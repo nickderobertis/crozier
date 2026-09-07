@@ -21,20 +21,21 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
-**What it says today.** The walk enumerates 412 features. 322 are `golden`: a
+**What it says today.** The walk enumerates 451 features. 350 are `golden`: a
 registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 70 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
 recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
-about Fern and not a byte comparison against crozier. 20 are `gap`, every one of
-them `UNREACHABLE` — the shape has no position in a generated Python SDK at all.
-Both backlogs this file carries are empty. So *does crozier byte-match Fern on
+about Fern and not a byte comparison against crozier. 31 are `gap`: 20 of them
+`UNREACHABLE` — the shape has no position in a generated Python SDK at all — and
+11 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
+and that this corpus never writes. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
-evidence covers 322 of the 412 features this walk can see, that 70 more carry a
-Fern verdict and no byte comparison at all, and that the walk cannot see
-everything — where the remaining distance lies is
+evidence covers 350 of the 451 features this walk can see, that 70 more carry a
+Fern verdict and no byte comparison at all, that 11 have neither, and that the
+walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
-left for a reader to infer from an empty backlog.
+left for a reader to infer from a backlog's size.
 
 ## The region files
 
@@ -114,7 +115,18 @@ A field whose value is drawn from a closed set also emits a **valued selector**,
 themselves a closed list: `openapi.openapi` (major.minor only), `parameter.in`,
 `parameter.style`, `header.style`, `mediaType.encoding.style`, `schema.type`,
 `schema.format`, `securityScheme.type`, `securityScheme.in`,
-`securityScheme.scheme`.
+`securityScheme.scheme`, `schema.additionalProperties`.
+
+A **boolean** value emits no valued selector, because a boolean field is written
+for its presence and a valued spelling of it would be a second name for the field
+selector the grammar already has. `schema.additionalProperties` is the one
+exception, and is in the list above for that reason alone: it is the field that is
+*a schema or a boolean*, and which boolean it carries is a different shape rather
+than the same shape written twice — `additionalProperties: false` closes an object
+and `src/ir.rs`'s `is_inline_struct` hoists a model for it, while
+`additionalProperties: true` opens a map and `is_map` renders it as a dictionary.
+A `schema.additionalProperties` whose value is a schema emits no valued selector
+at all, exactly as an open set would not.
 
 A **count** is the number of declaration sites in that document — one per place
 the field is written, so a schema keyword used in forty schemas counts forty. Map
@@ -132,36 +144,88 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-six, declared in `scripts/openapi-surface-census.py` and restated here, with a
+17, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
-- `operation.tags:multiple` — one per Operation Object whose `tags` array holds
-  more than one member.
+- `operation.tags:multiple` — one per Operation Object whose `tags` array
+  holds more than one member.
 - `operation.operationId:duplicate` — one per Operation Object whose
-  `operationId` value is declared by more than one Operation Object of the same
-  document, so a value written twice counts two.
-- `openapi.paths:normalized-collision` — one per Paths Object key that collides
-  with at least one other key of the same document after path-template-name
-  normalization, so a two-key collision counts two. The normalization is
-  crozier's own — `naming::field_name` of `src/naming.rs`, the transform that
-  gives a path parameter its Python name and so decides which routes
-  `src/emit.rs` renders as one URL — applied to each `{expression}` and to
-  nothing else, so `/users/{userId}` and `/users/{user_id}` collide while
-  `/{id}/users` and `/users/{id}` do not.
-- `openapi.paths:templated-key` — one per Paths Object key carrying at least one
-  `{expression}` template expression, so a key with two counts one.
+  `operationId` value is declared by more than one Operation Object of the
+  same document, so a value written twice counts two.
+- `openapi.paths:normalized-collision` — one per Paths Object key that
+  collides with at least one other key of the same document after path-
+  template-name normalization, so a two-key collision counts two. The
+  normalization is crozier's own — `naming::field_name` of `src/naming.rs`,
+  the transform that gives a path parameter its Python name and so decides
+  which routes `src/emit.rs` renders as one URL — applied to each
+  `{expression}` and to nothing else, so `/users/{userId}` and
+  `/users/{user_id}` collide while `/{id}/users` and `/users/{id}` do not.
+- `openapi.paths:templated-key` — one per Paths Object key carrying at least
+  one `{expression}` template expression, so a key with two counts one.
 - `openapi.paths:several-template-expressions` — one per Paths Object key
   carrying more than one `{expression}` template expression, so a key with one
-  counts none and a key with three counts one. The two are separate readings of
-  the same key rather than one selector and a refinement of it: a key with
+  counts none and a key with three counts one. The two are separate readings
+  of the same key rather than one selector and a refinement of it: a key with
   exactly one expression is what tells them apart.
 - `components.schemas:normalized-collision` — one per `components.schemas` key
-  that collides with at least one other key of the same document after
-  class-name normalization, so a two-key collision counts two. The normalization
-  is again crozier's own — `naming::class_name` of `src/naming.rs`, the transform
-  `src/ir.rs`'s `ref_to_class` gives a named schema and so the one that decides
-  which components generate as one class — so `OBRate1_0` and `OB_Rate1_0`
-  collide while `OBRate1` and `OBRate1_0` do not.
+  that collides with at least one other key of the same document after class-
+  name normalization, so a two-key collision counts two. The normalization is
+  again crozier's own — `naming::class_name` of `src/naming.rs`, the transform
+  `src/ir.rs`'s `ref_to_class` gives a named schema and so the one that
+  decides which components generate as one class — so `OBRate1_0` and
+  `OB_Rate1_0` collide while `OBRate1` and `OBRate1_0` do not.
+- `openapi.paths:leading-literal-segment` — one per Paths Object key whose
+  first non-empty `/`-separated segment is not wholly a `{expression}`
+  template expression, which is the segment `src/ir.rs`'s `path_group`
+  returns.
+- `openapi.paths:template-before-literal-segment` — one per Paths Object key
+  whose first non-empty segment is wholly a template expression and which
+  carries a later segment that is not, so `path_group` skips one to return the
+  other.
+- `openapi.paths:all-segments-templated` — one per Paths Object key with no
+  non-empty segment that is not wholly a template expression, so a key whose
+  every segment is templated counts one and so does a key carrying no segment
+  at all. The three above are one reading of a key between them, and the
+  reading `path_group` makes: every key takes exactly one of them.
+- `schema.type:primary=array` — one per Schema Object whose `type` names
+  `array` first among its non-`null` members, which is the member
+  `TypeField::primary` of `src/openapi.rs` reads, so a 3.1 `type: [string,
+  array]` counts none and `type: [null, array]` counts one. A schema declaring
+  `array` anywhere among its types is what `schema.type=array` counts, and the
+  two disagree on exactly the key case 3.1 added.
+- `schema.properties:non-empty` — one per Schema Object whose `properties` map
+  holds at least one entry, so a declared-but-empty `properties: {}` counts
+  none.
+- `schema.oneOf:sole-member` — one per Schema Object whose `oneOf` array holds
+  exactly one member.
+- `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds
+  exactly one member.
+- `schema.oneOf:sole-non-null-member` — one per Schema Object whose `oneOf`
+  array holds exactly one member whose primary type is not `null`, beside at
+  least one member whose primary type is `null`.
+- `schema.anyOf:sole-non-null-member` — one per Schema Object whose `anyOf`
+  array holds exactly one member whose primary type is not `null`, beside at
+  least one member whose primary type is `null`.
+- `schema.enum:string-valued` — one per Schema Object whose `enum` array
+  yields at least one string value under crozier's own `string_enum_values` —
+  the schema is `type: string`, or declares no `type` and every member is a
+  string.
+- `schema.const:string-valued` — one per Schema Object whose `const` value
+  yields a string under that same reading, which is the spelling
+  `string_enum_values` falls back to when no `enum` is written. The two are
+  two readings rather than one, because a schema writing both is read by its
+  `enum` alone.
+
+**Fourteen of the 17 are node-local**, which is what makes them one family:
+each is decided from one object-model node's own declared fields and their
+values, with no `$ref` resolution and no document-scope comparison. The other
+three — `operation.operationId:duplicate` and the two `normalized-collision`
+spellings — compare one document's own values against each other, and say so in
+their own sentence. A property that would need the schema a `$ref` points at is
+not a predicate of either kind and is declared nowhere: those shapes are the
+enumeration holes [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case)
+names H-ref-target, H-pointer-target and H-pointer-nesting, and the resolving walk
+they would take is a different instrument.
 
 A predicate selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name, and reports an undeclared one
@@ -243,12 +307,35 @@ can express. Three conventions that derivation applies, stated once:
   uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
-  `hoist_union_variant` sends all three to `base_type_ref`. Nine of the
-  fifty-three cases below survive this test; the other forty-four name the
+  `hoist_union_variant` sends all three to `base_type_ref`. Forty of the
+  seventy-six cases below survive this test; the other thirty-six name the
   extension that would close them.
 
-Every case whose own condition is the presence of a field and nothing more, and
-no other, earns one. The conjunctions are themselves a closed list of 9, declared in
+  What the test does **not** rule out is a node whose own declaration contradicts
+  itself. A schema writing `$ref` beside a sibling keyword is one — 3.0 says the
+  siblings are ignored, and `schema.oneOf>schema.allOf` has counted such a node
+  since this list was first declared — and a scalar `type` beside an object-only
+  keyword (`properties` on a `type: string`) is another. A selector naming the
+  object-side keyword counts both, and neither selects the arm; but a
+  contradiction is not a shape a document declares, and reading them as leaks
+  would make every case of every table a hole. That is the reading these rows have
+  always been written under, and it is stated here rather than left implicit.
+- **A case's closing selector may be a conjunction of *declared* selectors,
+  rather than one predicate that bundles them.** Several arms stack conditions:
+  every case of `hoist_union_variant` inside its `type: array` guard reads the
+  guard *and* something about the item, and `simple_nullable_member` reads an
+  arity *and* refuses a string-enum member. Where an arm's own condition is more
+  than one property, its selector joins one declared member per property under the
+  `&` and `>` operators above, so a case row carrying
+  `schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty`
+  is this grammar composing three members it declares separately — not a fifth
+  mechanism. A predicate that bundled the three would be a name no other case
+  could reuse, and would hide from a reader which property the arm actually reads.
+
+A case earns a selector when every property its own condition reads is one the
+grammar can name — a field written, a member of a closed value set, or one of the
+node-local predicates above — and those members compose into one conjunction.
+The conjunctions are themselves a closed list of 37, declared in
 `scripts/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
@@ -270,6 +357,84 @@ with a drift gate over the pair:
   properties declares `anyOf`.
 - `schema.properties>schema.oneOf` — one per Schema Object one of whose
   properties declares `oneOf`.
+- `schema.items>schema.type:primary=array` — one per Schema Object whose
+  `items` value declares `array` as its primary type.
+- `schema.items>schema.properties:non-empty` — one per Schema Object whose
+  `items` value declares a non-empty `properties` map.
+- `schema.items>schema.additionalProperties=false` — one per Schema Object
+  whose `items` value declares `additionalProperties: false`.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` holding a `oneOf` with one non-`null` member
+  beside a `null` one.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` holding an `anyOf` with one non-`null` member
+  beside a `null` one.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` holding a `oneOf` with one non-`null` member
+  beside a `null` one.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` holding an `anyOf` with one non-`null` member
+  beside a `null` one.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` declaring `oneOf`.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` declaring `anyOf`.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` declaring `oneOf`.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` declaring `anyOf`.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` declaring a non-empty `properties` map.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` declaring a non-empty `properties` map.
+- `schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` declaring `additionalProperties: false`.
+- `schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` declaring `additionalProperties: false`.
+- `schema.oneOf>schema.properties:non-empty` — one per Schema Object one of
+  whose `oneOf` members declares a non-empty `properties` map.
+- `schema.anyOf>schema.properties:non-empty` — one per Schema Object one of
+  whose `anyOf` members declares a non-empty `properties` map.
+- `schema.properties>schema.enum:string-valued` — one per Schema Object one of
+  whose properties declares a string-valued `enum`.
+- `schema.properties>schema.const:string-valued` — one per Schema Object one
+  of whose properties declares a string-valued `const`.
+- `schema.properties>schema.properties:non-empty` — one per Schema Object one
+  of whose properties declares a non-empty `properties` map.
+- `schema.properties>schema.additionalProperties=false` — one per Schema
+  Object one of whose properties declares `additionalProperties: false`.
+- `schema.properties>schema.oneOf:sole-non-null-member` — one per Schema
+  Object one of whose properties declares a `oneOf` with one non-`null` member
+  beside a `null` one.
+- `schema.properties>schema.anyOf:sole-non-null-member` — one per Schema
+  Object one of whose properties declares an `anyOf` with one non-`null`
+  member beside a `null` one.
+- `schema.properties>schema.type:primary=array` — one per Schema Object one of
+  whose properties declares `array` as its primary type.
+- `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty` —
+  one per Schema Object one of whose properties declares a one-member `oneOf`
+  whose member declares a non-empty `properties` map.
+- `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty` —
+  one per Schema Object one of whose properties declares a one-member `anyOf`
+  whose member declares a non-empty `properties` map.
+- `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false` —
+  one per Schema Object one of whose properties declares a one-member `oneOf`
+  whose member declares `additionalProperties: false`.
+- `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false` —
+  one per Schema Object one of whose properties declares a one-member `anyOf`
+  whose member declares `additionalProperties: false`.
 
 A conjunction selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name — and refuses a well-formed
@@ -431,39 +596,41 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 19 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 126 | 102 | 21 | 3 | 0 | 0 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 162 | 127 | 21 | 14 | 11 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 38 | 12 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 67 | 62 | 5 | 0 | 0 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 70 | 65 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 2 | 17 | 0 | 0 | 17 |
-| **total** | **412** | **322** | **70** | **20** | **0** | **0** | **20** |
+| **total** | **451** | **350** | **70** | **31** | **11** | **0** | **20** |
 
-The walk enumerated **412** features and landed each in exactly one category:
-**322** `golden`, **70** `limitations`, **20** `gap`. The `gap` column splits by
-settlement class into **0** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
+The walk enumerated **451** features and landed each in exactly one category:
+**350** `golden`, **70** `limitations`, **31** `gap`. The `gap` column splits by
+settlement class into **11** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
-**What the `golden` count means, and what it does not.** 322 of those 412
+**What the `golden` count means, and what it does not.** 350 of those 451
 features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
-real bytes there and `just check` fails if they diverge. The other 90 do not. 70
-carry a Fern verdict measured on a probe and no byte comparison at all, and 20
-have no position in a generated Python SDK for a comparison to be about. Neither
-column is a defect count, and neither 322 nor 412 is a claim of exhaustion —
+real bytes there and `just check` fails if they diverge. The other 101 do not. 70
+carry a Fern verdict measured on a probe and no byte comparison at all, and 31
+have neither. Neither
+column is a defect count, and neither 350 nor 451 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
-**What the `gap` count means.** 20 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 31 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 [`fern-limitations.md`](fern-limitations.md) has never measured Fern on it, so
-nothing contradicts whatever crozier does. `just check` is green over all 20
-either way. It is not a defect count — all 20 of them (`UNREACHABLE`) have no
+nothing contradicts whatever crozier does. `just check` is green over all 31
+either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-That leaves 0 for the two backlogs below, which is why both are now empty.
+That leaves 11 for the two backlogs below, every one of them in the fixture one:
+they are branches of `src/ir.rs` a real document can select and this corpus never
+writes, named for the first time by the node-local predicate family.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 412 rows carry 412 distinct
+**Each feature is classified exactly once.** The 451 rows carry 451 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Thirteen spec
@@ -587,13 +754,17 @@ ledger join and the site counts it ranks on, and found no row whose `category` o
 
 ### Golden-classified is not golden-exhausted
 
-Both backlogs below are empty, and an empty backlog is the easiest thing in this
-document to misread. It does not say every OpenAPI feature is byte-matched
-against Fern; it says every feature this walk enumerated has been *landed* — in a
-category, with the evidence that category demands. The distance between a
-classified feature and an exhausted one is real, it is measurable, and it lives
-in four places. Naming them is the point of this section, because the one claim
-this file has never made is that everything is covered.
+The probe backlog below is empty and the fixture one carries eleven rows, and a
+backlog's size is the easiest thing in this document to misread either way. It
+does not say every OpenAPI feature is byte-matched against Fern; it says every
+feature this walk enumerated has been *landed* — in a category, with the evidence
+that category demands. The distance between a classified feature and an exhausted
+one is real, it is measurable, and it lives in four places. Naming them is the
+point of this section, because the one claim this file has never made is that
+everything is covered. The eleven rows are what the fourth place looks like when
+it is worked: they were part of the unnamed work this section describes until a
+predicate family named them, and naming them is what moved them into the
+denominator and into a backlog at once.
 
 **A `golden` row is one witness, not a branch.** It says a registered source
 declares the feature and its committed Fern golden byte-matches — so the bytes
@@ -625,19 +796,27 @@ registrable witness turns up the classification precedence promotes it to
 closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
-is enumerable only where a selector can name it, so the walk's 412 is a
+is enumerable only where a selector can name it, so the walk's 451 is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
-[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 53
-branches those six functions of `src/ir.rs` offer a document, 9 carry an exact
-selector and 44 are enumeration holes, each naming the predicate or valued
-selector that would close it and none of them a row anywhere. The same is true
-off that file — the enum-member spellings `src/naming.rs` lowers, the JSON value
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 76
+branches those six functions of `src/ir.rs` offer a document, 40 carry an exact
+selector and 36 are enumeration holes, each naming the operator or predicate that
+would close it and none of them a row anywhere. **That bound has moved once, and
+moving it is what a reader should expect of it.** It read *"of the 53 branches, 9
+carry an exact selector and 44 are enumeration holes"* until the node-local
+predicate family was declared; the same seventy-six branches were always there,
+and thirty-one of them became nameable, classifiable and — for eleven — a `gap`
+with a settlement route. The remaining thirty-six turn on a `$ref` resolving, on a
+comparison across the document, or on the *absence* of a declaration, and each
+says which. The same is true off that file — the enum-member spellings
+`src/naming.rs` lowers, the JSON value
 *kinds* the example branches of `src/emit.rs` switch on, and the cross-document
 `$ref` path of `src/refs.rs`, which the corpus is single-document by construction
-and so can never reach. None of that is in the 412, in the 20 `gap` rows, or in
+and so can never reach. None of that is in the 451, in the 31 `gap` rows, or in
 either backlog. It is not unclassified work; it is unnamed work, and this
-document's own instrument is what would have to grow first.
+document's own instrument is what would have to grow first — which is exactly what
+the eleven new `FIXTURE` rows are: the first time it did.
 
 **And the thin end is one document wide.** A `golden` row rests on whichever
 registered sources happen to declare the shape, and for several that is a single
@@ -650,13 +829,18 @@ generator has earned.
 
 ### The ranked `FIXTURE` backlog
 
-**Where this list stands, and the three ways a row left it.** It is empty. No
-region file carries a `FIXTURE` gap, so the ranking table at the end of this
-section has no rows, no median blind-spot count is published for it, and there is
-no population to narrate. That is a change of state rather than a change of rule:
-every row that ever stood here left by one of three routes, and which route a row
-took is what decides the evidence the tree now holds for it. The paragraphs below
-walk them in the order they happened; this is the shape they add up to.
+**Where this list stands, and the three ways a row left it.** It carries eleven
+rows, and none of them is a row that ever stood here before: the list was
+exhausted, and the node-local predicate family refilled it from the one direction
+an exhausted backlog can be refilled from — the instrument, not the corpus.
+Eleven branches of `src/ir.rs`'s six blind functions now have a name, and no
+registered source declares any of them, which is what a `gap` is. They are
+[tabled at the end of this section](#the-ranked-fixture-backlog) and narrated in
+[the paragraph that added them](#the-eleven-rows-the-node-local-predicates-added).
+Everything below them is history: every row that ever stood here left by one of
+three routes, and which route a row took is what decides the evidence the tree
+now holds for it. The paragraphs below walk them in the order they happened; this
+is the shape they add up to.
 
 - **By a registered witness.** A real-world document was screened for licence and
   immutable ref, put to Fern at 5.20.0, and committed as a corpus row with its
@@ -969,11 +1153,33 @@ That round generated every cleanly-generating probe with crozier too and
 byte-compared it with Fern under the gate's normalization, finding no differing
 file; like the round above, that is corroborating evidence counted nowhere here.
 
-**With them the `FIXTURE` backlog is exhausted.** All 0 `FIXTURE` gaps remain
+#### The eleven rows the node-local predicates added
+
+**The backlog was exhausted and is not any more, and nothing about the corpus
+moved.** The eleven rows below are eleven branches of `src/ir.rs` that this
+change named for the first time — the `anyOf` spelling of an arm whose `oneOf`
+spelling the corpus declares, the closed-object element of an arm whose
+struct element it declares, the one-member composition whose two-member sibling
+it declares. Each was reachable by a real document and reached by no golden
+before this change and after it alike; what changed is that each now has a
+selector, so the census could be *asked*, and the answer came back zero across
+all 169 registered sources. That is the mechanism
+[the conjunction pass predicted](#the-six-blind-regions-of-srcirrs-case-by-case)
+for a future `gap` — *extend the grammar to express one and the census can report
+the new selector absent* — happening for the first time.
+
+**They rank as one block**, because their four criteria are identical: each names
+one place in `src/ir.rs`, that file's blind-spot count is one number, each moves
+the types module and the census reports no witness for any of them. So the total
+order among them is criterion 5, the key, and the table below is alphabetical.
+Every one is `FIXTURE` rather than `PROBE`: the corpus already declares the
+sibling spelling of each, so a screened real-world document plausibly declares
+this one, and no structural measurement is involved.
+
+**All 11 `FIXTURE` gaps remain
 across the six regions: the gate recomputes that total off the region files
-themselves and zero is what it reports, so the table below carries no rows. The rubric and its
-four criteria stay stated because the next `FIXTURE` gap the walk enumerates is
-ranked by them, and a row that returns is ranked by [the ranking
+themselves. The rubric and its
+four criteria are how they are ordered, and a row is ranked by [the ranking
 rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
 descending, then artifact breadth descending, then witness supply descending,
 then key. Each row publishes the measured value of all four, so the order can be
@@ -993,15 +1199,30 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which
-  is what makes it a gap. The last row to score above zero,
+  is what makes it a gap — 11 of the 11 score zero here, no registered source
+  declaring any of them at all. The last row to score above zero,
   `parameter-style-matrix-path-scalar` on the golden-less `appng-rest-api`, left
   this list [settled by probe](#the-six-rows-a-round-of-probes-settled).
 
-With the list empty there is no median blind-spot count to publish and no
-population to narrate; both return with the first row that returns.
+**The median blind-spot count of this list is 235** — every entry names
+`src/ir.rs` and nothing else, and 0 of the 11 entries name no `src/` file at all,
+which is the mirror image of the list this one replaced. 0 of the 11 ranked
+entries reach no blind region, so criterion 1 no longer decides the order and
+criterion 5 does.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
+| 1 | [`anyof-array-variant-anyof-nullable-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 2 | [`anyof-array-variant-closed-object-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 3 | [`anyof-array-variant-oneof-nullable-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 4 | [`anyof-array-variant-struct-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 5 | [`anyof-sole-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 6 | [`oneof-array-variant-anyof-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 7 | [`oneof-array-variant-anyof-nullable-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 8 | [`oneof-array-variant-closed-object-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 9 | [`property-sole-anyof-closed-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 10 | [`property-sole-anyof-struct-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 11 | [`property-sole-oneof-closed-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -1020,7 +1241,7 @@ functions named in each verdict are counted from that union.
 | `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
 | `src/emit.rs` | 437 | all-e2e 137, non-e2e 300 | none | **A shape the walk missed, and now the sharpest measured price of settling a row by probe.** This file is where the block moved most since these cells were last taken — 175 printed to 437 — and the largest new block is one change's: the object-typed path parameter [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail) found crozier diverging on and repaired. `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10 are 125 of this file's 312-region union, and `build_example_inner` rose 7 to 19 beside them. The shape driving all of it is one **no registered source declares**, so no committed golden can reach a line of it: a probe settles a row's category and buys no byte-comparison evidence, and this is what that costs, in regions rather than in argument. `append_request_call_args` 10 — the function the one ranked gap that ever pointed here, `media-type-range`, named — was not among the blind regions when that row was ranked; corpus row 127 settled the row `golden` and the function is blind now. The rest is example rendering, as before: `example_matches_type` 24, `header_first_query_example` 16, `example_is_object` 14, `raw_type_str_ctx` 13, `value_from_example` 10, `named_value_inner` 10, `flat` 9. `type_serializes_as` 8 a committed golden reaches now, as the streaming docstrings `client_stream_docstring` 11 + `raw_stream_docstring` 10 already did. Every `example`/`examples` field is classified `golden`, but the walk enumerates the *field*; those branches switch on the JSON value *kind* an example holds, and example values are not in the grammar's closed list of valued selectors, so no `gap` row could have named them. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
-| `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | none | **Still wholly unreached, and no longer joined to a ranked gap at all.** The old verdict opened *"agrees on the file, misses the shapes"* — the agreement being that a ranked `FIXTURE` row pointed here and the block did too. That half is gone: the ranked backlog is empty, so nothing about this file is fixture work, and the last row that pointed here, `parameter-style-form-cookie-scalar`, is `limitations` since [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail) measured Fern discarding a cookie parameter and the `form` style on it alike, on a probe rather than a golden. The other half stands unchanged and is the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run prints. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives the conjunctions from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it.** The [conjunction selectors](#the-selector-grammar) were declared off these six functions' own branches ([case by case](#the-six-blind-regions-of-srcirrs-case-by-case)), the census was run over the 164 registered sources that walk read, and all nine came back `golden` — every one declared by at least one source whose committed golden byte-matches, from `schema.items>schema.$ref` at 4,151 sites in 114 sources down to `schema.anyOf>schema.allOf` at 4 in one. The `schemas` region carries the nine rows and the split each rests on. What stays true of this file is the *branch* reading: a golden pinning a conjunction pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and the forty-four cases of these six functions that no selector kind can express are still unmeasured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
+| `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | 11 (all of them, the eleven the node-local predicate family named) | **Still wholly unreached, and joined to a ranked gap again — eleven of them.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: eleven ranked `FIXTURE` rows point here, every one of them a branch of this file's six blind functions that the node-local predicate family named and no registered source declares — [the eleven the predicates added](#the-eleven-rows-the-node-local-predicates-added). The other half is unchanged and is the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run prints. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The thirty-nine selectors the second pass declared did not: twenty-eight are `golden` and eleven are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-six of the thirty-nine rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and the thirty-six cases of these six functions that no selector kind can express are still unmeasured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
 | `src/openapi.rs` | 218 | all-e2e 84, non-e2e 134 | none | **Accounts for what is left, and no ranked gap points here any more.** The four that did — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256`, one `#[serde(other)]` scheme fallback arm and four IANA scheme members collapsing through it — are `limitations` since [Round 6](fern-limitations.md#round-6--security) measured Fern on all four, and the fifth ranked row this file ever carried, `securityscheme-ref`, is `limitations` on the same round; the `$ref` position it named is `normalize_security_scheme_refs` now, and it is reached by a probe rather than by a golden. `normalize_parameters` was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way; neither is blind at all now. The largest block, `filter_by_audience` 47 + `audiences` 8, belongs to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `load` 26 + `expecting` 5 + `de_composition` 5 + the four `visit_*` arms 12 between them are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. `filter_ignored` 13 is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. **This file is where the corpus moved most.** `collect_schema_refs` 46, `expand_schema_closure` 32, `operation_schema_seed` 24, `visit_seq` 7 and `normalize_parameters` 3 were all blind two measurements ago and are reached by a committed golden now, and `filter_ignored` fell from 72; that is the whole of the file's 511 → 184. **The 184 has since risen to 218, and the rise is a probe's.** `normalize_security_scheme_refs` 18 is the `$ref` position `securityscheme-ref` named, written when [Round 6](fern-limitations.md#round-6--security) settled that row by probe — code a measurement drove into `src/` that no committed golden reaches, which is what `src/emit.rs` above now shows at four times the size. |
 | `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
@@ -1030,26 +1251,31 @@ functions named in each verdict are counted from that union.
 | `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 
-**Where the two backlogs agree.** They no longer meet anywhere: the ranked
-backlog is empty, so no `src/` file is named by both. `src/ir.rs` was the last
-file both named, until [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail)
+**Where the two backlogs agree.** At one file, `src/ir.rs`, and every ranked row
+is there. That agreement had lapsed — the ranked backlog was empty, so no `src/`
+file was named by both, `src/ir.rs` having been the last until
+[Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail)
 settled `parameter-style-form-cookie-scalar`; `emit.rs` stopped being one when
 corpus row 127 settled `media-type-range`, and `openapi.rs` when
 [Round 6](fern-limitations.md#round-6--security) settled the five `security`
-rows that pointed at it as `limitations`.
+rows that pointed at it as `limitations`. It is back for a reason worth stating:
+the eleven rows that restored it were read off this file's own blind functions,
+so the join is not a coincidence of two independent measurements agreeing but one
+measurement finding what the other pointed at.
 Ranking on criterion 2 therefore does not fight the repository's own
-measurement; it no longer refines it either, because no ranked entry is left to
-refine it with. **The order of size at the top has moved twice over** — it was
+measurement and does not refine it either, since every ranked row scores the same
+235: the order among them falls through to criterion 5. **The order of size at
+the top has moved twice over** — it was
 `openapi.rs` 511 > `ir.rs` 201, then `ir.rs` 235 > `openapi.rs` 184, and the
 refreshed run makes it `emit.rs` 437 > `ir.rs` 235 > `openapi.rs` 218, on a rise
-in `emit.rs` no corpus row caused. None of it changes a ranked row, there being
-no ranked row at all.
+in `emit.rs` no corpus row caused. None of it changes a ranked row, every one of
+which names `ir.rs` and nothing else.
 
 **Where they do not, and the reading that has to change with them.** No ranked
-gap points at any of the twelve, the backlog being exhausted: one
+gap points at eleven of the twelve: one
 (`src/refs.rs`) is a region only a probe can settle, two (`src/naming.rs`,
-`src/emit.rs`) are shapes the walk missed, two (`src/openapi.rs`, `src/ir.rs`)
-are regions probes have now settled, and the remaining seven are outside the
+`src/emit.rs`) are shapes the walk missed, one (`src/openapi.rs`) is a region
+probes have now settled, and the remaining seven are outside the
 walk's subject entirely — they carry no OpenAPI-derived code, so neither a
 fixture nor a probe is their instrument. The two largest of the twelve,
 `src/settings.rs` and `src/emit.rs`, together 1,301 of the block's 2,291 printed
@@ -1073,35 +1299,42 @@ every branch of each of those six functions a source document can select, under
 it distinguishes.
 
 **Every case below is in exactly one of two states.** It carries exactly one
-selector from the closed list of 9 — and only where that selector is *exact*,
-counting the nodes the branch is selected by and no others — or it is recorded as
-one of sixteen enumeration holes naming the property no selector kind can express
-and what closing it would take —
-the way `normalization-collision` was recorded before `components.schemas:normalized-collision`
-existed. No case is in neither, and none is in both.
+selector the census declares — a conjunction, or, where the arm reads one Paths
+Object key and opens no schema, a predicate — and only where that selector is
+*exact*, counting the nodes the branch is selected by and no others. Otherwise it
+is recorded as one of nine enumeration holes naming the property no selector kind
+can express and what closing it would take — the way `normalization-collision` was
+recorded before `components.schemas:normalized-collision` existed. No case is in
+neither, and none is in both.
+
+A case number carrying a letter is one arm read at the grain the selectors need.
+Two things put a letter on a row. A branch reached through `x.or(y)` is two cases
+under [the enumeration rule](#the-selector-grammar), so the `oneOf` and `anyOf`
+spellings of one arm are two rows; and where an arm's condition is a *disjunction*
+— `is_inline_struct` is four conditions joined by `||`, and this table already
+split it into separate cases where `nested_array_element` reads it — each disjunct
+is its own row, because a conjunction selector cannot express a disjunction and a
+selector naming one disjunct would be narrower than the whole arm.
 
 | hole | what no selector kind can express | what closing it would take |
 |---|---|---|
 | **H-residual** | a function's residual arm is selected by the *absence* of every case above it | a negation operator over a group's members, deliberately absent: a complement is not a shape a document declares |
-| **H-negated-value** | that a value was *not* written — `is_inline_struct`'s `!declares_scalar_type(schema)`, which excludes a schema whose `type` is `string`, `number`, `integer` or `boolean` | the same negation operator H-residual names; the four positive spellings are valued selectors the grammar already has, and only their complement is missing |
-| **H-arity** | the *number* of members a composition field declares — `let [member] = schema.all_of…as_slice()`, `non_null.len() == 1`, `members.len() == 1` | a predicate over a composition field's length (`schema.allOf:sole-member`, `schema.oneOf:sole-non-null-member`), of the family `operation.tags:multiple` already is |
-| **H-empty-collection** | whether a map- or list-valued field is *non-empty* — `is_inline_object` and `is_inline_struct` both read `!schema.properties.is_empty()`, so a declared-but-empty `properties: {}` is not an inline object at all | a predicate `schema.properties:non-empty`, again a length predicate of the `operation.tags:multiple` family |
-| **H-boolean-value** | which *boolean* a schema-or-boolean field was written with — `is_inline_struct`'s `AdditionalProperties::Bool(false)` arm | `schema.additionalProperties` added to the closed list of valued fields for its boolean spelling |
-| **H-type-multiplicity** | *which* member of a `type` array is the one a branch reads: `TypeField::primary()` takes the first non-`null` member, while `schema.type=array` counts a schema declaring `array` anywhere among its types, so a 3.1 `type: [string, array]` is counted and takes the string path | a valued selector reading a member's *position* rather than its presence (`schema.type:primary=array`), which is a predicate over the `type` field's array |
-| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half — one new member of the valued-field list and one new predicate, since neither alone decides the arm |
-| **H-enum-value-kind** | that an `enum`'s or `const`'s values are *strings* — `string_enum_values` returns `None` for `enum: [1, 2, 3]` on a schema that is not `type: string`, and for a `type: string` enum whose values are all non-strings | a predicate `schema.enum:string-valued`, of the same value-reading family as H-example-value |
+| **H-negated-value** | that a value was *not* written — `is_inline_struct`'s `!declares_scalar_type(schema)`, which excludes a schema whose `type` is `string`, `number`, `integer` or `boolean`; the same helper's `additional_properties.is_none()`, which is what makes a declared-but-empty `properties: {}` an inline struct; `sole_inline_all_of`'s nine sibling-absence tests; and `is_bare_object`'s four | the same negation operator H-residual names; every positive spelling is a selector the grammar already has, and only their complement is missing |
+| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half — and, beyond both, the negation operator H-negated-value names, because the arm is `is_bare_object` beside that pair and a map schema carrying a concrete example is a coherent document the pair alone counts and `hoist_union_variant` sends to `base_type_ref` |
 | **H-discriminant-value** | that a union's members each carry a discriminable value for the discriminant property — `discriminated_union` requires `discriminant_value` (a one-member string `enum`, or a string `example`) on every member when no `mapping` is written, and every `mapping` target to resolve when one is; a `discriminator` beside a `oneOf` is therefore not enough to select the arm, and the inferred spelling reads the same member values with no `discriminator` written at all | a predicate comparing the members of one `oneOf` against each other and against a named property's value, of the family `operation.operationId:duplicate` already is |
-| **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown` | the length predicate H-arity names, plus a predicate over what the remaining members declare; `schema.allOf` alone counts every `allOf` there is |
+| **H-annotated-ref** | that an `allOf` holds exactly one `$ref` beside members that add nothing but a description, *and* that the reference resolves — `described_all_of_ref` requires at least two members, exactly one of them a reference, and every other `is_unknown`, and every arm reading it then resolves that reference against `components.schemas` | a predicate over an `allOf`'s length and over what its non-reference members declare, evaluated against the resolving walk H-ref-target names; `schema.allOf` alone counts every `allOf` there is |
 | **H-ref-target** | the shape of the schema a `$ref` *points at*: the walk counts a Reference Object and never descends | a resolving walk, which is a different instrument — the target's own declaration site is already counted where it is written |
-| **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the three `openapi.paths:` predicates already are over a key's shape |
+| **H-pointer-form** | the segment structure of a `$ref` *value*, as in `#/components/schemas/A/allOf/0/properties/b` | a predicate family over `schema.$ref` (`:components-schemas-pointer`, `:nested-properties`, `:nested-items`, `:composition-index`, `:foreign-pointer`), of the family the `openapi.paths:` predicates already are over a key's shape |
 | **H-pointer-nesting** | that a `$ref` value's segment sequence addresses the nesting a schema declares: each arm's schema-side half is already named by a plain field selector (`schema.allOf`, `schema.properties`, `schema.items`), and what no kind can express is the *correspondence* between the two, which is a joint property of a value and the document it points into | the `schema.$ref` pointer-form predicate family H-pointer-form names, evaluated against the resolving walk H-ref-target names — both together, and neither is a conjunction over one node's declared fields |
 | **H-pointer-target** | whether a `$ref` value names a key `components.schemas` declares | a predicate comparing one document's `$ref` values against its own component names, of the family `components.schemas:normalized-collision` already is |
-| **H-key-segment-position** | *which* segment of a Paths Object key carries a template expression | a predicate `openapi.paths:leading-template-segment`, of the family the three `openapi.paths:` predicates already are |
-| **H-key-all-templated** | that *every* segment of a Paths Object key is a template expression | a predicate `openapi.paths:all-segments-templated`, same family |
 
-Declaring any of those predicates is a change to the *predicate* list, not to the
-conjunction list this section derives; each hole says which one it would take, so
-the next node reads the work off the row rather than rediscovering it.
+Every one of the nine turns on something outside the node in front of the walk —
+a `$ref` resolving, a comparison across the document, or the *absence* of a
+declaration — which is what separates them from the node-local predicate family
+[the grammar declares](#the-selector-grammar). Declaring one of them is a change
+to the predicate list or to the operators, not to the conjunction list this
+section derives; each hole says which, so the next node reads the work off the row
+rather than rediscovering it.
 
 #### `resolve_schema_pointer`
 
@@ -1135,15 +1368,21 @@ shape.
 
 Its entry gate is `let items = array.items.as_deref()?`, carried as the leftmost
 member `schema.items` of every case rather than listed as a case of its own.
+Cases 4 to 6b are one arm — `is_inline_struct(items)` — read one disjunct at a
+time, which is the grain a conjunction can name: the helper is
+`!declares_scalar_type && (properties non-empty || allOf || a declared-but-empty
+properties on an object || additionalProperties: false)`, and its scalar-type
+guard is what leaves two of the four a hole.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `items.reference.is_none() && items.ty…primary() == Some("array")` — the recursive nested-array descent | **H-type-multiplicity** |
+| 1 | `items.reference.is_none() && items.ty…primary() == Some("array")` — the recursive nested-array descent | `schema.items>schema.type:primary=array` |
 | 2 | `self.discriminated_union(&name, &module, items, …)` returning `Some`, in either the written-`discriminator` spelling or the inferred one | **H-discriminant-value** |
 | 3 | `if items.reference.is_some() { return None; }` — the arm's own condition is that the field is written, and nothing more | `schema.items>schema.$ref` |
-| 4 | `is_inline_struct(items)` → `add_object`, on an `items` whose `properties` are non-empty | **H-empty-collection** |
+| 4 | `is_inline_struct(items)` → `add_object`, on an `items` whose `properties` are non-empty | `schema.items>schema.properties:non-empty` |
 | 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type` | **H-negated-value** |
-| 6 | the same arm on `type: object` with `additionalProperties: false` | **H-boolean-value** |
+| 6 | the same arm on an `items` writing `additionalProperties: false`, which `is_object_type` reads as an object however — or whether — the `type` is written | `schema.items>schema.additionalProperties=false` |
+| 6b | the same arm on an `items` writing an explicitly empty `properties: {}` beside no `additionalProperties` — `is_inline_struct`'s third disjunct, which the account this table replaces did not derive | **H-negated-value** |
 | 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` selects it too | `schema.items>schema.oneOf` |
 | 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically | `schema.items>schema.anyOf` |
 | 9 | the closing `None` | **H-residual** |
@@ -1154,29 +1393,52 @@ Every caller reaches it through `one_of.as_ref().or(any_of.as_ref())` — the
 named-schema, response and request-body hoisters, `prop_type_ref`, and its own
 recursion — so a document declaring only `anyOf` selects every case below exactly
 as one declaring `oneOf` does, and each case that survives the exactness test is
-two. Cases 4 to 7 all sit inside `if variant.ty…primary() == Some("array")`, so
-each carries H-type-multiplicity on top of the condition its own row names; the
-row names the narrower one.
+two. Cases 3 to 7 all sit inside `if variant.ty…primary() == Some("array")` —
+case 3 included, which the account this table replaces stated as "cases 4 to 7" —
+and that guard is `schema.type:primary=array`, so each of those rows carries it
+beside the condition its own row names. Case 3 reads a second `or` inside the
+first, because `simple_nullable_member` takes `any_of.or(one_of)` — the opposite
+order to every other call site — so its four rows are the product of the two.
+What those four rows do **not** spell is the rest of the helper's condition: the
+sole non-null member must itself declare no `oneOf` or `anyOf` and must not be a
+string enum. Neither is expressible, and neither has to be, because the nodes
+they exclude are exactly the nodes cases 4 and 5 claim — the item still declares a
+composition, so the gate below fires — which is the chain overlap
+[the exactness rule](#the-selector-grammar) permits between two listed cases.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
 | 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm, so nothing precedes it | `schema.oneOf>schema.$ref` |
 | 2 | the same arm, `anyOf` head | `schema.anyOf>schema.$ref` |
-| 3 | `if let Some(member) = simple_nullable_member(item)` — one element member beside `type: null`, typed `List[Optional[…]]` | **H-arity** |
+| 3a | `if let Some(member) = simple_nullable_member(item)` — one element member beside `type: null`, typed `List[Optional[…]]`; the item's `anyOf` spelling, which the helper reads first; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` |
+| 3b | the same, the item's `oneOf` spelling; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` |
+| 3c | 3a's item, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` |
+| 3d | 3b's item, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` |
 | 4 | an array variant whose item composes, `hoist_discriminated_union(&item_name, item, …)` returning `Some` | **H-discriminant-value** |
-| 5 | the same item falling through to the `TypeDecl::Alias` union over `item.one_of.as_ref().or(item.any_of.as_ref())`; the inner gate is exact, the `type: array` guard around it is not | **H-type-multiplicity** |
+| 5a | the same item falling through to the `TypeDecl::Alias` union over `item.one_of.as_ref().or(item.any_of.as_ref())`; the item's `oneOf` spelling, `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf` |
+| 5b | the item's `anyOf` spelling, `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` |
+| 5c | the item's `oneOf` spelling, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf` |
+| 5d | the item's `anyOf` spelling, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf` |
 | 6 | `described_all_of_ref(item)` resolving → `hoist_named_copy` of the annotated `$ref` | **H-annotated-ref** |
-| 7 | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object` | **H-empty-collection** |
-| 8 | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty, either head | **H-empty-collection** |
+| 7a | `item.reference.is_none() && is_inline_struct(item)` → `hoist_object`, on an item whose `properties` are non-empty; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty` |
+| 7b | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty` |
+| 7c | the same arm on an item writing `additionalProperties: false`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` |
+| 7d | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` |
+| 7e | the same arm on an item declaring `allOf`, either head, which `is_inline_struct` takes only for an item declaring no scalar `type` | **H-negated-value** |
+| 7f | the same arm on an item writing an explicitly empty `properties: {}` beside no `additionalProperties`, either head | **H-negated-value** |
+| 8a | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty; `oneOf` head. The helper carries no scalar-type guard, so the disjunct is the whole of its own condition | `schema.oneOf>schema.properties:non-empty` |
+| 8b | the same, `anyOf` head | `schema.anyOf>schema.properties:non-empty` |
 | 9 | the same arm on a variant declaring `allOf` — `is_inline_object` is a disjunction and carries no scalar-type guard, so `all_of.is_some()` is the whole of it; `oneOf` head | `schema.oneOf>schema.allOf` |
 | 10 | the same arm, `anyOf` head | `schema.anyOf>schema.allOf` |
-| 11 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` — the arm reads the example's JSON kind and rejects a schema-shaped object | **H-example-value** |
+| 11 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` — the arm reads the example's JSON kind and rejects a schema-shaped object, over a helper that is itself four absence tests | **H-example-value** |
 | 12 | the closing `base_type_ref(variant)` | **H-residual** |
 
 #### `prop_type_ref`
 
 It is called on each member of `properties`, so `schema.properties` is the
-leftmost member of every case.
+leftmost member of every case. Cases 8a to 8d are `is_inline_struct` read one
+disjunct at a time, as in `nested_array_element`; cases 12a to 12f are the same
+helper read again, inside the one-member arity its own arm tests.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
@@ -1185,16 +1447,26 @@ leftmost member of every case.
 | 3 | inside it, `if target.one_of.is_some() \|\| target.any_of.is_some()` → `hoist_named_copy` | **H-ref-target** |
 | 4 | inside it, `!is_map(&target) && !is_bare_object(&target) && …` → `hoist_object_with_doc` | **H-ref-target** |
 | 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)` | **H-ref-target** |
-| 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared | **H-arity** |
-| 7 | `string_enum_values(prop_schema)` → a hoisted enum, which the helper refuses unless the values are strings | **H-enum-value-kind** |
-| 8 | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object` | **H-empty-collection** |
+| 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member`; what remains is nine sibling-absence tests, and without them the selector counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | **H-negated-value** |
+| 7a | `string_enum_values(prop_schema)` → a hoisted enum, over a written `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.enum:string-valued` |
+| 7b | the same over a `const`, the spelling the helper falls back to when no `enum` is written | `schema.properties>schema.const:string-valued` |
+| 8a | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object`, on a property whose `properties` are non-empty | `schema.properties>schema.properties:non-empty` |
+| 8b | the same arm on a property declaring `allOf`, which `is_inline_struct` takes only for a property declaring no scalar `type` | **H-negated-value** |
+| 8c | the same arm on a property writing an explicitly empty `properties: {}` beside no `additionalProperties` | **H-negated-value** |
+| 8d | the same arm on a property writing `additionalProperties: false` | `schema.properties>schema.additionalProperties=false` |
 | 9 | `if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref())` — the composition gate, whose own condition is that the field is written; `oneOf` spelling | `schema.properties>schema.oneOf` |
 | 10 | the same gate, `anyOf` spelling: a property declaring only `anyOf` reaches every arm below it identically | `schema.properties>schema.anyOf` |
-| 11 | inside it, `non_null.len() == 1 && non_null.len() != members.len()` — the nullable pair collapsing to its one member | **H-arity** |
-| 12 | inside it, `members.len() == 1 && is_inline_struct(&members[0])` | **H-arity** |
+| 11a | inside it, `non_null.len() == 1 && non_null.len() != members.len()` — the nullable pair collapsing to its one member; `oneOf` spelling | `schema.properties>schema.oneOf:sole-non-null-member` |
+| 11b | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-non-null-member` |
+| 12a | inside it, `members.len() == 1 && is_inline_struct(&members[0])`, on a member whose `properties` are non-empty; `oneOf` spelling | `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty` |
+| 12b | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty` |
+| 12c | the same on a member writing `additionalProperties: false`; `oneOf` spelling | `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false` |
+| 12d | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false` |
+| 12e | the same on a member declaring `allOf`, either spelling | **H-negated-value** |
+| 12f | the same on a member writing an explicitly empty `properties: {}` beside no `additionalProperties`, either spelling | **H-negated-value** |
 | 13 | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)` | **H-discriminant-value** |
 | 14 | inside it, the closing alias over the members left after `is_null_variant` filtering | **H-residual** |
-| 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | **H-type-multiplicity** |
+| 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | `schema.properties>schema.type:primary=array` |
 | 16 | the closing `base_type_ref(prop_schema)` | **H-residual** |
 
 #### `ref_to_class`
@@ -1215,17 +1487,92 @@ is for and which the grammar declares none over.
 
 #### `path_group`
 
-Wholly an enumeration hole for the same reason: it reads the request URL and
-opens no schema. `openapi.paths:templated-key` says a key carries a template
-expression and `openapi.paths:several-template-expressions` says it carries more
-than one; neither says *which* segment carries it or whether all of them do,
-which is the only thing this function reads.
+It reads the request URL and opens no schema, so its three arms are named by
+predicates over a Paths Object key rather than by conjunctions over a node's
+fields. `openapi.paths:templated-key` says a key carries a template expression and
+`openapi.paths:several-template-expressions` says it carries more than one;
+neither says *which* segment carries it or whether all of them do, which is the
+only thing this function reads, and the three predicates below say exactly that.
+They partition every key, so each of the three arms is counted by one of them and
+by no other — which is why this table is the one region where no case needs the
+chain-overlap allowance at all.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `.find(\|s\| !(s.starts_with('{') && s.ends_with('}')))` returning the key's first segment | **H-key-segment-position** |
-| 2 | the same `find` returning a later segment, having skipped a templated one | **H-key-segment-position** |
-| 3 | `.unwrap_or("service")` — every segment is templated, or the URL has none | **H-key-all-templated** |
+| 1 | `.find(\|s\| !(s.starts_with('{') && s.ends_with('}')))` returning the key's first segment | `openapi.paths:leading-literal-segment` |
+| 2 | the same `find` returning a later segment, having skipped a templated one | `openapi.paths:template-before-literal-segment` |
+| 3 | `.unwrap_or("service")` — every segment is templated, or the URL has none | `openapi.paths:all-segments-templated` |
+
+**What the node-local predicate family closed, and what it did not.** The
+account this table replaces derived fifty-three cases, nine of them carrying a
+conjunction and forty-four recorded as one of sixteen enumeration holes. Eight of
+those sixteen were holes only because the grammar had no *node-local* predicate —
+a property one object-model node's own declared fields and their values decide,
+with no `$ref` resolution and no comparison across the document. Eleven such
+predicates are now declared, plus the one valued field
+`schema.additionalProperties`, and with them the table above derives seventy-six
+cases, forty carrying a selector and thirty-six recorded as one of nine holes.
+Seven hole kinds are gone: H-arity, H-empty-collection, H-type-multiplicity,
+H-boolean-value, H-enum-value-kind, H-key-segment-position and
+H-key-all-templated no longer name any case, because every arm they named is now
+counted by its own selector.
+
+**Three of the arms this pass set out to close stayed holes, and each is a
+finding rather than an omission.** `prop_type_ref`'s case 6 was recorded as
+H-arity, and its arity half is indeed a declared predicate now — but
+`sole_inline_all_of` is that arity *beside nine sibling-absence tests*, and
+without a negation operator the arity alone counts VolView's `TaskSpec.id`, a
+`type: string` carrying a one-member `allOf`, which the function sends to its
+closing `base_type_ref`; the case is H-negated-value. `hoist_union_variant`'s case
+11 was recorded as H-example-value, and the two selectors that hole names would
+still leave `is_bare_object`'s four absence tests unexpressed, so a map schema
+carrying a concrete example — `type: object` beside an `additionalProperties`
+schema and an `example` — is counted by them and reaches `base_type_ref`; it is
+H-example-value still, and its row now says the negation operator is needed too.
+`prop_type_ref`'s case 12 was recorded as H-arity and is now four cases and two
+holes rather than one hole, because the arity is only half of it: the other half
+is `is_inline_struct`, a *disjunction*, which no conjunction expresses, so each
+disjunct is its own case and the two that turn on an absence stay holes.
+
+**Where this pass read `src/ir.rs` differently from the account it replaces.**
+Three differences, each recorded on the row it belongs to rather than only here.
+The `type: array` guard of `hoist_union_variant` covers **cases 3 to 7**, not
+"cases 4 to 7" as that account said: `simple_nullable_member` is read inside the
+same `if variant.ty…primary() == Some("array")` block, which is why cases 3a to 3d
+carry `schema.type:primary=array` like their neighbours. `is_inline_struct` is a
+disjunction of **four** conditions, not the three that account derived where
+`nested_array_element` reads it: a `type: object` writing an explicitly empty
+`properties: {}` beside no `additionalProperties` is an inline struct, and that
+arm is now case 6b there and cases 7f, 8c and 12f in the two other tables that
+read the helper. And `simple_nullable_member` reads `any_of.or(one_of)` — the
+opposite order to every other call site in the file — which is why case 3 splits
+into four rows rather than two, and why row 3a is the `anyOf` spelling.
+
+**What the thirty-nine new selectors classified as.** The census was run over all
+169 registered sources and every one of them was put to it by name. **28 are
+`golden`** and **11 are `gap`**, all eleven `FIXTURE`; none is `limitations`,
+because [`fern-limitations.md`](fern-limitations.md) names no row for any of them.
+[`schemas.md`](openapi-surface/schemas.md) owns thirty-six of the thirty-nine —
+every selector anchoring on a Schema Object — and
+[`document-paths.md`](openapi-surface/document-paths.md) the three
+`openapi.paths:` readings `path_group` makes. The two boolean spellings
+`schema.additionalProperties` now emits are the exception that adds no row:
+[`schemas.md`](openapi-surface/schemas.md)'s `additional-properties-boolean-true`
+and `additional-properties-boolean-false` already classify those two features on a
+bespoke variant scan, so what the valued selector adds is that the *census* can
+now answer for them by name — and those two cells stay dated to the scan they were
+taken on, which is the rule
+[the measurement bullet](#ranked-gap-backlog) states for every region file.
+
+**Eleven is the first non-empty answer this instrument has given about these six
+functions**, and it is what the [conjunction pass](#what-the-conjunction-pass-moved-in-those-six-regions)
+predicted would happen: *extend the grammar to express one of these holes and the
+census can report the new selector absent across every registered source, which
+is a `gap`.* All eleven are the `anyOf` twin, the closed-object element or the
+one-member composition of an arm whose sibling spelling the corpus does declare,
+which is why each is `FIXTURE` rather than `PROBE` — a real document plausibly
+writes it and Fern plausibly emits bytes from it. They are ranked as one block in
+[the fixture backlog](#the-eleven-rows-the-node-local-predicates-added).
 
 **What this section did not do, and what has since been done.** The change that
 wrote it declared selectors and added no row to any region file: naming a shape
@@ -1233,8 +1580,9 @@ is what makes it classifiable, not what classifies it. The classification has
 since been taken. All nine conjunctions were run over the 164 registered sources
 and all nine are `golden`; [`schemas.md`](openapi-surface/schemas.md) owns the
 nine rows, since every one of them anchors on a Schema Object, and that region's
-own counts move with them. The sixteen holes are untouched — each still names the
-predicate or valued selector that would close it, and none is a row anywhere.
+own counts move with them. The sixteen holes that pass left were untouched by it —
+each still named the predicate or valued selector that would close it, and none
+was a row anywhere. Nine of them remain; the paragraph below says which closed.
 
 **And the settlement pass found nothing to settle.** The four routes a
 conjunction row could take — register a golden for a source the corpus already
@@ -1280,8 +1628,8 @@ precedence, a conjunction is a `gap` exactly when no registered source *carrying
 a committed golden* declares it and no [`fern-limitations.md`](fern-limitations.md)
 row names it. Two things put one there, and neither is far-fetched:
 
-- **A conjunction whose shape the corpus never writes.** The closed list of nine
-  is read off the six blind functions' own cases, and the sixteen holes
+- **A conjunction whose shape the corpus never writes.** The closed list
+  is read off the six blind functions' own cases, and the holes
   [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) names are
   shapes no selector kind can express *yet*. Extend the grammar to express one —
   each hole says which kind it would take — and the census can report the new
@@ -1791,7 +2139,8 @@ may measure it, because a witness was found. Nine rows of the ranked backlog
 stood in exactly that state, and every further search put more there. Route 2 is
 the way out of it and route 3 the way out of the same dead end on
 `search-incomplete`; between them, twenty-four rows have taken those routes and
-the ranked backlog is empty. **Both routes buy a Fern verdict and cost the
+emptied the ranked backlog, which the eleven rows a later change *named* have
+since refilled from the instrument's side rather than the corpus's. **Both routes buy a Fern verdict and cost the
 parity evidence route 1 would have produced** — which is why the rule spends more
 words on their gates than on route 1's, and why neither is the first thing to
 reach for.

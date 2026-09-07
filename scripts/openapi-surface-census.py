@@ -821,7 +821,19 @@ VALUED = {
     "openapi.openapi", "parameter.in", "parameter.style", "header.style",
     "mediaType.encoding.style", "schema.type", "schema.format",
     "securityScheme.type", "securityScheme.in", "securityScheme.scheme",
+    "schema.additionalProperties",
 }
+
+# The one exception to "a boolean value emits no valued selector".
+# `Census.declared_here` skips `bool` for every other member of `VALUED`, because
+# a boolean field is written for its presence and `parameter.required=true` would
+# be a second spelling of `parameter.required`. `schema.additionalProperties` is
+# the field that is a *schema or a boolean*, and which boolean it carries is what
+# `src/ir.rs`'s `is_inline_struct` and `is_map` branch on — `false` closes the
+# object and hoists a model, `true` opens a map — so its two boolean spellings are
+# two shapes rather than one presence. A schema-valued `additionalProperties`
+# emits no valued selector at all, exactly as an open set would not.
+VALUED_BOOL = {"schema.additionalProperties"}
 
 # `$ref` inside these kinds is a declared field of the kind itself (a JSON Schema
 # keyword, a Path Item reference); anywhere else a `$ref` makes the node a
@@ -833,11 +845,21 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # says a field was written and a valued selector says which member of a closed set
 # it was written with; neither can express a property of a field's array members,
 # a comparison between two documents' worth of one field's values, or anything at
-# all about the map keys the grammar deliberately excludes as *names*. The six
-# below are exactly those shapes. `docs/openapi-surface-coverage.md`'s
+# all about the map keys the grammar deliberately excludes as *names*. Every
+# member below is one of those shapes. `docs/openapi-surface-coverage.md`'s
 # `### The selector grammar` restates them for a reader, and
 # `tests/surface_census_test.py` reconciles the two lists the way it already
 # reconciles `VALUED`.
+#
+# Every member is **node-local**: it is decided from one object-model node's own
+# declared fields and their values, with no `$ref` resolution and no
+# document-scope comparison — except the three that were declared before the
+# family was named, `operation.operationId:duplicate` and the two
+# `normalized-collision` spellings, which compare one document's own values
+# against each other and say so in their own sentence. A predicate that would need the schema a `$ref` points
+# at is not a member of this family and is not declared here; those shapes are the
+# enumeration holes `docs/openapi-surface-coverage.md`'s case analysis names
+# H-ref-target, H-pointer-target and H-pointer-nesting.
 PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
@@ -864,6 +886,60 @@ PREDICATES = {
         "the same document after class-name normalization, so a two-key collision "
         "counts two"
     ),
+    # The node-local family below is read off the arms of the six blind functions
+    # of `src/ir.rs`, one member per property those arms test that a field or a
+    # valued selector cannot say. Each is decided from the node in front of it.
+    "schema.type:primary=array": (
+        "one per Schema Object whose `type` names `array` first among its non-`null` "
+        "members, which is the member `TypeField::primary` of `src/openapi.rs` reads, "
+        "so a 3.1 `type: [string, array]` counts none and `type: [null, array]` counts "
+        "one"
+    ),
+    "schema.properties:non-empty": (
+        "one per Schema Object whose `properties` map holds at least one entry, so a "
+        "declared-but-empty `properties: {}` counts none"
+    ),
+    "schema.oneOf:sole-non-null-member": (
+        "one per Schema Object whose `oneOf` array holds exactly one member whose "
+        "primary type is not `null`, beside at least one member whose primary type is "
+        "`null`"
+    ),
+    "schema.anyOf:sole-non-null-member": (
+        "one per Schema Object whose `anyOf` array holds exactly one member whose "
+        "primary type is not `null`, beside at least one member whose primary type is "
+        "`null`"
+    ),
+    "schema.oneOf:sole-member": (
+        "one per Schema Object whose `oneOf` array holds exactly one member"
+    ),
+    "schema.anyOf:sole-member": (
+        "one per Schema Object whose `anyOf` array holds exactly one member"
+    ),
+    "schema.enum:string-valued": (
+        "one per Schema Object whose `enum` array yields at least one string value "
+        "under crozier's own `string_enum_values` — the schema is `type: string`, or "
+        "declares no `type` and every member is a string"
+    ),
+    "schema.const:string-valued": (
+        "one per Schema Object whose `const` value yields a string under that same "
+        "reading, which is the spelling `string_enum_values` falls back to when no "
+        "`enum` is written"
+    ),
+    "openapi.paths:leading-literal-segment": (
+        "one per Paths Object key whose first non-empty `/`-separated segment is not "
+        "wholly a `{expression}` template expression, which is the segment "
+        "`src/ir.rs`'s `path_group` returns"
+    ),
+    "openapi.paths:template-before-literal-segment": (
+        "one per Paths Object key whose first non-empty segment is wholly a template "
+        "expression and which carries a later segment that is not, so `path_group` "
+        "skips one to return the other"
+    ),
+    "openapi.paths:all-segments-templated": (
+        "one per Paths Object key with no non-empty segment that is not wholly a "
+        "template expression, so a key whose every segment is templated counts one "
+        "and so does a key carrying no segment at all"
+    ),
 }
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
@@ -889,12 +965,16 @@ PREDICATES = {
 #
 # A branch earns a row only when a conjunction names it *exactly* — when the nodes
 # this census counts and the nodes the generator sends down that branch differ
-# only where another case of the same function claims them. That is why there are
-# nine rows and forty-four holes: an arm whose own condition reads a JSON value's
-# kind, a collection's emptiness, an `enum`'s value types or which member of a
-# `type` array comes first is not named by the presence of the field carrying it,
-# and a row that pretended otherwise would count documents the generator sends
-# elsewhere. Every surviving row's condition is "this field is written".
+# only where another case of the same function claims them. That is what bounds
+# the list to the entries below rather than to what the operators can spell: an
+# arm reading something no member can say is a hole instead, and a row that
+# pretended otherwise would count documents the generator sends elsewhere. Which
+# properties a member can say is `PREDICATES`' business, not this table's — a
+# collection's emptiness, an `enum`'s value types and which member of a `type`
+# array comes first each have a predicate now, so the conditions those arms read
+# compose here like any other member, and what is left a hole is an arm reading a
+# `$ref`'s target, a comparison across the document, or the *absence* of a
+# declaration.
 #
 # Nothing here counts: an entry is its spelling and one sentence saying what it
 # counts. The count is composed from the entry's own members under the `&` and `>`
@@ -909,6 +989,34 @@ CONJUNCTIONS = {
     "schema.oneOf>schema.allOf": "one per Schema Object one of whose `oneOf` members declares `allOf`",
     "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
     "schema.properties>schema.oneOf": "one per Schema Object one of whose properties declares `oneOf`",
+    "schema.items>schema.type:primary=array": "one per Schema Object whose `items` value declares `array` as its primary type",
+    "schema.items>schema.properties:non-empty": "one per Schema Object whose `items` value declares a non-empty `properties` map",
+    "schema.items>schema.additionalProperties=false": "one per Schema Object whose `items` value declares `additionalProperties: false`",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` holding a `oneOf` with one non-`null` member beside a `null` one",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` holding an `anyOf` with one non-`null` member beside a `null` one",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` holding a `oneOf` with one non-`null` member beside a `null` one",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` holding an `anyOf` with one non-`null` member beside a `null` one",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring `oneOf`",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring `anyOf`",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring `oneOf`",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring `anyOf`",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring a non-empty `properties` map",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring a non-empty `properties` map",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring `additionalProperties: false`",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring `additionalProperties: false`",
+    "schema.oneOf>schema.properties:non-empty": "one per Schema Object one of whose `oneOf` members declares a non-empty `properties` map",
+    "schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose `anyOf` members declares a non-empty `properties` map",
+    "schema.properties>schema.enum:string-valued": "one per Schema Object one of whose properties declares a string-valued `enum`",
+    "schema.properties>schema.const:string-valued": "one per Schema Object one of whose properties declares a string-valued `const`",
+    "schema.properties>schema.properties:non-empty": "one per Schema Object one of whose properties declares a non-empty `properties` map",
+    "schema.properties>schema.additionalProperties=false": "one per Schema Object one of whose properties declares `additionalProperties: false`",
+    "schema.properties>schema.oneOf:sole-non-null-member": "one per Schema Object one of whose properties declares a `oneOf` with one non-`null` member beside a `null` one",
+    "schema.properties>schema.anyOf:sole-non-null-member": "one per Schema Object one of whose properties declares an `anyOf` with one non-`null` member beside a `null` one",
+    "schema.properties>schema.type:primary=array": "one per Schema Object one of whose properties declares `array` as its primary type",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares a non-empty `properties` map",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares a non-empty `properties` map",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares `additionalProperties: false`",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares `additionalProperties: false`",
 }
 
 
@@ -1209,6 +1317,62 @@ def normalized_path(template: str) -> str:
     )
 
 
+def primary_type(value: Any) -> str | None:
+    """The `type` member `TypeField::primary` of `src/openapi.rs` reads.
+
+    A string is its own primary type; a 3.1 list is the first member that is not
+    `null`, which is why `type: [string, array]` takes the *string* path through
+    every arm of `src/ir.rs` that asks whether a schema is an array. Anything else
+    is a `type` crozier would refuse to deserialize, and reads as none here.
+    """
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        for member in value:
+            if isinstance(member, str) and member != "null":
+                return member
+    return None
+
+
+def string_valued(node: dict[Any, Any], values: Any) -> bool:
+    """Whether `string_enum_values` of `src/ir.rs` would yield strings from these.
+
+    Its three conditions, case for case: the schema is `type: string`, or it
+    declares no `type` at all and every member is a string; and at least one member
+    survives as a string, since a `type: string` enum whose members are integers
+    leaves nothing to enumerate and crozier falls back to the base type.
+    """
+    if not isinstance(values, list):
+        return False
+    if primary_type(node.get("type")) != "string":
+        omitted_type = "type" not in node
+        all_strings = all(isinstance(value, str) for value in values)
+        if not omitted_type or not all_strings:
+            return False
+    return any(isinstance(value, str) for value in values)
+
+
+def path_segment_predicates(key: str) -> list[str]:
+    """The three predicates `path_group` of `src/ir.rs` reads off one route.
+
+    `path_group` splits the URL on `/`, drops the empty segments and returns the
+    first that is not *wholly* a template expression, falling back to `service`
+    when there is none. So a segment is templated here exactly as it is there —
+    `{id}` is, `v{n}` is not — and the three arms partition every key: the first
+    segment is literal, a later one is after `path_group` skipped a templated one,
+    or there is none to find.
+    """
+    segments = [segment for segment in key.split("/") if segment]
+    templated = [
+        segment.startswith("{") and segment.endswith("}") for segment in segments
+    ]
+    if not any(not is_template for is_template in templated):
+        return ["openapi.paths:all-segments-templated"]
+    if templated[0]:
+        return ["openapi.paths:template-before-literal-segment"]
+    return ["openapi.paths:leading-literal-segment"]
+
+
 def grammar() -> tuple[set[str], set[str]]:
     """Every selector the grammar allows, and every prefix that can carry an `x-`.
 
@@ -1256,13 +1420,17 @@ def selector_error(text: str) -> str | None:
             "docs/openapi-surface-coverage.md."
         )
     base, equals, value = text.partition("=")
-    if not equals and ":" in base:
-        if base in PREDICATES:
+    if ":" in base:
+        # A predicate first, even when the spelling carries an `=`: the family
+        # reads a member's *position* as well as its presence, so
+        # `schema.type:primary=array` is one predicate's name rather than a valued
+        # selector over a field called `schema.type:primary`.
+        if text in PREDICATES:
             return None
-        close = difflib.get_close_matches(base, sorted(PREDICATES), n=3)
+        close = difflib.get_close_matches(text, sorted(PREDICATES), n=3)
         suggestion = f" Did you mean: {', '.join(close)}?" if close else ""
         return (
-            f"{base!r} is not one of the predicate selectors the census emits."
+            f"{text!r} is not one of the predicate selectors the census emits."
             f"{suggestion} They are: {', '.join(sorted(PREDICATES))}."
         )
     if equals and not value:
@@ -1324,6 +1492,8 @@ class Census:
             found += self.path_key_templates(node)
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
+        if kind_name == "schema" and not is_reference_node(node, kind_name):
+            found += self.schema_predicates(node)
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
             found += [
@@ -1348,7 +1518,12 @@ class Census:
                     found.append("operation.tags:multiple")
             if selector in VALUED:
                 for member in value if isinstance(value, list) else [value]:
-                    if isinstance(member, (str, int, float)) and not isinstance(member, bool):
+                    if isinstance(member, bool):
+                        # A boolean emits a valued selector only for the one field
+                        # whose two booleans are two shapes; see `VALUED_BOOL`.
+                        if selector in VALUED_BOOL:
+                            found.append(f"{selector}={'true' if member else 'false'}")
+                    elif isinstance(member, (str, int, float)):
                         found.append(f"{selector}={self.value_of(selector, member)}")
         self.declared_cache[key] = found
         return found
@@ -1464,14 +1639,52 @@ class Census:
             if collisions[normalized_path(key)] > 1
         ]
 
+    def schema_predicates(self, node: dict[Any, Any]) -> list[str]:
+        """The node-local predicates one Schema Object's own fields decide.
+
+        Every one mirrors a property an arm of one of the six blind functions of
+        `src/ir.rs` tests and no selector of the first two kinds can say: which
+        member of a `type` array `TypeField::primary` reads, whether a
+        `properties` map holds anything, how many non-`null` members a composition
+        field has, and whether an `enum` or a `const` yields strings. Nothing here
+        opens another node: a `$ref` is a string to this function.
+        """
+        found: list[str] = []
+        if primary_type(node.get("type")) == "array":
+            found.append("schema.type:primary=array")
+        properties = node.get("properties")
+        if isinstance(properties, dict) and properties:
+            found.append("schema.properties:non-empty")
+        for field in ("oneOf", "anyOf"):
+            members = node.get(field)
+            if not isinstance(members, list):
+                continue
+            non_null = [
+                member
+                for member in members
+                if not isinstance(member, dict)
+                or primary_type(member.get("type")) != "null"
+            ]
+            if len(non_null) == 1 and len(non_null) != len(members):
+                found.append(f"schema.{field}:sole-non-null-member")
+            if len(members) == 1:
+                found.append(f"schema.{field}:sole-member")
+        if "enum" in node and string_valued(node, node.get("enum")):
+            found.append("schema.enum:string-valued")
+        if "const" in node and string_valued(node, [node.get("const")]):
+            found.append("schema.const:string-valued")
+        return found
+
     def path_key_templates(self, node: dict[Any, Any]) -> list[str]:
-        """The two predicates the *shape* of a Paths Object key decides.
+        """The five predicates the *shape* of a Paths Object key decides.
 
         `openapi.paths:templated-key` is one per key carrying a template
         expression at all, and `openapi.paths:several-template-expressions` one
         per key carrying more than one — two readings of the same key, so a key
         with three expressions contributes one to each and a key with one
-        contributes to the first alone.
+        contributes to the first alone. The three `path_segment_predicates` adds
+        are a third reading: not how many expressions a key carries but *where*
+        the first one sits, which is the only thing `path_group` looks at.
         """
         found: list[str] = []
         for key in self.route_keys(node):
@@ -1480,6 +1693,7 @@ class Census:
                 found.append("openapi.paths:templated-key")
             if expressions > 1:
                 found.append("openapi.paths:several-template-expressions")
+            found += path_segment_predicates(key)
         return found
 
     def class_name_collisions(self, node: Any) -> list[str]:

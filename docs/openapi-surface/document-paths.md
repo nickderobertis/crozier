@@ -175,6 +175,9 @@ would not pass a refresh unnoticed.
 | nonascii-operationId | both | Operation Object.operationId containing a non-ASCII identifier | limitations | 2026-09-03 ledger `nonascii-operationId` — crashes + supply |  |  |  |
 | untagged-operation | both | Operation Object.tags omitted | golden | census arithmetic (method declarations minus `operation.tags`): `amazonaws.com-cloudformation` (132), `amazonaws.com-cloudfront` (27), `anchore.io` (7), `atlassian.com-jira` (2), `aws-importexport` (12), `blackadi-oauth2` (84), `calorieninjas.com` (1), `color.pizza` (4), `crozier-sdk-extensions` (2), `digit-leading-property` (1), `discord-com` (217), `electric-sql` (3), `eos.local` (4), `eos.local-extra-fields-forbid` (4), `eozilla` (1), `etherpad.local` (24), `etsi.local-mec010-2_apppkgmgmt` (1), `exa-gate` (29), `flowdapt` (1), `frankfurter` (5), `free5gc-pdu-session` (1), `helios-verifiable-api` (6), `khoainats` (2), `kytos-sdntrace-cp` (2), `listennotes` (3), `livepeer-ai-runner` (3), `marimo` (86), `microcks.local` (2), `nimisampo` (14), `openfigi.com` (2), `query-parameters-openapi` (1), `redhat.com-catalog_inventory` (2), `servers-webhooks` (2), `svix-webhooks` (2), `tamoss` (8), `tlon-notes` (18), `twilio.com-twilio_messaging_v1` (45), `twilio.com-twilio_voice_v1` (32) |  |  |  |
 | multi-tagged-operation | both | Operation Object.tags with several members | golden | 2026-09-05 census `operation.tags:multiple`: 239 declaration sites across 17 registered sources. The sixteen that carry a committed golden — `6-dot-authentiqio.appspot.com` (14), `airbyte.local-config` (6), `apache.org` (1), `apache.org-airflow` (1), `apicurio.local-registry` (9), `bungie.net` (7), `discourse.local` (12), `eozilla` (1), `komga` (17), `letta` (11), `mosip-esignet` (4), `osparc-simcore-webserver` (95), `short-io` (1), `strapi-rest-api` (1), `webflow-v2` (52), `withsecure-gdpr-subject-rights` (1) — declare 233 of them; the one registered source with no golden, `corrently.io` (6), declares the other 6. No ledger row names it |  |  |  |
+| path-leading-literal-segment | both | Paths Object path key with a leading literal segment | golden | census `openapi.paths:leading-literal-segment`: 5911 declaration sites across 165 registered sources, of which the 148 that carry a committed golden declare 4551 of them, the five largest being `gambitcomm.local-mimic` (356), `bunq.com` (250), `letta` (216), `osparc-simcore-webserver` (213), `netbox.dev` (210). The 17 registered sources with no golden declare the other 1360. The branch is `path_group`'s case 1, `.find(\|s\| !(s.starts_with('{') && s.ends_with('}')))` returning the key's first segment — the fallback module name an untagged operation with no `operationId` is grouped under. **A golden pinning this shape does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
+| path-template-before-literal-segment | both | Paths Object path key whose first templated segment precedes a literal one | golden | census `openapi.paths:template-before-literal-segment`: 4 declaration sites across 4 registered sources, of which the 3 that carry a committed golden declare 3 of them, the largest being `apis.guru` (1), `cyberark-conjur-api` (1), `nimisampo` (1). The 1 registered source with no golden declare the other 1. The branch is `path_group`'s case 2, the same `find` returning a later segment having skipped a templated one. **A golden pinning this shape does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
+| path-all-segments-templated | both | Paths Object path key whose every segment is templated | golden | census `openapi.paths:all-segments-templated`: 17 declaration sites across 14 registered sources, of which the 12 that carry a committed golden declare 14 of them, the five largest being `cyberark-conjur-api` (2), `strapi-rest-api` (2), `anchore.io` (1), `bintable.com` (1), `color.pizza` (1). The 2 registered sources with no golden declare the other 3. The branch is `path_group`'s case 3, `.unwrap_or("service")` — no segment is literal, so the group falls back to the constant `service`. **A golden pinning this shape does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
 
 ## Method notes
 
@@ -215,12 +218,38 @@ same key and not one selector and a refinement of it — a key with exactly one
 expression is reported by the first and not the second — which is why the second
 row is not simply the first one's subset count.
 
+**Three more predicates read the same keys, and they say where a template
+expression sits rather than how many there are.** `src/ir.rs`'s `path_group` is
+the fallback module name an untagged operation with no `operationId` is grouped
+under, and it reads one thing only: the first `/`-separated segment of the route
+that is not *wholly* a `{expression}`. `openapi.paths:leading-literal-segment`,
+`openapi.paths:template-before-literal-segment` and
+`openapi.paths:all-segments-templated` are that reading, and they **partition**
+every Paths Object key — each key takes exactly one — so the three rows at the end
+of the table are the three arms of that function and no key is counted twice or
+missed. All three are `golden` over the 169-source walk: 165 sources declare a
+leading literal segment, 14 a key whose every segment is templated, and four a
+template before a literal one, the last being the thinnest of the three and the
+one a withdrawn corpus row would take to `gap`. A segment carrying an expression
+*inside* it (`/v{version}/widgets`) is not templated by this reading, which is
+what keeps these three apart from `openapi.paths:templated-key`.
+
 This file now carries no `gap` row, so it publishes no `crozier sites` count
 either: those cells are required on a `gap` row and empty otherwise. The
 reconciliation below keeps the rule that produced them — a site count is an exact
 raw-occurrence search over each `src/` file before its `#[cfg(test)]` module — and
 asserts the empty set, so the day a row returns to `gap` the check demands its
 measurement again. No Fern command or probe was run.
+
+**What the three new rows do to the reconciliation below, and what this change
+deliberately did not do about it.** The command in that section counts the census
+rows this table transcribes and requires an exact snapshot digest of the census
+output. Both move with these three rows — the count from 62 to 65, and the digest
+with every selector the node-local predicate family added. Neither is refreshed
+here: re-pinning a digest is a measurement, and the change that takes it owns
+saying what moved and why, so this one leaves the pin standing rather than
+replacing it with one nobody reviewed. Run the command before trusting its
+numbers again.
 
 ### Snapshot reconciliation
 
