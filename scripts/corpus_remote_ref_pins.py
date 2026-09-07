@@ -218,7 +218,8 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
             if not value.strip() or value != value.strip():
                 raise PinError(
                     f"{site}: {column} is {value!r}; every column must carry a "
-                    "non-empty value with no surrounding whitespace"
+                    "non-empty value with no surrounding whitespace — fill it in "
+                    "or delete the record"
                 )
         if not is_absolute_reference(record.mutable_url):
             raise PinError(
@@ -446,8 +447,11 @@ def verification_failure(
         record = by_identity.get(reference_identity(address))
         if record is not None and address != record.pinned_url:
             return (
-                f"{path}: `$ref` {address} names the same file as the superseded pin "
-                f"for {record.mutable_url}; {manifest} now pins {record.pinned_url}"
+                f"{path}: `$ref` {address} names the same file as the pin for "
+                f"{record.mutable_url} but at a superseded revision, where "
+                f"{manifest} pins {record.pinned_url}; re-run the fetch to reapply "
+                "the current pins, or — if the upstream document itself names that "
+                "revision — add a record for it"
             )
     return None
 

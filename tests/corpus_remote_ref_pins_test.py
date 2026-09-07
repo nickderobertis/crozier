@@ -366,6 +366,7 @@ class PinMechanismTests(unittest.TestCase):
             pinned_url("block", SUPERSEDED_SHA),
             pinned_url("block"),
             str(self.manifest),
+            "re-run the fetch",
         )
 
     # -- 7. `--if-missing` hands back only a matching cache -----------------
@@ -417,7 +418,11 @@ class PinMechanismTests(unittest.TestCase):
     def test_the_fetch_origin_override_refuses_a_non_loopback_value(self) -> None:
         result = self.fetch("pinned-row", CROZIER_CORPUS_PIN_ORIGIN="https://example.test")
         self.assert_actionable(
-            result, "https://example.test", "CROZIER_CORPUS_PIN_ORIGIN", "127.0.0.1"
+            result,
+            "https://example.test",
+            "CROZIER_CORPUS_PIN_ORIGIN",
+            "127.0.0.1",
+            "unset it",
         )
         self.assert_no_leftovers("pinned-row", expected=set())
 
@@ -507,6 +512,7 @@ class TheLintStillDiscriminates(unittest.TestCase):
             self.check((*self.GOOD[:2], elsewhere, self.GOOD[3])),
             elsewhere,
             "raw.githubusercontent.com",
+            "pin the reference to a commit URL",
         )
 
     def test_a_malformed_digest_is_rejected(self) -> None:
@@ -516,14 +522,22 @@ class TheLintStillDiscriminates(unittest.TestCase):
 
     def test_an_unknown_corpus_name_is_rejected(self) -> None:
         self.assert_rejected(
-            self.check(("no-such-row", *self.GOOD[1:])), "no-such-row", "CORPUS.md"
+            self.check(("no-such-row", *self.GOOD[1:])),
+            "no-such-row",
+            "CORPUS.md",
+            "correct the name or delete the record",
         )
 
     def test_a_duplicate_record_is_rejected(self) -> None:
         self.assert_rejected(self.check(self.GOOD, self.GOOD), "duplicate", "delete the rest")
 
     def test_an_out_of_order_file_is_rejected(self) -> None:
-        self.assert_rejected(self.check(self.SECOND, self.GOOD), "sorted", self.SECOND[1])
+        self.assert_rejected(
+            self.check(self.SECOND, self.GOOD),
+            "sorted",
+            self.SECOND[1],
+            "sort the records",
+        )
 
     def test_a_mutable_url_prefixing_another_in_the_same_row_is_rejected(self) -> None:
         prefixed = (
@@ -535,23 +549,35 @@ class TheLintStillDiscriminates(unittest.TestCase):
         self.assert_rejected(self.check(self.GOOD, prefixed), "prefix", "drop a record")
 
     def test_too_few_columns_is_rejected(self) -> None:
-        self.assert_rejected(self.check(self.GOOD[:3]), "3 tab-separated column(s)")
+        self.assert_rejected(
+            self.check(self.GOOD[:3]), "3 tab-separated column(s)", "rewrite the record"
+        )
 
     def test_too_many_columns_is_rejected(self) -> None:
-        self.assert_rejected(self.check((*self.GOOD, "extra")), "5 tab-separated column(s)")
+        self.assert_rejected(
+            self.check((*self.GOOD, "extra")),
+            "5 tab-separated column(s)",
+            "rewrite the record",
+        )
 
     def test_an_empty_column_is_rejected(self) -> None:
         for index, column in enumerate(("corpus_name", "mutable_url", "pinned_url", "sha256")):
             with self.subTest(column):
                 record = list(self.GOOD)
                 record[index] = ""
-                self.assert_rejected(self.check(tuple(record)), column, "non-empty value")
+                self.assert_rejected(
+                    self.check(tuple(record)),
+                    column,
+                    "non-empty value",
+                    "fill it in or delete the record",
+                )
 
     def test_a_relative_mutable_url_is_rejected(self) -> None:
         self.assert_rejected(
             self.check((self.GOOD[0], "./schemas/block.yaml", *self.GOOD[2:])),
             "./schemas/block.yaml",
             "not an absolute URL",
+            "record the `$ref` exactly as the upstream root document writes it",
         )
 
 
