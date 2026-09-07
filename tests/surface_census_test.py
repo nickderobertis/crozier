@@ -670,7 +670,13 @@ class GrammarContractTests(unittest.TestCase):
         start = "A shape the two kinds above cannot express emits a **predicate selector**,"
         self.assertIn(start, text, "the grammar section documents no predicate selector")
         body = text.split(start, 1)[1].split("A predicate selector is a selector", 1)[0]
-        documented = set(re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+)`", body))
+        # A predicate spelling may carry a value of its own — `schema.type:primary=array`
+        # names which member of a `type` array the arm reads, which is a position
+        # rather than a presence — so the pattern admits one, and the `=` does not
+        # make the spelling a valued selector over a field nothing declares.
+        documented = set(
+            re.findall(r"`([A-Za-z][A-Za-z.]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
+        )
         self.assertEqual(set(census.PREDICATES), documented)
 
     # ------------------------------------------------------------------
@@ -713,7 +719,10 @@ class GrammarContractTests(unittest.TestCase):
                 function = heading.group(1)
                 found[function] = []
                 continue
-            row = re.match(r"^\| \d+ \| ", line.replace("\\|", "\x00"))
+            # A case number may carry a letter: one arm read at the grain the
+            # selectors need, either its two `x.or(y)` spellings or one disjunct
+            # of a condition joined by `||`.
+            row = re.match(r"^\| \d+[a-z]? \| ", line.replace("\\|", "\x00"))
             if row and function is not None:
                 cells = [c.replace("\x00", "\\|").strip() for c in
                          line.replace("\\|", "\x00").strip().strip("|").split("|")]
@@ -771,7 +780,12 @@ class GrammarContractTests(unittest.TestCase):
                     if hole:
                         self.assertIn(hole.group(1), holes)
                     else:
-                        self.assertIn(selector.group(1), census.CONJUNCTIONS)
+                        # A conjunction, or — where the arm reads one Paths Object
+                        # key and opens no schema — the predicate that reads it.
+                        self.assertIn(
+                            selector.group(1),
+                            set(census.CONJUNCTIONS) | set(census.PREDICATES),
+                        )
 
     def test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region(self) -> None:
         """The list is bounded by the generator's branches, not by what `&` can spell."""
@@ -781,7 +795,40 @@ class GrammarContractTests(unittest.TestCase):
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
         }
-        self.assertEqual(set(census.CONJUNCTIONS), derived)
+        self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
+        self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
+
+    def test_the_case_analysis_states_the_totals_its_own_rows_add_up_to(self) -> None:
+        """The paragraph a reader takes the size of this instrument from.
+
+        The exactness rule publishes how many of the cases below carry a selector
+        and how many name the extension that would close them; both are counted
+        off the rows themselves, so a case added, closed or reopened without the
+        sentence moving fails here.
+        """
+        words = {
+            8: "eight", 9: "nine", 36: "thirty-six", 40: "forty", 76: "seventy-six",
+        }
+        rows_of = [cells for rows in self.case_rows().values() for cells in rows]
+        selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
+        holes = [c for c in rows_of if re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", c[2])]
+        self.assertEqual(len(rows_of), len(selectors) + len(holes))
+        stated = re.search(
+            r"\b([A-Za-z-]+) of the\n  ([a-z-]+) cases below survive this test; the "
+            r"other ([a-z-]+) name the\n  extension that would close them",
+            self.DOC.read_text(encoding="utf-8"),
+        )
+        self.assertIsNotNone(stated, "the exactness rule no longer states its own totals")
+        self.assertEqual(
+            (words[len(selectors)], words[len(rows_of)], words[len(holes)]),
+            tuple(group.lower() for group in stated.groups()),
+        )
+        kinds = re.search(
+            r"recorded as one of ([a-z-]+) enumeration holes",
+            self.DOC.read_text(encoding="utf-8"),
+        )
+        self.assertIsNotNone(kinds, "the case analysis no longer states its hole-kind count")
+        self.assertEqual(words[len(self.documented_holes())], kinds.group(1))
 
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
         """Six copies of the region boundaries; the index's table is the original."""
@@ -1049,12 +1096,13 @@ class ConjunctionCensusTests(unittest.TestCase):
     the instrument must be able to give — a shape the corpus has never seen — and
     it is the evidence a `gap` row would cite.
 
-    Nine selectors and not more: a case carries one only where the arm's own
-    condition is that a field is written, because anything else the arm reads —
-    an example's JSON kind, a `properties` map's emptiness, an `enum`'s value
-    types, which member of a `type` array comes first — is a condition no selector
-    kind expresses, and a selector ignoring it would count documents the generator
-    sends elsewhere. The other forty-four cases are enumeration holes.
+    Thirty-seven selectors and not more: a case carries one only where every
+    property the arm's own condition reads is one the grammar can name — a field
+    written, a member of a closed value set, or one of the node-local predicates —
+    because anything else the arm reads, an example's JSON kind or the *absence* of
+    a sibling declaration, is a condition no selector kind expresses and a selector
+    ignoring it would count documents the generator sends elsewhere. The other
+    thirty-six cases are enumeration holes.
 
     The numbers are the census's own, and an independent count over every vendored
     document agrees with all nine. They were taken before the free-map-key walk
@@ -1065,24 +1113,68 @@ class ConjunctionCensusTests(unittest.TestCase):
     classification these numbers carry is the repaired walk's as well.
     """
 
+    # The nine the conjunction pass declared, kept apart from the twenty-eight the
+    # node-local predicate family added, so each pass's own coverage is readable.
+    PRE_EXISTING = (
+        "schema.anyOf>schema.$ref",
+        "schema.anyOf>schema.allOf",
+        "schema.items>schema.$ref",
+        "schema.items>schema.anyOf",
+        "schema.items>schema.oneOf",
+        "schema.oneOf>schema.$ref",
+        "schema.oneOf>schema.allOf",
+        "schema.properties>schema.anyOf",
+        "schema.properties>schema.oneOf",
+    )
+
     DECLARED = {
         "schema.anyOf>schema.$ref": {},
         "schema.anyOf>schema.allOf": {},
         "schema.items>schema.$ref": {
-            "audience-filter": 1, "audience-filter-strict": 1,
-            "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1,
-            "inline-request-response": 1, "oauth-client-credentials": 1,
-            "query-parameters-openapi": 2, "recursive-types": 2,
+            "audience-filter": 1, "audience-filter-strict": 1, "crozier-sdk-extensions": 1, "exhaustive": 7, "inline-array-request": 1, "inline-request-response": 1, "oauth-client-credentials": 1, "query-parameters-openapi": 2, "recursive-types": 2
         },
         "schema.items>schema.anyOf": {},
         "schema.items>schema.oneOf": {},
         "schema.oneOf>schema.$ref": {
-            "discriminated-unions": 1, "query-parameters-openapi": 2,
-            "recursive-types": 1,
+            "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
         "schema.properties>schema.anyOf": {},
         "schema.properties>schema.oneOf": {},
+        "schema.items>schema.type:primary=array": {},
+        "schema.items>schema.properties:non-empty": {"inline-array-request": 1},
+        "schema.items>schema.additionalProperties=false": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
+        "schema.oneOf>schema.properties:non-empty": {},
+        "schema.anyOf>schema.properties:non-empty": {},
+        "schema.properties>schema.enum:string-valued": {
+            "discriminated-unions": 2, "exhaustive": 2, "recursive-types": 2
+        },
+        "schema.properties>schema.const:string-valued": {},
+        "schema.properties>schema.properties:non-empty": {
+            "inline-request-response": 2, "nested-core-imports": 1
+        },
+        "schema.properties>schema.additionalProperties=false": {},
+        "schema.properties>schema.oneOf:sole-non-null-member": {},
+        "schema.properties>schema.anyOf:sole-non-null-member": {},
+        "schema.properties>schema.type:primary=array": {
+            "crozier-sdk-extensions": 1, "exhaustive": 3, "inline-request-response": 1, "malformed-property-schema": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 1
+        },
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1197,6 +1289,582 @@ class ConjunctionCensusTests(unittest.TestCase):
         self.assertEqual([], payload["rows"])
         self.assertEqual([self.ABSENT], payload["absent_selectors"])
 
+
+
+# --- the node-local selector family ----------------------------------------
+# The building blocks the discrimination table below composes. Each is one shape
+# an arm of `src/ir.rs` reads, written once so the table reads as the difference
+# between a document that selects a branch and one that misses it by a single
+# property.
+STRUCT = {"properties": {"id": {"type": "string"}}}
+EMPTY_PROPERTIES = {"properties": {}}
+CLOSED_OBJECT = {"type": "object", "additionalProperties": False}
+OPEN_OBJECT = {"type": "object", "additionalProperties": True}
+NULLABLE_ONE_OF = {"oneOf": [{"type": "null"}, {"type": "string"}]}
+NULLABLE_ANY_OF = {"anyOf": [{"type": "null"}, {"type": "string"}]}
+TWO_ONE_OF = {"oneOf": [{"type": "string"}, {"type": "integer"}]}
+TWO_ANY_OF = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+
+
+def array_of(items: dict) -> dict:
+    """An array schema over one item schema."""
+    return {"type": "array", "items": items}
+
+
+def schema_source(title: str, root: dict) -> dict:
+    """A source document whose one interesting node is `components.schemas.Root`."""
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": title, "version": "1"},
+        "paths": {},
+        "components": {"schemas": {"Root": root, "Other": {"type": "string"}}},
+    }
+
+
+def paths_source(title: str, key: str) -> dict:
+    """A source document whose one interesting node is a Paths Object key."""
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": title, "version": "1"},
+        "paths": {
+            key: {
+                "get": {
+                    "operationId": "read",
+                    "responses": {"200": {"description": "ok"}},
+                }
+            }
+        },
+    }
+
+
+def write_json_fixture(root: Path, name: str, document: dict) -> None:
+    directory = root / name
+    directory.mkdir(parents=True)
+    (directory / "openapi.json").write_text(
+        json.dumps(document, indent=2), encoding="utf-8"
+    )
+
+
+class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
+    """What each node-local selector counts, over inputs that discriminate its branch.
+
+    Every entry below is one selector and three documents: one whose node selects
+    the `src/ir.rs` arm the selector was read off, one *near miss* satisfying every
+    part of the selector's condition but one, and — where an arm's condition can
+    also be satisfied by a node an earlier or later case of the same function's
+    table claims — one exercising that permitted overlap. The near miss is what
+    makes the assertion mean something: a selector that counted both would be
+    broader than its arm, which this document ranks as worse than the hole it
+    replaced.
+
+    The census is driven for real, as its own process, over real documents on the
+    real filesystem, in one run over a fixtures root holding all of them. What this
+    class establishes is each selector's *extension* over those inputs and nothing
+    more; that those same nodes select the arm the selector was derived from is
+    established by executing the generator, in `src/ir.rs`'s own test module, over
+    the same shapes.
+    """
+
+    # selector, slug, the branch it was read off, and the three documents.
+    CASES: tuple[dict, ...] = (
+        # --- the predicates, each read at the node that declares it -----------
+        {
+            "selector": "schema.type:primary=array",
+            "slug": "primary-array",
+            "branch": "the `type: array` guard of nested_array_element case 1",
+            "select": ("schema", array_of({"type": "string"})),
+            "near": ("schema", {"type": ["string", "array"], "items": {"type": "string"}}),
+        },
+        {
+            "selector": "schema.properties:non-empty",
+            "slug": "properties-non-empty",
+            "branch": "the `properties` disjunct of `is_inline_struct`",
+            "select": ("schema", STRUCT),
+            "near": ("schema", EMPTY_PROPERTIES),
+        },
+        {
+            "selector": "schema.oneOf:sole-member",
+            "slug": "one-of-sole-member",
+            "branch": "prop_type_ref case 12's `members.len() == 1`",
+            "select": ("schema", {"oneOf": [{"type": "string"}]}),
+            "near": ("schema", TWO_ONE_OF),
+        },
+        {
+            "selector": "schema.anyOf:sole-member",
+            "slug": "any-of-sole-member",
+            "branch": "prop_type_ref case 12's `members.len() == 1`, `anyOf` spelling",
+            "select": ("schema", {"anyOf": [{"type": "string"}]}),
+            "near": ("schema", TWO_ANY_OF),
+        },
+        {
+            "selector": "schema.oneOf:sole-non-null-member",
+            "slug": "one-of-sole-non-null",
+            "branch": "prop_type_ref case 11's nullable pair",
+            "select": ("schema", NULLABLE_ONE_OF),
+            "near": ("schema", TWO_ONE_OF),
+        },
+        {
+            "selector": "schema.anyOf:sole-non-null-member",
+            "slug": "any-of-sole-non-null",
+            "branch": "prop_type_ref case 11's nullable pair, `anyOf` spelling",
+            "select": ("schema", NULLABLE_ANY_OF),
+            "near": ("schema", TWO_ANY_OF),
+        },
+        {
+            "selector": "schema.enum:string-valued",
+            "slug": "enum-string-valued",
+            "branch": "prop_type_ref case 7a's `string_enum_values`",
+            "select": ("schema", {"enum": ["alpha", "beta"]}),
+            "near": ("schema", {"enum": [1, 2]}),
+        },
+        {
+            "selector": "schema.const:string-valued",
+            "slug": "const-string-valued",
+            "branch": "prop_type_ref case 7b's `const` fallback",
+            "select": ("schema", {"const": "alpha"}),
+            "near": ("schema", {"const": 1}),
+        },
+        {
+            "selector": "schema.additionalProperties=false",
+            "slug": "additional-properties-false",
+            "branch": "the closed-object disjunct of `is_inline_struct`",
+            "select": ("schema", CLOSED_OBJECT),
+            "near": ("schema", OPEN_OBJECT),
+        },
+        {
+            "selector": "schema.additionalProperties=true",
+            "slug": "additional-properties-true",
+            "branch": "`is_map`'s open-map arm, the other boolean of the same field",
+            "select": ("schema", OPEN_OBJECT),
+            "near": ("schema", {"type": "object", "additionalProperties": {"type": "string"}}),
+        },
+        {
+            "selector": "openapi.paths:leading-literal-segment",
+            "slug": "leading-literal",
+            "branch": "path_group case 1",
+            "select": ("paths", "/widgets/{id}"),
+            "near": ("paths", "/{id}/widgets"),
+        },
+        {
+            "selector": "openapi.paths:template-before-literal-segment",
+            "slug": "template-before-literal",
+            "branch": "path_group case 2",
+            "select": ("paths", "/{tenant}/widgets/{id}"),
+            "near": ("paths", "/{tenant}/{id}"),
+        },
+        {
+            "selector": "openapi.paths:all-segments-templated",
+            "slug": "all-templated",
+            "branch": "path_group case 3",
+            "select": ("paths", "/{tenant}/{id}"),
+            "near": ("paths", "/{tenant}/widgets"),
+        },
+        # --- nested_array_element ---------------------------------------------
+        {
+            "selector": "schema.items>schema.type:primary=array",
+            "slug": "nae-1",
+            "branch": "nested_array_element case 1",
+            "select": ("schema", array_of(array_of(STRUCT))),
+            "near": ("schema", array_of({"type": ["string", "array"], "items": STRUCT})),
+            "overlap": ("schema", array_of({"$ref": "#/components/schemas/Other", "type": "array"})),
+            "overlap_selector": "schema.items>schema.$ref",
+        },
+        {
+            "selector": "schema.items>schema.properties:non-empty",
+            "slug": "nae-4",
+            "branch": "nested_array_element case 4",
+            "select": ("schema", array_of(STRUCT)),
+            "near": ("schema", array_of(EMPTY_PROPERTIES)),
+            "overlap": ("schema", array_of({**array_of({"type": "string"}), **STRUCT})),
+            "overlap_selector": "schema.items>schema.type:primary=array",
+        },
+        {
+            "selector": "schema.items>schema.additionalProperties=false",
+            "slug": "nae-6",
+            "branch": "nested_array_element case 6",
+            "select": ("schema", array_of(CLOSED_OBJECT)),
+            "near": ("schema", array_of(OPEN_OBJECT)),
+            "overlap": ("schema", array_of({**STRUCT, "additionalProperties": False})),
+            "overlap_selector": "schema.items>schema.properties:non-empty",
+        },
+        # --- hoist_union_variant, cases 3a to 3d ------------------------------
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+            "slug": "huv-3a",
+            "branch": "hoist_union_variant case 3a",
+            "select": ("schema", {"oneOf": [array_of(NULLABLE_ANY_OF)]}),
+            "near": ("schema", {"oneOf": [array_of(TWO_ANY_OF)]}),
+            "overlap": ("schema", {"oneOf": [array_of(
+                {"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]}
+            )]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+            "slug": "huv-3b",
+            "branch": "hoist_union_variant case 3b",
+            "select": ("schema", {"oneOf": [array_of(NULLABLE_ONE_OF)]}),
+            "near": ("schema", {"oneOf": [array_of(TWO_ONE_OF)]}),
+            "overlap": ("schema", {"oneOf": [array_of(
+                {"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]}
+            )]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+            "slug": "huv-3c",
+            "branch": "hoist_union_variant case 3c",
+            "select": ("schema", {"anyOf": [array_of(NULLABLE_ANY_OF)]}),
+            "near": ("schema", {"anyOf": [array_of(TWO_ANY_OF)]}),
+            "overlap": ("schema", {"anyOf": [array_of(
+                {"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]}
+            )]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+            "slug": "huv-3d",
+            "branch": "hoist_union_variant case 3d",
+            "select": ("schema", {"anyOf": [array_of(NULLABLE_ONE_OF)]}),
+            "near": ("schema", {"anyOf": [array_of(TWO_ONE_OF)]}),
+            "overlap": ("schema", {"anyOf": [array_of(
+                {"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]}
+            )]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        # --- hoist_union_variant, cases 5a to 5d ------------------------------
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+            "slug": "huv-5a",
+            "branch": "hoist_union_variant case 5a",
+            "select": ("schema", {"oneOf": [array_of(TWO_ONE_OF)]}),
+            "near": ("schema", {"oneOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
+            "overlap": ("schema", {"oneOf": [array_of(NULLABLE_ONE_OF)]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+            "slug": "huv-5b",
+            "branch": "hoist_union_variant case 5b",
+            "select": ("schema", {"oneOf": [array_of(TWO_ANY_OF)]}),
+            "near": ("schema", {"oneOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
+            "overlap": ("schema", {"oneOf": [array_of(NULLABLE_ANY_OF)]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+            "slug": "huv-5c",
+            "branch": "hoist_union_variant case 5c",
+            "select": ("schema", {"anyOf": [array_of(TWO_ONE_OF)]}),
+            "near": ("schema", {"anyOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
+            "overlap": ("schema", {"anyOf": [array_of(NULLABLE_ONE_OF)]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
+            "slug": "huv-5d",
+            "branch": "hoist_union_variant case 5d",
+            "select": ("schema", {"anyOf": [array_of(TWO_ANY_OF)]}),
+            "near": ("schema", {"anyOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
+            "overlap": ("schema", {"anyOf": [array_of(NULLABLE_ANY_OF)]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        },
+        # --- hoist_union_variant, cases 7a to 7d ------------------------------
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+            "slug": "huv-7a",
+            "branch": "hoist_union_variant case 7a",
+            "select": ("schema", {"oneOf": [array_of(STRUCT)]}),
+            "near": ("schema", {"oneOf": [array_of(EMPTY_PROPERTIES)]}),
+            "overlap": ("schema", {"oneOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+            "slug": "huv-7b",
+            "branch": "hoist_union_variant case 7b",
+            "select": ("schema", {"anyOf": [array_of(STRUCT)]}),
+            "near": ("schema", {"anyOf": [array_of(EMPTY_PROPERTIES)]}),
+            "overlap": ("schema", {"anyOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+            "slug": "huv-7c",
+            "branch": "hoist_union_variant case 7c",
+            "select": ("schema", {"oneOf": [array_of(CLOSED_OBJECT)]}),
+            "near": ("schema", {"oneOf": [array_of(OPEN_OBJECT)]}),
+            "overlap": ("schema", {"oneOf": [array_of({**STRUCT, "additionalProperties": False})]}),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+            "slug": "huv-7d",
+            "branch": "hoist_union_variant case 7d",
+            "select": ("schema", {"anyOf": [array_of(CLOSED_OBJECT)]}),
+            "near": ("schema", {"anyOf": [array_of(OPEN_OBJECT)]}),
+            "overlap": ("schema", {"anyOf": [array_of({**STRUCT, "additionalProperties": False})]}),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        # --- hoist_union_variant, cases 8a and 8b -----------------------------
+        {
+            "selector": "schema.oneOf>schema.properties:non-empty",
+            "slug": "huv-8a",
+            "branch": "hoist_union_variant case 8a",
+            "select": ("schema", {"oneOf": [STRUCT]}),
+            "near": ("schema", {"oneOf": [EMPTY_PROPERTIES]}),
+            "overlap": ("schema", {"oneOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
+            "overlap_selector": "schema.oneOf>schema.allOf",
+        },
+        {
+            "selector": "schema.anyOf>schema.properties:non-empty",
+            "slug": "huv-8b",
+            "branch": "hoist_union_variant case 8b",
+            "select": ("schema", {"anyOf": [STRUCT]}),
+            "near": ("schema", {"anyOf": [EMPTY_PROPERTIES]}),
+            "overlap": ("schema", {"anyOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
+            "overlap_selector": "schema.anyOf>schema.allOf",
+        },
+        # --- prop_type_ref ----------------------------------------------------
+        {
+            "selector": "schema.properties>schema.enum:string-valued",
+            "slug": "ptr-7a",
+            "branch": "prop_type_ref case 7a",
+            "select": ("schema", {"properties": {"kind": {"enum": ["alpha", "beta"]}}}),
+            "near": ("schema", {"properties": {"kind": {"enum": [1, 2]}}}),
+            "overlap": ("schema", {"properties": {"kind": {"enum": ["alpha"], **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.const:string-valued",
+            "slug": "ptr-7b",
+            "branch": "prop_type_ref case 7b",
+            "select": ("schema", {"properties": {"kind": {"const": "alpha"}}}),
+            "near": ("schema", {"properties": {"kind": {"const": 1}}}),
+            "overlap": ("schema", {"properties": {"kind": {"const": "alpha", **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.properties:non-empty",
+            "slug": "ptr-8a",
+            "branch": "prop_type_ref case 8a",
+            "select": ("schema", {"properties": {"nested": STRUCT}}),
+            "near": ("schema", {"properties": {"nested": EMPTY_PROPERTIES}}),
+            "overlap": ("schema", {"properties": {"nested": {**STRUCT, **TWO_ONE_OF}}}),
+            "overlap_selector": "schema.properties>schema.oneOf",
+        },
+        {
+            "selector": "schema.properties>schema.additionalProperties=false",
+            "slug": "ptr-8d",
+            "branch": "prop_type_ref case 8d",
+            "select": ("schema", {"properties": {"bag": CLOSED_OBJECT}}),
+            "near": ("schema", {"properties": {"bag": OPEN_OBJECT}}),
+            "overlap": ("schema", {"properties": {"bag": {**STRUCT, "additionalProperties": False}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-non-null-member",
+            "slug": "ptr-11a",
+            "branch": "prop_type_ref case 11a",
+            "select": ("schema", {"properties": {"maybe": NULLABLE_ONE_OF}}),
+            "near": ("schema", {"properties": {"maybe": TWO_ONE_OF}}),
+            "overlap": ("schema", {"properties": {"maybe": {**NULLABLE_ONE_OF, **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-non-null-member",
+            "slug": "ptr-11b",
+            "branch": "prop_type_ref case 11b",
+            "select": ("schema", {"properties": {"maybe": NULLABLE_ANY_OF}}),
+            "near": ("schema", {"properties": {"maybe": TWO_ANY_OF}}),
+            "overlap": ("schema", {"properties": {"maybe": {**NULLABLE_ANY_OF, **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.type:primary=array",
+            "slug": "ptr-15",
+            "branch": "prop_type_ref case 15",
+            "select": ("schema", {"properties": {"many": array_of(STRUCT)}}),
+            "near": ("schema", {"properties": {"many": {
+                "type": ["string", "array"], "items": STRUCT
+            }}}),
+            "overlap": ("schema", {"properties": {"many": {
+                **array_of(STRUCT), **TWO_ONE_OF
+            }}}),
+            "overlap_selector": "schema.properties>schema.oneOf",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+            "slug": "ptr-12a",
+            "branch": "prop_type_ref case 12a",
+            "select": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT, {"type": "string"}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT], **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+            "slug": "ptr-12b",
+            "branch": "prop_type_ref case 12b",
+            "select": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT, {"type": "string"}]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT], **STRUCT}}}),
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+            "slug": "ptr-12c",
+            "branch": "prop_type_ref case 12c",
+            "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"oneOf": [OPEN_OBJECT]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {
+                "oneOf": [{**STRUCT, "additionalProperties": False}]
+            }}}),
+            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+            "slug": "ptr-12d",
+            "branch": "prop_type_ref case 12d",
+            "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
+            "near": ("schema", {"properties": {"wrapper": {"anyOf": [OPEN_OBJECT]}}}),
+            "overlap": ("schema", {"properties": {"wrapper": {
+                "anyOf": [{**STRUCT, "additionalProperties": False}]
+            }}}),
+            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        },
+    )
+
+    # The predicates declared before this family was named: the three that compare
+    # one document's values against each other, and the two key-shape readings the
+    # path-template pass added. Everything else in the two closed lists is a
+    # selector this node declared, and is what the table has to cover.
+    PRE_EXISTING_PREDICATES = (
+        "operation.tags:multiple",
+        "operation.operationId:duplicate",
+        "openapi.paths:normalized-collision",
+        "openapi.paths:templated-key",
+        "openapi.paths:several-template-expressions",
+        "components.schemas:normalized-collision",
+    )
+    DECLARED_HERE = frozenset(
+        set(census.PREDICATES)
+        | set(census.CONJUNCTIONS)
+        | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
+    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(PRE_EXISTING_PREDICATES)
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """One census run over a root holding every document the table names."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for case in cls.CASES:
+                for role in ("select", "near", "overlap"):
+                    if role not in case:
+                        continue
+                    kind, payload = case[role]
+                    name = f"{case['slug']}-{role}"
+                    document = (
+                        schema_source(name, payload)
+                        if kind == "schema"
+                        else paths_source(name, payload)
+                    )
+                    write_json_fixture(root, name, document)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        payload = json.loads(completed.stdout)
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"] for row in payload["rows"]
+        }
+
+    def test_the_table_covers_every_selector_this_node_declared(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(self.DECLARED_HERE, {case["selector"] for case in self.CASES})
+
+    def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector, branch=case["branch"]):
+                self.assertEqual(
+                    1,
+                    self.reported.get((selector, f"{slug}-select")),
+                    f"{selector} does not count the node that selects {case['branch']}",
+                )
+                self.assertNotIn(
+                    (selector, f"{slug}-near"),
+                    self.reported,
+                    f"{selector} counts a node missing {case['branch']} by one property",
+                )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap this document permits, made visible rather than assumed.
+
+        An arm runs only because the earlier ones did not, so a node satisfying two
+        cases' conditions is counted by both selectors and reaches one arm. That is
+        the overlap the exactness rule allows, and these documents are the ones it
+        is allowed on.
+        """
+        for case in self.CASES:
+            if "overlap" not in case:
+                continue
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
+                self.assertEqual(
+                    1,
+                    self.reported.get((case["overlap_selector"], f"{slug}-overlap")),
+                    "the overlap document is not counted by the case that claims it",
+                )
+
+    def test_the_entries_carrying_no_overlap_are_the_ones_no_case_can_claim(self) -> None:
+        """Which entries are exempt from the overlap assertion, and why each is.
+
+        Two kinds are, and both are stated here rather than left as a gap in the
+        table. A **member predicate** is not an arm — `schema.properties:non-empty`
+        is one property several arms read — so it has no case of its own for
+        another case to overlap with, and the overlaps of the arms that read it are
+        the conjunctions' own, asserted above. The **three path readings**
+        partition every Paths Object key between them, each key taking exactly one,
+        so `path_group` has no node two of its three arms claim. Every entry that
+        is neither carries an overlap document.
+        """
+        exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
+        self.assertEqual(
+            {
+                selector
+                for selector in self.DECLARED_HERE
+                if not census.is_conjunction(selector)
+            },
+            exempt,
+            "a conjunction read off one arm must exercise the overlap its case permits",
+        )
+
+    def test_a_misspelling_of_a_node_local_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            ("schema.properties:nonempty", "Did you mean: schema.properties:non-empty"),
+            ("schema.type:primary=arrays", "Did you mean: schema.type:primary=array"),
+            ("openapi.paths:leading-template-segment", "is not one of the predicate selectors"),
+            ("schema.items>schema.properties:nonempty", "is not one of the conjunction selectors"),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+
+    def test_a_node_local_selector_no_source_declares_is_reported_as_absent(self) -> None:
+        """Absent, not silent: the answer a `gap` row would cite."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
+            completed = run(
+                "--vendored-only", "--fixtures-root", str(root),
+                "--selector", "schema.items>schema.additionalProperties=false",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({}, rows(completed))
+        self.assertIn("(declared by no registered source)", completed.stdout)
 
 class ObjectModelWalkTests(unittest.TestCase):
     """The distinction the whole instrument rests on: fields, not matching text."""
@@ -3397,6 +4065,11 @@ class PredicateSelectorTests(unittest.TestCase):
     to the instrument that is supposed to say whether the corpus has ever seen
     them. These drive the real script over real documents on the real filesystem,
     once for a document that declares each shape and once for one that does not.
+
+    The node-local members the predicate family gained later are discriminated in
+    `NodeLocalSelectorDiscriminationTests`, which asserts a near miss for each one
+    rather than an absence for all of them; what stays here is the refusal, the
+    acceptance and the absent-report every predicate has to answer.
     """
 
     def census(self, sources: dict[str, str], *selectors: str) -> subprocess.CompletedProcess:
@@ -3675,10 +4348,19 @@ class PredicateSelectorTests(unittest.TestCase):
 
     def test_a_document_declaring_none_of_them_reports_each_as_absent(self) -> None:
         """Absent, not missing: the phrase a `gap` row cites as its evidence."""
-        plain = {"plain": document("plain", [
-            ("/widgets", ["tags: [alpha]\noperationId: listWidgets"]),
-            ("/gadgets", ["operationId: listGadgets"]),
-        ])}
+        # No path key at all: three of the predicates read every Paths Object key
+        # and one of the three counts any key there is, so a document with routes
+        # cannot be the one that declares none.
+        plain = {"plain": """\
+            openapi: 3.0.3
+            info: {title: plain, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                Widget:
+                  type: object
+                  description: a widget
+            """}
         completed = self.census(plain, *sorted(census.PREDICATES))
         self.assertEqual({}, rows(completed))
         for selector in census.PREDICATES:
