@@ -21,18 +21,18 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
-**What it says today.** The walk enumerates 451 features. 350 are `golden`: a
+**What it says today.** The walk enumerates 470 features. 362 are `golden`: a
 registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 70 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
 recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
-about Fern and not a byte comparison against crozier. 31 are `gap`: 20 of them
+about Fern and not a byte comparison against crozier. 38 are `gap`: 20 of them
 `UNREACHABLE` — the shape has no position in a generated Python SDK at all — and
-11 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
-and that this corpus never writes. So *does crozier byte-match Fern on
+18 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
+and that no committed golden reaches. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
-evidence covers 350 of the 451 features this walk can see, that 70 more carry a
-Fern verdict and no byte comparison at all, that 11 have neither, and that the
+evidence covers 362 of the 470 features this walk can see, that 70 more carry a
+Fern verdict and no byte comparison at all, that 38 have neither, and that the
 walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
 left for a reader to infer from a backlog's size.
@@ -974,27 +974,32 @@ registrable witness turns up the classification precedence promotes it to
 closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
-is enumerable only where a selector can name it, so the walk's 451 is a
+is enumerable only where a selector can name it, so
+[the walk's 470](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
-[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 76
-branches those six functions of `src/ir.rs` offer a document, 40 carry an exact
-selector and 36 are enumeration holes, each naming the operator or predicate that
-would close it and none of them a row anywhere. **That bound has moved once, and
-moving it is what a reader should expect of it.** It read *"of the 53 branches, 9
-carry an exact selector and 44 are enumeration holes"* until the node-local
-predicate family was declared; the same seventy-six branches were always there,
-and thirty-one of them became nameable, classifiable and — for eleven — a `gap`
-with a settlement route. The remaining thirty-six turn on a `$ref` resolving, on a
-comparison across the document, or on the *absence* of a declaration, and each
-says which. The same is true off that file — the enum-member spellings
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 83
+branches those six functions of `src/ir.rs` offer a document, 60 carry an exact
+selector and 23 are enumeration holes, each naming the operator or predicate that
+would close it and none of them a row anywhere. **That bound has moved three
+times, and moving it is what a reader should expect of it.** It read *"of the 53
+branches, 9 carry an exact selector and 44 are enumeration holes"* until the
+node-local predicate family was declared, and *"of the 76 branches, 40 carry an
+exact selector and 36 are enumeration holes"* until the annotated-`$ref` pass read
+the four arms inside `prop_type_ref`'s resolution gate at the grain their
+selectors need. The branch count moves when a case is read at a finer grain — a
+disjunction split disjunct by disjunct is more rows describing the same code — and
+the hole count moves when the grammar grows. The remaining twenty-three turn on a
+JSON value's kind or content, on a comparison across the document, or on the
+*absence* of a declaration, and each says which. The same is true off that file —
+the enum-member spellings
 `src/naming.rs` lowers, the JSON value
 *kinds* the example branches of `src/emit.rs` switch on, and the cross-document
 `$ref` path of `src/refs.rs`, which the corpus is single-document by construction
-and so can never reach. None of that is in the 451, in the 31 `gap` rows, or in
+and so can never reach. None of that is in the 470, in the 38 `gap` rows, or in
 either backlog. It is not unclassified work; it is unnamed work, and this
 document's own instrument is what would have to grow first — which is exactly what
-the eleven new `FIXTURE` rows are: the first time it did.
+the eighteen `FIXTURE` rows are: the three times it did.
 
 **And the thin end is one document wide.** A `golden` row rests on whichever
 registered sources happen to declare the shape, and for several that is a single

@@ -14609,8 +14609,10 @@ mod tests {
     // can emit equal products for the inputs chosen, and two inputs differing in
     // more than the arm they select can emit unequal ones.
 
-    const RESOLVING_ARM_INPUTS: &str =
-        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/resolving-arm-inputs.json"));
+    const RESOLVING_ARM_INPUTS: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/resolving-arm-inputs.json"
+    ));
 
     /// One document of that file: its `schemas` and `body` substituted into the
     /// shared envelope at the two placeholder strings. The Python half's
@@ -14624,9 +14626,7 @@ mod tests {
             serde_json::Value::Object(fields) => serde_json::Value::Object(
                 fields
                     .iter()
-                    .map(|(key, value)| {
-                        (key.clone(), resolving_arm_document(value, schemas, body))
-                    })
+                    .map(|(key, value)| (key.clone(), resolving_arm_document(value, schemas, body)))
                     .collect(),
             ),
             serde_json::Value::Array(items) => serde_json::Value::Array(
@@ -14654,8 +14654,11 @@ mod tests {
             !fragment.is_null(),
             "{name} is named by a case and written by no document"
         );
-        let document =
-            resolving_arm_document(&payload["envelope"], &fragment["schemas"], &fragment["body"]);
+        let document = resolving_arm_document(
+            &payload["envelope"],
+            &fragment["schemas"],
+            &fragment["body"],
+        );
         let (ir, observed) = generate(document);
         let ran = arm_trace::declared_arms()
             .into_iter()
@@ -14685,15 +14688,23 @@ mod tests {
         // observed arm set is asserted, not just the case's own arm, so a document
         // reaching a neighbouring arm the record does not name fails here.
         let payload = resolving_arm_inputs();
-        let cases = payload["cases"].as_array().expect("the file lists its cases");
+        let cases = payload["cases"]
+            .as_array()
+            .expect("the file lists its cases");
         assert_eq!(12, cases.len(), "one case per selector the pass declared");
         let mut driven = std::collections::BTreeSet::new();
         let mut drives = 0usize;
         for case in cases {
-            let arm = case["arm"].as_str().expect("a case names the arm it was read off");
-            let selector = case["selector"].as_str().expect("a case names its selector");
+            let arm = case["arm"]
+                .as_str()
+                .expect("a case names the arm it was read off");
+            let selector = case["selector"]
+                .as_str()
+                .expect("a case names its selector");
             for (role, counted) in [("select", true), ("overlap", true), ("near", false)] {
-                let entries = case[role].as_object().expect("a role is a map of documents");
+                let entries = case[role]
+                    .as_object()
+                    .expect("a role is a map of documents");
                 assert!(!entries.is_empty(), "{selector}: no `{role}` document");
                 for (name, entry) in entries {
                     let (ran, _) = observed_over(&payload, name);
@@ -14767,10 +14778,16 @@ mod tests {
         without_witness.dedup();
         assert_eq!(
             vec![
-                "any-of-not-a-property", "closed-not-a-property", "const-not-a-property",
-                "enum-not-a-property", "gate-no-all-of", "gate-not-a-property",
-                "one-of-not-a-property", "props-not-a-property",
-                "target-all-of-not-a-property", "variant-anyof-not-a-union",
+                "any-of-not-a-property",
+                "closed-not-a-property",
+                "const-not-a-property",
+                "enum-not-a-property",
+                "gate-no-all-of",
+                "gate-not-a-property",
+                "one-of-not-a-property",
+                "props-not-a-property",
+                "target-all-of-not-a-property",
+                "variant-anyof-not-a-union",
                 "variant-oneof-not-a-union",
             ],
             without_witness,
