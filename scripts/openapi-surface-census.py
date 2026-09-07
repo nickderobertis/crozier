@@ -940,6 +940,51 @@ PREDICATES = {
         "template expression, so a key whose every segment is templated counts one "
         "and so does a key carrying no segment at all"
     ),
+    # The pointer-form family below is read off the arms of `ref_to_class` and of
+    # `resolve_schema_pointer`'s two string-decided cases. Each is decided from one
+    # `$ref` value's own segment structure — the six lexical ones from the string
+    # alone, and `schema.$ref:undeclared-component-head` by comparing that string's
+    # head against the document's own `components.schemas` keys, which is the
+    # document-scope comparison `components.schemas:normalized-collision` already
+    # makes. None of them opens the schema a pointer addresses: that is the
+    # resolving walk `docs/openapi-surface-coverage.md` names H-pointer-nesting.
+    "schema.$ref:cross-document": (
+        "one per Schema Object whose `$ref` names another document — the value "
+        "carries a non-empty part before its `#`, or no `#` at all — so "
+        "`./other.yaml#/components/schemas/Author` counts and `#/definitions/Foo` "
+        "does not"
+    ),
+    "schema.$ref:same-document-foreign-pointer": (
+        "one per Schema Object whose `$ref` points inside its own document but "
+        "outside `components.schemas`, so `#/definitions/Foo` and "
+        "`#/components/parameters/Page` count and `#/components/schemas/Foo` does "
+        "not"
+    ),
+    "schema.$ref:nested-properties": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer "
+        "carrying a `properties` segment with a segment after it, at a position the "
+        "`ref_to_class` walk reads, so a pointer carrying two counts one"
+    ),
+    "schema.$ref:nested-items": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer "
+        "carrying an `items` segment at a position that same walk reads"
+    ),
+    "schema.$ref:composition-index": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer "
+        "carrying an `allOf`, `oneOf` or `anyOf` segment at a position that same "
+        "walk reads"
+    ),
+    "schema.$ref:unnamed-segment": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer "
+        "carrying, at a position that same walk reads, a segment that names none of "
+        "those five — a trailing `properties` included, since `ref_to_class` reads "
+        "one as a name it cannot use rather than as a nesting step"
+    ),
+    "schema.$ref:undeclared-component-head": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer "
+        "whose head segment names no key of the same document's own "
+        "`components.schemas`"
+    ),
 }
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
