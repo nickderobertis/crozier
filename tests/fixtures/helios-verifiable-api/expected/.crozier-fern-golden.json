@@ -2,5 +2,42 @@
   "fern_python_sdk_version": "5.20.0",
   "corpus_spec_name": "helios-verifiable-api",
   "corpus_spec_ref": "43a8c9f3cdda41a6f383c4db41d9a83f102638b1",
-  "corpus_spec_url": "https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml"
+  "corpus_spec_url": "https://raw.githubusercontent.com/a16z/helios/43a8c9f3cdda41a6f383c4db41d9a83f102638b1/verifiable-api/server/openapi.yaml",
+  "corpus_remote_ref_pins": [
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/base-types.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/base-types.yaml",
+      "sha256": "3b34fffaea334d8a8e5f44669c10b9329195573b522f35f439cb3f7134b19205"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/block.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/block.yaml",
+      "sha256": "37586fcfd0e8ac21912b3a3a66693c6304e2983a4996ce8a8830d6b504b956c7"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/filter.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/filter.yaml",
+      "sha256": "1cffdb444b3eaf6c22acebb5b98ce540036240a74001c7cee94bb3201d107010"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/receipt.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/receipt.yaml",
+      "sha256": "5b8f15e2d926d8faad8d189d141972f990ce1978176bea0c4435e700081f9979"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/state.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/state.yaml",
+      "sha256": "c74bcd0cd619353320500c7f638c0a15d6413f5b69a339ddddbc80cd21fc9c73"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/transaction.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/transaction.yaml",
+      "sha256": "b74544f4621cd44e940b0726fdcc73a67c9e05301d87285ab60468364bc75518"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/withdrawal.yaml",
+      "pinned_url": "https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/withdrawal.yaml",
+      "sha256": "eaa368104ba7dc8e254968d80f7ef4962e930ce9977a711bfe721d01c6e83336"
+    }
+  ]
 }

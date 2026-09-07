@@ -1445,8 +1445,8 @@ four models carry `extra="forbid"` in the v2 `model_config` and
 
 Every corpus spec but one is a single self-contained document: every `$ref` is a
 local JSON pointer into the same file. `helios-verifiable-api` is not — many of
-its component schemas are `$ref`s naming an `ethereum/execution-apis` document
-by absolute URL, and Fern's importer **fetches** each one and resolves it
+its component schemas are `$ref`s naming one of seven `ethereum/execution-apis`
+documents by absolute URL, and Fern's importer **fetches** each one and resolves it
 transitively. Its CORPUS.md row is keyed by that fixture name, and its shapes
 cell carries the counts; they are not restated here. That is the only
 reference form Fern was measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
@@ -1508,11 +1508,32 @@ reference to reach:
   union's own annotation accepts, not the `BlockTag.EARLIEST` member a
   single-enum argument would take.
 
-The row's one standing liability is recorded in its `CORPUS.md` shapes cell: its
-golden depends on a **third-party fetch at generation time**, and the referenced
-URLs address `refs/heads/main` rather than an immutable ref, so an upstream edit
-to any of the referenced files breaks this row's reproduction for a reason
-unrelated to crozier.
+The row still depends on a **third-party fetch at generation time**, but no
+longer on a mutable one. Upstream writes those seven references against
+`refs/heads/main`, so the document served today and the document served tomorrow
+are not the same document.
+[`tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)
+records, per corpus row, one `mutable_url -> pinned_url` substitution per
+reference plus the SHA-256 of the bytes the pinned URL serves, and
+`scripts/fetch-corpus.sh` applies the row's records to the fetched document
+*before* publishing it into `.local/corpus/`. So the document every consumer sees
+— crozier's byte-match and Fern's own generation alike — is **upstream's bytes
+plus exactly that one recorded substitution**, not upstream's bytes. What the row
+now depends on is the seven `ethereum/execution-apis` blobs at
+`80d0a6ee6c129a29c507c35b0245a16c5a81b9d3`, which cannot change.
+
+Two guards keep that true rather than aspirational.
+[`scripts/corpus_remote_ref_pins.py`](../scripts/corpus_remote_ref_pins.py) is the
+manifest's one reader, and it refuses to publish *any* row's document — pinned or
+not — that carries an absolute-URL `$ref` naming something other than a
+40-character commit on `raw.githubusercontent.com`, so the next row to reference a
+mutable document fails the fetch instead of inheriting the old liability. And it
+fetches each `pinned_url` once and compares its SHA-256 to the record, so a URL
+that stopped serving the bytes it was pinned to is an error rather than a silent
+substitution. The provenance is recorded beside the golden:
+`expected/.crozier-fern-golden.json` carries the records the fetch applied, so
+editing one makes the row stale and regenerates it through the ordinary workflow
+([`fern-goldens.md`](fern-goldens.md#moving-a-remote-ref-pin-forward)).
 
 ## Map-of-self and multi-type arrays (issue #77)
 

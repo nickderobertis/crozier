@@ -221,6 +221,13 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/fern-goldens.md`](docs/fern-goldens.md).
 - CalorieNinjas at Fern 5.20 is covered by an exact, always-retried upstream
   failure fingerprint and has no golden until Fern can generate one.
+- A corpus document naming another document by absolute URL is reproducible only
+  if that URL is immutable, so `tests/fixtures/corpus-remote-ref-pins.tsv` records
+  the substitution and `scripts/fetch-corpus.sh` applies it before publishing the
+  fetch — the row's inputs are upstream's bytes plus that one record. The fetch
+  refuses ANY row whose document would carry a mutable absolute `$ref`, so a new
+  row referencing one fails rather than inheriting the liability. Moving a pin:
+  [`docs/fern-goldens.md`](docs/fern-goldens.md#moving-a-remote-ref-pin-forward).
 
 ## Scripts and output are context
 

@@ -195,6 +195,37 @@ runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
 Use the exact resolved version shown in the run evidence on later reruns so a
 newly released Fern version cannot join the same repair cycle.
 
+### Moving a remote-`$ref` pin forward
+
+A corpus row whose document names another document by absolute URL is only
+reproducible if that URL is immutable, so
+[`../tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)
+records the substitution — `corpus_name`, the `mutable_url` upstream writes, the
+`pinned_url` replacing it, and the SHA-256 of the bytes that URL serves.
+`scripts/fetch-corpus.sh` applies a row's records to the fetched document before
+publishing it, so Fern generates from, and crozier byte-matches against, the same
+pinned inputs. `helios-verifiable-api` is the only row with records today.
+
+The provenance rides along: `expected_state` writes those records into
+`expected/.crozier-fern-golden.json` for a row that has them, and omits the key
+entirely for a row that does not — which is what keeps every other golden
+current, since `is_current()` byte-compares that file.
+
+So the procedure is the ordinary one, and the manifest is its only input:
+
+1. Edit the row's record — the new `pinned_url`, and the `sha256` of the bytes it
+   serves (`curl -fsSL <pinned_url> | sha256sum`).
+2. Run `just lint-corpus-remote-ref-pins`. That row's state file no longer matches
+   `expected_state`, so the row is stale.
+3. Dispatch the **Fern goldens** workflow with `fixtures=<name>`. It refetches
+   (applying the new pin, verifying the new digest), regenerates, and republishes
+   the tree and its provenance through Route B.
+
+No new workflow input is needed, and no other row is touched. A record whose
+`mutable_url` the fetched document does not reference fails the fetch rather than
+applying nothing, so a manifest left behind by a root-`$ref` bump surfaces at
+step 3 rather than silently pinning nothing.
+
 ### Exact known upstream failures
 
 `calorieninjas.com` is the single registered exception across the whole corpus at

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import importlib.machinery
+import importlib.util
 import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -14,6 +18,7 @@ REPO = Path(__file__).resolve().parent.parent
 TOOL = REPO / "scripts" / "fern-goldens"
 STATE = ".crozier-fern-golden.json"
 ALIASES = REPO / "tests" / "fixtures" / "corpus-aliases.tsv"
+PIN_MANIFEST = REPO / "tests" / "fixtures" / "corpus-remote-ref-pins.tsv"
 KNOWN_FAILURE = (
     REPO
     / "tests"
@@ -32,9 +37,16 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (self.root / "tests" / "fixtures").mkdir(parents=True)
         (self.root / "fake-bin").mkdir()
         shutil.copy2(TOOL, self.root / "scripts" / "fern-goldens")
-        for script in ("corpus-lib.sh", "fetch-corpus.sh", "lib.sh"):
+        for script in (
+            "corpus-lib.sh",
+            "corpus_remote_ref_pins.py",
+            "fetch-corpus.sh",
+            "lib.sh",
+            "openapi-surface-census.py",
+        ):
             shutil.copy2(REPO / "scripts" / script, self.root / "scripts" / script)
         shutil.copy2(ALIASES, self.root / "tests" / "fixtures" / ALIASES.name)
+        shutil.copy2(PIN_MANIFEST, self.root / "tests" / "fixtures" / PIN_MANIFEST.name)
         (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8")
         (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8")
         self.write_manifest()
@@ -91,7 +103,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             import sys
 
             args = sys.argv[1:]
+            served = json.loads(os.environ.get("SERVED_DOCUMENTS", "{}"))
             if "-o" not in args:
+                url = next((arg for arg in args if arg.startswith("https://")), "")
+                for fragment, body in served.items():
+                    if fragment in url:
+                        sys.stdout.write(body)
+                        raise SystemExit(0)
                 print(json.dumps({"results": [
                     {"name": "4.9.0"}, {"name": "4.10.0"},
                     {"name": "4.11.0-rc.1"}, {"name": "latest"}
@@ -102,6 +120,10 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             if any(name and name in url for name in os.environ.get("FAIL_FETCH", "").split(",")):
                 print("synthetic fetch failure", file=sys.stderr)
                 raise SystemExit(22)
+            for fragment, body in served.items():
+                if fragment in url:
+                    destination.write_text(body, encoding="utf-8")
+                    raise SystemExit(0)
             destination.write_text('{"openapi":"3.0.3"}\n', encoding="utf-8")
             """,
         )
@@ -251,6 +273,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
         return path
 
+    def write_pin_manifest(self, *records: tuple[str, str, str, str]) -> None:
+        (self.root / "tests" / "fixtures" / PIN_MANIFEST.name).write_text(
+            "# Synthetic pin manifest.\n"
+            + "".join("\t".join(record) + "\n" for record in sorted(records)),
+            encoding="utf-8",
+        )
+
     @staticmethod
     def write_executable(path: Path, source: str) -> None:
         path.write_text(textwrap.dedent(source).lstrip(), encoding="utf-8")
@@ -390,6 +419,91 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(len(self.calls()), 5)
         self.assertFalse(
             (self.root / ".local" / "fern-goldens" / "generated-goldens.tar.gz").exists()
+        )
+
+    def test_a_row_with_pin_records_records_them_and_restages_when_one_moves(self) -> None:
+        """The pins land in the state file, and moving one makes the row stale."""
+        schema = "base:\n  type: string\n"
+        digest = hashlib.sha256(schema.encode()).hexdigest()
+        mutable = "https://example.test/schemas/base.yaml"
+        first = "https://raw.githubusercontent.com/e/a/" + "a" * 40 + "/src/base.yaml"
+        second = "https://raw.githubusercontent.com/e/a/" + "b" * 40 + "/src/base.yaml"
+        spec = json.dumps(
+            {
+                "openapi": "3.0.3",
+                "components": {"schemas": {"Base": {"$ref": f"{mutable}#/base"}}},
+            }
+        )
+        served = json.dumps(
+            {"alpha/openapi.json": spec, "a" * 40: schema, "b" * 40: schema}
+        )
+
+        self.write_pin_manifest(("alpha", mutable, first, digest))
+        generated = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            SERVED_DOCUMENTS=served,
+        )
+        self.assertIn("1 generated, 0 current, 0 failed", generated.stdout)
+        self.assertEqual(
+            self.state("alpha")["corpus_remote_ref_pins"],
+            [{"url": mutable, "pinned_url": first, "sha256": digest}],
+        )
+        # The fetched document is upstream's bytes plus exactly that substitution.
+        fetched = (self.root / ".local" / "corpus" / "alpha" / "openapi.json").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(fetched, spec.replace(mutable, first))
+
+        unchanged = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            SERVED_DOCUMENTS=served,
+        )
+        self.assertIn("0 generated, 1 current, 0 failed", unchanged.stdout)
+
+        self.write_pin_manifest(("alpha", mutable, second, digest))
+        moved = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            SERVED_DOCUMENTS=served,
+        )
+        self.assertIn("1 generated, 0 current, 0 failed", moved.stdout)
+        self.assertEqual(
+            self.state("alpha")["corpus_remote_ref_pins"],
+            [{"url": mutable, "pinned_url": second, "sha256": digest}],
+        )
+
+    def test_a_row_without_pin_records_writes_the_state_it_always_wrote(self) -> None:
+        """Conditional emission: no pin key, so no other golden goes stale."""
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        path = self.root / "tests" / "fixtures" / "alpha" / "expected" / STATE
+        self.assertEqual(
+            path.read_bytes(),
+            (
+                json.dumps(
+                    {
+                        "fern_python_sdk_version": "4.9.0",
+                        "corpus_spec_name": "alpha",
+                        "corpus_spec_ref": "1",
+                        "corpus_spec_url": "https://example.test/alpha/openapi.json",
+                    },
+                    indent=2,
+                )
+                + "\n"
+            ).encode(),
         )
 
     def test_authoritative_aliases_drive_python_workflow_and_bash_helper(self) -> None:
@@ -1318,6 +1432,67 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "invalid branch name", publication.stdout + publication.stderr
         )
         self.assertFalse(branch_marker.exists())
+
+
+def load_goldens_tool():
+    """`scripts/fern-goldens` as a module. It has no `.py` suffix, so the loader
+    is named explicitly rather than inferred from the path."""
+    loader = importlib.machinery.SourceFileLoader("fern_goldens", str(TOOL))
+    spec = importlib.util.spec_from_loader("fern_goldens", loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["fern_goldens"] = module
+    loader.exec_module(module)
+    return module
+
+
+class CommittedGoldenStateTests(unittest.TestCase):
+    """`expected_state` over the REAL tree, against the REAL committed state files.
+
+    `is_current()` byte-compares a golden's state file against `expected_state`,
+    so these are the tests that say whether the corpus is current — a branch
+    cannot answer that for the goldens `main` carries.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.tool = load_goldens_tool()
+        cls.rows = cls.tool.load_manifest(REPO)
+
+    def committed(self, row) -> Path:
+        return REPO / "tests" / "fixtures" / row.fixture / "expected" / STATE
+
+    def test_the_pinned_row_state_is_what_the_tool_computes_for_it(self) -> None:
+        row = next(r for r in self.rows if r.name == "helios-verifiable-api")
+        committed = self.committed(row)
+        payload = json.loads(committed.read_text(encoding="utf-8"))
+        self.assertEqual(
+            committed.read_bytes(),
+            self.tool.expected_state(REPO, row, payload["fern_python_sdk_version"]),
+        )
+        self.assertEqual(len(payload["corpus_remote_ref_pins"]), 7)
+        for pin in payload["corpus_remote_ref_pins"]:
+            self.assertEqual(sorted(pin), ["pinned_url", "sha256", "url"])
+
+    def test_every_row_without_pin_records_keeps_the_state_it_already_had(self) -> None:
+        """The conditional-emission guarantee, stated over the committed corpus."""
+        checked = 0
+        for row in self.rows:
+            committed = self.committed(row)
+            if not committed.is_file():
+                continue
+            if self.tool.corpus_remote_ref_pins(REPO, row):
+                continue
+            payload = json.loads(committed.read_text(encoding="utf-8"))
+            with self.subTest(row.fixture):
+                self.assertNotIn("corpus_remote_ref_pins", payload)
+                self.assertEqual(
+                    committed.read_bytes(),
+                    self.tool.expected_state(
+                        REPO, row, payload["fern_python_sdk_version"]
+                    ),
+                )
+            checked += 1
+        self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
 
 
 if __name__ == "__main__":
