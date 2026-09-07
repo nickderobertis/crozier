@@ -224,8 +224,11 @@ drift gate over the pair:
   `#/definitions/Foo` from a Swagger conversion and
   `#/components/parameters/Page` count. The two above are the two shapes that
   reach `ref_to_class`'s first case, which names a reference off its last
-  segment, and they are two selectors rather than one because only the first is
-  out of the corpus's reach.
+  segment, and they are two selectors rather than one because only the first
+  names a document other than the one being censused: crozier answers it by
+  fetching that document, where a same-document pointer is answered — or not —
+  inside the bytes already read. Both are declared by registered sources that
+  carry committed goldens.
 - `schema.$ref:nested-properties` — one per Schema Object whose `$ref` is a
   `#/components/schemas/` pointer carrying a `properties` segment with a
   segment after it, at a position the `ref_to_class` walk reads, so a pointer
@@ -1596,11 +1599,19 @@ nodes that take it. That is why this table needs no chain-overlap allowance whil
 the second can stop before reaching one.
 
 The first case takes two selectors rather than one, because two different shapes
-reach it and only one of them is out of the corpus's reach: a reference into
-another document, and a reference into this document outside `components.schemas`
-— `#/definitions/Foo` from a Swagger conversion, or a pointer into another
-component map. Recording both under one name would put a reachable branch behind
-an `UNREACHABLE` row.
+reach it and only one of them names a document other than the one in hand: a
+reference into another document, which crozier answers by fetching that document
+([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and a
+reference into this document outside `components.schemas` — `#/definitions/Foo`
+from a Swagger conversion, or a pointer into another component map — which is
+answered inside the bytes already read. The plan this pass ran under expected the
+first to be permanently `UNREACHABLE`, and asked for the split so that recording
+both under one name would not put a reachable branch behind that row. **The
+measurement contradicted the premise rather than the split**: both halves came
+back `golden` — the cross-document spelling at 29 declaration sites across two
+registered sources that both carry a committed golden, the same-document one at
+50 across four, three of them golden-bearing — and keeping them apart is what
+let the census say so of each separately.
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
