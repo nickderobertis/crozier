@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import importlib.util
+import itertools
 import json
 import os
 import re
@@ -2384,6 +2385,72 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual(1, self.reported.get((gate, "gate-dangling-ref")))
         self.assertEqual(1, self.reported.get((target, "props-select")))
         self.assertNotIn((target, "props-dangling"), self.reported)
+
+    def test_each_selector_reports_one_row_per_document_declaring_it(self) -> None:
+        """`--selector` takes each of these like any other selector.
+
+        The JSON report the rest of this case reads is one of two answers the
+        census gives; this is the other, and it is the one a `gap` row's evidence
+        is read out of. Each selector is asked for by name over the same fixtures
+        root and its answer is the per-document table, not a bare total.
+        """
+        payload = self.spec
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, fragment in payload["documents"].items():
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            for case in self.cases:
+                selector = case["selector"]
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    expected = {
+                        (selector, name): count
+                        for (reported, name), count in self.reported.items()
+                        if reported == selector
+                    }
+                    self.assertTrue(expected, f"{selector} counts nothing to report")
+                    self.assertEqual(expected, rows(completed))
+
+    def test_each_selector_has_exactly_one_name(self) -> None:
+        """One shape, one name: every writing the grammar admits canonicalizes to it.
+
+        A group's members are written in lexicographic order except that the
+        member a descent binds to comes last, since that is the member the
+        operator binds to — so the writings one of these selectors admits are the
+        permutations of each group's *other* members, and each has to canonicalize
+        to the declared spelling. Every group of these ten carries exactly one
+        member the descent does not bind to, so each admits one writing and the
+        declared spelling is it; the case that exercises the rule over a group
+        with several is `ResolvingDescentTests`'s own, which permutes a
+        four-member `~>` conjunction six ways.
+        """
+        for case in self.cases:
+            selector = case["selector"]
+            if not census.is_conjunction(selector):
+                continue
+            with self.subTest(selector=selector):
+                self.assertEqual(selector, census.canonical_conjunction(selector))
+                groups = census.conjunction_parts(selector)
+                writings = [""]
+                for members, operator in groups:
+                    head, last = (members, []) if operator is None else (members[:-1], members[-1:])
+                    writings = [
+                        prefix + "&".join([*order, *last]) + (operator or "")
+                        for prefix in writings
+                        for order in itertools.permutations(head)
+                    ]
+                for writing in writings:
+                    self.assertEqual(
+                        selector,
+                        census.canonical_conjunction(writing),
+                        f"{writing} is a second name for one shape",
+                    )
 
     def test_a_misspelling_of_an_annotated_ref_selector_is_refused_by_name(self) -> None:
         """The refusal, driven through the real script rather than the module."""
