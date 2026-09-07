@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import ast
 import gzip
+import importlib.util
 import io
 import json
 import os
@@ -302,13 +303,73 @@ def resolve_latest_version(root: Path) -> str:
     return max(versions, key=semantic_key)
 
 
-def expected_state(row: CorpusRow, version: str) -> bytes:
-    state = {
+PINS_MODULE = "corpus_remote_ref_pins"
+
+
+def load_pins_module(root: Path):
+    """`scripts/corpus_remote_ref_pins.py`, imported rather than re-parsed.
+
+    The substitution `scripts/fetch-corpus.sh` applies and the provenance this
+    tool records have to be the same records, so the manifest has exactly one
+    reader and this is a caller of it.
+    """
+    path = root / "scripts" / f"{PINS_MODULE}.py"
+    cached = sys.modules.get(PINS_MODULE)
+    if cached is not None and getattr(cached, "__file__", None) == str(path):
+        return cached
+    spec = importlib.util.spec_from_file_location(PINS_MODULE, path)
+    if spec is None or spec.loader is None:
+        raise GoldensError(f"could not load the pin manifest reader {path}")
+    module = importlib.util.module_from_spec(spec)
+    # Registered before execution because the reader defines dataclasses, and
+    # `@dataclass` resolves annotations through `sys.modules[cls.__module__]`.
+    sys.modules[PINS_MODULE] = module
+    try:
+        spec.loader.exec_module(module)
+    except OSError as error:
+        del sys.modules[PINS_MODULE]
+        raise GoldensError(
+            f"could not load the pin manifest reader {path}: {error}"
+        ) from error
+    return module
+
+
+def corpus_remote_ref_pins(root: Path, row: CorpusRow) -> list[dict[str, str]]:
+    """This row's recorded remote-`$ref` pins, sorted by the URL each replaces."""
+    module = load_pins_module(root)
+    try:
+        records = module.records_for(row.name, root)
+    except module.PinError as error:
+        raise GoldensError(str(error)) from error
+    return [
+        {
+            "url": record.mutable_url,
+            "pinned_url": record.pinned_url,
+            "sha256": record.sha256,
+        }
+        for record in sorted(records, key=lambda record: record.mutable_url)
+    ]
+
+
+def expected_state(root: Path, row: CorpusRow, version: str) -> bytes:
+    state: dict[str, object] = {
         "fern_python_sdk_version": version,
         "corpus_spec_name": row.name,
         "corpus_spec_ref": row.ref,
         "corpus_spec_url": row.url,
     }
+    # Emitted ONLY for a row that has pin records. `is_current()` byte-compares
+    # the on-disk state file against this, so an unconditional key would make
+    # every other golden stale at once and send the whole corpus back through
+    # Docker on the next scheduled run.
+    #
+    # The consequence to keep: editing a `pinned_url` or `sha256` in
+    # `tests/fixtures/corpus-remote-ref-pins.tsv` makes this row stale, so a
+    # `workflow_dispatch` with `fixtures=<name>` regenerates it through the
+    # ordinary path. The manifest is the input; no workflow input is needed.
+    pins = corpus_remote_ref_pins(root, row)
+    if pins:
+        state["corpus_remote_ref_pins"] = pins
     return (json.dumps(state, indent=2) + "\n").encode()
 
 
@@ -439,7 +500,7 @@ def is_current(root: Path, row: CorpusRow, version: str) -> bool:
         return (
             not expected.is_symlink()
             and (expected / "src").is_dir()
-            and state.read_bytes() == expected_state(row, version)
+            and state.read_bytes() == expected_state(root, row, version)
             and any(
                 path.is_file() and path.name != STATE_FILE
                 for path in expected.rglob("*")
@@ -644,7 +705,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                     raise GoldensError(
                         f"generator returned success without a packaged src/ tree; see {log_path}"
                     )
-                (staged_expected / STATE_FILE).write_bytes(expected_state(row, version))
+                (staged_expected / STATE_FILE).write_bytes(expected_state(root, row, version))
                 atomic_replace_directory(staged_expected, fixture_dir / "expected")
                 generated.append(row.fixture)
                 print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")
