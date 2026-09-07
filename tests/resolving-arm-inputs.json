@@ -2022,6 +2022,45 @@
      ]
     }
    }
+  },
+  "resolves-inline-member": {
+   "schemas": {
+    "Target": {
+     "type": "object",
+     "properties": {
+      "a": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "allOf": [
+         {
+          "type": "object",
+          "properties": {
+           "a": {
+            "type": "string"
+           }
+          }
+         },
+         {
+          "description": "annotated"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
   }
  },
  "cases": [
@@ -2030,24 +2069,93 @@
    "arm": "prop_type_ref:1",
    "branch": "prop_type_ref case 1, the described_all_of_ref gate",
    "select": {
-    "gate-ref-first": "the canonical form: the reference first, one member carrying only a description",
-    "gate-ref-last": "the reference written second, which described_all_of_ref reads identically",
-    "gate-bare-member": "a second member declaring nothing at all, which is_unknown accepts",
-    "gate-three-members": "three members: one reference and two that declare nothing",
-    "gate-dangling-ref": "the reference resolves to nothing, which the gate does not require"
+    "gate-ref-first": {
+     "form": "the canonical form: the reference first, one member carrying only a description",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-ref-last": {
+     "form": "the reference written second, which described_all_of_ref reads identically",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-bare-member": {
+     "form": "a second member declaring nothing at all, which is_unknown accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-three-members": {
+     "form": "three members: one reference and two that declare nothing",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-dangling-ref": {
+     "form": "the reference resolves to nothing, which the gate does not require",
+     "arms": [
+      "prop_type_ref:1"
+     ]
+    }
    },
    "near": {
-    "gate-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "gate-no-all-of": "schema.allOf:annotated-ref: a bare $ref beside a description, with no allOf at all",
-    "gate-one-member": "schema.allOf:annotated-ref: one member, which members.len() < 2 refuses",
-    "gate-two-refs": "schema.allOf:annotated-ref: two references, which reference.replace refuses",
-    "gate-no-ref": "schema.allOf:annotated-ref: no member is a Reference Object, so there is nothing annotated",
-    "gate-typed-member": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses"
+    "gate-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "gate-no-all-of": {
+     "part": "schema.allOf:annotated-ref: a bare $ref beside a description, with no allOf at all",
+     "arms": [],
+     "entered": {
+      "none": "prop_type_ref runs on the property and falls to its closing base_type_ref, which coins nothing at all, so this one document shows no witness of entry either way"
+     }
+    },
+    "gate-one-member": {
+     "part": "schema.allOf:annotated-ref: one member, which members.len() < 2 refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-two-refs": {
+     "part": "schema.allOf:annotated-ref: two references, which reference.replace refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-no-ref": {
+     "part": "schema.allOf:annotated-ref: no member is a Reference Object, so there is nothing annotated",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-typed-member": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    }
    },
    "overlap": {
     "enum-select": {
      "why": "the gate holds and the target is a string enum, so case 2a claims it too",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
     }
    }
   },
@@ -2056,20 +2164,71 @@
    "arm": "prop_type_ref:2",
    "branch": "prop_type_ref case 2a, string_enum_values over the target's enum",
    "select": {
-    "enum-select": "the canonical form, over a target the arm's own condition accepts",
-    "enum-alt-gate": "the gate's other spelling: the reference written second",
-    "enum-alt-target": "string_enum_values' other form: no type at all, every member a string"
+    "enum-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    },
+    "enum-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    },
+    "enum-alt-target": {
+     "form": "string_enum_values' other form: no type at all, every member a string",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    }
    },
    "near": {
-    "enum-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "enum-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "enum-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "enum-target-lacks": "schema.enum:string-valued: an enum whose members are integers, which string_enum_values refuses"
+    "enum-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "enum-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "enum-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "enum-target-lacks": {
+     "part": "schema.enum:string-valued: an enum whose members are integers, which string_enum_values refuses",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-enum-and-const": {
      "why": "a target writing a string enum beside a string const",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
     }
    }
   },
@@ -2078,20 +2237,71 @@
    "arm": "prop_type_ref:2",
    "branch": "prop_type_ref case 2b, string_enum_values falling back to the target's const",
    "select": {
-    "const-select": "the canonical form, over a target the arm's own condition accepts",
-    "const-alt-gate": "the gate's other spelling: the reference written second",
-    "const-alt-target": "the same fallback with no type written, every value a string"
+    "const-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    },
+    "const-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    },
+    "const-alt-target": {
+     "form": "the same fallback with no type written, every value a string",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    }
    },
    "near": {
-    "const-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "const-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "const-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "const-target-lacks": "schema.const:string-valued: a const that is an integer, which string_enum_values refuses"
+    "const-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "const-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "const-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "const-target-lacks": {
+     "part": "schema.const:string-valued: a const that is an integer, which string_enum_values refuses",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-enum-and-const": {
      "why": "a target writing a string const beside a string enum",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
     }
    }
   },
@@ -2100,19 +2310,64 @@
    "arm": "prop_type_ref:3",
    "branch": "prop_type_ref case 3a, target.one_of.is_some()",
    "select": {
-    "one-of-select": "the canonical form, over a target the arm's own condition accepts",
-    "one-of-alt-gate": "the gate's other spelling: the reference written second"
+    "one-of-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    },
+    "one-of-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    }
    },
    "near": {
-    "one-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "one-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "one-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "one-of-target-lacks": "schema.oneOf: a target declaring no composition at all"
+    "one-of-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "one-of-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "one-of-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "one-of-target-lacks": {
+     "part": "schema.oneOf: a target declaring no composition at all",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-one-of-and-any-of": {
      "why": "a target declaring both composition fields",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
     }
    }
   },
@@ -2121,19 +2376,64 @@
    "arm": "prop_type_ref:3",
    "branch": "prop_type_ref case 3b, target.any_of.is_some()",
    "select": {
-    "any-of-select": "the canonical form, over a target the arm's own condition accepts",
-    "any-of-alt-gate": "the gate's other spelling: the reference written second"
+    "any-of-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    },
+    "any-of-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
+    }
    },
    "near": {
-    "any-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "any-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "any-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "any-of-target-lacks": "schema.anyOf: a target declaring no composition at all"
+    "any-of-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "any-of-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "any-of-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "any-of-target-lacks": {
+     "part": "schema.anyOf: a target declaring no composition at all",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-one-of-and-any-of": {
      "why": "a target declaring both composition fields",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:3"
+     ]
     }
    }
   },
@@ -2142,20 +2442,71 @@
    "arm": "prop_type_ref:4",
    "branch": "prop_type_ref case 4a, the !target.properties.is_empty() disjunct",
    "select": {
-    "props-select": "the canonical form, over a target the arm's own condition accepts",
-    "props-alt-gate": "the gate's other spelling: the reference written second",
-    "props-alt-target": "the same disjunct with no type written, which is_object_type reads from the properties"
+    "props-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    },
+    "props-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    },
+    "props-alt-target": {
+     "form": "the same disjunct with no type written, which is_object_type reads from the properties",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    }
    },
    "near": {
-    "props-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "props-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "props-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "props-target-lacks": "schema.properties:non-empty: a declared-but-empty properties map, which is_bare_object accepts"
+    "props-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "props-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "props-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "props-target-lacks": {
+     "part": "schema.properties:non-empty: a declared-but-empty properties map, which is_bare_object accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-properties-and-all-of": {
      "why": "a target declaring properties beside an allOf",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
     }
    }
   },
@@ -2164,19 +2515,64 @@
    "arm": "prop_type_ref:4",
    "branch": "prop_type_ref case 4b, the target.all_of.is_some() disjunct",
    "select": {
-    "target-all-of-select": "the canonical form, over a target the arm's own condition accepts",
-    "target-all-of-alt-gate": "the gate's other spelling: the reference written second"
+    "target-all-of-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    },
+    "target-all-of-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    }
    },
    "near": {
-    "target-all-of-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "target-all-of-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "target-all-of-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "target-all-of-target-lacks": "schema.allOf: a target declaring no allOf, which leaves the disjunct unsatisfied"
+    "target-all-of-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "target-all-of-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "target-all-of-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "target-all-of-target-lacks": {
+     "part": "schema.allOf: a target declaring no allOf, which leaves the disjunct unsatisfied",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-properties-and-all-of": {
      "why": "a target declaring an allOf beside properties",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
     }
    }
   },
@@ -2185,20 +2581,71 @@
    "arm": "prop_type_ref:4",
    "branch": "prop_type_ref case 4c, the is_object_type disjunct over a closed target",
    "select": {
-    "closed-select": "the canonical form, over a target the arm's own condition accepts",
-    "closed-alt-gate": "the gate's other spelling: the reference written second",
-    "closed-alt-target": "the same disjunct with no type written, which is_object_type reads from additionalProperties"
+    "closed-select": {
+     "form": "the canonical form, over a target the arm's own condition accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    },
+    "closed-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    },
+    "closed-alt-target": {
+     "form": "the same disjunct with no type written, which is_object_type reads from additionalProperties",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
+    }
    },
    "near": {
-    "closed-not-a-property": "schema.properties: the annotated allOf is a named component, reached by no property",
-    "closed-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "closed-dangling": "the ~> resolution: the reference names no component, so no target is read",
-    "closed-target-lacks": "schema.additionalProperties=false: the other boolean, which makes the target is_map"
+    "closed-not-a-property": {
+     "part": "schema.properties: the annotated allOf is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the annotated allOf is a named component, so no property reaches prop_type_ref at all: the one negative of this table that deliberately fails the arm's caller gate"
+     }
+    },
+    "closed-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "closed-dangling": {
+     "part": "the ~> resolution: the reference names no component, so no target is read",
+     "arms": [
+      "prop_type_ref:1"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    },
+    "closed-target-lacks": {
+     "part": "schema.additionalProperties=false: the other boolean, which makes the target is_map",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ],
+     "entered": {
+      "arm": "prop_type_ref:1"
+     }
+    }
    },
    "overlap": {
     "overlap-properties-and-closed": {
      "why": "a target closing itself beside a non-empty properties map",
-     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:4"
+     ]
     }
    }
   },
@@ -2207,21 +2654,68 @@
    "arm": "hoist_union_variant:6",
    "branch": "hoist_union_variant case 6a, the annotated $ref element under a oneOf head",
    "select": {
-    "variant-oneof-select": "the canonical form under this head",
-    "variant-oneof-alt-gate": "the gate's other spelling: the reference written second",
-    "variant-oneof-alt-type": "schema.type:primary=array's other form: array is the first non-null member",
-    "variant-oneof-alt-resolve": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one"
+    "variant-oneof-select": {
+     "form": "the canonical form under this head",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-oneof-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-oneof-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-oneof-alt-resolve": {
+     "form": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    }
    },
    "near": {
-    "variant-oneof-not-a-union": "schema.oneOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
-    "variant-oneof-not-array": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
-    "variant-oneof-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "variant-oneof-dangling": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves"
+    "variant-oneof-not-a-union": {
+     "part": "schema.oneOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a property rather than a member of a composition, so hoist_union_variant is never called: this head's deliberate caller-gate negative"
+     }
+    },
+    "variant-oneof-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoice)"
+     }
+    },
+    "variant-oneof-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "variant-oneof-dangling": {
+     "part": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    }
    },
    "overlap": {
     "variant-oneof-overlap": {
      "why": "an item that is an annotated $ref and declares properties of its own, which case 7 claims too",
-     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty"
+     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
     }
    }
   },
@@ -2230,21 +2724,200 @@
    "arm": "hoist_union_variant:6",
    "branch": "hoist_union_variant case 6b, the annotated $ref element under a anyOf head",
    "select": {
-    "variant-anyof-select": "the canonical form under this head",
-    "variant-anyof-alt-gate": "the gate's other spelling: the reference written second",
-    "variant-anyof-alt-type": "schema.type:primary=array's other form: array is the first non-null member",
-    "variant-anyof-alt-resolve": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one"
+    "variant-anyof-select": {
+     "form": "the canonical form under this head",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-anyof-alt-gate": {
+     "form": "the gate's other spelling: the reference written second",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-anyof-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-anyof-alt-resolve": {
+     "form": "schema.$ref:resolves-to-component's other form: a pointer carrying no components.schemas prefix whose last segment names one",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    }
    },
    "near": {
-    "variant-anyof-not-a-union": "schema.anyOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
-    "variant-anyof-not-array": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
-    "variant-anyof-gate-broken": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
-    "variant-anyof-dangling": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves"
+    "variant-anyof-not-a-union": {
+     "part": "schema.anyOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a property rather than a member of a composition, so hoist_union_variant is never called: this head's deliberate caller-gate negative"
+     }
+    },
+    "variant-anyof-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoice)"
+     }
+    },
+    "variant-anyof-gate-broken": {
+     "part": "schema.allOf:annotated-ref: a second member declaring a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "variant-anyof-dangling": {
+     "part": "schema.$ref:resolves-to-component: the reference names no component, so nothing resolves",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    }
    },
    "overlap": {
     "variant-anyof-overlap": {
      "why": "an item that is an annotated $ref and declares properties of its own, which case 7 claims too",
-     "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty"
+     "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.allOf:annotated-ref",
+   "arm": "prop_type_ref:1",
+   "branch": "described_all_of_ref, the shape prop_type_ref case 1 and hoist_union_variant case 6 both gate on",
+   "select": {
+    "gate-ref-first": {
+     "form": "the canonical form: the reference first, one member carrying only a description",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-ref-last": {
+     "form": "the reference written second, which described_all_of_ref reads identically",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-bare-member": {
+     "form": "a second member declaring nothing at all, which is_unknown accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-three-members": {
+     "form": "three members: one reference and two that declare nothing",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-dangling-ref": {
+     "form": "the reference resolves to nothing, which this shape does not require",
+     "arms": [
+      "prop_type_ref:1"
+     ]
+    }
+   },
+   "near": {
+    "gate-no-all-of": {
+     "part": "schema.allOf: a bare $ref beside a description, with no allOf at all",
+     "arms": [],
+     "entered": {
+      "none": "prop_type_ref runs on the property and falls to its closing base_type_ref, which coins nothing at all, so this one document shows no witness of entry either way"
+     }
+    },
+    "gate-one-member": {
+     "part": "the member count: one member, which members.len() < 2 refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-two-refs": {
+     "part": "exactly one reference: two, which reference.replace refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-no-ref": {
+     "part": "at least one reference: none, so there is nothing annotated",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    },
+    "gate-typed-member": {
+     "part": "every other member declaring nothing: one declares a type, which is_unknown refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestAnnotated)"
+     }
+    }
+   },
+   "overlap": {
+    "enum-select": {
+     "why": "the same shape over a target declaring a string enum, which case 2a claims too",
+     "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:2"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.$ref:resolves-to-component",
+   "arm": "hoist_union_variant:6",
+   "branch": "resolve_ref_from_schemas succeeding, which hoist_union_variant case 6 asks for without reading a field of the target",
+   "select": {
+    "variant-oneof-select": {
+     "form": "a #/components/schemas/ pointer whose last segment names a component",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    },
+    "variant-oneof-alt-resolve": {
+     "form": "a pointer carrying no components.schemas prefix whose last segment names one",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
+    }
+   },
+   "near": {
+    "resolves-inline-member": {
+     "part": "a $ref written at all: the allOf composes an inline member instead, so nothing resolves",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "variant-oneof-dangling": {
+     "part": "the last segment naming a component: it names none of this document's own",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MakeThingRequestChoiceOneItem)"
+     }
+    }
+   },
+   "overlap": {
+    "variant-oneof-overlap": {
+     "why": "an item that is an annotated $ref and declares properties of its own, which case 7a claims too",
+     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:6"
+     ]
     }
    }
   }
