@@ -1,0 +1,26 @@
+# Immutable substitutions applied to a fetched corpus document's absolute-URL
+# `$ref`s, so a row's byte-match verdict depends only on content this repository
+# records rather than on whatever a mutable upstream branch serves today.
+#
+# corpus_name<TAB>mutable_url<TAB>pinned_url<TAB>sha256
+#
+#   corpus_name  a canonical CORPUS.md numbered row name (its third cell)
+#   mutable_url  the absolute `$ref` URL as the upstream root document writes it,
+#                with the `#fragment` removed
+#   pinned_url   the immutable URL substituted for it
+#   sha256       lowercase hex SHA-256 of the bytes served at `pinned_url`
+#
+# `#` comments and blank lines are ignored; records sort by (corpus_name,
+# mutable_url). `scripts/corpus_remote_ref_pins.py` is the only reader.
+#
+# `80d0a6ee6c129a29c507c35b0245a16c5a81b9d3` is the `ethereum/execution-apis`
+# revision the committed `helios-verifiable-api` golden was generated from: the
+# parent of `46e9fb7df0fb241ea2c316d5938b1eb8ff4204a3` ("schemas: treat
+# unresolvable safe and finalized tags as unknown blocks (#879)").
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/base-types.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/base-types.yaml	3b34fffaea334d8a8e5f44669c10b9329195573b522f35f439cb3f7134b19205
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/block.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/block.yaml	37586fcfd0e8ac21912b3a3a66693c6304e2983a4996ce8a8830d6b504b956c7
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/filter.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/filter.yaml	1cffdb444b3eaf6c22acebb5b98ce540036240a74001c7cee94bb3201d107010
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/receipt.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/receipt.yaml	5b8f15e2d926d8faad8d189d141972f990ce1978176bea0c4435e700081f9979
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/state.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/state.yaml	c74bcd0cd619353320500c7f638c0a15d6413f5b69a339ddddbc80cd21fc9c73
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/transaction.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/transaction.yaml	b74544f4621cd44e940b0726fdcc73a67c9e05301d87285ab60468364bc75518
+helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/withdrawal.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/withdrawal.yaml	eaa368104ba7dc8e254968d80f7ef4962e930ce9977a711bfe721d01c6e83336

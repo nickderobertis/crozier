@@ -19,10 +19,31 @@ corpus_rows() {
   ' "$manifest"
 }
 
+corpus_scripts_dir() {
+  cd "$(dirname "${BASH_SOURCE[0]}")" && pwd
+}
+
 corpus_aliases_file() {
-  local corpus_lib_dir
-  corpus_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  printf '%s\n' "$corpus_lib_dir/../tests/fixtures/corpus-aliases.tsv"
+  printf '%s\n' "$(corpus_scripts_dir)/../tests/fixtures/corpus-aliases.tsv"
+}
+
+# Substitute a row's recorded remote-`$ref` pins into a freshly fetched document,
+# and refuse any document that would be published carrying a mutable absolute
+# `$ref`. See scripts/corpus_remote_ref_pins.py.
+corpus_pin_apply() {
+  local name="$1" file="$2" document_name="$3"
+  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
+    apply "$name" "$file" --as "$document_name"
+}
+
+# Whether a cached document is already in the state `corpus_pin_apply` leaves it
+# in. A mismatch is a routine cache miss rather than an error, so the caller
+# refetches instead of reporting: anything genuinely wrong resurfaces loudly from
+# `corpus_pin_apply` on that refetch.
+corpus_pin_verify() {
+  local name="$1" file="$2"
+  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
+    verify "$name" "$file" >/dev/null 2>&1
 }
 
 corpus_fixture_for() {
@@ -134,6 +155,12 @@ corpus_fetch_source() {
     fi
     if [ ! -s "$temporary" ]; then
       echo "corpus: fetched an empty spec for $name from $url" >&2
+      rm -f "$temporary"
+      return 1
+    fi
+    # Pin before publishing, so a document carrying a mutable absolute `$ref`
+    # never reaches a consumer: this is a gate, not a post-hoc repair.
+    if ! corpus_pin_apply "$name" "$temporary" "${target##*/}"; then
       rm -f "$temporary"
       return 1
     fi

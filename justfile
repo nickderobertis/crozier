@@ -20,7 +20,7 @@ bootstrap:
     @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -361,6 +361,22 @@ lint-corpus-licensing:
 # Part of `check`.
 test-corpus-licensing:
     python3 tests/corpus_licensing_test.py
+
+# A corpus row whose document names another document by absolute URL is only
+# reproducible if that URL is immutable. tests/fixtures/corpus-remote-ref-pins.tsv
+# records the substitutions that make it so; this is the offline gate over the
+# manifest itself — well-formed records, real corpus names, immutable pinned URLs,
+# no duplicates, sorted. No network. Part of `check`.
+lint-corpus-remote-ref-pins:
+    python3 scripts/corpus_remote_ref_pins.py check
+
+# Boundary coverage for the pin MECHANISM, which the manifest cannot prove: drives
+# the REAL scripts/fetch-corpus.sh against a loopback HTTP server the suite starts
+# itself, so real curl and the real filesystem publish a real document. Also holds
+# the offline lint's malformed-manifest cases. No test reaches GitHub, so `check`
+# takes a loopback socket and no external host. Part of `check`.
+test-corpus-remote-ref-pins:
+    python3 tests/corpus_remote_ref_pins_test.py
 
 # The screening record for the widened admissible-licence rule,
 # docs/licence-rescreening.md: one line per candidate the six region files
