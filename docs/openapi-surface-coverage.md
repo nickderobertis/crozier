@@ -277,7 +277,7 @@ drift gate over the pair:
   a member count, that exactly one member is a reference, and what the others
   declare — is a field's presence.
 
-**Twenty of the 26 are node-local**, which is what makes them one family:
+**Twenty-one of the 26 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -285,11 +285,12 @@ in exactly that sense — a `$ref` *value* is one of the node's own declared
 fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further. The other
-five — `operation.operationId:duplicate`, the two `normalized-collision`
-spellings and the two `schema.$ref:` spellings that measure a reference against
-the document's own `components.schemas`, `undeclared-component-head` and
-`resolves-to-component` — compare one document's
-own values against each other, and say so in their own sentence. The last two of
+five — `operation.operationId:duplicate`,
+`openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
+`schema.$ref:undeclared-component-head` and
+`schema.$ref:resolves-to-component` — compare one document's
+own values against each other, and say so in their own sentence. Those two
+numbers partition the closed list, and a check reconciles the split with it. The last two of
 them read **the document context**: the census carries the document's own
 `components.schemas` map and the set of its keys, reachable from every node it
 walks, and it is the document being censused and nothing else — no fetch, no

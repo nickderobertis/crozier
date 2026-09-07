@@ -689,6 +689,62 @@ class GrammarContractTests(unittest.TestCase):
         self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
         self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
+    # The predicates that compare one document's own values against each other
+    # rather than reading the node in front of the walk. The script names them in
+    # its own `PREDICATES` header comment and the grammar section names them in
+    # prose; this list is the third statement of the same partition, and the case
+    # below holds all three together. A predicate added to the closed list is
+    # node-local unless it is here.
+    DOCUMENT_COMPARING_PREDICATES = frozenset({
+        "operation.operationId:duplicate",
+        "openapi.paths:normalized-collision",
+        "components.schemas:normalized-collision",
+        "schema.$ref:undeclared-component-head",
+        "schema.$ref:resolves-to-component",
+    })
+
+    def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
+        """The two counts the grammar states about its own predicates, recomputed.
+
+        `test_the_documented_predicate_selectors_are_the_ones_the_script_declares`
+        holds the set and its total; this holds the *split* the paragraph after it
+        states — how many predicates are node-local and how many compare one
+        document's values against each other. Both are spelled as words, and they
+        have to partition the closed list, so a predicate added to one family and
+        counted in neither fails here. Nothing else derives the split: the
+        paragraph drifted once already, when a node-local predicate was added and
+        the word before "of the 26" stayed put.
+        """
+        words = {
+            "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
+            "four": 4, "five": 5, "six": 6, "seven": 7,
+        }
+        text = self.DOC.read_text(encoding="utf-8")
+        stated = re.search(
+            r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text
+        )
+        self.assertIsNotNone(stated, "the grammar no longer states its node-local count")
+        self.assertEqual(len(census.PREDICATES), int(stated.group(2)))
+        body = text.split(stated.group(0), 1)[1].split("\n\nA predicate selector", 1)[0]
+        other = re.search(r"The other\n?([a-z-]+) —", body)
+        self.assertIsNotNone(other, "the grammar no longer counts the other family")
+        node_local = words[stated.group(1)]
+        comparing = words[other.group(1)]
+        self.assertEqual(
+            len(census.PREDICATES),
+            node_local + comparing,
+            "the two stated families do not partition the closed list",
+        )
+        self.assertEqual(len(self.DOCUMENT_COMPARING_PREDICATES), comparing)
+        for selector in sorted(self.DOCUMENT_COMPARING_PREDICATES):
+            with self.subTest(selector=selector):
+                self.assertIn(selector, census.PREDICATES)
+                self.assertIn(
+                    f"`{selector}`",
+                    body,
+                    f"{selector} is document-comparing and the paragraph does not name it",
+                )
+
     # ------------------------------------------------------------------
     # The fourth kind of selector: `<member>&<member>` and `<group>><group>`
     # ------------------------------------------------------------------

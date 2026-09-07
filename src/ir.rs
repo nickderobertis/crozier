@@ -14746,8 +14746,12 @@ mod tests {
         // about the arm's own condition; one that does reach it and takes a later
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
-        // that function's later arm coins — and the three that carry none say in
-        // their own record why.
+        // that function's later arm coins — and the eleven that carry none say in
+        // their own record why. Ten of the eleven are the deliberate caller-gate
+        // negative each selector carries — eight annotated `allOf`s written where
+        // no property reaches `prop_type_ref`, and two arrays written where no
+        // composition reaches `hoist_union_variant` — and the eleventh is the one
+        // document whose whole run coins nothing at all to be a witness.
         let payload = resolving_arm_inputs();
         let mut without_witness = Vec::new();
         for case in payload["cases"].as_array().expect("cases") {
