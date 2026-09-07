@@ -463,7 +463,11 @@ class TheLintStillDiscriminates(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name) / "repo"
+        # Resolve before joining: the module reports the manifest under its own
+        # `--root`.resolve(), and on Windows the temporary directory arrives as an
+        # 8.3 short name (`RUNNER~1`) that resolves to a different string
+        # (`runneradmin`), so an unresolved root never matches the reported path.
+        self.root = Path(self.temporary.name).resolve() / "repo"
         (self.root / "tests" / "fixtures").mkdir(parents=True)
         (self.root / "tests" / "fixtures" / "CORPUS.md").write_text(
             textwrap.dedent(
