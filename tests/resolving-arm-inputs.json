@@ -95,6 +95,26 @@
     }
    }
   },
+  "gate-null-valued-member": {
+   "schemas": {
+    "Target": {
+     "type": "integer"
+    }
+   },
+   "body": {
+    "annotated": {
+     "allOf": [
+      {
+       "$ref": "#/components/schemas/Target"
+      },
+      {
+       "description": "annotated",
+       "const": null
+      }
+     ]
+    }
+   }
+  },
   "gate-three-members": {
    "schemas": {
     "Target": {
@@ -2085,6 +2105,13 @@
     },
     "gate-bare-member": {
      "form": "a second member declaring nothing at all, which is_unknown accepts",
+     "arms": [
+      "prop_type_ref:1",
+      "prop_type_ref:5"
+     ]
+    },
+    "gate-null-valued-member": {
+     "form": "a second member whose only type-determining field is written as JSON `null`, which serde reads into `is_unknown`'s `Option` fields as no declaration at all",
      "arms": [
       "prop_type_ref:1",
       "prop_type_ref:5"

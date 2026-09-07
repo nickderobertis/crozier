@@ -1717,11 +1717,8 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
     )
 
 
-# The pointer-form family, declared by the pass after the node-local one and
-# discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
-# because the node-local table's own completeness assertion is "every selector
-# that pass declared", and these are not its.
-# The twelve the annotated-`$ref` pass declared, kept apart the same way: they are
+# The twelve the annotated-`$ref` pass declared, kept apart from the node-local
+# table the same way its own successors are: they are
 # one path through `src/ir.rs` — `described_all_of_ref` resolving, and the arms
 # that read what it resolved to — and `AnnotatedRefSelectorDiscriminationTests`
 # is the case that answers for every one of them.
@@ -1741,6 +1738,10 @@ ANNOTATED_REF_SELECTORS = frozenset({
 })
 
 
+# The pointer-form family, declared by the pass after the node-local one and
+# discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
+# because the node-local table's own completeness assertion is "every selector
+# that pass declared", and these are not its.
 POINTER_FORM_PREDICATES = frozenset({
     "schema.$ref:cross-document",
     "schema.$ref:same-document-foreign-pointer",
@@ -2322,10 +2323,12 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
       Object, so no document satisfies the rest of the condition without them.
     - against a **narrower** selector, one document per way the arm's own
       condition admits of being satisfied that the case analysis distinguishes —
-      the reference written first or second inside the `allOf`, the `enum`
-      spelling with and without a `type`, `array` as the sole type or as the first
-      non-`null` member of a 3.1 list, and a resolving reference written with and
-      without the `#/components/schemas/` prefix.
+      the reference written first or second inside the `allOf`, an annotating
+      member carrying a description, nothing at all, or a type-determining field
+      written as JSON `null`, the `enum` spelling with and without a `type`,
+      `array` as the sole type or as the first non-`null` member of a 3.1 list,
+      and a resolving reference written with and without the
+      `#/components/schemas/` prefix.
 
     Where the arm permits a node another case of the same function's table also
     claims, the overlap document is driven too and both selectors are asserted to
