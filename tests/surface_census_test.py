@@ -3031,6 +3031,84 @@ class RankedBacklogTests(unittest.TestCase):
             found[selector] = citing[0]
         return found
 
+    # The node-local predicates this pass declared, which carry rows of their own
+    # exactly as the conjunctions composing them do: a selector declared and never
+    # classified is a measurement nobody took. The five predicates that predate the
+    # family are not here — they are about a whole document's keys or values rather
+    # than about one arm of a blind function, and their rows say so instead.
+    BRANCH_PREDICATES = {
+        "schema.type:primary=array": "schemas",
+        "schema.properties:non-empty": "schemas",
+        "schema.oneOf:sole-member": "schemas",
+        "schema.anyOf:sole-member": "schemas",
+        "schema.oneOf:sole-non-null-member": "schemas",
+        "schema.anyOf:sole-non-null-member": "schemas",
+        "schema.enum:string-valued": "schemas",
+        "schema.const:string-valued": "schemas",
+        "openapi.paths:leading-literal-segment": "document-paths",
+        "openapi.paths:template-before-literal-segment": "document-paths",
+        "openapi.paths:all-segments-templated": "document-paths",
+    }
+
+    def predicate_rows(self) -> dict[str, tuple[str, list[str]]]:
+        """selector -> the one region row whose evidence cell cites it."""
+        found: dict[str, tuple[str, list[str]]] = {}
+        for selector in self.BRANCH_PREDICATES:
+            citing = [
+                (region, cells)
+                for region, cells in self.entries.values()
+                if f"`{selector}`" in cells[4]
+            ]
+            self.assertEqual(
+                1, len(citing),
+                f"{selector}: {len(citing)} region rows cite it; exactly one must",
+            )
+            found[selector] = citing[0]
+        return found
+
+    def test_every_branch_predicate_carries_one_row_in_the_region_that_owns_it(self) -> None:
+        """A predicate read off an arm is classified where the object it anchors on lives.
+
+        `schema.…` predicates anchor on a Schema Object and belong to `schemas`;
+        the three `openapi.paths:` readings anchor on the Paths Object and belong
+        to `document-paths`. Each row names the arm it was read off and the case
+        number of it, so a reader lands on the branch rather than on the field.
+        """
+        for selector, (region, cells) in sorted(self.predicate_rows().items()):
+            with self.subTest(selector=selector):
+                self.assertEqual(self.BRANCH_PREDICATES[selector], region)
+                self.assertIn(cells[3].strip("`"), self.CATEGORIES)
+                named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
+                self.assertTrue(
+                    named,
+                    "a predicate row names the blind function whose arm it was read off",
+                )
+                self.assertRegex(cells[4], r"case \d+")
+
+    def test_every_golden_branch_predicate_row_says_it_is_not_golden_exhausted(self) -> None:
+        """The same caveat the conjunction rows carry, for the same reason."""
+        caveat = " ".join(self.NOT_EXHAUSTED.split())
+        for selector, (_region, cells) in sorted(self.predicate_rows().items()):
+            if cells[3].strip("`") != "golden":
+                continue
+            with self.subTest(selector=selector):
+                self.assertIn(caveat, " ".join(cells[4].split()))
+
+    def test_every_branch_predicate_rows_evidence_is_the_census_own_output(self) -> None:
+        """Every vendored source a predicate row names, against the real script."""
+        reported: dict[str, dict[str, int]] = {s: {} for s in self.BRANCH_PREDICATES}
+        payload = json.loads(run("--vendored-only", "--json").stdout)
+        for row in payload["rows"]:
+            if row["selector"] in reported:
+                reported[row["selector"]][row["fixture"]] = row["count"]
+        vendored = {source["fixture"] for source in payload["sources"]}
+        for selector, (_region, cells) in sorted(self.predicate_rows().items()):
+            for name, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cells[4]):
+                if name not in vendored:
+                    continue
+                with self.subTest(selector=selector, fixture=name):
+                    self.assertEqual(reported[selector].get(name, 0), int(count))
+
     def test_every_declared_conjunction_carries_exactly_one_classified_row(self) -> None:
         """The closed list is the row set: a selector declared and never classified
         is a measurement nobody took, and two rows for one shape are two answers."""

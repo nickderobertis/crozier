@@ -13616,4 +13616,429 @@ mod tests {
             client.contents
         );
     }
+
+    /// One hoisted declaration as `Kind(Name)`.
+    ///
+    /// Several arms of the three functions below return the *same* `TypeRef` and
+    /// differ only in what they push onto the builder — `prop_type_ref`'s case 12
+    /// and its closing alias both return `Named("BagThing")`, one having hoisted an
+    /// object and the other an alias over a union — so the declaration is half of
+    /// what a branch produces and is asserted beside the return value.
+    fn decl_label(decl: &TypeDecl) -> String {
+        match decl {
+            TypeDecl::Object(object) => format!("Object({})", object.name),
+            TypeDecl::Alias(alias) => format!("Alias({})", alias.name),
+            TypeDecl::Enum(enum_type) => format!("Enum({})", enum_type.name),
+            TypeDecl::DiscriminatedUnion(union) => format!("Union({})", union.name),
+        }
+    }
+
+    // The shapes `NodeLocalSelectorDiscriminationTests` of
+    // `tests/surface_census_test.py` drives the census over, written once here so
+    // that what the census counts and what the generator does are asserted over the
+    // same nodes. Each pair is a node that selects one arm and the near miss that
+    // satisfies every part of the selector's condition but one.
+    fn struct_schema() -> serde_json::Value {
+        serde_json::json!({ "properties": { "id": { "type": "string" } } })
+    }
+
+    fn array_of(items: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "type": "array", "items": items })
+    }
+
+    fn also_array_of(items: serde_json::Value) -> serde_json::Value {
+        // The near miss for every `schema.type:primary=array` member: 3.1 lets a
+        // schema list its types, `TypeField::primary` reads the first non-`null`
+        // one, and a document declaring `array` second takes the string path.
+        serde_json::json!({ "type": ["string", "array"], "items": items })
+    }
+
+    #[test]
+    fn nested_array_element_separates_the_branches_its_selectors_name() {
+        let element = |value: serde_json::Value| {
+            let schemas = indexmap::IndexMap::new();
+            let mut builder = Builder {
+                types: Vec::new(),
+                schemas: &schemas,
+                strip_discriminant: std::collections::HashMap::new(),
+                building_types: std::collections::HashSet::new(),
+            };
+            let produced = builder.nested_array_element("Root", &schema(value));
+            (
+                produced,
+                builder.types.iter().map(decl_label).collect::<Vec<_>>(),
+            )
+        };
+
+        // Case 1, `schema.items>schema.type:primary=array`: the recursive descent,
+        // against an `items` whose `array` is the *second* type it lists.
+        assert_eq!(
+            element(array_of(array_of(struct_schema()))),
+            (
+                Some(TypeRef::List(Box::new(TypeRef::List(Box::new(
+                    TypeRef::Named("RootItemItem".to_string())
+                ))))),
+                vec!["Object(RootItemItem)".to_string()],
+            )
+        );
+        assert_eq!(
+            element(array_of(also_array_of(struct_schema()))),
+            (None, vec![])
+        );
+
+        // Case 4, `schema.items>schema.properties:non-empty`: `is_inline_struct`'s
+        // first disjunct, against a declared-but-empty `properties: {}`, which is
+        // not an inline struct at all.
+        assert_eq!(
+            element(array_of(struct_schema())),
+            (
+                Some(TypeRef::List(Box::new(TypeRef::Named(
+                    "RootItem".to_string()
+                )))),
+                vec!["Object(RootItem)".to_string()],
+            )
+        );
+        assert_eq!(
+            element(array_of(serde_json::json!({ "properties": {} }))),
+            (None, vec![])
+        );
+
+        // Case 6, `schema.items>schema.additionalProperties=false`: the closed-object
+        // disjunct, against the other boolean of the same field.
+        assert_eq!(
+            element(array_of(
+                serde_json::json!({ "type": "object", "additionalProperties": false })
+            )),
+            (
+                Some(TypeRef::List(Box::new(TypeRef::Named(
+                    "RootItem".to_string()
+                )))),
+                vec!["Object(RootItem)".to_string()],
+            )
+        );
+        assert_eq!(
+            element(array_of(
+                serde_json::json!({ "type": "object", "additionalProperties": true })
+            )),
+            (None, vec![])
+        );
+    }
+
+    #[test]
+    fn hoist_union_variant_separates_the_branches_its_selectors_name() {
+        let variant_ref = |value: serde_json::Value| {
+            let schemas = indexmap::IndexMap::new();
+            let mut hoister = InlineHoister {
+                root_types: &[],
+                schemas: Some(&schemas),
+                out: Vec::new(),
+            };
+            let variant = schema(value);
+            let produced =
+                hoister.hoist_union_variant("Choice", 0, &variant, std::slice::from_ref(&variant));
+            (
+                produced,
+                hoister.out.iter().map(decl_label).collect::<Vec<_>>(),
+            )
+        };
+        let nullable_one_of =
+            serde_json::json!({ "oneOf": [{ "type": "null" }, { "type": "string" }] });
+        let nullable_any_of =
+            serde_json::json!({ "anyOf": [{ "type": "null" }, { "type": "string" }] });
+        let two_one_of =
+            serde_json::json!({ "oneOf": [{ "type": "string" }, { "type": "integer" }] });
+        let two_any_of =
+            serde_json::json!({ "anyOf": [{ "type": "string" }, { "type": "integer" }] });
+        let optional_element = (
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                Prim::Str,
+            ))))),
+            vec![],
+        );
+        let hoisted_alias_item = (
+            TypeRef::List(Box::new(TypeRef::Named("ChoiceZeroItem".to_string()))),
+            vec!["Alias(ChoiceZeroItem)".to_string()],
+        );
+        let hoisted_object_item = (
+            TypeRef::List(Box::new(TypeRef::Named("ChoiceZeroItem".to_string()))),
+            vec!["Object(ChoiceZeroItem)".to_string()],
+        );
+
+        // Cases 3a to 3d, the four `sole-non-null-member` selectors: one element
+        // member beside `type: null` is an optional element rather than a hoisted
+        // alias, and `simple_nullable_member` reads the item's `anyOf` first. Both
+        // item spellings reach it; a pair with no `null` member falls to case 5.
+        assert_eq!(
+            variant_ref(array_of(nullable_any_of.clone())),
+            optional_element
+        );
+        assert_eq!(
+            variant_ref(array_of(nullable_one_of.clone())),
+            optional_element
+        );
+        assert_eq!(
+            variant_ref(array_of(two_any_of.clone())),
+            hoisted_alias_item
+        );
+        assert_eq!(
+            variant_ref(array_of(two_one_of.clone())),
+            hoisted_alias_item
+        );
+
+        // Cases 5a to 5d: the alias union over the item's composition, against the
+        // `type: [string, array]` near miss the `type: array` guard refuses.
+        assert_eq!(
+            variant_ref(array_of(two_one_of.clone())),
+            hoisted_alias_item
+        );
+        assert_eq!(
+            variant_ref(also_array_of(two_one_of.clone())),
+            (TypeRef::Primitive(Prim::Str), vec![])
+        );
+
+        // Cases 7a and 7b: `is_inline_struct` on the item, first disjunct.
+        assert_eq!(variant_ref(array_of(struct_schema())), hoisted_object_item);
+        assert_eq!(
+            variant_ref(array_of(serde_json::json!({ "properties": {} }))),
+            (
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Any))),
+                vec![],
+            )
+        );
+
+        // Cases 7c and 7d: the same helper's closed-object disjunct, against the
+        // open map the other boolean makes.
+        assert_eq!(
+            variant_ref(array_of(
+                serde_json::json!({ "type": "object", "additionalProperties": false })
+            )),
+            hoisted_object_item
+        );
+        assert_eq!(
+            variant_ref(array_of(
+                serde_json::json!({ "type": "object", "additionalProperties": true })
+            )),
+            (
+                TypeRef::List(Box::new(TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ))),
+                vec![],
+            )
+        );
+
+        // Cases 8a and 8b: `is_inline_object` on the variant itself, whose
+        // `properties` disjunct carries no scalar-type guard.
+        assert_eq!(
+            variant_ref(struct_schema()),
+            (
+                TypeRef::Named("ChoiceId".to_string()),
+                vec!["Object(ChoiceId)".to_string()],
+            )
+        );
+        assert_eq!(
+            variant_ref(serde_json::json!({ "properties": {} })),
+            (TypeRef::Primitive(Prim::Any), vec![])
+        );
+    }
+
+    #[test]
+    fn both_composition_spellings_hand_one_variant_to_the_same_arm() {
+        // What the `oneOf` and `anyOf` halves of every `hoist_union_variant` row
+        // are for. The caller reaches the function through
+        // `one_of.as_ref().or(any_of.as_ref())`, so a document writing only `anyOf`
+        // selects the arm a `oneOf` document selects — which is why one branch is
+        // two selectors, and why a closed list naming one spelling would report the
+        // other document as declaring nothing.
+        let spelled = |field: &str| {
+            let schemas = indexmap::IndexMap::new();
+            let mut hoister = InlineHoister {
+                root_types: &[],
+                schemas: Some(&schemas),
+                out: Vec::new(),
+            };
+            let mut property = serde_json::Map::new();
+            property.insert(
+                field.to_string(),
+                serde_json::json!([
+                    array_of(serde_json::json!({
+                        "oneOf": [{ "type": "null" }, { "type": "string" }]
+                    })),
+                    { "type": "integer" }
+                ]),
+            );
+            let produced = hoister.prop_type_ref(
+                "Bag",
+                "choice",
+                &schema(serde_json::Value::Object(property)),
+            );
+            let target = hoister.out.iter().find_map(|decl| match decl {
+                TypeDecl::Alias(alias) => Some(alias.target.clone()),
+                _ => None,
+            });
+            (produced, target)
+        };
+        let expected = (
+            TypeRef::Named("BagChoice".to_string()),
+            Some(TypeRef::Union(vec![
+                TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                    Prim::Str,
+                ))))),
+                TypeRef::Primitive(Prim::Int),
+            ])),
+        );
+        assert_eq!(spelled("oneOf"), expected);
+        assert_eq!(spelled("anyOf"), expected);
+    }
+
+    #[test]
+    fn prop_type_ref_separates_the_branches_its_selectors_name() {
+        let property = |value: serde_json::Value| {
+            let schemas = indexmap::IndexMap::new();
+            let mut hoister = InlineHoister {
+                root_types: &[],
+                schemas: Some(&schemas),
+                out: Vec::new(),
+            };
+            let produced = hoister.prop_type_ref("Bag", "thing", &schema(value));
+            (
+                produced,
+                hoister.out.iter().map(decl_label).collect::<Vec<_>>(),
+            )
+        };
+        let named = TypeRef::Named("BagThing".to_string());
+        let hoisted_enum = (named.clone(), vec!["Enum(BagThing)".to_string()]);
+        let hoisted_object = (named.clone(), vec!["Object(BagThing)".to_string()]);
+        let closed = serde_json::json!({ "type": "object", "additionalProperties": false });
+        let open = serde_json::json!({ "type": "object", "additionalProperties": true });
+        let open_map = TypeRef::Dict(
+            Box::new(TypeRef::Primitive(Prim::Str)),
+            Box::new(TypeRef::Primitive(Prim::Any)),
+        );
+
+        // Case 7a, `schema.properties>schema.enum:string-valued`: `string_enum_values`
+        // refuses an `enum` whose members are integers, and the property is a plain
+        // `str` rather than a hoisted enum class.
+        assert_eq!(
+            property(serde_json::json!({ "enum": ["alpha", "beta"] })),
+            hoisted_enum
+        );
+        assert_eq!(
+            property(serde_json::json!({ "enum": [1, 2] })),
+            (TypeRef::Primitive(Prim::Str), vec![])
+        );
+
+        // Case 7b, `schema.properties>schema.const:string-valued`: the spelling the
+        // same helper falls back to when no `enum` is written.
+        assert_eq!(
+            property(serde_json::json!({ "const": "alpha" })),
+            hoisted_enum
+        );
+        assert_eq!(
+            property(serde_json::json!({ "const": 1 })),
+            (TypeRef::Primitive(Prim::Any), vec![])
+        );
+
+        // Case 8a, `schema.properties>schema.properties:non-empty`.
+        assert_eq!(property(struct_schema()), hoisted_object);
+        assert_eq!(
+            property(serde_json::json!({ "properties": {} })),
+            (TypeRef::Primitive(Prim::Any), vec![])
+        );
+
+        // Case 8d, `schema.properties>schema.additionalProperties=false`: the closed
+        // object hoists a model where the open one is `is_map`'s dictionary.
+        assert_eq!(property(closed.clone()), hoisted_object);
+        assert_eq!(property(open.clone()), (open_map.clone(), vec![]));
+
+        // Cases 11a and 11b, the two `sole-non-null-member` spellings: the nullable
+        // pair collapses to its one member, where a pair with no `null` member is an
+        // alias over both.
+        for members in ["oneOf", "anyOf"] {
+            let mut nullable = serde_json::Map::new();
+            nullable.insert(
+                members.to_string(),
+                serde_json::json!([{ "type": "null" }, { "type": "string" }]),
+            );
+            assert_eq!(
+                property(serde_json::Value::Object(nullable)),
+                (TypeRef::Primitive(Prim::Str), vec![])
+            );
+            let mut pair = serde_json::Map::new();
+            pair.insert(
+                members.to_string(),
+                serde_json::json!([{ "type": "string" }, { "type": "integer" }]),
+            );
+            assert_eq!(
+                property(serde_json::Value::Object(pair)),
+                (named.clone(), vec!["Alias(BagThing)".to_string()])
+            );
+        }
+
+        // Cases 12a to 12d: a one-member composition whose member is an inline
+        // struct is that struct, hoisted under the property's own name. Both near
+        // misses return the same `TypeRef`, which is why the declaration is asserted:
+        // a second member makes the arm an alias over a union, and an open map member
+        // makes it an alias over a dictionary.
+        for members in ["oneOf", "anyOf"] {
+            for member in [struct_schema(), closed.clone()] {
+                let mut sole = serde_json::Map::new();
+                sole.insert(members.to_string(), serde_json::json!([member]));
+                assert_eq!(property(serde_json::Value::Object(sole)), hoisted_object);
+            }
+            let mut two = serde_json::Map::new();
+            two.insert(
+                members.to_string(),
+                serde_json::json!([struct_schema(), { "type": "string" }]),
+            );
+            assert_eq!(
+                property(serde_json::Value::Object(two)),
+                (
+                    named.clone(),
+                    vec![
+                        "Object(BagThingId)".to_string(),
+                        "Alias(BagThing)".to_string()
+                    ],
+                )
+            );
+            let mut sole_open = serde_json::Map::new();
+            sole_open.insert(members.to_string(), serde_json::json!([open.clone()]));
+            assert_eq!(
+                property(serde_json::Value::Object(sole_open)),
+                (named.clone(), vec!["Alias(BagThing)".to_string()])
+            );
+        }
+
+        // Case 15, `schema.properties>schema.type:primary=array`.
+        assert_eq!(
+            property(array_of(struct_schema())),
+            (
+                TypeRef::List(Box::new(TypeRef::Named("BagThingItem".to_string()))),
+                vec!["Object(BagThingItem)".to_string()],
+            )
+        );
+        assert_eq!(
+            property(also_array_of(struct_schema())),
+            (TypeRef::Primitive(Prim::Str), vec![])
+        );
+    }
+
+    #[test]
+    fn path_group_separates_the_three_segment_positions_its_predicates_name() {
+        // The three keys `NodeLocalSelectorDiscriminationTests` drives the census
+        // over for `openapi.paths:leading-literal-segment`,
+        // `openapi.paths:template-before-literal-segment` and
+        // `openapi.paths:all-segments-templated`. The three partition every route,
+        // so each key's near miss is one of the other two arms rather than a
+        // fall-through: the group is a different string in all three.
+        assert_eq!(path_group("/widgets/{id}"), "widgets");
+        assert_eq!(path_group("/{id}/widgets"), "widgets");
+        assert_eq!(path_group("/{tenant}/widgets/{id}"), "widgets");
+        assert_eq!(path_group("/{tenant}/{id}"), "service");
+        assert_eq!(path_group("/{tenant}/widgets"), "widgets");
+        // A segment is templated only when it is *wholly* a template expression,
+        // which is what keeps `openapi.paths:templated-key` and these three apart:
+        // a key with an expression inside a segment has no templated segment at all.
+        assert_eq!(path_group("/v{version}/widgets"), "v{version}");
+    }
 }
