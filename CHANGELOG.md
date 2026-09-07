@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.69](https://github.com/nickderobertis/crozier/compare/v0.0.68...v0.0.69) - 2026-09-07
+
+### Added
+
+- *(census)* name the seventeen blind branches one node's own fields decide ([#240](https://github.com/nickderobertis/crozier/pull/240))
+
 ## [0.0.68](https://github.com/nickderobertis/crozier/compare/v0.0.67...v0.0.68) - 2026-09-06
 
 ### Added
