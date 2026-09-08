@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.72](https://github.com/nickderobertis/crozier/compare/v0.0.71...v0.0.72) - 2026-09-08
+
+### Added
+
+- *(census)* name the three branches a union's discriminable members decide ([#248](https://github.com/nickderobertis/crozier/pull/248))
+
 ## [0.0.71](https://github.com/nickderobertis/crozier/compare/v0.0.70...v0.0.71) - 2026-09-08
 
 ### Added
