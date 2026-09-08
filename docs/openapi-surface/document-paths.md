@@ -519,6 +519,28 @@ cells stay dated to the walk they were taken on and this paragraph records what 
 reader running the command will see. That refresh belongs to the change that
 re-transcribes this table, exactly as the 141-source refresh did.
 
+**The change that names the discriminated-union condition re-pins this digest,
+and the one it replaces reproduced.** That change registers no source — its twelve
+rows are [`schemas.md`](schemas.md)'s and all twelve are measured over the corpus
+as it already stands — but it declares twelve selectors, and a selector is census
+output. Running the check below over its own base on **2026-09-07** hashes to
+`cf049c23…`, the pin standing there, so that pin was **reproducible rather than
+stale** and what moves the digest is this change's own census output. The new pin,
+`be8a93d6…`, is the same **169**-source walk (32 vendored, 137 fetched, **152**
+golden-bearing), taken twice on **2026-09-07** with identical bytes. Ten selectors
+are new to its output — the twelve that change declares, less the two no
+registered source declares — they add 297 declaration sites, and **no per-source
+count of any pre-existing selector moves under it**, which is what a pass that
+only adds selectors should do.
+
+**The 164-versus-169 drift this check halts on is the same one, unrepaired.** With
+the pin refreshed the check reaches the census-row assertions and stops at
+`document-info`, whose cell transcribes **164** sources where the walk reports 169,
+for the reason the paragraph above it states. That refresh is still the business of
+the change that re-transcribes this table; this change is bound not to move an
+existing row's evidence-cell count, and every source it would have to add is a
+corpus row it may not touch.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -601,7 +623,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "cf049c230cd307cef0467048ad197299a4ecf869fb620bb575bd8af4817fe2d3"
+expected_digest = "be8a93d6a50c4b789563989a68bccde8e8222b5bf3c4398b2f72542936f8c15a"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout

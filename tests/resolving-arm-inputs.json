@@ -2081,6 +2081,6422 @@
      ]
     }
    }
+  },
+  "du-nested-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind",
+        "mapping": {
+         "cat": "#/components/schemas/Cat",
+         "dog": "#/components/schemas/Dog"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-enum-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-const-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "cat"
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "dog"
+          }
+         }
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-example-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "example": "cat"
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "example": "dog"
+          }
+         }
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-prop-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     }
+    }
+   }
+  },
+  "du-nested-oneof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Untagged"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind",
+        "mapping": {
+         "cat": "#/components/schemas/Missing"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-dangling-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Missing"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-blank-property-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "example": "cat"
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "example": "dog"
+          }
+         }
+        }
+       ],
+       "discriminator": {
+        "propertyName": ""
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-duplicate-tags": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "cat"
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "cat"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-plain-oneof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-oneof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       },
+       "properties": {
+        "shared": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-anyof-inline-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "enum": [
+            "cat"
+           ]
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "type": "string",
+           "enum": [
+            "dog"
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-anyof-inline-const": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "cat"
+          }
+         }
+        },
+        {
+         "type": "object",
+         "properties": {
+          "kind": {
+           "const": "dog"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-prop-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ]
+    }
+   }
+  },
+  "du-nested-anyof-with-discriminator": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-anyof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Untagged"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-plain-anyof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-anyof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/Cat"
+        },
+        {
+         "$ref": "#/components/schemas/Dog"
+        }
+       ],
+       "properties": {
+        "shared": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-inheritance-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string"
+        }
+       },
+       "discriminator": {
+        "propertyName": "kind",
+        "mapping": {
+         "cat": "#/components/schemas/Cat",
+         "dog": "#/components/schemas/Dog"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-inheritance-shorthand-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "discriminator": {
+        "propertyName": "kind",
+        "mapping": {
+         "cat": "Cat",
+         "dog": "Dog"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-prop-inheritance-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "type": "object",
+     "properties": {
+      "kind": {
+       "type": "string"
+      }
+     },
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     }
+    }
+   }
+  },
+  "du-nested-inheritance-empty-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string"
+        }
+       },
+       "discriminator": {
+        "propertyName": "kind"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-inheritance-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string"
+        }
+       },
+       "discriminator": {
+        "propertyName": "kind",
+        "mapping": {
+         "cat": "#/components/schemas/Missing"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-inheritance-blank-property-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string"
+        }
+       },
+       "discriminator": {
+        "propertyName": "",
+        "mapping": {
+         "cat": "#/components/schemas/Cat"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-plain-object": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "a": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-inheritance-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "tag": {
+         "type": "string"
+        }
+       },
+       "discriminator": {
+        "propertyName": "tag",
+        "mapping": {
+         "cat": "#/components/schemas/Cat"
+        }
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-oneof-variant-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-enum-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-mapping-alt-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-array-prop-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "list": {
+     "type": "array",
+     "items": {
+      "oneOf": [
+       {
+        "$ref": "#/components/schemas/Cat"
+       },
+       {
+        "$ref": "#/components/schemas/Dog"
+       }
+      ],
+      "discriminator": {
+       "propertyName": "kind",
+       "mapping": {
+        "cat": "#/components/schemas/Cat",
+        "dog": "#/components/schemas/Dog"
+       }
+      }
+     }
+    }
+   }
+  },
+  "du-oneof-variant-oneof-mapping-not-array": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Untagged"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Missing"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-plain-oneof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "integer"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-oneof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        },
+        "properties": {
+         "shared": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-inline-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "type": "object",
+          "properties": {
+           "kind": {
+            "type": "string",
+            "enum": [
+             "cat"
+            ]
+           }
+          }
+         },
+         {
+          "type": "object",
+          "properties": {
+           "kind": {
+            "type": "string",
+            "enum": [
+             "dog"
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-inferred-alt-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-array-prop-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "list": {
+     "type": "array",
+     "items": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Cat"
+       },
+       {
+        "$ref": "#/components/schemas/Dog"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "du-oneof-variant-anyof-inferred-not-array": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-with-discriminator": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Untagged"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-plain-anyof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "integer"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-oneof-variant-anyof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "properties": {
+         "shared": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-enum-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-mapping-alt-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-mapping-not-array": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Cat",
+          "dog": "#/components/schemas/Dog"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Untagged"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind",
+         "mapping": {
+          "cat": "#/components/schemas/Missing"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-plain-oneof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "integer"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-oneof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "oneOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        },
+        "properties": {
+         "shared": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-inline-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "type": "object",
+          "properties": {
+           "kind": {
+            "type": "string",
+            "enum": [
+             "cat"
+            ]
+           }
+          }
+         },
+         {
+          "type": "object",
+          "properties": {
+           "kind": {
+            "type": "string",
+            "enum": [
+             "dog"
+            ]
+           }
+          }
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-inferred-alt-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "null",
+        "array"
+       ],
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-inferred-not-array": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": [
+        "string",
+        "array"
+       ],
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-with-discriminator": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "discriminator": {
+         "propertyName": "kind"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Untagged"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-plain-anyof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "type": "string"
+         },
+         {
+          "type": "integer"
+         }
+        ]
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-anyof-variant-anyof-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "choice": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "array",
+       "items": {
+        "anyOf": [
+         {
+          "$ref": "#/components/schemas/Cat"
+         },
+         {
+          "$ref": "#/components/schemas/Dog"
+         }
+        ],
+        "properties": {
+         "shared": {
+          "type": "string"
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-oneof-enum-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-oneof-const-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "cat"
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "dog"
+        }
+       }
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-oneof-example-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "example": "cat"
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "example": "dog"
+        }
+       }
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-oneof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ]
+    }
+   }
+  },
+  "du-named-oneof-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-prop-oneof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Untagged"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-oneof-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Missing"
+      }
+     }
+    }
+   }
+  },
+  "du-prop-oneof-dangling-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Missing"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-oneof-blank-property-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "example": "cat"
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "example": "dog"
+        }
+       }
+      }
+     ],
+     "discriminator": {
+      "propertyName": ""
+     }
+    }
+   }
+  },
+  "du-prop-oneof-duplicate-tags": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "cat"
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "cat"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-plain-oneof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-oneof-gate-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     },
+     "description": "the union the composition gate above case 13 claims too"
+    }
+   }
+  },
+  "du-prop-anyof-inline-enum": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "enum": [
+          "cat"
+         ]
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "type": "string",
+         "enum": [
+          "dog"
+         ]
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-anyof-inline-const": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "cat"
+        }
+       }
+      },
+      {
+       "type": "object",
+       "properties": {
+        "kind": {
+         "const": "dog"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "du-named-anyof-inferred": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ]
+    }
+   },
+   "body": {}
+  },
+  "du-prop-anyof-with-discriminator": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind"
+     }
+    }
+   }
+  },
+  "du-prop-anyof-untagged-member": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Untagged"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-plain-anyof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "integer"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-anyof-gate-overlap": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "anyOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "description": "the union the composition gate above case 13 claims too"
+    }
+   }
+  },
+  "du-nested-empty-oneof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "oneOf": []
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-nested-empty-anyof": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Matrix": {
+     "type": "array",
+     "items": {
+      "type": "array",
+      "items": {
+       "anyOf": []
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "du-prop-referenced-type-example-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "alpha"
+      }
+     },
+     "required": [
+      "type"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "beta"
+      }
+     },
+     "required": [
+      "type"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-role-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "role": {
+       "type": "string",
+       "example": "user"
+      }
+     },
+     "required": [
+      "role"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "role": {
+       "type": "string",
+       "example": "admin"
+      }
+     },
+     "required": [
+      "role"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-message-type-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "greeting"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "farewell"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-mcp-server-type-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "mcp_server_type": {
+       "const": "stdio"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "mcp_server_type": {
+       "const": "http"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-preserved-message-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "message"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "farewell"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-type-not-required": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "alpha"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "beta"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-unsupported-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "colour": {
+       "type": "string",
+       "example": "red"
+      }
+     },
+     "required": [
+      "colour"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "colour": {
+       "type": "string",
+       "example": "green"
+      }
+     },
+     "required": [
+      "colour"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
   }
  },
  "cases": [
@@ -2944,6 +9360,1007 @@
      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
      "arms": [
       "hoist_union_variant:6"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.items>schema.oneOf:discriminated-union",
+   "arm": "nested_array_element:2",
+   "branch": "nested_array_element case 2, discriminated_union returning Some over the oneOf head",
+   "select": {
+    "du-nested-oneof-mapping": {
+     "form": "the written spelling with a mapping every entry of which resolves",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-oneof-enum-tag": {
+     "form": "the written spelling with no mapping, each resolved member tagged by a one-member string enum",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-oneof-const-tag": {
+     "form": "the written spelling over inline members tagged by a const, the spelling string_enum_values falls back to",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-oneof-example-tag": {
+     "form": "the written spelling over inline members tagged by a string example, discriminant_value's other reading",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-oneof-inferred": {
+     "form": "the inferred spelling: no discriminator written at all, the tag property found on the members themselves",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-empty-oneof": {
+     "form": "the empty union: `discriminated_union` finds `type` inferable vacuously over no members at all and returns `Some` with none, which is the arm's own edge and not the composition alias the case analysis attributed it to",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   },
+   "near": {
+    "du-prop-oneof-mapping": {
+     "part": "schema.items: the union is a property rather than an array element, so nested_array_element is never called",
+     "arms": [
+      "prop_type_ref:13"
+     ],
+     "entered": {
+      "none": "the union is a request-body property, so prop_type_ref takes it and nested_array_element is never entered"
+     }
+    },
+    "du-nested-oneof-untagged-member": {
+     "part": "schema.oneOf:discriminated-union: one resolved member carries no discriminable value for the discriminant property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-oneof-dangling-mapping": {
+     "part": "schema.oneOf:discriminated-union: a written mapping whose target names no component of this document",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-oneof-dangling-member": {
+     "part": "schema.oneOf:discriminated-union: a $ref member that resolve_ref_from_schemas answers nothing for",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-oneof-blank-property-name": {
+     "part": "schema.oneOf:discriminated-union: an empty propertyName, with nothing inferable in its place",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-oneof-duplicate-tags": {
+     "part": "schema.oneOf:discriminated-union: the members' tags are not distinct, so no property discriminates",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-plain-oneof": {
+     "part": "schema.oneOf:discriminated-union: an ordinary union, no discriminator and no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-nested-oneof-overlap": {
+     "why": "the union also declares a non-empty properties map of its own, which case 4 claims under its own selector; case 2 runs first",
+     "selector": "schema.items>schema.properties:non-empty",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.items>schema.anyOf:discriminated-union",
+   "arm": "nested_array_element:2",
+   "branch": "nested_array_element case 2, discriminated_union returning Some over the anyOf head",
+   "select": {
+    "du-nested-anyof-inferred": {
+     "form": "the inferred spelling over $ref members, the only spelling an anyOf head reaches",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-anyof-inline-enum": {
+     "form": "the same over inline members tagged by a one-member string enum",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-anyof-inline-const": {
+     "form": "the same over inline members tagged by a const",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-empty-anyof": {
+     "form": "the empty union: `discriminated_union` finds `type` inferable vacuously over no members at all and returns `Some` with none, which is the arm's own edge and not the composition alias the case analysis attributed it to",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   },
+   "near": {
+    "du-prop-anyof-inferred": {
+     "part": "schema.items: the union is a property rather than an array element",
+     "arms": [
+      "prop_type_ref:13"
+     ],
+     "entered": {
+      "none": "the union is a request-body property, so prop_type_ref takes it and nested_array_element is never entered"
+     }
+    },
+    "du-nested-anyof-with-discriminator": {
+     "part": "schema.anyOf:discriminated-union: a discriminator written beside an anyOf with no oneOf, which discriminated_union refuses outright",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-anyof-untagged-member": {
+     "part": "schema.anyOf:discriminated-union: one resolved member carries no discriminable value",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    },
+    "du-nested-plain-anyof": {
+     "part": "schema.anyOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MatrixItemItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-nested-anyof-overlap": {
+     "why": "the union also declares a non-empty properties map of its own, which case 4 claims under its own selector; case 2 runs first",
+     "selector": "schema.items>schema.properties:non-empty",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.items>schema.discriminator:inheritance-union",
+   "arm": "nested_array_element:2",
+   "branch": "nested_array_element case 2, discriminated_union delegating to inheritance_discriminated_union",
+   "select": {
+    "du-nested-inheritance-mapping": {
+     "form": "the canonical form: a base object whose mapping names components by pointer",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-inheritance-shorthand-mapping": {
+     "form": "the mapping written as bare component names, which the last-segment lookup resolves identically",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   },
+   "near": {
+    "du-prop-inheritance-mapping": {
+     "part": "schema.items: the base is a property rather than an array element",
+     "arms": [],
+     "entered": {
+      "none": "the base is a request-body property with no composition of its own, so prop_type_ref hoists it as a model and nested_array_element is never entered"
+     }
+    },
+    "du-nested-inheritance-empty-mapping": {
+     "part": "schema.discriminator:inheritance-union: a discriminator with no mapping, so there is no variant list to read",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-inheritance-dangling-mapping": {
+     "part": "schema.discriminator:inheritance-union: a mapping whose target names no component of this document",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-inheritance-blank-property-name": {
+     "part": "schema.discriminator:inheritance-union: an empty propertyName",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-plain-object": {
+     "part": "schema.discriminator:inheritance-union: no discriminator at all",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-nested-inheritance-overlap": {
+     "why": "the base declares a non-empty properties map, which case 4 claims under its own selector; case 2 runs first",
+     "selector": "schema.items>schema.properties:non-empty",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+   "arm": "hoist_union_variant:4",
+   "branch": "hoist_union_variant case 4, an array variant under the oneOf head whose oneOf item is a union hoist_discriminated_union builds",
+   "select": {
+    "du-oneof-variant-oneof-mapping": {
+     "form": "the oneof mapping spelling under the oneOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-oneof-variant-oneof-enum-tag": {
+     "form": "the oneof enum tag spelling under the oneOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-oneof-variant-oneof-inferred": {
+     "form": "the oneof inferred spelling under the oneOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-oneof-variant-oneof-mapping-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member of a 3.1 type list",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   },
+   "near": {
+    "du-array-prop-oneof-mapping": {
+     "part": "schema.oneOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a request-body property, so hoist_array_item_type takes its element and hoist_union_variant is never entered"
+     }
+    },
+    "du-oneof-variant-oneof-mapping-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
+     }
+    },
+    "du-oneof-variant-oneof-untagged-member": {
+     "part": "schema.items>schema.oneOf:discriminated-union: oneof untagged member",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-oneof-variant-oneof-dangling-mapping": {
+     "part": "schema.items>schema.oneOf:discriminated-union: oneof dangling mapping",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-oneof-variant-plain-oneof": {
+     "part": "schema.items>schema.oneOf:discriminated-union: plain oneof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-oneof-variant-oneof-overlap": {
+     "why": "the item also declares a non-empty properties map of its own, which case 7 claims under its own selector; case 4 runs first",
+     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+   "arm": "hoist_union_variant:4",
+   "branch": "hoist_union_variant case 4, an array variant under the oneOf head whose anyOf item is a union hoist_discriminated_union builds",
+   "select": {
+    "du-oneof-variant-anyof-inferred": {
+     "form": "the anyof inferred spelling under the oneOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-oneof-variant-anyof-inline-enum": {
+     "form": "the anyof inline enum spelling under the oneOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-oneof-variant-anyof-inferred-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member of a 3.1 type list",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   },
+   "near": {
+    "du-array-prop-anyof-inferred": {
+     "part": "schema.oneOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a request-body property, so hoist_array_item_type takes its element and hoist_union_variant is never entered"
+     }
+    },
+    "du-oneof-variant-anyof-inferred-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
+     }
+    },
+    "du-oneof-variant-anyof-with-discriminator": {
+     "part": "schema.items>schema.anyOf:discriminated-union: anyof with discriminator",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-oneof-variant-anyof-untagged-member": {
+     "part": "schema.items>schema.anyOf:discriminated-union: anyof untagged member",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-oneof-variant-plain-anyof": {
+     "part": "schema.items>schema.anyOf:discriminated-union: plain anyof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-oneof-variant-anyof-overlap": {
+     "why": "the item also declares a non-empty properties map of its own, which case 7 claims under its own selector; case 4 runs first",
+     "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+   "arm": "hoist_union_variant:4",
+   "branch": "hoist_union_variant case 4, an array variant under the anyOf head whose oneOf item is a union hoist_discriminated_union builds",
+   "select": {
+    "du-anyof-variant-oneof-mapping": {
+     "form": "the oneof mapping spelling under the anyOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-anyof-variant-oneof-enum-tag": {
+     "form": "the oneof enum tag spelling under the anyOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-anyof-variant-oneof-inferred": {
+     "form": "the oneof inferred spelling under the anyOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-anyof-variant-oneof-mapping-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member of a 3.1 type list",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   },
+   "near": {
+    "du-array-prop-oneof-mapping": {
+     "part": "schema.anyOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a request-body property, so hoist_array_item_type takes its element and hoist_union_variant is never entered"
+     }
+    },
+    "du-anyof-variant-oneof-mapping-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
+     }
+    },
+    "du-anyof-variant-oneof-untagged-member": {
+     "part": "schema.items>schema.oneOf:discriminated-union: oneof untagged member",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-anyof-variant-oneof-dangling-mapping": {
+     "part": "schema.items>schema.oneOf:discriminated-union: oneof dangling mapping",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-anyof-variant-plain-oneof": {
+     "part": "schema.items>schema.oneOf:discriminated-union: plain oneof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-anyof-variant-oneof-overlap": {
+     "why": "the item also declares a non-empty properties map of its own, which case 7 claims under its own selector; case 4 runs first",
+     "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+   "arm": "hoist_union_variant:4",
+   "branch": "hoist_union_variant case 4, an array variant under the anyOf head whose anyOf item is a union hoist_discriminated_union builds",
+   "select": {
+    "du-anyof-variant-anyof-inferred": {
+     "form": "the anyof inferred spelling under the anyOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-anyof-variant-anyof-inline-enum": {
+     "form": "the anyof inline enum spelling under the anyOf head",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    },
+    "du-anyof-variant-anyof-inferred-alt-type": {
+     "form": "schema.type:primary=array's other form: array is the first non-null member of a 3.1 type list",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   },
+   "near": {
+    "du-array-prop-anyof-inferred": {
+     "part": "schema.anyOf: the array is a property rather than a member of a composition, so hoist_union_variant is never called",
+     "arms": [],
+     "entered": {
+      "none": "the array is a request-body property, so hoist_array_item_type takes its element and hoist_union_variant is never entered"
+     }
+    },
+    "du-anyof-variant-anyof-inferred-not-array": {
+     "part": "schema.type:primary=array: array is not the first non-null member, so the variant's array guard fails",
+     "arms": [],
+     "entered": {
+      "none": "the variant enters hoist_union_variant and its type list names string first, so it falls to the closing base_type_ref, which coins nothing at all to be a witness"
+     }
+    },
+    "du-anyof-variant-anyof-with-discriminator": {
+     "part": "schema.items>schema.anyOf:discriminated-union: anyof with discriminator",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-anyof-variant-anyof-untagged-member": {
+     "part": "schema.items>schema.anyOf:discriminated-union: anyof untagged member",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    },
+    "du-anyof-variant-plain-anyof": {
+     "part": "schema.items>schema.anyOf:discriminated-union: plain anyof",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestChoiceOneItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-anyof-variant-anyof-overlap": {
+     "why": "the item also declares a non-empty properties map of its own, which case 7 claims under its own selector; case 4 runs first",
+     "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+     "arms": [
+      "hoist_union_variant:4"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.oneOf:discriminated-union",
+   "arm": "prop_type_ref:13",
+   "branch": "prop_type_ref case 13, hoist_discriminated_union returning Some over the property's oneOf",
+   "select": {
+    "du-prop-oneof-mapping": {
+     "form": "the written spelling with a mapping every entry of which resolves",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-enum-tag": {
+     "form": "the written spelling with no mapping, each resolved member tagged by a one-member string enum",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-const-tag": {
+     "form": "the written spelling over inline members tagged by a const",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-example-tag": {
+     "form": "the written spelling over inline members tagged by a string example",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-inferred": {
+     "form": "the inferred spelling: no discriminator written at all",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-type-example-tag": {
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-role-tag": {
+     "form": "the same over a required `role`, which `src/ir.rs` supports on the requirement alone with no example test",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-message-type-tag": {
+     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-mcp-server-type-tag": {
+     "form": "the same over `mcp_server_type`, the other name supported unconditionally",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   },
+   "near": {
+    "du-named-oneof-mapping": {
+     "part": "schema.properties: the union is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the union is a named component, so add_named builds it and no property reaches prop_type_ref"
+     }
+    },
+    "du-prop-oneof-untagged-member": {
+     "part": "schema.oneOf:discriminated-union: one resolved member carries no discriminable value",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-dangling-mapping": {
+     "part": "schema.oneOf:discriminated-union: a written mapping whose target names no component",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-dangling-member": {
+     "part": "schema.oneOf:discriminated-union: a $ref member that resolves to nothing",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-blank-property-name": {
+     "part": "schema.oneOf:discriminated-union: an empty propertyName with nothing inferable in its place",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-duplicate-tags": {
+     "part": "schema.oneOf:discriminated-union: the members' tags are not distinct",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-plain-oneof": {
+     "part": "schema.oneOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-type-not-required": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-unsupported-name": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: a shared tag property naming none of the four `src/ir.rs` supports for a union that references components",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    }
+   },
+   "overlap": {
+    "du-prop-oneof-gate-overlap": {
+     "why": "case 9, the composition gate case 13 sits inside, claims every node case 13 claims; the chain overlap is what makes case 13's own selector narrower than the gate's",
+     "selector": "schema.properties>schema.oneOf",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.properties>schema.anyOf:discriminated-union",
+   "arm": "prop_type_ref:13",
+   "branch": "prop_type_ref case 13, the same arm over the property's anyOf",
+   "select": {
+    "du-prop-anyof-inferred": {
+     "form": "the inferred spelling over $ref members, the only spelling an anyOf head reaches",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-anyof-inline-enum": {
+     "form": "the same over inline members tagged by a one-member string enum",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-anyof-inline-const": {
+     "form": "the same over inline members tagged by a const",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   },
+   "near": {
+    "du-named-anyof-inferred": {
+     "part": "schema.properties: the union is a named component, reached by no property",
+     "arms": [],
+     "entered": {
+      "none": "the union is a named component, so add_named builds it and no property reaches prop_type_ref"
+     }
+    },
+    "du-prop-anyof-with-discriminator": {
+     "part": "schema.anyOf:discriminated-union: a discriminator written beside an anyOf with no oneOf, which discriminated_union refuses outright",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-untagged-member": {
+     "part": "schema.anyOf:discriminated-union: one resolved member carries no discriminable value",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-plain-anyof": {
+     "part": "schema.anyOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    }
+   },
+   "overlap": {
+    "du-prop-anyof-gate-overlap": {
+     "why": "case 10, the composition gate case 13 sits inside under the anyOf spelling, claims every node case 13 claims",
+     "selector": "schema.properties>schema.anyOf",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.oneOf:discriminated-union",
+   "arm": "prop_type_ref:13",
+   "branch": "the cross-member reading itself, read off prop_type_ref case 13's hoist_discriminated_union",
+   "select": {
+    "du-prop-oneof-mapping": {
+     "form": "the written spelling with a resolving mapping",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-enum-tag": {
+     "form": "the written spelling with no mapping, members tagged by a one-member string enum",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-const-tag": {
+     "form": "the written spelling over inline const tags",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-example-tag": {
+     "form": "the written spelling over inline string example tags",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-inferred": {
+     "form": "the inferred spelling, no discriminator written at all",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-type-example-tag": {
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-role-tag": {
+     "form": "the same over a required `role`, which `src/ir.rs` supports on the requirement alone with no example test",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-message-type-tag": {
+     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-mcp-server-type-tag": {
+     "form": "the same over `mcp_server_type`, the other name supported unconditionally",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   },
+   "near": {
+    "du-prop-oneof-untagged-member": {
+     "part": "one resolved member carries no discriminable value",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-dangling-mapping": {
+     "part": "a written mapping whose target names no component",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-dangling-member": {
+     "part": "a $ref member that resolves to nothing",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-blank-property-name": {
+     "part": "an empty propertyName with nothing inferable in its place",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-duplicate-tags": {
+     "part": "the members' tags are not distinct",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-plain-oneof": {
+     "part": "an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-with-discriminator": {
+     "part": "the anyOf head with a discriminator, which the oneOf reading does not count and discriminated_union refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "part": "schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-type-not-required": {
+     "part": "schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-unsupported-name": {
+     "part": "schema.oneOf:discriminated-union: a shared tag property naming none of the four `src/ir.rs` supports for a union that references components",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    }
+   },
+   "overlap": {
+    "du-prop-oneof-gate-overlap": {
+     "why": "case 9, the composition gate case 13 sits inside, claims the same node",
+     "selector": "schema.properties>schema.oneOf",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.anyOf:discriminated-union",
+   "arm": "prop_type_ref:13",
+   "branch": "the same reading under the anyOf head, where only the inferred spelling reaches it",
+   "select": {
+    "du-prop-anyof-inferred": {
+     "form": "the inferred spelling over $ref members",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-anyof-inline-enum": {
+     "form": "the same over inline one-member string enums",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-anyof-inline-const": {
+     "form": "the same over inline const tags",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   },
+   "near": {
+    "du-prop-anyof-with-discriminator": {
+     "part": "a discriminator written beside the anyOf, which discriminated_union refuses outright",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-anyof-untagged-member": {
+     "part": "one resolved member carries no discriminable value",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-plain-anyof": {
+     "part": "an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    }
+   },
+   "overlap": {
+    "du-prop-anyof-gate-overlap": {
+     "why": "case 10, the composition gate case 13 sits inside under this spelling, claims the same node",
+     "selector": "schema.properties>schema.anyOf",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    }
+   }
+  },
+  {
+   "selector": "schema.discriminator:inheritance-union",
+   "arm": "nested_array_element:2",
+   "branch": "the inheritance reading, read off nested_array_element case 2's delegation to inheritance_discriminated_union",
+   "select": {
+    "du-nested-inheritance-mapping": {
+     "form": "the canonical form: a base object whose mapping names components by pointer",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    },
+    "du-nested-inheritance-shorthand-mapping": {
+     "form": "the mapping written as bare component names",
+     "arms": [
+      "nested_array_element:2"
+     ]
+    }
+   },
+   "near": {
+    "du-nested-inheritance-empty-mapping": {
+     "part": "a discriminator with no mapping",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-inheritance-dangling-mapping": {
+     "part": "a mapping whose target names no component of this document",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-inheritance-blank-property-name": {
+     "part": "an empty propertyName",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    },
+    "du-nested-plain-object": {
+     "part": "no discriminator at all",
+     "arms": [],
+     "entered": {
+      "declaration": "Object(MatrixItemItem)"
+     }
+    }
+   },
+   "overlap": {
+    "du-nested-inheritance-overlap": {
+     "why": "the base declares a non-empty properties map, which case 4 claims under its own selector",
+     "selector": "schema.items>schema.properties:non-empty",
+     "arms": [
+      "nested_array_element:2"
      ]
     }
    }

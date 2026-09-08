@@ -853,12 +853,14 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 #
 # Every member is **node-local**: it is decided from one object-model node's own
 # declared fields and their values, with no `$ref` resolution and no
-# document-scope comparison — except five, which compare one document's own values
+# document-scope comparison — except eight, which compare one document's own values
 # against each other and say so in their own sentence:
-# `operation.operationId:duplicate`, the two `normalized-collision` spellings, and
-# the two `schema.$ref:` spellings that measure a reference against the document's
+# `operation.operationId:duplicate`, the two `normalized-collision` spellings, the
+# two `schema.$ref:` spellings that measure a reference against the document's
 # own `components.schemas` — `undeclared-component-head` and
-# `resolves-to-component` — both of which read the document context
+# `resolves-to-component` — and the three `discriminated_union` readings, which
+# resolve a union's `$ref` members and a `discriminator`'s mapping targets against
+# that same map before comparing them. Those last five read the document context
 # `Census.__init__` holds. A predicate that would need the *shape* of the schema a
 # `$ref` points at is still not a member of either kind and is not declared here:
 # that is what the `~>` operator below descends for, and what
@@ -1008,6 +1010,43 @@ PREDICATES = {
     # `described_all_of_ref` is read by arms of two blind functions, and none of the
     # three things it asks is a field's presence, so it is a predicate rather than a
     # conjunction of members.
+    # The cross-member family: three readings of the one place in the generator
+    # that compares a union's members *against each other*. Each is decided from
+    # one node's own members and the document's `components.schemas`, which is the
+    # document context `schema.$ref:resolves-to-component` already reads.
+    "schema.oneOf:discriminated-union": (
+        "one per Schema Object whose `oneOf` is a union `discriminated_union` of "
+        "`src/ir.rs` builds — the reading rather than the resemblance. The written "
+        "spelling needs a `discriminator` whose `propertyName` is non-empty; the "
+        "inferred spelling needs no `discriminator` at all and finds a property of "
+        "the first member every member tags itself with, distinctly. Where no "
+        "non-empty `mapping` is written every member must carry a "
+        "`discriminant_value` for that property — a one-member string `enum`, the "
+        "`const` that stands in for one, or a string `example` — read off the "
+        "member *resolved*, so a `$ref` member naming no component of this "
+        "document refuses the whole union; where one is written, every mapping "
+        "target must resolve instead. A `discriminator` beside a `oneOf` is "
+        "therefore neither necessary nor sufficient. `oneOf` is the head wherever "
+        "both composition fields are written, exactly as the `or` in `src/ir.rs` "
+        "has it, so this and the `anyOf` spelling below never count one node twice"
+    ),
+    "schema.anyOf:discriminated-union": (
+        "one per Schema Object whose `anyOf`, written where no `oneOf` is, is such "
+        "a union. Only the *inferred* spelling reaches it: `discriminated_union` "
+        "refuses a written `discriminator` beside an `anyOf` with no `oneOf` "
+        "outright, because Fern applies an explicit discriminator to `oneOf` alone "
+        "and reads an `anyOf` as an ordinary union whatever sibling block a "
+        "generator emitted beside it"
+    ),
+    "schema.discriminator:inheritance-union": (
+        "one per Schema Object that is the base of an inheritance-style "
+        "discriminated union — OpenAPI's other polymorphism spelling, which "
+        "`inheritance_discriminated_union` of `src/ir.rs` reads: a `discriminator` "
+        "with a non-empty `propertyName` and a non-empty `mapping` every entry of "
+        "which resolves, on a schema declaring no `oneOf` and no `anyOf` of its "
+        "own. It is the arm `discriminated_union` delegates to before it looks at "
+        "a union head at all"
+    ),
     "schema.allOf:annotated-ref": (
         "one per Schema Object whose `allOf` is the annotated-`$ref` shape "
         "`described_all_of_ref` of `src/ir.rs` reads: an array of at least two "
@@ -1115,6 +1154,15 @@ CONJUNCTIONS = {
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": "one per Schema Object one of whose properties is an annotated `$ref` whose target declares `additionalProperties: false`",
     "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` that are an annotated `$ref` resolving to a component of this document",
     "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` that are an annotated `$ref` resolving to a component of this document",
+    "schema.items>schema.oneOf:discriminated-union": "one per Schema Object whose `items` value is a union `discriminated_union` of `src/ir.rs` builds from its `oneOf`",
+    "schema.items>schema.anyOf:discriminated-union": "one per Schema Object whose `items` value is such a union built from its `anyOf`, written where no `oneOf` is",
+    "schema.items>schema.discriminator:inheritance-union": "one per Schema Object whose `items` value is the base of an inheritance-style discriminated union, declaring a resolving `discriminator` mapping and no composition of its own",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` that are a union `discriminated_union` builds from their `oneOf`",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` that are such a union built from their `anyOf`",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` that are a union `discriminated_union` builds from their `oneOf`",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` that are such a union built from their `anyOf`",
+    "schema.properties>schema.oneOf:discriminated-union": "one per Schema Object one of whose properties is a union `discriminated_union` builds from its `oneOf`",
+    "schema.properties>schema.anyOf:discriminated-union": "one per Schema Object one of whose properties is such a union built from its `anyOf`, written where no `oneOf` is",
 }
 
 
@@ -1627,6 +1675,350 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
     return found
 
 
+# ---------------------------------------------------------------------------
+# The discriminated-union reading
+# ---------------------------------------------------------------------------
+#
+# Three predicates ask whether `discriminated_union` of `src/ir.rs` would build a
+# union out of one Schema Object, which is a comparison *across* the members of
+# one union rather than a property of the node in front of the walk: every member
+# has to carry a value for one shared property, and those values have to be
+# distinct. That is the family `operation.operationId:duplicate` is in, and the
+# helpers below are the port of the Rust that decides it — `discriminant_value`,
+# `string_enum_values`, `schema_example`, `inferred_discriminant_property_with`,
+# `inferred_union_discriminant_property`, `discriminated_union` and
+# `inheritance_discriminated_union`, case for case. A reading rather than a
+# resemblance is the whole point: a `discriminator` written beside a `oneOf` is
+# neither necessary nor sufficient for any of the three arms these predicates
+# name.
+
+
+def required_names(node: dict[Any, Any]) -> list[str]:
+    """One schema's `required` array, as the `Vec<String>` `serde` reads it."""
+    required = node.get("required")
+    if not isinstance(required, list):
+        return []
+    return [name for name in required if isinstance(name, str)]
+
+
+def string_enum_values(node: Any) -> list[str] | None:
+    """`string_enum_values` of `src/ir.rs`: the strings it yields, or `None`.
+
+    The `enum` array if one is written, else the one-member array its `const`
+    falls back to, filtered to strings under the same three conditions
+    `string_valued` above already ports — which is why this calls it rather than
+    restating them.
+    """
+    if not isinstance(node, dict):
+        return None
+    if written(node, "enum"):
+        values = node["enum"]
+        if not isinstance(values, list):
+            return None
+    elif written(node, "const"):
+        values = [node["const"]]
+    else:
+        return None
+    if not string_valued(node, values):
+        return None
+    return [value for value in values if isinstance(value, str)]
+
+
+def schema_example(node: dict[Any, Any]) -> Any:
+    """`schema_example` of `src/ir.rs`: `example`, else the first of `examples`."""
+    if written(node, "example"):
+        return node["example"]
+    examples = node.get("examples")
+    if isinstance(examples, list) and examples:
+        return examples[0]
+    return None
+
+
+def discriminant_value(node: Any) -> str | None:
+    """`discriminant_value` of `src/ir.rs`: the tag one member writes, or `None`.
+
+    Two spellings and no others: a **one-member** string `enum` (or the `const`
+    that stands in for one), or a string `example`. An `enum` of two strings is
+    not a tag, and neither is a numeric one.
+    """
+    if not isinstance(node, dict):
+        return None
+    values = string_enum_values(node)
+    if values is not None and len(values) == 1:
+        return values[0]
+    example = schema_example(node)
+    return example if isinstance(example, str) else None
+
+
+def union_members(node: dict[Any, Any]) -> list[Any] | None:
+    """`one_of.as_ref().or(any_of.as_ref())` of `src/ir.rs`, over a raw node.
+
+    `oneOf` wins wherever both are written, exactly as the `or` has it. A field
+    written as something other than an array is a document crozier refuses at the
+    boundary, and reads as no union here.
+    """
+    for field in ("oneOf", "anyOf"):
+        if written(node, field):
+            members = node[field]
+            return members if isinstance(members, list) else None
+    return None
+
+
+# The values `inferred_discriminant_property_with` refuses to read as a
+# `message_type` tag, which is `preserve_const_discriminant` of `src/ir.rs` and is
+# its list rather than one invented here. The four property names that same
+# function supports for a union referencing components are spelled in the `match`
+# `_candidate_tag_values` mirrors below, where the Rust spells them, because each
+# of the four asks something different of the member.
+_PRESERVED_CONST_DISCRIMINANTS = frozenset({
+    "approval", "approval_request_message", "message", "tool",
+    "tool_return_message", "stop_reason", "usage_statistics",
+})
+
+
+def _resolved_member(member: Any, schemas: dict[Any, Any]) -> Any:
+    """One union member as the *resolving* readers of it see it.
+
+    `resolve_ref_from_schemas` is the last-segment lookup the `~>` operator
+    already mirrors. `inferred_discriminant_property_with` falls back to the
+    member itself where the lookup finds nothing (`unwrap_or(variant)`); the
+    member loop of `discriminated_union` does not, and calls
+    `_resolved_member_strict` instead.
+    """
+    if not isinstance(member, dict):
+        return member
+    reference = member.get("$ref")
+    if not isinstance(reference, str):
+        return member
+    target = schemas.get(reference.rsplit("/")[-1])
+    return target if isinstance(target, dict) else member
+
+
+def _resolved_member_strict(member: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """One union member resolved, or `None` where `resolve_ref_from_schemas` fails."""
+    if not isinstance(member, dict):
+        return None
+    reference = member.get("$ref")
+    if not isinstance(reference, str):
+        return member
+    target = schemas.get(reference.rsplit("/")[-1])
+    return target if isinstance(target, dict) else None
+
+
+def _inferred_discriminant_property(
+    node: dict[Any, Any], schemas: dict[Any, Any], enum_tag: bool = True
+) -> str | None:
+    """`inferred_discriminant_property_with` of `src/ir.rs`, condition for condition.
+
+    The first resolved member's property *names* are the candidates, in the order
+    it declares them, and a candidate wins when every resolved member carries a
+    readable tag for it and the tags are all distinct. What "readable" means
+    depends on whether the union references components at all: where it does, a
+    member either tags itself with a required one-member `enum` or the property is
+    one of the four `src/ir.rs` supports by name; where it does not, a one-member
+    `enum` is required of every member.
+    """
+    members = union_members(node)
+    if members is None:
+        return None
+    references_components = any(
+        isinstance(member, dict) and isinstance(member.get("$ref"), str)
+        for member in members
+    )
+    resolved = [_resolved_member(member, schemas) for member in members]
+    if not resolved or not isinstance(resolved[0], dict):
+        return None
+    first_properties = resolved[0].get("properties")
+    if not isinstance(first_properties, dict):
+        return None
+    for candidate in first_properties:
+        if not isinstance(candidate, str):
+            continue
+        values = _candidate_tag_values(
+            candidate, resolved, references_components, enum_tag
+        )
+        if values is not None and len(set(values)) == len(values):
+            return candidate
+    return None
+
+
+def _candidate_tag_values(
+    candidate: str,
+    resolved: list[Any],
+    references_components: bool,
+    enum_tag: bool,
+) -> list[str] | None:
+    """The tag every resolved member writes for one candidate property, or `None`.
+
+    One iteration of the `find_map` closure above: the `collect::<Option<Vec<_>>>`
+    fails as soon as one member declares no readable tag, which is what a `None`
+    here says.
+    """
+    values: list[str] = []
+    for variant in resolved:
+        if not isinstance(variant, dict):
+            return None
+        properties = variant.get("properties")
+        field = properties.get(candidate) if isinstance(properties, dict) else None
+        if not isinstance(field, dict):
+            return None
+        enum_written = field["enum"] if written(field, "enum") else None
+        singleton_enum = len(string_enum_values(field) or []) == 1
+        tagged_by_enum = (
+            candidate in required_names(variant)
+            and singleton_enum
+            and isinstance(enum_written, list)
+            and len(enum_written) == 1
+        )
+        if references_components and not (enum_tag and tagged_by_enum):
+            if candidate == "type":
+                supported = candidate in required_names(variant) and isinstance(
+                    schema_example(field), str
+                )
+            elif candidate == "role":
+                supported = candidate in required_names(variant)
+            elif candidate in ("message_type", "mcp_server_type"):
+                supported = True
+            else:
+                supported = False
+            if not supported:
+                return None
+        elif not singleton_enum:
+            return None
+        value = discriminant_value(field)
+        if value is None:
+            return None
+        if candidate == "message_type" and value in _PRESERVED_CONST_DISCRIMINANTS:
+            return None
+        values.append(value)
+    return values
+
+
+def _inferred_union_discriminant_property(
+    node: dict[Any, Any], schemas: dict[Any, Any]
+) -> str | None:
+    """`inferred_union_discriminant_property` of `src/ir.rs`, with its fallback.
+
+    The fallback reads `type` off every resolved member that requires it, and
+    accepts either tag spelling `discriminant_value` reads. A union with no
+    members at all satisfies it vacuously — nought distinct values out of nought —
+    which is how an empty `oneOf: []` reaches `discriminated_union`'s `Some`.
+    """
+    found = _inferred_discriminant_property(node, schemas, True)
+    if found is not None:
+        return found
+    members = union_members(node)
+    if members is None:
+        return None
+    values: list[str] = []
+    for member in members:
+        variant = _resolved_member(member, schemas)
+        if not isinstance(variant, dict) or "type" not in required_names(variant):
+            return None
+        properties = variant.get("properties")
+        field = properties.get("type") if isinstance(properties, dict) else None
+        value = discriminant_value(field)
+        if value is None:
+            return None
+        values.append(value)
+    return "type" if len(set(values)) == len(values) else None
+
+
+def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
+    """`self.schemas.get(target_key)?`, over every entry of a written `mapping`."""
+    for reference in mapping.values():
+        if not isinstance(reference, str):
+            return False
+        if not isinstance(schemas.get(reference.rsplit("/")[-1]), dict):
+            return False
+    return True
+
+
+def _written_discriminator(node: dict[Any, Any]) -> dict[Any, Any] | None:
+    """The Discriminator Object this schema writes, as `Option<Discriminator>`."""
+    discriminator = node.get("discriminator")
+    return discriminator if isinstance(discriminator, dict) else None
+
+
+def inheritance_union(node: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
+    """`inheritance_discriminated_union` of `src/ir.rs` returning `Some`.
+
+    OpenAPI's other polymorphism spelling: a base object whose `discriminator`
+    names its subtypes through a `mapping`, with no `oneOf` or `anyOf` of its own.
+    Its three conditions are a `discriminator`, a non-empty `propertyName`, and a
+    non-empty `mapping` every entry of which resolves.
+
+    **One reading rather than a port.** The Rust lets a mapping entry naming the
+    union's *own* coined class name through without resolving it — the wrapper
+    holds the alias in a `value` field — and that name is coined from the call
+    site rather than declared by the document, so no census can decide it. This
+    requires every entry to resolve. The two disagree only on a mapping naming a
+    component this document does not declare whose class name is nonetheless the
+    one the caller would coin, which is a document contradicting itself; the case
+    analysis records the divergence beside the case.
+    """
+    discriminator = _written_discriminator(node)
+    if discriminator is None:
+        return False
+    property_name = discriminator.get("propertyName")
+    if not isinstance(property_name, str) or not property_name:
+        return False
+    mapping = discriminator.get("mapping")
+    if not isinstance(mapping, dict) or not mapping:
+        return False
+    return _mapping_targets_resolve(mapping, schemas)
+
+
+def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> str | None:
+    """Which composition head `discriminated_union` builds this union from, if any.
+
+    `discriminated_union` of `src/ir.rs`, arm for arm, answering `"oneOf"`,
+    `"anyOf"` or `None`:
+
+    * a schema declaring neither is not this shape at all — it is the inheritance
+      spelling, which `inheritance_union` above decides;
+    * a `discriminator` written beside an `anyOf` with no `oneOf` is **refused**,
+      because Fern applies an explicit discriminator to `oneOf` alone;
+    * the discriminant property is the written `propertyName` where one is
+      non-empty, and the *inferred* property otherwise — so a union carrying no
+      `discriminator` at all reaches this;
+    * where no non-empty `mapping` is written, every member — resolved first, if
+      it is a `$ref` — must carry a `discriminant_value` for that property;
+    * where one is, every mapping target must resolve.
+    """
+    if not written(node, "oneOf") and not written(node, "anyOf"):
+        return None
+    discriminator = _written_discriminator(node)
+    if discriminator is not None and not written(node, "oneOf"):
+        return None
+    members = union_members(node)
+    if members is None:
+        return None
+    property_name = None
+    if discriminator is not None:
+        declared = discriminator.get("propertyName")
+        if isinstance(declared, str) and declared:
+            property_name = declared
+    if property_name is None:
+        property_name = _inferred_union_discriminant_property(node, schemas)
+    if property_name is None:
+        return None
+    mapping = discriminator.get("mapping") if discriminator is not None else None
+    if isinstance(mapping, dict) and mapping:
+        if not _mapping_targets_resolve(mapping, schemas):
+            return None
+    else:
+        for member in members:
+            target = _resolved_member_strict(member, schemas)
+            if target is None:
+                return None
+            properties = target.get("properties")
+            field = properties.get(property_name) if isinstance(properties, dict) else None
+            if discriminant_value(field) is None:
+                return None
+    return "oneOf" if written(node, "oneOf") else "anyOf"
+
+
 def components_schemas(document: Any) -> dict[Any, Any]:
     """One document's own `components.schemas` map, as the census reads it.
 
@@ -2021,12 +2413,31 @@ class Census:
             found.append("schema.const:string-valued")
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
+        found += self.discriminated_union_predicates(node)
         reference = node.get("$ref")
         if isinstance(reference, str):
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
             found += self.resolving_target_predicates(reference)
         return found
+
+    def discriminated_union_predicates(self, node: dict[Any, Any]) -> list[str]:
+        """The three readings of `discriminated_union` this node's members decide.
+
+        The one cross-member comparison in the grammar: a union is this shape only
+        when its members, each resolved through the document context, all carry a
+        distinct tag for one shared property — or when a written `mapping` names
+        targets that all resolve. The three spellings are exclusive by
+        construction, so no node counts twice: the inheritance one is decided only
+        for a schema declaring neither composition field, and `oneOf` is the head
+        wherever both are written.
+        """
+        if not written(node, "oneOf") and not written(node, "anyOf"):
+            if inheritance_union(node, self.component_schemas):
+                return ["schema.discriminator:inheritance-union"]
+            return []
+        head = discriminated_union_head(node, self.component_schemas)
+        return [] if head is None else [f"schema.{head}:discriminated-union"]
 
     def resolving_target_predicates(self, reference: str) -> list[str]:
         """`schema.$ref:resolves-to-component`: the last-segment lookup finding one.
