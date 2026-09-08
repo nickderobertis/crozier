@@ -20,6 +20,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import itertools
 import json
@@ -902,6 +903,145 @@ class GrammarContractTests(unittest.TestCase):
         }
         self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
+
+    # ------------------------------------------------------------------
+    # The case table, and what ties it to the code it is a reading of
+    # ------------------------------------------------------------------
+
+    BLIND_FUNCTIONS = (
+        "resolve_schema_pointer",
+        "nested_array_element",
+        "hoist_union_variant",
+        "prop_type_ref",
+        "ref_to_class",
+        "path_group",
+    )
+
+    @staticmethod
+    def function_body(name: str) -> list[str]:
+        """One `fn` of `src/ir.rs`, brace-matched from its header line.
+
+        The same reading `docs/openapi-surface-coverage.md`'s per-function
+        attribution script makes, and the only definition of "this function's
+        body" the honesty check below has.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            if not re.search(rf"\bfn {re.escape(name)}\s*[(<]", line):
+                continue
+            depth, started = 0, False
+            for cursor in range(index, len(lines)):
+                for char in lines[cursor]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                        if started and depth == 0:
+                            return lines[index : cursor + 1]
+        raise AssertionError(f"src/ir.rs declares no fn {name}")
+
+    @classmethod
+    def function_digest(cls, name: str) -> str:
+        """One function body's digest: blank lines and `//` lines dropped, runs collapsed."""
+        kept = [
+            " ".join(line.split())
+            for line in cls.function_body(name)
+            if line.strip() and not line.strip().startswith("//")
+        ]
+        return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
+
+    def test_the_case_table_and_the_case_analysis_carry_the_same_cases(self) -> None:
+        """The two statements of one derivation, reconciled in both directions.
+
+        `scripts/openapi-surface-census.py`'s `CASES` is the machine-readable
+        table the residual selectors are composed from; the case analysis in
+        `docs/openapi-surface-coverage.md` restates it for a reader. A case in
+        one and not the other fails here, and so does a case whose verdict
+        differs — which is what stops the residual being composed from a table
+        nobody reads while a reader takes the size of the instrument off a table
+        nothing composes.
+        """
+        documented = {
+            function: [(cells[0], cells[2].strip("`") if cells[2].startswith("`")
+                        else re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2]).group(1))
+                       for cells in rows_of]
+            for function, rows_of in self.case_rows().items()
+        }
+        declared = {
+            function: [(case.number, case.verdict()) for case in cases]
+            for function, cases in census.CASES.items()
+        }
+        self.assertEqual(set(self.BLIND_FUNCTIONS), set(declared))
+        self.assertEqual(declared, documented)
+
+    def test_every_case_of_the_table_is_well_formed(self) -> None:
+        """A case is a selector or a hole, never both and never neither.
+
+        And every block a case names is declared, every case a block's residual
+        is scoped to sits in that block, and a residual's own selector is
+        composed rather than written — which is what makes adding a case to the
+        table change what the residual matches with no selector text edited.
+        """
+        for function, cases in census.CASES.items():
+            numbers = [case.number for case in cases]
+            self.assertEqual(len(numbers), len(set(numbers)), f"{function} repeats a case")
+            for case in cases:
+                with self.subTest(function=function, case=case.number):
+                    self.assertNotEqual(
+                        case.selector is None,
+                        case.hole is None,
+                        "a case carries exactly one of a selector and a hole",
+                    )
+                    if case.block is not None:
+                        self.assertIn(case.block, census.BLOCKS)
+                    if case.opens is not None:
+                        self.assertIn(case.opens, census.BLOCKS)
+                    if case.residual is not None:
+                        self.assertIsNotNone(case.block)
+                        self.assertTrue(case.residual, "a residual publishes a sentence")
+
+    def test_the_case_table_is_a_reading_of_the_functions_it_names(self) -> None:
+        """The honesty check: a branch added, removed or edited without re-derivation.
+
+        The table is a reading of six functions of `src/ir.rs` and nothing else
+        ties it to them, so each function's normalized body carries a digest in
+        the table. Any of the three changes moves the body and fails here; what
+        the digest cannot do is say which case moved, and it fires on a change
+        that moves no branch at all. Both limits are stated in
+        `docs/openapi-surface-coverage.md` rather than left implicit.
+        """
+        self.assertEqual(set(self.BLIND_FUNCTIONS), set(census.BLIND_FUNCTION_DIGESTS))
+        for name in self.BLIND_FUNCTIONS:
+            with self.subTest(function=name):
+                self.assertEqual(
+                    census.BLIND_FUNCTION_DIGESTS[name],
+                    self.function_digest(name),
+                    f"src/ir.rs's {name} changed; re-derive its rows of the case "
+                    "table in scripts/openapi-surface-census.py and of the case "
+                    "analysis in docs/openapi-surface-coverage.md, then re-pin "
+                    "the digest",
+                )
+
+    def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
+        """The check above, proved against a branch this case adds and removes.
+
+        A digest nobody has seen fail is a digest that might be computed over
+        the wrong span, so this one takes the real `nested_array_element` body,
+        inserts one branch into it, and asserts the digest is not the pinned
+        one — the failure the check exists to produce, induced on purpose.
+        """
+        lines = self.function_body("nested_array_element")
+        self.assertTrue(lines[0].strip().startswith("fn nested_array_element"))
+        edited = [lines[0], "        if items.pattern.is_some() { return None; }", *lines[1:]]
+        kept = [
+            " ".join(line.split())
+            for line in edited
+            if line.strip() and not line.strip().startswith("//")
+        ]
+        self.assertNotEqual(
+            census.BLIND_FUNCTION_DIGESTS["nested_array_element"],
+            hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+        )
 
     def test_the_case_analysis_states_the_totals_its_own_rows_add_up_to(self) -> None:
         """The paragraph a reader takes the size of this instrument from.

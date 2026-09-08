@@ -1175,6 +1175,227 @@ CONJUNCTIONS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# The case table: the six blind functions of `src/ir.rs`, branch by branch
+# ---------------------------------------------------------------------------
+#
+# The one machine-readable statement of the derivation
+# `docs/openapi-surface-coverage.md`'s
+# `### The six blind regions of src/ir.rs, case by case` restates for a reader.
+# It exists because two things have to be composed from it rather than written
+# out. A **residual** arm — the arm selected by the absence of every case above
+# it — spelled as prose would be a hand-copy of the table that goes quietly wrong
+# the day a branch is added; and the drift gate that already reconciles the
+# coverage document's case analysis against the declared selector lists now
+# reconciles it against this table too, in both directions, so a case in one and
+# not the other fails.
+#
+# What a `Case` carries beyond its verdict is what the composition needs:
+#
+# * `block` — the enclosing gate the case sits inside. A residual is scoped to
+#   the arm that encloses it, never to the whole function:
+#   `prop_type_ref`'s case 5 is the residual of the resolution block alone, so it
+#   is the complement of cases 2 to 4 *within* that gate and of nothing above it.
+# * `opens` / `falls_through` — a case that is itself a gate. Entering a gate is
+#   not the same as taking a branch: `prop_type_ref`'s case 1 holds over an
+#   annotated `$ref` that resolves to nothing and then falls through to the arms
+#   below it, so the function's own residual must *not* negate it, while case 9's
+#   composition block returns on every path and is negated like any other arm.
+# * `residual` — the sentence the composed selector is published with. Only the
+#   sentence is written here; the spelling is composed by `residual_selector`.
+#
+# `BLIND_FUNCTION_DIGESTS` is what ties this reading to the code it reads. See
+# `tests/surface_census_test.py`, which recomputes them.
+
+
+@dataclass(frozen=True)
+class Block:
+    """One enclosing gate of a blind function, as its cases' selectors spell it.
+
+    `prefix` is the selector text every case inside the block starts with, up to
+    and including the operator that reaches the node the block's arms read.
+    `anchor` is what the block itself contributes at that node — the member its
+    own gate is — which the cases inside do not repeat, because a predicate over
+    a field implies the field, and which the block's residual carries positively
+    so that a group of negated members alone never stands on its own.
+    """
+
+    prefix: str
+    anchor: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class Case:
+    """One branch of one blind function, and the verdict the case analysis gives it."""
+
+    number: str
+    selector: str | None = None
+    hole: str | None = None
+    block: str | None = None
+    opens: str | None = None
+    falls_through: bool = False
+    residual: str | None = None
+
+    def verdict(self) -> str:
+        """What the case analysis's third column says: a selector or a hole."""
+        return self.selector if self.hole is None else self.hole
+
+
+BLOCKS: dict[str, Block] = {
+    # `nested_array_element`'s entry gate is `array.items.as_deref()?`.
+    "nested_array_element": Block("schema.items>"),
+    # `hoist_union_variant` is reached through `one_of.as_ref().or(any_of.as_ref())`
+    # at every call site, so its function block is two blocks — one per head.
+    "hoist_union_variant/oneOf": Block("schema.oneOf>"),
+    "hoist_union_variant/anyOf": Block("schema.anyOf>"),
+    # `prop_type_ref` is called on each member of `properties`.
+    "prop_type_ref": Block("schema.properties>"),
+    # Its case 1 gate, and the resolution the gate performs but the row does not
+    # spell: the arms inside read the schema the annotated `$ref` denotes.
+    "prop_type_ref/resolution": Block(
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>"
+    ),
+    # Its composition gate, `one_of.as_ref().or(any_of.as_ref())`, twice.
+    "prop_type_ref/oneOf": Block("schema.properties>", ("schema.oneOf",)),
+    "prop_type_ref/anyOf": Block("schema.properties>", ("schema.anyOf",)),
+}
+
+
+# One entry per blind function, its cases in the order the function reads them.
+# A case number carrying a letter is one arm read at the grain the selectors need
+# — a branch reached through `x.or(y)` is two cases, and a disjunctive condition
+# is one case per disjunct — which is the convention the case analysis states.
+CASES: dict[str, tuple[Case, ...]] = {
+    "resolve_schema_pointer": (
+        Case("1a", selector="schema.$ref:cross-document"),
+        Case("1b", selector="schema.$ref:same-document-foreign-pointer"),
+        Case("2", selector="schema.$ref:undeclared-component-head"),
+        Case("3", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf"),
+        Case("4", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf"),
+        Case("5", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf"),
+        Case("6", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties"),
+        Case("7", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items"),
+        Case("8", selector="schema.$ref:unnamed-segment"),
+    ),
+    "nested_array_element": (
+        Case("1", block="nested_array_element", selector="schema.items>schema.type:primary=array"),
+        Case("2a", block="nested_array_element", selector="schema.items>schema.oneOf:discriminated-union"),
+        Case("2b", block="nested_array_element", selector="schema.items>schema.anyOf:discriminated-union"),
+        Case("2c", block="nested_array_element", selector="schema.items>schema.discriminator:inheritance-union"),
+        Case("3", block="nested_array_element", selector="schema.items>schema.$ref"),
+        Case("4", block="nested_array_element", selector="schema.items>schema.properties:non-empty"),
+        Case("5", block="nested_array_element", hole="H-negated-value"),
+        Case("6", block="nested_array_element", selector="schema.items>schema.additionalProperties=false"),
+        Case("6b", block="nested_array_element", hole="H-negated-value"),
+        Case("7", block="nested_array_element", selector="schema.items>schema.oneOf"),
+        Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),
+        Case("9", block="nested_array_element", hole="H-residual"),
+    ),
+    "hoist_union_variant": (
+        Case("1", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.$ref"),
+        Case("2", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.$ref"),
+        Case("3a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member"),
+        Case("3b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member"),
+        Case("3c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member"),
+        Case("3d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member"),
+        Case("4a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union"),
+        Case("4b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union"),
+        Case("4c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union"),
+        Case("4d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union"),
+        Case("5a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf"),
+        Case("5b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf"),
+        Case("5c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf"),
+        Case("5d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf"),
+        Case("6a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component"),
+        Case("6b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component"),
+        Case("7a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty"),
+        Case("7b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty"),
+        Case("7c", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
+        Case("7d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
+        Case("7e", block="hoist_union_variant/oneOf", hole="H-negated-value"),
+        Case("7f", block="hoist_union_variant/anyOf", hole="H-negated-value"),
+        Case("8a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.properties:non-empty"),
+        Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
+        Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
+        Case("10", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.allOf"),
+        Case("11", hole="H-example-value"),
+        Case("12", hole="H-residual"),
+    ),
+    "prop_type_ref": (
+        Case("1", block="prop_type_ref", selector="schema.properties>schema.allOf:annotated-ref", opens="prop_type_ref/resolution", falls_through=True),
+        Case("2a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"),
+        Case("2b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued"),
+        Case("3a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf"),
+        Case("3b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf"),
+        Case("4a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"),
+        Case("4b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf"),
+        Case("4c", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false"),
+        Case("5", block="prop_type_ref/resolution", hole="H-residual"),
+        Case("6", block="prop_type_ref", hole="H-negated-value"),
+        Case("7a", block="prop_type_ref", selector="schema.properties>schema.enum:string-valued"),
+        Case("7b", block="prop_type_ref", selector="schema.properties>schema.const:string-valued"),
+        Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
+        Case("8b", block="prop_type_ref", hole="H-negated-value"),
+        Case("8c", block="prop_type_ref", hole="H-negated-value"),
+        Case("8d", block="prop_type_ref", selector="schema.properties>schema.additionalProperties=false"),
+        Case("9", block="prop_type_ref", selector="schema.properties>schema.oneOf", opens="prop_type_ref/oneOf"),
+        Case("10", block="prop_type_ref", selector="schema.properties>schema.anyOf", opens="prop_type_ref/anyOf"),
+        Case("11a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-non-null-member"),
+        Case("11b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-non-null-member"),
+        Case("12a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty"),
+        Case("12b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty"),
+        Case("12c", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false"),
+        Case("12d", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false"),
+        Case("12e", block="prop_type_ref/oneOf", hole="H-negated-value"),
+        Case("12f", block="prop_type_ref/anyOf", hole="H-negated-value"),
+        Case("13a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:discriminated-union"),
+        Case("13b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:discriminated-union"),
+        Case("14", hole="H-residual"),
+        Case("15", block="prop_type_ref", selector="schema.properties>schema.type:primary=array"),
+        Case("16", hole="H-residual"),
+    ),
+    "ref_to_class": (
+        Case("1a", selector="schema.$ref:cross-document"),
+        Case("1b", selector="schema.$ref:same-document-foreign-pointer"),
+        Case("2", selector="schema.$ref:nested-properties"),
+        Case("3", selector="schema.$ref:nested-items"),
+        Case("4", selector="schema.$ref:composition-index"),
+        Case("5", selector="schema.$ref:unnamed-segment"),
+    ),
+    "path_group": (
+        Case("1", selector="openapi.paths:leading-literal-segment"),
+        Case("2", selector="openapi.paths:template-before-literal-segment"),
+        Case("3", selector="openapi.paths:all-segments-templated"),
+    ),
+}
+
+
+# What ties the table above to the code it is a reading of.
+#
+# The table is a reading of six functions of `src/ir.rs`, and until this was
+# recorded nothing in the tree failed when one of those functions grew a branch,
+# lost one, or had one edited: an enumeration whose honesty rests on nobody
+# having touched the code is the failure `docs/openapi-surface-coverage.md`
+# exists to avoid. Each value below is the SHA-256 (first 16 hex digits) of one
+# function's body with blank lines and whole-line `//` comments dropped and each
+# remaining line's internal whitespace collapsed, which is a normalization
+# `tests/surface_census_test.py` recomputes and compares.
+#
+# It catches all three changes the coverage document names — a branch added,
+# removed or edited — because any of them moves the body. What it deliberately
+# does **not** do is say *which* case moved, and it fires on a change that moves
+# no branch at all: a renamed local, a reordered `&&`, a trailing comment. That
+# is over-reporting rather than under-reporting, and re-deriving the table is
+# what clears it. The coverage document states the limit.
+BLIND_FUNCTION_DIGESTS: dict[str, str] = {
+    "resolve_schema_pointer": "39ffff07e088a992",
+    "nested_array_element": "db8c83a404e0417c",
+    "hoist_union_variant": "8b06d42a1f502227",
+    "prop_type_ref": "e73a4bfddf0a3452",
+    "ref_to_class": "45d0e7ca7b0473f4",
+    "path_group": "3730d67e0c2f068d",
+}
+
 # The two descent operators, and the only place either spelling is written.
 #
 # `>` descends into the object a field's value **is**, as written. `~>` descends

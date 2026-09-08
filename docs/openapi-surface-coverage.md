@@ -1720,6 +1720,30 @@ can express and what closing it would take — the way `normalization-collision`
 recorded before `components.schemas:normalized-collision` existed. No case is in
 neither, and none is in both.
 
+**This table is machine-readable, and this is the restatement of it.** The
+derivation is declared once, as `CASES` in `scripts/openapi-surface-census.py` —
+one entry per blind function, its cases in order, each case's selector or hole,
+and the enclosing gate each case sits inside. `tests/surface_census_test.py`
+reconciles the two in both directions, so a case in one and not the other fails
+the gate, and so does a case whose verdict differs. The declaration lives there
+rather than here because something has to be *composed* from it: a residual arm's
+selector is the complement of the cases above it, and a complement written out as
+prose is a hand-copy of the table that goes quietly wrong the day a branch is
+added.
+
+**And the table is tied to the code it reads.** It is a reading of six functions
+of `src/ir.rs`, and nothing used to fail when one of those functions grew a
+branch, lost one or had one edited — an enumeration whose honesty rests on nobody
+having touched the code is exactly the failure this document exists to avoid. So
+each function's body carries a digest in that same table, over the body with
+blank lines and whole-line comments dropped and each remaining line's whitespace
+collapsed, and the offline check recomputes it. **What it catches** is all three
+changes: any of them moves the body. **What it does not catch** is *which* case
+moved — the digest names the function and nothing finer — and it fires on a
+change that moves no branch at all, a renamed local or a reordered `&&` included.
+That is over-reporting rather than under-reporting, and re-deriving the function's
+rows is what clears it.
+
 A case number carrying a letter is one arm read at the grain the selectors need.
 Two things put a letter on a row. A branch reached through `x.or(y)` is two cases
 under [the enumeration rule](#the-selector-grammar), so the `oneOf` and `anyOf`
