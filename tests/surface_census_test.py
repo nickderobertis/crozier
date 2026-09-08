@@ -1028,6 +1028,13 @@ class GrammarContractTests(unittest.TestCase):
                     "the digest",
                 )
 
+    def test_the_example_schema_definition_port_is_tied_to_its_rust_helper(self) -> None:
+        """Case 11's content predicate drifts when the Rust keyword set moves."""
+        self.assertEqual(
+            census.EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST,
+            self.function_digest("example_is_schema_definition"),
+        )
+
     def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
         """The check above, proved against a branch this case adds and removes.
 
@@ -1607,20 +1614,34 @@ class ConjunctionCensusTests(unittest.TestCase):
             completed = run(
                 "--vendored-only",
                 "--fixtures-root", str(root),
-                "--selector", "schema.example=object",
-                "--selector", "schema.example:schema-shaped",
-                "--selector", selector,
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = rows(completed)
         self.assertEqual(
             {
                 ("schema.example=object", "examples"): 3,
                 ("schema.example:schema-shaped", "examples"): 1,
                 (selector, "examples"): 1,
             },
-            rows(completed),
+            {key: value for key, value in counted.items() if key[0] in {
+                "schema.example=object", "schema.example:schema-shaped", selector
+            }},
         )
+        self.assertFalse(
+            any(key.startswith("schema.example=") and key != "schema.example=object"
+                for key, _fixture in counted),
+            "a scalar example emitted a valued selector",
+        )
+        refused = run(
+            "--vendored-only", "--selector", "schema.example=scalar",
+        )
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("literal valued selector schema.example=object", refused.stderr)
 
+    @unittest.skipUnless(
+        os.environ.get("CROZIER_TEST_FETCHED_CORPUS") == "1",
+        "the registered-corpus journey is an opt-in network-tier check",
+    )
     def test_case_11_is_absent_from_the_registered_corpus(self) -> None:
         """The recorded gap is measured over every registered source, end to end."""
         selector = (
@@ -1647,7 +1668,8 @@ class ConjunctionCensusTests(unittest.TestCase):
             ("schema.items>schema.maxLength", "is not one of the conjunction selectors"),
             # Withdrawn as inexact: the arm also reads the example's JSON kind and
             # rejects a schema-shaped object, so this spelling counted documents
-            # `hoist_union_variant` sends to `base_type_ref`. H-example-value now.
+            # `hoist_union_variant` sends to `base_type_ref`; case 11's exact
+            # conjunction above is the accepted spelling.
             (
                 "schema.oneOf>schema.example&schema.type=object",
                 "is not one of the conjunction selectors",

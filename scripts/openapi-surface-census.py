@@ -1465,6 +1465,11 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "path_group": "3730d67e0c2f068d",
 }
 
+# The case-11 selector ports this helper's six-key content test as well as the
+# branch that calls it, so its body is pinned independently of the six blind
+# functions above. The same normalized-body drift gate recomputes this value.
+EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST = "9c184c478f5488ed"
+
 # The two descent operators, and the only place either spelling is written.
 #
 # `>` descends into the object a field's value **is**, as written. `~>` descends
@@ -2748,6 +2753,11 @@ def selector_error(text: str) -> str | None:
         )
     if equals and not value:
         return f"{text!r} is a valued selector with no value"
+    if equals and base == "schema.example" and value != "object":
+        return (
+            f"{text!r} is not the literal valued selector schema.example=object. "
+            "The selected example value emits a valued selector only when it is an object."
+        )
     if equals and base not in VALUED:
         return (
             f"{base!r} is not one of the fields that emit a valued selector. "
