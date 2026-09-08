@@ -704,6 +704,11 @@ class GrammarContractTests(unittest.TestCase):
         "schema.oneOf:discriminated-union",
         "schema.anyOf:discriminated-union",
         "schema.discriminator:inheritance-union",
+        "schema.$ref:pointer-walk-reaches=allOf",
+        "schema.$ref:pointer-walk-reaches=oneOf",
+        "schema.$ref:pointer-walk-reaches=anyOf",
+        "schema.$ref:pointer-walk-reaches=properties",
+        "schema.$ref:pointer-walk-reaches=items",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -721,6 +726,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
+            "thirteen": 13,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -876,10 +882,10 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            4: "four", 5: "five", 7: "seven", 8: "eight", 9: "nine",
-            20: "twenty", 23: "twenty-three",
+            3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight", 9: "nine",
+            15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
-            60: "sixty", 69: "sixty-nine", 76: "seventy-six",
+            60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
             78: "seventy-eight", 83: "eighty-three", 89: "eighty-nine",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
@@ -1279,6 +1285,18 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": {},
         "schema.properties>schema.oneOf:discriminated-union": {},
         "schema.properties>schema.anyOf:discriminated-union": {},
+        # The five the pointer-walk pass declared. Every one is zero over the
+        # vendored half for the reason
+        # `PointerFormSelectorDiscriminationTests` already asserts: no vendored
+        # document writes a `#/components/schemas/` pointer carrying a segment
+        # after its head at all, so none of these arms is reachable there.
+        # `PointerWalkSelectorDiscriminationTests` answers for all five by
+        # constructing the documents rather than borrowing them.
+        "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf": {},
+        "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf": {},
+        "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf": {},
+        "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties": {},
+        "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items": {},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1795,6 +1813,25 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
+# The five segment spellings `resolve_schema_pointer`'s `match part` names, in the
+# order its arms are numbered — case 3 to case 7.
+_POINTER_WALK_ARMS = ("allOf", "oneOf", "anyOf", "properties", "items")
+
+
+# The ten the pointer-walk pass declared: five predicates, one per arm of
+# `resolve_schema_pointer`'s segment loop, and the five conjunctions that carry
+# that function's caller gate in front of one.
+# `PointerWalkSelectorDiscriminationTests` is the case that answers for all ten.
+POINTER_WALK_SELECTORS = frozenset(
+    {f"schema.$ref:pointer-walk-reaches={arm}" for arm in _POINTER_WALK_ARMS}
+    | {
+        "schema.properties>schema.type:primary=array"
+        f"&schema.items>schema.$ref:pointer-walk-reaches={arm}"
+        for arm in _POINTER_WALK_ARMS
+    }
+)
+
+
 class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     """What each node-local selector counts, over inputs that discriminate its branch.
 
@@ -2203,7 +2240,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
-    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS
+    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
+        - POINTER_WALK_SELECTORS
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -3316,6 +3354,324 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn("(declared by no registered source)", completed.stdout)
+
+
+class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
+    """What each pointer-walk selector counts, over inputs that bound it both ways.
+
+    The same instrument the three families before it are held to, over the one
+    resolution nothing else in this census performs. `resolve_schema_pointer` of
+    `src/ir.rs` requires the `#/components/schemas/` prefix, takes the component
+    its **head** segment names, and then walks the reference's remaining segments
+    structurally through `allOf`, `oneOf`, `anyOf`, `properties` and `items`. Its
+    five `match` arms are its five segment spellings, and each is selected by a
+    joint property of the reference value *and* the document it points into: a
+    later segment is read only where every earlier arm's body resolved. So the
+    documents below vary both halves, and three of them make the point on their
+    own — `pw-{arm}-head` addresses a position the document declares,
+    `pw-{arm}-earlier-segment-unresolved` writes the same later segment behind an
+    earlier one the document does not declare, and each case's overlap document
+    addresses a position under two of these arms in sequence.
+
+    Each arm carries two selectors, and both are answered for here: the predicate
+    that reads the pointer against the document, and the conjunction that carries
+    `resolve_schema_pointer`'s **caller gate** in front of it — a property of a
+    Schema Object, whose primary type is `array`, whose `items` is that pointer,
+    which is the one place in the generator that calls the function at all. The
+    two ranges differ in exactly the parts each condition has: the conjunction's
+    near set drops its three caller-gate members as well as the five parts of the
+    predicate, and the predicate's drops only its own five, because a pointer
+    written outside that gate still *is* the shape the predicate reads.
+
+    - against a **broader** selector, one document per separately satisfiable part
+      of the condition — a document satisfying every other part and not that one,
+      whose node does not select the arm and which the selector counts zero. So a
+      selector that dropped or weakened any single member fails on that member's
+      own document rather than surviving because one chosen near miss happened to
+      vary a different one.
+    - against a **narrower** selector, one document per way the arm's own
+      condition admits of being satisfied that the case analysis distinguishes —
+      the segment read immediately after the head, read through the `properties`
+      arm, read through the `items` arm; read where the schema at that position
+      declares the field the segment names and where it declares nothing of the
+      sort, since the arm is selected by the *segment* and its body is what then
+      fails; read with the index or key segment after it missing, out of range or
+      unusable; and the property's own `type` written as a bare `array` and as a
+      3.1 list naming `null` first.
+
+    Every document is constructed:
+    `PointerFormSelectorDiscriminationTests` establishes that no vendored source
+    writes a `#/components/schemas/` pointer carrying a segment at all, so there
+    is none to borrow. The census is still driven for real, as its own process,
+    over real documents on the real filesystem, in one run over a fixtures root
+    holding all of them; and `src/ir.rs`'s
+    `every_shared_input_reaches_the_arm_its_selector_was_read_off` drives the real
+    generator over these same documents and asserts, at the arm's own site, that
+    each one this case requires a selector to count enters the arm and each one it
+    requires to count zero does not.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
+        cls.spec = payload
+        cls.cases = [
+            case for case in payload["cases"]
+            if case["selector"] in POINTER_WALK_SELECTORS
+        ]
+        cls.names = {
+            name
+            for case in cls.cases
+            for role in ("select", "near", "overlap")
+            for name in case[role]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in sorted(cls.names):
+                fragment = payload["documents"][name]
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        report = json.loads(completed.stdout)
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
+        }
+        cls.censused = {source["fixture"] for source in report["sources"]}
+
+    def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(
+            POINTER_WALK_SELECTORS, {case["selector"] for case in self.cases}
+        )
+
+    def test_every_document_the_table_names_was_censused(self) -> None:
+        """No case rests on a document the run never read."""
+        self.assertLessEqual(self.names, set(self.spec["documents"]))
+        self.assertEqual(self.names, self.censused)
+
+    def test_each_selector_counts_every_form_of_its_own_branch(self) -> None:
+        """The narrower half: one positive per way the arm admits of being reached."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["select"].items()):
+                with self.subTest(selector=selector, document=name, form=entry["form"]):
+                    self.assertEqual(
+                        1,
+                        self.reported.get((selector, name)),
+                        f"{selector} does not count {entry['form']}",
+                    )
+
+    def test_each_selector_counts_no_document_missing_one_part_of_its_condition(self) -> None:
+        """The broader half: one negative per separately satisfiable part."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["near"].items()):
+                with self.subTest(selector=selector, document=name, part=entry["part"]):
+                    self.assertNotIn(
+                        (selector, name),
+                        self.reported,
+                        f"{selector} counts a document dropping {entry['part']}",
+                    )
+
+    def test_the_two_selectors_of_one_arm_range_over_the_parts_each_has(self) -> None:
+        """Why the predicate's near set is the conjunction's minus three, stated.
+
+        The conjunction is the predicate behind `resolve_schema_pointer`'s caller
+        gate, so the three documents that drop a member of that gate are negatives
+        for it and *positives* for the predicate: a pointer written on a component
+        rather than on an array-typed property is still the shape the predicate
+        reads, and the generator simply never asks. Asserting that here is what
+        keeps the split deliberate rather than an omission.
+        """
+        gate = ("not-a-property", "not-array-typed", "ref-not-under-items")
+        for case in self.cases:
+            if census.is_conjunction(case["selector"]):
+                continue
+            arm = case["arm"].rsplit(":", 1)[1]
+            conjunction = next(
+                other for other in self.cases
+                if census.is_conjunction(other["selector"]) and other["arm"] == case["arm"]
+            )
+            dropped = set(conjunction["near"]) - set(case["near"])
+            with self.subTest(arm=case["arm"]):
+                self.assertEqual(
+                    {name for name in conjunction["near"]
+                     if name.endswith(gate)},
+                    dropped,
+                    f"case {arm}: the two near sets differ other than by the caller gate",
+                )
+                for name in sorted(dropped):
+                    self.assertEqual(
+                        1,
+                        self.reported.get((case["selector"], name)),
+                        f"{name} drops a caller-gate member, which the predicate does "
+                        "not read, so the predicate still counts it",
+                    )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap the exactness rule permits, made visible rather than assumed."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, overlap in sorted(case["overlap"].items()):
+                with self.subTest(selector=selector, document=name):
+                    self.assertEqual(1, self.reported.get((selector, name)), overlap["why"])
+                    self.assertEqual(
+                        1,
+                        self.reported.get((overlap["selector"], name)),
+                        "the overlap document is not counted by the case that claims it",
+                    )
+
+    def test_the_walk_reads_the_pointer_against_the_document_and_not_its_text(self) -> None:
+        """Three documents whose outcomes are not all the same, on one selector.
+
+        The finding this family exists for. `resolve_schema_pointer` walks a
+        pointer's segments *through* the document, so a predicate reading the
+        reference string alone cannot name its arms: the same segment sequence
+        selects different arms in different documents. All three references below
+        carry an `allOf` segment; only two of them reach it.
+        """
+        addressed = "pw-allof-after-items"      # `Root/items/allOf/0`, `Root` writing `items`
+        stopped = "pw-allof-earlier-segment-unresolved"  # the same pointer, `Root` writing none
+        sequenced = "pw-allof-with-properties"  # `Root/allOf/0/properties/b`, two arms in a row
+        allof = "schema.$ref:pointer-walk-reaches=allOf"
+        items = "schema.$ref:pointer-walk-reaches=items"
+        properties = "schema.$ref:pointer-walk-reaches=properties"
+        for name in (addressed, stopped, sequenced):
+            self.assertIn(name, self.censused, f"{name} was not censused")
+        self.assertEqual(
+            "#/components/schemas/Root/items/allOf/0",
+            self.spec["documents"][addressed]["schemas"]["Holder"]
+                ["properties"]["list"]["items"]["$ref"],
+        )
+        self.assertEqual(
+            self.spec["documents"][addressed]["schemas"]["Holder"],
+            self.spec["documents"][stopped]["schemas"]["Holder"],
+            "the two documents differ in what they declare, not in what they point with",
+        )
+        # Addressed: `Root` declares `items`, so the walk resolves that step and
+        # reads the `allOf` segment behind it — both arms.
+        self.assertEqual(1, self.reported.get((allof, addressed)))
+        self.assertEqual(1, self.reported.get((items, addressed)))
+        # Stopped: the same segments, a document declaring no `items` on `Root`.
+        # The walk enters the `items` arm, resolves nothing, and never reads the
+        # segment after it — so the `allOf` selectors must not count it.
+        self.assertEqual(1, self.reported.get((items, stopped)))
+        self.assertNotIn((allof, stopped), self.reported)
+        self.assertNotIn(
+            ("schema.properties>schema.type:primary=array"
+             "&schema.items>" + allof, stopped),
+            self.reported,
+        )
+        # Sequenced: a position under two of these arms in sequence, and what each
+        # selector involved counts.
+        self.assertEqual(1, self.reported.get((allof, sequenced)))
+        self.assertEqual(1, self.reported.get((properties, sequenced)))
+        self.assertNotIn((items, sequenced), self.reported)
+
+    def test_each_selector_reports_one_row_per_document_declaring_it(self) -> None:
+        """`--selector` takes each of these like any other selector."""
+        payload = self.spec
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in sorted(self.names):
+                fragment = payload["documents"][name]
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            for case in self.cases:
+                selector = case["selector"]
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    expected = {
+                        (selector, name): count
+                        for (reported, name), count in self.reported.items()
+                        if reported == selector
+                    }
+                    self.assertTrue(expected, f"{selector} counts nothing to report")
+                    self.assertEqual(expected, rows(completed))
+
+    def test_each_selector_has_exactly_one_name(self) -> None:
+        """One shape, one name: every writing the grammar admits canonicalizes to it.
+
+        A group's members are written in lexicographic order except that the
+        member a descent binds to comes last, so the writings one of these five
+        admits are the permutations of each group's *other* members. Each of the
+        three groups carries at most one such member — `schema.type:primary=array`
+        in the middle one — so each admits exactly one writing and the declared
+        spelling is it. The case that exercises the rule over a group with several
+        is `ResolvingDescentTests`'s own, which permutes a four-member `~>`
+        conjunction six ways.
+        """
+        for case in self.cases:
+            selector = case["selector"]
+            if not census.is_conjunction(selector):
+                continue
+            with self.subTest(selector=selector):
+                self.assertEqual(selector, census.canonical_conjunction(selector))
+                writings = [""]
+                for members, operator in census.conjunction_parts(selector):
+                    head, last = (
+                        (members, []) if operator is None else (members[:-1], members[-1:])
+                    )
+                    writings = [
+                        prefix + "&".join([*order, *last]) + (operator or "")
+                        for prefix in writings
+                        for order in itertools.permutations(head)
+                    ]
+                for writing in writings:
+                    self.assertEqual(
+                        selector,
+                        census.canonical_conjunction(writing),
+                        f"{writing} is a second name for one shape",
+                    )
+
+    def test_a_misspelling_of_a_pointer_walk_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            (
+                "schema.$ref:pointer-walk-reaches=allof",
+                "Did you mean: schema.$ref:pointer-walk-reaches=allOf",
+            ),
+            (
+                "schema.$ref:pointer-walk-reaches=propertie",
+                "Did you mean: schema.$ref:pointer-walk-reaches=properties",
+            ),
+            (
+                "schema.$ref:pointer-walk-allOf",
+                "is not one of the predicate selectors",
+            ),
+            (
+                "schema.properties>schema.type:primary=array"
+                "&schema.items>schema.$ref:pointer-walk-reaches=item",
+                "is not one of the conjunction selectors",
+            ),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+
+    def test_a_pointer_walk_selector_no_source_declares_is_reported_as_absent(self) -> None:
+        """Absent, not silent, over a document set this check supplies itself."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
+            for selector in sorted(POINTER_WALK_SELECTORS):
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    self.assertEqual({}, rows(completed))
+                    self.assertIn("(declared by no registered source)", completed.stdout)
 
 
 class ObjectModelWalkTests(unittest.TestCase):
@@ -4486,10 +4842,13 @@ class RankedBacklogTests(unittest.TestCase):
     # The predicates read off a *branch*, which carry rows of their own exactly as
     # the conjunctions composing them do: a selector declared and never classified
     # is a measurement nobody took. The eleven node-local ones the node-local pass
-    # declared, and the three cross-member readings of `discriminated_union` the
-    # discriminated-union pass added. The five predicates that predate the family
-    # are not here — they are about a whole document's keys or values rather than
-    # about one arm of a blind function, and their rows say so instead.
+    # declared, the three cross-member readings of `discriminated_union` the
+    # discriminated-union pass added, and the five the pointer-walk pass read off
+    # `resolve_schema_pointer`'s segment loop. The five predicates that predate the
+    # family are not here — they are about a whole document's keys or values rather
+    # than about one arm of a blind function, and their rows say so instead; nor
+    # are the seven `schema.$ref:` pointer-form ones, whose rows name two functions
+    # apiece because the two read the same positions.
     BRANCH_PREDICATES = {
         "schema.type:primary=array": "schemas",
         "schema.properties:non-empty": "schemas",
@@ -4505,6 +4864,11 @@ class RankedBacklogTests(unittest.TestCase):
         "schema.oneOf:discriminated-union": "schemas",
         "schema.anyOf:discriminated-union": "schemas",
         "schema.discriminator:inheritance-union": "schemas",
+        "schema.$ref:pointer-walk-reaches=allOf": "schemas",
+        "schema.$ref:pointer-walk-reaches=oneOf": "schemas",
+        "schema.$ref:pointer-walk-reaches=anyOf": "schemas",
+        "schema.$ref:pointer-walk-reaches=properties": "schemas",
+        "schema.$ref:pointer-walk-reaches=items": "schemas",
     }
 
     def predicate_rows(self) -> dict[str, tuple[str, list[str]]]:
