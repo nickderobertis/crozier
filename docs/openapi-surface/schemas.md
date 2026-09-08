@@ -440,10 +440,12 @@ whole **169**-source registered set (32 vendored, 137 fetched):
 `FIXTURE`, and no other region gained a row. The five
 close `ref_to_class` outright: that function opens no schema, so every one of its
 five cases is decided by the pointer's segment structure and each now carries an
-exact selector rather than an enumeration hole. `resolve_schema_pointer` keeps
-five holes — the five whose arm resolves a segment against the schema at that
-position, which is a joint property of a value and the document it points into —
-and its other three arms are counted here.
+exact selector rather than an enumeration hole. `resolve_schema_pointer` kept
+five holes at the time — the five whose arm resolves a segment against the schema
+at that position, which is a joint property of a value and the document it points
+into — and its other three arms are counted here.
+[The pointer-walk pass below](#the-pointer-walk-pass-and-the-four-gaps-it-found)
+closed those five.
 
 **Its first case is two rows, not one, and that is the finding of the pass.** A
 reference that strips no `#/components/schemas/` prefix reaches that arm from two
@@ -468,6 +470,42 @@ structural measurement is involved.
 `golden` rows says so in its own cell for the same reason the conjunction rows do:
 the row is about a *branch* of `src/ir.rs`, and a golden pins the bytes for the
 shapes its own document sends down that branch.
+
+### The pointer-walk pass, and the four gaps it found
+
+The ten `pointer-walk` rows at the end of the table are this region's whole share
+of the **ten** selectors the pointer-walk pass added, and they close
+`resolve_schema_pointer`'s last five enumeration holes. Five are predicates, one
+per arm of that function's segment loop, and five are the conjunctions that carry
+its **caller gate** in front of one. Each is one census invocation over the whole
+**169**-source registered set (32 vendored, 137 fetched):
+
+    just surface-census --selector 'schema.$ref:pointer-walk-reaches=allOf'
+    just surface-census --selector 'schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items'
+
+**Ten rows landed here, six of them `golden` and four `gap`**, all four
+`FIXTURE`, and no other region gained a row. The measured half is one document:
+`dnd5eapi.co` writes
+`#/components/schemas/Monster/allOf/3/properties/actions/items` on the `items` of
+two array properties of `Monster.allOf[3]`, `legendary_actions` and `reactions`,
+and that one pointer selects three of the five arms in sequence — `allOf`, then
+`properties`, then `items`. `openbanking-brasil-directory` adds one more
+`properties` site. The `oneOf` and `anyOf` arms are declared nowhere in the
+registered set, in either spelling, and are the four `gap` rows.
+
+**The predicate and the conjunction of one arm count differently, and both rows
+say why.** A predicate counts one per `$ref` node, so `dnd5eapi.co` declares each
+of the three golden predicates twice — once per property. A conjunction counts one
+per node at its *leftmost* position, and both properties belong to one Schema
+Object, so each golden conjunction is 1. The other difference is the caller gate:
+`resolve_schema_pointer` is reached from `field_type_ref` and nowhere else, on an
+array-typed property's `items` reference, so `openbanking-brasil-directory`'s
+pointer — written on a path parameter's schema — is counted by the predicate and
+not by the conjunction. That is the gate doing its work rather than a
+disagreement between two rows.
+
+**Golden-classified is not golden-exhausted here either**, and each of the six
+`golden` rows says so in its own cell, for the reason every branch row does.
 
 ### The conjunction pass, and what it found
 

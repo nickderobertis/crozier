@@ -541,6 +541,30 @@ the change that re-transcribes this table; this change is bound not to move an
 existing row's evidence-cell count, and every source it would have to add is a
 corpus row it may not touch.
 
+**The change that names `resolve_schema_pointer`'s segment loop re-pins this
+digest, and the one it replaces reproduced.** That change registers no source —
+its ten rows are [`schemas.md`](schemas.md)'s and all ten are measured over the
+corpus as it already stands — but it declares ten selectors, and a selector is
+census output. Running the check below over its own base on **2026-09-07** hashes
+to `be8a93d6…`, the pin standing there, so that pin was **reproducible rather
+than stale** and what moves the digest is this change's own census output. The new
+pin, `306e3d8a…`, is the same **169**-source walk (32 vendored, 137 fetched,
+**152** golden-bearing), taken on **2026-09-07** three times with identical
+bytes — twice through the script and once through `just surface-census --json`,
+which is the invocation the check makes. Six selectors are new to its output — the
+ten that change declares, less the four no registered source declares — they add
+11 declaration sites across `dnd5eapi.co` and `openbanking-brasil-directory`, and
+**no per-source count of any pre-existing selector moves under it**, which is what
+a pass that only adds selectors should do. That last clause is measured rather
+than asserted: the two walks were diffed key by key over every
+`(selector, fixture)` pair and the pre-existing set is identical.
+
+**The 164-versus-169 drift is unrepaired under this pin too**, and for the same
+reason: the check reaches the census-row assertions and stops at `document-info`.
+That drift predates this branch — `document-paths.md` on `origin/main` already
+carries both figures — and re-transcribing this table is a measurement this change
+is bound not to make.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -623,7 +647,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "be8a93d6a50c4b789563989a68bccde8e8222b5bf3c4398b2f72542936f8c15a"
+expected_digest = "306e3d8a31cbb6d8623098d9cd0619c894b4451909231de426a905afaea590b7"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout
