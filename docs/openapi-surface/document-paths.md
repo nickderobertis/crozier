@@ -489,6 +489,36 @@ reclassifications are [`schemas.md`](schemas.md)'s and
 `limitations` on a measured `discards` verdict, which empties the index's probe
 backlog. Nothing here becomes a corpus row.
 
+**The change that names the annotated-`$ref` path re-pins this digest, and the
+one it replaces did not reproduce.** That change registers no source — its twelve
+rows are [`schemas.md`](schemas.md)'s and all twelve are measured over the corpus
+as it already stands — but it declares twelve selectors, and a selector is census
+output. Running the check below over its own base on **2026-09-07** hashes to
+`e1d693c4…` rather than to the pinned `14c26286…`, so the pin it replaces was
+**stale rather than reproducible**, and the cause is not this change: the pin was
+taken before the node-local predicate pass added thirty-nine selectors and the
+pointer-form pass added seven, and each of those changes deliberately left the pin
+standing rather than replacing it with one nobody had reviewed. The new pin,
+`cf049c23…`, is the **169**-source walk (32 vendored, 137 fetched, **152**
+golden-bearing), taken twice on **2026-09-07** with identical bytes. Eight
+selectors are new to its output — the twelve that change declares, less the four
+no registered source declares — and **no per-source count of any pre-existing
+selector moves under it**, which is what a pass that only adds selectors should
+do.
+
+**The check now runs past the digest and halts on a drift this change did not
+cause and may not repair.** With the pin refreshed it reaches the census-row
+assertions and stops at `document-info`, whose cell transcribes **164** sources
+where the walk reports 169. The five it does not name — `audiobookshelf`,
+`googleapis-servicebroker`, `loris-dataquery`, `sftpgo` and `steaminputdb` — are
+corpus rows registered after the 164-source walk those cells were taken on, and
+every count the cell *does* name is still the measurement's own. The same is true
+of the other cells transcribed on that walk. Refreshing them is a measurement, and
+this change is bound not to move an existing row's evidence-cell count, so the
+cells stay dated to the walk they were taken on and this paragraph records what a
+reader running the command will see. That refresh belongs to the change that
+re-transcribes this table, exactly as the 141-source refresh did.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -571,7 +601,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "14c262865685b2c35ecdfe9038065dd12e2be096d0d32ba56ee237d16098c488"
+expected_digest = "cf049c230cd307cef0467048ad197299a4ecf869fb620bb575bd8af4817fe2d3"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout

@@ -14593,6 +14593,213 @@ mod tests {
         let _ = observed.ran("prop_type_ref:16");
     }
 
+    // ---------------------------------------------------------------------
+    // The annotated-`$ref` inputs, and which arm each one reaches
+    // ---------------------------------------------------------------------
+    //
+    // `tests/resolving-arm-inputs.json` is the one place these documents are
+    // written. `tests/surface_census_test.py` drives the real census over the
+    // same documents and asserts what each selector counts; this drives the real
+    // generator over them and asserts which arm ran. The two compose onto the
+    // same inputs rather than onto two hand-copied sets, which is the whole
+    // reason the file exists — a selector read off a *misreading* of an arm would
+    // otherwise be confirmed by documents chosen under the same misreading.
+    //
+    // What the generator *emitted* is deliberately not the observation: two arms
+    // can emit equal products for the inputs chosen, and two inputs differing in
+    // more than the arm they select can emit unequal ones.
+
+    const RESOLVING_ARM_INPUTS: &str = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/resolving-arm-inputs.json"
+    ));
+
+    /// One document of that file: its `schemas` and `body` substituted into the
+    /// shared envelope at the two placeholder strings. The Python half's
+    /// `substituted` is this function, over the same envelope.
+    fn resolving_arm_document(
+        envelope: &serde_json::Value,
+        schemas: &serde_json::Value,
+        body: &serde_json::Value,
+    ) -> serde_json::Value {
+        match envelope {
+            serde_json::Value::Object(fields) => serde_json::Value::Object(
+                fields
+                    .iter()
+                    .map(|(key, value)| (key.clone(), resolving_arm_document(value, schemas, body)))
+                    .collect(),
+            ),
+            serde_json::Value::Array(items) => serde_json::Value::Array(
+                items
+                    .iter()
+                    .map(|item| resolving_arm_document(item, schemas, body))
+                    .collect(),
+            ),
+            serde_json::Value::String(text) if text == "{schemas}" => schemas.clone(),
+            serde_json::Value::String(text) if text == "{body}" => body.clone(),
+            other => other.clone(),
+        }
+    }
+
+    /// The shared inputs, parsed once per case that reads them.
+    fn resolving_arm_inputs() -> serde_json::Value {
+        serde_json::from_str(RESOLVING_ARM_INPUTS).expect("the shared inputs parse")
+    }
+
+    /// Which declared arms one document of that file enters, and every
+    /// declaration the same run coins.
+    fn observed_over(payload: &serde_json::Value, name: &str) -> (Vec<String>, Vec<String>) {
+        let fragment = &payload["documents"][name];
+        assert!(
+            !fragment.is_null(),
+            "{name} is named by a case and written by no document"
+        );
+        let document = resolving_arm_document(
+            &payload["envelope"],
+            &fragment["schemas"],
+            &fragment["body"],
+        );
+        let (ir, observed) = generate(document);
+        let ran = arm_trace::declared_arms()
+            .into_iter()
+            .filter(|arm| observed.ran(arm))
+            .collect();
+        (ran, declarations(&ir))
+    }
+
+    /// The arms one case's own record says a document enters.
+    fn recorded_arms(entry: &serde_json::Value) -> Vec<String> {
+        entry["arms"]
+            .as_array()
+            .expect("a document's record lists the arms it enters")
+            .iter()
+            .map(|arm| arm.as_str().expect("an arm name").to_string())
+            .collect()
+    }
+
+    #[test]
+    fn every_annotated_ref_input_reaches_the_arm_its_selector_was_read_off() {
+        // The half of the measurement the census cannot make. For each selector
+        // the census check drives the real script over these documents for, every
+        // input it requires the selector to *count* enters the `src/ir.rs` arm the
+        // selector was read off, and every input it requires the selector to count
+        // *zero* leaves that arm unentered — over **every** such input rather than
+        // over one chosen positive and one chosen negative. Each document's whole
+        // observed arm set is asserted, not just the case's own arm, so a document
+        // reaching a neighbouring arm the record does not name fails here.
+        let payload = resolving_arm_inputs();
+        let cases = payload["cases"]
+            .as_array()
+            .expect("the file lists its cases");
+        assert_eq!(12, cases.len(), "one case per selector the pass declared");
+        let mut driven = std::collections::BTreeSet::new();
+        let mut drives = 0usize;
+        for case in cases {
+            let arm = case["arm"]
+                .as_str()
+                .expect("a case names the arm it was read off");
+            let selector = case["selector"]
+                .as_str()
+                .expect("a case names its selector");
+            for (role, counted) in [("select", true), ("overlap", true), ("near", false)] {
+                let entries = case[role]
+                    .as_object()
+                    .expect("a role is a map of documents");
+                assert!(!entries.is_empty(), "{selector}: no `{role}` document");
+                for (name, entry) in entries {
+                    let (ran, _) = observed_over(&payload, name);
+                    assert_eq!(
+                        recorded_arms(entry),
+                        ran,
+                        "{selector}: {name} enters arms the record does not name"
+                    );
+                    assert_eq!(
+                        counted,
+                        ran.iter().any(|entered| entered == arm),
+                        "{selector}: the census check counts {name} {}, so {arm} must {}run",
+                        if counted { "non-zero" } else { "zero" },
+                        if counted { "" } else { "not " },
+                    );
+                    driven.insert(name.clone());
+                    drives += 1;
+                }
+            }
+        }
+        assert_eq!(
+            payload["documents"]
+                .as_object()
+                .expect("the file writes its documents")
+                .keys()
+                .cloned()
+                .collect::<std::collections::BTreeSet<_>>(),
+            driven,
+            "every document of the shared inputs is driven by some case, and no \
+             case names one the file does not write"
+        );
+        assert_eq!(100, drives, "the number of drives the twelve cases make");
+    }
+
+    #[test]
+    fn every_annotated_ref_negative_says_whether_it_entered_the_arms_function() {
+        // The other half of what an easy negative would hide. A document failing
+        // the arm's *caller* gate never reaches the function, so it says nothing
+        // about the arm's own condition; one that does reach it and takes a later
+        // arm says everything. Each negative therefore carries its own witness of
+        // entry — another declared arm of the same function, or a declaration only
+        // that function's later arm coins — and the eleven that carry none say in
+        // their own record why. Ten of the eleven are the deliberate caller-gate
+        // negative each selector carries — eight annotated `allOf`s written where
+        // no property reaches `prop_type_ref`, and two arrays written where no
+        // composition reaches `hoist_union_variant` — and the eleventh is the one
+        // document whose whole run coins nothing at all to be a witness.
+        let payload = resolving_arm_inputs();
+        let mut without_witness = Vec::new();
+        for case in payload["cases"].as_array().expect("cases") {
+            for (name, entry) in case["near"].as_object().expect("near") {
+                let witness = &entry["entered"];
+                let (ran, coined) = observed_over(&payload, name);
+                if let Some(other) = witness["arm"].as_str() {
+                    assert!(
+                        ran.iter().any(|entered| entered == other),
+                        "{name}: its witness of entry, {other}, did not run"
+                    );
+                } else if let Some(label) = witness["declaration"].as_str() {
+                    assert!(
+                        coined.iter().any(|decl| decl == label),
+                        "{name}: its witness of entry, {label}, was coined by no run \
+                         (coined {coined:?})"
+                    );
+                } else {
+                    assert!(
+                        witness["none"].is_string(),
+                        "{name}: no witness of entry and no reason for having none"
+                    );
+                    without_witness.push(name.clone());
+                }
+            }
+        }
+        without_witness.sort();
+        without_witness.dedup();
+        assert_eq!(
+            vec![
+                "any-of-not-a-property",
+                "closed-not-a-property",
+                "const-not-a-property",
+                "enum-not-a-property",
+                "gate-no-all-of",
+                "gate-not-a-property",
+                "one-of-not-a-property",
+                "props-not-a-property",
+                "target-all-of-not-a-property",
+                "variant-anyof-not-a-union",
+                "variant-oneof-not-a-union",
+            ],
+            without_witness,
+            "the documents carrying no witness of entry are the caller-gate \
+             negatives and the one that coins nothing at all"
+        );
+    }
+
     /// The arm list is declared in [`arm_trace::OBSERVED_ARMS`] and restated in
     /// the coverage document; a case added to one and not the other fails here,
     /// in either direction.

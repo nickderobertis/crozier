@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import importlib.util
+import itertools
 import json
 import os
 import re
@@ -688,6 +689,62 @@ class GrammarContractTests(unittest.TestCase):
         self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
         self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
+    # The predicates that compare one document's own values against each other
+    # rather than reading the node in front of the walk. The script names them in
+    # its own `PREDICATES` header comment and the grammar section names them in
+    # prose; this list is the third statement of the same partition, and the case
+    # below holds all three together. A predicate added to the closed list is
+    # node-local unless it is here.
+    DOCUMENT_COMPARING_PREDICATES = frozenset({
+        "operation.operationId:duplicate",
+        "openapi.paths:normalized-collision",
+        "components.schemas:normalized-collision",
+        "schema.$ref:undeclared-component-head",
+        "schema.$ref:resolves-to-component",
+    })
+
+    def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
+        """The two counts the grammar states about its own predicates, recomputed.
+
+        `test_the_documented_predicate_selectors_are_the_ones_the_script_declares`
+        holds the set and its total; this holds the *split* the paragraph after it
+        states — how many predicates are node-local and how many compare one
+        document's values against each other. Both are spelled as words, and they
+        have to partition the closed list, so a predicate added to one family and
+        counted in neither fails here. Nothing else derives the split: the
+        paragraph drifted once already, when a node-local predicate was added and
+        the word before "of the 26" stayed put.
+        """
+        words = {
+            "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
+            "four": 4, "five": 5, "six": 6, "seven": 7,
+        }
+        text = self.DOC.read_text(encoding="utf-8")
+        stated = re.search(
+            r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text
+        )
+        self.assertIsNotNone(stated, "the grammar no longer states its node-local count")
+        self.assertEqual(len(census.PREDICATES), int(stated.group(2)))
+        body = text.split(stated.group(0), 1)[1].split("\n\nA predicate selector", 1)[0]
+        other = re.search(r"The other\n?([a-z-]+) —", body)
+        self.assertIsNotNone(other, "the grammar no longer counts the other family")
+        node_local = words[stated.group(1)]
+        comparing = words[other.group(1)]
+        self.assertEqual(
+            len(census.PREDICATES),
+            node_local + comparing,
+            "the two stated families do not partition the closed list",
+        )
+        self.assertEqual(len(self.DOCUMENT_COMPARING_PREDICATES), comparing)
+        for selector in sorted(self.DOCUMENT_COMPARING_PREDICATES):
+            with self.subTest(selector=selector):
+                self.assertIn(selector, census.PREDICATES)
+                self.assertIn(
+                    f"`{selector}`",
+                    body,
+                    f"{selector} is document-comparing and the paragraph does not name it",
+                )
+
     # ------------------------------------------------------------------
     # The fourth kind of selector: `<member>&<member>` and `<group>><group>`
     # ------------------------------------------------------------------
@@ -816,8 +873,10 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            7: "seven", 8: "eight", 9: "nine", 28: "twenty-eight", 36: "thirty-six",
-            40: "forty", 50: "fifty", 76: "seventy-six", 78: "seventy-eight",
+            5: "five", 7: "seven", 8: "eight", 9: "nine", 23: "twenty-three",
+            28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
+            60: "sixty", 76: "seventy-six", 78: "seventy-eight",
+            83: "eighty-three",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -1185,6 +1244,20 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
+        # The ten the annotated-`$ref` pass declared. Every one is zero over the
+        # vendored half: no vendored document writes an `allOf` of a `$ref` beside
+        # a description at all, which `AnnotatedRefSelectorDiscriminationTests`
+        # answers for by constructing the documents rather than borrowing them.
+        "schema.properties>schema.allOf:annotated-ref": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1305,10 +1378,12 @@ class ResolvingDescentTests(unittest.TestCase):
 
     `>` descends into the object a field's value *is*; `~>` descends into the
     schema the Reference Object written at a group's last member *denotes*,
-    resolved against the document being censused. No conjunction on the closed
-    list uses `~>`, because the list is held to the cases the blind-region tables
-    derive, so these cases hand the census their own compiled conjunction and run
-    the **real** walk over it:
+    resolved against the document being censused. The closed list carries seven
+    conjunctions spelled with `~>` — the annotated-`$ref` pass read them off
+    `prop_type_ref`'s cases 2 to 4 — and the exemplar below is deliberately not
+    one of them, because what these cases exercise is the *operator* rather than
+    any declared spelling: they hand the census their own compiled conjunction and
+    run the **real** walk over it:
     `census_document` is the function the command line calls per document, and
     `load_document` is the loader it reads every source with. Nothing is a
     stand-in.
@@ -1565,18 +1640,22 @@ class ResolvingDescentTests(unittest.TestCase):
                 self.assertEqual(canonical, census.canonical_conjunction(spelling))
         self.assertEqual(canonical, census.canonical_conjunction(canonical))
 
-    def test_the_closed_list_declares_no_conjunction_using_the_operator(self) -> None:
-        """The operator exists and no declared selector is spelled with it.
+    def test_an_undeclared_spelling_of_the_operator_is_still_refused(self) -> None:
+        """The closed list is closed by the generator's branches, not by the operators.
 
         A conjunction is declared only where a case of a blind region is read off
         it, which `test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region`
-        holds the list to. So `--selector` refuses a `~>` spelling by name, the
-        way it refuses any well-formed combination nobody declared.
+        holds the list to. Seven declared spellings use `~>` now; the exemplar
+        these cases run the evaluator over is not one of them, and `--selector`
+        refuses it by name exactly as it refuses any well-formed combination
+        nobody declared.
         """
-        self.assertEqual(
-            [],
-            [selector for selector in census.CONJUNCTIONS if census.RESOLVING_DESCENT in selector],
-        )
+        using = [
+            selector for selector in census.CONJUNCTIONS
+            if census.RESOLVING_DESCENT in selector
+        ]
+        self.assertEqual(7, len(using), f"the closed list spells {len(using)} with `~>`")
+        self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn(repr(self.RESOLVING), completed.stderr)
@@ -1636,6 +1715,27 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
     (directory / "openapi.json").write_text(
         json.dumps(document, indent=2), encoding="utf-8"
     )
+
+
+# The twelve the annotated-`$ref` pass declared, kept apart from the node-local
+# table the same way its own successors are: they are
+# one path through `src/ir.rs` — `described_all_of_ref` resolving, and the arms
+# that read what it resolved to — and `AnnotatedRefSelectorDiscriminationTests`
+# is the case that answers for every one of them.
+ANNOTATED_REF_SELECTORS = frozenset({
+    "schema.properties>schema.allOf:annotated-ref",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+    "schema.allOf:annotated-ref",
+    "schema.$ref:resolves-to-component",
+})
 
 
 # The pointer-form family, declared by the pass after the node-local one and
@@ -2061,7 +2161,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
-    ) - POINTER_FORM_PREDICATES
+    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -2175,6 +2275,273 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn("(declared by no registered source)", completed.stdout)
+
+
+# The one place the annotated-`$ref` inputs are written. `src/ir.rs`'s own test
+# module reads the same file and drives the same documents through the
+# arm-observation surface, so what this case establishes about a selector's
+# extension and what that one establishes about which arm ran compose onto the
+# same documents rather than onto two hand-copied sets of them.
+RESOLVING_ARM_INPUTS = REPO / "tests" / "resolving-arm-inputs.json"
+
+
+def substituted(node, schemas, body):
+    """One envelope with its two placeholder strings replaced.
+
+    The envelope is shared data rather than two copies of one OpenAPI document,
+    so a change to the operation that carries the body reaches both halves of the
+    measurement at once. `src/ir.rs`'s `resolving_arm_document` is this function.
+    """
+    if isinstance(node, dict):
+        return {key: substituted(value, schemas, body) for key, value in node.items()}
+    if isinstance(node, list):
+        return [substituted(value, schemas, body) for value in node]
+    if node == "{schemas}":
+        return schemas
+    if node == "{body}":
+        return body
+    return node
+
+
+class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
+    """What each annotated-`$ref` selector counts, over inputs that bound it both ways.
+
+    The same instrument the node-local and pointer-form families are held to, at
+    the grain those two did not need. Each selector here composes several members
+    over a resolving descent, so one near miss would leave every other member of
+    its condition unproven. The table therefore ranges over **two** enumerations
+    the arm itself bounds:
+
+    - against a **broader** selector, one document per separately satisfiable part
+      of the condition — a document satisfying every other part and not that one,
+      whose node does not select the arm and which the selector counts zero. A
+      selector that dropped or weakened any single member fails on that member's
+      own document rather than surviving because one chosen near miss happened to
+      vary a different one. `schema.allOf` and `schema.$ref`, the two members a
+      descent binds to, are not separately satisfiable: the annotated-`$ref`
+      predicate beside them already requires an `allOf` holding a Reference
+      Object, so no document satisfies the rest of the condition without them.
+    - against a **narrower** selector, one document per way the arm's own
+      condition admits of being satisfied that the case analysis distinguishes —
+      the reference written first or second inside the `allOf`, an annotating
+      member carrying a description, nothing at all, or a type-determining field
+      written as JSON `null`, the `enum` spelling with and without a `type`,
+      `array` as the sole type or as the first non-`null` member of a 3.1 list,
+      and a resolving reference written with and without the
+      `#/components/schemas/` prefix.
+
+    Where the arm permits a node another case of the same function's table also
+    claims, the overlap document is driven too and both selectors are asserted to
+    count it, which is the chain overlap
+    `docs/openapi-surface-coverage.md`'s exactness rule permits.
+
+    Every document is constructed: no vendored source writes an `allOf` of one
+    `$ref` beside a description at all, which `ConjunctionCensusTests` reports as
+    ten zeroes over the vendored half. The census is still driven for real, as its
+    own process, over real documents on the real filesystem, in one run over a
+    fixtures root holding all of them.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
+        cls.spec = payload
+        cls.cases = payload["cases"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, fragment in payload["documents"].items():
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        report = json.loads(completed.stdout)
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
+        }
+        cls.censused = {source["fixture"] for source in report["sources"]}
+
+    def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(
+            ANNOTATED_REF_SELECTORS, {case["selector"] for case in self.cases}
+        )
+
+    def test_every_document_the_table_names_was_censused(self) -> None:
+        """No case rests on a document the run never read."""
+        named = {
+            name
+            for case in self.cases
+            for role in ("select", "near", "overlap")
+            for name in case[role]
+        }
+        self.assertEqual(set(self.spec["documents"]), named)
+        self.assertEqual(named, self.censused)
+
+    def test_each_selector_counts_every_form_of_its_own_branch(self) -> None:
+        """The narrower half: one positive per way the arm admits of being reached."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["select"].items()):
+                with self.subTest(selector=selector, document=name, form=entry["form"]):
+                    self.assertEqual(
+                        1,
+                        self.reported.get((selector, name)),
+                        f"{selector} does not count {entry['form']}",
+                    )
+
+    def test_each_selector_counts_no_document_missing_one_part_of_its_condition(self) -> None:
+        """The broader half: one negative per separately satisfiable part."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["near"].items()):
+                with self.subTest(selector=selector, document=name, part=entry["part"]):
+                    self.assertNotIn(
+                        (selector, name),
+                        self.reported,
+                        f"{selector} counts a document dropping {entry['part']}",
+                    )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap the exactness rule permits, made visible rather than assumed."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, overlap in sorted(case["overlap"].items()):
+                with self.subTest(selector=selector, document=name):
+                    self.assertEqual(1, self.reported.get((selector, name)), overlap["why"])
+                    self.assertEqual(
+                        1,
+                        self.reported.get((overlap["selector"], name)),
+                        "the overlap document is not counted by the case that claims it",
+                    )
+
+    def test_the_two_annotated_all_of_shapes_are_told_apart(self) -> None:
+        """The distinction the whole family rests on, asserted on its own.
+
+        An `allOf` of one `$ref` beside a member declaring only a description is
+        an annotated reference; the same `allOf` beside a member declaring
+        anything else is a composition, and `described_all_of_ref` refuses it.
+        """
+        for selector in (
+            "schema.allOf:annotated-ref",
+            "schema.properties>schema.allOf:annotated-ref",
+        ):
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, "gate-ref-first")))
+                self.assertNotIn((selector, "gate-typed-member"), self.reported)
+
+    def test_a_reference_that_resolves_and_one_that_does_not_are_told_apart(self) -> None:
+        """The other distinction: two documents alike but for what the `$ref` names.
+
+        `gate-ref-first` and `gate-dangling-ref` differ in one thing — whether
+        `components.schemas` declares the component the annotated reference names.
+        The gate's own selector counts both, because `prop_type_ref` enters case 1
+        before resolving; every selector reading the target counts only the first.
+        """
+        gate = "schema.properties>schema.allOf:annotated-ref"
+        target = gate + "&schema.allOf>schema.$ref~>schema.properties:non-empty"
+        self.assertEqual(1, self.reported.get((gate, "gate-ref-first")))
+        self.assertEqual(1, self.reported.get((gate, "gate-dangling-ref")))
+        self.assertEqual(1, self.reported.get((target, "props-select")))
+        self.assertNotIn((target, "props-dangling"), self.reported)
+
+    def test_each_selector_reports_one_row_per_document_declaring_it(self) -> None:
+        """`--selector` takes each of these like any other selector.
+
+        The JSON report the rest of this case reads is one of two answers the
+        census gives; this is the other, and it is the one a `gap` row's evidence
+        is read out of. Each selector is asked for by name over the same fixtures
+        root and its answer is the per-document table, not a bare total.
+        """
+        payload = self.spec
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, fragment in payload["documents"].items():
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            for case in self.cases:
+                selector = case["selector"]
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    expected = {
+                        (selector, name): count
+                        for (reported, name), count in self.reported.items()
+                        if reported == selector
+                    }
+                    self.assertTrue(expected, f"{selector} counts nothing to report")
+                    self.assertEqual(expected, rows(completed))
+
+    def test_each_selector_has_exactly_one_name(self) -> None:
+        """One shape, one name: every writing the grammar admits canonicalizes to it.
+
+        A group's members are written in lexicographic order except that the
+        member a descent binds to comes last, since that is the member the
+        operator binds to — so the writings one of these selectors admits are the
+        permutations of each group's *other* members, and each has to canonicalize
+        to the declared spelling. Every group of these ten carries exactly one
+        member the descent does not bind to, so each admits one writing and the
+        declared spelling is it; the case that exercises the rule over a group
+        with several is `ResolvingDescentTests`'s own, which permutes a
+        four-member `~>` conjunction six ways.
+        """
+        for case in self.cases:
+            selector = case["selector"]
+            if not census.is_conjunction(selector):
+                continue
+            with self.subTest(selector=selector):
+                self.assertEqual(selector, census.canonical_conjunction(selector))
+                groups = census.conjunction_parts(selector)
+                writings = [""]
+                for members, operator in groups:
+                    head, last = (members, []) if operator is None else (members[:-1], members[-1:])
+                    writings = [
+                        prefix + "&".join([*order, *last]) + (operator or "")
+                        for prefix in writings
+                        for order in itertools.permutations(head)
+                    ]
+                for writing in writings:
+                    self.assertEqual(
+                        selector,
+                        census.canonical_conjunction(writing),
+                        f"{writing} is a second name for one shape",
+                    )
+
+    def test_a_misspelling_of_an_annotated_ref_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            ("schema.allOf:annotated-refs", "Did you mean: schema.allOf:annotated-ref"),
+            ("schema.$ref:resolves-to-components", "Did you mean: schema.$ref:resolves-to-component"),
+            (
+                "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneof",
+                "is not one of the conjunction selectors",
+            ),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+
+    def test_an_annotated_ref_selector_no_source_declares_is_reported_as_absent(self) -> None:
+        """Absent, not silent, over a document set this check supplies itself."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
+            for selector in sorted(ANNOTATED_REF_SELECTORS):
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    self.assertEqual({}, rows(completed))
+                    self.assertIn("(declared by no registered source)", completed.stdout)
+
 
 
 class DocumentContextTests(unittest.TestCase):
