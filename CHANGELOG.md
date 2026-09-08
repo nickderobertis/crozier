@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.73](https://github.com/nickderobertis/crozier/compare/v0.0.72...v0.0.73) - 2026-09-08
+
+### Added
+
+- *(census)* name the five branches a component pointer's segments address ([#250](https://github.com/nickderobertis/crozier/pull/250))
+
 ## [0.0.72](https://github.com/nickderobertis/crozier/compare/v0.0.71...v0.0.72) - 2026-09-08
 
 ### Added
