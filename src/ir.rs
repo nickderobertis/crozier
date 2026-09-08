@@ -14754,19 +14754,23 @@ mod tests {
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
         // that function's later arm coins — and the twenty-two that carry none say
-        // in their own record why. Forty-seven are the deliberate caller-gate
-        // negative each selector carries: eight annotated `allOf`s and two unions
-        // written where no property reaches `prop_type_ref`, four arrays written
-        // where no composition reaches `hoist_union_variant`, three shapes
-        // written where no array of arrays reaches `nested_array_element`, and
-        // thirty written where nothing reaches `resolve_schema_pointer` — the
-        // five pointer-walk arms' six apiece, three of which fail
-        // `field_type_ref`'s own gate before the call and three of which are the
-        // three early `None`s that stop the function before its segment loop.
-        // The other five reach their function and coin nothing at all to be a
-        // witness — one annotated `allOf`, and the four variants whose `type`
-        // list names `string` first, which enter `hoist_union_variant` and fall
-        // to its closing `base_type_ref`.
+        // in their own record why. Forty-seven of them enter no declared arm
+        // because nothing reaches one. Seventeen are the deliberate caller-gate
+        // negative each of the earlier selectors carries: eight annotated
+        // `allOf`s and two unions written where no property reaches
+        // `prop_type_ref`, four arrays written where no composition reaches
+        // `hoist_union_variant`, and three shapes written where no array of
+        // arrays reaches `nested_array_element`. Thirty are the five
+        // pointer-walk arms' six apiece, and they divide three ways: three per
+        // arm fail `field_type_ref`'s own gate, one per arm is refused by that
+        // caller's `starts_with` guard, and two per arm do reach
+        // `resolve_schema_pointer` and take one of the early `None`s that stop
+        // it before its segment loop — an undeclared head, and the bare
+        // component pointer with no segment after it. The other five reach
+        // their function and coin nothing at all to be a witness — one
+        // annotated `allOf`, and the four variants whose `type` list names
+        // `string` first, which enter `hoist_union_variant` and fall to its
+        // closing `base_type_ref`.
         let payload = resolving_arm_inputs();
         let mut without_witness = Vec::new();
         for case in payload["cases"].as_array().expect("cases") {
@@ -14852,8 +14856,8 @@ mod tests {
             ],
             without_witness,
             "the documents carrying no witness of entry are the caller-gate \
-             negatives, the three early `None`s of `resolve_schema_pointer`, and \
-             the five that coin nothing at all"
+             negatives, the pointers `resolve_schema_pointer` answers `None` for \
+             before its loop, and the five that coin nothing at all"
         );
     }
 
