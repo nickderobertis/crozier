@@ -466,40 +466,47 @@ structural measurement is involved.
 the row is about a *branch* of `src/ir.rs`, and a golden pins the bytes for the
 shapes its own document sends down that branch.
 
-### The pointer-walk pass, and the four gaps it found
+### The pointer-walk pass, and the two gaps it found
 
-The ten `pointer-walk` rows at the end of the table are this region's whole share
-of the **ten** selectors the pointer-walk pass added, and they close
-`resolve_schema_pointer`'s last five enumeration holes. Five are predicates, one
-per arm of that function's segment loop, and five are the conjunctions that carry
-its **caller gate** in front of one. Each is one census invocation over the whole
-**169**-source registered set (32 vendored, 137 fetched):
+The five `array-item-pointer-walk` rows at the end of the table are this region's
+whole share of the **five** selectors the pointer-walk pass added, and they close
+`resolve_schema_pointer`'s last five enumeration holes. Each is a conjunction
+carrying that function's **caller gate** in front of the reading of one arm of its
+segment loop, and each is one census invocation over the whole **169**-source
+registered set (32 vendored, 137 fetched):
 
-    just surface-census --selector 'schema.$ref:pointer-walk-reaches=allOf'
     just surface-census --selector 'schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items'
 
-**Ten rows landed here, six of them `golden` and four `gap`**, all four
+The reading itself — `schema.$ref:pointer-walk-reaches=items` and its four
+siblings — is **not** a selector and `--selector` refuses it. It is a
+[member-only reading](../openapi-surface-coverage.md#the-member-only-readings),
+declared as `MEMBER_ONLY_PREDICATES`, because standing alone it counts nodes from
+which `resolve_schema_pointer` is never called. An earlier draft of this pass
+declared the five as predicates and gave them five rows here; both were withdrawn
+for that miscount, which is why this region gained five rows and not ten.
+
+**Five rows landed here, three of them `golden` and two `gap`**, both
 `FIXTURE`, and no other region gained a row. The measured half is one document:
 `dnd5eapi.co` writes
 `#/components/schemas/Monster/allOf/3/properties/actions/items` on the `items` of
 two array properties of `Monster.allOf[3]`, `legendary_actions` and `reactions`,
 and that one pointer selects three of the five arms in sequence — `allOf`, then
-`properties`, then `items`. `openbanking-brasil-directory` adds one more
-`properties` site. The `oneOf` and `anyOf` arms are declared nowhere in the
-registered set, in either spelling, and are the four `gap` rows.
+`properties`, then `items`. Each of those three conjunctions counts it **1**: a
+conjunction counts one per node at its *leftmost* position, and both properties
+belong to one Schema Object. The `oneOf` and `anyOf` arms are declared nowhere in
+the registered set and are the two `gap` rows.
 
-**The predicate and the conjunction of one arm count differently, and both rows
-say why.** A predicate counts one per `$ref` node, so `dnd5eapi.co` declares each
-of the three golden predicates twice — once per property. A conjunction counts one
-per node at its *leftmost* position, and both properties belong to one Schema
-Object, so each golden conjunction is 1. The other difference is the caller gate:
+**The gate is what keeps these rows exact, and one registered document shows it.**
 `resolve_schema_pointer` is reached from `field_type_ref` and nowhere else, on an
-array-typed property's `items` reference, so `openbanking-brasil-directory`'s
-pointer — written on a path parameter's schema — is counted by the predicate and
-not by the conjunction. That is the gate doing its work rather than a
-disagreement between two rows.
+array-typed property's `items` reference, behind a
+`starts_with("#/components/schemas/")` guard. `openbanking-brasil-directory`
+writes `#/components/schemas/ClientCreationResponse/properties/client_id` on a
+path parameter's schema: it spells a `properties` segment the walk would read, and
+the generator never walks it, so it selects no case of that function's table and
+**no row here counts it**. That is the gate doing its work, and it is why the
+ungated reading earns no row of its own.
 
-**Golden-classified is not golden-exhausted here either**, and each of the six
+**Golden-classified is not golden-exhausted here either**, and each of the three
 `golden` rows says so in its own cell, for the reason every branch row does.
 
 ### The conjunction pass, and what it found
