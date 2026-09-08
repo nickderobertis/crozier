@@ -851,23 +851,18 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # `tests/surface_census_test.py` reconciles the two lists the way it already
 # reconciles `VALUED`.
 #
-# Every member is **node-local**: it is decided from one object-model node's own
+# Most members are **node-local**: decided from one object-model node's own
 # declared fields and their values, with no `$ref` resolution and no
-# document-scope comparison — except thirteen, which compare one document's own
-# values against each other and say so in their own sentence:
-# `operation.operationId:duplicate`, the two `normalized-collision` spellings, the
-# two `schema.$ref:` spellings that measure a reference against the document's
-# own `components.schemas` — `undeclared-component-head` and
-# `resolves-to-component` — the three `discriminated_union` readings, which
-# resolve a union's `$ref` members and a `discriminator`'s mapping targets against
-# that same map before comparing them, and the five `pointer-walk-reaches=`
-# spellings, which walk a pointer's segments through that same map. Those last ten
-# read the document context `Census.__init__` holds. What is still not a member of
-# either kind and is not declared here is a predicate that would evaluate a *group
-# of members at* the schema a `$ref` resolves to — the target's own fields, read as
-# a group — which is what the `~>` operator below descends for. The five
-# `pointer-walk-reaches=` spellings do not: they read which segment the walk
-# arrives at and nothing the target declares beyond what the walk itself consumed.
+# document-scope comparison. The rest compare one document's own values against
+# each other and say so in their own sentence, reading the document context
+# `Census.__init__` holds. Which member is which, and how many of each, is stated
+# once in the grammar section cited above and reconciled against this list by
+# `tests/surface_census_test.py`; it is not re-copied here, because a second copy
+# of a gated split is a second thing to keep right.
+#
+# What is not declared here, in either kind, is a predicate that would evaluate a
+# *group of members at* the schema a `$ref` resolves to — the target's own fields,
+# read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"

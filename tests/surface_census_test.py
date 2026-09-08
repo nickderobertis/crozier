@@ -757,7 +757,6 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "thirteen": 13,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
