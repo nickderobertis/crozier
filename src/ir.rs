@@ -14594,7 +14594,7 @@ mod tests {
     }
 
     // ---------------------------------------------------------------------
-    // The annotated-`$ref` inputs, and which arm each one reaches
+    // The shared arm inputs, and which arm each one reaches
     // ---------------------------------------------------------------------
     //
     // `tests/resolving-arm-inputs.json` is the one place these documents are
@@ -14678,7 +14678,7 @@ mod tests {
     }
 
     #[test]
-    fn every_annotated_ref_input_reaches_the_arm_its_selector_was_read_off() {
+    fn every_shared_input_reaches_the_arm_its_selector_was_read_off() {
         // The half of the measurement the census cannot make. For each selector
         // the census check drives the real script over these documents for, every
         // input it requires the selector to *count* enters the `src/ir.rs` arm the
@@ -14691,7 +14691,7 @@ mod tests {
         let cases = payload["cases"]
             .as_array()
             .expect("the file lists its cases");
-        assert_eq!(12, cases.len(), "one case per selector the pass declared");
+        assert_eq!(24, cases.len(), "one case per selector the two passes declared");
         let mut driven = std::collections::BTreeSet::new();
         let mut drives = 0usize;
         for case in cases {
@@ -14736,22 +14736,25 @@ mod tests {
             "every document of the shared inputs is driven by some case, and no \
              case names one the file does not write"
         );
-        assert_eq!(100, drives, "the number of drives the twelve cases make");
+        assert_eq!(215, drives, "the number of drives the twenty-four cases make");
     }
 
     #[test]
-    fn every_annotated_ref_negative_says_whether_it_entered_the_arms_function() {
+    fn every_shared_negative_says_whether_it_entered_the_arms_function() {
         // The other half of what an easy negative would hide. A document failing
         // the arm's *caller* gate never reaches the function, so it says nothing
         // about the arm's own condition; one that does reach it and takes a later
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
-        // that function's later arm coins — and the eleven that carry none say in
-        // their own record why. Ten of the eleven are the deliberate caller-gate
-        // negative each selector carries — eight annotated `allOf`s written where
-        // no property reaches `prop_type_ref`, and two arrays written where no
-        // composition reaches `hoist_union_variant` — and the eleventh is the one
-        // document whose whole run coins nothing at all to be a witness.
+        // that function's later arm coins — and the twenty-two that carry none say
+        // in their own record why. Seventeen are the deliberate caller-gate
+        // negative each selector carries: eight annotated `allOf`s and two unions
+        // written where no property reaches `prop_type_ref`, four arrays written
+        // where no composition reaches `hoist_union_variant`, and three shapes
+        // written where no array of arrays reaches `nested_array_element`. The other five reach their function and coin
+        // nothing at all to be a witness — one annotated `allOf` and the four
+        // variants whose `type` list names `string` first, which enter
+        // `hoist_union_variant` and fall to its closing `base_type_ref`.
         let payload = resolving_arm_inputs();
         let mut without_witness = Vec::new();
         for case in payload["cases"].as_array().expect("cases") {
@@ -14785,6 +14788,17 @@ mod tests {
                 "any-of-not-a-property",
                 "closed-not-a-property",
                 "const-not-a-property",
+                "du-anyof-variant-anyof-inferred-not-array",
+                "du-anyof-variant-oneof-mapping-not-array",
+                "du-array-prop-anyof-inferred",
+                "du-array-prop-oneof-mapping",
+                "du-named-anyof-inferred",
+                "du-named-oneof-mapping",
+                "du-oneof-variant-anyof-inferred-not-array",
+                "du-oneof-variant-oneof-mapping-not-array",
+                "du-prop-anyof-inferred",
+                "du-prop-inheritance-mapping",
+                "du-prop-oneof-mapping",
                 "enum-not-a-property",
                 "gate-no-all-of",
                 "gate-not-a-property",
@@ -14796,7 +14810,7 @@ mod tests {
             ],
             without_witness,
             "the documents carrying no witness of entry are the caller-gate \
-             negatives and the one that coins nothing at all"
+             negatives and the two that coin nothing at all"
         );
     }
 

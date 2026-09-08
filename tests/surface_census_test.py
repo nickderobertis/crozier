@@ -701,6 +701,9 @@ class GrammarContractTests(unittest.TestCase):
         "components.schemas:normalized-collision",
         "schema.$ref:undeclared-component-head",
         "schema.$ref:resolves-to-component",
+        "schema.oneOf:discriminated-union",
+        "schema.anyOf:discriminated-union",
+        "schema.discriminator:inheritance-union",
     })
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
@@ -717,7 +720,7 @@ class GrammarContractTests(unittest.TestCase):
         """
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
-            "four": 4, "five": 5, "six": 6, "seven": 7,
+            "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -873,10 +876,11 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            5: "five", 7: "seven", 8: "eight", 9: "nine", 23: "twenty-three",
+            4: "four", 5: "five", 7: "seven", 8: "eight", 9: "nine",
+            20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
-            60: "sixty", 76: "seventy-six", 78: "seventy-eight",
-            83: "eighty-three",
+            60: "sixty", 69: "sixty-nine", 76: "seventy-six",
+            78: "seventy-eight", 83: "eighty-three", 89: "eighty-nine",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -1165,13 +1169,14 @@ class ConjunctionCensusTests(unittest.TestCase):
     the instrument must be able to give — a shape the corpus has never seen — and
     it is the evidence a `gap` row would cite.
 
-    Thirty-seven selectors and not more: a case carries one only where every
+    The closed list and not more: a case carries a selector only where every
     property the arm's own condition reads is one the grammar can name — a field
-    written, a member of a closed value set, or one of the node-local predicates —
-    because anything else the arm reads, an example's JSON kind or the *absence* of
-    a sibling declaration, is a condition no selector kind expresses and a selector
-    ignoring it would count documents the generator sends elsewhere. The other
-    thirty-six cases are enumeration holes.
+    written, a member of a closed value set, or one of the predicates — because
+    anything else the arm reads, an example's JSON kind or the *absence* of a
+    sibling declaration, is a condition no selector kind expresses and a selector
+    ignoring it would count documents the generator sends elsewhere. Every case
+    that carries no selector is an enumeration hole, and
+    `GrammarContractTests` holds the two states to the case analysis's own rows.
 
     The numbers are the census's own, and an independent count over every vendored
     document agrees with all nine. They were taken before the free-map-key walk
@@ -1258,6 +1263,22 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
+        # The nine the discriminated-union pass declared. Every one is zero over
+        # the vendored half: the two vendored documents that declare a union
+        # `discriminated_union` builds — `discriminated-unions` and
+        # `recursive-types` — write it as a named component, which no conjunction
+        # anchored on `items`, on a union member or on a property reaches.
+        # `DiscriminatedUnionSelectorDiscriminationTests` answers for all nine by
+        # constructing the documents rather than borrowing them.
+        "schema.items>schema.oneOf:discriminated-union": {},
+        "schema.items>schema.anyOf:discriminated-union": {},
+        "schema.items>schema.discriminator:inheritance-union": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union": {},
+        "schema.properties>schema.oneOf:discriminated-union": {},
+        "schema.properties>schema.anyOf:discriminated-union": {},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1738,6 +1759,27 @@ ANNOTATED_REF_SELECTORS = frozenset({
 })
 
 
+# The twelve the discriminated-union pass declared, kept apart for the same
+# reason: they are one condition in `src/ir.rs` — `discriminated_union` returning
+# `Some` — reached from three arms, and
+# `DiscriminatedUnionSelectorDiscriminationTests` is the case that answers for
+# every one of them.
+DISCRIMINATED_UNION_SELECTORS = frozenset({
+    "schema.items>schema.oneOf:discriminated-union",
+    "schema.items>schema.anyOf:discriminated-union",
+    "schema.items>schema.discriminator:inheritance-union",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+    "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+    "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+    "schema.properties>schema.oneOf:discriminated-union",
+    "schema.properties>schema.anyOf:discriminated-union",
+    "schema.oneOf:discriminated-union",
+    "schema.anyOf:discriminated-union",
+    "schema.discriminator:inheritance-union",
+})
+
+
 # The pointer-form family, declared by the pass after the node-local one and
 # discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
 # because the node-local table's own completeness assertion is "every selector
@@ -2161,7 +2203,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
-    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS
+    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -2346,10 +2388,21 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
         cls.spec = payload
-        cls.cases = payload["cases"]
+        # The shared file carries every pass's cases; this one answers for its own.
+        cls.cases = [
+            case for case in payload["cases"]
+            if case["selector"] in ANNOTATED_REF_SELECTORS
+        ]
+        cls.names = {
+            name
+            for case in cls.cases
+            for role in ("select", "near", "overlap")
+            for name in case[role]
+        }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name, fragment in payload["documents"].items():
+            for name in sorted(cls.names):
+                fragment = payload["documents"][name]
                 write_json_fixture(root, name, substituted(
                     payload["envelope"], fragment["schemas"], fragment["body"]
                 ))
@@ -2369,14 +2422,8 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
 
     def test_every_document_the_table_names_was_censused(self) -> None:
         """No case rests on a document the run never read."""
-        named = {
-            name
-            for case in self.cases
-            for role in ("select", "near", "overlap")
-            for name in case[role]
-        }
-        self.assertEqual(set(self.spec["documents"]), named)
-        self.assertEqual(named, self.censused)
+        self.assertLessEqual(self.names, set(self.spec["documents"]))
+        self.assertEqual(self.names, self.censused)
 
     def test_each_selector_counts_every_form_of_its_own_branch(self) -> None:
         """The narrower half: one positive per way the arm admits of being reached."""
@@ -2456,7 +2503,8 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
         payload = self.spec
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name, fragment in payload["documents"].items():
+            for name in sorted(self.names):
+                fragment = payload["documents"][name]
                 write_json_fixture(root, name, substituted(
                     payload["envelope"], fragment["schemas"], fragment["body"]
                 ))
@@ -2542,6 +2590,245 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
                     self.assertEqual({}, rows(completed))
                     self.assertIn("(declared by no registered source)", completed.stdout)
 
+
+
+class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
+    """What each discriminated-union selector counts, over inputs that bound it both ways.
+
+    The same instrument the three families before it are held to, over the one
+    condition in `src/ir.rs` that compares a union's members *against each other*.
+    A `discriminator` written beside a `oneOf` is the shape that resembles this
+    condition and is not it, so a table resting on one chosen positive would
+    confirm the resemblance; this one therefore ranges over **two** enumerations
+    the arm itself bounds:
+
+    - against a **broader** selector, one document per separately satisfiable part
+      of the condition — a document satisfying every other part and not that one,
+      whose node does not select the arm and which the selector counts zero. The
+      parts of the cross-member reading are its own: a resolving `mapping`, a
+      discriminable value on every resolved member, a non-empty `propertyName`
+      with something inferable in its place, resolving `$ref` members, and
+      distinct tags. Which composition head the union is built from is *not*
+      separately satisfiable in that sense: a node writing a `oneOf` union beside
+      an `anyOf` still selects the arm, so a document dropping only the head would
+      be a negative the arm runs on, which is not what a near miss is for. The two
+      head spellings are two selectors instead, each with its own positives.
+    - against a **narrower** selector, one document per way the arm's own
+      condition admits of being satisfied that the case analysis distinguishes —
+      the written spelling with a `mapping` and without one, the three tag
+      spellings `discriminant_value` reads (a one-member string `enum`, a `const`,
+      a string `example`), the inferred spelling with no `discriminator` written
+      at all, a `mapping` written as pointers and as bare component names, and
+      `array` written as the sole type and as the first non-`null` member of a 3.1
+      type list.
+
+    Where the arm permits a node another case of the same function's table also
+    claims, the overlap document is driven too and both selectors are asserted to
+    count it, which is the chain overlap
+    `docs/openapi-surface-coverage.md`'s exactness rule permits.
+
+    Every document is constructed and shared with `src/ir.rs`'s own observation of
+    which arm ran, through `tests/resolving-arm-inputs.json`. The census is driven
+    for real, as its own process, over real documents on the real filesystem, in
+    one run over a fixtures root holding all of them.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
+        cls.spec = payload
+        cls.cases = [
+            case for case in payload["cases"]
+            if case["selector"] in DISCRIMINATED_UNION_SELECTORS
+        ]
+        cls.names = {
+            name
+            for case in cls.cases
+            for role in ("select", "near", "overlap")
+            for name in case[role]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in sorted(cls.names):
+                fragment = payload["documents"][name]
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        report = json.loads(completed.stdout)
+        cls.reported = {
+            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
+        }
+        cls.censused = {source["fixture"] for source in report["sources"]}
+
+    def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(
+            DISCRIMINATED_UNION_SELECTORS, {case["selector"] for case in self.cases}
+        )
+
+    def test_every_document_the_table_names_was_censused(self) -> None:
+        """No case rests on a document the run never read."""
+        self.assertEqual(self.names, self.censused)
+
+    def test_each_selector_counts_every_form_of_its_own_branch(self) -> None:
+        """The narrower half: one positive per way the arm admits of being reached."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["select"].items()):
+                with self.subTest(selector=selector, document=name, form=entry["form"]):
+                    self.assertEqual(
+                        1,
+                        self.reported.get((selector, name)),
+                        f"{selector} does not count {entry['form']}",
+                    )
+
+    def test_each_selector_counts_no_document_missing_one_part_of_its_condition(self) -> None:
+        """The broader half: one negative per separately satisfiable part."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, entry in sorted(case["near"].items()):
+                with self.subTest(selector=selector, document=name, part=entry["part"]):
+                    self.assertNotIn(
+                        (selector, name),
+                        self.reported,
+                        f"{selector} counts a document dropping {entry['part']}",
+                    )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap the exactness rule permits, made visible rather than assumed."""
+        for case in self.cases:
+            selector = case["selector"]
+            for name, overlap in sorted(case["overlap"].items()):
+                with self.subTest(selector=selector, document=name):
+                    self.assertEqual(1, self.reported.get((selector, name)), overlap["why"])
+                    self.assertEqual(
+                        1,
+                        self.reported.get((overlap["selector"], name)),
+                        "the overlap document is not counted by the case that claims it",
+                    )
+
+    def test_the_condition_is_read_rather_than_the_shape_that_resembles_it(self) -> None:
+        """The four documents the whole family rests on, asserted together.
+
+        A `discriminator` beside a `oneOf` is what the condition *looks* like. The
+        four below are alike but for one thing each, and the selectors have to
+        answer differently for three of them: the canonical written union counts;
+        the same union one of whose members carries no discriminable value does
+        not; a `discriminator` beside an `anyOf` with no `oneOf` does not, because
+        `discriminated_union` refuses that spelling outright; and a union with no
+        `discriminator` at all whose members tag themselves counts exactly as the
+        first does, which is the inferred spelling the resemblance misses in the
+        other direction.
+        """
+        for selector, position in (
+            ("schema.properties>schema.oneOf:discriminated-union", "prop"),
+            ("schema.items>schema.oneOf:discriminated-union", "nested"),
+        ):
+            with self.subTest(selector=selector):
+                self.assertEqual(
+                    1, self.reported.get((selector, f"du-{position}-oneof-enum-tag")),
+                    "a discriminator beside a oneOf whose members each carry a "
+                    "discriminable value is counted",
+                )
+                self.assertNotIn(
+                    (selector, f"du-{position}-oneof-untagged-member"), self.reported,
+                    "a member carrying no discriminable value is not this shape",
+                )
+                self.assertNotIn(
+                    (selector, f"du-{position}-anyof-with-discriminator"), self.reported,
+                    "a discriminator beside an anyOf with no oneOf is refused",
+                )
+                self.assertEqual(
+                    1, self.reported.get((selector, f"du-{position}-oneof-inferred")),
+                    "the inferred spelling, with no discriminator written at all, "
+                    "is counted exactly as the written one is",
+                )
+
+    def test_each_selector_reports_one_row_per_document_declaring_it(self) -> None:
+        """`--selector` takes each of these like any other selector."""
+        payload = self.spec
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in sorted(self.names):
+                fragment = payload["documents"][name]
+                write_json_fixture(root, name, substituted(
+                    payload["envelope"], fragment["schemas"], fragment["body"]
+                ))
+            for case in self.cases:
+                selector = case["selector"]
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    expected = {
+                        (selector, name): count
+                        for (reported, name), count in self.reported.items()
+                        if reported == selector
+                    }
+                    self.assertTrue(expected, f"{selector} counts nothing to report")
+                    self.assertEqual(expected, rows(completed))
+
+    def test_each_selector_has_exactly_one_name(self) -> None:
+        """One shape, one name: every writing the grammar admits canonicalizes to it."""
+        for case in self.cases:
+            selector = case["selector"]
+            if not census.is_conjunction(selector):
+                continue
+            with self.subTest(selector=selector):
+                self.assertEqual(selector, census.canonical_conjunction(selector))
+                groups = census.conjunction_parts(selector)
+                writings = [""]
+                for members, operator in groups:
+                    head, last = (members, []) if operator is None else (members[:-1], members[-1:])
+                    writings = [
+                        prefix + "&".join([*order, *last]) + (operator or "")
+                        for prefix in writings
+                        for order in itertools.permutations(head)
+                    ]
+                for writing in writings:
+                    self.assertEqual(
+                        selector,
+                        census.canonical_conjunction(writing),
+                        f"{writing} is a second name for one shape",
+                    )
+
+    def test_a_misspelling_of_a_discriminated_union_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            ("schema.oneOf:discriminated-unions", "Did you mean: schema.oneOf:discriminated-union"),
+            (
+                "schema.discriminator:inheritance-unions",
+                "Did you mean: schema.discriminator:inheritance-union",
+            ),
+            (
+                "schema.items>schema.oneOf:discriminated-unions",
+                "is not one of the conjunction selectors",
+            ),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(repr(selector), completed.stderr)
+                self.assertIn(expected, completed.stderr)
+
+    def test_a_discriminated_union_selector_no_source_declares_is_reported_as_absent(self) -> None:
+        """Absent, not silent, over a document set this check supplies itself."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
+            for selector in sorted(DISCRIMINATED_UNION_SELECTORS):
+                with self.subTest(selector=selector):
+                    completed = run(
+                        "--vendored-only", "--fixtures-root", str(root),
+                        "--selector", selector,
+                    )
+                    self.assertEqual(0, completed.returncode, completed.stderr)
+                    self.assertEqual({}, rows(completed))
+                    self.assertIn("(declared by no registered source)", completed.stdout)
 
 
 class DocumentContextTests(unittest.TestCase):
@@ -4163,11 +4450,13 @@ class RankedBacklogTests(unittest.TestCase):
             found[selector] = citing[0]
         return found
 
-    # The node-local predicates this pass declared, which carry rows of their own
-    # exactly as the conjunctions composing them do: a selector declared and never
-    # classified is a measurement nobody took. The five predicates that predate the
-    # family are not here — they are about a whole document's keys or values rather
-    # than about one arm of a blind function, and their rows say so instead.
+    # The predicates read off a *branch*, which carry rows of their own exactly as
+    # the conjunctions composing them do: a selector declared and never classified
+    # is a measurement nobody took. The eleven node-local ones the node-local pass
+    # declared, and the three cross-member readings of `discriminated_union` the
+    # discriminated-union pass added. The five predicates that predate the family
+    # are not here — they are about a whole document's keys or values rather than
+    # about one arm of a blind function, and their rows say so instead.
     BRANCH_PREDICATES = {
         "schema.type:primary=array": "schemas",
         "schema.properties:non-empty": "schemas",
@@ -4180,6 +4469,9 @@ class RankedBacklogTests(unittest.TestCase):
         "openapi.paths:leading-literal-segment": "document-paths",
         "openapi.paths:template-before-literal-segment": "document-paths",
         "openapi.paths:all-segments-templated": "document-paths",
+        "schema.oneOf:discriminated-union": "schemas",
+        "schema.anyOf:discriminated-union": "schemas",
+        "schema.discriminator:inheritance-union": "schemas",
     }
 
     def predicate_rows(self) -> dict[str, tuple[str, list[str]]]:
