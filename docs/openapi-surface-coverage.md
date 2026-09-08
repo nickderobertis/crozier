@@ -144,7 +144,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-29, declared in `scripts/openapi-surface-census.py` and restated here, with a
+32, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
@@ -193,6 +193,17 @@ drift gate over the pair:
   array]` counts none and `type: [null, array]` counts one. A schema declaring
   `array` anywhere among its types is what `schema.type=array` counts, and the
   two disagree on exactly the key case 3.1 added.
+- `schema.type:primary=object` — one per Schema Object whose `type` names
+  `object` first among its non-`null` members, which is the first disjunct of
+  `src/ir.rs`'s `is_object_type` and the reading every arm that asks whether a
+  schema closes an object makes.
+- `schema.type:primary-scalar` — one per Schema Object whose `type` names
+  `string`, `number`, `integer` or `boolean` first among its non-`null` members,
+  which is exactly what `src/ir.rs`'s `declares_scalar_type` reads. It is one
+  predicate rather than four because the arms reading it read the disjunction and
+  never one member of it, and it is not the four valued spellings `schema.type` =
+  `string` and its neighbours emit: those count a 3.1 `type` of `[object,
+  string]`, whose primary member is `object`, and this does not.
 - `schema.properties:non-empty` — one per Schema Object whose `properties` map
   holds at least one entry, so a declared-but-empty `properties: {}` counts
   none.
@@ -200,6 +211,9 @@ drift gate over the pair:
   exactly one member.
 - `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds
   exactly one member.
+- `schema.allOf:sole-member` — one per Schema Object whose `allOf` array holds
+  exactly one member, the arity `src/ir.rs`'s `sole_inline_all_of` tests, on the
+  same terms as the two above.
 - `schema.oneOf:sole-non-null-member` — one per Schema Object whose `oneOf`
   array holds exactly one member whose primary type is not `null`, beside at
   least one member whose primary type is `null`.
@@ -306,7 +320,7 @@ drift gate over the pair:
   a member count, that exactly one member is a reference, and what the others
   declare — is a field's presence.
 
-**Twenty-one of the 29 are node-local**, which is what makes them one family:
+**Twenty-four of the 32 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -541,9 +555,9 @@ can express. Three conventions that derivation applies, stated once:
   uncounted — and equally one **broader** than it: `schema.oneOf>schema.example&schema.type=object`
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
-  `hoist_union_variant` sends all three to `base_type_ref`. Seventy-four of the
-  eighty-nine cases below survive this test; the other fifteen name the
-  extension that would close them.
+  `hoist_union_variant` sends all three to `base_type_ref`. Ninety-four of the
+  ninety-five cases below survive this test; the other one names the
+  extension that would close it.
 
   What the test does **not** rule out is a node whose own declaration contradicts
   itself. A schema writing `$ref` beside a sibling keyword is one — 3.0 says the
@@ -569,7 +583,7 @@ can express. Three conventions that derivation applies, stated once:
 A case earns a selector when every property its own condition reads is one the
 grammar can name — a field written, a member of a closed value set, or one of the
 node-local predicates above — and those members compose into one conjunction.
-The conjunctions are themselves a closed list of 61, declared in
+The conjunctions are themselves a closed list of 81, declared in
 `scripts/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
@@ -748,13 +762,90 @@ with a drift gate over the pair:
 - `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items` —
   one per Schema Object one of whose properties declares `array` as its primary
   type over `items` that are such a pointer read an `items` segment at.
+- `schema.items>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object whose `items` value declares `allOf` and declares no
+  scalar `type`, which is the composition disjunct of `is_inline_struct`.
+- `schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object whose `items` value writes an explicitly empty
+  `properties` map beside no `additionalProperties`, on an `object` primary
+  type.
+- `schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` declaring `allOf` and no scalar `type`.
+- `schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` declaring `allOf` and no scalar `type`.
+- `schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object one of whose `oneOf` members declares `array` as its
+  primary type over `items` writing an explicitly empty `properties` map
+  beside no `additionalProperties`, on an `object` primary type.
+- `schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object one of whose `anyOf` members declares `array` as its
+  primary type over `items` writing an explicitly empty `properties` map
+  beside no `additionalProperties`, on an `object` primary type.
+- `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref` —
+  one per Schema Object one of whose properties is a one-member `allOf` and
+  nothing else — no `$ref` of its own and none on the member, no `type`, no
+  `properties`, no `oneOf`, no `anyOf`, no `items`, no
+  `additionalProperties` and no `enum` — which is the shape
+  `sole_inline_all_of` of `src/ir.rs` reads.
+- `schema.properties>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object one of whose properties declares `allOf` and
+  declares no scalar `type`.
+- `schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object one of whose properties writes an explicitly empty
+  `properties` map beside no `additionalProperties`, on an `object` primary
+  type.
+- `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object one of whose properties declares a one-member
+  `oneOf` whose member declares `allOf` and no scalar `type`.
+- `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` —
+  one per Schema Object one of whose properties declares a one-member
+  `anyOf` whose member declares `allOf` and no scalar `type`.
+- `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object one of whose properties declares a one-member
+  `oneOf` whose member writes an explicitly empty `properties` map beside no
+  `additionalProperties`, on an `object` primary type.
+- `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` —
+  one per Schema Object one of whose properties declares a one-member
+  `anyOf` whose member writes an explicitly empty `properties` map beside no
+  `additionalProperties`, on an `object` primary type.
+- `schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array` —
+  one per Schema Object whose `items` value declares none of the members
+  `nested_array_element`'s other cases carry, which is the residual arm its
+  closing `None` is.
+- `schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty` —
+  one per Schema Object one of whose `oneOf` members declares none of the
+  members `hoist_union_variant`'s other cases carry at the variant, which is
+  the residual arm its closing `base_type_ref` is.
+- `schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty` —
+  one per Schema Object one of whose `anyOf` members declares none of them,
+  the same residual arm reached through the other union head.
+- `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` —
+  one per Schema Object one of whose properties is an annotated `$ref` whose
+  target declares none of the members the arms inside `prop_type_ref`'s
+  resolution gate read, which is the residual arm its closing
+  `full_type_ref_resolved` is.
+- `schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf` —
+  one per Schema Object one of whose properties declares a `oneOf` that is
+  none of the shapes the arms inside `prop_type_ref`'s composition gate
+  read, which is the residual arm its closing union alias is.
+- `schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf` —
+  one per Schema Object one of whose properties declares an `anyOf` that is
+  none of them, the same residual arm reached through the other composition
+  spelling.
+- `schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array` —
+  one per Schema Object one of whose properties declares none of the members
+  `prop_type_ref`'s own arms carry, which is the residual arm its closing
+  `base_type_ref` is.
 
 A conjunction selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name — and refuses a well-formed
 combination nobody declared, because the list is closed by the code rather than
 by the operators — and reports an undeclared one as absent.
 
-The last five are the five arms of `resolve_schema_pointer`'s segment loop, each
+The five `schema.$ref:pointer-walk-reaches=` entries above are the five arms of
+`resolve_schema_pointer`'s segment loop, each
 behind that function's own **caller gate**: `field_type_ref` calls it on an
 array-typed property's `items` reference and nowhere else, so the three members in
 front of the [member-only reading](#the-member-only-readings) are what keep the
@@ -1715,10 +1806,11 @@ selector the census declares — a conjunction, or, where the arm reads one Path
 Object key or one `$ref` value and opens no schema, a predicate — and only where
 that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-is recorded as one of three enumeration holes naming the property no selector kind
-can express and what closing it would take — the way `normalization-collision` was
-recorded before `components.schemas:normalized-collision` existed. No case is in
-neither, and none is in both.
+is recorded as an enumeration hole of one remaining kind, naming the property no
+selector kind can express and what closing it would take — the way
+`normalization-collision` was recorded before
+`components.schemas:normalized-collision` existed. No case is in neither, and none
+is in both.
 
 **This table is machine-readable, and this is the restatement of it.** The
 derivation is declared once, as `CASES` in `scripts/openapi-surface-census.py` —
@@ -1755,18 +1847,20 @@ selector naming one disjunct would be narrower than the whole arm.
 
 | hole | what no selector kind can express | what closing it would take |
 |---|---|---|
-| **H-residual** | a function's residual arm is selected by the *absence* of every case above it | a negation operator over a group's members, deliberately absent: a complement is not a shape a document declares |
-| **H-negated-value** | that a value was *not* written — `is_inline_struct`'s `!declares_scalar_type(schema)`, which excludes a schema whose `type` is `string`, `number`, `integer` or `boolean`; the same helper's `additional_properties.is_none()`, which is what makes a declared-but-empty `properties: {}` an inline struct; `sole_inline_all_of`'s nine sibling-absence tests; and `is_bare_object`'s four | the same negation operator H-residual names; every positive spelling is a selector the grammar already has, and only their complement is missing |
-| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half — and, beyond both, the negation operator H-negated-value names, because the arm is `is_bare_object` beside that pair and a map schema carrying a concrete example is a coherent document the pair alone counts and `hoist_union_variant` sends to `base_type_ref` |
+| **H-example-value** | the JSON *kind and content* of an `example` or `examples` value — `hoist_union_variant`'s bare-object arm needs `schema_example(variant)` to yield an object that `example_is_schema_definition` does not reject, so a `type: object` variant beside a scalar example, an empty `examples`, or an object whose every value is itself a schema declaration is counted and takes `base_type_ref` | a valued selector over an example's JSON kind (`schema.example=object`) *and* a predicate `schema.example:schema-shaped` for the rejection half. The negation operator this row used to name as a third requirement is landed and is no longer one: `is_bare_object`'s four absence tests are four negated members now, and what is left is the example's own content |
 
-Every one of the three turns on something the node in front of the walk does not
-say — the JSON kind or content of a value, a comparison across the document, or
-the *absence* of a declaration — which is what separates them from the node-local
-predicate family
-[the grammar declares](#the-selector-grammar). Declaring one of them is a change
-to the predicate list or to the operators, not to the conjunction list this
-section derives; each hole says which, so the next node reads the work off the row
-rather than rediscovering it.
+**Two hole kinds are gone, and the one below is the whole of what is left.**
+H-residual named every residual arm — the arm selected by the *absence* of every
+case above it — and H-negated-value named every arm whose condition was that a
+value was not written. Both wanted the same thing, a negation operator over a
+group's members, and both are closed by it: the residuals are composed from the
+case table and the negated conditions are spelled member by member. What remains
+turns on something the node in front of the walk does not say at all — the JSON
+kind and content of a value — which is what separates it from the node-local
+predicate family [the grammar declares](#the-selector-grammar). Declaring it is a
+change to the predicate list and to the valued-field list, not to the conjunction
+list this section derives; the row says which, so the next node reads the work off
+it rather than rediscovering it.
 
 #### The five rows the annotated-`$ref` pass added
 
@@ -2067,12 +2161,12 @@ guard is what leaves two of the four a hole.
 | 2c | the same call over an `items` declaring neither, which `discriminated_union` delegates to `inheritance_discriminated_union` — OpenAPI's other polymorphism spelling, a base object whose `discriminator.mapping` names the subtypes. **The selector reads one thing the code does not test:** the Rust lets a mapping entry naming the union's *own* coined class name through without resolving it, and that name is coined from the call site rather than declared by the document, so the predicate requires every entry to resolve instead. The two disagree only on a mapping naming a component this document does not declare whose class name is nonetheless the one the caller would coin, which is a document contradicting itself | `schema.items>schema.discriminator:inheritance-union` |
 | 3 | `if items.reference.is_some() { return None; }` — the arm's own condition is that the field is written, and nothing more | `schema.items>schema.$ref` |
 | 4 | `is_inline_struct(items)` → `add_object`, on an `items` whose `properties` are non-empty | `schema.items>schema.properties:non-empty` |
-| 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type` | **H-negated-value** |
+| 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type`. The negated member is `declares_scalar_type` exactly — the *primary* member of a `type` array — and not the four valued spellings, which would leave a 3.1 `type: [object, string]` beside an `allOf` uncounted while the arm takes it | `schema.items>!schema.type:primary-scalar&schema.allOf` |
 | 6 | the same arm on an `items` writing `additionalProperties: false`, which `is_object_type` reads as an object however — or whether — the `type` is written | `schema.items>schema.additionalProperties=false` |
-| 6b | the same arm on an `items` writing an explicitly empty `properties: {}` beside no `additionalProperties` — `is_inline_struct`'s third disjunct, which the account this table replaces did not derive | **H-negated-value** |
+| 6b | the same arm on an `items` writing an explicitly empty `properties: {}` beside no `additionalProperties` — `is_inline_struct`'s third disjunct, which the account this table replaces did not derive. With the map empty and no `additionalProperties`, `is_object_type` reduces to its first disjunct, which is what the last member spells | `schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` reaches it. **What the account this row replaces got wrong is which arm an empty one then takes:** case 2 runs first and claims it, because `inferred_union_discriminant_property` finds `type` inferable vacuously over no members at all and `discriminated_union` returns `Some` with none — the generator coins a `Union({Ctx}ItemItem)` for `items: {oneOf: []}` and no alias, which `tests/resolving-arm-inputs.json`'s `du-nested-empty-oneof` drives and `src/ir.rs`'s own observation of the arm confirms. This row's selector still counts the node, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two listed cases | `schema.items>schema.oneOf` |
 | 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically, and an empty `anyOf: []` is claimed by case 2b for the reason case 7 states | `schema.items>schema.anyOf` |
-| 9 | the closing `None` | **H-residual** |
+| 9 | the closing `None` — the residual arm, selected by the absence of every case above it. Its selector is **composed from the case table** and written nowhere: one negated member per case above whose own selector is this block's gate and one member. Cases 5 and 6b state a property of the `items` node that takes two members apiece and case 2's three readings are negated separately, so the composed spelling is the nine below | `schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array` |
 
 #### `hoist_union_variant`
 
@@ -2115,14 +2209,17 @@ composition, so the gate below fires — which is the chain overlap
 | 7b | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty` |
 | 7c | the same arm on an item writing `additionalProperties: false`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` |
 | 7d | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false` |
-| 7e | the same arm on an item declaring `allOf`, either head, which `is_inline_struct` takes only for an item declaring no scalar `type` | **H-negated-value** |
-| 7f | the same arm on an item writing an explicitly empty `properties: {}` beside no `additionalProperties`, either head | **H-negated-value** |
+| 7e | the same arm on an item declaring `allOf`, which `is_inline_struct` takes only for an item declaring no scalar `type`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf` |
+| 7f | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf` |
+| 7g | the same arm on an item writing an explicitly empty `properties: {}` beside no `additionalProperties`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
+| 7h | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 8a | `is_inline_object(variant)` → `hoist_object` on a variant whose `properties` are non-empty; `oneOf` head. The helper carries no scalar-type guard, so the disjunct is the whole of its own condition | `schema.oneOf>schema.properties:non-empty` |
 | 8b | the same, `anyOf` head | `schema.anyOf>schema.properties:non-empty` |
 | 9 | the same arm on a variant declaring `allOf` — `is_inline_object` is a disjunction and carries no scalar-type guard, so `all_of.is_some()` is the whole of it; `oneOf` head | `schema.oneOf>schema.allOf` |
 | 10 | the same arm, `anyOf` head | `schema.anyOf>schema.allOf` |
 | 11 | `is_bare_object(variant) && schema_example(variant).is_some_and(…)` — the arm reads the example's JSON kind and rejects a schema-shaped object, over a helper that is itself four absence tests | **H-example-value** |
-| 12 | the closing `base_type_ref(variant)` | **H-residual** |
+| 12a | the closing `base_type_ref(variant)` — the residual arm, its selector **composed from the case table**; `oneOf` head. Only cases 1, 8a and 9 are negatable: every case inside the `type: array` guard states a property of the item rather than of the variant, and case 11 is a hole. The nodes those cases claim are counted here too, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two cases of one table | `schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty` |
+| 12b | the same, `anyOf` head | `schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty` |
 
 #### `prop_type_ref`
 
@@ -2154,13 +2251,13 @@ both count it and the earlier arm runs — the chain overlap
 | 4a | inside it, `!is_map(&target) && !is_bare_object(&target) && (…)` → `hoist_object_with_doc`; the `!target.properties.is_empty()` disjunct, which excludes both negated helpers on its own — each of them requires an empty `properties` map | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty` |
 | 4b | the same arm's `target.all_of.is_some()` disjunct. `is_bare_object` is excluded by the `allOf` itself; `is_map` is not, so a target declaring `allOf` beside `type: object` and a schema-valued or `true` `additionalProperties` with no properties is counted here and taken by case 5, which is a case of this table and carries its own row | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf` |
 | 4c | the same arm's `is_object_type(&target)` disjunct, on a target closing itself. That is the whole of what the disjunct adds over 4a and 4b: with no properties and no `allOf`, `!is_bare_object` needs an `additionalProperties` written and `!is_map` needs it to be `false`, and a scalar `type` beside it is the contradiction [the exactness rule](#the-selector-grammar) already excuses | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false` |
-| 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)`, selected by the *absence* of cases 2 to 4: `string_enum_values` yielding nothing, no `oneOf` or `anyOf`, and then `is_map` or `is_bare_object` or none of the three positive disjuncts above. No property is common to every target that reaches it — a `type: string`, a bare `{}`, an open map, a bare `type: object` and a `{format: date}` all do — and every way of reaching it is an emptiness test or a negation. **The plan this row landed under expected an exact selector here and the reading of the code contradicts it**, so the row follows the code: this is the residual arm of the resolution block, the same shape as cases 14 and 16 below | **H-residual** |
-| 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member`; what remains is nine sibling-absence tests, and without them the selector counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | **H-negated-value** |
+| 5 | inside it, the closing `full_type_ref_resolved(&target, schemas)`, selected by the *absence* of cases 2 to 4: `string_enum_values` yielding nothing, no `oneOf` or `anyOf`, and then `is_map` or `is_bare_object` or none of the three positive disjuncts above. No property is common to every target that reaches it — a `type: string`, a bare `{}`, an open map, a bare `type: object` and a `{format: date}` all do — and every way of reaching it is an emptiness test or a negation. It is the residual arm of the **resolution block alone**, so its selector is composed from that block's seven cases and from nothing above the gate: the `~>` in front of the negated members is what scopes it | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
+| 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member` and the nine sibling-absence tests are the nine negated members, eight at the property and one at the member the descent reaches. Without them the arity alone counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref` |
 | 7a | `string_enum_values(prop_schema)` → a hoisted enum, over a written `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.enum:string-valued` |
 | 7b | the same over a `const`, the spelling the helper falls back to when no `enum` is written | `schema.properties>schema.const:string-valued` |
 | 8a | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object`, on a property whose `properties` are non-empty | `schema.properties>schema.properties:non-empty` |
-| 8b | the same arm on a property declaring `allOf`, which `is_inline_struct` takes only for a property declaring no scalar `type` | **H-negated-value** |
-| 8c | the same arm on a property writing an explicitly empty `properties: {}` beside no `additionalProperties` | **H-negated-value** |
+| 8b | the same arm on a property declaring `allOf`, which `is_inline_struct` takes only for a property declaring no scalar `type` | `schema.properties>!schema.type:primary-scalar&schema.allOf` |
+| 8c | the same arm on a property writing an explicitly empty `properties: {}` beside no `additionalProperties` | `schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 8d | the same arm on a property writing `additionalProperties: false` | `schema.properties>schema.additionalProperties=false` |
 | 9 | `if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref())` — the composition gate, whose own condition is that the field is written; `oneOf` spelling | `schema.properties>schema.oneOf` |
 | 10 | the same gate, `anyOf` spelling: a property declaring only `anyOf` reaches every arm below it identically | `schema.properties>schema.anyOf` |
@@ -2170,13 +2267,16 @@ both count it and the earlier arm runs — the chain overlap
 | 12b | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty` |
 | 12c | the same on a member writing `additionalProperties: false`; `oneOf` spelling | `schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false` |
 | 12d | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false` |
-| 12e | the same on a member declaring `allOf`, either spelling | **H-negated-value** |
-| 12f | the same on a member writing an explicitly empty `properties: {}` beside no `additionalProperties`, either spelling | **H-negated-value** |
+| 12e | the same on a member declaring `allOf` and no scalar `type`; `oneOf` spelling | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` |
+| 12f | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` |
+| 12g | the same on a member writing an explicitly empty `properties: {}` beside no `additionalProperties`; `oneOf` spelling | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
+| 12h | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 13a | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)`; the property's `oneOf` spelling. The composition gate above it is what puts the arm inside, so this counts no node cases 9 and 10 do not | `schema.properties>schema.oneOf:discriminated-union` |
 | 13b | the same arm, the property's `anyOf` spelling, which only the inferred reading reaches for the reason case 2b states | `schema.properties>schema.anyOf:discriminated-union` |
-| 14 | inside it, the closing alias over the members left after `is_null_variant` filtering | **H-residual** |
+| 14a | inside it, the closing alias over the members left after `is_null_variant` filtering — the residual of the **composition block alone**, so the gate is its one positive member and the complement is of cases 11 and 13 within that gate rather than of everything above it; `oneOf` spelling. Case 12's four rows each state a property of the sole member and take two members apiece, so they are not negatable and the nodes they claim are counted here | `schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf` |
+| 14b | the same, `anyOf` spelling | `schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf` |
 | 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | `schema.properties>schema.type:primary=array` |
-| 16 | the closing `base_type_ref(prop_schema)` | **H-residual** |
+| 16 | the closing `base_type_ref(prop_schema)` — the function's own residual, composed from its own arms and not from the two blocks inside them: negating cases 9 and 10 already excludes every case of the composition block. **Case 1 is deliberately not negated**, and that is the one place this composition reads something a string comparison could not: its gate *falls through* when the annotated `$ref` resolves to nothing, so a property taking it can still reach this arm, and negating it would make the residual narrower than its own arm | `schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array` |
 
 #### `ref_to_class`
 

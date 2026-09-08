@@ -898,6 +898,25 @@ PREDICATES = {
         "so a 3.1 `type: [string, array]` counts none and `type: [null, array]` counts "
         "one"
     ),
+    "schema.type:primary=object": (
+        "one per Schema Object whose `type` names `object` first among its non-`null` "
+        "members, which is the first disjunct of `is_object_type` of `src/ir.rs` and "
+        "the reading every arm that asks whether a schema closes an object makes"
+    ),
+    "schema.type:primary-scalar": (
+        "one per Schema Object whose `type` names `string`, `number`, `integer` or "
+        "`boolean` first among its non-`null` members, which is exactly what "
+        "`declares_scalar_type` of `src/ir.rs` reads. It is one predicate rather than "
+        "four because the arms that read it read the disjunction and never one member "
+        "of it, and it is not the four valued spellings `schema.type=string` and its "
+        "neighbours: those count a 3.1 `type: [object, string]`, whose primary member "
+        "is `object`, and this does not"
+    ),
+    "schema.allOf:sole-member": (
+        "one per Schema Object whose `allOf` array holds exactly one member, the "
+        "arity `sole_inline_all_of` of `src/ir.rs` tests, on the same terms as the "
+        "`oneOf` and `anyOf` spellings above"
+    ),
     "schema.properties:non-empty": (
         "one per Schema Object whose `properties` map holds at least one entry, so a "
         "declared-but-empty `properties: {}` counts none"
@@ -1172,6 +1191,19 @@ CONJUNCTIONS = {
     "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf": "one per Schema Object one of whose properties declares `array` as its primary type over `items` that are such a pointer read an `anyOf` segment at",
     "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties": "one per Schema Object one of whose properties declares `array` as its primary type over `items` that are such a pointer read a `properties` segment at",
     "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items": "one per Schema Object one of whose properties declares `array` as its primary type over `items` that are such a pointer read an `items` segment at",
+    "schema.items>!schema.type:primary-scalar&schema.allOf": "one per Schema Object whose `items` value declares `allOf` and declares no scalar `type`, which is the composition disjunct of `is_inline_struct`",
+    "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object whose `items` value writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring `allOf` and no scalar `type`",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring `allOf` and no scalar `type`",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` writing an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` writing an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref": "one per Schema Object one of whose properties is a one-member `allOf` and nothing else — no `$ref` of its own and none on the member, no `type`, no `properties`, no `oneOf`, no `anyOf`, no `items`, no `additionalProperties` and no `enum` — which is the shape `sole_inline_all_of` of `src/ir.rs` reads",
+    "schema.properties>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose properties declares `allOf` and declares no scalar `type`",
+    "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose properties writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member declares `allOf` and no scalar `type`",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares `allOf` and no scalar `type`",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
 }
 
 
@@ -1236,10 +1268,6 @@ class Case:
     falls_through: bool = False
     residual: str | None = None
 
-    def verdict(self) -> str:
-        """What the case analysis's third column says: a selector or a hole."""
-        return self.selector if self.hole is None else self.hole
-
 
 BLOCKS: dict[str, Block] = {
     # `nested_array_element`'s entry gate is `array.items.as_deref()?`.
@@ -1284,12 +1312,16 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("2c", block="nested_array_element", selector="schema.items>schema.discriminator:inheritance-union"),
         Case("3", block="nested_array_element", selector="schema.items>schema.$ref"),
         Case("4", block="nested_array_element", selector="schema.items>schema.properties:non-empty"),
-        Case("5", block="nested_array_element", hole="H-negated-value"),
+        Case("5", block="nested_array_element", selector="schema.items>!schema.type:primary-scalar&schema.allOf"),
         Case("6", block="nested_array_element", selector="schema.items>schema.additionalProperties=false"),
-        Case("6b", block="nested_array_element", hole="H-negated-value"),
+        Case("6b", block="nested_array_element", selector="schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("7", block="nested_array_element", selector="schema.items>schema.oneOf"),
         Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),
-        Case("9", block="nested_array_element", hole="H-residual"),
+        Case("9", block="nested_array_element", residual=(
+            "one per Schema Object whose `items` value declares none of the members "
+            "`nested_array_element`'s other cases carry, which is the residual arm "
+            "its closing `None` is"
+        )),
     ),
     "hoist_union_variant": (
         Case("1", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.$ref"),
@@ -1312,14 +1344,24 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("7b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty"),
         Case("7c", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
         Case("7d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
-        Case("7e", block="hoist_union_variant/oneOf", hole="H-negated-value"),
-        Case("7f", block="hoist_union_variant/anyOf", hole="H-negated-value"),
+        Case("7e", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf"),
+        Case("7f", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf"),
+        Case("7g", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case("7h", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("8a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.properties:non-empty"),
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
         Case("10", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.allOf"),
         Case("11", hole="H-example-value"),
-        Case("12", hole="H-residual"),
+        Case("12a", block="hoist_union_variant/oneOf", residual=(
+            "one per Schema Object one of whose `oneOf` members declares none of the "
+            "members `hoist_union_variant`'s other cases carry at the variant, which "
+            "is the residual arm its closing `base_type_ref` is"
+        )),
+        Case("12b", block="hoist_union_variant/anyOf", residual=(
+            "one per Schema Object one of whose `anyOf` members declares none of "
+            "them, the same residual arm reached through the other union head"
+        )),
     ),
     "prop_type_ref": (
         Case("1", block="prop_type_ref", selector="schema.properties>schema.allOf:annotated-ref", opens="prop_type_ref/resolution", falls_through=True),
@@ -1330,13 +1372,18 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("4a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"),
         Case("4b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf"),
         Case("4c", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false"),
-        Case("5", block="prop_type_ref/resolution", hole="H-residual"),
-        Case("6", block="prop_type_ref", hole="H-negated-value"),
+        Case("5", block="prop_type_ref/resolution", residual=(
+            "one per Schema Object one of whose properties is an annotated `$ref` "
+            "whose target declares none of the members the arms inside "
+            "`prop_type_ref`'s resolution gate read, which is the residual arm its "
+            "closing `full_type_ref_resolved` is"
+        )),
+        Case("6", block="prop_type_ref", selector="schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref"),
         Case("7a", block="prop_type_ref", selector="schema.properties>schema.enum:string-valued"),
         Case("7b", block="prop_type_ref", selector="schema.properties>schema.const:string-valued"),
         Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
-        Case("8b", block="prop_type_ref", hole="H-negated-value"),
-        Case("8c", block="prop_type_ref", hole="H-negated-value"),
+        Case("8b", block="prop_type_ref", selector="schema.properties>!schema.type:primary-scalar&schema.allOf"),
+        Case("8c", block="prop_type_ref", selector="schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("8d", block="prop_type_ref", selector="schema.properties>schema.additionalProperties=false"),
         Case("9", block="prop_type_ref", selector="schema.properties>schema.oneOf", opens="prop_type_ref/oneOf"),
         Case("10", block="prop_type_ref", selector="schema.properties>schema.anyOf", opens="prop_type_ref/anyOf"),
@@ -1346,13 +1393,28 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("12b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty"),
         Case("12c", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false"),
         Case("12d", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false"),
-        Case("12e", block="prop_type_ref/oneOf", hole="H-negated-value"),
-        Case("12f", block="prop_type_ref/anyOf", hole="H-negated-value"),
+        Case("12e", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf"),
+        Case("12f", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf"),
+        Case("12g", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case("12h", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("13a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:discriminated-union"),
         Case("13b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:discriminated-union"),
-        Case("14", hole="H-residual"),
+        Case("14a", block="prop_type_ref/oneOf", residual=(
+            "one per Schema Object one of whose properties declares a `oneOf` that is "
+            "none of the shapes the arms inside `prop_type_ref`'s composition gate "
+            "read, which is the residual arm its closing union alias is"
+        )),
+        Case("14b", block="prop_type_ref/anyOf", residual=(
+            "one per Schema Object one of whose properties declares an `anyOf` that "
+            "is none of them, the same residual arm reached through the other "
+            "composition spelling"
+        )),
         Case("15", block="prop_type_ref", selector="schema.properties>schema.type:primary=array"),
-        Case("16", hole="H-residual"),
+        Case("16", block="prop_type_ref", residual=(
+            "one per Schema Object one of whose properties declares none of the "
+            "members `prop_type_ref`'s own arms carry, which is the residual arm its "
+            "closing `base_type_ref` is"
+        )),
     ),
     "ref_to_class": (
         Case("1a", selector="schema.$ref:cross-document"),
@@ -1407,6 +1469,29 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
 # it performs, and that reference depth is bounded at one.
 DESCENT = ">"
 RESOLVING_DESCENT = "~>"
+# The negation operator, and the only place its spelling is written.
+#
+# `!` applied to a **member** of a group says the node at that position does not
+# declare that member — the complement of the selector it prefixes, read at one
+# node and never over a subtree. It composes with `&` and with both descent
+# operators, and it moves no count rule: a conjunction carrying one still counts
+# one per node at the leftmost position, exactly as every other selector does.
+#
+# What it is for is the arms selected by the *absence* of something: the residual
+# arm of a function or of one of its blocks, and `is_inline_struct`'s
+# `!declares_scalar_type`. A complement is only a shape rather than a guess where
+# the cases it complements are themselves exact, which is why the operator arrives
+# after the rest of the case table does and why the composition below reads that
+# table rather than a spelling anyone wrote.
+#
+# **A selector of negated members alone is refused**, by name. Negation says what
+# a node does not declare, and "does not declare a `oneOf`" is not a shape a
+# document declares — it is true of almost every node in almost every document,
+# so a count over it measures the corpus's size rather than its surface. At least
+# one positive member has to anchor a selector; where a group holds only negated
+# members, as a residual's last group does, the groups in front of it are that
+# anchor.
+NEGATION = "!"
 # `~>` is matched first, so `a~>b` splits on the two-character operator rather
 # than on the `>` inside it.
 _DESCENT = re.compile(f"({re.escape(RESOLVING_DESCENT)}|{re.escape(DESCENT)})")
@@ -1481,6 +1566,13 @@ MEMBER_ONLY_PREDICATES = {
 }
 
 
+# One compiled conjunction: per group, the members that must hold and the members
+# that must not, and the descent leaving that group.
+CompiledConjunction = tuple[
+    tuple[tuple[frozenset[str], frozenset[str]], tuple[str, str] | None], ...
+]
+
+
 def conjunction_parts(text: str) -> list[tuple[list[str], str | None]]:
     """One conjunction as its descent-separated groups.
 
@@ -1506,30 +1598,67 @@ def is_conjunction(text: str) -> bool:
 
 
 def descent_field(member: str) -> str | None:
-    """The field a group descends through: the last member, which must be a field."""
-    if "=" in member or ":" in member:
+    """The field a group descends through: the last member, which must be a field.
+
+    A negated member is not one. `!schema.items>` would ask the walk to descend
+    through a field the node does not write, which addresses nothing, so a
+    conjunction spelling it is refused where the closed list is compiled rather
+    than silently holding nowhere.
+    """
+    if "=" in member or ":" in member or member.startswith(NEGATION):
         return None
     _, _, field = member.rpartition(".")
     return field or None
 
 
-def compile_conjunction(
-    text: str,
-) -> tuple[tuple[frozenset[str], tuple[str, str] | None], ...]:
+def group_halves(members: Iterable[str]) -> tuple[frozenset[str], frozenset[str]]:
+    """One group's members as the set that must hold and the set that must not."""
+    positive = {member for member in members if not member.startswith(NEGATION)}
+    negated = {member[len(NEGATION):] for member in members if member.startswith(NEGATION)}
+    return frozenset(positive), frozenset(negated)
+
+
+def compile_conjunction(text: str) -> CompiledConjunction:
     """One conjunction as the groups `Census.conjunction_holds` evaluates.
 
-    Each group is the set of members that must hold at one node, paired with the
-    descent that leaves it: the field the operator descends through — the group's
-    last member, since that is the member either operator binds to — and which
-    operator it is. The last group descends nowhere and carries `None`.
+    Each group is the members that must hold at one node and the members that
+    must **not**, paired with the descent that leaves it: the field the operator
+    descends through — the group's last member, since that is the member either
+    operator binds to — and which operator it is. The last group descends nowhere
+    and carries `None`.
     """
     return tuple(
         (
-            frozenset(members),
+            group_halves(members),
             None if operator is None else (descent_field(members[-1]), operator),
         )
         for members, operator in conjunction_parts(text)
     )
+
+
+def conjunction_error(text: str) -> str | None:
+    """Why this conjunction is not well-formed under the operators, or None.
+
+    Two shapes are refused rather than left to hold nowhere: a selector whose
+    every member is negated, which names no shape a document declares, and a
+    descent bound to a negated member, which would descend through a field the
+    node does not write.
+    """
+    groups = conjunction_parts(text)
+    if all(member.startswith(NEGATION) for members, _ in groups for member in members):
+        return (
+            f"{text!r} is a selector of negated members alone. `!` says what a node "
+            "does not declare, which is not a shape a document declares, so a "
+            "selector needs at least one positive member to anchor it."
+        )
+    for members, operator in groups:
+        if operator is not None and members[-1].startswith(NEGATION):
+            return (
+                f"{text!r} binds {operator!r} to the negated member "
+                f"{members[-1]!r}; a descent operator descends through a field the "
+                "node writes, so the member it binds to is never negated."
+            )
+    return None
 
 
 def canonical_conjunction(text: str) -> str:
@@ -1550,6 +1679,83 @@ def canonical_conjunction(text: str) -> str:
             spelled.append("&".join([*sorted(head), last]) + operator)
     return "".join(spelled)
 
+
+def residual_selector(function: str, residual: Case) -> str:
+    """One residual arm's selector, composed from the case table and nowhere else.
+
+    A residual arm is selected by the *absence* of every case above it, so its
+    selector is its block's gate followed by one negated member per sibling the
+    negation operator can complement. Which siblings those are is the whole of
+    the rule, and it is read off the table rather than chosen per function:
+
+    * a sibling in the **same block** — a residual is scoped to the arm that
+      encloses it, never to the function, so `prop_type_ref`'s case 5 complements
+      the resolution block alone and case 16 the function's own arms alone;
+    * whose selector is the block's prefix and **one positive member**. A
+      sibling whose condition reaches into a subtree states a property no member
+      at this node can complement, so the residual does not exclude it and counts
+      the nodes it claims — the chain overlap
+      `docs/openapi-surface-coverage.md`'s exactness rule permits between two
+      cases of one table, visible because that sibling is a row of the same
+      table;
+    * which is not a gate that **falls through**. Entering a gate is not taking a
+      branch: `prop_type_ref`'s case 1 holds over an annotated `$ref` that
+      resolves to nothing and then falls through to the arms below, so negating
+      it would make the function's residual narrower than its arm, which the
+      exactness rule disqualifies as firmly as a broader one.
+
+    A case recorded as a hole complements nothing either, for the same reason and
+    with the same consequence: the residual counts what that case claims, and the
+    hole is a row of the table saying so.
+    """
+    block = BLOCKS[residual.block]
+    negated = set()
+    for case in CASES[function]:
+        if case is residual or case.block != residual.block or case.selector is None:
+            continue
+        if case.opens is not None and case.falls_through:
+            continue
+        if not case.selector.startswith(block.prefix):
+            continue
+        member = case.selector[len(block.prefix):]
+        if is_conjunction(member) or member in block.anchor:
+            continue
+        negated.add(NEGATION + member)
+    members = sorted(block.anchor) + sorted(negated)
+    return canonical_conjunction(block.prefix + "&".join(members))
+
+
+# The residual arms, keyed as the case table addresses them. Nothing here is a
+# spelling anyone wrote: add a case to `CASES` and the residual of its block
+# changes what it matches, with no selector text edited anywhere.
+RESIDUAL_SELECTORS: dict[tuple[str, str], str] = {
+    (function, case.number): residual_selector(function, case)
+    for function, cases in CASES.items()
+    for case in cases
+    if case.residual is not None
+}
+
+
+def case_verdict(function: str, case: Case) -> str:
+    """What the case analysis's third column says for one case of the table."""
+    if case.residual is not None:
+        return RESIDUAL_SELECTORS[(function, case.number)]
+    return case.selector if case.hole is None else case.hole
+
+
+CONJUNCTIONS.update(
+    {
+        RESIDUAL_SELECTORS[(function, case.number)]: case.residual
+        for function, cases in CASES.items()
+        for case in cases
+        if case.residual is not None
+    }
+)
+
+for _spelling in CONJUNCTIONS:
+    _refusal = conjunction_error(_spelling)
+    if _refusal is not None:  # a declaration the operators cannot carry
+        raise ValueError(_refusal)
 
 COMPILED_CONJUNCTIONS = {text: compile_conjunction(text) for text in CONJUNCTIONS}
 
@@ -2487,7 +2693,14 @@ def grammar() -> tuple[set[str], set[str]]:
 def selector_error(text: str) -> str | None:
     """Why this `--selector` names nothing the grammar can emit, or None."""
     selectors, prefixes = grammar()
-    if is_conjunction(text):
+    if NEGATION in text:
+        # A negated spelling is refused for what is wrong with it — an unanchored
+        # complement, or a descent bound to a member the node does not write —
+        # rather than reported as a shape nobody declares.
+        malformed = conjunction_error(text)
+        if malformed is not None:
+            return malformed
+    if is_conjunction(text) or NEGATION in text:
         # The conjunction list is closed by the branch structure of the six blind
         # functions, not by what the operators can spell, so a well-formed
         # combination nobody declared is refused exactly as a typo is.
@@ -2543,8 +2756,7 @@ class Census:
     def __init__(
         self,
         document: Any = None,
-        conjunctions: dict[str, tuple[tuple[frozenset[str], tuple[str, str] | None], ...]]
-        | None = None,
+        conjunctions: dict[str, CompiledConjunction] | None = None,
     ) -> None:
         self.counts: dict[str, int] = defaultdict(int)
         # The conjunctions this walk evaluates: the closed list every command
@@ -2691,16 +2903,17 @@ class Census:
         node: Any,
         kind_name: str,
         prefix: str,
-        groups: tuple[tuple[frozenset[str], tuple[str, str] | None], ...],
+        groups: CompiledConjunction,
         index: int,
         seen: frozenset[int],
         resolved: bool = False,
     ) -> bool:
         """Whether this conjunction's remaining groups hold from this node.
 
-        The whole of what `&`, `>` and `~>` mean, and the only place any of them
-        is interpreted: a group holds when every one of its members is a selector
-        the node itself declares, `>` hands the groups after it to the objects the
+        The whole of what `&`, `!`, `>` and `~>` mean, and the only place any of
+        them is interpreted: a group holds when every one of its positive members
+        is a selector the node itself declares and none of its negated members
+        is, `>` hands the groups after it to the objects the
         group's last member's value is, and `~>` hands them to the one schema the
         Reference Object written at that member denotes. A field holding several
         objects (a `oneOf` list, a `properties` map) satisfies the rest if any one
@@ -2715,8 +2928,9 @@ class Census:
         """
         if not isinstance(node, dict) or id(node) in seen:
             return False
-        members, descend = groups[index]
-        if not members.issubset(self.declared_here(node, kind_name, prefix)):
+        (positive, negated), descend = groups[index]
+        declared = set(self.declared_here(node, kind_name, prefix))
+        if not positive.issubset(declared) or negated & declared:
             return False
         if descend is None:
             return True
@@ -2744,7 +2958,7 @@ class Census:
         self,
         node: dict[Any, Any],
         field: str,
-        groups: tuple[tuple[frozenset[str], tuple[str, str] | None], ...],
+        groups: CompiledConjunction,
         index: int,
         seen: frozenset[int],
         resolved: bool,
@@ -2818,8 +3032,16 @@ class Census:
         by `pointer_target_predicates`, and never followed to what it addresses.
         """
         found: list[str] = []
-        if primary_type(node.get("type")) == "array":
+        primary = primary_type(node.get("type"))
+        if primary == "array":
             found.append("schema.type:primary=array")
+        if primary == "object":
+            found.append("schema.type:primary=object")
+        if primary in ("string", "number", "integer", "boolean"):
+            found.append("schema.type:primary-scalar")
+        all_of = node.get("allOf")
+        if isinstance(all_of, list) and len(all_of) == 1:
+            found.append("schema.allOf:sole-member")
         properties = node.get("properties")
         if isinstance(properties, dict) and properties:
             found.append("schema.properties:non-empty")
@@ -2991,8 +3213,7 @@ class Census:
 
 def census_document(
     document: Any,
-    conjunctions: dict[str, tuple[tuple[frozenset[str], tuple[str, str] | None], ...]]
-    | None = None,
+    conjunctions: dict[str, CompiledConjunction] | None = None,
 ) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
     census = Census(document, conjunctions)
