@@ -1652,9 +1652,9 @@ class ConjunctionCensusTests(unittest.TestCase):
         sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
         self.assertEqual(169, len(sources))
         declared: dict[tuple[str, str], int] = {}
-        for offset in range(0, len(sources), 57):
+        for offset in range(0, len(sources), 30):
             fixture_args = list(itertools.chain.from_iterable(
-                ("--fixture", source.fixture) for source in sources[offset : offset + 57]
+                ("--fixture", source.fixture) for source in sources[offset : offset + 30]
             ))
             completed = run("--selector", selector, *fixture_args)
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -2104,11 +2104,9 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
-# The twenty-three the negation pass declared, kept apart from the tables above
-# for the same reason each of those is: they are one operator — `!`, the
-# complement of a member at one node — and the arms it made expressible, and
-# `NegationSelectorDiscriminationTests` is the case that answers for every one of
-# them.
+# The twenty-three the negation pass declared plus case 11's example-value
+# conjunction, kept apart from the tables above because all twenty-four depend
+# on `!` and are exercised together by `NegationSelectorDiscriminationTests`.
 NEGATION_SELECTORS = frozenset({
     "schema.type:primary=object",
     "schema.type:primary-scalar",
@@ -4117,6 +4115,8 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "branch": "hoist_union_variant case 11",
             "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
             "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
+            "overlap": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
         },
         # --- `is_inline_struct` read where the three tables read it -----------
         {
@@ -4395,7 +4395,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                     "the overlap document is not counted by the case that claims it",
                 )
 
-    def test_the_entries_carrying_no_overlap_are_the_predicates_and_exact_case(self) -> None:
+    def test_the_entries_carrying_no_overlap_are_the_three_predicates(self) -> None:
         """Which entries are exempt from the overlap assertion, and why.
 
         A predicate is a property several arms read rather than an arm, so it has
@@ -4405,9 +4405,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
         self.assertEqual(
             {selector for selector in NEGATION_SELECTORS
-             if not census.is_conjunction(selector)} | {
-                "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object"
-             },
+             if not census.is_conjunction(selector)},
             exempt,
         )
 

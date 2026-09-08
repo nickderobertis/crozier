@@ -72,6 +72,7 @@ test-live-e2e *args:
 # its API rather than hidden in a shared filter.
 test-corpus-match:
     ./scripts/fetch-corpus.sh
+    CROZIER_TEST_FETCHED_CORPUS=1 "$(./scripts/census-python.sh)" tests/surface_census_test.py ConjunctionCensusTests.test_case_11_is_absent_from_the_registered_corpus
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bunq_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bungie_matches_fern_output
