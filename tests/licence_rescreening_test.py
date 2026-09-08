@@ -152,7 +152,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
             "curedao/curedao-monorepo",
         ):
             self.assertIn(expected, documents, f"{expected} fell out of the set")
-        for expected in ("security.md:502", "parameters.md:413", "schemas.md:1134"):
+        for expected in ("security.md:502", "parameters.md:413", "schemas.md:1129"):
             self.assertIn(expected, rows, f"{expected} fell out of the in-scope rows")
 
     def test_a_pooled_region_row_splits_into_its_members(self) -> None:
@@ -160,7 +160,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
         gate = load_gate()
         row = (REPO / "docs/openapi-surface/schemas.md").read_text(
             encoding="utf-8"
-        ).split("\n")[1133]
+        ).split("\n")[1128]
         candidate = row.strip().strip("|").split(" | ")[0]
         self.assertEqual(len(gate.documents_in(candidate)), 10)
 

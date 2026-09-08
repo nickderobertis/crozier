@@ -14692,7 +14692,7 @@ mod tests {
             .as_array()
             .expect("the file lists its cases");
         assert_eq!(
-            34,
+            29,
             cases.len(),
             "one case per selector the three passes declared"
         );
@@ -14741,8 +14741,8 @@ mod tests {
              case names one the file does not write"
         );
         assert_eq!(
-            370, drives,
-            "the number of drives the thirty-four cases make"
+            308, drives,
+            "the number of drives the twenty-nine cases make"
         );
     }
 

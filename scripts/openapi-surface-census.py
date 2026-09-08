@@ -1011,52 +1011,6 @@ PREDICATES = {
         "reads this, where an arm that goes on to read the target's own fields "
         "descends through `~>` instead"
     ),
-    # The pointer-walk family below is read off the five arms of
-    # `resolve_schema_pointer`'s own segment loop — the other of the two
-    # resolutions `src/ir.rs` performs, and the one no other member of this list
-    # makes. Each is decided from one `$ref` value's segments walked *through this
-    # document*, so it is a joint property of the value and the document it points
-    # into rather than of either alone; that is the reading
-    # `docs/openapi-surface-coverage.md` recorded as the enumeration hole
-    # H-pointer-nesting before these five closed it. They read the document
-    # context `Census.__init__` holds, exactly as
-    # `schema.$ref:undeclared-component-head` does, and they open no second
-    # document.
-    "schema.$ref:pointer-walk-reaches=allOf": (
-        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer that "
-        "`resolve_schema_pointer` of `src/ir.rs`, walking it through this document, "
-        "reads a segment spelled `allOf` at. Reading a segment is what selects the arm, "
-        "so the arm is entered whether or not the schema at that position declares an "
-        "`allOf`, and a trailing `.../allOf` with no index after it is entered too. "
-        "Reaching a *later* segment needs every earlier arm to have resolved — the head "
-        "to name a declared component, a composition index to be in range, a property "
-        "key to be declared, an `items` to be written — so `A/items/allOf/0` reads this "
-        "segment only where `A` writes `items`"
-    ),
-    "schema.$ref:pointer-walk-reaches=oneOf": (
-        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
-        "spelled `oneOf` at, on the same terms"
-    ),
-    "schema.$ref:pointer-walk-reaches=anyOf": (
-        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
-        "spelled `anyOf` at, on the same terms. It and the two above are three arms "
-        "rather than one: a pointer naming one of the three composition fields selects "
-        "only that field's arm"
-    ),
-    "schema.$ref:pointer-walk-reaches=properties": (
-        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
-        "spelled `properties` at. The arm consumes the *key* segment after it, which the "
-        "count rule excludes as a name, so what this says is that the walk reached the "
-        "step and not which property it addressed; a trailing `.../properties` enters the "
-        "arm and then fails for want of a key, which is where this reading and "
-        "`ref_to_class`'s parts company"
-    ),
-    "schema.$ref:pointer-walk-reaches=items": (
-        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
-        "spelled `items` at. It consumes no following segment, so a pointer writing two "
-        "in a row addresses two nesting levels and is still one place the shape is "
-        "written"
-    ),
     # `described_all_of_ref` is read by arms of two blind functions, and none of the
     # three things it asks is a field's presence, so it is a predicate rather than a
     # conjunction of members.
@@ -1238,6 +1192,75 @@ RESOLVING_DESCENT = "~>"
 # `~>` is matched first, so `a~>b` splits on the two-character operator rather
 # than on the `>` inside it.
 _DESCENT = re.compile(f"({re.escape(RESOLVING_DESCENT)}|{re.escape(DESCENT)})")
+
+
+
+# The pointer-walk family: readings that are a conjunction **member** and never a
+# selector on their own.
+#
+# Each is read off one of the five arms of `resolve_schema_pointer`'s segment loop
+# — the other of the two resolutions `src/ir.rs` performs, and the one no member of
+# `PREDICATES` makes. Each is decided from one `$ref` value's segments walked
+# *through this document*, so it is a joint property of the value and the document
+# it points into rather than of either alone; that is the reading
+# `docs/openapi-surface-coverage.md` recorded as the enumeration hole
+# H-pointer-nesting before the five conjunctions carrying them closed it. They read
+# the document context `Census.__init__` holds, exactly as
+# `schema.$ref:undeclared-component-head` does, and they open no second document.
+#
+# **Why they are member-only, which is the whole reason this list exists apart from
+# `PREDICATES`.** `resolve_schema_pointer` has exactly one production call site —
+# `field_type_ref`, on an array-typed property whose `items` is a reference, behind
+# a `starts_with("#/components/schemas/")` guard. A node writing such a pointer
+# anywhere else is one the generator never walks, so a *standalone* selector over
+# this reading would count nodes that select **no** case of that function's table,
+# which is the miscount `docs/openapi-surface-coverage.md`'s exactness rule
+# disqualifies. `openbanking-brasil-directory` writes exactly that node:
+# `#/components/schemas/ClientCreationResponse/properties/client_id` on a path
+# parameter's schema. So the reading is declared here, where
+# `Census.conjunction_holds` can match it as the last member of a conjunction whose
+# leftmost members are that caller gate, and `Census.walk` never records it alone.
+# The five selectors cases 3 to 7 actually carry are in `CONJUNCTIONS`.
+#
+# A member of this list is not a `--selector` and is refused as one, exactly as any
+# other undeclared spelling is: it is not a name for a shape, it is half of one.
+MEMBER_ONLY_PREDICATES = {
+    "schema.$ref:pointer-walk-reaches=allOf": (
+        "one per Schema Object whose `$ref` is a `#/components/schemas/` pointer that "
+        "`resolve_schema_pointer` of `src/ir.rs`, walking it through this document, "
+        "reads a segment spelled `allOf` at. Reading a segment is what selects the arm, "
+        "so the arm is entered whether or not the schema at that position declares an "
+        "`allOf`, and a trailing `.../allOf` with no index after it is entered too. "
+        "Reaching a *later* segment needs every earlier arm to have resolved — the head "
+        "to name a declared component, a composition index to be in range, a property "
+        "key to be declared, an `items` to be written — so `A/items/allOf/0` reads this "
+        "segment only where `A` writes `items`"
+    ),
+    "schema.$ref:pointer-walk-reaches=oneOf": (
+        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
+        "spelled `oneOf` at, on the same terms"
+    ),
+    "schema.$ref:pointer-walk-reaches=anyOf": (
+        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
+        "spelled `anyOf` at, on the same terms. It and the two above are three arms "
+        "rather than one: a pointer naming one of the three composition fields selects "
+        "only that field's arm"
+    ),
+    "schema.$ref:pointer-walk-reaches=properties": (
+        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
+        "spelled `properties` at. The arm consumes the *key* segment after it, which the "
+        "count rule excludes as a name, so what this says is that the walk reached the "
+        "step and not which property it addressed; a trailing `.../properties` enters the "
+        "arm and then fails for want of a key, which is where this reading and "
+        "`ref_to_class`'s parts company"
+    ),
+    "schema.$ref:pointer-walk-reaches=items": (
+        "one per Schema Object whose `$ref` is such a pointer that walk reads a segment "
+        "spelled `items` at. It consumes no following segment, so a pointer writing two "
+        "in a row addresses two nesting levels and is still one place the shape is "
+        "written"
+    ),
+}
 
 
 def conjunction_parts(text: str) -> list[tuple[list[str], str | None]]:
@@ -2401,6 +2424,15 @@ class Census:
         seen = seen | {id(node)}
         kind = OBJECTS[kind_name]
         for selector in self.declared_here(node, kind_name, prefix):
+            # `declared_here` answers what a node *declares*, which is what a
+            # conjunction group is matched against; what a node declares and what
+            # the census reports are the same everywhere except here. A member of
+            # `MEMBER_ONLY_PREDICATES` is half a shape's name: standing alone it
+            # would count nodes from which the generator function its arm belongs
+            # to is never reached, so it is recorded only through the conjunctions
+            # that carry that function's caller gate in front of it.
+            if selector in MEMBER_ONLY_PREDICATES:
+                continue
             self.record(selector)
         for selector, groups in self.conjunctions.items():
             # A fresh alias guard: a conjunction's descent is its own path from
