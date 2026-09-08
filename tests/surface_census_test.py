@@ -20,6 +20,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import itertools
 import json
@@ -756,6 +757,7 @@ class GrammarContractTests(unittest.TestCase):
         """
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
+            "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -903,6 +905,151 @@ class GrammarContractTests(unittest.TestCase):
         self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
 
+    # ------------------------------------------------------------------
+    # The case table, and what ties it to the code it is a reading of
+    # ------------------------------------------------------------------
+
+    BLIND_FUNCTIONS = (
+        "resolve_schema_pointer",
+        "nested_array_element",
+        "hoist_union_variant",
+        "prop_type_ref",
+        "ref_to_class",
+        "path_group",
+    )
+
+    @staticmethod
+    def function_body(name: str) -> list[str]:
+        """One `fn` of `src/ir.rs`, brace-matched from its header line.
+
+        The same reading `docs/openapi-surface-coverage.md`'s per-function
+        attribution script makes, and the only definition of "this function's
+        body" the honesty check below has.
+        """
+        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            if not re.search(rf"\bfn {re.escape(name)}\s*[(<]", line):
+                continue
+            depth, started = 0, False
+            for cursor in range(index, len(lines)):
+                for char in lines[cursor]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                        if started and depth == 0:
+                            return lines[index : cursor + 1]
+        raise AssertionError(f"src/ir.rs declares no fn {name}")
+
+    @classmethod
+    def function_digest(cls, name: str) -> str:
+        """One function body's digest: blank lines and `//` lines dropped, runs collapsed."""
+        kept = [
+            " ".join(line.split())
+            for line in cls.function_body(name)
+            if line.strip() and not line.strip().startswith("//")
+        ]
+        return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
+
+    def test_the_case_table_and_the_case_analysis_carry_the_same_cases(self) -> None:
+        """The two statements of one derivation, reconciled in both directions.
+
+        `scripts/openapi-surface-census.py`'s `CASES` is the machine-readable
+        table the residual selectors are composed from; the case analysis in
+        `docs/openapi-surface-coverage.md` restates it for a reader. A case in
+        one and not the other fails here, and so does a case whose verdict
+        differs — which is what stops the residual being composed from a table
+        nobody reads while a reader takes the size of the instrument off a table
+        nothing composes.
+        """
+        documented = {
+            function: [(cells[0], cells[2].strip("`") if cells[2].startswith("`")
+                        else re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2]).group(1))
+                       for cells in rows_of]
+            for function, rows_of in self.case_rows().items()
+        }
+        declared = {
+            function: [(case.number, census.case_verdict(function, case)) for case in cases]
+            for function, cases in census.CASES.items()
+        }
+        self.assertEqual(set(self.BLIND_FUNCTIONS), set(declared))
+        self.assertEqual(declared, documented)
+
+    def test_every_case_of_the_table_is_well_formed(self) -> None:
+        """A case is a selector or a hole, never both and never neither.
+
+        And every block a case names is declared, every case a block's residual
+        is scoped to sits in that block, and a residual's own selector is
+        composed rather than written — which is what makes adding a case to the
+        table change what the residual matches with no selector text edited.
+        """
+        for function, cases in census.CASES.items():
+            numbers = [case.number for case in cases]
+            self.assertEqual(len(numbers), len(set(numbers)), f"{function} repeats a case")
+            for case in cases:
+                with self.subTest(function=function, case=case.number):
+                    stated = [
+                        field
+                        for field in (case.selector, case.hole, case.residual)
+                        if field is not None
+                    ]
+                    self.assertEqual(
+                        1,
+                        len(stated),
+                        "a case carries exactly one of a selector, a hole and a "
+                        "residual sentence",
+                    )
+                    if case.block is not None:
+                        self.assertIn(case.block, census.BLOCKS)
+                    if case.opens is not None:
+                        self.assertIn(case.opens, census.BLOCKS)
+                    if case.residual is not None:
+                        self.assertIsNotNone(case.block)
+                        self.assertTrue(case.residual, "a residual publishes a sentence")
+
+    def test_the_case_table_is_a_reading_of_the_functions_it_names(self) -> None:
+        """The honesty check: a branch added, removed or edited without re-derivation.
+
+        The table is a reading of six functions of `src/ir.rs` and nothing else
+        ties it to them, so each function's normalized body carries a digest in
+        the table. Any of the three changes moves the body and fails here; what
+        the digest cannot do is say which case moved, and it fires on a change
+        that moves no branch at all. Both limits are stated in
+        `docs/openapi-surface-coverage.md` rather than left implicit.
+        """
+        self.assertEqual(set(self.BLIND_FUNCTIONS), set(census.BLIND_FUNCTION_DIGESTS))
+        for name in self.BLIND_FUNCTIONS:
+            with self.subTest(function=name):
+                self.assertEqual(
+                    census.BLIND_FUNCTION_DIGESTS[name],
+                    self.function_digest(name),
+                    f"src/ir.rs's {name} changed; re-derive its rows of the case "
+                    "table in scripts/openapi-surface-census.py and of the case "
+                    "analysis in docs/openapi-surface-coverage.md, then re-pin "
+                    "the digest",
+                )
+
+    def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
+        """The check above, proved against a branch this case adds and removes.
+
+        A digest nobody has seen fail is a digest that might be computed over
+        the wrong span, so this one takes the real `nested_array_element` body,
+        inserts one branch into it, and asserts the digest is not the pinned
+        one — the failure the check exists to produce, induced on purpose.
+        """
+        lines = self.function_body("nested_array_element")
+        self.assertTrue(lines[0].strip().startswith("fn nested_array_element"))
+        edited = [lines[0], "        if items.pattern.is_some() { return None; }", *lines[1:]]
+        kept = [
+            " ".join(line.split())
+            for line in edited
+            if line.strip() and not line.strip().startswith("//")
+        ]
+        self.assertNotEqual(
+            census.BLIND_FUNCTION_DIGESTS["nested_array_element"],
+            hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+        )
+
     def test_the_case_analysis_states_the_totals_its_own_rows_add_up_to(self) -> None:
         """The paragraph a reader takes the size of this instrument from.
 
@@ -912,7 +1059,8 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight", 9: "nine",
+            1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
+            9: "nine", 94: "ninety-four", 95: "ninety-five",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
@@ -924,7 +1072,7 @@ class GrammarContractTests(unittest.TestCase):
         self.assertEqual(len(rows_of), len(selectors) + len(holes))
         stated = re.search(
             r"\b([A-Za-z-]+) of the\n  ([a-z-]+) cases below survive this test; the "
-            r"other ([a-z-]+) name the\n  extension that would close them",
+            r"other ([a-z-]+) names? the\n  extension that would close (?:them|it)",
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(stated, "the exactness rule no longer states its own totals")
@@ -933,7 +1081,7 @@ class GrammarContractTests(unittest.TestCase):
             tuple(group.lower() for group in stated.groups()),
         )
         kinds = re.search(
-            r"recorded as one of ([a-z-]+) enumeration holes",
+            r"an enumeration hole of ([a-z-]+) remaining kinds?",
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(kinds, "the case analysis no longer states its hole-kind count")
@@ -1327,6 +1475,36 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items": {},
+        # The thirteen the negation pass declared beside the seven residual arms
+        # below. Every one is zero over the vendored half: none of these documents
+        # writes an `allOf` on a property, an item or a sole composition member
+        # without a scalar `type` beside it, and none writes an explicitly empty
+        # `properties: {}` at all.
+        "schema.items>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref": {},
+        "schema.properties>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": {},
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        # The seven residual arms, whose selectors are composed from the case
+        # table rather than written. They are the most-travelled paths in the six
+        # functions and the vendored half declares four of them, which is what a
+        # residual arm should look like: `prop_type_ref`'s own residual is the
+        # widest number in this table.
+        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
+        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {},
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
+        "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
+        "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
+        "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array": {"audience-filter": 3, "audience-filter-strict": 4, "auth-schemes": 2, "bracketed-property-names": 2, "client-class-name": 1, "cookie-parameters": 1, "crozier-sdk-extensions": 5, "digit-leading-property": 1, "discriminated-unions": 2, "enum-name-sanitization": 1, "enum-query-param": 1, "enum-receiver-collision": 1, "error-responses": 2, "exhaustive": 16, "form-bodies": 4, "inline-array-request": 2, "inline-request-response": 6, "integer-enums": 1, "nested-core-imports": 1, "oauth-client-credentials": 3, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 2, "recursive-types": 2, "schema-constraints": 2, "servers-webhooks": 3, "sse-streaming": 1, "tag-based-grouping": 2, "writeonly-fields": 1},
     }
 
     # A conjunction no vendored source declares, asserted as absent rather than as
@@ -1723,7 +1901,7 @@ class ResolvingDescentTests(unittest.TestCase):
             selector for selector in census.CONJUNCTIONS
             if census.RESOLVING_DESCENT in selector
         ]
-        self.assertEqual(7, len(using), f"the closed list spells {len(using)} with `~>`")
+        self.assertEqual(8, len(using), f"the closed list spells {len(using)} with `~>`")
         self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
@@ -1840,6 +2018,38 @@ POINTER_FORM_PREDICATES = frozenset({
     "schema.$ref:composition-index",
     "schema.$ref:unnamed-segment",
     "schema.$ref:undeclared-component-head",
+})
+
+
+# The twenty-three the negation pass declared, kept apart from the tables above
+# for the same reason each of those is: they are one operator — `!`, the
+# complement of a member at one node — and the arms it made expressible, and
+# `NegationSelectorDiscriminationTests` is the case that answers for every one of
+# them.
+NEGATION_SELECTORS = frozenset({
+    "schema.type:primary=object",
+    "schema.type:primary-scalar",
+    "schema.allOf:sole-member",
+    "schema.items>!schema.type:primary-scalar&schema.allOf",
+    "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref",
+    "schema.properties>!schema.type:primary-scalar&schema.allOf",
+    "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
+    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+    "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
+    "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
+    "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
 })
 
 
@@ -2283,7 +2493,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
-        - POINTER_WALK_SELECTORS
+        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -3735,6 +3945,496 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
                     self.assertIn("(declared by no registered source)", completed.stdout)
 
 
+def components_source(title: str, schemas: dict) -> dict:
+    """A source document whose whole surface is the `components.schemas` given.
+
+    Unlike `schema_source` it adds no second component: the negation family reads
+    what a node does *not* declare, so a bystander schema nobody asked about would
+    be counted by half of it.
+    """
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": title, "version": "1"},
+        "paths": {},
+        "components": {"schemas": schemas},
+    }
+
+
+ANNOTATED = [{"$ref": "#/components/schemas/Target"}, {"description": "annotated"}]
+
+
+def _array_variant(head: str, item: dict) -> dict:
+    """One union head whose sole variant is an array over `item`."""
+    return {head: [{"type": "array", "items": item}]}
+
+
+ALL_OF_ITEM = {"allOf": [{"type": "object"}]}
+SCALAR_ALL_OF_ITEM = {"type": "string", "allOf": [{"type": "object"}]}
+EMPTY_OBJECT_ITEM = {"type": "object", "properties": {}}
+CLOSED_EMPTY_OBJECT_ITEM = {"type": "object", "properties": {}, "additionalProperties": False}
+STRUCT_ALL_OF_ITEM = {"properties": {"id": {"type": "string"}}, "allOf": [{"title": "x"}]}
+STRUCT_EMPTY_ITEM = {
+    "type": "object",
+    "properties": {},
+    "oneOf": [{"type": "string"}, {"type": "integer"}],
+}
+
+
+class NegationSelectorDiscriminationTests(unittest.TestCase):
+    """What each selector the negation operator made expressible counts.
+
+    Every entry below is one selector and up to three documents: one whose node
+    selects the `src/ir.rs` arm the selector was read off, one *near miss*
+    satisfying every part of the selector's condition but one, and — where the
+    arm's condition can also be satisfied by a node another case of the same
+    function's table claims — one exercising that permitted overlap. A residual
+    arm's entry is the same shape as any other's, because a residual is an arm:
+    what is different is that its selector is composed from the case table rather
+    than written, which `test_a_case_added_to_the_table_moves_the_residual_it_is_in`
+    drives a real, patched copy of the script to show.
+
+    The census is driven for real, as its own process, over real documents on the
+    real filesystem, in one run over a fixtures root holding all of them.
+    """
+
+    CASES: tuple[dict, ...] = (
+        # --- the three predicates the operator needed -------------------------
+        {
+            "selector": "schema.type:primary=object",
+            "slug": "primary-object",
+            "branch": "`is_object_type`'s first disjunct",
+            "select": {"Root": {"type": "object"}},
+            "near": {"Root": {"type": ["string", "object"]}},
+        },
+        {
+            "selector": "schema.type:primary-scalar",
+            "slug": "primary-scalar",
+            "branch": "`declares_scalar_type`",
+            "select": {"Root": {"type": "string"}},
+            "near": {"Root": {"type": ["object", "string"]}},
+        },
+        {
+            "selector": "schema.allOf:sole-member",
+            "slug": "all-of-sole-member",
+            "branch": "`sole_inline_all_of`'s arity",
+            "select": {"Root": {"allOf": [{"title": "one"}]}},
+            "near": {"Root": {"allOf": [{"title": "one"}, {"title": "two"}]}},
+        },
+        # --- `is_inline_struct` read where the three tables read it -----------
+        {
+            "selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
+            "slug": "nae-5",
+            "branch": "nested_array_element case 5",
+            "select": {"Root": {"type": "array", "items": ALL_OF_ITEM}},
+            "near": {"Root": {"type": "array", "items": SCALAR_ALL_OF_ITEM}},
+            "overlap": {"Root": {"type": "array", "items": STRUCT_ALL_OF_ITEM}},
+            "overlap_selector": "schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "nae-6b",
+            "branch": "nested_array_element case 6b",
+            "select": {"Root": {"type": "array", "items": EMPTY_OBJECT_ITEM}},
+            "near": {"Root": {"type": "array", "items": CLOSED_EMPTY_OBJECT_ITEM}},
+            "overlap": {"Root": {"type": "array", "items": STRUCT_EMPTY_ITEM}},
+            "overlap_selector": "schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+            "slug": "huv-7e",
+            "branch": "hoist_union_variant case 7e",
+            "select": {"Root": _array_variant("oneOf", ALL_OF_ITEM)},
+            "near": {"Root": _array_variant("oneOf", SCALAR_ALL_OF_ITEM)},
+            "overlap": {"Root": _array_variant("oneOf", STRUCT_ALL_OF_ITEM)},
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+            "slug": "huv-7f",
+            "branch": "hoist_union_variant case 7f",
+            "select": {"Root": _array_variant("anyOf", ALL_OF_ITEM)},
+            "near": {"Root": _array_variant("anyOf", SCALAR_ALL_OF_ITEM)},
+            "overlap": {"Root": _array_variant("anyOf", STRUCT_ALL_OF_ITEM)},
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "huv-7g",
+            "branch": "hoist_union_variant case 7g",
+            "select": {"Root": _array_variant("oneOf", EMPTY_OBJECT_ITEM)},
+            "near": {"Root": _array_variant("oneOf", CLOSED_EMPTY_OBJECT_ITEM)},
+            "overlap": {"Root": _array_variant("oneOf", STRUCT_EMPTY_ITEM)},
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "huv-7h",
+            "branch": "hoist_union_variant case 7h",
+            "select": {"Root": _array_variant("anyOf", EMPTY_OBJECT_ITEM)},
+            "near": {"Root": _array_variant("anyOf", CLOSED_EMPTY_OBJECT_ITEM)},
+            "overlap": {"Root": _array_variant("anyOf", STRUCT_EMPTY_ITEM)},
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.properties>!schema.type:primary-scalar&schema.allOf",
+            "slug": "ptr-8b",
+            "branch": "prop_type_ref case 8b",
+            "select": {"Root": {"properties": {"p": ALL_OF_ITEM}}},
+            "near": {"Root": {"properties": {"p": SCALAR_ALL_OF_ITEM}}},
+            "overlap": {"Root": {"properties": {"p": STRUCT_ALL_OF_ITEM}}},
+            "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "ptr-8c",
+            "branch": "prop_type_ref case 8c",
+            "select": {"Root": {"properties": {"p": EMPTY_OBJECT_ITEM}}},
+            "near": {"Root": {"properties": {"p": CLOSED_EMPTY_OBJECT_ITEM}}},
+            "overlap": {"Root": {"properties": {"p": STRUCT_EMPTY_ITEM}}},
+            "overlap_selector": "schema.properties>schema.oneOf",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+            "slug": "ptr-12e",
+            "branch": "prop_type_ref case 12e",
+            "select": {"Root": {"properties": {"p": {"oneOf": [ALL_OF_ITEM]}}}},
+            "near": {"Root": {"properties": {"p": {"oneOf": [SCALAR_ALL_OF_ITEM]}}}},
+            "overlap": {"Root": {"properties": {"p": {"oneOf": [STRUCT_ALL_OF_ITEM]}}}},
+            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+            "slug": "ptr-12f",
+            "branch": "prop_type_ref case 12f",
+            "select": {"Root": {"properties": {"p": {"anyOf": [ALL_OF_ITEM]}}}},
+            "near": {"Root": {"properties": {"p": {"anyOf": [SCALAR_ALL_OF_ITEM]}}}},
+            "overlap": {"Root": {"properties": {"p": {"anyOf": [STRUCT_ALL_OF_ITEM]}}}},
+            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "ptr-12g",
+            "branch": "prop_type_ref case 12g",
+            "select": {"Root": {"properties": {"p": {"oneOf": [EMPTY_OBJECT_ITEM]}}}},
+            "near": {"Root": {"properties": {"p": {"oneOf": [CLOSED_EMPTY_OBJECT_ITEM]}}}},
+            "overlap": {"Root": {"properties": {"p": {"oneOf": [STRUCT_EMPTY_ITEM]}}}},
+            "overlap_selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
+        },
+        {
+            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "ptr-12h",
+            "branch": "prop_type_ref case 12h",
+            "select": {"Root": {"properties": {"p": {"anyOf": [EMPTY_OBJECT_ITEM]}}}},
+            "near": {"Root": {"properties": {"p": {"anyOf": [CLOSED_EMPTY_OBJECT_ITEM]}}}},
+            "overlap": {"Root": {"properties": {"p": {"anyOf": [STRUCT_EMPTY_ITEM]}}}},
+            "overlap_selector": "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
+        },
+        # --- `sole_inline_all_of`, whose nine absence tests are nine members ---
+        {
+            "selector": "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref",
+            "slug": "ptr-6",
+            "branch": "prop_type_ref case 6",
+            "select": {"Root": {"properties": {"p": {"allOf": [{"title": "inline"}]}}}},
+            # VolView's `TaskSpec.id`, the document the arity alone miscounts.
+            "near": {"Root": {"properties": {"p": {"type": "string", "allOf": [{"title": "inline"}]}}}},
+            "overlap": {"Root": {"properties": {"p": {"allOf": [{"title": "inline"}]}}}},
+            "overlap_selector": "schema.properties>!schema.type:primary-scalar&schema.allOf",
+        },
+        # --- the residual arms, composed from the case table ------------------
+        {
+            "selector": "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
+            "slug": "nae-9",
+            "branch": "nested_array_element case 9, its closing `None`",
+            "select": {"Root": {"type": "array", "items": {"type": "string"}}},
+            "near": {
+                "Root": {"type": "array", "items": {"$ref": "#/components/schemas/Target"}},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": {"type": "array", "items": ALL_OF_ITEM}},
+            "overlap_selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
+        },
+        {
+            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "slug": "huv-12a",
+            "branch": "hoist_union_variant case 12a, its closing `base_type_ref`",
+            "select": {"Root": {"oneOf": [{"type": "string"}, {"type": "integer"}]}},
+            "near": {
+                "Root": {"oneOf": [{"$ref": "#/components/schemas/Target"}]},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": _array_variant("oneOf", {"properties": {"id": {"type": "string"}}})},
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "slug": "huv-12b",
+            "branch": "hoist_union_variant case 12b, the same arm through the other head",
+            "select": {"Root": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+            "near": {
+                "Root": {"anyOf": [{"$ref": "#/components/schemas/Target"}]},
+                "Target": {"type": "string"},
+            },
+            "overlap": {"Root": _array_variant("anyOf", {"properties": {"id": {"type": "string"}}})},
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+            "slug": "ptr-5",
+            "branch": "prop_type_ref case 5, the resolution block's own residual",
+            "select": {
+                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                "Target": {"type": "string"},
+            },
+            "near": {
+                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                "Target": {"type": "string", "enum": ["alpha", "beta"]},
+            },
+            "overlap": {
+                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                "Target": {"type": "string"},
+            },
+            "overlap_selector": "schema.properties>schema.allOf:annotated-ref",
+        },
+        {
+            "selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
+            "slug": "ptr-14a",
+            "branch": "prop_type_ref case 14a, the composition block's own residual",
+            "select": {"Root": {"properties": {"p": {"oneOf": [{"type": "string"}, {"type": "integer"}]}}}},
+            "near": {"Root": {"properties": {"p": {"oneOf": [{"type": "null"}, {"type": "string"}]}}}},
+            "overlap": {"Root": {"properties": {"p": {"oneOf": [{"properties": {"id": {"type": "string"}}}]}}}},
+            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
+            "slug": "ptr-14b",
+            "branch": "prop_type_ref case 14b, the same residual through the other spelling",
+            "select": {"Root": {"properties": {"p": {"anyOf": [{"type": "string"}, {"type": "integer"}]}}}},
+            "near": {"Root": {"properties": {"p": {"anyOf": [{"type": "null"}, {"type": "string"}]}}}},
+            "overlap": {"Root": {"properties": {"p": {"anyOf": [{"properties": {"id": {"type": "string"}}}]}}}},
+            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+            "slug": "ptr-16",
+            "branch": "prop_type_ref case 16, the function's own residual",
+            "select": {"Root": {"properties": {"p": {"type": "string"}}}},
+            "near": {"Root": {"properties": {"p": {"oneOf": [{"type": "string"}, {"type": "integer"}]}}}},
+            # Case 1 is the gate this residual deliberately does not negate: its
+            # own arm falls through when the annotated `$ref` resolves to nothing.
+            "overlap": {
+                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                "Target": {"type": "string"},
+            },
+            "overlap_selector": "schema.properties>schema.allOf:annotated-ref",
+        },
+    )
+
+    @classmethod
+    def censused(cls, documents: dict[str, dict]) -> dict[tuple[str, str], int]:
+        """The real script's own output over a fixtures root holding `documents`."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, schemas in documents.items():
+                write_json_fixture(root, name, components_source(name, schemas))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+        assert completed.returncode == 0, completed.stderr
+        return {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        documents = {
+            f"{case['slug']}-{role}": case[role]
+            for case in cls.CASES
+            for role in ("select", "near", "overlap")
+            if role in case
+        }
+        cls.reported = cls.censused(documents)
+
+    def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
+        """A selector declared and never discriminated is one nobody measured."""
+        self.assertEqual(NEGATION_SELECTORS, {case["selector"] for case in self.CASES})
+        for selector in sorted(NEGATION_SELECTORS):
+            with self.subTest(selector=selector):
+                self.assertIn(
+                    selector, set(census.PREDICATES) | set(census.CONJUNCTIONS)
+                )
+
+    def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector, branch=case["branch"]):
+                self.assertEqual(
+                    1,
+                    self.reported.get((selector, f"{slug}-select")),
+                    f"{selector} does not count the node that selects {case['branch']}",
+                )
+                self.assertNotIn(
+                    (selector, f"{slug}-near"),
+                    self.reported,
+                    f"{selector} counts a node missing {case['branch']} by one property",
+                )
+
+    def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
+        """The overlap a residual inherits, made visible rather than assumed.
+
+        A residual is not narrowed by a case whose own condition reaches into a
+        subtree, or by a case recorded as a hole, or by a gate that falls through,
+        so it counts the nodes those cases claim. Each document below is one of
+        those nodes, and both selectors count it.
+        """
+        for case in self.CASES:
+            if "overlap" not in case:
+                continue
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
+                self.assertEqual(
+                    1,
+                    self.reported.get((case["overlap_selector"], f"{slug}-overlap")),
+                    "the overlap document is not counted by the case that claims it",
+                )
+
+    def test_the_entries_carrying_no_overlap_are_the_three_predicates(self) -> None:
+        """Which entries are exempt from the overlap assertion, and why.
+
+        A predicate is a property several arms read rather than an arm, so it has
+        no case of its own for another case to overlap with; the overlaps of the
+        arms that read it are the conjunctions' own, asserted above.
+        """
+        exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
+        self.assertEqual(
+            {selector for selector in NEGATION_SELECTORS
+             if not census.is_conjunction(selector)},
+            exempt,
+        )
+
+    def test_a_residual_inside_a_gate_counts_no_node_the_gate_excludes(self) -> None:
+        """The scoping property, over a document constructed for it.
+
+        `prop_type_ref`'s case 5 is the residual of the resolution block alone,
+        and that block is entered only where the annotated `$ref` *resolves*. A
+        property whose annotated `$ref` names no component of the document
+        satisfies every negated member — the target it would be read against does
+        not exist — and the gate is what has to stop it being counted.
+        """
+        residual = census.RESIDUAL_SELECTORS[("prop_type_ref", "5")]
+        reported = self.censused({
+            "resolving": {
+                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                "Target": {"type": "string"},
+            },
+            "dangling": {"Root": {"properties": {"p": {"allOf": ANNOTATED}}}},
+        })
+        self.assertEqual(1, reported.get((residual, "resolving")))
+        self.assertNotIn((residual, "dangling"), reported)
+        # The gate itself holds over both, which is what makes the difference the
+        # residual's own and not the gate member's.
+        gate = "schema.properties>schema.allOf:annotated-ref"
+        self.assertEqual(1, reported.get((gate, "resolving")))
+        self.assertEqual(1, reported.get((gate, "dangling")))
+
+    def test_a_case_added_to_the_table_moves_the_residual_it_is_in(self) -> None:
+        """The composition, proved by adding a case to a real copy of the script.
+
+        A residual selector nobody wrote is only worth the claim if adding a case
+        to `CASES` changes what it matches with no selector text edited. This
+        copies the real script, inserts one case into `nested_array_element`'s
+        block, and drives *that* script over a document the real residual counts
+        and the patched one must not.
+        """
+        addition = (
+            '        Case("8z", block="nested_array_element", '
+            'selector="schema.items>schema.title"),\n'
+        )
+        source = SCRIPT.read_text(encoding="utf-8")
+        marker = '        Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),\n'
+        self.assertIn(marker, source)
+        patched_source = source.replace(marker, marker + addition, 1)
+        self.assertIn("schema.items>schema.title", patched_source)
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            patched = root / "patched-census.py"
+            patched.write_text(patched_source, encoding="utf-8")
+            spec = importlib.util.spec_from_file_location("patched_census", patched)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["patched_census"] = module
+            spec.loader.exec_module(module)
+            try:
+                patched_residual = module.RESIDUAL_SELECTORS[("nested_array_element", "9")]
+            finally:
+                del sys.modules["patched_census"]
+            real_residual = census.RESIDUAL_SELECTORS[("nested_array_element", "9")]
+            self.assertNotEqual(real_residual, patched_residual)
+            self.assertIn("!schema.title", patched_residual)
+            self.assertNotIn("!schema.title", real_residual)
+
+            fixtures = root / "fixtures"
+            write_json_fixture(
+                fixtures,
+                "titled-item",
+                components_source(
+                    "titled-item",
+                    {"Root": {"type": "array", "items": {"type": "string", "title": "t"}}},
+                ),
+            )
+            (fixtures / "CORPUS.md").write_text("", encoding="utf-8")
+            arguments = ["--vendored-only", "--fixtures-root", str(fixtures), "--json"]
+            real = subprocess.run(
+                [sys.executable, str(SCRIPT), *arguments, "--selector", real_residual],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+            )
+            self.assertEqual(0, real.returncode, real.stderr)
+            self.assertEqual(
+                [1], [row["count"] for row in json.loads(real.stdout)["rows"]]
+            )
+            moved = subprocess.run(
+                [sys.executable, str(patched), *arguments, "--selector", patched_residual],
+                capture_output=True, text=True, timeout=CENSUS_TIMEOUT,
+            )
+            self.assertEqual(0, moved.returncode, moved.stderr)
+            self.assertEqual([], json.loads(moved.stdout)["rows"])
+
+    def test_a_misspelling_of_a_negation_selector_is_refused_by_name(self) -> None:
+        """The refusal, driven through the real script rather than the module."""
+        for selector, expected in (
+            ("schema.type:primary-scalars", "Did you mean: schema.type:primary-scalar"),
+            ("schema.allOf:sole-members", "Did you mean: schema.allOf:sole-member"),
+            (
+                "schema.items>!schema.type:primary-scalar&schema.allOff",
+                "is not one of the conjunction selectors",
+            ),
+        ):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn(expected, completed.stderr)
+
+    def test_a_selector_of_negated_members_alone_is_refused_by_name(self) -> None:
+        """The one shape the operator does not spell, refused for what it is."""
+        for selector in ("!schema.oneOf", "!schema.oneOf&!schema.anyOf"):
+            with self.subTest(selector=selector):
+                completed = run("--vendored-only", "--selector", selector)
+                self.assertEqual(1, completed.returncode, completed.stdout)
+                self.assertIn("negated members alone", completed.stderr)
+                self.assertIn("at least one positive member", completed.stderr)
+        # And a descent bound to a negated member, the other malformed spelling.
+        completed = run("--vendored-only", "--selector", "!schema.items>schema.oneOf")
+        self.assertEqual(1, completed.returncode, completed.stdout)
+        self.assertIn("descends through a field the node writes", completed.stderr)
+
+    def test_a_negation_selector_no_source_declares_is_reported_as_absent(self) -> None:
+        """Absent, not silent: the phrase a `gap` row cites as its evidence."""
+        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty"
+        completed = run("--vendored-only", "--selector", absent)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({}, rows(completed))
+        self.assertIn("(declared by no registered source)", completed.stdout)
+
+
 class ObjectModelWalkTests(unittest.TestCase):
     """The distinction the whole instrument rests on: fields, not matching text."""
 
@@ -4931,6 +5631,11 @@ class RankedBacklogTests(unittest.TestCase):
         "schema.oneOf:discriminated-union": "schemas",
         "schema.anyOf:discriminated-union": "schemas",
         "schema.discriminator:inheritance-union": "schemas",
+        # The three the negation pass declared, two of them readings of a `type`
+        # array's primary member and one an `allOf` arity.
+        "schema.type:primary=object": "schemas",
+        "schema.type:primary-scalar": "schemas",
+        "schema.allOf:sole-member": "schemas",
         # The five `pointer-walk-reaches=` readings are deliberately absent: a
         # member of `census.MEMBER_ONLY_PREDICATES` is not a selector, so it
         # carries no row of its own. The rows for `resolve_schema_pointer`'s cases
@@ -6325,7 +7030,6 @@ class PredicateSelectorTests(unittest.TestCase):
             components:
               schemas:
                 Widget:
-                  type: object
                   description: a widget
             """}
         completed = self.census(plain, *sorted(census.PREDICATES))
