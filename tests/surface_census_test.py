@@ -3416,15 +3416,16 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
     earlier one the document does not declare, and each case's overlap document
     addresses a position under two of these arms in sequence.
 
-    Each arm carries two selectors, and both are answered for here: the predicate
-    that reads the pointer against the document, and the conjunction that carries
-    `resolve_schema_pointer`'s **caller gate** in front of it — a property of a
-    Schema Object, whose primary type is `array`, whose `items` is that pointer,
-    which is the one place in the generator that calls the function at all. The
-    two ranges differ in exactly the parts each condition has: the conjunction's
-    near set drops its three caller-gate members as well as the five parts of the
-    predicate, and the predicate's drops only its own five, because a pointer
-    written outside that gate still *is* the shape the predicate reads.
+    Each arm carries exactly one selector: the conjunction that puts
+    `resolve_schema_pointer`'s **caller gate** in front of the reading of the arm
+    — a property of a Schema Object, whose primary type is `array`, whose `items`
+    is that pointer, which is the one place in the generator that calls the
+    function at all. The reading on its own is a member of
+    `census.MEMBER_ONLY_PREDICATES` and not a selector, because a pointer written
+    outside that gate still *is* the shape it reads while the generator never
+    walks it; `test_no_member_only_reading_is_ever_recorded_as_a_selector` and
+    `test_a_pointer_the_generator_never_walks_is_counted_by_nothing` below hold
+    that, over the three caller-gate documents each arm carries.
 
     - against a **broader** selector, one document per separately satisfiable part
       of the condition — a document satisfying every other part and not that one,
