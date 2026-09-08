@@ -1764,11 +1764,12 @@ def union_members(node: dict[Any, Any]) -> list[Any] | None:
     return None
 
 
-# The four property names `inferred_discriminant_property_with` supports when the
-# union also references components and the member does not tag itself with a
-# required one-member `enum`, and the values that same function refuses to read as
-# a `message_type` tag. Both lists are `src/ir.rs`'s own.
-_SUPPORTED_REFERENCED_TAGS = ("type", "role", "message_type", "mcp_server_type")
+# The values `inferred_discriminant_property_with` refuses to read as a
+# `message_type` tag, which is `preserve_const_discriminant` of `src/ir.rs` and is
+# its list rather than one invented here. The four property names that same
+# function supports for a union referencing components are spelled in the `match`
+# `_candidate_tag_values` mirrors below, where the Rust spells them, because each
+# of the four asks something different of the member.
 _PRESERVED_CONST_DISCRIMINANTS = frozenset({
     "approval", "approval_request_message", "message", "tool",
     "tool_return_message", "stop_reason", "usage_statistics",

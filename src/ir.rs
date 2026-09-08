@@ -14741,7 +14741,7 @@ mod tests {
              case names one the file does not write"
         );
         assert_eq!(
-            217, drives,
+            231, drives,
             "the number of drives the twenty-four cases make"
         );
     }

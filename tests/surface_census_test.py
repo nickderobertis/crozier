@@ -2620,7 +2620,13 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
       a string `example`), the inferred spelling with no `discriminator` written
       at all, a `mapping` written as pointers and as bare component names, and
       `array` written as the sole type and as the first non-`null` member of a 3.1
-      type list.
+      type list. A union whose members are `$ref`s and which tags them with
+      something other than a required one-member `enum` is four more forms, one per
+      property name `src/ir.rs` supports by name in that position — `type` (which
+      also needs a string `example`), `role`, `message_type` and
+      `mcp_server_type` — beside the three negatives that bound them: a
+      `message_type` value `preserve_const_discriminant` keeps, a `type` written
+      but not required, and a tag property naming none of the four.
 
     Where the arm permits a node another case of the same function's table also
     claims, the overlap document is driven too and both selectors are asserted to

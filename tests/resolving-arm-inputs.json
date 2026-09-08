@@ -7953,6 +7953,550 @@
     }
    },
    "body": {}
+  },
+  "du-prop-referenced-type-example-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "alpha"
+      }
+     },
+     "required": [
+      "type"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "beta"
+      }
+     },
+     "required": [
+      "type"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-role-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "role": {
+       "type": "string",
+       "example": "user"
+      }
+     },
+     "required": [
+      "role"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "role": {
+       "type": "string",
+       "example": "admin"
+      }
+     },
+     "required": [
+      "role"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-message-type-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "greeting"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "farewell"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-mcp-server-type-tag": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "mcp_server_type": {
+       "const": "stdio"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "mcp_server_type": {
+       "const": "http"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-preserved-message-type": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "message"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "message_type": {
+       "const": "farewell"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-type-not-required": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "alpha"
+      }
+     }
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string",
+       "example": "beta"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
+  },
+  "du-prop-referenced-unsupported-name": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "TaggedOne": {
+     "type": "object",
+     "properties": {
+      "colour": {
+       "type": "string",
+       "example": "red"
+      }
+     },
+     "required": [
+      "colour"
+     ]
+    },
+    "TaggedTwo": {
+     "type": "object",
+     "properties": {
+      "colour": {
+       "type": "string",
+       "example": "green"
+      }
+     },
+     "required": [
+      "colour"
+     ]
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/TaggedOne"
+      },
+      {
+       "$ref": "#/components/schemas/TaggedTwo"
+      }
+     ]
+    }
+   }
   }
  },
  "cases": [
@@ -9392,6 +9936,30 @@
      "arms": [
       "prop_type_ref:13"
      ]
+    },
+    "du-prop-referenced-type-example-tag": {
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-role-tag": {
+     "form": "the same over a required `role`, which `src/ir.rs` supports on the requirement alone with no example test",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-message-type-tag": {
+     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-mcp-server-type-tag": {
+     "form": "the same over `mcp_server_type`, the other name supported unconditionally",
+     "arms": [
+      "prop_type_ref:13"
+     ]
     }
    },
    "near": {
@@ -9439,6 +10007,27 @@
     },
     "du-prop-plain-oneof": {
      "part": "schema.oneOf:discriminated-union: an ordinary union with no shared tag property",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-type-not-required": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-unsupported-name": {
+     "part": "schema.properties>schema.oneOf:discriminated-union: a shared tag property naming none of the four `src/ir.rs` supports for a union that references components",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"
@@ -9553,6 +10142,30 @@
      "arms": [
       "prop_type_ref:13"
      ]
+    },
+    "du-prop-referenced-type-example-tag": {
+     "form": "the inferred spelling over $ref members whose shared `type` is required and carries a string example, which is the whole of what makes `type` a supported tag for a union that references components",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-role-tag": {
+     "form": "the same over a required `role`, which `src/ir.rs` supports on the requirement alone with no example test",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-message-type-tag": {
+     "form": "the same over `message_type`, supported unconditionally, on a value outside the set `preserve_const_discriminant` keeps",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-referenced-mcp-server-type-tag": {
+     "form": "the same over `mcp_server_type`, the other name supported unconditionally",
+     "arms": [
+      "prop_type_ref:13"
+     ]
     }
    },
    "near": {
@@ -9600,6 +10213,27 @@
     },
     "du-prop-anyof-with-discriminator": {
      "part": "the anyOf head with a discriminator, which the oneOf reading does not count and discriminated_union refuses",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-preserved-message-type": {
+     "part": "schema.oneOf:discriminated-union: a `message_type` value `preserve_const_discriminant` keeps, which `src/ir.rs` refuses to read as a tag",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-type-not-required": {
+     "part": "schema.oneOf:discriminated-union: `type` written with a string example but not required, so the supported test fails on its first half",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-referenced-unsupported-name": {
+     "part": "schema.oneOf:discriminated-union: a shared tag property naming none of the four `src/ir.rs` supports for a union that references components",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"
