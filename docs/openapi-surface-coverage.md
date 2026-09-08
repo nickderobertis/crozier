@@ -1738,6 +1738,17 @@ are both product cells of shapes the corpus writes separately:
   (`letta` 3, `truefoundry-trueforge` 1) and write the `oneOf`-headed element under
   a `oneOf` head (`letta` 3); only this corner of the product is unwritten.
 
+**One thing the case analysis said about a neighbouring row turned out to be
+wrong, and the row now says what the generator does.** `nested_array_element`'s
+case 7 claimed an empty `oneOf: []` selects the hoisted-alias arm, on the reading
+that its gate is `Option::is_some`. It does reach that gate, but case 2 runs
+first and claims it: `inferred_union_discriminant_property` finds `type`
+inferable vacuously over no members at all, so `discriminated_union` returns
+`Some` with none and the generator coins a `Union({Ctx}ItemItem)` rather than an
+alias. The finding is the instrument's own — the predicate counts the node, which
+made the disagreement visible — and it is settled by executing the generator over
+`du-nested-empty-oneof` and observing which arm ran, not by reading either.
+
 **One reading in the case analysis is the selector's rather than the code's, and
 case 2c says so.** `inheritance_discriminated_union` lets a mapping entry naming
 the union's *own* coined class name through without resolving it, and that name is
@@ -1823,8 +1834,8 @@ guard is what leaves two of the four a hole.
 | 5 | the same arm on an `items` declaring `allOf`, which `is_inline_struct` takes only for a schema declaring no scalar `type` | **H-negated-value** |
 | 6 | the same arm on an `items` writing `additionalProperties: false`, which `is_object_type` reads as an object however — or whether — the `type` is written | `schema.items>schema.additionalProperties=false` |
 | 6b | the same arm on an `items` writing an explicitly empty `properties: {}` beside no `additionalProperties` — `is_inline_struct`'s third disjunct, which the account this table replaces did not derive | **H-negated-value** |
-| 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` selects it too | `schema.items>schema.oneOf` |
-| 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically | `schema.items>schema.anyOf` |
+| 7 | `items.one_of.as_ref().or(items.any_of.as_ref())` → the hoisted union alias, `oneOf` spelling; the gate is `Option::is_some`, so an empty `oneOf: []` reaches it. **What the account this row replaces got wrong is which arm an empty one then takes:** case 2 runs first and claims it, because `inferred_union_discriminant_property` finds `type` inferable vacuously over no members at all and `discriminated_union` returns `Some` with none — the generator coins a `Union({Ctx}ItemItem)` for `items: {oneOf: []}` and no alias, which `tests/resolving-arm-inputs.json`'s `du-nested-empty-oneof` drives and `src/ir.rs`'s own observation of the arm confirms. This row's selector still counts the node, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two listed cases | `schema.items>schema.oneOf` |
+| 8 | the same arm, `anyOf` spelling: an `items` declaring only `anyOf` reaches it identically, and an empty `anyOf: []` is claimed by case 2b for the reason case 7 states | `schema.items>schema.anyOf` |
 | 9 | the closing `None` | **H-residual** |
 
 #### `hoist_union_variant`
