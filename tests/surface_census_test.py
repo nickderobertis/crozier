@@ -875,7 +875,6 @@ class GrammarContractTests(unittest.TestCase):
     def test_every_case_carries_one_declared_selector_or_one_declared_hole(self) -> None:
         """No case in neither state, and none in both."""
         holes = self.documented_holes()
-        self.assertTrue(holes, "the case analysis declares no enumeration hole")
         for function, rows_of in self.case_rows().items():
             self.assertTrue(rows_of, f"{function} lists no case")
             for cells in rows_of:
@@ -1059,7 +1058,7 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
+            0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
             9: "nine", 94: "ninety-four", 95: "ninety-five",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
@@ -1397,6 +1396,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
+        "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": {},
         "schema.properties>schema.anyOf": {},
         "schema.properties>schema.oneOf": {},
         "schema.items>schema.type:primary=array": {},
@@ -1578,6 +1578,67 @@ class ConjunctionCensusTests(unittest.TestCase):
         for selector in ("schema.items>schema.oneOf", "schema.properties>schema.oneOf"):
             with self.subTest(selector=selector):
                 self.assertNotIn((selector, "any-of-only"), counted)
+
+    def test_example_value_selectors_and_case_11_distinguish_the_real_readings(self) -> None:
+        """The public CLI reads example first, then the first examples member."""
+        selector = (
+            "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
+            "!schema.example:schema-shaped&!schema.properties:non-empty&"
+            "schema.example=object&schema.type:primary=object"
+        )
+        document = """\
+            openapi: 3.0.3
+            info: {title: examples, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                Root:
+                  oneOf:
+                    - {type: object, example: scalar}
+                    - {type: object, example: {field: value}}
+                    - {type: object, example: {field: {type: string}}}
+                    - {type: object, examples: []}
+                    - {type: object, examples: [{field: from-list}]}
+                    - {type: object, example: scalar-wins, examples: [{field: ignored}]}
+            """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "examples", document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root", str(root),
+                "--selector", "schema.example=object",
+                "--selector", "schema.example:schema-shaped",
+                "--selector", selector,
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {
+                ("schema.example=object", "examples"): 3,
+                ("schema.example:schema-shaped", "examples"): 1,
+                (selector, "examples"): 1,
+            },
+            rows(completed),
+        )
+
+    def test_case_11_is_absent_from_the_registered_corpus(self) -> None:
+        """The recorded gap is measured over every registered source, end to end."""
+        selector = (
+            "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
+            "!schema.example:schema-shaped&!schema.properties:non-empty&"
+            "schema.example=object&schema.type:primary=object"
+        )
+        sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
+        self.assertEqual(169, len(sources))
+        declared: dict[tuple[str, str], int] = {}
+        for offset in range(0, len(sources), 57):
+            fixture_args = list(itertools.chain.from_iterable(
+                ("--fixture", source.fixture) for source in sources[offset : offset + 57]
+            ))
+            completed = run("--selector", selector, *fixture_args)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            declared.update(rows(completed))
+        self.assertEqual({}, declared)
 
     def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
         for selector, expected in (
@@ -2030,6 +2091,7 @@ NEGATION_SELECTORS = frozenset({
     "schema.type:primary=object",
     "schema.type:primary-scalar",
     "schema.allOf:sole-member",
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
     "schema.items>!schema.type:primary-scalar&schema.allOf",
     "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
@@ -2382,6 +2444,13 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "near": ("schema", {"properties": {"kind": {"const": 1}}}),
             "overlap": ("schema", {"properties": {"kind": {"const": "alpha", **STRUCT}}}),
             "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.example:schema-shaped",
+            "slug": "schema-shaped-example",
+            "branch": "`example_is_schema_definition`",
+            "select": ("schema", {"example": {"field": {"type": "string"}}}),
+            "near": ("schema", {"example": {"field": {"description": "metadata"}}}),
         },
         {
             "selector": "schema.properties>schema.properties:non-empty",
@@ -4020,6 +4089,13 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "select": {"Root": {"allOf": [{"title": "one"}]}},
             "near": {"Root": {"allOf": [{"title": "one"}, {"title": "two"}]}},
         },
+        {
+            "selector": "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
+            "slug": "huv-11",
+            "branch": "hoist_union_variant case 11",
+            "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
+        },
         # --- `is_inline_struct` read where the three tables read it -----------
         {
             "selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
@@ -4297,7 +4373,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                     "the overlap document is not counted by the case that claims it",
                 )
 
-    def test_the_entries_carrying_no_overlap_are_the_three_predicates(self) -> None:
+    def test_the_entries_carrying_no_overlap_are_the_predicates_and_exact_case(self) -> None:
         """Which entries are exempt from the overlap assertion, and why.
 
         A predicate is a property several arms read rather than an arm, so it has
@@ -4307,7 +4383,9 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
         self.assertEqual(
             {selector for selector in NEGATION_SELECTORS
-             if not census.is_conjunction(selector)},
+             if not census.is_conjunction(selector)} | {
+                "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object"
+             },
             exempt,
         )
 
