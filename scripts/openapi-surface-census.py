@@ -853,18 +853,21 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 #
 # Every member is **node-local**: it is decided from one object-model node's own
 # declared fields and their values, with no `$ref` resolution and no
-# document-scope comparison — except eight, which compare one document's own values
-# against each other and say so in their own sentence:
+# document-scope comparison — except thirteen, which compare one document's own
+# values against each other and say so in their own sentence:
 # `operation.operationId:duplicate`, the two `normalized-collision` spellings, the
 # two `schema.$ref:` spellings that measure a reference against the document's
 # own `components.schemas` — `undeclared-component-head` and
-# `resolves-to-component` — and the three `discriminated_union` readings, which
+# `resolves-to-component` — the three `discriminated_union` readings, which
 # resolve a union's `$ref` members and a `discriminator`'s mapping targets against
-# that same map before comparing them. Those last five read the document context
-# `Census.__init__` holds. A predicate that would need the *shape* of the schema a
-# `$ref` points at is still not a member of either kind and is not declared here:
-# that is what the `~>` operator below descends for, and what
-# `docs/openapi-surface-coverage.md`'s case analysis names H-pointer-nesting.
+# that same map before comparing them, and the five `pointer-walk-reaches=`
+# spellings, which walk a pointer's segments through that same map. Those last ten
+# read the document context `Census.__init__` holds. What is still not a member of
+# either kind and is not declared here is a predicate that would evaluate a *group
+# of members at* the schema a `$ref` resolves to — the target's own fields, read as
+# a group — which is what the `~>` operator below descends for. The five
+# `pointer-walk-reaches=` spellings do not: they read which segment the walk
+# arrives at and nothing the target declares beyond what the walk itself consumed.
 PREDICATES = {
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
@@ -951,8 +954,9 @@ PREDICATES = {
     # alone, and `schema.$ref:undeclared-component-head` by comparing that string's
     # head against the document's own `components.schemas` keys, which is the
     # document-scope comparison `components.schemas:normalized-collision` already
-    # makes. None of them opens the schema a pointer addresses: that is the
-    # resolving walk `docs/openapi-surface-coverage.md` names H-pointer-nesting.
+    # makes. None of them walks a pointer's later segments through the document:
+    # that is the `pointer-walk-reaches=` family below, which closed what
+    # `docs/openapi-surface-coverage.md` recorded as H-pointer-nesting.
     "schema.$ref:cross-document": (
         "one per Schema Object whose `$ref` names another document — the value "
         "carries a non-empty part before its `#`, or no `#` at all — so "
@@ -1629,8 +1633,8 @@ def pointer_form_predicates(reference: str) -> list[str]:
     Nothing here opens the schema a pointer addresses. Whether the pointer's head
     names a declared component is `Census.pointer_target_predicates`, which reads
     the document context; whether its later segments address the nesting the
-    target declares is the resolving walk `docs/openapi-surface-coverage.md` names
-    H-pointer-nesting.
+    target declares is `pointer_walk_predicates` below, the resolving walk that
+    closed what `docs/openapi-surface-coverage.md` recorded as H-pointer-nesting.
     """
     if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
         # Case 1 of both functions, split by which of two shapes reached it: a

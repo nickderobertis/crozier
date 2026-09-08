@@ -2186,8 +2186,10 @@ derives seventy-eight cases rather than seventy-six — `ref_to_class`'s first c
 and `resolve_schema_pointer`'s are each two rows now, one per shape reaching them
 — fifty carrying a selector and twenty-eight recorded as one of seven holes.
 `ref_to_class` was wholly a hole and is wholly counted; `resolve_schema_pointer`
-keeps five, the five whose arm resolves a segment against the schema at that
-position, and they are H-pointer-nesting as they always were. **Seven new rows
+kept five, the five whose arm resolves a segment against the schema at that
+position, which that pass left recorded as H-pointer-nesting and
+[the pointer-walk pass](#the-four-rows-the-pointer-walk-pass-added) closed after
+it. **Seven new rows
 landed, and all seven are [`schemas`](openapi-surface/schemas.md)'s: five `golden`
 and two `gap`, both of the two `FIXTURE`** — which is the size of the settlement
 work this pass added, readable off the region file rather than off a report. **What
