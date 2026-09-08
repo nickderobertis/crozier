@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.71](https://github.com/nickderobertis/crozier/compare/v0.0.70...v0.0.71) - 2026-09-08
+
+### Added
+
+- *(census)* name the six branches an annotated $ref's resolved target decides ([#245](https://github.com/nickderobertis/crozier/pull/245))
+
 ## [0.0.70](https://github.com/nickderobertis/crozier/compare/v0.0.69...v0.0.70) - 2026-09-07
 
 ### Added
