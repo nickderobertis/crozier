@@ -1876,15 +1876,17 @@ the wrong resolution would have counted nothing here and would have counted
 walks at all.
 
 **Six of the ten came back `golden` and four are the rows below.** `dnd5eapi.co`
-is the whole of the golden half: its two `legendary_actions` and `reactions`
-properties are arrays whose `items` is that pointer, so they declare the `allOf`,
-`properties` and `items` arms twice each — and the conjunctions once each, because
-both properties belong to one Schema Object and the count rule is one per node at
-the leftmost position. `openbanking-brasil-directory` adds a third `properties`
-site. The `oneOf` and `anyOf` arms are declared by no registered source at all:
-they are the two rows below in their predicate spelling and the two below them in
-their conjunction spelling, all four `FIXTURE`, all four in
-[`schemas`](openapi-surface/schemas.md).
+declares every one of the six, and all but one site of them: its two
+`legendary_actions` and `reactions` properties are arrays whose `items` is that
+pointer, so they declare the `allOf`, `properties` and `items` predicates twice
+each — and each of the three conjunctions once, because both properties belong to
+one Schema Object and the count rule is one per node at the leftmost position.
+`openbanking-brasil-directory` adds the one remaining site, a third `properties`
+predicate. The `oneOf` and `anyOf` arms are declared by no registered source in
+either spelling, which is the four `gap` rows: `ref-pointer-walk-oneof` and
+`ref-pointer-walk-anyof` for the predicates and `array-item-pointer-walk-oneof`
+and `array-item-pointer-walk-anyof` for the conjunctions, all four `FIXTURE`, all
+four in [`schemas`](openapi-surface/schemas.md).
 
 **The code has one early `None` the case analysis did not derive, and case 2 now
 records it.** After `schemas.get(parts.next()?)?` succeeds, the function reads
