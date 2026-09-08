@@ -14753,7 +14753,7 @@ mod tests {
         // about the arm's own condition; one that does reach it and takes a later
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
-        // that function's later arm coins — and the twenty-two that carry none say
+        // that function's later arm coins — and the fifty-two that carry none say
         // in their own record why. Forty-seven of them enter no declared arm
         // because nothing reaches one. Seventeen are the deliberate caller-gate
         // negative each of the earlier selectors carries: eight annotated
