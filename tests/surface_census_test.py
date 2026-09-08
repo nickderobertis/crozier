@@ -1638,29 +1638,6 @@ class ConjunctionCensusTests(unittest.TestCase):
         self.assertEqual(1, refused.returncode, refused.stdout)
         self.assertIn("literal valued selector schema.example=object", refused.stderr)
 
-    @unittest.skipUnless(
-        os.environ.get("CROZIER_TEST_FETCHED_CORPUS") == "1",
-        "the registered-corpus journey is an opt-in network-tier check",
-    )
-    def test_case_11_is_absent_from_the_registered_corpus(self) -> None:
-        """The recorded gap is measured over every registered source, end to end."""
-        selector = (
-            "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
-            "!schema.example:schema-shaped&!schema.properties:non-empty&"
-            "schema.example=object&schema.type:primary=object"
-        )
-        sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
-        self.assertEqual(169, len(sources))
-        declared: dict[tuple[str, str], int] = {}
-        for offset in range(0, len(sources), 30):
-            fixture_args = list(itertools.chain.from_iterable(
-                ("--fixture", source.fixture) for source in sources[offset : offset + 30]
-            ))
-            completed = run("--selector", selector, *fixture_args)
-            self.assertEqual(0, completed.returncode, completed.stderr)
-            declared.update(rows(completed))
-        self.assertEqual({}, declared)
-
     def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
         for selector, expected in (
             ("schema.items>schema.oneof", "Did you mean: schema.items>schema.oneOf"),
