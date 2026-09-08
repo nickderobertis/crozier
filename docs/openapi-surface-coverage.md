@@ -1166,11 +1166,11 @@ generator has earned.
 ### The ranked `FIXTURE` backlog
 
 **Where this list stands, and the three ways a row left it.** It carries
-twenty-four
+twenty-two
 rows, and none of them is a row that ever stood here before: the list was
 exhausted, and five instrument passes refilled it from the one direction an
 exhausted backlog can be refilled from — the instrument, not the corpus.
-Twenty-four branches of `src/ir.rs`'s six blind functions now have a name, and no
+Twenty-two branches of `src/ir.rs`'s six blind functions now have a name, and no
 *golden-bearing* registered source declares any of them, which is what a `gap` is.
 They are
 [tabled at the end of this section](#the-ranked-fixture-backlog) and narrated in

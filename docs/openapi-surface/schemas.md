@@ -439,7 +439,7 @@ exact selector rather than an enumeration hole. `resolve_schema_pointer` kept
 five holes at the time — the five whose arm resolves a segment against the schema
 at that position, which is a joint property of a value and the document it points
 into — and its other three arms are counted here.
-[The pointer-walk pass below](#the-pointer-walk-pass-and-the-four-gaps-it-found)
+[The pointer-walk pass below](#the-pointer-walk-pass-and-the-two-gaps-it-found)
 closed those five.
 
 **Its first case is two rows, not one, and that is the finding of the pass.** A
