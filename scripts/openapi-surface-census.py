@@ -1105,9 +1105,11 @@ PREDICATES = {
 # target is no longer a hole either: `~>` resolves the reference and the members
 # after it read the target, which is what ten entries of this table do. Nor is an
 # arm reading a pointer's segments *against* the document it points into: the five
-# `schema.$ref:pointer-walk-reaches=` predicates make that walk, and the five
-# entries at the end of this table carry `resolve_schema_pointer`'s caller gate in
-# front of one. What is left a hole is an arm reading a JSON value's kind or
+# `schema.$ref:pointer-walk-reaches=` readings of `MEMBER_ONLY_PREDICATES` make
+# that walk, and the five entries at the end of this table carry
+# `resolve_schema_pointer`'s caller gate in front of one. Those readings are
+# members rather than selectors, so the entries here are the whole of what that
+# pass declares. What is left a hole is an arm reading a JSON value's kind or
 # content, a comparison across the document, or the *absence* of a declaration.
 #
 # Nothing here counts: an entry is its spelling and one sentence saying what it

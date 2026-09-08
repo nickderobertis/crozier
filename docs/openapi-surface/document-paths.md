@@ -543,13 +543,14 @@ corpus row it may not touch.
 
 **The change that names `resolve_schema_pointer`'s segment loop re-pins this
 digest, and the one it replaces reproduced.** That change registers no source —
-its ten rows are [`schemas.md`](schemas.md)'s and all ten are measured over the
-corpus as it already stands — but it declares ten selectors, and a selector is
-census output. Running the check below over its own base on **2026-09-07** hashes
-to `be8a93d6…`, the pin standing there, so that pin was **reproducible rather
-than stale** and what moves the digest is this change's own census output. It pinned
-`306e3d8a…` for its ten selectors, and **the correction below replaced that pin
-before it was published.**
+its rows are [`schemas.md`](schemas.md)'s and all of them are measured over the
+corpus as it already stands — but it declares selectors, and a selector is census
+output. Running the check below over its own base on **2026-09-07** hashes to
+`be8a93d6…`, the pin standing there, so that pin was **reproducible rather than
+stale** and what moves the digest is this change's own census output. Its first
+draft declared ten selectors and pinned `306e3d8a…` for them; **five of the ten
+were withdrawn and the correction below replaced that pin before it was
+published**, so neither the ten nor `306e3d8a…` describes the tree.
 
 **Five of those ten were withdrawn, and this is the pin that stands.** The five
 standalone `schema.$ref:pointer-walk-reaches=` predicates were not exact: each

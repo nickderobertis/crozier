@@ -757,10 +757,13 @@ by the operators — and reports an undeclared one as absent.
 The last five are the five arms of `resolve_schema_pointer`'s segment loop, each
 behind that function's own **caller gate**: `field_type_ref` calls it on an
 array-typed property's `items` reference and nowhere else, so the three members in
-front of the predicate are what keep the count off a pointer the generator never
-walks. `openbanking-brasil-directory` writes one — its
+front of the [member-only reading](#the-member-only-readings) are what keep the
+count off a pointer the generator never walks.
+`openbanking-brasil-directory` writes such a pointer — its
 `#/components/schemas/ClientCreationResponse/properties/client_id` sits on a path
-parameter's schema — and the predicate counts it while the conjunction does not.
+parameter's schema — and no selector counts it, because that node selects no case
+of the function's table. Declaring the reading on its own would have counted it,
+which is why it is a member and not a selector.
 
 **A selector absent from the census output for every registered source is a
 feature no registered source declares.** That absence is the evidence a `gap` row
@@ -1934,9 +1937,13 @@ not derive it; it is recorded on case 2's row, with five documents in
 measurement.
 
 **What did not move.** No existing row's category, settlement or evidence-cell
-count changed, and no count rule did: the five predicates and five conjunctions
-name positions the walk did not name before, and `>`, `&`, `~>`, a field, a valued
-and a predicate selector all keep the meaning they had.
+count changed, and no count rule did: the five conjunctions name positions the
+walk did not name before, and `>`, `&`, `~>`, a field, a valued and a predicate
+selector all keep the meaning they had. The five readings those conjunctions
+carry are member-only and are not selectors, so they add nothing to what the
+census counts on its own — a
+[member-only reading](#the-member-only-readings) reaches a count only through the
+gated conjunction that carries it.
 
 #### `resolve_schema_pointer`
 
@@ -1956,10 +1963,12 @@ combination of fields at one node, so no conjunction over declared fields names
 one: `schema.allOf>schema.properties` would name *one* continuation of the
 `"allOf"` arm and leave `allOf/{i}/items`, `allOf/{i}/oneOf/{j}`, a bare
 `allOf/{i}` and every deeper form uncounted. The five
-`schema.$ref:pointer-walk-reaches=` predicates
-[the grammar declares](#the-selector-grammar) make that walk instead — the
+`schema.$ref:pointer-walk-reaches=`
+[member-only readings](#the-member-only-readings) make that walk instead — the
 prefixed pointer walk, not the last-segment lookup `~>` performs — and answer,
 for one reference against one document, which segment spellings the loop read.
+Each is carried by the conjunction that puts this function's caller gate in front
+of it, and it is the conjunction that is the selector.
 A **later** segment is read only where every earlier arm's body resolved, which
 is why a predicate over the reference string alone would not do:
 `A/items/allOf/0` selects case 3 where `A` writes `items` and selects only case 7
@@ -1970,11 +1979,14 @@ documents and over one addressing a position under two arms in sequence.
 half of what the rows below say. `resolve_schema_pointer` has exactly one
 production call site — `field_type_ref`, on an array-typed property whose `items`
 is a reference, behind a `starts_with("#/components/schemas/")` guard — so each
-selector's three leftmost members are that gate and the predicate is its last.
-Without them a row would count a pointer the generator never walks, which
+selector's three leftmost members are that gate and the
+[member-only reading](#the-member-only-readings) of the arm is its last. Without
+them a row would count a pointer the generator never walks, which
 `openbanking-brasil-directory` writes: its
 `#/components/schemas/ClientCreationResponse/properties/client_id` sits on a path
-parameter's schema, so the predicate counts it and the conjunction does not. The
+parameter's schema and selects no case of this table, so **nothing counts it** —
+which is why the reading is declared as a member and never as a selector of its
+own. The
 gate's *positive* conditions are what the members carry; its negations — that the
 property is not itself a `$ref`, and that no earlier arm of `field_type_ref`
 returned first — are the H-negated-value shape, and every node they leak is one

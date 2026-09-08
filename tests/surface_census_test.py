@@ -4904,13 +4904,19 @@ class RankedBacklogTests(unittest.TestCase):
     # The predicates read off a *branch*, which carry rows of their own exactly as
     # the conjunctions composing them do: a selector declared and never classified
     # is a measurement nobody took. The eleven node-local ones the node-local pass
-    # declared, the three cross-member readings of `discriminated_union` the
-    # discriminated-union pass added, and the five the pointer-walk pass read off
-    # `resolve_schema_pointer`'s segment loop. The five predicates that predate the
+    # declared, and the three cross-member readings of `discriminated_union` the
+    # discriminated-union pass added. The five predicates that predate the
     # family are not here — they are about a whole document's keys or values rather
     # than about one arm of a blind function, and their rows say so instead; nor
     # are the seven `schema.$ref:` pointer-form ones, whose rows name two functions
     # apiece because the two read the same positions.
+    #
+    # The pointer-walk pass read five branches off `resolve_schema_pointer`'s
+    # segment loop and they are **not** here either, for a different reason than
+    # any of the above: what it declared for them are conjunctions, not predicates.
+    # The reading of each arm on its own is a `census.MEMBER_ONLY_PREDICATES`
+    # member rather than a selector, so it carries no row and this rule does not
+    # reach it — see the note where the five names would otherwise sit, below.
     BRANCH_PREDICATES = {
         "schema.type:primary=array": "schemas",
         "schema.properties:non-empty": "schemas",
