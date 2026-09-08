@@ -875,7 +875,6 @@ class GrammarContractTests(unittest.TestCase):
     def test_every_case_carries_one_declared_selector_or_one_declared_hole(self) -> None:
         """No case in neither state, and none in both."""
         holes = self.documented_holes()
-        self.assertTrue(holes, "the case analysis declares no enumeration hole")
         for function, rows_of in self.case_rows().items():
             self.assertTrue(rows_of, f"{function} lists no case")
             for cells in rows_of:
@@ -1029,6 +1028,13 @@ class GrammarContractTests(unittest.TestCase):
                     "the digest",
                 )
 
+    def test_the_example_schema_definition_port_is_tied_to_its_rust_helper(self) -> None:
+        """Case 11's content predicate drifts when the Rust keyword set moves."""
+        self.assertEqual(
+            census.EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST,
+            self.function_digest("example_is_schema_definition"),
+        )
+
     def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
         """The check above, proved against a branch this case adds and removes.
 
@@ -1059,7 +1065,7 @@ class GrammarContractTests(unittest.TestCase):
         sentence moving fails here.
         """
         words = {
-            1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
+            0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
             9: "nine", 94: "ninety-four", 95: "ninety-five",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
@@ -1397,6 +1403,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
+        "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": {},
         "schema.properties>schema.anyOf": {},
         "schema.properties>schema.oneOf": {},
         "schema.items>schema.type:primary=array": {},
@@ -1579,6 +1586,58 @@ class ConjunctionCensusTests(unittest.TestCase):
             with self.subTest(selector=selector):
                 self.assertNotIn((selector, "any-of-only"), counted)
 
+    def test_example_value_selectors_and_case_11_distinguish_the_real_readings(self) -> None:
+        """The public CLI reads example first, then the first examples member."""
+        selector = (
+            "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
+            "!schema.example:schema-shaped&!schema.properties:non-empty&"
+            "schema.example=object&schema.type:primary=object"
+        )
+        document = """\
+            openapi: 3.0.3
+            info: {title: examples, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                Root:
+                  oneOf:
+                    - {type: object, example: scalar}
+                    - {type: object, example: {field: value}}
+                    - {type: object, example: {field: {type: string}}}
+                    - {type: object, examples: []}
+                    - {type: object, examples: [{field: from-list}]}
+                    - {type: object, example: scalar-wins, examples: [{field: ignored}]}
+            """
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "examples", document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root", str(root),
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        counted = rows(completed)
+        self.assertEqual(
+            {
+                ("schema.example=object", "examples"): 3,
+                ("schema.example:schema-shaped", "examples"): 1,
+                (selector, "examples"): 1,
+            },
+            {key: value for key, value in counted.items() if key[0] in {
+                "schema.example=object", "schema.example:schema-shaped", selector
+            }},
+        )
+        self.assertFalse(
+            any(key.startswith("schema.example=") and key != "schema.example=object"
+                for key, _fixture in counted),
+            "a scalar example emitted a valued selector",
+        )
+        refused = run(
+            "--vendored-only", "--selector", "schema.example=scalar",
+        )
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("literal valued selector schema.example=object", refused.stderr)
+
     def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
         for selector, expected in (
             ("schema.items>schema.oneof", "Did you mean: schema.items>schema.oneOf"),
@@ -1586,7 +1645,8 @@ class ConjunctionCensusTests(unittest.TestCase):
             ("schema.items>schema.maxLength", "is not one of the conjunction selectors"),
             # Withdrawn as inexact: the arm also reads the example's JSON kind and
             # rejects a schema-shaped object, so this spelling counted documents
-            # `hoist_union_variant` sends to `base_type_ref`. H-example-value now.
+            # `hoist_union_variant` sends to `base_type_ref`; case 11's exact
+            # conjunction above is the accepted spelling.
             (
                 "schema.oneOf>schema.example&schema.type=object",
                 "is not one of the conjunction selectors",
@@ -2021,15 +2081,14 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
-# The twenty-three the negation pass declared, kept apart from the tables above
-# for the same reason each of those is: they are one operator — `!`, the
-# complement of a member at one node — and the arms it made expressible, and
-# `NegationSelectorDiscriminationTests` is the case that answers for every one of
-# them.
+# The twenty-three the negation pass declared plus case 11's example-value
+# conjunction, kept apart from the tables above because all twenty-four depend
+# on `!` and are exercised together by `NegationSelectorDiscriminationTests`.
 NEGATION_SELECTORS = frozenset({
     "schema.type:primary=object",
     "schema.type:primary-scalar",
     "schema.allOf:sole-member",
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
     "schema.items>!schema.type:primary-scalar&schema.allOf",
     "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
@@ -2382,6 +2441,13 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "near": ("schema", {"properties": {"kind": {"const": 1}}}),
             "overlap": ("schema", {"properties": {"kind": {"const": "alpha", **STRUCT}}}),
             "overlap_selector": "schema.properties>schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.example:schema-shaped",
+            "slug": "schema-shaped-example",
+            "branch": "`example_is_schema_definition`",
+            "select": ("schema", {"example": {"field": {"type": "string"}}}),
+            "near": ("schema", {"example": {"field": {"description": "metadata"}}}),
         },
         {
             "selector": "schema.properties>schema.properties:non-empty",
@@ -4019,6 +4085,15 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "branch": "`sole_inline_all_of`'s arity",
             "select": {"Root": {"allOf": [{"title": "one"}]}},
             "near": {"Root": {"allOf": [{"title": "one"}, {"title": "two"}]}},
+        },
+        {
+            "selector": "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
+            "slug": "huv-11",
+            "branch": "hoist_union_variant case 11",
+            "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
+            "overlap": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
         },
         # --- `is_inline_struct` read where the three tables read it -----------
         {

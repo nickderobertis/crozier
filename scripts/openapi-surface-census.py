@@ -821,7 +821,7 @@ VALUED = {
     "openapi.openapi", "parameter.in", "parameter.style", "header.style",
     "mediaType.encoding.style", "schema.type", "schema.format",
     "securityScheme.type", "securityScheme.in", "securityScheme.scheme",
-    "schema.additionalProperties",
+    "schema.additionalProperties", "schema.example",
 }
 
 # The one exception to "a boolean value emits no valued selector".
@@ -946,6 +946,12 @@ PREDICATES = {
         "one per Schema Object whose `const` value yields a string under that same "
         "reading, which is the spelling `string_enum_values` falls back to when no "
         "`enum` is written"
+    ),
+    "schema.example:schema-shaped": (
+        "one per Schema Object whose `example`, or else first `examples` member, "
+        "is a non-empty object every value of which is an object declaring at "
+        "least one of `type`, `$ref`, `properties`, `allOf`, `oneOf` or `anyOf`, "
+        "which is exactly `example_is_schema_definition` of `src/ir.rs`"
     ),
     "openapi.paths:leading-literal-segment": (
         "one per Paths Object key whose first non-empty `/`-separated segment is not "
@@ -1137,6 +1143,7 @@ CONJUNCTIONS = {
     "schema.items>schema.oneOf": "one per Schema Object whose `items` value declares `oneOf`",
     "schema.oneOf>schema.$ref": "one per Schema Object one of whose `oneOf` members is a Reference Object",
     "schema.oneOf>schema.allOf": "one per Schema Object one of whose `oneOf` members declares `allOf`",
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members is a bare object carrying an object-valued example that is not itself a schema definition",
     "schema.properties>schema.anyOf": "one per Schema Object one of whose properties declares `anyOf`",
     "schema.properties>schema.oneOf": "one per Schema Object one of whose properties declares `oneOf`",
     "schema.items>schema.type:primary=array": "one per Schema Object whose `items` value declares `array` as its primary type",
@@ -1352,7 +1359,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
         Case("10", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.allOf"),
-        Case("11", hole="H-example-value"),
+        Case("11", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object"),
         Case("12a", block="hoist_union_variant/oneOf", residual=(
             "one per Schema Object one of whose `oneOf` members declares none of the "
             "members `hoist_union_variant`'s other cases carry at the variant, which "
@@ -1457,6 +1464,11 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
+
+# The case-11 selector ports this helper's six-key content test as well as the
+# branch that calls it, so its body is pinned independently of the six blind
+# functions above. The same normalized-body drift gate recomputes this value.
+EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST = "9c184c478f5488ed"
 
 # The two descent operators, and the only place either spelling is written.
 #
@@ -2361,6 +2373,17 @@ def schema_example(node: dict[Any, Any]) -> Any:
     return None
 
 
+def example_is_schema_definition(example: Any) -> bool:
+    """`example_is_schema_definition` of `src/ir.rs`, condition for condition."""
+    if not isinstance(example, dict) or not example:
+        return False
+    schema_keys = {"type", "$ref", "properties", "allOf", "oneOf", "anyOf"}
+    return all(
+        isinstance(value, dict) and bool(schema_keys & value.keys())
+        for value in example.values()
+    )
+
+
 def discriminant_value(node: Any) -> str | None:
     """`discriminant_value` of `src/ir.rs`: the tag one member writes, or `None`.
 
@@ -2730,6 +2753,11 @@ def selector_error(text: str) -> str | None:
         )
     if equals and not value:
         return f"{text!r} is a valued selector with no value"
+    if equals and base == "schema.example" and value != "object":
+        return (
+            f"{text!r} is not the literal valued selector schema.example=object. "
+            "The selected example value emits a valued selector only when it is an object."
+        )
     if equals and base not in VALUED:
         return (
             f"{base!r} is not one of the fields that emit a valued selector. "
@@ -2812,6 +2840,8 @@ class Census:
             found += self.class_name_collisions(node.get("schemas"))
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
+            if isinstance(schema_example(node), dict):
+                found.append("schema.example=object")
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
             found += [
@@ -2835,6 +2865,8 @@ class Census:
                 if isinstance(value, list) and len(value) > 1:
                     found.append("operation.tags:multiple")
             if selector in VALUED:
+                if selector == "schema.example":
+                    continue
                 for member in value if isinstance(value, list) else [value]:
                     if isinstance(member, bool):
                         # A boolean emits a valued selector only for the one field
@@ -3063,6 +3095,8 @@ class Census:
             found.append("schema.enum:string-valued")
         if "const" in node and string_valued(node, [node.get("const")]):
             found.append("schema.const:string-valued")
+        if example_is_schema_definition(schema_example(node)):
+            found.append("schema.example:schema-shaped")
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
         found += self.discriminated_union_predicates(node)
