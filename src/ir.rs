@@ -14691,7 +14691,11 @@ mod tests {
         let cases = payload["cases"]
             .as_array()
             .expect("the file lists its cases");
-        assert_eq!(24, cases.len(), "one case per selector the two passes declared");
+        assert_eq!(
+            24,
+            cases.len(),
+            "one case per selector the two passes declared"
+        );
         let mut driven = std::collections::BTreeSet::new();
         let mut drives = 0usize;
         for case in cases {
@@ -14736,7 +14740,10 @@ mod tests {
             "every document of the shared inputs is driven by some case, and no \
              case names one the file does not write"
         );
-        assert_eq!(217, drives, "the number of drives the twenty-four cases make");
+        assert_eq!(
+            217, drives,
+            "the number of drives the twenty-four cases make"
+        );
     }
 
     #[test]
@@ -14751,10 +14758,11 @@ mod tests {
         // negative each selector carries: eight annotated `allOf`s and two unions
         // written where no property reaches `prop_type_ref`, four arrays written
         // where no composition reaches `hoist_union_variant`, and three shapes
-        // written where no array of arrays reaches `nested_array_element`. The other five reach their function and coin
-        // nothing at all to be a witness — one annotated `allOf` and the four
-        // variants whose `type` list names `string` first, which enter
-        // `hoist_union_variant` and fall to its closing `base_type_ref`.
+        // written where no array of arrays reaches `nested_array_element`. The
+        // other five reach their function and coin nothing at all to be a
+        // witness — one annotated `allOf`, and the four variants whose `type`
+        // list names `string` first, which enter `hoist_union_variant` and fall
+        // to its closing `base_type_ref`.
         let payload = resolving_arm_inputs();
         let mut without_witness = Vec::new();
         for case in payload["cases"].as_array().expect("cases") {
@@ -14810,7 +14818,7 @@ mod tests {
             ],
             without_witness,
             "the documents carrying no witness of entry are the caller-gate \
-             negatives and the two that coin nothing at all"
+             negatives and the five that coin nothing at all"
         );
     }
 
