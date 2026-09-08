@@ -5631,6 +5631,11 @@ class RankedBacklogTests(unittest.TestCase):
         "schema.oneOf:discriminated-union": "schemas",
         "schema.anyOf:discriminated-union": "schemas",
         "schema.discriminator:inheritance-union": "schemas",
+        # The three the negation pass declared, two of them readings of a `type`
+        # array's primary member and one an `allOf` arity.
+        "schema.type:primary=object": "schemas",
+        "schema.type:primary-scalar": "schemas",
+        "schema.allOf:sole-member": "schemas",
         # The five `pointer-walk-reaches=` readings are deliberately absent: a
         # member of `census.MEMBER_ONLY_PREDICATES` is not a selector, so it
         # carries no row of its own. The rows for `resolve_schema_pointer`'s cases
