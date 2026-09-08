@@ -547,17 +547,28 @@ its ten rows are [`schemas.md`](schemas.md)'s and all ten are measured over the
 corpus as it already stands — but it declares ten selectors, and a selector is
 census output. Running the check below over its own base on **2026-09-07** hashes
 to `be8a93d6…`, the pin standing there, so that pin was **reproducible rather
-than stale** and what moves the digest is this change's own census output. The new
-pin, `306e3d8a…`, is the same **169**-source walk (32 vendored, 137 fetched,
-**152** golden-bearing), taken on **2026-09-07** three times with identical
-bytes — twice through the script and once through `just surface-census --json`,
-which is the invocation the check makes. Six selectors are new to its output — the
-ten that change declares, less the four no registered source declares — they add
-11 declaration sites across `dnd5eapi.co` and `openbanking-brasil-directory`, and
-**no per-source count of any pre-existing selector moves under it**, which is what
-a pass that only adds selectors should do. That last clause is measured rather
-than asserted: the two walks were diffed key by key over every
-`(selector, fixture)` pair and the pre-existing set is identical.
+than stale** and what moves the digest is this change's own census output. It pinned
+`306e3d8a…` for its ten selectors, and **the correction below replaced that pin
+before it was published.**
+
+**Five of those ten were withdrawn, and this is the pin that stands.** The five
+standalone `schema.$ref:pointer-walk-reaches=` predicates were not exact: each
+counted nodes from which `resolve_schema_pointer` is never called — the ledger's
+own example is `openbanking-brasil-directory`'s
+`#/components/schemas/ClientCreationResponse/properties/client_id`, on a path
+parameter's schema — which is a count over documents selecting no case of that
+function's table. They are now member-only readings rather than selectors, and
+the five gated conjunctions are the whole of what that pass declares. The pin is
+`5e70b510…`, the same **169**-source walk (32 vendored, 137 fetched, **152**
+golden-bearing), taken on **2026-09-07** twice with identical bytes through
+`just surface-census --json`, which is the invocation the check makes. Three
+selectors are new to its output — the five conjunctions, less the two no
+registered source declares — carrying 3 declaration sites, all `dnd5eapi.co`'s.
+**No per-source count of any pre-existing selector moves under it**, which is what
+a pass that only adds selectors should do. That is measured rather than asserted:
+the walk under the withdrawn predicates and the walk without them were diffed key
+by key over every `(selector, fixture)` pair, the only difference is the four rows
+the withdrawn selectors carried, and no surviving pair's count changed.
 
 **The 164-versus-169 drift is unrepaired under this pin too**, and for the same
 reason: the check reaches the census-row assertions and stops at `document-info`.
@@ -647,7 +658,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "306e3d8a31cbb6d8623098d9cd0619c894b4451909231de426a905afaea590b7"
+expected_digest = "5e70b510381da08d228ac4d721d8aa7eb07e5e2470a3db6bf50cd4c48569d916"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout
