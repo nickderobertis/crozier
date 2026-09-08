@@ -14692,9 +14692,9 @@ mod tests {
             .as_array()
             .expect("the file lists its cases");
         assert_eq!(
-            24,
+            29,
             cases.len(),
-            "one case per selector the two passes declared"
+            "one case per selector the three passes declared"
         );
         let mut driven = std::collections::BTreeSet::new();
         let mut drives = 0usize;
@@ -14741,8 +14741,8 @@ mod tests {
              case names one the file does not write"
         );
         assert_eq!(
-            231, drives,
-            "the number of drives the twenty-four cases make"
+            312, drives,
+            "the number of drives the twenty-nine cases make"
         );
     }
 
@@ -14753,16 +14753,24 @@ mod tests {
         // about the arm's own condition; one that does reach it and takes a later
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
-        // that function's later arm coins — and the twenty-two that carry none say
-        // in their own record why. Seventeen are the deliberate caller-gate
-        // negative each selector carries: eight annotated `allOf`s and two unions
-        // written where no property reaches `prop_type_ref`, four arrays written
-        // where no composition reaches `hoist_union_variant`, and three shapes
-        // written where no array of arrays reaches `nested_array_element`. The
-        // other five reach their function and coin nothing at all to be a
-        // witness — one annotated `allOf`, and the four variants whose `type`
-        // list names `string` first, which enter `hoist_union_variant` and fall
-        // to its closing `base_type_ref`.
+        // that function's later arm coins — and the fifty-two that carry none say
+        // in their own record why. Forty-seven of them enter no declared arm
+        // because nothing reaches one. Seventeen are the deliberate caller-gate
+        // negative each of the earlier selectors carries: eight annotated
+        // `allOf`s and two unions written where no property reaches
+        // `prop_type_ref`, four arrays written where no composition reaches
+        // `hoist_union_variant`, and three shapes written where no array of
+        // arrays reaches `nested_array_element`. Thirty are the five
+        // pointer-walk arms' six apiece, and they divide three ways: three per
+        // arm fail `field_type_ref`'s own gate, one per arm is refused by that
+        // caller's `starts_with` guard, and two per arm do reach
+        // `resolve_schema_pointer` and take one of the early `None`s that stop
+        // it before its segment loop — an undeclared head, and the bare
+        // component pointer with no segment after it. The other five reach
+        // their function and coin nothing at all to be a witness — one
+        // annotated `allOf`, and the four variants whose `type` list names
+        // `string` first, which enter `hoist_union_variant` and fall to its
+        // closing `base_type_ref`.
         let payload = resolving_arm_inputs();
         let mut without_witness = Vec::new();
         for case in payload["cases"].as_array().expect("cases") {
@@ -14812,13 +14820,44 @@ mod tests {
                 "gate-not-a-property",
                 "one-of-not-a-property",
                 "props-not-a-property",
+                "pw-allof-bare-component-pointer",
+                "pw-allof-foreign-prefix",
+                "pw-allof-not-a-property",
+                "pw-allof-not-array-typed",
+                "pw-allof-ref-not-under-items",
+                "pw-allof-undeclared-head",
+                "pw-anyof-bare-component-pointer",
+                "pw-anyof-foreign-prefix",
+                "pw-anyof-not-a-property",
+                "pw-anyof-not-array-typed",
+                "pw-anyof-ref-not-under-items",
+                "pw-anyof-undeclared-head",
+                "pw-items-bare-component-pointer",
+                "pw-items-foreign-prefix",
+                "pw-items-not-a-property",
+                "pw-items-not-array-typed",
+                "pw-items-ref-not-under-items",
+                "pw-items-undeclared-head",
+                "pw-oneof-bare-component-pointer",
+                "pw-oneof-foreign-prefix",
+                "pw-oneof-not-a-property",
+                "pw-oneof-not-array-typed",
+                "pw-oneof-ref-not-under-items",
+                "pw-oneof-undeclared-head",
+                "pw-properties-bare-component-pointer",
+                "pw-properties-foreign-prefix",
+                "pw-properties-not-a-property",
+                "pw-properties-not-array-typed",
+                "pw-properties-ref-not-under-items",
+                "pw-properties-undeclared-head",
                 "target-all-of-not-a-property",
                 "variant-anyof-not-a-union",
                 "variant-oneof-not-a-union",
             ],
             without_witness,
             "the documents carrying no witness of entry are the caller-gate \
-             negatives and the five that coin nothing at all"
+             negatives, the pointers `resolve_schema_pointer` answers `None` for \
+             before its loop, and the five that coin nothing at all"
         );
     }
 

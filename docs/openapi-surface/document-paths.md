@@ -541,6 +541,42 @@ the change that re-transcribes this table; this change is bound not to move an
 existing row's evidence-cell count, and every source it would have to add is a
 corpus row it may not touch.
 
+**The change that names `resolve_schema_pointer`'s segment loop re-pins this
+digest, and the one it replaces reproduced.** That change registers no source —
+its rows are [`schemas.md`](schemas.md)'s and all of them are measured over the
+corpus as it already stands — but it declares selectors, and a selector is census
+output. Running the check below over its own base on **2026-09-07** hashes to
+`be8a93d6…`, the pin standing there, so that pin was **reproducible rather than
+stale** and what moves the digest is this change's own census output. Its first
+draft declared ten selectors and pinned `306e3d8a…` for them; **five of the ten
+were withdrawn and the correction below replaced that pin before it was
+published**, so neither the ten nor `306e3d8a…` describes the tree.
+
+**Five of those ten were withdrawn, and this is the pin that stands.** The five
+standalone `schema.$ref:pointer-walk-reaches=` predicates were not exact: each
+counted nodes from which `resolve_schema_pointer` is never called — the ledger's
+own example is `openbanking-brasil-directory`'s
+`#/components/schemas/ClientCreationResponse/properties/client_id`, on a path
+parameter's schema — which is a count over documents selecting no case of that
+function's table. They are now member-only readings rather than selectors, and
+the five gated conjunctions are the whole of what that pass declares. The pin is
+`5e70b510…`, the same **169**-source walk (32 vendored, 137 fetched, **152**
+golden-bearing), taken on **2026-09-07** twice with identical bytes through
+`just surface-census --json`, which is the invocation the check makes. Three
+selectors are new to its output — the five conjunctions, less the two no
+registered source declares — carrying 3 declaration sites, all `dnd5eapi.co`'s.
+**No per-source count of any pre-existing selector moves under it**, which is what
+a pass that only adds selectors should do. That is measured rather than asserted:
+the walk under the withdrawn predicates and the walk without them were diffed key
+by key over every `(selector, fixture)` pair, the only difference is the four rows
+the withdrawn selectors carried, and no surviving pair's count changed.
+
+**The 164-versus-169 drift is unrepaired under this pin too**, and for the same
+reason: the check reaches the census-row assertions and stops at `document-info`.
+That drift predates this branch — `document-paths.md` on `origin/main` already
+carries both figures — and re-transcribing this table is a measurement this change
+is bound not to make.
+
 `just lint-llm-diff origin/main` checks this documented contract semantically.
 
 ```bash
@@ -623,7 +659,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "be8a93d6a50c4b789563989a68bccde8e8222b5bf3c4398b2f72542936f8c15a"
+expected_digest = "5e70b510381da08d228ac4d721d8aa7eb07e5e2470a3db6bf50cd4c48569d916"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout

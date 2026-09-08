@@ -345,6 +345,11 @@ appears, including the ones 3.1 added.
 | anyof-array-variant-anyof-discriminated-union-item | both | Schema Object.anyOf (array member whose element is an anyOf discriminated union) | golden | census `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union`, taken on the 169-source walk (32 vendored, 137 fetched): 4 declaration sites across 2 registered sources, every one of which carries a committed golden — `letta` (3), `truefoundry-trueforge` (1). Every source declaring it carries a golden. The branch is `hoist_union_variant`'s case 4d, the same arm with both heads spelled `anyOf`, which is the product of the two `or`s the case analysis derives. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
 | property-oneof-discriminated-union | both | Schema Object.properties (property that is a oneOf discriminated union) | golden | census `schema.properties>schema.oneOf:discriminated-union`, taken on the 169-source walk (32 vendored, 137 fetched): 33 declaration sites across 5 registered sources, every one of which carries a committed golden — `letta` (15), `braintrust-dev` (12), `osparc-simcore-webserver` (4), `openintegrationhub-secret-service` (1), `truefoundry-trueforge` (1). Every source declaring it carries a golden. The branch is `prop_type_ref`'s case 13a, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)` inside the composition gate — the property is typed by a tagged union hoisted under its own name instead of by the alias case 14 would coin over the same members. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
 | property-anyof-discriminated-union | both | Schema Object.properties (property that is an anyOf discriminated union) | golden | census `schema.properties>schema.anyOf:discriminated-union`, taken on the 169-source walk (32 vendored, 137 fetched): 2 declaration sites across 1 registered source, which carries a committed golden and declares all of them — `braintrust-dev` (2). Every source declaring it carries a golden. The branch is `prop_type_ref`'s case 13b, the same arm under the property's `anyOf` spelling, which only the inferred reading reaches. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
+| array-item-pointer-walk-allof | both | Schema Object.properties (array property whose element pointer the walk reads an allOf segment at) | golden | census `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf`, taken on the 169-source walk (32 vendored, 137 fetched): 1 declaration site across 1 registered source, which carries a committed golden and declares it — `dnd5eapi.co` (1). Every source declaring it carries a golden. `dnd5eapi.co`'s `Monster.allOf[3]` declares two array properties, `legendary_actions` and `reactions`, whose `items` is the pointer `#/components/schemas/Monster/allOf/3/properties/actions/items` — two `$ref` nodes on one Schema Object, and this row counts **1** rather than 2 because the count rule is one per node at the *leftmost* position of the selector, which is the Schema Object those two properties belong to rather than either `$ref` node. The branch is `resolve_schema_pointer`'s case 3, `"allOf" => schema.all_of.as_ref()?.get(parts.next()?.parse::<usize>().ok()?)?`, behind that function's own caller gate: `field_type_ref` calls it on an array-typed property's `items` reference and nowhere else, which is what the three members in front of the member-only reading carry. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
+| array-item-pointer-walk-oneof | both | Schema Object.properties (array property whose element pointer the walk reads a oneOf segment at) | gap | census `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf`, taken on the 169-source walk (32 vendored, 137 fetched): **0** declaration sites across all 169 registered sources — neither half of the corpus declares the shape, and `--selector` reports it absent rather than printing nothing. The branch is `resolve_schema_pointer`'s case 4, `"oneOf" => schema.one_of.as_ref()?.get(…)?`, behind that function's own caller gate: `field_type_ref` calls it on an array-typed property's `items` reference and nowhere else, which is what the three members in front of the member-only reading carry. No `../fern-limitations.md` row names it | `src/ir.rs`: 1 place — `resolve_schema_pointer`'s `"oneOf" => schema.one_of.as_ref()?.get(…)?` arm | An array property whose `items` pointer addresses a `oneOf` member resolves to that member's schema, so the types module annotates the property with the element type read out of it instead of with the unresolved reference's own class name. | `FIXTURE` — a real-world, redistributable OpenAPI 3 document at an immutable ref plausibly writes an array whose element pointer addresses a `oneOf` member, since a registered golden-bearing source already writes one addressing an `allOf` member, so a screened corpus row pins it and promotes this row to `golden` under [the classification precedence](../openapi-surface-coverage.md#the-category-rules) |
+| array-item-pointer-walk-anyof | both | Schema Object.properties (array property whose element pointer the walk reads an anyOf segment at) | gap | census `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf`, taken on the 169-source walk (32 vendored, 137 fetched): **0** declaration sites across all 169 registered sources — neither half of the corpus declares the shape, and `--selector` reports it absent rather than printing nothing. The branch is `resolve_schema_pointer`'s case 5, `"anyOf" => schema.any_of.as_ref()?.get(…)?`, behind that function's own caller gate: `field_type_ref` calls it on an array-typed property's `items` reference and nowhere else, which is what the three members in front of the member-only reading carry. No `../fern-limitations.md` row names it | `src/ir.rs`: 1 place — `resolve_schema_pointer`'s `"anyOf" => schema.any_of.as_ref()?.get(…)?` arm | An array property whose `items` pointer addresses an `anyOf` member resolves to that member's schema, so the types module annotates the property with the element type read out of it instead of with the unresolved reference's own class name. | `FIXTURE` — a real-world, redistributable OpenAPI 3 document at an immutable ref plausibly writes an array whose element pointer addresses an `anyOf` member, since a registered golden-bearing source already writes one addressing an `allOf` member, so a screened corpus row pins it and promotes this row to `golden` under [the classification precedence](../openapi-surface-coverage.md#the-category-rules) |
+| array-item-pointer-walk-properties | both | Schema Object.properties (array property whose element pointer the walk reads a properties segment at) | golden | census `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties`, taken on the 169-source walk (32 vendored, 137 fetched): 1 declaration site across 1 registered source, which carries a committed golden and declares it — `dnd5eapi.co` (1). Every source declaring it carries a golden. `dnd5eapi.co`'s `Monster.allOf[3]` declares two array properties, `legendary_actions` and `reactions`, whose `items` is the pointer `#/components/schemas/Monster/allOf/3/properties/actions/items`. `openbanking-brasil-directory` writes a pointer of the same shape — `#/components/schemas/ClientCreationResponse/properties/client_id` — and is **absent here, counted by nothing**: that pointer sits on a path parameter's schema, which `field_type_ref` never reaches, so it selects no case of `resolve_schema_pointer`'s table. Excluding it is the caller gate doing its work; a selector counting it would not be exact. The branch is `resolve_schema_pointer`'s case 6, `"properties" => schema.properties.get(parts.next()?)?`, behind that function's own caller gate: `field_type_ref` calls it on an array-typed property's `items` reference and nowhere else, which is what the three members in front of the member-only reading carry. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
+| array-item-pointer-walk-items | both | Schema Object.properties (array property whose element pointer the walk reads an items segment at) | golden | census `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items`, taken on the 169-source walk (32 vendored, 137 fetched): 1 declaration site across 1 registered source, which carries a committed golden and declares it — `dnd5eapi.co` (1). Every source declaring it carries a golden. `dnd5eapi.co`'s `Monster.allOf[3]` declares two array properties, `legendary_actions` and `reactions`, whose `items` is the pointer `#/components/schemas/Monster/allOf/3/properties/actions/items`. The branch is `resolve_schema_pointer`'s case 7, `"items" => schema.items.as_deref()?`, behind that function's own caller gate: `field_type_ref` calls it on an array-typed property's `items` reference and nowhere else, which is what the three members in front of the member-only reading carry. **A golden pinning the branch does not pin the whole of the branch's behaviour** — one witness fixes the bytes for the shapes it happens to declare, and the branch is what this row is about, so golden-classified is not golden-exhausted here more than anywhere. No `../fern-limitations.md` row names it |  |  |  |
 
 ## Method notes
 
@@ -430,10 +435,12 @@ whole **169**-source registered set (32 vendored, 137 fetched):
 `FIXTURE`, and no other region gained a row. The five
 close `ref_to_class` outright: that function opens no schema, so every one of its
 five cases is decided by the pointer's segment structure and each now carries an
-exact selector rather than an enumeration hole. `resolve_schema_pointer` keeps
-five holes — the five whose arm resolves a segment against the schema at that
-position, which is a joint property of a value and the document it points into —
-and its other three arms are counted here.
+exact selector rather than an enumeration hole. `resolve_schema_pointer` kept
+five holes at the time — the five whose arm resolves a segment against the schema
+at that position, which is a joint property of a value and the document it points
+into — and its other three arms are counted here.
+[The pointer-walk pass below](#the-pointer-walk-pass-and-the-two-gaps-it-found)
+closed those five.
 
 **Its first case is two rows, not one, and that is the finding of the pass.** A
 reference that strips no `#/components/schemas/` prefix reaches that arm from two
@@ -458,6 +465,49 @@ structural measurement is involved.
 `golden` rows says so in its own cell for the same reason the conjunction rows do:
 the row is about a *branch* of `src/ir.rs`, and a golden pins the bytes for the
 shapes its own document sends down that branch.
+
+### The pointer-walk pass, and the two gaps it found
+
+The five `array-item-pointer-walk` rows at the end of the table are this region's
+whole share of the **five** selectors the pointer-walk pass added, and they close
+`resolve_schema_pointer`'s last five enumeration holes. Each is a conjunction
+carrying that function's **caller gate** in front of the reading of one arm of its
+segment loop, and each is one census invocation over the whole **169**-source
+registered set (32 vendored, 137 fetched):
+
+    just surface-census --selector 'schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items'
+
+The reading itself — `schema.$ref:pointer-walk-reaches=items` and its four
+siblings — is **not** a selector and `--selector` refuses it. It is a
+[member-only reading](../openapi-surface-coverage.md#the-member-only-readings),
+declared as `MEMBER_ONLY_PREDICATES`, because standing alone it counts nodes from
+which `resolve_schema_pointer` is never called. An earlier draft of this pass
+declared the five as predicates and gave them five rows here; both were withdrawn
+for that miscount, which is why this region gained five rows and not ten.
+
+**Five rows landed here, three of them `golden` and two `gap`**, both
+`FIXTURE`, and no other region gained a row. The measured half is one document:
+`dnd5eapi.co` writes
+`#/components/schemas/Monster/allOf/3/properties/actions/items` on the `items` of
+two array properties of `Monster.allOf[3]`, `legendary_actions` and `reactions`,
+and that one pointer selects three of the five arms in sequence — `allOf`, then
+`properties`, then `items`. Each of those three conjunctions counts it **1**: a
+conjunction counts one per node at its *leftmost* position, and both properties
+belong to one Schema Object. The `oneOf` and `anyOf` arms are declared nowhere in
+the registered set and are the two `gap` rows.
+
+**The gate is what keeps these rows exact, and one registered document shows it.**
+`resolve_schema_pointer` is reached from `field_type_ref` and nowhere else, on an
+array-typed property's `items` reference, behind a
+`starts_with("#/components/schemas/")` guard. `openbanking-brasil-directory`
+writes `#/components/schemas/ClientCreationResponse/properties/client_id` on a
+path parameter's schema: it spells a `properties` segment the walk would read, and
+the generator never walks it, so it selects no case of that function's table and
+**no row here counts it**. That is the gate doing its work, and it is why the
+ungated reading earns no row of its own.
+
+**Golden-classified is not golden-exhausted here either**, and each of the three
+`golden` rows says so in its own cell, for the reason every branch row does.
 
 ### The conjunction pass, and what it found
 
