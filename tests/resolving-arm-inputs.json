@@ -10529,6 +10529,52 @@
     }
    },
    "body": {}
+  },
+  "pw-allof-map-form-composition": {
+   "schemas": {
+    "Root": {
+     "allOf": {
+      "0": {
+       "properties": {
+        "b": {
+         "type": "string"
+        }
+       }
+      }
+     }
+    },
+    "Holder": {
+     "type": "object",
+     "properties": {
+      "list": {
+       "type": "array",
+       "items": {
+        "$ref": "#/components/schemas/Root/allOf/0/properties/b"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
+  },
+  "pw-items-non-object-child": {
+   "schemas": {
+    "Root": {
+     "items": "not-an-object"
+    },
+    "Holder": {
+     "type": "object",
+     "properties": {
+      "list": {
+       "type": "array",
+       "items": {
+        "$ref": "#/components/schemas/Root/items/properties/b"
+       }
+      }
+     }
+    }
+   },
+   "body": {}
   }
  },
  "cases": [
@@ -12445,6 +12491,13 @@
      "arms": [
       "resolve_schema_pointer:3"
      ]
+    },
+    "pw-allof-map-form-composition": {
+     "form": "the composition written as the integer-keyed map `de_composition` of `src/openapi.rs` accepts beside the array, which the walk orders by key and reads the indexed member of",
+     "arms": [
+      "resolve_schema_pointer:3",
+      "resolve_schema_pointer:6"
+     ]
     }
    },
    "near": {
@@ -12807,6 +12860,20 @@
      "arms": [
       "resolve_schema_pointer:6"
      ]
+    },
+    "pw-allof-map-form-composition": {
+     "form": "the `properties` segment reached through a composition written in map form",
+     "arms": [
+      "resolve_schema_pointer:3",
+      "resolve_schema_pointer:6"
+     ]
+    },
+    "pw-items-non-object-child": {
+     "form": "the `properties` segment reached through an `items` whose value is not an object, so the arm is read against a schema declaring nothing",
+     "arms": [
+      "resolve_schema_pointer:6",
+      "resolve_schema_pointer:7"
+     ]
     }
    },
    "near": {
@@ -12915,6 +12982,13 @@
     "pw-items-nullable-array-type": {
      "form": "the property's type written as a 3.1 list naming `null` first, which `TypeField::primary` reads as `array` all the same",
      "arms": [
+      "resolve_schema_pointer:7"
+     ]
+    },
+    "pw-items-non-object-child": {
+     "form": "an `items` whose value is not an object, which `de_items` degrades into a schema declaring nothing, so the arm resolves and the walk carries on",
+     "arms": [
+      "resolve_schema_pointer:6",
       "resolve_schema_pointer:7"
      ]
     }
