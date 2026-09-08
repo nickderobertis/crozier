@@ -21,21 +21,28 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
-**What it says today.** The walk enumerates 482 features. 372 are `golden`: a
+**What it says today.** The walk enumerates 510 features. 391 are `golden`: a
 registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 70 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
 recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
-about Fern and not a byte comparison against crozier. 40 are `gap`: 20 of them
+about Fern and not a byte comparison against crozier. 49 are `gap`: 20 of them
 `UNREACHABLE` — the shape has no position in a generated Python SDK at all — and
-20 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
+29 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
 and that no committed golden reaches. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
-evidence covers 372 of the 482 features this walk can see, that 70 more carry a
-Fern verdict and no byte comparison at all, that 40 have neither, and that the
+evidence covers 391 of the 510 features this walk can see, that 70 more carry a
+Fern verdict and no byte comparison at all, that 49 have neither, and that the
 walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
 left for a reader to infer from a backlog's size.
+
+**The denominator is the instrument's, and it just grew.** 510 is larger than the
+482 the paragraph above read before the negation operator landed, and the corpus
+is unchanged: the same 32 vendored and 137 `link-ok` sources, no row added and
+none withdrawn. What grew is the grammar — a feature is enumerable only where a
+selector can name it — so a larger denominator here means the walk sees more of
+the same corpus rather than that the corpus saw more.
 
 ## The region files
 
@@ -1234,33 +1241,35 @@ closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 482](#what-the-walk-enumerated) is a
+[the walk's 510](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
-[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 89
-branches those six functions of `src/ir.rs` offer a document, 69 carry an exact
-selector and 20 are enumeration holes, each naming the operator or predicate that
-would close it and none of them a row anywhere. **That bound has moved four
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 95
+branches those six functions of `src/ir.rs` offer a document, 94 carry an exact
+selector and **one** is an enumeration hole, naming the two declarations that
+would close it and being a row nowhere. **That bound has moved five
 times, and moving it is what a reader should expect of it.** It read *"of the 53
 branches, 9 carry an exact selector and 44 are enumeration holes"* until the
 node-local predicate family was declared, *"of the 76 branches, 40 carry an
 exact selector and 36 are enumeration holes"* until the annotated-`$ref` pass read
 the four arms inside `prop_type_ref`'s resolution gate at the grain their
-selectors need, and *"of the 83 branches, 60 carry an exact selector and 23 are
+selectors need, *"of the 83 branches, 60 carry an exact selector and 23 are
 enumeration holes"* until the discriminated-union pass closed
-**H-discriminant-value**. The branch count moves when a case is read at a finer
+**H-discriminant-value**, and *"of the 89 branches, 74 carry an exact selector and
+15 are enumeration holes"* until the negation operator closed **H-residual** and
+**H-negated-value** together. The branch count moves when a case is read at a finer
 grain — a disjunction split disjunct by disjunct is more rows describing the same
-code — and the hole count moves when the grammar grows. The remaining twenty turn
-on a JSON value's kind or content, on a comparison across the document, or on the
-*absence* of a declaration, and each says which. The same is true off that file —
+code — and the hole count moves when the grammar grows. The one that remains turns
+on a JSON value's kind and content — `hoist_union_variant`'s bare-object arm reads
+what an `example` *is* — and its row says so. The same is true off that file —
 the enum-member spellings
 `src/naming.rs` lowers, the JSON value
 *kinds* the example branches of `src/emit.rs` switch on, and the cross-document
 `$ref` path of `src/refs.rs`, which the corpus is single-document by construction
-and so can never reach. None of that is in the 482, in the 40 `gap` rows, or in
+and so can never reach. None of that is in the 510, in the 49 `gap` rows, or in
 either backlog. It is not unclassified work; it is unnamed work, and this
 document's own instrument is what would have to grow first — which is exactly what
-the twenty `FIXTURE` rows are: the four times it did.
+the twenty-nine `FIXTURE` rows are: the five times it did.
 
 **And the thin end is one document wide.** A `golden` row rests on whichever
 registered sources happen to declare the shape, and for several that is a single
@@ -2084,6 +2093,88 @@ carry are member-only and are not selectors, so they add nothing to what the
 census counts on its own — a
 [member-only reading](#the-member-only-readings) reaches a count only through the
 gated conjunction that carries it.
+
+#### The seven rows the negation pass added
+
+**Twenty-three more branches named, sixteen of them already `golden`, and both
+enumeration-hole kinds that turned on an absence closed.** This pass declared one
+operator, three predicates and twenty conjunctions. The operator is `!` over a
+member of a group — the complement of a selector read at one node — and it is
+what H-residual and H-negated-value had both been waiting for: the first named
+every arm selected by the *absence* of every case above it, and the second every
+arm whose own condition was that a value was not written. Seven of the twenty
+conjunctions are those residual arms, and their spelling is **composed by the
+census from the case table** rather than written anywhere, so adding a case to a
+block changes what that block's residual matches with no selector text edited.
+
+**The case table is machine-readable now, and that is why the residuals could be
+composed at all.** A residual written out as prose would be a hand-copy of the
+table that goes quietly wrong the day a branch is added; declared as `CASES` in
+`scripts/openapi-surface-census.py`, with the coverage document's case analysis
+restating it and the gate reconciling the two in both directions, it is a single
+source with two readers. The table also carries a digest of each of the six
+functions' normalized bodies, so a branch added, removed or edited without the
+table being re-derived fails the gate rather than going unnoticed.
+
+**Sixteen came back `golden` and seven `gap`.** The census was run over all 169
+registered sources and every one of the twenty-three selectors was put to it by
+name. The `golden` sixteen include every residual arm, which is what a residual
+should look like: `prop_type_ref`'s own residual is declared at 16,159 sites
+across 162 sources, 146 of them carrying a committed golden, and
+`nested_array_element`'s at 4,568 across 115. They also include three shapes the
+corpus writes rarely and had never been asked about —
+`schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object`
+rests on `webflow-v2` alone (2 sites), and
+`schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf`
+on `braintrust-dev` alone (1).
+
+**The seven `gap` rows are all `FIXTURE`, and the probe backlog stays empty.**
+Each is the `oneOf` twin of a shape the corpus writes under `anyOf`, the
+one-member-composition form of a shape it writes at the property, or the
+inside-a-union form of a shape it writes outside one — so a real, redistributable
+document plausibly writes each, and Fern plausibly emits bytes from it, which is
+what `FIXTURE` means. None of them is a measurement no single specification can
+hold, and none is a shape for which no witness could be found at all, which are
+the two things that would have made one a `PROBE`. **That contradicts the plan
+this pass ran under**, which predicted both backlogs would refill; the fixture one
+did, from twenty-two rows to twenty-nine, and the probe one is still empty, on the
+measurement rather than on the prediction.
+
+**One reading of `src/ir.rs` this pass had to settle against the code, and it is
+the reason case 16 looks under-negated.** A residual negates only those cases in
+its own block whose selector is the block's gate and one member — a case whose
+condition reaches into a subtree states a property no member at this node can
+complement — and it does **not** negate a gate that *falls through*.
+`prop_type_ref`'s case 1 is exactly that: it holds over an annotated `$ref` that
+resolves to nothing and then falls through to the arms below it, so negating it
+would make the function's residual narrower than its own arm, which
+[the exactness rule](#the-selector-grammar) disqualifies as firmly as a broader
+one. The nodes the un-negated cases claim are counted by the residual, which is
+the chain overlap that rule permits between two cases of one table — visible,
+because every one of those cases is a row here.
+
+**What did not move.** No existing row's category, settlement or evidence-cell
+count changed, and no count rule did: `!` adds a way to say what a node does not
+declare and leaves `&`, `>`, `~>` and every selector kind meaning what they
+meant. The three predicates and twenty conjunctions name positions the walk did
+not name before, which is why the feature denominator moves over an unchanged
+corpus.
+
+**The size of what this leaves, in numbers rather than in prose.** Twenty-three
+rows landed, all of them [`schemas`](openapi-surface/schemas.md)'s: **16
+`golden`** and **7 `gap`**, every one of the seven `FIXTURE` and none
+`limitations`, because [`fern-limitations.md`](fern-limitations.md) names no row
+for any of them. The case analysis now derives **95** branches, **94** of which
+carry an exact selector and **1** of which is an enumeration hole. The follow-on
+work the tree inherits is therefore **seven screened corpus rows** — one witness
+apiece for the seven `FIXTURE` gaps, each of which promotes its row to `golden`
+under [the classification precedence](#the-category-rules) — and **zero probe
+work**, because [the probe backlog](#the-probe-backlog) gains nothing here. The
+one remaining enumeration hole is a separate, smaller piece of work: a valued
+selector over an example's JSON kind and a predicate for the schema-shaped
+rejection, which is what `hoist_union_variant`'s case 11 asks for and the only
+thing left between this instrument and every branch of these six functions
+carrying a name.
 
 #### `resolve_schema_pointer`
 

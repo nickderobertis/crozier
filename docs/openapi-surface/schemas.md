@@ -532,6 +532,48 @@ ungated reading earns no row of its own.
 **Golden-classified is not golden-exhausted here either**, and each of the three
 `golden` rows says so in its own cell, for the reason every branch row does.
 
+### The negation pass, and the seven gaps it found
+
+The twenty-three rows at the end of the table are this region's whole share of the
+**twenty-three** selectors the negation pass added — three predicates and twenty
+conjunctions — and no other region gained a row, because every one of them anchors
+on a Schema Object. Each is one census invocation over the whole **169**-source
+registered set (32 vendored, 137 fetched):
+
+    just surface-census --selector 'schema.properties>!schema.type:primary-scalar&schema.allOf'
+
+**Sixteen came back `golden` and seven `gap`, all seven `FIXTURE`.** The seven are
+the `oneOf` twin of a shape the corpus writes under `anyOf`
+(`oneof-array-variant-composed-item`), the two array-variant forms of an element
+the corpus writes outside a union (`oneof-` and
+`anyof-array-variant-empty-object-item`), and the four one-member-composition
+forms of shapes the corpus writes at the property itself
+(`property-sole-{oneof,anyof}-{composed,empty-object}-member`). Every one of them
+measures **0** declaration sites across all 169 sources; every one has a sibling
+spelling a registered golden-bearing source already declares, which is what makes
+each a fixture problem rather than a probe one, and why this pass adds no row to
+[the probe backlog](../openapi-surface-coverage.md#the-probe-backlog).
+
+**Seven of the sixteen `golden` rows are residual arms**, and their selectors are
+not written anywhere: the census composes each from
+[the case table](../openapi-surface-coverage.md#the-six-blind-regions-of-srcirrs-case-by-case)
+that `scripts/openapi-surface-census.py` declares. `property-residual` —
+`prop_type_ref`'s own closing `base_type_ref` — is the widest row this region has
+ever carried at 16,159 declaration sites across 162 sources, 146 of them
+golden-bearing, which is what a most-travelled path should measure. Two of the
+sixteen rest on a single source apiece: `array-item-empty-object` on `webflow-v2`
+(2 sites) and `anyof-array-variant-composed-item` on `braintrust-dev` (1), so
+withdrawing either corpus row would take that row to `gap` without a line of
+`src/` changing.
+
+**Nothing already here moved.** No existing row's category, settlement or
+evidence-cell count changed, and the twenty-three new cells are all dated to the
+169-source walk this pass re-pinned in
+[`document-paths.md`](document-paths.md#snapshot-reconciliation); the rest of this
+file's cells stay dated to the walks they were taken on, which is the rule
+[the measurement bullet](../openapi-surface-coverage.md#ranked-gap-backlog) states
+for every region file.
+
 ### The conjunction pass, and what it found
 
 The nine conjunction rows at the end of the table are one census invocation each,

@@ -571,6 +571,24 @@ the walk under the withdrawn predicates and the walk without them were diffed ke
 by key over every `(selector, fixture)` pair, the only difference is the four rows
 the withdrawn selectors carried, and no surviving pair's count changed.
 
+**The change that lands the negation operator re-pins this digest, and the one it
+replaces reproduced.** That change registers no source — its twenty-three rows are
+[`schemas.md`](schemas.md)'s and all of them are measured over the corpus as it
+already stands — but it declares selectors, and a selector is census output.
+Running the check below over its own base on **2026-09-08** hashes to
+`5e70b510…`, the pin standing there, so that pin was **reproducible rather than
+stale** and what moves the digest is this change's own census output. The new pin,
+`57e1f640…`, is the same **169**-source walk (32 vendored, 137 fetched, **152**
+golden-bearing), taken twice on **2026-09-08** with identical bytes through
+`just surface-census --json`, which is the invocation the check makes. Sixteen
+selectors are new to its output — the twenty-three that change declares, less the
+seven no registered source declares — they add 752 rows and 156,861 declaration
+sites, and **no per-source count of any pre-existing selector moves under it**,
+which is what a pass that only adds selectors should do. That is measured rather
+than asserted: the two walks were diffed key by key over every
+`(selector, fixture)` pair, every pair the old walk carried is present in the new
+one with the same count, and the source list is identical.
+
 **The 164-versus-169 drift is unrepaired under this pin too**, and for the same
 reason: the check reaches the census-row assertions and stops at `document-info`.
 That drift predates this branch — `document-paths.md` on `origin/main` already
@@ -659,7 +677,7 @@ for key, cells in rows.items():
         assert not cells[5], f"{key} is not a gap row but publishes a crozier-site count"
 
 # --- every transcribed fixture count is the census's own ---------------------
-expected_digest = "5e70b510381da08d228ac4d721d8aa7eb07e5e2470a3db6bf50cd4c48569d916"
+expected_digest = "57e1f640c6386394f23504451d53c3169109cff61e2b496a337e93d08654281c"
 census = subprocess.run(
     ["just", "surface-census", "--json"], check=True, stdout=subprocess.PIPE
 ).stdout
