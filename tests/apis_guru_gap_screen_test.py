@@ -40,13 +40,19 @@ class GapScreenTest(unittest.TestCase):
         path.write_text(json.dumps(catalogue, sort_keys=True), encoding="utf-8")
         return path.as_uri()
 
-    def invoke(self, index: str, output: Path | None = None, provenance: Path | None = None):
+    def invoke(
+        self,
+        index: str,
+        output: Path | None = None,
+        provenance: Path | None = None,
+        *extra_args: str,
+    ):
         output = output or self.root / "report.tsv"
         provenance = provenance or REPO / "docs/openapi-surface/apis-guru-publisher-provenance.tsv"
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--index-url", index, "--output", str(output),
              "--provenance-map", str(provenance), "--snapshot-utc", STAMP,
-             "--workers", "2", "--attempts", "2"],
+             "--workers", "2", "--attempts", "2", *extra_args],
             cwd=REPO, capture_output=True, text=True, timeout=30,
         )
         return completed, output
@@ -187,6 +193,21 @@ components:
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("unanswered after 2 bounded attempts", completed.stderr)
         self.assertFalse(output.exists())
+
+    def test_nonpositive_numeric_arguments_are_rejected(self) -> None:
+        index = self.index([])
+        expected = "apis-guru-gap-screen: attempts, workers, and timeout must be positive\n"
+        for option, value in (
+            ("--attempts", "0"),
+            ("--workers", "0"),
+            ("--timeout", "0"),
+        ):
+            with self.subTest(option=option):
+                completed, output = self.invoke(index, None, None, option, value)
+                self.assertEqual(completed.returncode, 2)
+                self.assertEqual(completed.stderr, expected)
+                self.assertEqual(completed.stdout, "")
+                self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":
