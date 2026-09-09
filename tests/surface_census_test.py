@@ -5370,10 +5370,46 @@ class RankedBacklogTests(unittest.TestCase):
             "the settlement classes do not partition the gap rows",
         )
 
+    def test_the_headline_totals_are_the_region_files_own(self) -> None:
+        """The opening answer cannot retain totals from an earlier settlement."""
+        rows = list(self.entries.values())
+        categories = {
+            category: sum(
+                1 for _region, cells in rows if cells[3].strip("`") == category
+            )
+            for category in self.CATEGORIES
+        }
+        headline = self.section("**What it says today.**", "**The denominator")
+        stated = re.search(
+            r"enumerates (\d+) features\. (\d+) are `golden`.*?"
+            r"(\d+) are\s+`limitations`.*?(\d+) are `gap`: (\d+) of them\s+"
+            r"`UNREACHABLE`.*?and\s+(\d+) `FIXTURE`.*?"
+            r"evidence covers (\d+) of the (\d+) features.*?"
+            r"(\d+) more carry a\s+Fern verdict.*?that (\d+) have neither",
+            headline,
+            re.S,
+        )
+        self.assertIsNotNone(stated, "the headline no longer states its ten totals")
+        expected = [
+            len(rows),
+            categories["golden"],
+            categories["limitations"],
+            categories["gap"],
+            len(self.gaps("UNREACHABLE")),
+            len(self.gaps("FIXTURE")),
+            categories["golden"],
+            len(rows),
+            categories["limitations"],
+            categories["gap"],
+        ]
+        self.assertEqual(expected, [int(value) for value in stated.groups()])
+
     def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
         """What `gap` means restates the gap total twice, then its two parts."""
         gap = sum(
-            1 for _region, cells in self.entries.values() if cells[3].strip("`") == "gap"
+            1
+            for _region, cells in self.entries.values()
+            if cells[3].strip("`") == "gap"
         )
         unreachable = len(self.gaps("UNREACHABLE"))
         prose = self.section("**What the `gap` count means.**", "### Reconciliation")
@@ -6084,7 +6120,7 @@ class RankedBacklogTests(unittest.TestCase):
             AMENDED_ROUTE,               # how a row says it took the route
             "`blocker:`",                # and where it names its blocker
             "still beats",               # the precedence that does not move
-            "no registered-witness parity evidence",
+            "no byte-comparison evidence",
         ):
             self.assertIn(demanded, flat, f"the rule no longer states {demanded!r}")
 
