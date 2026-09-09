@@ -60,13 +60,17 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 for key, selector in keys
                 for family in families
             )
-            completed.append(
-                self.changed(
-                    source,
-                    "|---|---|---|---|---|---|---|---|---|\n",
-                    "|---|---|---|---|---|---|---|---|---|\n" + records,
-                )
+            separator = "|---|---|---|---|---|---|---|---|---|\n"
+            text = source.read_text(encoding="utf-8")
+            self.assertIn(separator, text)
+            directory = Path(tempfile.mkdtemp())
+            self.addCleanup(shutil.rmtree, directory)
+            target = directory / source.name
+            target.write_text(
+                text.split(separator, 1)[0] + separator + records,
+                encoding="utf-8",
             )
+            completed.append(target)
         directory = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, directory)
         schemas = directory / "schemas.md"
