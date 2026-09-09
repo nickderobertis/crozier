@@ -40,11 +40,13 @@ class GapScreenTest(unittest.TestCase):
         path.write_text(json.dumps(catalogue, sort_keys=True), encoding="utf-8")
         return path.as_uri()
 
-    def invoke(self, index: str, output: Path | None = None):
+    def invoke(self, index: str, output: Path | None = None, provenance: Path | None = None):
         output = output or self.root / "report.tsv"
+        provenance = provenance or REPO / "docs/openapi-surface/apis-guru-publisher-provenance.tsv"
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--index-url", index, "--output", str(output),
-             "--snapshot-utc", STAMP, "--workers", "2", "--attempts", "2"],
+             "--provenance-map", str(provenance), "--snapshot-utc", STAMP,
+             "--workers", "2", "--attempts", "2"],
             cwd=REPO, capture_output=True, text=True, timeout=30,
         )
         return completed, output
@@ -59,6 +61,15 @@ class GapScreenTest(unittest.TestCase):
         admitted = self.spec("admitted.json", json.dumps({
             "openapi": "3.0.0", "info": {
                 "title": "A", "version": "1", "license": {"name": "MIT"},
+                "x-origin": [{"url": publisher_source}],
+            },
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        untrusted = self.spec("untrusted.json", json.dumps({
+            "openapi": "3.0.0", "info": {
+                "title": "U", "version": "1", "license": {"name": "MIT"},
                 "x-origin": [{"url": publisher_source}],
             },
             "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
@@ -87,13 +98,19 @@ components:
         }))
         index = self.index([
             ("z.example", "2", admitted), ("z.example", "1", admitted),
-            ("asana.com", "1.0", admitted),
+            ("asana.com", "1.0", admitted), ("untrusted.example", "1", untrusted),
             ("a.example", "1", unknown), ("m.example", "1", refused),
         ])
-        first, output = self.invoke(index)
+        provenance = self.root / "provenance.tsv"
+        provenance.write_text(
+            "api_id\tversion\tsource_url\timmutable_ref\n"
+            f"asana.com\t1.0\t{publisher_source}\t0123456789abcdef0123456789abcdef01234567\n",
+            encoding="utf-8",
+        )
+        first, output = self.invoke(index, provenance=provenance)
         self.assertEqual(first.returncode, 0, first.stderr)
         original = output.read_bytes()
-        second, _ = self.invoke(index, output)
+        second, _ = self.invoke(index, output, provenance)
         self.assertEqual(second.returncode, 0, second.stderr)
         self.assertEqual(output.read_bytes(), original)
         with output.open(encoding="utf-8", newline="") as handle:
@@ -115,8 +132,12 @@ components:
             r["immutable_ref"] == "0123456789abcdef0123456789abcdef01234567"
             for r in traced
         ))
-        self.assertTrue(all("publisher source traced" in r["notes"] for r in traced))
+        self.assertTrue(all("ownership evidenced by provenance mapping" in r["notes"] for r in traced))
         self.assertTrue(all("repeats the rejected-spec table" in r["notes"] for r in traced))
+        untrusted_rows = [r for r in hits if r["api_id"] == "untrusted.example"]
+        self.assertTrue(untrusted_rows)
+        self.assertTrue(all(not r["source_url"] and not r["immutable_ref"] for r in untrusted_rows))
+        self.assertTrue(all("not evidenced" in r["notes"] for r in untrusted_rows))
         none = [r for r in rows if r["outcome"] == "none-found"]
         self.assertTrue(none)
         self.assertTrue(all(not r["api_id"] and not r["declaration_count"] for r in none))

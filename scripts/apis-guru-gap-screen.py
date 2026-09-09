@@ -22,6 +22,7 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_INDEX = "https://api.apis.guru/v2/list.json"
+DEFAULT_PROVENANCE = REPO / "docs/openapi-surface/apis-guru-publisher-provenance.tsv"
 HEADER = (
     "snapshot_utc", "catalogue_digest", "gap_key", "selector", "outcome",
     "api_id", "version", "spec_url", "source_url", "immutable_ref", "license",
@@ -151,17 +152,27 @@ def licence(document: Any) -> tuple[str, str]:
     return value, "unknown"
 
 
-def provenance(document: Any) -> tuple[str, str, str]:
-    info = document.get("info") if isinstance(document, dict) else None
-    origins = info.get("x-origin") if isinstance(info, dict) else None
-    if not isinstance(origins, list):
-        return "", "", "publisher-owned immutable source not evidenced"
-    for origin in origins:
-        url = origin.get("url") if isinstance(origin, dict) else None
-        match = SHA_REF.search(url or "")
-        if match:
-            return str(url), match.group(1), "publisher source traced from info.x-origin"
-    return "", "", "publisher-owned immutable source not evidenced"
+def publisher_provenance(path: Path) -> dict[tuple[str, str], tuple[str, str]]:
+    """Load explicit publisher-ownership evidence keyed by catalogue identity."""
+    result = {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        expected = ("api_id", "version", "source_url", "immutable_ref")
+        if tuple(reader.fieldnames or ()) != expected:
+            raise ValueError(f"{path}: expected provenance columns: {', '.join(expected)}")
+        for line, row in enumerate(reader, 2):
+            key = (row["api_id"], row["version"])
+            source_url = row["source_url"]
+            immutable_ref = row["immutable_ref"]
+            match = SHA_REF.search(source_url)
+            if not all((*key, source_url, immutable_ref)):
+                raise ValueError(f"{path}:{line}: provenance fields must be non-empty")
+            if not match or match.group(1).lower() != immutable_ref.lower():
+                raise ValueError(f"{path}:{line}: source URL must contain its immutable ref")
+            if key in result:
+                raise ValueError(f"{path}:{line}: duplicate provenance for {key[0]}/{key[1]}")
+            result[key] = (source_url, immutable_ref)
+    return result
 
 
 def rejected_api_guru_versions(path: Path) -> set[tuple[str, str]]:
@@ -198,7 +209,8 @@ def screen_one(entry: tuple[str, str, str], selectors: dict[str, str], attempts:
     counts = CENSUS.census_document(document, conjunctions=conjunctions)
     hits = {key: counts.get(selector, 0) for key, selector in selectors.items()}
     license_text, license_screen = licence(document)
-    source_url, immutable_ref, notes = provenance(document)
+    source_url = immutable_ref = ""
+    notes = "publisher-owned immutable source not evidenced"
     if not license_text:
         notes += "; document declares no info.license"
     return entry, hits, license_text, license_screen, source_url, immutable_ref, notes
@@ -218,6 +230,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--index-url", default=DEFAULT_INDEX)
     parser.add_argument("--output", type=Path, default=REPO / "docs/openapi-surface/apis-guru-gap-witnesses.tsv")
     parser.add_argument("--regions-dir", type=Path, default=REPO / "docs/openapi-surface")
+    parser.add_argument("--provenance-map", type=Path, default=DEFAULT_PROVENANCE)
     parser.add_argument("--snapshot-utc")
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=30)
@@ -232,6 +245,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     try:
         selectors = selectors_from_regions(args.regions_dir)
+        provenance = publisher_provenance(args.provenance_map)
         index_bytes = fetch(args.index_url, args.attempts, args.timeout)
         index = parse_bytes(index_bytes, args.index_url)
         entries = versions(index)
@@ -255,6 +269,13 @@ def main(argv: list[str] | None = None) -> int:
                 count = hits[key]
                 if count:
                     api_id, version, spec_url = entry
+                    if (api_id, version) in provenance:
+                        source_url, immutable_ref = provenance[(api_id, version)]
+                        notes = notes.replace(
+                            "publisher-owned immutable source not evidenced",
+                            "publisher ownership evidenced by provenance mapping",
+                            1,
+                        )
                     if (api_id, version) in rejected:
                         notes += "; repeats the rejected-spec table in tests/fixtures/AGENTS.md"
                     rows.append(dict(zip(HEADER, (snapshot, digest, key, selectors[key], "candidate", api_id, version, spec_url, source_url, immutable_ref, license_text, license_screen, str(count), notes))))
