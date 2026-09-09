@@ -615,7 +615,10 @@ class RecipeWiringTests(unittest.TestCase):
 
     def test_the_gate_runs_this_file_offline(self) -> None:
         self.assertEqual(
-            [f'"$(./scripts/census-python.sh)" tests/{Path(__file__).name}'],
+            [
+                f'"$(./scripts/census-python.sh)" tests/{Path(__file__).name}',
+                '"$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py',
+            ],
             recipe_body("test-surface-census"),
         )
         check = next(

@@ -347,6 +347,11 @@ surface-census *args:
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 test-surface-census:
     "$(./scripts/census-python.sh)" tests/surface_census_test.py
+    "$(./scripts/census-python.sh)" tests/apis_guru_gap_screen_test.py
+
+# Screen every APIs.guru catalogue version for the owned surface-gap selectors.
+apis-guru-gap-screen *args:
+    "$(./scripts/census-python.sh)" ./scripts/apis-guru-gap-screen.py {{args}}
 
 # The corpus's admissible-licence rule is stated in ONE file,
 # docs/corpus-licensing.md. This fails when any other tracked Markdown document
