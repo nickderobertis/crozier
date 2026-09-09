@@ -22,6 +22,7 @@ turns that skip into a failure so the required check can never no-op.
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import os
@@ -38,6 +39,51 @@ CONFIG = REPO / "llmlint.yml"
 RECORD = json.loads(LOCK.read_text(encoding="utf-8"))
 PLUGINS = RECORD["plugins"]
 VENDORED = [plugin for plugin in PLUGINS if not plugin.get("bundled")]
+
+
+def configured_excludes() -> list[str]:
+    """Read the quoted exclude entries from the repository's llmlint config."""
+    lines = CONFIG.read_text(encoding="utf-8").splitlines()
+    start = lines.index("  exclude:") + 1
+    end = next(
+        index
+        for index in range(start, len(lines))
+        if lines[index] and not lines[index].startswith(" ")
+    )
+    return [
+        line.strip().removeprefix("- ").strip('"')
+        for line in lines[start:end]
+        if line.strip().startswith('- "')
+    ]
+
+
+class GeneratedProbeExpectationsStayNarrowlyExcluded(unittest.TestCase):
+    """Keep generated probe output out without hiding its authored machinery."""
+
+    def test_exclusion_covers_expectations_but_not_authored_paths(self) -> None:
+        excludes = configured_excludes()
+        expectation = (
+            "docs/openapi-surface/probe-expected/"
+            "annotated-ref-target-closed-object/src/fern/types/target.py"
+        )
+        authored = (
+            "docs/openapi-surface/probes/annotated-ref-target-closed-object.yml",
+            "scripts/openapi-surface-census.py",
+            "tests/surface_census_test.py",
+            "tests/e2e.rs",
+        )
+
+        self.assertTrue(
+            any(fnmatch.fnmatchcase(expectation, pattern) for pattern in excludes),
+            "llmlint.yml no longer excludes the generated Fern probe expectations",
+        )
+        for path in authored:
+            with self.subTest(path=path):
+                self.assertTrue((REPO / path).is_file(), f"authored path is missing: {path}")
+                self.assertFalse(
+                    any(fnmatch.fnmatchcase(path, pattern) for pattern in excludes),
+                    f"llmlint.yml excludes authored probe machinery: {path}",
+                )
 
 
 def llmlint_binary() -> str | None:

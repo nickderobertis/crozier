@@ -21,6 +21,11 @@ files:
     # never LLM-judged. This top-level exclude is the single source of truth (the
     # diff-scoped run self-discovers files and honors it; needs llmlint >= 0.3.12).
     - "tests/fixtures/**"
+    # Fern probe expectations — generated output used for normalized parity
+    # comparisons, not authored source. Their 1.5M-token tree exceeds the judge's
+    # input capacity; the probes and the code that produce and compare it remain
+    # linted.
+    - "docs/openapi-surface/probe-expected/**"
     # screencomp visual-docs artifacts — generated captures, not hand-written
     # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
     # the animated GIF, the digest baseline, and the vendored binary font. They

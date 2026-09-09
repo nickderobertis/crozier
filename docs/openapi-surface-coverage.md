@@ -1085,7 +1085,7 @@ which 113 are a region row's key verbatim. The other four:
 
 | ledger key | how it is accounted for |
 |---|---|
-| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 86. |
+| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 116. |
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
 | `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
@@ -1677,7 +1677,17 @@ which the census already visited, so no count rule changed, no existing row's
 category, settlement or evidence-cell count moved, and no snapshot digest was
 re-pinned.
 
-**The ranked backlog is empty.** All thirty rows were settled by the APIs.guru witness-supply probes recorded in [`fern-limitations.md` Round 7](fern-limitations.md#round-7--apisguru-witness-supply-probes). They are `limitations`, remain explicitly convertible to `golden`, and therefore publish no ranking criteria or median here.
+**All 0 `FIXTURE` gaps remain:** the ranked backlog is empty. All thirty former
+rows were settled by the APIs.guru witness-supply probes recorded in
+[`fern-limitations.md` Round 7](fern-limitations.md#round-7--apisguru-witness-supply-probes).
+They are `limitations` and remain explicitly convertible to `golden`.
+
+- **Criterion 3**, artifact breadth, would normalize a row's prose over the same
+  six generated artifact kinds as before: `types/`, `client.py`, `raw_client.py`,
+  `errors/`, `reference.md`, and `core/`.
+- **Criterion 4**, witness supply, would count registered sources declaring the
+  shape. With no ranked rows, neither criterion publishes a value or median.
+
 ### The ranked list against `golden blind spots`
 
 [`tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#where-the-goldens-are-blind--just-fixtures-coverage)
