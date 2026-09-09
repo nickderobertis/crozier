@@ -416,6 +416,105 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertIn("17" if artifact.startswith("asana") else "25", cells[7])
         self.assertEqual(expected, actual)
 
+    @staticmethod
+    def document_rows(text: str) -> list[list[str]]:
+        return [
+            [cell.strip().strip("`") for cell in line.strip("|").split("|")]
+            for line in text.splitlines()
+            if line.startswith("| `")
+        ]
+
+    def test_code_platform_candidate_screens_match_source_records(self) -> None:
+        source = self.document_rows(SHARDS[1].read_text(encoding="utf-8"))
+        source = [row for row in source if len(row) == 9 and row[4].isdigit() and int(row[4])]
+        candidates = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        section = candidates.split("## Code-platform artifacts", 1)[1]
+        rows = self.document_rows(section.split("## Previously rejected specs", 1)[0])
+        self.assertTrue(rows)
+        covered: dict[int, set[str]] = {}
+        for row in rows:
+            artifact, keys, redistribution, publisher, fern, retention, verdict, evidence = row
+            pin = re.search(r"[0-9a-f]{40}", artifact)
+            self.assertIsNotNone(pin, artifact)
+            filename = artifact.split(" at ", 1)[0].split()[-1] if " at " in artifact else artifact.rsplit("/", 1)[1]
+            matches = [
+                (index, record) for index, record in enumerate(source)
+                if pin[0] in record[6] and filename in record[5]
+                and ((record[6].startswith("immutable commits:")
+                      and (not artifact.startswith("ballerina-platform/")
+                           or artifact.rsplit("/", 2)[1].lower() in record[5].lower()))
+                     or (not record[6].startswith("immutable commits:")
+                         and artifact.split("@", 1)[1] in record[6]))
+            ]
+            self.assertTrue(matches, artifact)
+            self.assertEqual(
+                {record[0] for _, record in matches},
+                set(re.findall(r"[a-z][a-z0-9-]+", keys)),
+                artifact,
+            )
+            for index, record in matches:
+                covered.setdefault(index, set()).add(artifact)
+                # The multi-document GitHub result only screened its best survivor.
+                grouped = record[6].startswith("immutable commits:")
+                accepted = "check exit 0" in record[8] and (not grouped or artifact.startswith("paypal/"))
+                refused = "check exit 1" in record[8]
+                expected = "witness-found" if accepted else "fern-rejected" if refused else "witness-blocked"
+                self.assertEqual(expected, verdict, artifact)
+                if accepted:
+                    self.assertTrue(all(cell.startswith("passed:") for cell in row[2:6]), artifact)
+                    count = re.search(r"(\d+) files", record[8])[1]
+                    self.assertIn(f"{count} files", fern)
+                    for version in re.findall(r"\b5\.\d+\.\d+\b", record[8]):
+                        self.assertIn(version, fern)
+                    models = re.findall(r"\b(?:FourHundred\w+|Auth\w+Payload)\b", record[8])
+                    self.assertTrue(models)
+                    for model in models:
+                        self.assertIn(model, retention + evidence)
+                elif refused:
+                    self.assertTrue(redistribution.startswith("passed:"))
+                    self.assertTrue(publisher.startswith("passed:"))
+                    self.assertTrue(fern.startswith("refused:"))
+                    self.assertEqual("not reached", retention)
+                    diagnostic = record[8].split(": ", 1)[1].split(";", 1)[0]
+                    self.assertIn(diagnostic, fern)
+                else:
+                    self.assertTrue("blocked:" in redistribution or "blocked:" in publisher)
+                    self.assertEqual("not reached", fern)
+                    self.assertEqual("not reached", retention)
+        self.assertEqual(set(range(len(source))), set(covered))
+        for index, record in enumerate(source):
+            expected_count = len(record[5].split(";")) if record[6].startswith("immutable commits:") else 1
+            self.assertEqual(expected_count, len(covered[index]), record[5])
+
+    def test_registration_choices_match_candidate_proof(self) -> None:
+        candidates = self.document_rows((ROOT / "candidates.md").read_text(encoding="utf-8"))
+        schemas = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        choices = schemas.split("| key ready to register |", 1)[1].split("\n\n", 1)[0]
+        rows = self.document_rows(choices)
+        self.assertTrue(rows)
+        for key, link, proof in rows:
+            url = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)[1]
+            owner, repo, pin, path = url.removeprefix("https://raw.githubusercontent.com/").split("/", 3)
+            artifact = f"{owner}/{repo}@{pin}/{path}"
+            if owner == "jentic":
+                artifact = path.removeprefix("apis/")
+            matches = [row for row in candidates if row[0] == artifact]
+            self.assertEqual(1, len(matches), artifact)
+            candidate = matches[0]
+            self.assertIn(key, candidate[1].replace("`", "").split(", "))
+            self.assertEqual("witness-found", candidate[6])
+            self.assertTrue(all(cell.startswith("passed:") for cell in candidate[2:6]))
+            evidence = " ".join(candidate[2:])
+            if owner == "jentic":
+                self.assertIn(pin, evidence)
+            counts = set(re.findall(r"(\d+) (?:Python )?files", evidence))
+            self.assertEqual(counts, set(re.findall(r"(\d+) (?:Python )?files", proof)))
+            self.assertTrue(counts)
+            for version in re.findall(r"\b5\.\d+\.\d+\b", candidate[4]):
+                self.assertIn(version, proof)
+            for model in re.findall(r"\b(?:Auth\w+Payload|GroundTruthList\w*)\b", proof):
+                self.assertIn(model, evidence)
+
     def test_previously_rejected_specs_keep_one_matching_disposition(self) -> None:
         instructions = (REPO / "tests/fixtures/AGENTS.md").read_text(encoding="utf-8")
         rejected = instructions.split("### Specs already tried and REJECTED", 1)[1]
