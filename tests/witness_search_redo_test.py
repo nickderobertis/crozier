@@ -8,6 +8,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -24,7 +25,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def run_validator(
         self, *paths: Path, reconcile: bool = False
     ) -> subprocess.CompletedProcess[str]:
-        command = [str(SCRIPT), str(CONTRACT), *(str(path) for path in paths)]
+        command = [
+            sys.executable,
+            str(SCRIPT),
+            str(CONTRACT),
+            *(str(path) for path in paths),
+        ]
         if reconcile:
             command += [
                 "--reconcile",
@@ -108,6 +114,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
+                sys.executable,
                 str(SCRIPT),
                 str(CONTRACT),
                 *(str(path) for path in shards),
@@ -147,7 +154,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual(expected, rows)
 
     def test_local_census_drives_real_documents_and_reports_bad_input(self) -> None:
-        directory = Path(tempfile.mkdtemp())
+        directory = Path(tempfile.mkdtemp(prefix="witness census "))
         self.addCleanup(shutil.rmtree, directory)
         for name in ("first.json", "second.json"):
             (directory / name).write_text(
@@ -195,7 +202,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertIn("test/broken.json", bad.stderr)
 
     def test_local_census_rejects_invalid_arguments_and_contracts(self) -> None:
-        directory = Path(tempfile.mkdtemp())
+        directory = Path(tempfile.mkdtemp(prefix="witness census "))
         self.addCleanup(shutil.rmtree, directory)
         empty = directory / "empty.md"
         empty.write_text("No contract rows.\n", encoding="utf-8")
@@ -383,6 +390,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_reconcile_requires_an_authoritative_schemas_document(self) -> None:
         result = subprocess.run(
             [
+                sys.executable,
                 str(SCRIPT),
                 str(CONTRACT),
                 *(str(path) for path in SHARDS),

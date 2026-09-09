@@ -494,4 +494,4 @@ test-witness-search-redo:
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:
-    @"$(./scripts/census-python.sh)" ./scripts/witness-search-local-census.py {{args}}
+    @"$(./scripts/census-python.sh)" ./scripts/witness-search-local-census.py "$@"
