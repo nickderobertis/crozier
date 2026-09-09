@@ -26,13 +26,13 @@ registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 70 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
 recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
-about Fern and not a byte comparison against crozier. 49 are `gap`: 20 of them
+about Fern and not a byte comparison against crozier. 50 are `gap`: 20 of them
 `UNREACHABLE` — the shape has no position in a generated Python SDK at all — and
-29 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
+30 `FIXTURE`, every one a branch of `src/ir.rs` that a real document can select
 and that no committed golden reaches. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
 evidence covers 391 of the 511 features this walk can see, that 70 more carry a
-Fern verdict and no byte comparison at all, that 49 have neither, and that the
+Fern verdict and no byte comparison at all, that 50 have neither, and that the
 walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
 left for a reader to infer from a backlog's size.
