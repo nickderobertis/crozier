@@ -14,7 +14,6 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "witness-search-redo.py"
-LOCAL_CENSUS = REPO / "scripts" / "witness-search-local-census.py"
 ROOT = REPO / "docs" / "openapi-surface" / "witness-search-redo"
 CONTRACT = ROOT / "contract.md"
 DECLARERS = ROOT / "catalogue-portals-declarers.tsv"
@@ -164,8 +163,17 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 ),
                 encoding="utf-8",
             )
+        (directory / "third.yaml").write_text(
+            "openapi: 3.1.0\ninfo: {title: YAML witness, version: '1'}\n"
+            "paths: {}\ncomponents:\n  schemas:\n    Witness:\n"
+            "      anyOf:\n        - type: string\n",
+            encoding="utf-8",
+        )
         command = [
-            str(LOCAL_CENSUS),
+            "just",
+            "witness-search-local-census",
+            "--workers",
+            "8",
             "--contract",
             str(CONTRACT),
             "--documents",
@@ -179,12 +187,59 @@ class WitnessSearchRedoTests(unittest.TestCase):
             for row in rows
             if row["key"] == "anyof-sole-member" and int(row["count"]) > 0
         }
-        self.assertEqual({"first.json", "second.json"}, hits)
+        self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
         bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
+
+    def test_local_census_rejects_invalid_arguments_and_contracts(self) -> None:
+        directory = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, directory)
+        empty = directory / "empty.md"
+        empty.write_text("No contract rows.\n", encoding="utf-8")
+        malformed = directory / "malformed.md"
+        malformed.write_text("| `key` | `unknown.selector` |\n", encoding="utf-8")
+        duplicate = directory / "duplicate.md"
+        duplicate.write_text("| `key` | `schema.type` |\n" * 2, encoding="utf-8")
+        empty_key = directory / "empty-key.md"
+        empty_key.write_text("| `` | `schema.type` |\n", encoding="utf-8")
+        for args, diagnostic in (
+            (["--workers", "0"], "--workers must be positive"),
+            (["--documents", "missing-equals"], "--documents must be SOURCE=DIR"),
+            (["--documents", f"={directory}"], "--documents must be SOURCE=DIR"),
+            (["--documents", "test="], "--documents must be SOURCE=DIR"),
+            (
+                ["--documents", f"test={directory / 'missing'}"],
+                "--documents must be SOURCE=DIR",
+            ),
+            (["--contract", str(directory / "missing.md")], "invalid --contract"),
+            (["--contract", str(directory)], "invalid --contract"),
+            (["--contract", str(empty)], "no key/selector rows"),
+            (["--contract", str(malformed)], "invalid --contract"),
+            (["--contract", str(duplicate)], "empty or duplicate contract key"),
+            (["--contract", str(empty_key)], "empty or duplicate contract key"),
+        ):
+            with self.subTest(args=args):
+                result = subprocess.run(
+                    [
+                        "just",
+                        "witness-search-local-census",
+                        "--contract",
+                        str(CONTRACT),
+                        "--documents",
+                        f"test={directory}",
+                        *args,
+                    ],
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual("", result.stdout)
 
     def test_every_measured_declarer_appears_in_the_report(self) -> None:
         with DECLARERS.open(encoding="utf-8", newline="") as handle:
@@ -302,7 +357,18 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_enabled_reconciliation_refuses_incomplete_source_key_coverage(
         self,
     ) -> None:
-        result = self.run_validator(*SHARDS, reconcile=True)
+        completed, schemas = self.completed_documents()
+        complete = self.reconcile_documents(completed, schemas)
+        self.assertEqual(0, complete.returncode, complete.stderr)
+        row = next(
+            line
+            for line in completed[0]
+            .read_text(encoding="utf-8")
+            .splitlines(keepends=True)
+            if line.startswith("| `anyof-sole-member` | `schema.anyOf:sole-member` |")
+        )
+        completed[0] = self.changed(completed[0], row, "")
+        result = self.reconcile_documents(completed, schemas)
         self.assertNotEqual(0, result.returncode)
         self.assertIn("missing source/key coverage", result.stderr)
 

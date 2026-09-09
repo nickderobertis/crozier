@@ -33,7 +33,14 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.startswith("| `") and line.count("|") == 3:
             cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
+            if not cells[0] or any(key == cells[0] for key, _ in keys):
+                raise ValueError(f"empty or duplicate contract key: {cells[0]!r}")
+            error = CENSUS.selector_error(cells[1])
+            if error:
+                raise ValueError(error)
             keys.append((cells[0], cells[1]))
+    if not keys:
+        raise ValueError("no key/selector rows found")
     return keys
 
 
@@ -50,11 +57,15 @@ def census_one(
     path, conjunctions, keys = job
     try:
         counts = CENSUS.census_document(read_document(path), conjunctions=conjunctions)
-        return path, None, [
-            (key, counts.get(selector, 0))
-            for key, selector in keys
-            if counts.get(selector, 0)
-        ]
+        return (
+            path,
+            None,
+            [
+                (key, counts.get(selector, 0))
+                for key, selector in keys
+                if counts.get(selector, 0)
+            ],
+        )
     except (OSError, ValueError, CENSUS.DocumentError) as error:
         return path, str(error), []
 
@@ -73,7 +84,14 @@ def main() -> int:
     args = parser.parse_args()
     if args.workers < 1:
         parser.error("--workers must be positive")
-    keys = contract_keys(args.contract)
+    try:
+        keys = contract_keys(args.contract)
+    except (OSError, ValueError) as error:
+        parser.error(
+            f"invalid --contract {args.contract}: {error}; "
+            "pass a readable contract such as "
+            "docs/openapi-surface/witness-search-redo/contract.md"
+        )
     conjunctions = {
         selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
     }
@@ -83,15 +101,19 @@ def main() -> int:
     for value in args.documents:
         source, separator, root_text = value.partition("=")
         root = Path(root_text)
-        if not separator or not source or not root.is_dir():
-            parser.error(f"--documents must be SOURCE=DIR with an existing DIR: {value}")
+        if not separator or not source or not root_text or not root.is_dir():
+            parser.error(
+                f"--documents must be SOURCE=DIR with an existing DIR: {value}"
+            )
         paths = sorted(
             path
             for path in root.rglob("*")
             if path.suffix.lower() in {".json", ".yaml", ".yml"}
         )
         jobs = ((path, conjunctions, keys) for path in paths)
-        with concurrent.futures.ProcessPoolExecutor(max_workers=args.workers) as executor:
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=args.workers
+        ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
             for path, error, hits in results:
                 if error:
