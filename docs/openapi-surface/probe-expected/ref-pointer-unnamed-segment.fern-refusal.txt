@@ -1,0 +1,5 @@
+fern_cli_version: 5.67.1
+fern_python_sdk_version: 5.20.0
+generate_exit: 1
+diagnostic: Type name must begin with a letter
+output_tree: none

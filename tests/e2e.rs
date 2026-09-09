@@ -1218,6 +1218,86 @@ fn assert_corpus_matches(c: &Corpus) {
     }
 }
 
+/// Drive every witness-supply probe through the public CLI and compare the full
+/// packaged tree with the committed Fern 5.20.0 measurement. These are probe
+/// expectations, not corpus goldens: they settle a Fern verdict where no
+/// registrable real-world document exists and do not enter `CORPUS.md`.
+#[test]
+fn witness_supply_probes_match_fern_measurements() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let probes = root.join("docs/openapi-surface/probes");
+    let expected_base = root.join("docs/openapi-surface/probe-expected");
+    let mut keys: Vec<String> = std::fs::read_dir(&expected_base)
+        .expect("probe expectation directory")
+        .filter_map(|entry| {
+            let entry = entry.expect("probe expectation entry");
+            entry
+                .file_type()
+                .expect("probe expectation file type")
+                .is_dir()
+                .then(|| entry.file_name().to_string_lossy().into_owned())
+        })
+        .collect();
+    keys.sort();
+    assert_eq!(
+        keys.len(),
+        29,
+        "every cleanly generating assigned probe is measured"
+    );
+
+    for key in keys {
+        let expected_root = expected_base.join(&key);
+        let out = tempfile::tempdir().expect("probe output tempdir");
+        crozier()
+            .args(["generate", "python", "--spec"])
+            .arg(probes.join(format!("{key}.yml")))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success()
+            .stderr(predicate::str::contains("generated"));
+
+        let expected_files = walk_files(&expected_root);
+        let generated_files = walk_files(out.path());
+        assert_eq!(
+            generated_files, expected_files,
+            "{key}: generated file set differs"
+        );
+        for rel in expected_files {
+            let generated = std::fs::read_to_string(out.path().join(&rel))
+                .unwrap_or_else(|error| panic!("{key}: missing generated {rel}: {error}"));
+            let expected = std::fs::read_to_string(expected_root.join(&rel))
+                .unwrap_or_else(|error| panic!("{key}: missing expected {rel}: {error}"));
+            if !generated_matches_fixture(&rel, &generated, &expected) {
+                let (actual, expected) = normalized_pair(&rel, &generated, &expected);
+                let diff = unified_diff(&expected, &actual).unwrap_or_default();
+                panic!("{key}: generated {rel} differs from Fern 5.20.0\n{diff}");
+            }
+        }
+    }
+
+    let refused = probes.join("ref-pointer-unnamed-segment.yml");
+    assert!(refused.is_file(), "the refused probe remains reproducible");
+    assert_eq!(
+        std::fs::read_to_string(
+            expected_base.join("ref-pointer-unnamed-segment.fern-refusal.txt")
+        )
+        .expect("committed Fern refusal verdict"),
+        "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n",
+        "the refused probe's measured Fern verdict must remain explicit"
+    );
+    assert!(
+        !expected_base.join("ref-pointer-unnamed-segment").exists(),
+        "Fern emitted no SDK for the refused probe, so it must have no expectation tree"
+    );
+}
+
 /// Generate a corpus's SDK into a fresh tempdir with that corpus's naming, and
 /// return the dir (the caller keeps it alive). Fails the test if crozier errors —
 /// shared by the gate and the gap reporter so both drive the binary

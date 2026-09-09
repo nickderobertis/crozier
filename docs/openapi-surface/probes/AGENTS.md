@@ -30,6 +30,11 @@ normalized, `__init__.py` import order canonicalized with `ruff` isort,
 does to a corpus golden. A divergence is repaired in `src/`, never written down
 as a Fern limitation.
 
+Keep a clean generation's complete comment-stripped output in the sibling
+`probe-expected/<key>/` directory. When Fern refuses a probe, preserve the
+versioned exit verdict as `probe-expected/<key>.fern-refusal.txt` instead; a
+refusal must never acquire a fabricated output tree.
+
 ## Naming
 
 `<ledger-key-family>.yml`, plus the variants a measurement needs. A shape whose
