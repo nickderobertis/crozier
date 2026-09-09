@@ -452,21 +452,34 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
         shards, schemas = self.completed_documents()
         for path in shards:
-            path.write_text(path.read_text().replace("| unanswered |", "| 0 |"))
+            path.write_text(
+                path.read_text(encoding="utf-8").replace("| unanswered |", "| 0 |"),
+                encoding="utf-8",
+            )
         schemas.write_text(
-            schemas.read_text()
+            schemas.read_text(encoding="utf-8")
             .replace("→ `unanswered`", "→ 0")
-            .replace("search outcome `search-incomplete`", "search outcome `none-found`")
+            .replace("search outcome `search-incomplete`", "search outcome `none-found`"),
+            encoding="utf-8",
         )
         result = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, result.returncode, result.stderr)
-        shards[0].write_text(shards[0].read_text().replace("| 0 |", "| unanswered |", 1))
-        schemas.write_text(schemas.read_text().replace("→ 0", "→ `unanswered`", 1))
+        shards[0].write_text(
+            shards[0].read_text(encoding="utf-8").replace("| 0 |", "| unanswered |", 1),
+            encoding="utf-8",
+        )
+        schemas.write_text(
+            schemas.read_text(encoding="utf-8").replace("→ 0", "→ `unanswered`", 1),
+            encoding="utf-8",
+        )
         refused = self.reconcile_documents(shards, schemas)
         self.assertNotEqual(0, refused.returncode)
         self.assertIn("expected 'search-incomplete'", refused.stderr)
         schemas.write_text(
-            schemas.read_text().replace("search outcome `none-found`", "search outcome `search-incomplete`", 1)
+            schemas.read_text(encoding="utf-8").replace(
+                "search outcome `none-found`", "search outcome `search-incomplete`", 1
+            ),
+            encoding="utf-8",
         )
         recovered = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, recovered.returncode, recovered.stderr)
