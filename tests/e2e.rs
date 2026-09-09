@@ -1298,6 +1298,77 @@ fn witness_supply_probes_match_fern_measurements() {
     );
 }
 
+/// Re-run the one refused witness-supply probe through Fern itself. Kept out of
+/// the offline gate because Fern's pinned Python generator runs in Docker.
+#[test]
+#[ignore = "requires the Fern CLI, Docker, and generator image"]
+fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let workspace = tempfile::tempdir().expect("Fern probe workspace");
+    let fern_root = workspace.path().join("fern");
+    let openapi = fern_root.join("openapi");
+    std::fs::create_dir_all(&openapi).expect("Fern OpenAPI directory");
+    std::fs::copy(
+        root.join("docs/openapi-surface/probes/ref-pointer-unnamed-segment.yml"),
+        openapi.join("openapi.yml"),
+    )
+    .expect("copy refused probe into Fern workspace");
+    std::fs::write(
+        fern_root.join("fern.config.json"),
+        "{ \"organization\": \"fern\", \"version\": \"5.67.1\" }\n",
+    )
+    .expect("write pinned Fern CLI configuration");
+    std::fs::write(
+        fern_root.join("generators.yml"),
+        "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: 5.20.0\n        config:\n          pydantic_config:\n            enum_type: python_enums\n        output:\n          location: local-file-system\n          path: ../generated/python\n",
+    )
+    .expect("write pinned Fern generator configuration");
+
+    let preview = workspace.path().join("preview");
+    let output = std::process::Command::new("fern")
+        .current_dir(&fern_root)
+        .env("FERN_TOKEN", "preview-only-no-publish")
+        .env("CI", "true")
+        .env("GITHUB_ACTIONS", "true")
+        .args([
+            "generate",
+            "--group",
+            "python-sdk",
+            "--local",
+            "--preview",
+            "--output",
+        ])
+        .arg(&preview)
+        .arg("--force")
+        .output()
+        .expect("run pinned Fern measurement");
+    assert_eq!(output.status.code(), Some(1), "Fern must refuse the probe");
+    let diagnostic = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(
+        diagnostic.contains("Type name must begin with a letter"),
+        "Fern returned the wrong refusal:\n{diagnostic}"
+    );
+    assert!(
+        !preview.join("fern-python-sdk").exists(),
+        "Fern must not write an SDK output tree for a refused probe"
+    );
+
+    let observed = "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n";
+    let expected =
+        std::fs::read_to_string(root.join(
+            "docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt",
+        ))
+        .expect("committed Fern refusal measurement");
+    assert_eq!(
+        observed, expected,
+        "normalized Fern refusal metadata drifted"
+    );
+}
+
 /// Generate a corpus's SDK into a fresh tempdir with that corpus's naming, and
 /// return the dir (the caller keeps it alive). Fails the test if crozier errors —
 /// shared by the gate and the gap reporter so both drive the binary
