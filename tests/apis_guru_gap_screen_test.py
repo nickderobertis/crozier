@@ -189,7 +189,21 @@ components:
 
     def test_tracked_snapshot_is_reconciled_with_finished_evidence(self) -> None:
         """Every owned selector has exactly one complete, evidence-backed settlement."""
-        with REPORT.open(encoding="utf-8", newline="") as handle:
+        self.assert_finished_evidence_reconciles(
+            REPORT,
+            REGIONS,
+            REPO / "docs/fern-limitations.md",
+            tuple((REPO / "docs/openapi-surface").glob("*.tsv")),
+        )
+
+    def assert_finished_evidence_reconciles(
+        self,
+        report: Path,
+        regions: tuple[Path, ...],
+        limitations: Path,
+        screening_paths: tuple[Path, ...],
+    ) -> None:
+        with report.open(encoding="utf-8", newline="") as handle:
             report_rows = list(csv.DictReader(handle, dialect="excel-tab"))
 
         selectors_by_key: dict[str, str] = {}
@@ -206,7 +220,7 @@ components:
         owned = set(selectors_by_key) | case_11_keys
 
         region_rows: dict[str, list[list[str]]] = {key: [] for key in owned}
-        for path in REGIONS:
+        for path in regions:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if not line.startswith("|"):
                     continue
@@ -214,7 +228,7 @@ components:
                 if cells and cells[0] in region_rows:
                     region_rows[cells[0]].append(cells)
 
-        limitations_text = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        limitations_text = limitations.read_text(encoding="utf-8")
         round_7 = limitations_text.split(
             "### Round 7 — APIs.guru witness-supply probes", 1
         )[1].split("\n## ", 1)[0]
@@ -282,22 +296,27 @@ components:
         ]
         screening_rows: list[dict[str, str]] = []
         required = {
-            "gap_key", "candidate_order", "api_id", "version", "fern_check",
-            "generation", "retained_shape", "outcome", "evidence_verdict",
+            "gap_key", "candidate_order", "api_id", "version", "spec_url",
+            "source_url", "immutable_ref", "fern_check", "generation",
+            "retained_shape", "outcome", "evidence_verdict",
         }
-        for path in (REPO / "docs/openapi-surface").glob("*.tsv"):
-            if path == REPORT:
+        for path in screening_paths:
+            if path == report:
                 continue
             with path.open(encoding="utf-8", newline="") as handle:
                 reader = csv.DictReader(handle, dialect="excel-tab")
                 if required <= set(reader.fieldnames or ()):
                     screening_rows.extend(reader)
         expected_candidates = [
-            (row["gap_key"], row["api_id"], row["version"])
+            tuple(row[field] for field in (
+                "gap_key", "api_id", "version", "spec_url", "source_url", "immutable_ref",
+            ))
             for row in admitted_immutable
         ]
         actual_candidates = [
-            (row["gap_key"], row["api_id"], row["version"])
+            tuple(row[field] for field in (
+                "gap_key", "api_id", "version", "spec_url", "source_url", "immutable_ref",
+            ))
             for row in screening_rows if row["gap_key"] in owned
         ]
         self.assertEqual(sorted(actual_candidates), sorted(expected_candidates))
@@ -307,11 +326,76 @@ components:
                 int(row["candidate_order"]) for row in screening_rows
                 if row["gap_key"] == key
             ]
-            self.assertEqual(orders, sorted(orders))
+            self.assertEqual(sorted(orders), list(range(1, len(orders) + 1)))
         for row in screening_rows:
             if row["gap_key"] in owned:
                 for field in required - {"gap_key", "api_id", "version", "candidate_order"}:
                     self.assertTrue(row[field], f"{row['gap_key']} screening lacks {field}")
+
+    def test_reconciliation_rejects_duplicate_order_and_wrong_identity(self) -> None:
+        report = self.root / "report.tsv"
+        report.write_text(
+            "gap_key\tselector\toutcome\tapi_id\tversion\tspec_url\tsource_url\t"
+            "immutable_ref\tlicense_screen\n"
+            "oneof-bare-object-example-variant\t" + CASE_11_SELECTOR
+            + "\tcandidate\texample.test\t1\thttps://catalogue.test/a\t"
+            "https://publisher.test/a\taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tadmitted\n"
+            "oneof-bare-object-example-variant\t" + CASE_11_SELECTOR
+            + "\tcandidate\texample.test\t1\thttps://catalogue.test/b\t"
+            "https://publisher.test/b\tbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tadmitted\n",
+            encoding="utf-8",
+        )
+        region = self.root / "schemas.md"
+        region.write_text(
+            "| key | oas | location | category | evidence | sites | bytes | settlement |\n"
+            "|---|---|---|---|---|---|---|---|\n"
+            "| oneof-bare-object-example-variant | both | Schema Object.oneOf | golden | "
+            f"census `{CASE_11_SELECTOR}`: 2 declarations; committed golden | | | |\n",
+            encoding="utf-8",
+        )
+        limitations = self.root / "fern-limitations.md"
+        limitations.write_text(
+            "### Round 7 — APIs.guru witness-supply probes\n\n## Next\n",
+            encoding="utf-8",
+        )
+        screening = self.root / "candidate-screening.tsv"
+        header = (
+            "gap_key\tcandidate_order\tapi_id\tversion\tspec_url\tsource_url\t"
+            "immutable_ref\tfern_check\tgeneration\tretained_shape\toutcome\t"
+            "evidence_verdict\n"
+        )
+        screening.write_text(
+            header
+            + "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+            "https://catalogue.test/a\thttps://publisher.test/a\t"
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\tpass\tpass\tretained\t"
+            "discarded\tlimitations\n"
+            + "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+            "https://catalogue.test/b\thttps://publisher.test/b\t"
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\tpass\tpass\tretained\t"
+            "discarded\tlimitations\n",
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(AssertionError, r"\[1, 1\] != \[1, 2\]"):
+            self.assert_finished_evidence_reconciles(
+                report, (region,), limitations, (screening,)
+            )
+
+        screening.write_text(
+            screening.read_text(encoding="utf-8")
+            .replace(
+                "oneof-bare-object-example-variant\t1\texample.test\t1\t"
+                "https://catalogue.test/b",
+                "oneof-bare-object-example-variant\t2\texample.test\t1\t"
+                "https://catalogue.test/wrong-document",
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, "wrong-document"):
+            self.assert_finished_evidence_reconciles(
+                report, (region,), limitations, (screening,)
+            )
 
     def test_malformed_document_refuses_to_publish(self) -> None:
         malformed = self.spec("bad.json", "{not json")
