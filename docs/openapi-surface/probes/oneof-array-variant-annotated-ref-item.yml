@@ -1,0 +1,31 @@
+openapi: 3.1.0
+info:
+  title: oneof-array-variant-annotated-ref-item probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: getProbe
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Probe"
+components:
+  schemas:
+    Probe:
+      oneOf:
+        - type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Target"
+            description: annotated
+        - type: integer
+    Target:
+      type: object
+      properties:
+        name:
+          type: string
+

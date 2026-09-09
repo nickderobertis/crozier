@@ -1,0 +1,29 @@
+openapi: 3.1.0
+info:
+  title: array-item-pointer-walk-anyof probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: getProbe
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Probe"
+components:
+  schemas:
+    Probe:
+      type: object
+      properties:
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/Target/anyOf/0"
+    Target:
+      anyOf:
+        - type: string
+        - type: integer
+

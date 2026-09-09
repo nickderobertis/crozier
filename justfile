@@ -256,6 +256,11 @@ fern-goldens-result *args:
 test-fern-goldens:
     python3 tests/fern_goldens_test.py
 
+# Live Fern measurement for the witness-supply probe Fern refuses. Separate
+# from `check`: Fern's pinned Python generator runs in Docker and needs network.
+test-fern-probe-refusal:
+    cargo test --test e2e fern_ref_pointer_unnamed_segment_refusal_matches_measurement -- --ignored --exact --nocapture
+
 # Process/filesystem/test-selection-boundary coverage for `fixtures-coverage`.
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
 # of the whole corpus; the unmeasured thing would otherwise be the measurement.

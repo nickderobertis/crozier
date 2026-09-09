@@ -7193,6 +7193,22 @@ impl Builder<'_> {
             return;
         }
 
+        // Fern treats an explicitly closed object with no fields as a free-form
+        // mapping at a component declaration. This differs from
+        // `properties: {}`, whose explicit property map is an empty model.
+        if is_closed_empty_object(schema) {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ),
+                docstring,
+            );
+            return;
+        }
+
         if schema
             .ty
             .as_ref()
@@ -7944,6 +7960,12 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if is_closed_empty_object(prop_schema) {
+            return TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            );
+        }
         if is_map(prop_schema) && is_optional(prop_schema) {
             // A nullable map whose value declares its own structure still hoists
             // that value to `{Owner}{Prop}Value`, exactly as a non-nullable one
@@ -8138,12 +8160,46 @@ impl Builder<'_> {
             // `List[PipelineStagesItem]`).
             if prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
                 if let Some(items) = &prop_schema.items {
+                    if is_inheritance_union_base(items) {
+                        let name = format!("{owner}{}Item", naming::class_name(prop));
+                        let module = naming::module_name(&name);
+                        if let Some(mut decl) = self.discriminated_union(
+                            &name,
+                            &module,
+                            items,
+                            clean_doc(items.description.as_deref()),
+                        ) {
+                            if let Some(discriminator) = &items.discriminator {
+                                for (member, reference) in
+                                    decl.members.iter_mut().zip(discriminator.mapping.values())
+                                {
+                                    if let Some(target) =
+                                        resolve_ref_from_schemas(self.schemas, reference)
+                                    {
+                                        member.fields = member_fields(
+                                            target,
+                                            &discriminator.property_name,
+                                            self.schemas,
+                                            Some(&ref_to_class(reference)),
+                                        );
+                                    }
+                                }
+                            }
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                            return sequence_of(prop_schema, TypeRef::Named(name));
+                        }
+                    }
                     let resolved_items = items.reference.as_deref().and_then(|reference| {
                         reference
                             .starts_with("#/components/schemas/")
                             .then(|| resolve_schema_pointer(self.schemas, reference))
                             .flatten()
                     });
+                    if items.reference.as_deref().is_some_and(|reference| {
+                        reference.contains("/oneOf/") || reference.contains("/anyOf/")
+                    }) {
+                        return sequence_of(prop_schema, TypeRef::Primitive(Prim::Any));
+                    }
                     // A nullable component used as an array item remains nullable in
                     // the collection (`List[Optional[Language]]`), even though the
                     // `$ref` node itself carries no `nullable` flag.
@@ -8306,6 +8362,12 @@ impl Builder<'_> {
             // does for the alias — kept local to the hoist so inline unions elsewhere
             // are unchanged.
             if let Some(members) = prop_schema.any_of.as_ref().or(prop_schema.one_of.as_ref()) {
+                if members.len() == 1 && is_closed_empty_object(&members[0]) {
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Primitive(Prim::Any)),
+                    );
+                }
                 // A property-level union whose members all tag themselves with the
                 // same single-valued property is one of Fern's discriminated unions
                 // even with no `discriminator` block — braintrust's `CodeBundle.location`
@@ -8442,7 +8504,7 @@ impl Builder<'_> {
                     // `…BtqlExportCredentials` itself — rather than naming a variant
                     // beneath a one-element `typing.Union`.
                     if let [only] = members.as_slice() {
-                        if is_inline_object(only) {
+                        if is_inline_struct(only) {
                             self.add_object(
                                 &name,
                                 naming::module_name(&name),
@@ -8576,6 +8638,83 @@ impl Builder<'_> {
                 clean_doc(variant.description.as_deref()),
             )));
             return TypeRef::Named(name);
+        }
+        if variant.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+            if let Some(item) = variant.items.as_deref() {
+                if let Some(member) = simple_nullable_member(item) {
+                    let element = member.reference.as_deref().map_or_else(
+                        || base_type_ref(member),
+                        |reference| TypeRef::Named(ref_to_class(reference)),
+                    );
+                    return sequence_of(variant, optional_type_ref(element));
+                }
+                let variant_name = variant_class_name(parent, index, variant, siblings);
+                let item_name = format!("{variant_name}Item");
+                let item_module = naming::module_name(&item_name);
+                if is_inheritance_union_base(item) {
+                    let member = item
+                        .one_of
+                        .as_ref()
+                        .or(item.any_of.as_ref())
+                        .and_then(|members| members.first())
+                        .and_then(|member| member.reference.as_deref())
+                        .map(ref_to_class)
+                        .map(TypeRef::Named)
+                        .unwrap_or(TypeRef::Primitive(Prim::Any));
+                    return sequence_of(variant, member);
+                }
+                if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
+                    if let Some(decl) = self.discriminated_union(
+                        &item_name,
+                        &item_module,
+                        item,
+                        clean_doc(item.description.as_deref()),
+                    ) {
+                        self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                    } else {
+                        let members = members
+                            .iter()
+                            .enumerate()
+                            .map(|(member_index, member)| {
+                                self.variant_ref(&item_name, member_index, member, members)
+                            })
+                            .collect();
+                        self.push_alias(
+                            &item_name,
+                            item_module,
+                            TypeRef::Union(dedupe_union_members(members)),
+                            clean_doc(item.description.as_deref()),
+                        );
+                    }
+                    return sequence_of(variant, TypeRef::Named(item_name));
+                }
+                if described_all_of_ref(item).is_some() {
+                    if let Some(element) = self.annotated_ref_type(&item_name, item) {
+                        return sequence_of(variant, element);
+                    }
+                }
+                if let Some(reference) = single_all_of_ref(item) {
+                    return sequence_of(variant, TypeRef::Named(ref_to_class(reference)));
+                }
+                if is_closed_empty_object(item) {
+                    return sequence_of(
+                        variant,
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Primitive(Prim::Any)),
+                        ),
+                    );
+                }
+                if is_inline_struct(item) {
+                    self.add_object(
+                        &item_name,
+                        item_module,
+                        item,
+                        clean_doc(item.description.as_deref()),
+                    );
+                    return sequence_of(variant, TypeRef::Named(item_name));
+                }
+            }
         }
         // `allOf: [$ref Base, {title}]` is an annotated reference, not inheritance:
         // Fern copies the referenced model's fields under the variant's own name.
@@ -8996,6 +9135,18 @@ fn is_inline_struct(schema: &Schema) -> bool {
                     schema.additional_properties,
                     Some(AdditionalProperties::Bool(false))
                 )))
+}
+
+fn is_closed_empty_object(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && is_object_type(schema)
+        && schema.properties.is_empty()
+        && !schema.properties.declared()
+        && schema.all_of.is_none()
+        && matches!(
+            schema.additional_properties,
+            Some(AdditionalProperties::Bool(false))
+        )
 }
 
 /// Whether the schema declares a non-composite scalar `type` of its own. Such a

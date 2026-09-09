@@ -6084,7 +6084,7 @@ class RankedBacklogTests(unittest.TestCase):
             AMENDED_ROUTE,               # how a row says it took the route
             "`blocker:`",                # and where it names its blocker
             "still beats",               # the precedence that does not move
-            "no byte-comparison evidence",
+            "no registered-witness parity evidence",
         ):
             self.assertIn(demanded, flat, f"the rule no longer states {demanded!r}")
 

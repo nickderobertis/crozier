@@ -1,0 +1,25 @@
+openapi: 3.1.0
+info:
+  title: anyof-array-variant-empty-object-item probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: getProbe
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Probe"
+components:
+  schemas:
+    Probe:
+      anyOf:
+        - type: array
+          items:
+            type: object
+            properties: {}
+        - type: integer
+
