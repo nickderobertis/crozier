@@ -387,6 +387,202 @@ class WitnessSearchRedoTests(unittest.TestCase):
         result = self.reconcile_documents(completed, schemas)
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_catalogue_candidates_are_reconciled_once_with_all_four_screens(self) -> None:
+        report = SHARDS[0].read_text(encoding="utf-8")
+        expected: dict[str, set[str]] = {}
+        for key, artifact in re.findall(r"^- `([^`]+)` — `([^`]+)`", report, re.M):
+            expected.setdefault(artifact, set()).add(key)
+        text = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        section = text.split("## Catalogue and portal artifacts", 1)[1]
+        section = section.split("## Code-platform artifacts", 1)[0]
+        actual = {}
+        for line in section.splitlines():
+            if not line.startswith("| `"):
+                continue
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            self.assertEqual(8, len(cells))
+            artifact = cells[0].strip("`")
+            self.assertNotIn(artifact, actual)
+            actual[artifact] = set(re.findall(r"`([^`]+)`", cells[1]))
+            self.assertTrue(all(cells[index] for index in range(2, 6)))
+            self.assertIn(cells[6].strip("`"), {
+                "witness-found", "witness-blocked", "fern-rejected", "search-incomplete"
+            })
+            if "attentivemobile.com" in artifact:
+                self.assertEqual("`search-incomplete`", cells[6])
+                self.assertIn("no completed check", cells[4])
+            if artifact in {"asana.com/1.0", "box.com/2.0.0"}:
+                self.assertEqual("`fern-rejected`", cells[6])
+                self.assertIn("17" if artifact.startswith("asana") else "25", cells[7])
+        self.assertEqual(expected, actual)
+
+    @staticmethod
+    def document_rows(text: str) -> list[list[str]]:
+        return [
+            [cell.strip().strip("`") for cell in line.strip("|").split("|")]
+            for line in text.splitlines()
+            if line.startswith("| `")
+        ]
+
+    def test_code_platform_candidate_screens_match_source_records(self) -> None:
+        source = self.document_rows(SHARDS[1].read_text(encoding="utf-8"))
+        source = [row for row in source if len(row) == 9 and row[4].isdigit() and int(row[4])]
+        candidates = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        section = candidates.split("## Code-platform artifacts", 1)[1]
+        rows = self.document_rows(section.split("## Previously rejected specs", 1)[0])
+        self.assertTrue(rows)
+        covered: dict[int, set[str]] = {}
+        for row in rows:
+            artifact, keys, redistribution, publisher, fern, retention, verdict, evidence = row
+            pin = re.search(r"[0-9a-f]{40}", artifact)
+            self.assertIsNotNone(pin, artifact)
+            filename = artifact.split(" at ", 1)[0].split()[-1] if " at " in artifact else artifact.rsplit("/", 1)[1]
+            matches = [
+                (index, record) for index, record in enumerate(source)
+                if pin[0] in record[6] and filename in record[5]
+                and ((record[6].startswith("immutable commits:")
+                      and (not artifact.startswith("ballerina-platform/")
+                           or artifact.rsplit("/", 2)[1].lower() in record[5].lower()))
+                     or (not record[6].startswith("immutable commits:")
+                         and artifact.split("@", 1)[1] in record[6]))
+            ]
+            self.assertTrue(matches, artifact)
+            self.assertEqual(
+                {record[0] for _, record in matches},
+                set(re.findall(r"[a-z][a-z0-9-]+", keys)),
+                artifact,
+            )
+            for index, record in matches:
+                covered.setdefault(index, set()).add(artifact)
+                # The multi-document GitHub result only screened its best survivor.
+                grouped = record[6].startswith("immutable commits:")
+                accepted = "check exit 0" in record[8] and (not grouped or artifact.startswith("paypal/"))
+                refused = "check exit 1" in record[8]
+                expected = "witness-found" if accepted else "fern-rejected" if refused else "witness-blocked"
+                self.assertEqual(expected, verdict, artifact)
+                if accepted:
+                    self.assertTrue(all(cell.startswith("passed:") for cell in row[2:6]), artifact)
+                    count = re.search(r"(\d+) files", record[8])[1]
+                    self.assertIn(f"{count} files", fern)
+                    for version in re.findall(r"\b5\.\d+\.\d+\b", record[8]):
+                        self.assertIn(version, fern)
+                    models = re.findall(r"\b(?:FourHundred\w+|Auth\w+Payload)\b", record[8])
+                    self.assertTrue(models)
+                    for model in models:
+                        self.assertIn(model, retention + evidence)
+                elif refused:
+                    self.assertTrue(redistribution.startswith("passed:"))
+                    self.assertTrue(publisher.startswith("passed:"))
+                    self.assertTrue(fern.startswith("refused:"))
+                    self.assertEqual("not reached", retention)
+                    diagnostic = record[8].split(": ", 1)[1].split(";", 1)[0]
+                    self.assertIn(diagnostic, fern)
+                else:
+                    self.assertTrue("blocked:" in redistribution or "blocked:" in publisher)
+                    self.assertEqual("not reached", fern)
+                    self.assertEqual("not reached", retention)
+        self.assertEqual(set(range(len(source))), set(covered))
+        for index, record in enumerate(source):
+            expected_count = len(record[5].split(";")) if record[6].startswith("immutable commits:") else 1
+            self.assertEqual(expected_count, len(covered[index]), record[5])
+
+    def test_registration_choices_match_candidate_proof(self) -> None:
+        candidates = self.document_rows((ROOT / "candidates.md").read_text(encoding="utf-8"))
+        schemas = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        choices = schemas.split("| key ready to register |", 1)[1].split("\n\n", 1)[0]
+        rows = self.document_rows(choices)
+        self.assertTrue(rows)
+        for key, link, proof in rows:
+            url = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)[1]
+            owner, repo, pin, path = url.removeprefix("https://raw.githubusercontent.com/").split("/", 3)
+            artifact = f"{owner}/{repo}@{pin}/{path}"
+            if owner == "jentic":
+                artifact = path.removeprefix("apis/")
+            matches = [row for row in candidates if row[0] == artifact]
+            self.assertEqual(1, len(matches), artifact)
+            candidate = matches[0]
+            self.assertIn(key, candidate[1].replace("`", "").split(", "))
+            self.assertEqual("witness-found", candidate[6])
+            self.assertTrue(all(cell.startswith("passed:") for cell in candidate[2:6]))
+            evidence = " ".join(candidate[2:])
+            if owner == "jentic":
+                self.assertIn(pin, evidence)
+            counts = set(re.findall(r"(\d+) (?:Python )?files", evidence))
+            self.assertEqual(counts, set(re.findall(r"(\d+) (?:Python )?files", proof)))
+            self.assertTrue(counts)
+            for version in re.findall(r"\b5\.\d+\.\d+\b", candidate[4]):
+                self.assertIn(version, proof)
+            for model in re.findall(r"\b(?:Auth\w+Payload|GroundTruthList\w*)\b", proof):
+                self.assertIn(model, evidence)
+
+    def test_previously_rejected_specs_keep_one_matching_disposition(self) -> None:
+        instructions = (REPO / "tests/fixtures/AGENTS.md").read_text(encoding="utf-8")
+        rejected = instructions.split("### Specs already tried and REJECTED", 1)[1]
+        rejected = rejected.split("\n## ", 1)[0]
+        candidates = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        recorded: dict[str, list[list[str]]] = {}
+        for line in candidates.splitlines():
+            if line.startswith("| `"):
+                cells = [cell.strip() for cell in line.strip("|").split("|")]
+                recorded.setdefault(cells[0].strip("`"), []).append(cells)
+        count = 0
+        for line in rejected.splitlines():
+            if not line.startswith("| `"):
+                continue
+            label, source, diagnostic = (
+                cell.strip() for cell in line.strip("|").split("|")
+            )
+            catalogue = re.search(r"api-guru `([^`]+)`", label)
+            artifact = catalogue[1] if catalogue else source.strip("`")
+            with self.subTest(spec=label):
+                rows = recorded.get(artifact, [])
+                self.assertEqual(1, len(rows), f"{artifact}: expected exactly one record")
+                self.assertEqual("`fern-rejected`", rows[0][6])
+                self.assertIn(
+                    diagnostic.replace("../../docs/", "../../"), rows[0][7]
+                )
+            count += 1
+        self.assertGreater(count, 0, "rejected-spec source table must not be empty")
+
+    def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
+        result = self.run_validator(*SHARDS, reconcile=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
+        shards, schemas = self.completed_documents()
+        for path in shards:
+            path.write_text(
+                path.read_text(encoding="utf-8").replace("| unanswered |", "| 0 |"),
+                encoding="utf-8",
+            )
+        schemas.write_text(
+            schemas.read_text(encoding="utf-8")
+            .replace("→ `unanswered`", "→ 0")
+            .replace("search outcome `search-incomplete`", "search outcome `none-found`"),
+            encoding="utf-8",
+        )
+        result = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, result.returncode, result.stderr)
+        shards[0].write_text(
+            shards[0].read_text(encoding="utf-8").replace("| 0 |", "| unanswered |", 1),
+            encoding="utf-8",
+        )
+        schemas.write_text(
+            schemas.read_text(encoding="utf-8").replace("→ 0", "→ `unanswered`", 1),
+            encoding="utf-8",
+        )
+        refused = self.reconcile_documents(shards, schemas)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn("expected 'search-incomplete'", refused.stderr)
+        schemas.write_text(
+            schemas.read_text(encoding="utf-8").replace(
+                "search outcome `none-found`", "search outcome `search-incomplete`", 1
+            ),
+            encoding="utf-8",
+        )
+        recovered = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_reconcile_requires_an_authoritative_schemas_document(self) -> None:
         result = subprocess.run(
             [
