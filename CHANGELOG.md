@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.74](https://github.com/nickderobertis/crozier/compare/v0.0.73...v0.0.74) - 2026-09-09
+
+### Other
+
+- *(surface)* settle APIs.guru gaps without admissible witnesses ([#255](https://github.com/nickderobertis/crozier/pull/255))
+
 ## [0.0.73](https://github.com/nickderobertis/crozier/compare/v0.0.72...v0.0.73) - 2026-09-08
 
 ### Added
