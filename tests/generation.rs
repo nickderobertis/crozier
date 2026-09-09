@@ -5120,10 +5120,9 @@ components:
     );
     let closed = &files["src/acme/types/closed_map.py"];
     assert!(
-        closed.contains("class ClosedMap(UniversalBaseModel):"),
-        "{closed}"
+        closed.contains("ClosedMap = typing.Dict[str, typing.Any]"),
+        "Fern's measured closed-empty-object fallback stays a mapping: {closed}"
     );
-    assert!(closed.contains("extra=\"allow\""), "{closed}");
 }
 
 #[test]
