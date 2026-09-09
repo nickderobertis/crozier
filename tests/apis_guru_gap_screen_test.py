@@ -52,8 +52,15 @@ class GapScreenTest(unittest.TestCase):
     def test_real_command_writes_complete_deterministic_snapshot(self) -> None:
         # One real JSON document hits two owned selectors; two versions of the
         # same API prove versions are independent catalogue declarations.
+        publisher_source = (
+            "https://github.com/example/publisher/blob/"
+            "0123456789abcdef0123456789abcdef01234567/openapi.json"
+        )
         admitted = self.spec("admitted.json", json.dumps({
-            "openapi": "3.0.0", "info": {"title": "A", "version": "1", "license": {"name": "MIT"}},
+            "openapi": "3.0.0", "info": {
+                "title": "A", "version": "1", "license": {"name": "MIT"},
+                "x-origin": [{"url": publisher_source}],
+            },
             "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
                 "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
             }]}}},
@@ -80,6 +87,7 @@ components:
         }))
         index = self.index([
             ("z.example", "2", admitted), ("z.example", "1", admitted),
+            ("asana.com", "1.0", admitted),
             ("a.example", "1", unknown), ("m.example", "1", refused),
         ])
         first, output = self.invoke(index)
@@ -100,6 +108,15 @@ components:
         self.assertIn("refused", {r["license_screen"] for r in hits})
         self.assertEqual({r["version"] for r in hits if r["api_id"] == "z.example"}, {"1", "2"})
         self.assertTrue(all(int(r["declaration_count"]) > 0 for r in hits))
+        traced = [r for r in hits if r["api_id"] == "asana.com"]
+        self.assertTrue(traced)
+        self.assertTrue(all(r["source_url"] == publisher_source for r in traced))
+        self.assertTrue(all(
+            r["immutable_ref"] == "0123456789abcdef0123456789abcdef01234567"
+            for r in traced
+        ))
+        self.assertTrue(all("publisher source traced" in r["notes"] for r in traced))
+        self.assertTrue(all("repeats the rejected-spec table" in r["notes"] for r in traced))
         none = [r for r in rows if r["outcome"] == "none-found"]
         self.assertTrue(none)
         self.assertTrue(all(not r["api_id"] and not r["declaration_count"] for r in none))
