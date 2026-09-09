@@ -2404,22 +2404,13 @@ writes it, which the census already visited, so no count rule moved, no existing
 row's category, settlement or evidence-cell count moved, and no snapshot digest was
 re-pinned.
 
-**Three of the arms this pass set out to close stayed holes, and each is a
-finding rather than an omission.** `prop_type_ref`'s case 6 was recorded as
-H-arity, and its arity half is indeed a declared predicate now — but
-`sole_inline_all_of` is that arity *beside nine sibling-absence tests*, and
-without a negation operator the arity alone counts VolView's `TaskSpec.id`, a
-`type: string` carrying a one-member `allOf`, which the function sends to its
-closing `base_type_ref`; the case is H-negated-value. `hoist_union_variant`'s case
-11 was recorded as H-example-value, and the two selectors that hole names would
-still leave `is_bare_object`'s four absence tests unexpressed, so a map schema
-carrying a concrete example — `type: object` beside an `additionalProperties`
-schema and an `example` — is counted by them and reaches `base_type_ref`; it is
-H-example-value still, and its row now says the negation operator is needed too.
-`prop_type_ref`'s case 12 was recorded as H-arity and is now four cases and two
-holes rather than one hole, because the arity is only half of it: the other half
-is `is_inline_struct`, a *disjunction*, which no conjunction expresses, so each
-disjunct is its own case and the two that turn on an absence stay holes.
+**The three arms this pass left as holes are now enumerated.** The later
+negation pass spells `prop_type_ref`'s former sibling-absence conditions and the
+residual composition arms member by member. The example-value pass likewise
+names `hoist_union_variant`'s case 11 with the concrete-object and
+schema-shaped-example predicates. The case table above is the current source of
+truth; these names describe the historical gaps that motivated those later
+operators, not entries that remain open.
 
 **Where this pass read `src/ir.rs` differently from the account it replaces.**
 Three differences, each recorded on the row it belongs to rather than only here.
