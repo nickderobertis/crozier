@@ -94,6 +94,50 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("missing source/key coverage", result.stderr)
 
+    def test_enabled_reconciliation_accepts_complete_seven_source_coverage(
+        self,
+    ) -> None:
+        keys = []
+        for line in CONTRACT.read_text(encoding="utf-8").splitlines():
+            if line.startswith("| `") and line.count("|") == 3:
+                cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
+                keys.append(tuple(cells))
+        owned = (
+            (SHARDS[0], ("apis.guru", "jentic", "vendor-portals")),
+            (SHARDS[1], ("sourcegraph", "github-code-search", "swaggerhub", "postman")),
+        )
+        completed = []
+        for source, families in owned:
+            records = "".join(
+                f"| `{key}` | `{selector}` | `{family}` | `query {key}` | unanswered | — | — | — | — |\n"
+                for key, selector in keys
+                for family in families
+            )
+            completed.append(
+                self.changed(
+                    source,
+                    "|---|---|---|---|---|---|---|---|---|\n",
+                    "|---|---|---|---|---|---|---|---|---|\n" + records,
+                )
+            )
+        directory = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, directory)
+        schemas = directory / "schemas.md"
+        schemas.write_text(
+            "\n".join(f"`{key}` search outcome `search-incomplete`" for key, _ in keys),
+            encoding="utf-8",
+        )
+        command = [
+            str(SCRIPT),
+            str(CONTRACT),
+            *(str(path) for path in completed),
+            "--reconcile",
+            "--schemas",
+            str(schemas),
+        ]
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
