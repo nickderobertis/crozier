@@ -71,30 +71,39 @@ def table_cells(line: str) -> list[str]:
 
 
 def selectors_from_regions(regions: Path) -> dict[str, str]:
-    """Derive the frozen key set's selector spellings from region gap rows."""
+    """Derive the frozen key set's selectors from open or probe-settled rows."""
     wanted = set(OWNED_KEYS)
     found: dict[str, str] = {}
-    case_11_is_gap = False
+    case_11_is_owned = False
     for path in sorted(regions.glob("*.md")):
         for line in path.read_text(encoding="utf-8").splitlines():
             cells = table_cells(line) if line.startswith("|") else []
             if not cells:
                 continue
             key = cells[0].strip("` ")
-            if key == CASE_11_KEY and "gap" in cells:
-                case_11_is_gap = True
+            category = cells[3].strip("` ") if len(cells) == 8 else ""
+            if key == CASE_11_KEY and category in {"gap", "limitations"}:
+                case_11_is_owned = True
                 wanted.add(key)
-            if key not in wanted or "FIXTURE" not in line:
+            if key not in wanted:
+                continue
+            open_fixture = category == "gap" and "FIXTURE" in cells[7]
+            settled_probe = (
+                category == "limitations"
+                and f"`../fern-limitations.md` `{key}`" in cells[4]
+                and "convertible to `golden`" in cells[4]
+            )
+            if not (open_fixture or settled_probe):
                 continue
             match = re.search(r"census `([^`]+)`", line)
             if not match:
-                raise ValueError(f"{path}: FIXTURE row {key!r} has no census selector")
+                raise ValueError(f"{path}: measurable row {key!r} has no census selector")
             found[key] = match.group(1)
     missing = sorted(wanted - found.keys())
     if missing:
-        raise ValueError(f"region rows do not define the owned FIXTURE key(s): {', '.join(missing)}")
-    if not case_11_is_gap and CASE_11_KEY in found:
-        raise ValueError("case-11 was included without a gap row")
+        raise ValueError(f"region rows do not define the owned measurable key(s): {', '.join(missing)}")
+    if not case_11_is_owned and CASE_11_KEY in found:
+        raise ValueError("case-11 was included without an owned region row")
     for key, selector in found.items():
         problem = CENSUS.selector_error(selector)
         if problem:
