@@ -188,13 +188,25 @@ components:
                     self.assertEqual(bool(row["source_url"]), bool(row["immutable_ref"]))
 
     def test_tracked_snapshot_is_reconciled_with_finished_evidence(self) -> None:
-        """Every owned selector has exactly one complete, evidence-backed settlement."""
-        self.assert_finished_evidence_reconciles(
-            REPORT,
-            REGIONS,
-            REPO / "docs/fern-limitations.md",
-            tuple((REPO / "docs/openapi-surface").glob("*.tsv")),
-        )
+        """The one-source snapshot supplies candidates, never absence settlement."""
+        with REPORT.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, dialect="excel-tab"))
+        owned = {row["gap_key"] for row in rows}
+        self.assertEqual(30, len(owned))
+        self.assertIn("HISTORICAL ONE-SOURCE INPUT", REPORT.read_text(encoding="utf-8"))
+        entries = {}
+        for region in REGIONS:
+            for line in region.read_text(encoding="utf-8").splitlines():
+                if not line.startswith("|"):
+                    continue
+                cells = [cell.strip() for cell in line.split("|")[1:-1]]
+                if len(cells) == 8:
+                    entries[cells[0].strip("`")] = cells
+        for key in owned:
+            self.assertEqual("gap", entries[key][3].strip("`"), key)
+            self.assertTrue(entries[key][7].lstrip("`*").startswith("FIXTURE"), key)
+        limitations = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        self.assertNotIn("### Round 7 — APIs.guru witness-supply probes", limitations)
 
     def assert_finished_evidence_reconciles(
         self,
