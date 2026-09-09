@@ -3,8 +3,12 @@
 
 from __future__ import annotations
 
+import csv
+import json
+import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +17,7 @@ REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "witness-search-redo.py"
 ROOT = REPO / "docs" / "openapi-surface" / "witness-search-redo"
 CONTRACT = ROOT / "contract.md"
+DECLARERS = ROOT / "catalogue-portals-declarers.tsv"
 SHARDS = (ROOT / "catalogue-portals.md", ROOT / "code-platforms.md")
 
 
@@ -20,7 +25,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def run_validator(
         self, *paths: Path, reconcile: bool = False
     ) -> subprocess.CompletedProcess[str]:
-        command = [str(SCRIPT), str(CONTRACT), *(str(path) for path in paths)]
+        command = [
+            sys.executable,
+            str(SCRIPT),
+            str(CONTRACT),
+            *(str(path) for path in paths),
+        ]
         if reconcile:
             command += [
                 "--reconcile",
@@ -60,16 +70,16 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 for key, selector in keys
                 for family in families
             )
-            separator = "|---|---|---|---|---|---|---|---|---|\n"
-            text = source.read_text(encoding="utf-8")
-            self.assertIn(separator, text)
             directory = Path(tempfile.mkdtemp())
             self.addCleanup(shutil.rmtree, directory)
             target = directory / source.name
-            target.write_text(
-                text.split(separator, 1)[0] + separator + records,
-                encoding="utf-8",
-            )
+            text = source.read_text(encoding="utf-8")
+            separator = "|---|---|---|---|---|---|---|---|---|\n"
+            self.assertIn(separator, text)
+            before, existing = text.split(separator, 1)
+            appendix = existing.find("\n## ")
+            suffix = existing[appendix:] if appendix >= 0 else ""
+            target.write_text(before + separator + records + suffix, encoding="utf-8")
             completed.append(target)
         directory = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, directory)
@@ -104,6 +114,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
     ) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
+                sys.executable,
                 str(SCRIPT),
                 str(CONTRACT),
                 *(str(path) for path in shards),
@@ -116,13 +127,190 @@ class WitnessSearchRedoTests(unittest.TestCase):
             text=True,
         )
 
-    def test_each_empty_shard_is_independently_valid_and_outcome_invisible(
+    def test_each_shard_is_independently_valid_and_outcome_invisible(
         self,
     ) -> None:
         for shard in SHARDS:
             with self.subTest(shard=shard.name):
                 result = self.run_validator(shard)
                 self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_catalogue_report_covers_every_owned_key_and_source(self) -> None:
+        result = self.run_validator(SHARDS[0])
+        self.assertEqual(0, result.returncode, result.stderr)
+        text = SHARDS[0].read_text(encoding="utf-8").split("## Records", 1)[1]
+        text = text.split("\n## ", 1)[0]
+        rows = {
+            (cells[0].strip("`"), cells[2].strip("`"))
+            for line in text.splitlines()
+            if line.startswith("| `")
+            for cells in ([cell.strip() for cell in line.strip("|").split("|")],)
+        }
+        expected = {
+            (key, source)
+            for key, _selector in self.contract_keys()
+            for source in ("apis.guru", "jentic", "vendor-portals")
+        }
+        self.assertEqual(expected, rows)
+
+    def test_local_census_drives_real_documents_and_reports_bad_input(self) -> None:
+        directory = Path(tempfile.mkdtemp(prefix="witness census "))
+        self.addCleanup(shutil.rmtree, directory)
+        for name in ("first.json", "second.json"):
+            (directory / name).write_text(
+                json.dumps(
+                    {
+                        "openapi": "3.1.0",
+                        "info": {"title": name, "version": "1"},
+                        "paths": {},
+                        "components": {
+                            "schemas": {"Witness": {"anyOf": [{"type": "string"}]}}
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+        (directory / "third.yaml").write_text(
+            "openapi: 3.1.0\ninfo: {title: YAML witness, version: '1'}\n"
+            "paths: {}\ncomponents:\n  schemas:\n    Witness:\n"
+            "      anyOf:\n        - type: string\n",
+            encoding="utf-8",
+        )
+        command = [
+            "just",
+            "witness-search-local-census",
+            "--workers",
+            "8",
+            "--contract",
+            str(CONTRACT),
+            "--documents",
+            f"test={directory}",
+        ]
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
+        hits = {
+            row["document"]
+            for row in rows
+            if row["key"] == "anyof-sole-member" and int(row["count"]) > 0
+        }
+        self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
+
+        (directory / "broken.json").write_text("{", encoding="utf-8")
+        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        self.assertNotEqual(0, bad.returncode)
+        self.assertIn("test/broken.json", bad.stderr)
+
+    def test_local_census_rejects_invalid_arguments_and_contracts(self) -> None:
+        directory = Path(tempfile.mkdtemp(prefix="witness census "))
+        self.addCleanup(shutil.rmtree, directory)
+        empty = directory / "empty.md"
+        empty.write_text("No contract rows.\n", encoding="utf-8")
+        malformed = directory / "malformed.md"
+        malformed.write_text("| `key` | `unknown.selector` |\n", encoding="utf-8")
+        duplicate = directory / "duplicate.md"
+        duplicate.write_text("| `key` | `schema.type` |\n" * 2, encoding="utf-8")
+        empty_key = directory / "empty-key.md"
+        empty_key.write_text("| `` | `schema.type` |\n", encoding="utf-8")
+        for args, diagnostic in (
+            (["--workers", "0"], "--workers must be positive"),
+            (["--documents", "missing-equals"], "--documents must be SOURCE=DIR"),
+            (["--documents", f"={directory}"], "--documents must be SOURCE=DIR"),
+            (["--documents", "test="], "--documents must be SOURCE=DIR"),
+            (
+                ["--documents", f"test={directory / 'missing'}"],
+                "--documents must be SOURCE=DIR",
+            ),
+            (["--contract", str(directory / "missing.md")], "invalid --contract"),
+            (["--contract", str(directory)], "invalid --contract"),
+            (["--contract", str(empty)], "no key/selector rows"),
+            (["--contract", str(malformed)], "invalid --contract"),
+            (["--contract", str(duplicate)], "empty or duplicate contract key"),
+            (["--contract", str(empty_key)], "empty or duplicate contract key"),
+        ):
+            with self.subTest(args=args):
+                result = subprocess.run(
+                    [
+                        "just",
+                        "witness-search-local-census",
+                        "--contract",
+                        str(CONTRACT),
+                        "--documents",
+                        f"test={directory}",
+                        *args,
+                    ],
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual("", result.stdout)
+
+    def test_every_measured_declarer_appears_in_the_report(self) -> None:
+        with DECLARERS.open(encoding="utf-8", newline="") as handle:
+            declarers = {
+                (row["source"], row["key"], row["document"], row["count"])
+                for row in csv.DictReader(handle, dialect="excel-tab")
+            }
+        report = SHARDS[0].read_text(encoding="utf-8")
+        actual = set()
+        for heading, source in (
+            ("## Appendix A", "apis.guru"),
+            ("## Appendix B", "jentic"),
+            ("## Appendix C", "vendor-portals"),
+        ):
+            section = report.split(heading, 1)[1].split("\n## ", 1)[0]
+            for line in section.splitlines():
+                match = re.match(
+                    r"^- `([^`]+)` — `([^`]+)`(?: at `[^`]+`)? — (\d+) declaration\(s\):",
+                    line,
+                )
+                if match:
+                    actual.add((source, *match.groups()))
+        self.assertEqual(declarers, actual)
+
+    def test_jentic_dispositions_carry_artifact_specific_trace_evidence(self) -> None:
+        report = SHARDS[0].read_text(encoding="utf-8")
+        section = report.split("## Appendix B", 1)[1].split("\n## ", 1)[0]
+        rows = [line for line in section.splitlines() if line.startswith("- `")]
+        self.assertEqual(681, len(rows))
+        for row in rows:
+            self.assertIn("artifact SHA-256", row)
+            self.assertTrue(
+                "pinned import trace" in row or "pinned `apis.json`" in row,
+                row,
+            )
+        self.assertNotRegex(
+            section,
+            r"jentic-public-apis/[0-9a-f]{40}/openapi/",
+        )
+        self.assertIn(
+            "jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/stripe.com/",
+            section,
+        )
+        self.assertIn(
+            "stripe/openapi/refs/heads/master/openapi/spec3.json",
+            section,
+        )
+        self.assertIn("discarded at Fern acceptance: check exit 1", section)
+        self.assertIn("Fern acceptance screen incomplete, not rejected", section)
+        self.assertNotIn(
+            "check remained CPU-active for more than 22 minutes without a result",
+            section,
+        )
+        self.assertNotIn("named declaring components", section)
+        self.assertIn("generated-model evidence retained", section)
+        self.assertIn("losing the declared `additionalProperties: false`", section)
+        self.assertIn(
+            "publisher relationship traced through the APIs.guru origin",
+            section,
+        )
+        self.assertNotIn(
+            "source artifact to third-party `https://api.apis.guru",
+            section,
+        )
 
     def test_omitted_key_is_rejected(self) -> None:
         bad = self.changed(SHARDS[0], "| `anyof-sole-member` |\n", "")
@@ -176,7 +364,18 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_enabled_reconciliation_refuses_incomplete_source_key_coverage(
         self,
     ) -> None:
-        result = self.run_validator(*SHARDS, reconcile=True)
+        completed, schemas = self.completed_documents()
+        complete = self.reconcile_documents(completed, schemas)
+        self.assertEqual(0, complete.returncode, complete.stderr)
+        row = next(
+            line
+            for line in completed[0]
+            .read_text(encoding="utf-8")
+            .splitlines(keepends=True)
+            if line.startswith("| `anyof-sole-member` | `schema.anyOf:sole-member` |")
+        )
+        completed[0] = self.changed(completed[0], row, "")
+        result = self.reconcile_documents(completed, schemas)
         self.assertNotEqual(0, result.returncode)
         self.assertIn("missing source/key coverage", result.stderr)
 
@@ -191,6 +390,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_reconcile_requires_an_authoritative_schemas_document(self) -> None:
         result = subprocess.run(
             [
+                sys.executable,
                 str(SCRIPT),
                 str(CONTRACT),
                 *(str(path) for path in SHARDS),
