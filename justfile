@@ -194,6 +194,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e googleapis_servicebroker_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audiobookshelf_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e steaminputdb_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paypal_catalog_products_matches_fern_output
 
 # Format the codebase in place.
 format:

@@ -139,7 +139,9 @@ pub fn to_pascal_case(input: &str) -> String {
 /// The class name for a named schema.
 #[must_use]
 pub fn class_name(schema_key: &str) -> String {
-    let pascal = to_pascal_case(schema_key);
+    let pascal = to_pascal_case(
+        &numeric_enum_identifier(schema_key).unwrap_or_else(|| schema_key.to_owned()),
+    );
     let expanded = pascal
         .chars()
         .next()
@@ -987,6 +989,8 @@ mod tests {
     fn digit_leading_schema_names_get_legal_class_names() {
         assert_eq!(class_name("5GmmCause"), "FiveGmmCause");
         assert_eq!(class_name("Widget"), "Widget");
+        assert_eq!(class_name("400"), "FourHundred");
+        assert_eq!(class_name("422"), "FourHundredTwentyTwo");
     }
 
     #[test]

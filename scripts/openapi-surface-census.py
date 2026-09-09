@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 137 of the 169 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 138 of the 170 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -1992,8 +1992,23 @@ def sanitize_identifier(name: str) -> str:
     return out
 
 
+def numeric_class_name(value: int) -> str:
+    """Mirror naming.rs's canonical numeric identifier expansion (0..9999)."""
+    small = (*_DIGIT_WORDS, "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen",
+             "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen")
+    tens = ("", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety")
+    if value < 20:
+        return small[value]
+    if value < 100:
+        return tens[value // 10] + (small[value % 10] if value % 10 else "")
+    divisor, suffix = (100, "Hundred") if value < 1000 else (1000, "Thousand")
+    return small[value // divisor] + suffix + (numeric_class_name(value % divisor) if value % divisor else "")
+
+
 def class_name(schema_key: str) -> str:
     """`naming::class_name`: the Python class name crozier gives a named schema."""
+    if re.fullmatch(r"0|[1-9][0-9]{0,3}", schema_key):
+        return numeric_class_name(int(schema_key))
     pascal = to_pascal_case(schema_key)
     if pascal and _is_digit(pascal[0]):
         pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]

@@ -2270,6 +2270,7 @@ const CORPORA: &[&Corpus] = &[
     &GOOGLEAPIS_SERVICEBROKER,
     &AUDIOBOOKSHELF,
     &STEAMINPUTDB,
+    &PAYPAL_CATALOG_PRODUCTS,
 ];
 
 #[test]
@@ -4425,6 +4426,18 @@ const GOOGLEAPIS_SERVICEBROKER: Corpus = Corpus {
 /// `image/*`, all three over `{type: string, format: binary}`.
 const AUDIOBOOKSHELF: Corpus = Corpus {
     api: "audiobookshelf",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// PayPal's catalog API declares sole-member `anyOf` error detail items.
+const PAYPAL_CATALOG_PRODUCTS: Corpus = Corpus {
+    api: "paypal-catalog-products",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -9764,4 +9777,63 @@ fn a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message() {
         !dir.path().join("sdk").exists(),
         "a failed fetch should write no SDK"
     );
+}
+
+#[test]
+fn paypal_catalog_products_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PAYPAL_CATALOG_PRODUCTS);
+}
+
+#[test]
+fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
+    let Some(source) = corpus_spec(PAYPAL_CATALOG_PRODUCTS.api) else {
+        return;
+    };
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.json");
+    let output = dir.path().join("sdk");
+    let command = || {
+        let mut command = crozier();
+        command
+            .args(["generate", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ]);
+        command
+    };
+    command()
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not read spec"));
+    std::fs::write(&spec, "{invalid JSON").unwrap();
+    command().assert().failure().code(1);
+    assert!(!output.exists());
+    std::fs::copy(source, &spec).unwrap();
+    command().assert().success();
+    for relative in [
+        "src/fern/types/four_hundred_details_item.py",
+        "src/fern/types/error_default.py",
+        "src/fern/types/bad_request_error_body.py",
+        "src/fern/products/client.py",
+        "src/fern/products/raw_client.py",
+        "reference.md",
+    ] {
+        let actual = std::fs::read_to_string(output.join(relative)).unwrap();
+        let expected = std::fs::read_to_string(
+            fixture_dir(PAYPAL_CATALOG_PRODUCTS.api)
+                .join("expected")
+                .join(relative),
+        )
+        .unwrap();
+        assert!(
+            generated_matches_fixture(relative, &actual, &expected),
+            "{relative}"
+        );
+    }
 }

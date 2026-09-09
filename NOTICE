@@ -41,6 +41,12 @@ Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(
 
 Additional issue #77 real-world OpenAPI source specs:
 
+  * PayPal Catalog Products API: PayPal's publisher-owned description at
+    https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/catalogs_products_v1.json.
+    The repository's LICENSE at that same commit grants Apache-2.0 redistribution;
+    corpus row 138 records the immutable reference. Only Fern-generated output
+    is vendored, with Python comments stripped as described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

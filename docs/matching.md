@@ -1938,3 +1938,24 @@ runs on every CI platform. It cannot run in every sandbox (some restrict the
 linker features the LLVM profile runtime needs, and ptrace-based tools need
 privileges those sandboxes withhold); when developing in such an environment, run
 the rest of the gate and rely on CI for the coverage number.
+
+### PayPal catalogue products (corpus row 138)
+
+The four sole-member `anyOf` error-detail items retain concrete models. Numeric
+schema keys spell the whole number (`400` becomes `FourHundred`), while a name
+such as `5GmmCause` keeps the existing first-digit expansion. The census's naming
+mirror follows the same rule.
+
+The document also measures an optional singleton `name` enum as the discriminator
+of a union of referenced error models. Discriminator values used as class names
+split punctuation into word boundaries; their wire values remain unchanged.
+An error response combining a typed object base with property-only refinements
+retains the base's fields, including their existing named enum types, and drops
+the refinements. Repeated occurrences retain that same typed error body.
+
+A described header with a string default remains a fixed wire header; Fern's
+Markdown examples and parameter reference nevertheless include it as a literal.
+Fixed headers precede optional headers in the raw request. A named array request
+body uses its declared media example in the client docstring as well as in the
+reference. The PayPal fixture byte comparison and its missing/malformed-source
+recovery journey cover these behaviors through the real binary.

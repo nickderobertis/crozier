@@ -550,6 +550,36 @@ class WitnessSearchRedoTests(unittest.TestCase):
             count += 1
         self.assertGreater(count, 0, "rejected-spec source table must not be empty")
 
+    def test_paypal_registration_accounts_for_all_owned_keys(self) -> None:
+        source = REPO / ".local/corpus/paypal-catalog-products/openapi.json"
+        if not source.is_file():
+            self.skipTest("PayPal source not fetched; run just fetch-corpus --fixture paypal-catalog-products")
+        keys = dict(self.contract_keys())
+        self.assertEqual(30, len(keys))
+        result = subprocess.run(
+            [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
+             "--fixture", "paypal-catalog-products", "--json",
+             *(arg for selector in keys.values() for arg in ("--selector", selector))],
+            cwd=REPO, capture_output=True, text=True,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        census = json.loads(result.stdout)
+        counts = {row["selector"]: row["count"] for row in census["rows"]}
+        self.assertEqual({"schema.anyOf:sole-member": 4}, counts)
+        self.assertEqual(set(keys.values()) - set(counts), set(census["absent_selectors"]))
+        # Authoritative entry rows use bare keys, unlike candidate tables.
+        entries = {}
+        for line in (REPO / "docs/openapi-surface/schemas.md").read_text().splitlines():
+            if line.startswith("| "):
+                cells = [cell.strip().strip("`") for cell in line.strip("|").split("|")]
+                if len(cells) == 8 and cells[0] in keys:
+                    entries[cells[0]] = cells
+        self.assertEqual(set(keys), set(entries))
+        for key, selector in keys.items():
+            self.assertEqual("golden" if selector in counts else "gap", entries[key][3], key)
+        self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
+        self.assertIn("paypal-catalog-products", entries["anyof-sole-member"][4])
+
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
         result = self.run_validator(*SHARDS, reconcile=True)
         self.assertEqual(0, result.returncode, result.stderr)

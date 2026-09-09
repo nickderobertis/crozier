@@ -71,7 +71,7 @@ def table_cells(line: str) -> list[str]:
 
 
 def selectors_from_regions(regions: Path) -> dict[str, str]:
-    """Derive the frozen key set's selectors from open or probe-settled rows."""
+    """Derive the frozen search selectors, including keys since settled by a golden."""
     wanted = set(OWNED_KEYS)
     found: dict[str, str] = {}
     case_11_is_owned = False
@@ -82,7 +82,7 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
                 continue
             key = cells[0].strip("` ")
             category = cells[3].strip("` ") if len(cells) == 8 else ""
-            if key == CASE_11_KEY and category in {"gap", "limitations"}:
+            if key == CASE_11_KEY and category in {"gap", "limitations", "golden"}:
                 case_11_is_owned = True
                 wanted.add(key)
             if key not in wanted:
@@ -93,7 +93,7 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
                 and f"`../fern-limitations.md` `{key}`" in cells[4]
                 and "convertible to `golden`" in cells[4]
             )
-            if not (open_fixture or settled_probe):
+            if not (open_fixture or settled_probe or category == "golden"):
                 continue
             match = re.search(r"census `([^`]+)`", line)
             if not match:
