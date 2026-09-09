@@ -7,7 +7,6 @@ import argparse
 import csv
 import concurrent.futures
 import importlib.util
-import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -44,19 +43,14 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
     return keys
 
 
-def read_document(path: Path) -> Any:
-    text = path.read_text(encoding="utf-8-sig")
-    if path.suffix.lower() == ".json":
-        return json.loads(text)
-    return CENSUS._YamlReader(path, text).load()
-
-
 def census_one(
     job: tuple[Path, dict[str, Any], list[tuple[str, str]]],
 ) -> tuple[Path, str | None, list[tuple[str, int]]]:
     path, conjunctions, keys = job
     try:
-        counts = CENSUS.census_document(read_document(path), conjunctions=conjunctions)
+        counts = CENSUS.census_document(
+            CENSUS.load_document(path), conjunctions=conjunctions
+        )
         return (
             path,
             None,
