@@ -416,6 +416,35 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertIn("17" if artifact.startswith("asana") else "25", cells[7])
         self.assertEqual(expected, actual)
 
+    def test_previously_rejected_specs_keep_one_matching_disposition(self) -> None:
+        instructions = (REPO / "tests/fixtures/AGENTS.md").read_text(encoding="utf-8")
+        rejected = instructions.split("### Specs already tried and REJECTED", 1)[1]
+        rejected = rejected.split("\n## ", 1)[0]
+        candidates = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        recorded: dict[str, list[list[str]]] = {}
+        for line in candidates.splitlines():
+            if line.startswith("| `"):
+                cells = [cell.strip() for cell in line.strip("|").split("|")]
+                recorded.setdefault(cells[0].strip("`"), []).append(cells)
+        count = 0
+        for line in rejected.splitlines():
+            if not line.startswith("| `"):
+                continue
+            label, source, diagnostic = (
+                cell.strip() for cell in line.strip("|").split("|")
+            )
+            catalogue = re.search(r"api-guru `([^`]+)`", label)
+            artifact = catalogue[1] if catalogue else source.strip("`")
+            with self.subTest(spec=label):
+                rows = recorded.get(artifact, [])
+                self.assertEqual(1, len(rows), f"{artifact}: expected exactly one record")
+                self.assertEqual("`fern-rejected`", rows[0][6])
+                self.assertIn(
+                    diagnostic.replace("../../docs/", "../../"), rows[0][7]
+                )
+            count += 1
+        self.assertGreater(count, 0, "rejected-spec source table must not be empty")
+
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
         result = self.run_validator(*SHARDS, reconcile=True)
         self.assertEqual(0, result.returncode, result.stderr)
