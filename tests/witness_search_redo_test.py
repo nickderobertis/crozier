@@ -387,6 +387,61 @@ class WitnessSearchRedoTests(unittest.TestCase):
         result = self.reconcile_documents(completed, schemas)
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_catalogue_candidates_are_reconciled_once_with_all_four_screens(self) -> None:
+        report = SHARDS[0].read_text(encoding="utf-8")
+        expected: dict[str, set[str]] = {}
+        for key, artifact in re.findall(r"^- `([^`]+)` — `([^`]+)`", report, re.M):
+            expected.setdefault(artifact, set()).add(key)
+        text = (ROOT / "candidates.md").read_text(encoding="utf-8")
+        section = text.split("## Catalogue and portal artifacts", 1)[1]
+        section = section.split("## Code-platform artifacts", 1)[0]
+        actual = {}
+        for line in section.splitlines():
+            if not line.startswith("| `"):
+                continue
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            self.assertEqual(8, len(cells))
+            artifact = cells[0].strip("`")
+            self.assertNotIn(artifact, actual)
+            actual[artifact] = set(re.findall(r"`([^`]+)`", cells[1]))
+            self.assertTrue(all(cells[index] for index in range(2, 6)))
+            self.assertIn(cells[6].strip("`"), {
+                "witness-found", "witness-blocked", "fern-rejected", "search-incomplete"
+            })
+            if "attentivemobile.com" in artifact:
+                self.assertEqual("`search-incomplete`", cells[6])
+                self.assertIn("no completed check", cells[4])
+            if artifact in {"asana.com/1.0", "box.com/2.0.0"}:
+                self.assertEqual("`fern-rejected`", cells[6])
+                self.assertIn("17" if artifact.startswith("asana") else "25", cells[7])
+        self.assertEqual(expected, actual)
+
+    def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
+        result = self.run_validator(*SHARDS, reconcile=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
+        shards, schemas = self.completed_documents()
+        for path in shards:
+            path.write_text(path.read_text().replace("| unanswered |", "| 0 |"))
+        schemas.write_text(
+            schemas.read_text()
+            .replace("→ `unanswered`", "→ 0")
+            .replace("search outcome `search-incomplete`", "search outcome `none-found`")
+        )
+        result = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, result.returncode, result.stderr)
+        shards[0].write_text(shards[0].read_text().replace("| 0 |", "| unanswered |", 1))
+        schemas.write_text(schemas.read_text().replace("→ 0", "→ `unanswered`", 1))
+        refused = self.reconcile_documents(shards, schemas)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn("expected 'search-incomplete'", refused.stderr)
+        schemas.write_text(
+            schemas.read_text().replace("search outcome `none-found`", "search outcome `search-incomplete`", 1)
+        )
+        recovered = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_reconcile_requires_an_authoritative_schemas_document(self) -> None:
         result = subprocess.run(
             [
