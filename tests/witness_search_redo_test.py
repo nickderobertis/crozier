@@ -43,6 +43,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
         directory = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, directory)
         target = directory / source.name
+        candidate = source.parent / "candidates.md"
+        if source.name == "schemas.md" and candidate.is_file():
+            shutil.copyfile(candidate, directory / "candidates.md")
         text = source.read_text(encoding="utf-8")
         self.assertIn(old, text)
         target.write_text(text.replace(old, new, 1), encoding="utf-8")
@@ -107,6 +110,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        (schemas.parent / "candidates.md").write_text("# Candidate screens\n", encoding="utf-8")
         return completed, schemas
 
     def reconcile_documents(
@@ -121,6 +125,8 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--reconcile",
                 "--schemas",
                 str(schemas),
+                "--candidates",
+                str(schemas.parent / "candidates.md"),
             ],
             cwd=REPO,
             capture_output=True,
@@ -547,6 +553,35 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
         result = self.run_validator(*SHARDS, reconcile=True)
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
+        shards, schemas = self.completed_documents()
+        key = self.contract_keys()[0][0]
+        candidates = schemas.parent / "candidates.md"
+        row = (
+            f"| `publisher/spec@pin/openapi.json` | `{key}` | passed: grant | "
+            "passed: publisher pin | passed: non-empty generation | "
+            "passed: generated model | `witness-found` | model.py |\n"
+        )
+        candidates.write_text(row, encoding="utf-8")
+        schemas.write_text(schemas.read_text().replace(
+            "search outcome `search-incomplete`", "search outcome `witness-found`", 1
+        ), encoding="utf-8")
+        found = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, found.returncode, found.stderr)
+        for screen in ("grant", "publisher pin", "non-empty generation", "generated model"):
+            with self.subTest(screen=screen):
+                candidates.write_text(row.replace(f"passed: {screen}", f"blocked: {screen}"))
+                rejected = self.reconcile_documents(shards, schemas)
+                self.assertNotEqual(0, rejected.returncode)
+                self.assertIn("search-incomplete", rejected.stderr)
+        candidates.write_text(row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"))
+        discarded = self.reconcile_documents(shards, schemas)
+        self.assertNotEqual(0, discarded.returncode)
+        self.assertIn("search-incomplete", discarded.stderr)
+        candidates.write_text(row)
+        recovered = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
 
     def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
         shards, schemas = self.completed_documents()

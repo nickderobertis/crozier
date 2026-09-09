@@ -168,7 +168,25 @@ def validate_documents(paths: list[Path], contract: Path) -> list[str]:
     return failures
 
 
-def reconcile(paths: list[Path], contract: Path, schemas: Path) -> list[str]:
+def screened_keys(path: Path) -> set[str]:
+    """A declaration count is not proof that an artifact passed all four screens."""
+    found: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("| `"):
+            continue
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) != 8 or value(cells[6]) != "witness-found":
+            continue
+        if not all(cell.startswith("passed:") for cell in cells[2:6]):
+            continue
+        keys = set(re.findall(r"`([^`]+)`", cells[1]))
+        if "discarded keys:" in cells[5]:
+            keys -= set(re.findall(r"`([^`]+)`", cells[5].split("discarded keys:", 1)[1]))
+        found.update(keys)
+    return found
+
+
+def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path) -> list[str]:
     failures = validate_documents(paths, contract)
     keys = contract_keys(contract)
     records: dict[tuple[str, str], list[str]] = {}
@@ -187,18 +205,21 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path) -> list[str]:
     if missing:
         failures.append(f"reconciliation: missing source/key coverage {missing}")
         return failures
+    witnesses = screened_keys(candidates)
     rows = schema_rows(schemas.read_text(encoding="utf-8"))
     for key in keys:
         answered = all(
             value(records[(key, source)][4]) != "unanswered" for source in ALL_SOURCES
         )
         expected = (
-            "none-found"
+            "witness-found"
+            if key in witnesses
+            else "none-found"
             if answered
             and all(value(records[(key, source)][4]) == "0" for source in ALL_SOURCES)
             else "search-incomplete"
             if not answered
-            else "witness-found"
+            else "witness-blocked"
         )
         owned_rows = rows.get(key, [])
         if len(owned_rows) != 1:
@@ -232,11 +253,12 @@ def main() -> int:
     parser.add_argument("shards", nargs="+", type=Path)
     parser.add_argument("--reconcile", action="store_true")
     parser.add_argument("--schemas", type=Path)
+    parser.add_argument("--candidates", type=Path, help="four-screen record (default: beside CONTRACT)")
     args = parser.parse_args()
     if args.reconcile and args.schemas is None:
         parser.error("--reconcile requires --schemas PATH")
     failures = (
-        reconcile(args.shards, args.contract, args.schemas)
+        reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"))
         if args.reconcile
         else validate_documents(args.shards, args.contract)
     )
