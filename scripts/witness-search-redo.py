@@ -42,13 +42,17 @@ def value(cell: str) -> str:
 
 
 def schema_rows(text: str) -> dict[str, list[list[str]]]:
-    """Parse authoritative entry rows without joining facts across rows."""
+    """Parse bare or code-spanned keys from authoritative eight-cell entry rows."""
     found: dict[str, list[list[str]]] = {}
     for line in text.splitlines():
         if not line.startswith("| "):
             continue
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if len(cells) == 8 and cells[0].startswith("`"):
+        if (
+            len(cells) == 8
+            and value(cells[0]) != "key"
+            and value(cells[3]) in {"golden", "limitations", "gap"}
+        ):
             found.setdefault(value(cells[0]), []).append(cells)
     return found
 
@@ -229,6 +233,8 @@ def main() -> int:
     parser.add_argument("--reconcile", action="store_true")
     parser.add_argument("--schemas", type=Path)
     args = parser.parse_args()
+    if args.reconcile and args.schemas is None:
+        parser.error("--reconcile requires --schemas PATH")
     failures = (
         reconcile(args.shards, args.contract, args.schemas)
         if args.reconcile

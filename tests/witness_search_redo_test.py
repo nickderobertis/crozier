@@ -83,7 +83,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |\n"
             "|---|---|---|---|---|---|---|---|\n"
             + "".join(
-                f"| `{key}` | both | Schema Object | gap | search outcome `search-incomplete`; "
+                f"| {key} | both | Schema Object | gap | search outcome `search-incomplete`; "
                 + "; ".join(
                     f"**{source}** `query {key} {source}` → `unanswered`"
                     for source in sources
@@ -179,9 +179,25 @@ class WitnessSearchRedoTests(unittest.TestCase):
     def test_enabled_reconciliation_accepts_complete_seven_source_coverage(
         self,
     ) -> None:
+        """The real region contract's bare key is found and compared successfully."""
         completed, schemas = self.completed_documents()
         result = self.reconcile_documents(completed, schemas)
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_reconcile_requires_an_authoritative_schemas_document(self) -> None:
+        result = subprocess.run(
+            [
+                str(SCRIPT),
+                str(CONTRACT),
+                *(str(path) for path in SHARDS),
+                "--reconcile",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(2, result.returncode)
+        self.assertIn("--reconcile requires --schemas PATH", result.stderr)
 
     def test_cross_shard_duplicate_is_rejected(self) -> None:
         completed, _schemas = self.completed_documents()
