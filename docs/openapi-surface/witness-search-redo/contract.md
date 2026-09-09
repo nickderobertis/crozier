@@ -11,14 +11,19 @@ The `catalogue-portals` shard exclusively owns `apis.guru`, `jentic`, and
 requires one record for every key/source pair. Every record has exactly these fields:
 `key`, `selector`, `source`, `query`, `result`, `candidates`, `provenance`,
 `licence-screen`, and `fern-screen`. `query` is the exact rerunnable query in a code
-span. `result` is a returned count or `unanswered`; an unanswered source is never
-written as zero. Candidate provenance is immutable, and every answered candidate set
-records both screens.
+span. `result` is a nonnegative integer or `unanswered`; an unanswered source is never
+written as zero. A positive result requires candidates, immutable provenance, and both
+screens. Zero and `unanswered` require all four supporting fields to be `—`.
 
 Only all seven answered sources, each returning zero, permits `none-found`. Any
 `unanswered` source requires `search-incomplete`; otherwise a nonzero result requires
 `witness-found`. The reconciliation entry point is
 `scripts/witness-search-redo.py CONTRACT SHARD SHARD --reconcile --schemas docs/openapi-surface/schemas.md`.
+It reads exactly one authoritative eight-cell table row per owned key. That same row
+must contain the words `search outcome` followed by the outcome in a code span, plus
+all seven bold source-family names, each followed by its exact query in a code span,
+an arrow, and its count or `unanswered`. The query and result must equal the
+corresponding shard record. Facts on another row cannot satisfy it.
 
 ## Owned keys
 
