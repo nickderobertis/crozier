@@ -581,7 +581,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertIn("paypal-catalog-products", entries["anyof-sole-member"][4])
 
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
-        result = self.run_validator(*SHARDS, reconcile=True)
+        supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
+        command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in SHARDS),
+                   "--reconcile", "--schemas", str(REPO / "docs/openapi-surface/schemas.md")]
+        if supplement.is_file():
+            command += ["--supplement-candidates", str(supplement)]
+        result = subprocess.run(command, cwd=REPO, capture_output=True, encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
@@ -701,6 +706,145 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertIn(
                     message, self.reconcile_documents(completed, bad_schemas).stderr
                 )
+
+class WideWitnessTests(unittest.TestCase):
+    """Acquire pinned bytes and validate reports through the actual CLI boundary."""
+
+    contract_keys = WitnessSearchRedoTests.contract_keys
+    completed_documents = WitnessSearchRedoTests.completed_documents
+
+    def setUp(self) -> None:
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.work = Path(self.directory.name)
+        self.wide = REPO / 'scripts/witness-scrape-wide.py'
+        self.report = self.work / 'report'
+        result = self.cli('derive', '--report', self.report)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.key = next(iter(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys']))
+        self.sha = 'a' * 64
+        self.artifact = 'https://publisher.example/pinned/openapi.json'
+        self.candidate = (
+            '| artifact | keys | redistribution | immutable publisher reference | Fern acceptance | retention | disposition | evidence |\n'
+            '|---|---|---|---|---|---|---|---|\n'
+            f'| `{self.artifact}` | `{self.key}` | passed: grant | passed: immutable publisher | passed: real generation | passed: retained model | `witness-found` | fern.txt |\n'
+        )
+        (self.report / 'candidates.md').write_text(self.candidate, encoding='utf-8')
+        (self.report / 'fern.txt').write_text('Fern evidence: modèle conservé\n', encoding='utf-8')
+        (self.report / 'comparison.txt').write_text('comparison failed: modèle.py differs\n', encoding='utf-8')
+        self.rank_header = 'rank\tartifact_sha256\tartifact\tkeys\tfern_evidence\tcomparison_evidence\n'
+        self.rank_row = f'1\t{self.sha}\t{self.artifact}\t{json.dumps([self.key])}\tfern.txt\tcomparison.txt\n'
+        (self.report / 'ranking.tsv').write_text(self.rank_header + self.rank_row, encoding='utf-8')
+        self.slots_header = '| slot | artifact_sha256 | keys | disposition | evidence |\n|---|---|---|---|---|\n'
+        (self.report / 'slots.md').write_text(self.slots_header, encoding='utf-8')
+
+    def cli(self, *args) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(self.wide), *(str(a) for a in args)],
+                              cwd=REPO, capture_output=True, encoding='utf-8')
+
+    def validate(self, *args) -> subprocess.CompletedProcess[str]:
+        return self.cli('validate', '--report', self.report, *args)
+
+    def test_real_report_validator_rejects_contract_drift_and_recovers(self) -> None:
+        good = self.validate()
+        self.assertEqual(0, good.returncode, good.stderr)
+        changes = [
+            ('ranking.tsv', self.rank_header + self.rank_row * 2, 'duplicate rank'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace('1\t', '0\t', 1), 'malformed'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace(self.key, 'unknown-key'), 'unknown keys'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace('fern.txt', 'absent-é.txt'), 'absent-é.txt'),
+            ('keys.md', (self.report / 'keys.md').read_text(encoding='utf-8').replace('schema.', 'invented.', 1), 'selector'),
+            ('candidates.md', self.candidate.replace('passed: retained model', f'passed: other model; discarded keys: `{self.key}`'), 'retained candidate screens'),
+        ]
+        for filename, text, message in changes:
+            with self.subTest(message=message):
+                path = self.report / filename
+                old = path.read_text(encoding='utf-8')
+                path.write_text(text, encoding='utf-8')
+                failed = self.validate()
+                self.assertNotEqual(0, failed.returncode)
+                self.assertIn(message, failed.stderr)
+                path.write_text(old, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_slots_reject_conflicting_claims_and_accept_exhaustion(self) -> None:
+        path = self.report / 'slots.md'
+        row = f'| slot-1 | {self.sha} | {json.dumps([self.key])} | registered | comparison.txt |\n'
+        path.write_text(self.slots_header + row, encoding='utf-8')
+        self.assertEqual(0, self.validate().returncode)
+        path.write_text(self.slots_header + row + row.replace('slot-1', 'slot-2'), encoding='utf-8')
+        failed = self.validate()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('conflicting slot claim', failed.stderr)
+        path.write_text(self.slots_header + '| slot-1 | — | [] | exhausted | comparison.txt |\n', encoding='utf-8')
+        self.assertEqual(0, self.validate().returncode)
+
+    def test_supplements_are_optional_additive_and_discarded_keys_do_not_pass(self) -> None:
+        shards, schemas = self.completed_documents()
+        key = self.contract_keys()[0][0]
+        supplemental = self.work / 'supplement.md'
+        supplemental.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
+        command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in shards),
+                   '--reconcile', '--schemas', str(schemas), '--candidates', str(schemas.parent / 'candidates.md')]
+        run = lambda extra: subprocess.run(command + extra, cwd=REPO, capture_output=True, encoding='utf-8')
+        self.assertEqual(0, run([]).returncode)
+        supplement = ['--supplement-candidates', str(supplemental)]
+        self.assertIn("expected 'witness-found'", run(supplement).stderr)
+        schemas.write_text(schemas.read_text(encoding='utf-8').replace('search outcome `search-incomplete`', 'search outcome `witness-found`', 1), encoding='utf-8')
+        self.assertEqual(0, run(supplement * 2).returncode)
+        self.assertNotEqual(0, run([]).returncode)
+        supplemental.write_text(supplemental.read_text(encoding='utf-8').replace('passed: retained model', f'passed: other model; discarded keys: `{key}`'), encoding='utf-8')
+        self.assertIn("expected 'search-incomplete'", run(supplement).stderr)
+
+    def test_acquisition_uses_real_files_cache_and_census_with_failure_recovery(self) -> None:
+        import hashlib
+        spec = self.work / 'publisher.yaml'  # publisher suffix may disagree with unchanged JSON bytes
+        spec.write_text(json.dumps({'openapi': '3.0.3', 'info': {'title': 'Réel', 'version': '1'},
+                                    'paths': {}, 'components': {'schemas': {'Sample': {'properties': {'x': {'anyOf': [{'type': 'object', 'properties': {'value': {'type': 'string'}}}]}}}}}}), encoding='utf-8')
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        malformed = self.work / 'malformé.json'
+        malformed.write_text('{é', encoding='utf-8')
+        inventory = self.work / 'inventory.json'
+        rows = [{'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': sha},
+                {'artifact': malformed.as_uri()}, {'artifact': (self.work / 'absent.json').as_uri()}]
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': rows}), encoding='utf-8')
+        cache = self.work / 'cache'
+        output = self.report / 'acquisition.json'
+        args = ('acquire', '--inventory', inventory, '--cache', cache,
+                '--contract', self.report / 'keys.md', '--output', output)
+        first = self.cli(*args)
+        self.assertEqual(0, first.returncode, first.stderr)
+        outcomes = json.loads(output.read_text(encoding='utf-8'))['sources']
+        self.assertEqual(['readable', 'unreadable', 'inaccessible'], [r['status'] for r in outcomes])
+        self.assertEqual('newly-fetched', outcomes[0]['acquisition'])
+        self.assertEqual(sha + '.json', outcomes[0]['document'])
+        self.assertIn('property-sole-anyof-struct-member', output.with_suffix('.census.tsv').read_text(encoding='utf-8'))
+        self.assertEqual(0, self.validate('--inventory', inventory).returncode)
+        spec.unlink()  # exact cached bytes still support a real census offline
+        second = self.cli(*args)
+        self.assertEqual(0, second.returncode, second.stderr)
+        self.assertEqual('verified-reuse', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['acquisition'])
+        (cache / sha).write_bytes(b'changed cached bytes')
+        third = self.cli(*args)
+        self.assertEqual(0, third.returncode, third.stderr)
+        self.assertEqual('inaccessible', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['status'])
+        spec.write_text('{"openapi":"3.1.0"}', encoding='utf-8')
+        self.assertEqual(0, self.cli(*args).returncode)
+        measured = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual('digest-changed', measured['sources'][0]['status'])
+        measured['sources'].pop()
+        output.write_text(json.dumps(measured), encoding='utf-8')
+        partial = self.validate('--inventory', inventory)
+        self.assertNotEqual(0, partial.returncode)
+        self.assertIn('partial inventory', partial.stderr)
+
+    def test_committed_wide_report(self) -> None:
+        root = REPO / 'docs/openapi-surface/witness-scrape-wide'
+        if not (root / 'README.md').exists():
+            self.skipTest('report acquisition still in progress')
+        result = self.cli('validate', '--report', root, '--inventory', root / 'inventory.json')
+        self.assertEqual(0, result.returncode, result.stderr)
 
 
 if __name__ == "__main__":

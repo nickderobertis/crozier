@@ -168,7 +168,7 @@ def validate_documents(paths: list[Path], contract: Path) -> list[str]:
     return failures
 
 
-def screened_keys(path: Path) -> set[str]:
+def screened_keys(path: Path, *, artifact: str | None = None) -> set[str]:
     """A declaration count is not proof that an artifact passed all four screens."""
     found: set[str] = set()
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -176,6 +176,8 @@ def screened_keys(path: Path) -> set[str]:
             continue
         cells = [cell.strip() for cell in line.strip("|").split("|")]
         if len(cells) != 8 or value(cells[6]) != "witness-found":
+            continue
+        if artifact is not None and value(cells[0]) != artifact:
             continue
         if not all(cell.startswith("passed:") for cell in cells[2:6]):
             continue
@@ -186,7 +188,7 @@ def screened_keys(path: Path) -> set[str]:
     return found
 
 
-def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path) -> list[str]:
+def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()) -> list[str]:
     failures = validate_documents(paths, contract)
     keys = contract_keys(contract)
     records: dict[tuple[str, str], list[str]] = {}
@@ -206,6 +208,8 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
         failures.append(f"reconciliation: missing source/key coverage {missing}")
         return failures
     witnesses = screened_keys(candidates)
+    for supplement in supplement_candidates:
+        witnesses.update(screened_keys(supplement))
     rows = schema_rows(schemas.read_text(encoding="utf-8"))
     for key in keys:
         answered = all(
@@ -254,11 +258,13 @@ def main() -> int:
     parser.add_argument("--reconcile", action="store_true")
     parser.add_argument("--schemas", type=Path)
     parser.add_argument("--candidates", type=Path, help="four-screen record (default: beside CONTRACT)")
+    parser.add_argument("--supplement-candidates", type=Path, action="append", default=[],
+                        help="additional four-screen records; repeatable, historical inputs unchanged")
     args = parser.parse_args()
     if args.reconcile and args.schemas is None:
         parser.error("--reconcile requires --schemas PATH")
     failures = (
-        reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"))
+        reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"), tuple(args.supplement_candidates))
         if args.reconcile
         else validate_documents(args.shards, args.contract)
     )
