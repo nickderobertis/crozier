@@ -1,0 +1,13 @@
+api:
+  path: openapi/openapi.yml
+groups:
+  python-sdk:
+    generators:
+      - name: fernapi/fern-python-sdk
+        version: 5.20.0
+        config:
+          pydantic_config:
+            enum_type: python_enums
+        output:
+          location: local-file-system
+          path: ../generated/python

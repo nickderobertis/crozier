@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "artifact": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/box.com/2.0.0/openapi.yaml",
+  "artifact_sha256": "8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e",
+  "keys": {
+    "annotated-ref-target-composed": 34
+  },
+  "document_license": {
+    "name": "Apache-2.0",
+    "url": "http://www.apache.org/licenses/LICENSE-2.0"
+  },
+  "aggregation_licence": {
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "evidence": "licences/APIs-guru--openapi-directory--LICENSE"
+  },
+  "prior_candidate_identity": "box.com/2.0.0",
+  "prior_screen": [
+    "`box.com/2.0.0`",
+    "`annotated-ref-target-composed`",
+    "passed: admitted grant",
+    "passed: pinned publisher trace",
+    "refused: concrete diagnostic below",
+    "not reached",
+    "`fern-rejected`",
+    "box.com/2.0.0 (34): publisher API description; versioned APIs.guru ref admissible; Apache-2.0; Fern check exit 1: 25 errors."
+  ],
+  "prior_evidence": "../../witness-search-redo/candidates.md",
+  "indexed_json_acquisition": "HTTP Error 403: Forbidden",
+  "provenance": "Publisher/version trace retained from the historical candidate; current YAML bytes independently pinned and measured. No JSON/YAML equivalence is claimed.",
+  "fern": {
+    "status": "refused",
+    "error_count": 23,
+    "artifact": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/box.com/2.0.0/openapi.yaml",
+    "sha256": "8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e",
+    "check_exit": 1,
+    "cli_version": "5.67.1",
+    "generator_version": "5.20.0",
+    "check_command": [
+      "fern",
+      "check"
+    ],
+    "check_cwd": "/home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/fern-check/wide-box-com",
+    "generation_exit": 1,
+    "generation_command": [
+      "bash",
+      "/home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/fern-stage/scripts/generate-fern-fixture.sh",
+      "wide-box-com",
+      "5.20.0",
+      "/home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/guru-cas/8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e",
+      "/home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/fern-stage/tests/fixtures/wide-box-com/expected"
+    ],
+    "check_configuration": "Route A default python-sdk group, pinned generator and enum configuration",
+    "check_evidence": "evidence/8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e.check.log",
+    "check_log_sha256": "ca77b7f621dbe23de65cecfdb61ff2a1a5af2f66d9490c79f837b6f05f5e5e22",
+    "generate_evidence": "evidence/8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e.generate.log",
+    "generate_log_sha256": "bff4baee14b1b830225eada4d32d04ec16b6b4bd09ef618c9c9fb8483ce7a5ef",
+    "generation_script_sha256": "1876e45217a9139f2ef2719f16ab7989d766933f51f7909cbf7811470e1db3e9",
+    "generator_pin_source": "tests/fixtures/eos.local/expected/.crozier-fern-golden.json"
+  },
+  "comparison": {
+    "status": "not-run",
+    "differing_files": [],
+    "diagnostics": [
+      "Pinned Fern check and Route A generation both refused these exact bytes; no generated SDK exists for retention or Crozier comparison."
+    ]
+  },
+  "publisher_trace": {
+    "historical_identity": "box.com/2.0.0",
+    "document_origins": [
+      {
+        "converter": {
+          "url": "https://github.com/mermade/oas-kit",
+          "version": "7.0.4"
+        },
+        "format": "openapi",
+        "url": "https://opensource.box.com/box-openapi/openapi.json",
+        "version": "3.0"
+      }
+    ],
+    "document_servers": [
+      {
+        "description": "Box Platform API server",
+        "url": "https://api.box.com/2.0"
+      }
+    ],
+    "pinned_artifact": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/box.com/2.0.0/openapi.yaml"
+  }
+}

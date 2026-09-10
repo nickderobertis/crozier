@@ -1,0 +1,3421 @@
+{
+  "schema_version": 1,
+  "source_commit": "e88fcc24dbb8d865dbbdab0c65fd9672679bd8a1",
+  "keys": {
+    "annotated-ref-target-closed-object": {
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "pandascore.co/2.23.1",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/input-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/input-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/output-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/output-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/openapi.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/input-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/input-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/output-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/output-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/openapi.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "annotated-ref-target-composed": {
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "asana.com/1.0",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "box.com/2.0.0",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/asana.com/main/1.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/asana.com/main/1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/asana.com/main/1.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/asana.com/main/1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/asana.com/main/1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/groupe-psa.io/main/3.19.2/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/groupe-psa.io/main/3.19.2/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/groupe-psa.io/main/3.19.2/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/groupe-psa.io/main/3.19.2/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/groupe-psa.io/main/3.19.2/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandadoc.com/main/7.18.1/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandadoc.com/main/7.18.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandadoc.com/main/7.18.1/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandadoc.com/main/7.18.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandadoc.com/main/7.18.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/wildapricot.com/main/9.6.1/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/wildapricot.com/main/9.6.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/wildapricot.com/main/9.6.1/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/wildapricot.com/main/9.6.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/wildapricot.com/main/9.6.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "box/box-openapi@933ec4c5d9f4dbdaaa823efa3a083cf177aecbde/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "ballerina-platform/openapi-connectors@81158a45a86fa9a85de4e7fbd7cdc2a529d50743/openapi/pagerduty/openapi.yml",
+          "screens": [
+            "repository grant admitted; document has no grant",
+            "blocked: Ballerina is not PagerDuty's publisher",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "annotated-ref-target-oneof": {
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "pandascore.co/2.23.1",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/input-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/input-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/output-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/meta/import/output-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/main/2.23.1/openapi.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/input-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/input-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/output-bundle.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/output-entry.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/openapi.json",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/box.com/main/2024.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/openai.com/main/2.3.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/openai.com/main/2.3.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/openai.com/main/2.3.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/openai.com/main/2.3.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/openai.com/main/2.3.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "box/box-openapi@933ec4c5d9f4dbdaaa823efa3a083cf177aecbde/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openai/openai-openapi@b53b169f44dc0fbf878db3f9a1d3b66f43831f8d/openapi.yaml",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        }
+      ]
+    },
+    "annotated-ref-target-string-const": {
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "anyof-array-variant-anyof-nullable-item": {
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/smith.langchain.com/langsmith-api/0.1.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        }
+      ]
+    },
+    "anyof-array-variant-closed-object-item": {
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "webflow.com/2023-03-01T164537Z",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cradl.ai/main/2026-01-28T09:00:46Z/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "passed: generated-model evidence below; discarded keys: `anyof-array-variant-closed-object-item`"
+          ],
+          "disposition": "witness-found",
+          "discarded": true
+        },
+        {
+          "artifact": "openapi/cradl.ai/main/2026-01-28T09:00:46Z/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "passed: generated-model evidence below; discarded keys: `anyof-array-variant-closed-object-item`"
+          ],
+          "disposition": "witness-found",
+          "discarded": true
+        },
+        {
+          "artifact": "openapi/cradl.ai/main/2026-01-28T09:00:46Z/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "passed: generated-model evidence below; discarded keys: `anyof-array-variant-closed-object-item`"
+          ],
+          "disposition": "witness-found",
+          "discarded": true
+        },
+        {
+          "artifact": "openapi/cradl.ai/main/2026-01-28T09:00:46Z/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "passed: generated-model evidence below; discarded keys: `anyof-array-variant-closed-object-item`"
+          ],
+          "disposition": "witness-found",
+          "discarded": true
+        },
+        {
+          "artifact": "openapi/cradl.ai/main/2026-01-28T09:00:46Z/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "passed: generated-model evidence below; discarded keys: `anyof-array-variant-closed-object-item`"
+          ],
+          "disposition": "witness-found",
+          "discarded": true
+        },
+        {
+          "artifact": "openapi/elastic.co/kibana/1.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/elastic.co/kibana/1.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/elastic.co/kibana/1.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/elastic.co/kibana/1.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/elastic.co/kibana/1.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/exa.ai/main/2.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/exa.ai/main/2.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/exa.ai/main/2.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/exa.ai/main/2.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/exa.ai/main/2.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/huggingface.co/main/0.0.1/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/huggingface.co/main/0.0.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/huggingface.co/main/0.0.1/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/huggingface.co/main/0.0.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/huggingface.co/main/0.0.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/lucidtech-api/2023-03-01 16:45:37+00:00/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/lucidtech-api/2023-03-01 16:45:37+00:00/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/lucidtech-api/2023-03-01 16:45:37+00:00/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/lucidtech-api/2023-03-01 16:45:37+00:00/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/lucidtech-api/2023-03-01 16:45:37+00:00/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/main/2023-03-01T16:45:37Z/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/main/2023-03-01T16:45:37Z/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/main/2023-03-01T16:45:37Z/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/main/2023-03-01T16:45:37Z/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/main/2023-03-01T16:45:37Z/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/webflow-api/2023-03-01T16:45:37Z/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/webflow-api/2023-03-01T16:45:37Z/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/webflow-api/2023-03-01T16:45:37Z/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/webflow-api/2023-03-01T16:45:37Z/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/webflow.com/webflow-api/2023-03-01T16:45:37Z/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "anyof-array-variant-empty-object-item": {
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/apideck.com/proxy/10.14.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/apideck.com/proxy/10.14.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/apideck.com/proxy/10.14.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/apideck.com/proxy/10.14.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/apideck.com/proxy/10.14.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "anyof-array-variant-oneof-nullable-item": {
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "array-item-inheritance-union": {
+      "selector": "schema.items>schema.discriminator:inheritance-union",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "array-item-pointer-walk-anyof": {
+      "selector": "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "array-item-pointer-walk-oneof": {
+      "selector": "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/sellsy.com/main/2.128.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "oneof-array-variant-annotated-ref-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "oneof-array-variant-anyof-discriminated-union-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "oneof-array-variant-anyof-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cov-spectrum.org/main/v0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cov-spectrum.org/main/v0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cov-spectrum.org/main/v0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cov-spectrum.org/main/v0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cov-spectrum.org/main/v0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/novu.co/novu-api/3.14.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/novu.co/novu-api/3.14.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/novu.co/novu-api/3.14.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/novu.co/novu-api/3.14.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/novu.co/novu-api/3.14.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/prolific.com/main/1.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/prolific.com/main/1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/prolific.com/main/1.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/prolific.com/main/1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/prolific.com/main/1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "oneof-array-variant-anyof-nullable-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "oneof-array-variant-closed-object-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/zulip.com/zulip/1.0.0/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "passed: check and generation",
+            "blocked: generated item allows extra properties"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/vercel.com/main/0.0.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/telnyx.com/main/2.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/telnyx.com/main/2.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/telnyx.com/main/2.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/telnyx.com/main/2.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/telnyx.com/main/2.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "oneof-array-variant-composed-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/swaggerhub.nexus-gg/attribution/1.6.5/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/swaggerhub.nexus-gg/attribution/1.6.5/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/swaggerhub.nexus-gg/attribution/1.6.5/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/swaggerhub.nexus-gg/attribution/1.6.5/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/swaggerhub.nexus-gg/attribution/1.6.5/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "oneof-array-variant-empty-object-item": {
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/metabase.com/main/v0.57.1-SNAPSHOT/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    },
+    "property-sole-anyof-closed-object-member": {
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "property-sole-anyof-composed-member": {
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "property-sole-anyof-empty-object-member": {
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "property-sole-anyof-struct-member": {
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cloudflare.com/main/4.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/7shifts.com/7-shifts/2023-05-01/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/7shifts.com/7-shifts/2023-05-01/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/7shifts.com/7-shifts/2023-05-01/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/7shifts.com/7-shifts/2023-05-01/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/7shifts.com/7-shifts/2023-05-01/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cpy.re/peertube/7.1.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cpy.re/peertube/7.1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cpy.re/peertube/7.1.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cpy.re/peertube/7.1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cpy.re/peertube/7.1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/griffin.com/main/1.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/griffin.com/main/1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/griffin.com/main/1.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/griffin.com/main/1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/griffin.com/main/1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "cloudflare/api-schemas@f2df0ca75c0fec9047e91a34c20dd666c2dcd1ba/openapi.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "refused: concrete diagnostic below",
+            "not reached"
+          ],
+          "disposition": "fern-rejected",
+          "discarded": false
+        }
+      ]
+    },
+    "property-sole-oneof-closed-object-member": {
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "property-sole-oneof-composed-member": {
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/cvent.com/main/ea/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        }
+      ]
+    },
+    "property-sole-oneof-empty-object-member": {
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": []
+    },
+    "ref-pointer-unnamed-segment": {
+      "selector": "schema.$ref:unnamed-segment",
+      "region": "schemas",
+      "usable_witness": false,
+      "candidates": [
+        {
+          "artifact": "codat.io:accounting/2.1.0",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:assess/1.0",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:bank-feeds/2.1.0",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:banking/2.1.0",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:commerce/2.1.0",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:sync-for-commerce/1.1",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "codat.io:sync-for-expenses/prealpha",
+          "screens": [
+            "blocked: see exact grant finding",
+            "not reached",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/accounting/3.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/clearbooks.co.uk/clear-books-api/1.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/clearbooks.co.uk/clear-books-api/1.0.0/meta/import/input-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/clearbooks.co.uk/clear-books-api/1.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/clearbooks.co.uk/clear-books-api/1.0.0/meta/import/output-entry.json",
+          "screens": [
+            "passed: admitted grant",
+            "passed: pinned publisher trace",
+            "unanswered: no completed check",
+            "not reached"
+          ],
+          "disposition": "search-incomplete",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/clearbooks.co.uk/clear-books-api/1.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/assess/1.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/assess/1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/assess/1.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/assess/1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/assess/1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/bank-feeds/3.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/banking/3.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/banking/3.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/banking/3.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/banking/3.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/banking/3.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/commerce/3.0.0/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/commerce/3.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/commerce/3.0.0/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/commerce/3.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/commerce/3.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-commerce/1.1/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-commerce/1.1/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-commerce/1.1/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-commerce/1.1/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-commerce/1.1/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-expenses/prealpha/meta/import/input-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-expenses/prealpha/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-expenses/prealpha/meta/import/output-bundled.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-expenses/prealpha/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/codat.io/sync-for-expenses/prealpha/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/fareharbor.com/fareharbor-api/1.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/fareharbor.com/fareharbor-api/1.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/fareharbor.com/fareharbor-api/1.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/fareharbor.com/fareharbor-api/1.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/fareharbor.com/fareharbor-api/1.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/icarusapi.keatext.ai/main/2.0.0/meta/import/input-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/icarusapi.keatext.ai/main/2.0.0/meta/import/input-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/icarusapi.keatext.ai/main/2.0.0/meta/import/output-bundle.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/icarusapi.keatext.ai/main/2.0.0/meta/import/output-entry.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        },
+        {
+          "artifact": "openapi/icarusapi.keatext.ai/main/2.0.0/openapi.json",
+          "screens": [
+            "aggregation grant admitted; publisher grant unproven",
+            "blocked: publisher provenance unproven",
+            "not reached",
+            "not reached"
+          ],
+          "disposition": "witness-blocked",
+          "discarded": false
+        }
+      ]
+    }
+  }
+}

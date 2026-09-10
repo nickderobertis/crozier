@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "artifact": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/pandascore.co/2.23.1/openapi.yaml",
+  "artifact_sha256": "c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50",
+  "keys": {
+    "annotated-ref-target-closed-object": 7,
+    "annotated-ref-target-oneof": 4
+  },
+  "aggregation_licence": {
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "evidence": "licences/APIs-guru--openapi-directory--LICENSE"
+  },
+  "prior_candidate_identity": "pandascore.co/2.23.1",
+  "prior_screen": [
+    "`pandascore.co/2.23.1`",
+    "`annotated-ref-target-closed-object`, `annotated-ref-target-oneof`",
+    "blocked: see exact grant finding",
+    "not reached",
+    "not reached",
+    "not reached",
+    "`witness-blocked`",
+    "pandascore.co/2.23.1 (7): discarded at licence screen (no redistribution grant); publisher/ref/Fern not needed. pandascore.co/2.23.1 (4): discarded at licence screen (no redistribution grant); publisher/ref/Fern not needed."
+  ],
+  "prior_evidence": "../../witness-search-redo/candidates.md",
+  "indexed_json_acquisition": "HTTP Error 403: Forbidden",
+  "provenance": "Pinned aggregation bytes verified; publisher equivalence of this YAML and the previously screened JSON has not been established.",
+  "fern": {
+    "status": "not-run",
+    "diagnostic": "Earlier publisher redistribution screen blocks generation."
+  },
+  "comparison": {
+    "status": "not-run",
+    "differing_files": [],
+    "diagnostics": [
+      "No Fern-accepted, retained candidate; no comparison or byte-match claim."
+    ]
+  }
+}

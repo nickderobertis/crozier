@@ -1,0 +1,35 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: __package__.yml -> types -> AddFollowersRequest
+        issue: AddFollowersRequest is already declared in goals.yml
+
+    [error]
+        path: __package__.yml -> types -> ProjectSaveAsTemplateRequest
+        issue: ProjectSaveAsTemplateRequest is already declared in projects.yml
+
+    [error]
+        path: __package__.yml -> types -> RemoveFollowersRequest
+        issue: RemoveFollowersRequest is already declared in goals.yml
+
+Found 3 errors and 0 warnings in 0.002 seconds.
+::error::Found 3 errors and 0 warnings in 0.002 seconds.
+[api]: Warnings for generators.yml:
+::warning title=[api]%3A::Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning title=[api]%3A::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+         ╭────────────────────────────────────────────────────────────╮
+         │                                                            │
+         │                     Upgrades available                     │
+         │                                                            │
+         │                   Fern 5.67.1 → 5.119.2                    │
+         │                (Run fern upgrade to update)                │
+         │       Python SDK (Group: python-sdk) 5.20.0 → 5.30.0       │
+         │                                                            │
+         │   Run fern generator upgrade to upgrade your generators.   │
+         │                                                            │
+         ╰────────────────────────────────────────────────────────────╯
+

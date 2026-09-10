@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "baseline_keys": 26,
+  "baseline_named_keys": 14,
+  "baseline_usable_keys": 0,
+  "statuses": {
+    "inaccessible": 3992,
+    "readable": 2612,
+    "unreadable": 8,
+    "excluded": 2164
+  },
+  "declaring_artifacts": 10,
+  "declaration_rows": 11,
+  "ranked_candidates": 0,
+  "census_instrument_sha256": "032543fecafbc7f4d40b7edfe000d2c7f3418eb49f54c37094556b7fbdc3f390",
+  "census_runner_sha256": "ccb2545ce468eca44b10236b01f9d1a780e5d0c4225092259127c97bb262856c",
+  "catalogue_digest": "dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66",
+  "pinned_blob_verification": {
+    "catalogue_entries": 3992,
+    "verified_alternatives": 3894,
+    "missing_alternatives": 98,
+    "method": "Raw Git blob identity plus SHA-256, at the recorded commit; clean-filter transformations are rejected."
+  },
+  "catalogue_ledger": {
+    "path": "catalogue-entries.tsv.gz",
+    "uncompressed_sha256": "cda40beb0e58626182e0f82b59755adfa751f227e4ca22b0b5e9310bddd19c29",
+    "rows": 3992
+  }
+}

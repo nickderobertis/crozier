@@ -1,0 +1,117 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: PUT /collaborations/{collaboration_id}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+::warning title=[api]%3A::PUT /collaborations/{collaboration_id}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[sdk] 23 errors
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> get_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> post_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> put_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> get_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> post_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> put_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_id"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_name"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_type"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "type"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "login"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "address"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "avatar_url"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "job_title"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "language"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "max_upload_size"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "notification_email"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "phone"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "space_amount"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "space_used"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "timezone"
+
+Found 23 errors and 69 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 23 errors and 69 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+::warning title=[api]%3A::Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning title=[api]%3A::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+         ╭────────────────────────────────────────────────────────────╮
+         │                                                            │
+         │                     Upgrades available                     │
+         │                                                            │
+         │                   Fern 5.67.1 → 5.119.2                    │
+         │                (Run fern upgrade to update)                │
+         │       Python SDK (Group: python-sdk) 5.20.0 → 5.30.0       │
+         │                                                            │
+         │   Run fern generator upgrade to upgrade your generators.   │
+         │                                                            │
+         ╰────────────────────────────────────────────────────────────╯
+

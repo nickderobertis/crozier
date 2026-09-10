@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -37,7 +38,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--schemas",
                 str(REPO / "docs/openapi-surface/schemas.md"),
             ]
-        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
 
     def changed(self, source: Path, old: str, new: str) -> Path:
         directory = Path(tempfile.mkdtemp())
@@ -130,7 +131,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True, errors="backslashreplace", encoding="utf-8",
         )
 
     def test_each_shard_is_independently_valid_and_outcome_invisible(
@@ -192,7 +193,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "--documents",
             f"test={directory}",
         ]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
         rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
         hits = {
@@ -203,7 +204,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
-        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
 
@@ -247,7 +248,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     ],
                     cwd=REPO,
                     capture_output=True,
-                    text=True, encoding="utf-8",
+                    text=True, errors="backslashreplace", encoding="utf-8",
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
@@ -560,7 +561,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
              "--fixture", "paypal-catalog-products", "--json",
              *(arg for selector in keys.values() for arg in ("--selector", selector))],
-            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
+            cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         census = json.loads(result.stdout)
@@ -581,7 +582,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertIn("paypal-catalog-products", entries["anyof-sole-member"][4])
 
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
-        result = self.run_validator(*SHARDS, reconcile=True)
+        supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
+        command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in SHARDS),
+                   "--reconcile", "--schemas", str(REPO / "docs/openapi-surface/schemas.md")]
+        if supplement.is_file():
+            command += ["--supplement-candidates", str(supplement)]
+        result = subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
@@ -659,7 +665,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True, errors="backslashreplace", encoding="utf-8",
         )
         self.assertEqual(2, result.returncode)
         self.assertIn("--reconcile requires --schemas PATH", result.stderr)
@@ -701,6 +707,675 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertIn(
                     message, self.reconcile_documents(completed, bad_schemas).stderr
                 )
+
+class WideWitnessTests(unittest.TestCase):
+    """Acquire pinned bytes and validate reports through the actual CLI boundary."""
+
+    contract_keys = WitnessSearchRedoTests.contract_keys
+    completed_documents = WitnessSearchRedoTests.completed_documents
+
+    def setUp(self) -> None:
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.work = Path(self.directory.name)
+        self.wide = REPO / 'scripts/witness-scrape-wide.py'
+        self.report = self.work / 'report'
+        result = self.cli('derive', '--report', self.report)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.key = next(iter(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys']))
+        self.sha = 'a' * 64
+        self.artifact = 'https://publisher.example/pinned/openapi.json'
+        self.candidate = (
+            '| artifact | keys | redistribution | immutable publisher reference | Fern acceptance | retention | disposition | evidence |\n'
+            '|---|---|---|---|---|---|---|---|\n'
+            f'| `{self.artifact}` | `{self.key}` | passed: grant | passed: immutable publisher | passed: real generation | passed: retained model | `witness-found` | fern.txt |\n'
+        )
+        (self.report / 'candidates.md').write_text(self.candidate, encoding='utf-8')
+        (self.report / 'fern.txt').write_text('Fern evidence: modèle conservé\n', encoding='utf-8')
+        (self.report / 'comparison.txt').write_text('comparison failed: modèle.py differs\n', encoding='utf-8')
+        self.rank_header = 'rank\tartifact_sha256\tartifact\tkeys\tfern_evidence\tcomparison_evidence\n'
+        self.rank_row = f'1\t{self.sha}\t{self.artifact}\t{json.dumps([self.key])}\tfern.txt\tcomparison.txt\n'
+        (self.report / 'ranking.tsv').write_text(self.rank_header + self.rank_row, encoding='utf-8')
+        self.slots_header = '| slot | artifact_sha256 | keys | disposition | evidence |\n|---|---|---|---|---|\n'
+        (self.report / 'slots.md').write_text(self.slots_header, encoding='utf-8')
+        (self.report / 'acquisition.json').write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': self.artifact, 'sha256': self.sha}]}), encoding='utf-8')
+
+    def cli(self, *args) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(self.wide), *(str(a) for a in args)],
+                              cwd=REPO, capture_output=True, errors="backslashreplace", encoding='utf-8')
+
+    def validate(self, *args) -> subprocess.CompletedProcess[str]:
+        return self.cli('validate', '--report', self.report, *args)
+
+    def test_diagnostics_survive_legacy_child_encoding(self) -> None:
+        inventory = self.work / 'inventaire-é.json'
+        inventory.write_text('{}', encoding='utf-8')
+        args = ['acquire', '--inventory', str(inventory), '--cache', str(self.work / 'cache'),
+                '--contract', str(self.report / 'keys.md'), '--output', str(self.work / 'result.json')]
+        env = dict(os.environ, PYTHONIOENCODING='cp1252')
+        refused = subprocess.run([sys.executable, str(self.wide), *args], cwd=REPO,
+                                 capture_output=True, env=env)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn('inventaire-é.json', refused.stderr.decode('utf-8'))
+        # Inject a raw diagnostic at Python startup, while running the actual
+        # acquisition and census unchanged. Native children need not emit UTF-8.
+        startup = self.work / 'startup'
+        startup.mkdir()
+        (startup / 'sitecustomize.py').write_text(
+            "import os\nos.write(2, b'publisher diagnostic: \\xe9\\n')\n", encoding='utf-8')
+        env['PYTHONPATH'] = str(startup)
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': []}), encoding='utf-8')
+        recovered = subprocess.run([sys.executable, str(self.wide), *args], cwd=REPO,
+                                   capture_output=True, env=env)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        result = json.loads((self.work / 'result.json').read_text(encoding='utf-8'))
+        self.assertEqual(0, result['census_exit'])
+        self.assertIn(r'publisher diagnostic: \xe9',
+                      (self.work / 'result.census.log').read_text(encoding='utf-8'))
+
+    def test_derive_preserves_key_specific_screening_metadata(self) -> None:
+        root = self.work / 'history'
+        root.mkdir()
+        shutil.copyfile(CONTRACT, root / 'contract.md')
+        keys = list(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys'])
+        retained, discarded, absent = keys[:3]
+        screens = ['passed: publisher grant', 'passed: pinned publisher', 'passed: generated SDK',
+                   f'passed: retained first model; discarded keys: `{discarded}`']
+        blocked = ['blocked: no publisher grant', 'not reached', 'not reached', 'not reached']
+        table = '\n'.join(self.candidate.splitlines()[:2]) + '\n'
+        table += f'| `publisher/retained-é.json` | `{retained}`, `{discarded}` | ' + ' | '.join(screens) + ' | `witness-found` | evidence.txt |\n'
+        table += f'| `publisher/blocked.json` | `{discarded}` | ' + ' | '.join(blocked) + ' | `witness-blocked` | evidence.txt |\n'
+        (root / 'candidates.md').write_text(table, encoding='utf-8')
+        output = self.work / 'derived'
+        result = self.cli('derive', '--report', output, '--contract', root / 'contract.md')
+        self.assertEqual(0, result.returncode, result.stderr)
+        baseline = json.loads((output / 'baseline.json').read_text(encoding='utf-8'))
+        pin = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, encoding='utf-8').strip()
+        self.assertEqual(pin, baseline['source_commit'])
+        items = baseline['keys']
+        self.assertTrue(items[retained]['usable_witness'])
+        self.assertFalse(items[discarded]['usable_witness'])
+        self.assertFalse(items[absent]['usable_witness'])
+        self.assertEqual([], items[absent]['candidates'])
+        self.assertEqual([{'artifact': 'publisher/retained-é.json', 'screens': screens,
+                           'disposition': 'witness-found', 'discarded': False}], items[retained]['candidates'])
+        self.assertEqual([{'artifact': 'publisher/retained-é.json', 'screens': screens,
+                           'disposition': 'witness-found', 'discarded': True},
+                          {'artifact': 'publisher/blocked.json', 'screens': blocked,
+                           'disposition': 'witness-blocked', 'discarded': False}], items[discarded]['candidates'])
+        # Changing the frozen selector must refuse derivation before writing a report.
+        contract = root / 'contract.md'
+        contract.write_text(contract.read_text(encoding='utf-8').replace('schema.', 'unknown.', 1), encoding='utf-8')
+        refused = self.cli('derive', '--report', self.work / 'refused', '--contract', contract)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('selector', refused.stderr)
+        self.assertFalse((self.work / 'refused').exists())
+
+    def test_inventory_boundary_refusals_precede_acquisition_and_recover(self) -> None:
+        inventory = self.work / 'inventaire-é.json'
+        cache = self.work / 'cache'
+        output = self.work / 'acquisition.json'
+        source = {'artifact': (self.work / 'absent.json').as_uri()}
+        cases = [([], 'expected inventory'), ({}, 'expected inventory'),
+                 ({'schema_version': 2, 'sources': []}, 'expected inventory'),
+                 ({'schema_version': 1, 'sources': {}}, 'expected inventory')]
+        for row in (None, {}, {'artifact': ''}, {'artifact': 7}):
+            cases.append(({'schema_version': 1, 'sources': [row]}, 'missing artifact identity'))
+        cases.append(({'schema_version': 1, 'sources': [source, source]}, 'duplicate artifact'))
+        for field in ('sha256', 'prior_sha256'):
+            for value in ('A' * 64, 'a' * 63, 42):
+                cases.append(({'schema_version': 1, 'sources': [dict(source, **{field: value})]}, f'malformed {field}'))
+        args = ('acquire', '--inventory', inventory, '--cache', cache,
+                '--contract', self.report / 'keys.md', '--output', output)
+        for invalid, message in cases:
+            with self.subTest(invalid=invalid):
+                inventory.write_text(json.dumps(invalid), encoding='utf-8')
+                refused = self.cli(*args)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(message, refused.stderr)
+                self.assertIn('inventaire-é.json', refused.stderr)
+                self.assertFalse(cache.exists())
+                self.assertFalse(output.exists())
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [source]}), encoding='utf-8')
+        recovered = self.cli(*args)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual('inaccessible', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['status'])
+
+    def test_real_report_validator_rejects_contract_drift_and_recovers(self) -> None:
+        good = self.validate()
+        self.assertEqual(0, good.returncode, good.stderr)
+        changes = [
+            ('candidates.md', self.candidate.replace('witness-found', 'invented'), 'unknown candidate disposition'),
+            ('ranking.tsv', self.rank_header + self.rank_row * 2, 'duplicate rank'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace('1\t', '0\t', 1), 'malformed'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace(self.key, 'unknown-key'), 'unknown keys'),
+            ('ranking.tsv', self.rank_header + self.rank_row.replace('fern.txt', 'absent-é.txt'), 'absent-é.txt'),
+            ('keys.md', (self.report / 'keys.md').read_text(encoding='utf-8').replace('schema.', 'invented.', 1), 'selector'),
+            ('candidates.md', self.candidate.replace('passed: retained model', f'passed: other model; discarded keys: `{self.key}`'), 'retained candidate screens'),
+        ]
+        for filename, text, message in changes:
+            with self.subTest(message=message):
+                path = self.report / filename
+                old = path.read_text(encoding='utf-8')
+                path.write_text(text, encoding='utf-8')
+                failed = self.validate()
+                self.assertNotEqual(0, failed.returncode)
+                self.assertIn(message, failed.stderr)
+                path.write_text(old, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_report_table_failures_identify_the_broken_contract_and_recover(self) -> None:
+        candidate_row = self.candidate.splitlines()[-1] + '\n'
+        exhausted = '| slot-1 | — | [] | exhausted | comparison.txt |\n'
+        baseline = json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))
+        baseline['schema_version'] = 2
+        changes = [
+            ('baseline.json', json.dumps(baseline), 'baseline schema_version must be 1'),
+            ('candidates.md', self.candidate.replace('redistribution', 'grant'), 'candidate header'),
+            ('candidates.md', self.candidate.replace(' | fern.txt |', ' |'), 'eight columns'),
+            ('candidates.md', self.candidate.replace('passed: grant', ''), 'missing a screen state'),
+            ('candidates.md', self.candidate + candidate_row, 'duplicate candidate artifact'),
+            ('candidates.md', self.candidate.replace(self.key, 'unknown-key'), 'candidate has unknown keys'),
+            ('ranking.tsv', (self.rank_header + self.rank_row).replace('rank\t', 'position\t', 1), 'ranking header'),
+            ('slots.md', self.slots_header.replace('disposition', 'result'), 'slot header'),
+            ('slots.md', self.slots_header + exhausted.replace(' | comparison.txt |', ' |'), 'five columns'),
+            ('slots.md', self.slots_header + exhausted * 2, 'duplicate or empty slot'),
+            ('slots.md', self.slots_header + exhausted.replace('slot-1', ''), 'duplicate or empty slot'),
+            ('slots.md', self.slots_header + exhausted.replace('exhausted', 'invented'), 'unknown slot disposition'),
+            ('slots.md', self.slots_header + exhausted.replace('—', self.sha), 'absent artifact and keys'),
+            ('slots.md', self.slots_header + exhausted.replace('[]', json.dumps([self.key])), 'absent artifact and keys'),
+        ]
+        for filename, broken, diagnostic in changes:
+            with self.subTest(diagnostic=diagnostic, broken=broken):
+                path = self.report / filename
+                original = path.read_text(encoding='utf-8')
+                path.write_text(broken, encoding='utf-8')
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(diagnostic, refused.stderr)
+                path.write_text(original, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_slots_reject_conflicting_claims_and_accept_exhaustion(self) -> None:
+        path = self.report / 'slots.md'
+        row = f'| slot-1 | {self.sha} | {json.dumps([self.key])} | registered | comparison.txt |\n'
+        path.write_text(self.slots_header + row, encoding='utf-8')
+        self.assertEqual(0, self.validate().returncode)
+        path.write_text(self.slots_header + row + row.replace('slot-1', 'slot-2'), encoding='utf-8')
+        failed = self.validate()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('conflicting slot claim', failed.stderr)
+        path.write_text(self.slots_header + '| slot-1 | — | [] | exhausted | comparison.txt |\n', encoding='utf-8')
+        self.assertEqual(0, self.validate().returncode)
+
+    def multiple_ranked_candidates(self) -> tuple[list[tuple[str, str, list[str]]], list[str]]:
+        keys = list(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys'])[:2]
+        # Expected order is explicit: coverage beats firmness, then firmness beats
+        # the digest, and the equal-firmness pair is ordered by ascending digest.
+        definitions = [('d', keys, 0), ('b', keys[:1], 2), ('a', keys[:1], 1), ('c', keys[:1], 1)]
+        header = self.candidate.splitlines()[:2]
+        candidates = []
+        sources = []
+        for label, owned, firmness in definitions:
+            sha = label * 64
+            artifact = f'https://publisher.example/{"1" * 40}/{label}/openapi.json'
+            candidates.append((sha, artifact, owned))
+            header.append(f'| `{artifact}` | ' + ', '.join(f'`{key}`' for key in owned) + ' | passed: grant | passed: publisher pin | passed: generation | passed: retained model | `witness-found` | fern.txt |')
+            row = {'artifact': artifact, 'sha256': sha, 'ref': '1' * 40,
+                   'repository': 'APIs-guru/openapi-directory' if firmness == 0 else 'publisher/api',
+                   'status': 'readable', 'document': sha + '.json'}
+            row['repository_licences'] = [{'evidence': 'fern.txt'}]
+            if firmness in {0, 2}:
+                row['document_license'] = {'name': 'Document grant'}
+            sources.append(row)
+        # A retained provenance alias uses the existing byte rank, never a fifth rank.
+        alias = 'https://publisher.example/' + '1' * 40 + '/mirror-b/openapi.json'
+        header.append(f'| `{alias}` | `{keys[0]}` | passed: grant | passed: publisher pin | passed: generation | passed: retained model | `witness-found` | fern.txt |')
+        sources.append(dict(sources[1], artifact=alias))
+        (self.report / 'candidates.md').write_text('\n'.join(header) + '\n', encoding='utf-8')
+        (self.report / 'acquisition.json').write_text(json.dumps({'schema_version': 1, 'sources': sources}), encoding='utf-8')
+        self.write_ranks(candidates)
+        return candidates, keys
+
+    def write_ranks(self, candidates: list[tuple[str, str, list[str]]], ranks: list[int] | None = None) -> None:
+        numbers = ranks if ranks is not None else list(range(1, len(candidates) + 1))
+        rows = [f'{rank}\t{sha}\t{artifact}\t{json.dumps(keys)}\tfern.txt\tcomparison.txt\n'
+                for rank, (sha, artifact, keys) in zip(numbers, candidates)]
+        (self.report / 'ranking.tsv').write_text(self.rank_header + ''.join(rows), encoding='utf-8')
+
+    def test_ranked_bytes_must_match_acquisition_and_allow_provenance_aliases(self) -> None:
+        import hashlib
+        spec = self.work / 'publisher.json'
+        alias = self.work / 'miroir-é.json'
+        spec.write_text('{"openapi":"3.0.3","info":{"title":"Publisher","version":"1"},"paths":{}}', encoding='utf-8')
+        alias.write_bytes(spec.read_bytes())
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': path.as_uri(), 'sha256': sha} for path in (spec, alias)]}), encoding='utf-8')
+        acquisition = self.report / 'acquisition.json'
+        acquired = self.cli('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                            '--contract', self.report / 'keys.md', '--output', acquisition)
+        self.assertEqual(0, acquired.returncode, acquired.stderr)
+        original = acquisition.read_text(encoding='utf-8')
+        candidates = self.candidate.replace(self.artifact, spec.as_uri())
+        candidates += self.candidate.splitlines()[-1].replace(self.artifact, alias.as_uri()) + '\n'
+        (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+        slots = self.report / 'slots.md'
+        for identity in (spec.as_uri(), alias.as_uri()):
+            with self.subTest(identity=identity):
+                acquisition.write_text(original, encoding='utf-8')
+                (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+                self.write_ranks([(sha, identity, [self.key])])
+                slots.write_text(self.slots_header + f'| slot-1 | {sha} | {json.dumps([self.key])} | registered | comparison.txt |\n', encoding='utf-8')
+                valid = self.validate()
+                self.assertEqual(0, valid.returncode, valid.stderr)
+                substituted = 'f' * 64
+                self.assertNotEqual(sha, substituted)
+                self.write_ranks([(substituted, identity, [self.key])])
+                slots.write_text(slots.read_text(encoding='utf-8').replace(sha, substituted), encoding='utf-8')
+                # Keep only the ranked candidate so alias-completeness checks
+                # cannot accidentally catch the unrelated digest substitution.
+                (self.report / 'candidates.md').write_text(self.candidate.replace(self.artifact, identity), encoding='utf-8')
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranked digest differs from acquisition', refused.stderr)
+                self.assertIn(identity, refused.stderr)
+                self.write_ranks([(sha, identity, [self.key])])
+                slots.write_text(self.slots_header, encoding='utf-8')
+                for missing_digest in (False, True):
+                    data = json.loads(original)
+                    if missing_digest:
+                        next(row for row in data['sources'] if row['artifact'] == identity).pop('sha256')
+                    else:
+                        data['sources'] = [row for row in data['sources'] if row['artifact'] != identity]
+                    acquisition.write_text(json.dumps(data), encoding='utf-8')
+                    refused = self.validate()
+                    self.assertNotEqual(0, refused.returncode)
+                    self.assertIn('ranked artifact lacks acquisition digest', refused.stderr)
+                acquisition.unlink()
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranked artifact lacks acquisition digest', refused.stderr)
+                acquisition.write_text(original, encoding='utf-8')
+                (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+                recovered = self.validate()
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_multiple_ranks_freeze_coverage_firmness_and_digest_order(self) -> None:
+        candidates, _keys = self.multiple_ranked_candidates()
+        valid = self.validate()
+        self.assertEqual(0, valid.returncode, valid.stderr)
+        for first, second, reason in [(0, 1, 'coverage'), (1, 2, 'firmness'), (2, 3, 'digest')]:
+            with self.subTest(reason=reason):
+                wrong = list(candidates)
+                wrong[first], wrong[second] = wrong[second], wrong[first]
+                self.write_ranks(wrong)
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranking violates', refused.stderr)
+        self.write_ranks(candidates, [1, 2, 3, 5])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('ranks must be contiguous', refused.stderr)
+        self.write_ranks(candidates[:-1])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('retained candidate missing rank', refused.stderr)
+        alias = 'https://publisher.example/' + '1' * 40 + '/mirror-b/openapi.json'
+        self.write_ranks(candidates + [(candidates[1][0], alias, candidates[1][2])])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('duplicate ranked digest', refused.stderr)
+        self.write_ranks(candidates)
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_blocked_slots_do_not_claim_keys_but_registered_slots_cannot_conflict(self) -> None:
+        candidates, keys = self.multiple_ranked_candidates()
+        path = self.report / 'slots.md'
+        blocked = f'| slot-1 | {candidates[0][0]} | {json.dumps(keys[:1])} | blocked | comparison.txt |\n'
+        registered = f'| slot-2 | {candidates[1][0]} | {json.dumps(keys[:1])} | registered | comparison.txt |\n'
+        path.write_text(self.slots_header + blocked + registered, encoding='utf-8')
+        valid = self.validate()
+        self.assertEqual(0, valid.returncode, valid.stderr)
+        path.write_text(self.slots_header + blocked.replace('| blocked |', '| registered |') + registered, encoding='utf-8')
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('conflicting registered key claims', refused.stderr)
+        path.write_text(self.slots_header + blocked + registered, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_supplements_are_optional_additive_and_discarded_keys_do_not_pass(self) -> None:
+        shards, schemas = self.completed_documents()
+        key = self.contract_keys()[0][0]
+        supplemental = self.work / 'supplement.md'
+        supplemental.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
+        command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in shards),
+                   '--reconcile', '--schemas', str(schemas), '--candidates', str(schemas.parent / 'candidates.md')]
+        run = lambda extra: subprocess.run(command + extra, cwd=REPO, capture_output=True, errors="backslashreplace", encoding='utf-8')
+        self.assertEqual(0, run([]).returncode)
+        supplement = ['--supplement-candidates', str(supplemental)]
+        self.assertIn("expected 'witness-found'", run(supplement).stderr)
+        schemas.write_text(schemas.read_text(encoding='utf-8').replace('search outcome `search-incomplete`', 'search outcome `witness-found`', 1), encoding='utf-8')
+        self.assertEqual(0, run(supplement * 2).returncode)
+        self.assertNotEqual(0, run([]).returncode)
+        supplemental.write_text(supplemental.read_text(encoding='utf-8').replace('passed: retained model', f'passed: other model; discarded keys: `{key}`'), encoding='utf-8')
+        self.assertIn("expected 'search-incomplete'", run(supplement).stderr)
+        missing = self.work / 'absent-supplément.md'
+        missing_args = ['--supplement-candidates', str(missing)]
+        refused = run(missing_args)
+        self.assertEqual(2, refused.returncode)
+        self.assertIn('requires a candidate file', refused.stderr)
+        missing.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
+        self.assertEqual(0, run(missing_args).returncode)
+
+    def test_acquisition_uses_real_files_cache_and_census_with_failure_recovery(self) -> None:
+        (self.report / 'ranking.tsv').write_text(self.rank_header, encoding='utf-8')
+        (self.report / 'candidates.md').write_text('\n'.join(self.candidate.splitlines()[:2]) + '\n', encoding='utf-8')
+        import hashlib
+        spec = self.work / 'publisher.yaml'  # publisher suffix may disagree with unchanged JSON bytes
+        spec.write_text(json.dumps({'openapi': '3.0.3', 'info': {'title': 'Réel', 'version': '1'},
+                                    'paths': {}, 'components': {'schemas': {'Sample': {'properties': {'x': {'anyOf': [{'type': 'object', 'properties': {'value': {'type': 'string'}}}]}}}}}}), encoding='utf-8')
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        malformed = self.work / 'malformé.json'
+        malformed.write_text('{é', encoding='utf-8')
+        legacy = self.work / 'legacy.json'
+        legacy.write_text(json.dumps({'swagger': '2.0', 'info': {'title': 'Legacy', 'version': '1'}, 'paths': {}}), encoding='utf-8')
+        metadata = self.work / 'versions.json'
+        metadata.write_text('{"versions": ["1", "2"]}', encoding='utf-8')
+        inventory = self.work / 'inventory.json'
+        rows = [{'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': sha},
+                {'artifact': malformed.as_uri()}, {'artifact': (self.work / 'absent.json').as_uri()},
+                {'artifact': legacy.as_uri()}, {'artifact': metadata.as_uri()}]
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': rows}), encoding='utf-8')
+        import gzip
+        compressed = inventory.with_suffix('.json.gz')
+        compressed.write_bytes(gzip.compress(inventory.read_bytes(), mtime=0))
+        inventory = compressed
+        cache = self.work / 'cache'
+        output = self.report / 'acquisition.json'
+        args = ('acquire', '--inventory', inventory, '--cache', cache,
+                '--contract', self.report / 'keys.md', '--output', output)
+        for workers in ('0', '-1'):
+            refused = self.cli(*args, '--workers', workers)
+            self.assertNotEqual(0, refused.returncode)
+            self.assertIn('workers must be positive', refused.stderr)
+            self.assertFalse(cache.exists(), 'invalid worker counts must not start acquisition')
+        args += ('--workers', '2')
+        first = self.cli(*args)
+        self.assertEqual(0, first.returncode, first.stderr)
+        outcomes = json.loads(output.read_text(encoding='utf-8'))['sources']
+        self.assertEqual(['readable', 'unreadable', 'inaccessible', 'excluded', 'excluded'], [r['status'] for r in outcomes])
+        for excluded in outcomes[3:]:
+            self.assertIn('no conversion performed', excluded['diagnostic'])
+            self.assertNotIn('document', excluded)
+        self.assertEqual('newly-fetched', outcomes[0]['acquisition'])
+        self.assertEqual(sha + '.json', outcomes[0]['document'])
+        self.assertNotIn('document_license', outcomes[0])
+        self.assertIn('property-sole-anyof-struct-member', output.with_suffix('.census.tsv').read_text(encoding='utf-8'))
+        self.assertEqual(0, self.validate('--inventory', inventory).returncode)
+        spec.unlink()  # exact cached bytes still support a real census offline
+        second = self.cli(*args)
+        self.assertEqual(0, second.returncode, second.stderr)
+        self.assertEqual('verified-reuse', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['acquisition'])
+        (cache / sha).write_bytes(b'changed cached bytes')
+        third = self.cli(*args)
+        self.assertEqual(0, third.returncode, third.stderr)
+        self.assertEqual('inaccessible', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['status'])
+        spec.write_text('{"openapi":"3.1.0"}', encoding='utf-8')
+        self.assertEqual(0, self.cli(*args).returncode)
+        measured = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual('digest-changed', measured['sources'][0]['status'])
+        measured['sources'].pop()
+        output.write_text(json.dumps(measured), encoding='utf-8')
+        partial = self.validate('--inventory', inventory)
+        self.assertNotEqual(0, partial.returncode)
+        self.assertIn('partial inventory', partial.stderr)
+
+    def test_changed_publisher_bytes_record_the_document_licence(self) -> None:
+        import hashlib
+        spec = self.work / 'publisher.json'
+        document = {'openapi': '3.0.3', 'info': {'title': 'Éditeur', 'version': '2',
+                    'license': {'name': 'Publisher grant', 'url': 'https://publisher.example/grant'}}, 'paths': {}}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': '0' * 64}]}), encoding='utf-8')
+        output = self.work / 'acquisition.json'
+        run = self.cli('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                       '--contract', self.report / 'keys.md', '--output', output)
+        self.assertEqual(0, run.returncode, run.stderr)
+        row = json.loads(output.read_text(encoding='utf-8'))['sources'][0]
+        self.assertEqual('readable', row['status'])
+        self.assertEqual('changed-bytes', row['prior_relation'])
+        self.assertEqual(sha, row['sha256'])
+        self.assertEqual(document['info']['license'], row.get('document_license'))
+
+    def test_acquisition_preserves_failed_real_census_logs_and_recovers(self) -> None:
+        # JSON decoding succeeds, but a deeply nested schema exceeds the real
+        # census walk's recursion depth. No substitute census process is used.
+        spec = self.work / 'profond.json'
+        schema = {'type': 'string'}
+        for _ in range(700):
+            schema = {'items': schema}
+        document = {'openapi': '3.0.3', 'info': {'title': 'Profond', 'version': '1'},
+                    'paths': {}, 'components': {'schemas': {'Deep': schema}}}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [{'artifact': spec.as_uri()}]}), encoding='utf-8')
+        output = self.work / 'acquisition.json'
+        args = ('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                '--contract', self.report / 'keys.md', '--output', output)
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('census failed; see', refused.stderr)
+        self.assertIn(str(output.with_suffix('.census.log')), refused.stderr)
+        recorded = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual('readable', recorded['sources'][0]['status'])
+        self.assertNotEqual(0, recorded['census_exit'])
+        self.assertIn('RecursionError', output.with_suffix('.census.log').read_text(encoding='utf-8'))
+        document['components']['schemas']['Deep'] = {'type': 'string'}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        recovered = self.cli(*args)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual(0, json.loads(output.read_text(encoding='utf-8'))['census_exit'])
+
+    def test_index_tree_joins_every_version_to_verified_git_bytes(self) -> None:
+        import hashlib
+        tree = self.work / 'tree'
+        tree.mkdir()
+        def git(*args):
+            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, errors="backslashreplace", encoding='utf-8', check=True)
+        git('init', '-q')
+        # The fixture represents literal publisher bytes, independent of the
+        # host's Git defaults. The CRLF rejection is exercised explicitly below.
+        git('config', 'core.autocrlf', 'false')
+        git('config', 'user.name', 'Witness test')
+        git('config', 'user.email', 'witness@example.invalid')
+        path = tree / 'APIs/publisher/1/openapi.yaml'
+        path.parent.mkdir(parents=True)
+        path.write_bytes('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n'.encode('utf-8'))
+        git('add', 'APIs')
+        git('commit', '-qm', 'test: record publisher tree')
+        pin = git('rev-parse', 'HEAD').stdout.strip()
+        index = self.work / 'list.json'
+        index.write_text(json.dumps({'publisher': {'versions': {
+            '1': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.json', 'swaggerYamlUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.yaml'},
+            '2': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/2/openapi.json'}
+        }}}), encoding='utf-8')
+        output = self.work / 'associated.json'
+        args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
+                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--local-paths', '--output', output)
+        wrong_pin = list(args)
+        wrong_pin[wrong_pin.index('--ref') + 1] = '0' * 40
+        refused = self.cli(*wrong_pin)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('tree commit differs from the requested pin', refused.stderr)
+        self.assertFalse(output.exists())
+        result = self.cli(*args)
+        self.assertEqual(0, result.returncode, result.stderr)
+        measured = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual(1, measured['schema_version'])
+        self.assertEqual(2, len(measured['sources']))
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured['sources'][0]['prior_sha256'])
+        self.assertIn('absent from pinned', measured['sources'][1]['tree_diagnostic'])
+        self.assertEqual(str(path.resolve()), measured['sources'][0].get('local_path'))
+        local_inventory = self.work / 'local-inventory.json'
+        local_inventory.write_text(json.dumps({'schema_version': 1, 'sources': [measured['sources'][0]]}), encoding='utf-8')
+        local_output = self.work / 'local-acquisition.json'
+        acquire = self.cli('acquire', '--inventory', local_inventory, '--cache', self.work / 'local-cache',
+                           '--contract', self.report / 'keys.md', '--output', local_output, '--workers', '2')
+        self.assertEqual(0, acquire.returncode, acquire.stderr)
+        acquired = json.loads(local_output.read_text(encoding='utf-8'))['sources'][0]
+        self.assertEqual('readable', acquired['status'])
+        self.assertEqual(measured['sources'][0]['sha256'], acquired['sha256'])
+        self.assertEqual(path.read_bytes(), (self.work / 'local-cache' / acquired['sha256']).read_bytes())
+        self.assertTrue(local_output.with_suffix('.census.tsv').read_text(encoding='utf-8').startswith('source\tkey\tselector'))
+        path.write_text('changed: bytes\n', encoding='utf-8')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('changed bytes', refused.stderr)
+        git('restore', 'APIs')
+        self.assertEqual(0, self.cli(*args).returncode)
+        original_bytes = path.read_bytes()
+        git('config', 'core.autocrlf', 'true')
+        path.write_bytes(original_bytes.replace(b'\n', b'\r\n'))
+        git('diff', '--quiet', 'HEAD', '--', 'APIs')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('changed literal bytes', refused.stderr)
+        git('config', 'core.autocrlf', 'false')
+        path.write_bytes(original_bytes)
+        self.assertEqual(0, self.cli(*args).returncode)
+        index.write_text('{}', encoding='utf-8')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('catalogue digest changed', refused.stderr)
+
+    def test_committed_wide_report(self) -> None:
+        root = REPO / 'docs/openapi-surface/witness-scrape-wide'
+        result = self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_consolidated_report_rejects_lost_screens_and_census_evidence(self) -> None:
+        import gzip
+        import hashlib
+        root = self.work / 'consolidated'
+        shutil.copytree(REPO / 'docs/openapi-surface/witness-scrape-wide', root)
+        run = lambda: self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
+        good = run()
+        self.assertEqual(0, good.returncode, good.stderr)
+        candidates = root / 'candidates.md'
+        original = candidates.read_text(encoding='utf-8')
+        row = next(line for line in original.splitlines(keepends=True) if line.startswith('| `'))
+        candidates.write_text(original.replace(row, '', 1), encoding='utf-8')
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('missing completed or blocked screens', failed.stderr)
+        candidates.write_text(original, encoding='utf-8')
+        owned = re.findall(r'`([^`]+)`', row.split('|')[2])
+        known = json.loads((root / 'baseline.json').read_text(encoding='utf-8'))['keys']
+        other = next(key for key in known if key not in owned)
+        candidates.write_text(original.replace(row, row.replace(f'`{owned[0]}`', f'`{other}`', 1), 1), encoding='utf-8')
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('candidate keys disagree with measured declarations', failed.stderr)
+        candidates.write_text(original, encoding='utf-8')
+        evidence = root / 'publisher-census.tsv'
+        content = evidence.read_bytes()
+        evidence.unlink()
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('missing or outside-report evidence', failed.stderr)
+        evidence.write_bytes(content)
+        acquisition = root / 'acquisition.json.gz'
+        original_acquisition = acquisition.read_bytes()
+        outcome = json.loads(gzip.decompress(original_acquisition))
+        catalogue = root / 'catalogue-census.tsv'
+        # Restore the exact hashed evidence, without platform newline rewriting.
+        catalogue_bytes = catalogue.read_bytes()
+        catalogue.write_bytes(catalogue_bytes.replace(b'schema.', b'unknown.', 1))
+        for record in outcome['census_runs']:
+            if record['stdout'] == catalogue.name:
+                record['stdout_sha256'] = hashlib.sha256(catalogue.read_bytes()).hexdigest()
+        acquisition.write_bytes(gzip.compress(json.dumps(outcome).encode('utf-8'), mtime=0))
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('unknown document, selector or key', failed.stderr)
+        catalogue.write_bytes(catalogue_bytes)
+        acquisition.write_bytes(original_acquisition)
+        recovered = run()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_consolidated_report_rejects_corrupt_accounting_and_recovers(self) -> None:
+        import gzip
+        import hashlib
+        root = self.work / 'consolidated'
+        shutil.copytree(REPO / 'docs/openapi-surface/witness-scrape-wide', root)
+        run = lambda: self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
+        fingerprints = root / 'historical-sha256.tsv'
+        original_fingerprints = fingerprints.read_text(encoding='utf-8')
+        lines = original_fingerprints.splitlines()
+        cells = lines[1].split('\t')
+        header = lines[0].split('\t')
+        cells[header.index('sha256')] = '0' * 64
+        lines[1] = '\t'.join(cells)
+        fingerprints.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+        refused = run()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('historical report bytes changed', refused.stderr)
+        fingerprints.write_text(original_fingerprints, encoding='utf-8')
+        acquisition = root / 'acquisition.json.gz'
+        original = acquisition.read_bytes()
+        for mode, message in [
+            ('outcome', 'missing acquisition outcome'),
+            ('diagnostic', 'failed acquisition missing diagnostic'),
+            ('runs', 'missing census runs'),
+            ('exit', 'unfinished or failed census'),
+            ('digest', 'census evidence digest changed'),
+            ('header', 'census evidence header changed'),
+            ('count', 'invalid declaration count'),
+        ]:
+            with self.subTest(mode=mode):
+                data = json.loads(gzip.decompress(original))
+                catalogue = root / 'catalogue-census.tsv'
+                census_bytes = catalogue.read_bytes()
+                if mode == 'outcome':
+                    data['sources'][0].pop('status')
+                elif mode == 'diagnostic':
+                    failed = next(row for row in data['sources'] if row['status'] != 'readable')
+                    failed.pop('diagnostic')
+                elif mode == 'runs':
+                    data['census_runs'] = []
+                elif mode == 'exit':
+                    data['census_runs'][0]['exit_code'] = 1
+                elif mode == 'digest':
+                    data['census_runs'][0]['stdout_sha256'] = '0' * 64
+                else:
+                    rows = census_bytes.decode('utf-8').splitlines()
+                    if mode == 'header':
+                        rows[0] = rows[0].replace('count', 'total')
+                    else:
+                        cells = rows[1].split('\t')
+                        cells[-1] = '0'
+                        rows[1] = '\t'.join(cells)
+                    catalogue.write_text('\n'.join(rows) + '\n', encoding='utf-8')
+                    record = next(row for row in data['census_runs'] if row['stdout'] == catalogue.name)
+                    record['stdout_sha256'] = hashlib.sha256(catalogue.read_bytes()).hexdigest()
+                acquisition.write_bytes(gzip.compress(json.dumps(data).encode('utf-8'), mtime=0))
+                refused = run()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(message, refused.stderr)
+                catalogue.write_bytes(census_bytes)
+                acquisition.write_bytes(original)
+        recovered = run()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
 
 
 if __name__ == "__main__":

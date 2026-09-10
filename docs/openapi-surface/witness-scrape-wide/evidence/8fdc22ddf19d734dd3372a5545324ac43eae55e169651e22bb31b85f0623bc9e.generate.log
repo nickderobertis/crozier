@@ -1,0 +1,65 @@
+generate-fern-fixture: running Fern (python-sdk@5.20.0) locally...
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/tmp.JjFVX4t8Mb/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk PUT /collaborations/{collaboration_id}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+::warning title=[api]%3A python-sdk::PUT /collaborations/{collaboration_id}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+                  events.yml
+                  [error] Example is missing required property "response.body.entries.0.source.item_id"
+                  [error] Example is missing required property "response.body.entries.0.source.item_name"
+                  [error] Example is missing required property "response.body.entries.0.source.item_type"
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "type"
+                  [error] Unexpected property "login"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "address"
+                  [error] Unexpected property "avatar_url"
+                  [error] Unexpected property "job_title"
+                  [error] Unexpected property "language"
+                  [error] Unexpected property "max_upload_size"
+                  [error] Unexpected property "notification_email"
+                  [error] Unexpected property "phone"
+                  [error] Unexpected property "space_amount"
+                  [error] Unexpected property "space_used"
+                  [error] Unexpected property "timezone"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> get_events -> examples[0] -> response%0Aevents.yml%0A[error] Example is missing required property "response.body.entries.0.source.item_id"%0A[error] Example is missing required property "response.body.entries.0.source.item_name"%0A[error] Example is missing required property "response.body.entries.0.source.item_type"%0A[error] Unexpected property "id"%0A[error] Unexpected property "type"%0A[error] Unexpected property "login"%0A[error] Unexpected property "name"%0A[error] Unexpected property "address"%0A[error] Unexpected property "avatar_url"%0A[error] Unexpected property "job_title"%0A[error] Unexpected property "language"%0A[error] Unexpected property "max_upload_size"%0A[error] Unexpected property "notification_email"%0A[error] Unexpected property "phone"%0A[error] Unexpected property "space_amount"%0A[error] Unexpected property "space_used"%0A[error] Unexpected property "timezone"
+[api]: python-sdk classificationsOnFiles.yml -> service -> endpoints -> get_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFiles.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFiles.yml -> service -> endpoints -> get_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFiles.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk classificationsOnFolders.yml -> service -> endpoints -> get_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFolders.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFolders.yml -> service -> endpoints -> get_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFolders.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk classificationsOnFiles.yml -> service -> endpoints -> post_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFiles.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFiles.yml -> service -> endpoints -> post_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFiles.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk classificationsOnFolders.yml -> service -> endpoints -> post_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFolders.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFolders.yml -> service -> endpoints -> post_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFolders.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk classificationsOnFiles.yml -> service -> endpoints -> put_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFiles.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFiles.yml -> service -> endpoints -> put_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFiles.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk classificationsOnFolders.yml -> service -> endpoints -> put_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+                  classificationsOnFolders.yml
+                  [error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+                  
+::error title=[api]%3A python-sdk::classificationsOnFolders.yml -> service -> endpoints -> put_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response%0AclassificationsOnFolders.yml%0A[error] Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+[api]: python-sdk Found 23 errors and 69 warnings in 0.722 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 23 errors and 69 warnings in 0.722 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
