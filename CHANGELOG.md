@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.75](https://github.com/nickderobertis/crozier/compare/v0.0.74...v0.0.75) - 2026-09-10
+
+### Fixed
+
+- *(surface)* let screened witnesses settle incomplete searches ([#262](https://github.com/nickderobertis/crozier/pull/262))
+
 ## [0.0.74](https://github.com/nickderobertis/crozier/compare/v0.0.73...v0.0.74) - 2026-09-09
 
 ### Other
