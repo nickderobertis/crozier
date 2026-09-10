@@ -1193,11 +1193,14 @@ class WideWitnessTests(unittest.TestCase):
         def git(*args):
             return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, errors="backslashreplace", encoding='utf-8', check=True)
         git('init', '-q')
+        # The fixture represents literal publisher bytes, independent of the
+        # host's Git defaults. The CRLF rejection is exercised explicitly below.
+        git('config', 'core.autocrlf', 'false')
         git('config', 'user.name', 'Witness test')
         git('config', 'user.email', 'witness@example.invalid')
         path = tree / 'APIs/publisher/1/openapi.yaml'
         path.parent.mkdir(parents=True)
-        path.write_text('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n', encoding='utf-8')
+        path.write_bytes('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n'.encode('utf-8'))
         git('add', 'APIs')
         git('commit', '-qm', 'test: record publisher tree')
         pin = git('rev-parse', 'HEAD').stdout.strip()
@@ -1295,8 +1298,9 @@ class WideWitnessTests(unittest.TestCase):
         original_acquisition = acquisition.read_bytes()
         outcome = json.loads(gzip.decompress(original_acquisition))
         catalogue = root / 'catalogue-census.tsv'
-        text = catalogue.read_text(encoding='utf-8')
-        catalogue.write_text(text.replace('schema.', 'unknown.', 1), encoding='utf-8')
+        # Restore the exact hashed evidence, without platform newline rewriting.
+        catalogue_bytes = catalogue.read_bytes()
+        catalogue.write_bytes(catalogue_bytes.replace(b'schema.', b'unknown.', 1))
         for record in outcome['census_runs']:
             if record['stdout'] == catalogue.name:
                 record['stdout_sha256'] = hashlib.sha256(catalogue.read_bytes()).hexdigest()
@@ -1304,7 +1308,7 @@ class WideWitnessTests(unittest.TestCase):
         failed = run()
         self.assertNotEqual(0, failed.returncode)
         self.assertIn('unknown document, selector or key', failed.stderr)
-        catalogue.write_text(text, encoding='utf-8')
+        catalogue.write_bytes(catalogue_bytes)
         acquisition.write_bytes(original_acquisition)
         recovered = run()
         self.assertEqual(0, recovered.returncode, recovered.stderr)
