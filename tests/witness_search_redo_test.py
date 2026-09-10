@@ -781,6 +781,86 @@ class WideWitnessTests(unittest.TestCase):
         path.write_text(self.slots_header + '| slot-1 | — | [] | exhausted | comparison.txt |\n', encoding='utf-8')
         self.assertEqual(0, self.validate().returncode)
 
+    def multiple_ranked_candidates(self) -> tuple[list[tuple[str, str, list[str]]], list[str]]:
+        keys = list(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys'])[:2]
+        # Expected order is explicit: coverage beats firmness, then firmness beats
+        # the digest, and the equal-firmness pair is ordered by ascending digest.
+        definitions = [('d', keys, 0), ('b', keys[:1], 2), ('a', keys[:1], 1), ('c', keys[:1], 1)]
+        header = self.candidate.splitlines()[:2]
+        candidates = []
+        sources = []
+        for label, owned, firmness in definitions:
+            sha = label * 64
+            artifact = f'https://publisher.example/{"1" * 40}/{label}/openapi.json'
+            candidates.append((sha, artifact, owned))
+            header.append(f'| `{artifact}` | ' + ', '.join(f'`{key}`' for key in owned) + ' | passed: grant | passed: publisher pin | passed: generation | passed: retained model | `witness-found` | fern.txt |')
+            row = {'artifact': artifact, 'sha256': sha, 'ref': '1' * 40,
+                   'repository': 'APIs-guru/openapi-directory' if firmness == 0 else 'publisher/api',
+                   'status': 'readable', 'document': sha + '.json'}
+            row['repository_licences'] = [{'evidence': 'fern.txt'}]
+            if firmness in {0, 2}:
+                row['document_license'] = {'name': 'Document grant'}
+            sources.append(row)
+        # A retained provenance alias uses the existing byte rank, never a fifth rank.
+        alias = 'https://publisher.example/' + '1' * 40 + '/mirror-b/openapi.json'
+        header.append(f'| `{alias}` | `{keys[0]}` | passed: grant | passed: publisher pin | passed: generation | passed: retained model | `witness-found` | fern.txt |')
+        sources.append(dict(sources[1], artifact=alias))
+        (self.report / 'candidates.md').write_text('\n'.join(header) + '\n', encoding='utf-8')
+        (self.report / 'acquisition.json').write_text(json.dumps({'schema_version': 1, 'sources': sources}), encoding='utf-8')
+        self.write_ranks(candidates)
+        return candidates, keys
+
+    def write_ranks(self, candidates: list[tuple[str, str, list[str]]], ranks: list[int] | None = None) -> None:
+        numbers = ranks if ranks is not None else list(range(1, len(candidates) + 1))
+        rows = [f'{rank}\t{sha}\t{artifact}\t{json.dumps(keys)}\tfern.txt\tcomparison.txt\n'
+                for rank, (sha, artifact, keys) in zip(numbers, candidates)]
+        (self.report / 'ranking.tsv').write_text(self.rank_header + ''.join(rows), encoding='utf-8')
+
+    def test_multiple_ranks_freeze_coverage_firmness_and_digest_order(self) -> None:
+        candidates, _keys = self.multiple_ranked_candidates()
+        valid = self.validate()
+        self.assertEqual(0, valid.returncode, valid.stderr)
+        for first, second, reason in [(0, 1, 'coverage'), (1, 2, 'firmness'), (2, 3, 'digest')]:
+            with self.subTest(reason=reason):
+                wrong = list(candidates)
+                wrong[first], wrong[second] = wrong[second], wrong[first]
+                self.write_ranks(wrong)
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranking violates', refused.stderr)
+        self.write_ranks(candidates, [1, 2, 3, 5])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('ranks must be contiguous', refused.stderr)
+        self.write_ranks(candidates[:-1])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('retained candidate missing rank', refused.stderr)
+        alias = 'https://publisher.example/' + '1' * 40 + '/mirror-b/openapi.json'
+        self.write_ranks(candidates + [(candidates[1][0], alias, candidates[1][2])])
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('duplicate ranked digest', refused.stderr)
+        self.write_ranks(candidates)
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_blocked_slots_do_not_claim_keys_but_registered_slots_cannot_conflict(self) -> None:
+        candidates, keys = self.multiple_ranked_candidates()
+        path = self.report / 'slots.md'
+        blocked = f'| slot-1 | {candidates[0][0]} | {json.dumps(keys[:1])} | blocked | comparison.txt |\n'
+        registered = f'| slot-2 | {candidates[1][0]} | {json.dumps(keys[:1])} | registered | comparison.txt |\n'
+        path.write_text(self.slots_header + blocked + registered, encoding='utf-8')
+        valid = self.validate()
+        self.assertEqual(0, valid.returncode, valid.stderr)
+        path.write_text(self.slots_header + blocked.replace('| blocked |', '| registered |') + registered, encoding='utf-8')
+        refused = self.validate()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('conflicting registered key claims', refused.stderr)
+        path.write_text(self.slots_header + blocked + registered, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_supplements_are_optional_additive_and_discarded_keys_do_not_pass(self) -> None:
         shards, schemas = self.completed_documents()
         key = self.contract_keys()[0][0]
@@ -813,9 +893,14 @@ class WideWitnessTests(unittest.TestCase):
         sha = hashlib.sha256(spec.read_bytes()).hexdigest()
         malformed = self.work / 'malformé.json'
         malformed.write_text('{é', encoding='utf-8')
+        legacy = self.work / 'legacy.json'
+        legacy.write_text(json.dumps({'swagger': '2.0', 'info': {'title': 'Legacy', 'version': '1'}, 'paths': {}}), encoding='utf-8')
+        metadata = self.work / 'versions.json'
+        metadata.write_text('{"versions": ["1", "2"]}', encoding='utf-8')
         inventory = self.work / 'inventory.json'
         rows = [{'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': sha},
-                {'artifact': malformed.as_uri()}, {'artifact': (self.work / 'absent.json').as_uri()}]
+                {'artifact': malformed.as_uri()}, {'artifact': (self.work / 'absent.json').as_uri()},
+                {'artifact': legacy.as_uri()}, {'artifact': metadata.as_uri()}]
         inventory.write_text(json.dumps({'schema_version': 1, 'sources': rows}), encoding='utf-8')
         import gzip
         compressed = inventory.with_suffix('.json.gz')
@@ -825,10 +910,19 @@ class WideWitnessTests(unittest.TestCase):
         output = self.report / 'acquisition.json'
         args = ('acquire', '--inventory', inventory, '--cache', cache,
                 '--contract', self.report / 'keys.md', '--output', output)
+        for workers in ('0', '-1'):
+            refused = self.cli(*args, '--workers', workers)
+            self.assertNotEqual(0, refused.returncode)
+            self.assertIn('workers must be positive', refused.stderr)
+            self.assertFalse(cache.exists(), 'invalid worker counts must not start acquisition')
+        args += ('--workers', '2')
         first = self.cli(*args)
         self.assertEqual(0, first.returncode, first.stderr)
         outcomes = json.loads(output.read_text(encoding='utf-8'))['sources']
-        self.assertEqual(['readable', 'unreadable', 'inaccessible'], [r['status'] for r in outcomes])
+        self.assertEqual(['readable', 'unreadable', 'inaccessible', 'excluded', 'excluded'], [r['status'] for r in outcomes])
+        for excluded in outcomes[3:]:
+            self.assertIn('no conversion performed', excluded['diagnostic'])
+            self.assertNotIn('document', excluded)
         self.assertEqual('newly-fetched', outcomes[0]['acquisition'])
         self.assertEqual(sha + '.json', outcomes[0]['document'])
         self.assertNotIn('document_license', outcomes[0])
@@ -874,7 +968,7 @@ class WideWitnessTests(unittest.TestCase):
         }}}), encoding='utf-8')
         output = self.work / 'associated.json'
         args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
-                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--output', output)
+                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--local-paths', '--output', output)
         result = self.cli(*args)
         self.assertEqual(0, result.returncode, result.stderr)
         measured = json.loads(output.read_text(encoding='utf-8'))
@@ -882,6 +976,18 @@ class WideWitnessTests(unittest.TestCase):
         self.assertEqual(2, len(measured['sources']))
         self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured['sources'][0]['prior_sha256'])
         self.assertIn('absent from pinned', measured['sources'][1]['tree_diagnostic'])
+        self.assertEqual(str(path.resolve()), measured['sources'][0].get('local_path'))
+        local_inventory = self.work / 'local-inventory.json'
+        local_inventory.write_text(json.dumps({'schema_version': 1, 'sources': [measured['sources'][0]]}), encoding='utf-8')
+        local_output = self.work / 'local-acquisition.json'
+        acquire = self.cli('acquire', '--inventory', local_inventory, '--cache', self.work / 'local-cache',
+                           '--contract', self.report / 'keys.md', '--output', local_output, '--workers', '2')
+        self.assertEqual(0, acquire.returncode, acquire.stderr)
+        acquired = json.loads(local_output.read_text(encoding='utf-8'))['sources'][0]
+        self.assertEqual('readable', acquired['status'])
+        self.assertEqual(measured['sources'][0]['sha256'], acquired['sha256'])
+        self.assertEqual(path.read_bytes(), (self.work / 'local-cache' / acquired['sha256']).read_bytes())
+        self.assertTrue(local_output.with_suffix('.census.tsv').read_text(encoding='utf-8').startswith('source\tkey\tselector'))
         path.write_text('changed: bytes\n', encoding='utf-8')
         refused = self.cli(*args)
         self.assertNotEqual(0, refused.returncode)

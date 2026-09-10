@@ -5,3 +5,8 @@ disabled-validator: expected test failure observed: test_real_report_validator_r
 ignored-source-digest: expected test failure observed: test_acquisition_uses_real_files_cache_and_census_with_failure_recovery
 ignored-dirty-tree: expected test failure observed: test_index_tree_joins_every_version_to_verified_git_bytes
 ignored-supplements: expected retained-positive test failure observed
+
+Additional induced states after the judged coverage finding:
+omitted-local-paths: expected real-CLI test failure observed
+disabled-rank-order: expected real-CLI test failure observed
+disabled-registered-key-conflict: expected real-CLI test failure observed
