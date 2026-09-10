@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -37,7 +38,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--schemas",
                 str(REPO / "docs/openapi-surface/schemas.md"),
             ]
-        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
 
     def changed(self, source: Path, old: str, new: str) -> Path:
         directory = Path(tempfile.mkdtemp())
@@ -130,7 +131,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True, errors="backslashreplace", encoding="utf-8",
         )
 
     def test_each_shard_is_independently_valid_and_outcome_invisible(
@@ -192,7 +193,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "--documents",
             f"test={directory}",
         ]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
         rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
         hits = {
@@ -203,7 +204,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
-        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
 
@@ -247,7 +248,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     ],
                     cwd=REPO,
                     capture_output=True,
-                    text=True, encoding="utf-8",
+                    text=True, errors="backslashreplace", encoding="utf-8",
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
@@ -560,7 +561,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
              "--fixture", "paypal-catalog-products", "--json",
              *(arg for selector in keys.values() for arg in ("--selector", selector))],
-            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
+            cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         census = json.loads(result.stdout)
@@ -586,7 +587,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                    "--reconcile", "--schemas", str(REPO / "docs/openapi-surface/schemas.md")]
         if supplement.is_file():
             command += ["--supplement-candidates", str(supplement)]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, encoding="utf-8")
+        result = subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
@@ -664,7 +665,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, encoding="utf-8",
+            text=True, errors="backslashreplace", encoding="utf-8",
         )
         self.assertEqual(2, result.returncode)
         self.assertIn("--reconcile requires --schemas PATH", result.stderr)
@@ -742,10 +743,36 @@ class WideWitnessTests(unittest.TestCase):
 
     def cli(self, *args) -> subprocess.CompletedProcess[str]:
         return subprocess.run([sys.executable, str(self.wide), *(str(a) for a in args)],
-                              cwd=REPO, capture_output=True, encoding='utf-8')
+                              cwd=REPO, capture_output=True, errors="backslashreplace", encoding='utf-8')
 
     def validate(self, *args) -> subprocess.CompletedProcess[str]:
         return self.cli('validate', '--report', self.report, *args)
+
+    def test_diagnostics_survive_legacy_child_encoding(self) -> None:
+        inventory = self.work / 'inventaire-é.json'
+        inventory.write_text('{}', encoding='utf-8')
+        args = ['acquire', '--inventory', str(inventory), '--cache', str(self.work / 'cache'),
+                '--contract', str(self.report / 'keys.md'), '--output', str(self.work / 'result.json')]
+        env = dict(os.environ, PYTHONIOENCODING='cp1252')
+        refused = subprocess.run([sys.executable, str(self.wide), *args], cwd=REPO,
+                                 capture_output=True, env=env)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn('inventaire-é.json', refused.stderr.decode('utf-8'))
+        # Inject a raw diagnostic at Python startup, while running the actual
+        # acquisition and census unchanged. Native children need not emit UTF-8.
+        startup = self.work / 'startup'
+        startup.mkdir()
+        (startup / 'sitecustomize.py').write_text(
+            "import os\nos.write(2, b'publisher diagnostic: \\xe9\\n')\n", encoding='utf-8')
+        env['PYTHONPATH'] = str(startup)
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': []}), encoding='utf-8')
+        recovered = subprocess.run([sys.executable, str(self.wide), *args], cwd=REPO,
+                                   capture_output=True, env=env)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        result = json.loads((self.work / 'result.json').read_text(encoding='utf-8'))
+        self.assertEqual(0, result['census_exit'])
+        self.assertIn(r'publisher diagnostic: \xe9',
+                      (self.work / 'result.census.log').read_text(encoding='utf-8'))
 
     def test_derive_preserves_key_specific_screening_metadata(self) -> None:
         root = self.work / 'history'
@@ -1030,7 +1057,7 @@ class WideWitnessTests(unittest.TestCase):
         supplemental.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
         command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in shards),
                    '--reconcile', '--schemas', str(schemas), '--candidates', str(schemas.parent / 'candidates.md')]
-        run = lambda extra: subprocess.run(command + extra, cwd=REPO, capture_output=True, encoding='utf-8')
+        run = lambda extra: subprocess.run(command + extra, cwd=REPO, capture_output=True, errors="backslashreplace", encoding='utf-8')
         self.assertEqual(0, run([]).returncode)
         supplement = ['--supplement-candidates', str(supplemental)]
         self.assertIn("expected 'witness-found'", run(supplement).stderr)
@@ -1164,7 +1191,7 @@ class WideWitnessTests(unittest.TestCase):
         tree = self.work / 'tree'
         tree.mkdir()
         def git(*args):
-            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, encoding='utf-8', check=True)
+            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, errors="backslashreplace", encoding='utf-8', check=True)
         git('init', '-q')
         git('config', 'user.name', 'Witness test')
         git('config', 'user.email', 'witness@example.invalid')

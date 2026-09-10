@@ -299,6 +299,7 @@ def acquire(args) -> None:
         cwd=REPO,
         capture_output=True,
         encoding="utf-8",
+        errors="backslashreplace",
     )
     args.output.with_suffix(".census.tsv").write_text(run.stdout, encoding="utf-8")
     args.output.with_suffix(".census.log").write_text(run.stderr, encoding="utf-8")
@@ -706,4 +707,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
+    sys.stdout.reconfigure(encoding="utf-8", errors="backslashreplace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="backslashreplace")
     raise SystemExit(main())
