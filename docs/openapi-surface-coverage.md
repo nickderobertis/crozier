@@ -1043,6 +1043,13 @@ The subsequent PayPal registration adds one source (32 vendored plus 138
 denominator unchanged. Its four declarations retain concrete generated item
 models. See [the registration measurement](openapi-surface/schemas.md#paypal-registration-measurement).
 
+The subsequent [wide acquisition reconciliation](openapi-surface/witness-scrape-wide/README.md#finished-tree-reconciliation)
+adds no registered source or golden and promotes no feature. Its one registration
+slot exhausted an empty ranked queue; all 26 acquisition baseline keys remain
+search-incomplete within the 29-row fixture backlog. The report separates finite
+inventory closure from unanswered searches and excludes Postman from new work
+and future obligations while preserving historical source evidence.
+
 **What the `golden` count means, and what it does not.** 392 of those 511
 features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
