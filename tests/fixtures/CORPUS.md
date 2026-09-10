@@ -160,6 +160,7 @@ re-measure with `just fixtures-gaps`.
 | 135 | `googleapis-servicebroker` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/servicebroker/v1alpha1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | link-ok | Google's Service Broker API (`info.x-origin` records the publisher-served `https://servicebroker.googleapis.com/$discovery/rest?version=v1alpha1`), the fourth registered declarer of **two path templates that normalize to one** and the first where one colliding group is nested inside another: `/v1alpha1/{parent}/v2/service_instances/{instanceId}` beside `…/{instance_id}`, and one segment deeper `…/{instanceId}/service_bindings/{bindingId}` beside `…/{instanceId}/service_bindings/{binding_id}` — four keys in two groups that crozier's own `naming::field_name` folds to two, where the deeper pair agrees on the `{instanceId}` spelling it inherits and collides only on its own leaf. The collisions are inside one document, so the golden's own raw clients say what Fern did with them. Over 13 paths, 21 component schemas, 11 component parameters and two `oauth2` schemes |
 | 136 | `audiobookshelf` | github-raw | https://raw.githubusercontent.com/advplyr/audiobookshelf/0a797ab8bee15dc3ca92d1d76155259c46dbec62/docs/openapi.json | `0a797ab8bee15dc3ca92d1d76155259c46dbec62` | GPL-3.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The API the Audiobookshelf self-hosted audiobook server publishes for itself, the fourth registered declarer of a **media type range** other than `*/*` — three `200` responses keyed on `image/*` over `{type: string, format: binary}`, one each for the `GET`, `POST` and `PATCH` of `/api/authors/{id}/image` — and the only registered source declaring a range **beside two concrete media types of its own type**: that `GET`'s response content map is `image/webp`, `image/jpeg` and `image/*`, all three over the same binary schema, so this golden pins which of an overlapping set Fern picks. Over 31 paths, 91 component schemas and a `bearerAuth` `http` scheme |
 | 137 | `steaminputdb` | github-raw | https://raw.githubusercontent.com/Alia5/steaminputdb.com/a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393/openapi.yaml | `a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393` | AGPL-3.0 (declared by the document's `info.license`, `GNU Affero General Public License v3.0`, and by the repository's own `LICENSE.txt`) | link-ok | The API the SteamInputDB controller-configuration site publishes for itself, the corpus's only source whose sole Security Scheme Object mixes three vocabularies at once: `type: oauth2` carrying `flows.implicit` beside a stray `scheme: OAuth`, an `in: query`, a `name: Steam Auth` and an `openIdConnectUrl`. It is the corpus's **only** declarer of `securityScheme.scheme=OAuth` and its only **golden-bearing** declarer of `securityScheme.in=query` — the other three are DROPPED rows — and Fern reads neither key, importing the scheme as an optional bearer `token` on a document that declares no `security` requirement anywhere, which is what this golden says crozier must do too. Its `implicit` flow writes `scopes: null` where the specification makes the map required, and is the corpus's only `securityScheme.flows.implicit.tokenUrl`, a field an implicit flow has no use for. Its two colliding method names come from a shared **`summary`** rather than a shared `operationId` — four other registered sources collide that way too (`color.pizza`, `openbanking-brasil-directory`, `portfoliooptimizer.io`, `reverb.com`), and this is the one where the two colliding operations are the `GET` and `POST` of a single path and both carry a request body: `/v1/steam/login` declares no `operationId` anywhere in the document and both operations read `Log in with Steam`, so one `log_in_with_steam` survives — and the `OpenIDBody` both of their bodies `$ref` is inlined into it and dropped from the type layer, where a schema two *surviving* endpoints shared would have been kept. Four of its request schemas carry a `readOnly: true` `$schema` property Fern drops from every method it inlines them into, and its one multi-line operation description indents its second line with three tabs, which its `reference.md` entry keeps and its `client.py` docstring does not. Over 8 paths, 72 component schemas and an `openapi: 3.1.0` document's 96 `type: null` union members |
+| 138 | `paypal-catalog-products` | github-raw | https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/catalogs_products_v1.json | `90e8041ffe02d80c452d2b476bedd59a8d219bdc` | Apache-2.0 (the publisher repository's pinned `LICENSE`) | link-ok | PayPal Catalog Products API; four sole-member `anyOf` wrappers on error detail items. |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -690,3 +691,25 @@ carry a `GPL-3.0` `LICENSE`, `drakkan/sftpgo` an `AGPL-3.0` one,
 `info.license` `identifier: AGPL-3.0`, and the Google Service Broker document
 carries its own `Creative Commons Attribution 3.0` `info.license` inside the
 CC0-1.0 `APIs-guru/openapi-directory` aggregation.
+
+## Batch 16 — PayPal catalogue products
+
+Row 138 registers the first document in the reconciliation's preferred-document
+order. The pinned publisher document has four sole-member `anyOf` detail-item
+wrappers; Fern retains concrete item models for all four. The standard census
+reports no declaration of the other 29 owned selectors. The source is fetched
+unmodified; the golden is generated at Python 5.20.0 / CLI 5.67.1 and byte-matches
+with `unmatched: &[]`. See the [registration measurement](../../docs/openapi-surface/schemas.md#paypal-registration-measurement).
+
+The repairs spell numeric schema names as whole numbers, infer the optional
+singleton `name` discriminator across referenced union members, normalize
+punctuation in discriminator-derived names, retain the first typed base of a
+composed error response, retain described constant headers in documentation and
+place them before optional request headers, and use declared examples for named
+array request bodies. The byte comparison and missing/malformed-source recovery
+journey run the real CLI over the pinned document.
+
+When a diagnostic `TMPDIR` lives inside another Git checkout, set
+`GIT_CEILING_DIRECTORIES` to that temporary root during generation. Otherwise
+Fern records that unrelated parent checkout's commit in its metadata. This
+registration was regenerated with that boundary; no generated metadata was edited.

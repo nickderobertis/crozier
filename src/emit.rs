@@ -2511,7 +2511,18 @@ fn reference_entry(
             }
         }
     }
-    for dp in ordered_keyword_params(&mp.query, &mp.header, &reference_body) {
+    let mut reference_header = mp.header;
+    reference_header.extend(
+        ep.constant_header_descriptions
+            .iter()
+            .map(|(name, description)| DocParam {
+                name: naming::field_name(name),
+                annotation: "typing.Literal".to_string(),
+                default: None,
+                description: Some(description.clone()),
+            }),
+    );
+    for dp in ordered_keyword_params(&mp.query, &reference_header, &reference_body) {
         let is_body = reference_body.iter().any(|body| body.name == dp.name);
         let query_is_list = ep
             .query_params
@@ -2594,15 +2605,18 @@ fn reference_entry(
             suffix: reference_param_suffix(description),
         });
     }
-    params.extend(ep.constant_headers.iter().map(|(wire_name, _)| {
-        ParamRow {
-            name: naming::field_name(wire_name)
-                .trim_end_matches('_')
-                .to_string(),
-            annot: "typing.Literal".to_string(),
-            suffix: " ".to_string(),
-        }
-    }));
+    params.extend(
+        ep.constant_headers
+            .iter()
+            .filter(|(name, _)| !ep.constant_header_descriptions.contains_key(name))
+            .map(|(wire_name, _)| ParamRow {
+                name: naming::field_name(wire_name)
+                    .trim_end_matches('_')
+                    .to_string(),
+                annot: "typing.Literal".to_string(),
+                suffix: " ".to_string(),
+            }),
+    );
     params.push(ParamRow {
         name: "request_options".to_string(),
         annot: "typing.Optional[RequestOptions]".to_string(),
@@ -4958,6 +4972,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
         }
+        for (name, value) in &ep.constant_headers {
+            lines.push(format!("                \"{name}\": {value:?},"));
+        }
         for hp in &ep.header_params {
             let value = if hp.enum_value {
                 format!("{}.value", hp.py_name)
@@ -4968,9 +4985,6 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 "                \"{}\": {value} if {} is not None else None,",
                 hp.wire_name, hp.py_name
             ));
-        }
-        for (name, value) in &ep.constant_headers {
-            lines.push(format!("                \"{name}\": {value:?},"));
         }
         lines.push("            },".to_string());
     }
@@ -8143,6 +8157,16 @@ fn build_example_inner(
             });
         args.push((Some(hp.py_name.clone()), value));
     }
+    if documentation && !suppressed {
+        for (name, value) in &ep.constant_headers {
+            if ep.constant_header_descriptions.contains_key(name) {
+                args.push((
+                    Some(naming::field_name(name)),
+                    Example::Atom(format!("{value:?}")),
+                ));
+            }
+        }
+    }
     match &ep.request_body {
         Some(RequestBody::Single(s)) => {
             let mut v = if let Some(example) = body_example {
@@ -9691,6 +9715,7 @@ mod tests {
             query_params: Vec::new(),
             header_params: Vec::new(),
             constant_headers: Vec::new(),
+            constant_header_descriptions: Default::default(),
             request_body: None,
             request_body_required: false,
             request_body_has_multipart_related: false,

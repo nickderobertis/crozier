@@ -15,10 +15,23 @@ span. `result` is a nonnegative integer or `unanswered`; an unanswered source is
 written as zero. A positive result requires candidates, immutable provenance, and both
 screens. Zero and `unanswered` require all four supporting fields to be `—`.
 
-Only all seven answered sources, each returning zero, permits `none-found`. Any
-`unanswered` source requires `search-incomplete`; otherwise a nonzero result requires
-`witness-found`. The reconciliation entry point is
+A key with an artifact that passed redistribution, immutable publisher provenance,
+Fern acceptance and retention is `witness-found`, even when a source is unanswered.
+Positive evidence establishes existence independently of search completeness. This
+operator ruling supersedes the earlier unanswered-first precedence.
+
+Without a screened witness, an unanswered source requires `search-incomplete`.
+Only all seven answered sources, each returning zero, permits `none-found`;
+answered searches with declarations but no qualifying artifact are `witness-blocked`.
+Declaration counts alone never establish a screened witness.
+
+The reconciliation entry point is
 `scripts/witness-search-redo.py CONTRACT SHARD SHARD --reconcile --schemas docs/openapi-surface/schemas.md`.
+It reads the four-screen `candidates.md` beside CONTRACT (override with
+`--candidates PATH`). A `witness-found` artifact must have `passed:` in every
+screen cell. If an artifact retains some declared keys but discards others, its
+retention cell lists those exceptions as `discarded keys:` followed by their code-spanned
+names. Those keys do not inherit the artifact's successful retention verdict.
 It reads exactly one authoritative eight-cell table row per owned key. That same row
 must contain the words `search outcome` followed by the outcome in a code span, plus
 all seven bold source-family names, each followed by its exact query in a code span,

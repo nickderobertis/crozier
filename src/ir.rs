@@ -944,6 +944,8 @@ pub struct Endpoint {
     /// Optional string headers with schema defaults, sent on every request but
     /// omitted from the public method signature.
     pub constant_headers: Vec<(String, String)>,
+    /// Declared descriptions for constant headers retained by Markdown examples.
+    pub constant_header_descriptions: IndexMap<String, String>,
     /// The JSON request body, when the operation has one crozier can emit.
     pub request_body: Option<RequestBody>,
     /// Whether OpenAPI marks the operation's request body as required.
@@ -2861,6 +2863,22 @@ fn build_endpoint(
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
+        constant_header_descriptions: op
+            .parameters
+            .iter()
+            .filter_map(|parameter| {
+                constant_headers
+                    .iter()
+                    .any(|(name, _)| name == &parameter.name)
+                    .then(|| {
+                        parameter
+                            .description
+                            .as_ref()
+                            .map(|description| (parameter.name.clone(), description.clone()))
+                    })
+                    .flatten()
+            })
+            .collect(),
         constant_headers,
         request_body,
         request_body_required: op
@@ -3707,7 +3725,20 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
         builder.add_named(&name, &schema);
     }
     for (name, schema) in bodies {
-        builder.add_named(&name, &schema);
+        let base = composed_error_base(doc, &schema).and_then(|base| {
+            builder.types.iter().find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == base => Some(object.clone()),
+                _ => None,
+            })
+        });
+        if let Some(mut object) = base {
+            object.name = name.clone();
+            object.module = naming::module_name(&name);
+            object.docstring = None;
+            builder.types.push(TypeDecl::Object(object));
+        } else {
+            builder.add_named(&name, &schema);
+        }
     }
 }
 
@@ -3720,26 +3751,52 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
 /// `typing.Any` in the golden, while `mosip-esignet`'s five `401`s (one with a
 /// body, four without) are the same rule seen from the other side. The merged
 /// `{Class}Body` model is still emitted either way — only the class's annotation
-/// moves.
+/// moves. Compositions of a typed base and property-only refinements are the
+/// exception: Fern retains the base as the shared body even across operations.
 fn multiply_declared_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let mut seen: IndexMap<String, usize> = IndexMap::new();
+    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
-            for code in op.responses.keys() {
+            for (code, response) in &op.responses {
                 if code.starts_with('2') {
                     continue;
                 }
                 let Some(class) = code.parse::<u16>().ok().and_then(error_class_name) else {
                     continue;
                 };
-                *seen.entry(class.to_string()).or_default() += 1;
+                let entry = seen.entry(class.to_string()).or_insert((0, true));
+                entry.0 += 1;
+                entry.1 &= response_schema(response)
+                    .and_then(|schema| composed_error_base(doc, schema))
+                    .is_some();
             }
         }
     }
     seen.into_iter()
-        .filter(|(_, count)| *count > 1)
+        .filter(|(_, (count, composed))| *count > 1 && !composed)
         .map(|(class, _)| class)
         .collect()
+}
+
+/// Fern retains the first typed base of an error composition and discards the
+/// property-only refinements (PayPal's common error plus operation details).
+fn composed_error_base(doc: &OpenApi, schema: &Schema) -> Option<String> {
+    let members = schema.all_of.as_ref()?;
+    if members.len() < 2 || !schema.properties.is_empty() {
+        return None;
+    }
+    let reference = members.first()?.reference.as_deref()?;
+    let base = resolve_ref(doc, reference)?;
+    if base.ty.as_ref().and_then(TypeField::primary) != Some("object") {
+        return None;
+    }
+    for member in &members[1..] {
+        let target = resolve_ref(doc, member.reference.as_deref()?)?;
+        if target.ty.is_some() || target.properties.is_empty() {
+            return None;
+        }
+    }
+    Some(ref_to_class(reference))
 }
 
 /// Resolve an operation's declared error (non-2xx) responses into `raise` branches.
@@ -3952,7 +4009,11 @@ fn resolve_request_body(
         if target.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
             let type_ref = TypeRef::Named(class);
             let convert = type_needs_convert(&type_ref, types);
-            return Some(single(type_ref, required, convert, false));
+            let mut body = single(type_ref, required, convert, false);
+            if let RequestBody::Single(single) = &mut body {
+                single.example = media_example(doc, media).and_then(example_literal);
+            }
+            return Some(body);
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if target.properties.declared() || target.all_of.is_some() {
@@ -6319,6 +6380,11 @@ struct Builder<'a> {
     building_types: std::collections::HashSet<String>,
 }
 
+/// A wire discriminant can be prose; punctuation separates its class-name words.
+fn discriminant_class_name(value: &str) -> String {
+    naming::class_name(&value.replace(|c: char| !c.is_ascii_alphanumeric(), " "))
+}
+
 fn discriminant_value(schema: &Schema) -> Option<String> {
     string_enum_values(schema)
         .and_then(|values| (values.len() == 1).then(|| values[0].clone()))
@@ -6387,6 +6453,7 @@ fn inferred_discriminant_property_with(
                         }
                         "role" => variant.required.contains(property),
                         "message_type" | "mcp_server_type" => true,
+                        "name" => singleton_enum,
                         _ => false,
                     };
                     if !supported {
@@ -7688,7 +7755,7 @@ impl Builder<'_> {
                     .properties
                     .get(&property_name)
                     .and_then(discriminant_value)?;
-                let variant_name = format!("{name}{}", naming::class_name(&value));
+                let variant_name = format!("{name}{}", discriminant_class_name(&value));
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
@@ -7702,7 +7769,12 @@ impl Builder<'_> {
                     );
                 }
                 members.push(UnionMember {
-                    class_name: format!("{name}_{}", naming::class_name(&value)),
+                    class_name: format!(
+                        "{name}_{}",
+                        naming::class_name(
+                            &value.replace(|c: char| !c.is_ascii_alphanumeric(), " ")
+                        )
+                    ),
                     discriminant: value,
                     fields: member_fields(
                         target,
@@ -7739,7 +7811,7 @@ impl Builder<'_> {
                 // Fern names the wrapper after the discriminant *value*
                 // (`Node_And`), not the referenced schema (`AndNode`) — the two
                 // coincide only when the mapping key equals the schema name.
-                class_name: format!("{name}_{}", naming::class_name(value)),
+                class_name: format!("{name}_{}", discriminant_class_name(value)),
                 discriminant: value.clone(),
                 fields: member_fields(
                     target,
@@ -7807,7 +7879,7 @@ impl Builder<'_> {
         let mut variant_targets = Vec::new();
         for (value, reference) in &discriminator.mapping {
             let target_class = ref_to_class(reference);
-            let class_name = format!("{name}_{}", naming::class_name(value));
+            let class_name = format!("{name}_{}", discriminant_class_name(value));
             if target_class == name {
                 members.push(UnionMember {
                     class_name,

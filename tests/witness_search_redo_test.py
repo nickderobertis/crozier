@@ -37,12 +37,15 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--schemas",
                 str(REPO / "docs/openapi-surface/schemas.md"),
             ]
-        return subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
 
     def changed(self, source: Path, old: str, new: str) -> Path:
         directory = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, directory)
         target = directory / source.name
+        candidate = source.parent / "candidates.md"
+        if source.name == "schemas.md" and candidate.is_file():
+            shutil.copyfile(candidate, directory / "candidates.md")
         text = source.read_text(encoding="utf-8")
         self.assertIn(old, text)
         target.write_text(text.replace(old, new, 1), encoding="utf-8")
@@ -107,6 +110,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
+        (schemas.parent / "candidates.md").write_text("# Candidate screens\n", encoding="utf-8")
         return completed, schemas
 
     def reconcile_documents(
@@ -121,10 +125,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--reconcile",
                 "--schemas",
                 str(schemas),
+                "--candidates",
+                str(schemas.parent / "candidates.md"),
             ],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def test_each_shard_is_independently_valid_and_outcome_invisible(
@@ -186,7 +192,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "--documents",
             f"test={directory}",
         ]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
         rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
         hits = {
@@ -197,7 +203,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
-        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
 
@@ -241,7 +247,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     ],
                     cwd=REPO,
                     capture_output=True,
-                    text=True,
+                    text=True, encoding="utf-8",
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
@@ -544,9 +550,68 @@ class WitnessSearchRedoTests(unittest.TestCase):
             count += 1
         self.assertGreater(count, 0, "rejected-spec source table must not be empty")
 
+    def test_paypal_registration_accounts_for_all_owned_keys(self) -> None:
+        source = REPO / ".local/corpus/paypal-catalog-products/openapi.json"
+        if not source.is_file():
+            self.skipTest("PayPal source not fetched; run just fetch-corpus --fixture paypal-catalog-products")
+        keys = dict(self.contract_keys())
+        self.assertEqual(30, len(keys))
+        result = subprocess.run(
+            [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
+             "--fixture", "paypal-catalog-products", "--json",
+             *(arg for selector in keys.values() for arg in ("--selector", selector))],
+            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        census = json.loads(result.stdout)
+        counts = {row["selector"]: row["count"] for row in census["rows"]}
+        self.assertEqual({"schema.anyOf:sole-member": 4}, counts)
+        self.assertEqual(set(keys.values()) - set(counts), set(census["absent_selectors"]))
+        # Authoritative entry rows use bare keys, unlike candidate tables.
+        entries = {}
+        for line in (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").splitlines():
+            if line.startswith("| "):
+                cells = [cell.strip().strip("`") for cell in line.strip("|").split("|")]
+                if len(cells) == 8 and cells[0] in keys:
+                    entries[cells[0]] = cells
+        self.assertEqual(set(keys), set(entries))
+        for key, selector in keys.items():
+            self.assertEqual("golden" if selector in counts else "gap", entries[key][3], key)
+        self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
+        self.assertIn("paypal-catalog-products", entries["anyof-sole-member"][4])
+
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
         result = self.run_validator(*SHARDS, reconcile=True)
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
+        shards, schemas = self.completed_documents()
+        key = self.contract_keys()[0][0]
+        candidates = schemas.parent / "candidates.md"
+        row = (
+            f"| `publisher/spec@pin/openapi.json` | `{key}` | passed: grant | "
+            "passed: publisher pin | passed: non-empty generation | "
+            "passed: generated model | `witness-found` | model.py |\n"
+        )
+        candidates.write_text(row, encoding="utf-8")
+        schemas.write_text(schemas.read_text(encoding="utf-8").replace(
+            "search outcome `search-incomplete`", "search outcome `witness-found`", 1
+        ), encoding="utf-8")
+        found = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, found.returncode, found.stderr)
+        for screen in ("grant", "publisher pin", "non-empty generation", "generated model"):
+            with self.subTest(screen=screen):
+                candidates.write_text(row.replace(f"passed: {screen}", f"blocked: {screen}"), encoding="utf-8")
+                rejected = self.reconcile_documents(shards, schemas)
+                self.assertNotEqual(0, rejected.returncode)
+                self.assertIn("search-incomplete", rejected.stderr)
+        candidates.write_text(row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"), encoding="utf-8")
+        discarded = self.reconcile_documents(shards, schemas)
+        self.assertNotEqual(0, discarded.returncode)
+        self.assertIn("search-incomplete", discarded.stderr)
+        candidates.write_text(row, encoding="utf-8")
+        recovered = self.reconcile_documents(shards, schemas)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
 
     def test_seven_zero_answers_allow_absence_but_one_unanswered_forbids_it(self) -> None:
         shards, schemas = self.completed_documents()
@@ -594,7 +659,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(2, result.returncode)
         self.assertIn("--reconcile requires --schemas PATH", result.stderr)

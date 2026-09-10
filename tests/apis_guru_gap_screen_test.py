@@ -203,8 +203,14 @@ components:
                 if len(cells) == 8:
                     entries[cells[0].strip("`")] = cells
         for key in owned:
-            self.assertEqual("gap", entries[key][3].strip("`"), key)
-            self.assertTrue(entries[key][7].lstrip("`*").startswith("FIXTURE"), key)
+            if key == "anyof-sole-member":
+                self.assertEqual("golden", entries[key][3].strip("`"), key)
+                self.assertIn("paypal-catalog-products", entries[key][4])
+                self.assertIn("**4** declaration sites", entries[key][4])
+                self.assertEqual("", entries[key][7])
+            else:
+                self.assertEqual("gap", entries[key][3].strip("`"), key)
+                self.assertTrue(entries[key][7].lstrip("`*").startswith("FIXTURE"), key)
         limitations = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
         self.assertNotIn("### Round 7 — APIs.guru witness-supply probes", limitations)
 
