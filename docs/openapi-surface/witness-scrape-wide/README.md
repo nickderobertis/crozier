@@ -6,8 +6,8 @@ these pins. The complete publisher-tree census found no baseline declarations. T
 catalogue alternatives declare four baseline keys in ten artifacts, all versions
 already named in the preserved search. Eight lack an evidenced publisher
 redistribution grant; pinned Fern freshly refuses the other two. Accordingly,
-[`ranking.tsv`](ranking.tsv) is empty. Discovery has promoted no golden and has
-completed no registration slot. These are finite-corpus findings, not a global
+[`ranking.tsv`](ranking.tsv) is empty. Discovery promoted no golden; the subsequent registration dispatch
+independently recorded slot 1 as exhausted. These are finite-corpus findings, not a global
 `none-found` outcome; the authoritative search-incomplete rows remain unchanged.
 
 ## Refreshed baseline
@@ -189,7 +189,152 @@ Remaining-key coverage filters eligibility; it never reorders the discovery rank
 `slot | artifact_sha256 | keys | disposition | evidence`. Registration workers append
 one result per dispatch, using `registered`, `blocked` or `exhausted`; an exhausted
 slot uses `—` and `[]` and links its explanation. These are slot results, not new
-surface outcomes. Discovery's empty slots table does not claim a dispatch ran.
+surface outcomes. The appended slot 1 row records the independently completed dispatch.
+
+## Finished-tree reconciliation
+
+Reconciliation starts from the acquisition baseline commit
+`e88fcc24dbb8d865dbbdab0c65fd9672679bd8a1` and includes discovery
+`b915e322c57f56b521bb244f7e7c803351e388d4` and slot 1
+`95ceaa1f` (the reconciliation dispatch comparison base). All committed
+registration outcomes are in [slots.md](slots.md): **one exhausted slot, zero
+registered slots, zero blocked slots**. There are no additional manager-added
+slot rows on this tree. [Slot 1's independent audit](slot-1/README.md) verified
+all ten exact hashes and repeated both Fern generation refusals; it produced no
+expected tree. The empty slot is explained by eight missing publisher grants
+and two Fern refusals, not an omitted registration attempt.
+
+**Actual additions: zero corpus rows, zero committed goldens, zero golden
+promotions, zero new retained witnesses.** The additions are acquisition,
+census, screening and slot evidence. The 885 additional publisher paths broaden
+measured inventory; they do not constitute 885 witnesses. The acquired scope and
+its inaccessible, unreadable and excluded inputs are enumerated above. This
+reconciliation acquires no further corpus and runs no generation or repair.
+No external landing or publication is claimed.
+
+| measure | baseline | finished tree | delta |
+|---|---:|---:|---:|
+| baseline keys retained | 26 | 26 | 0 |
+| baseline keys with historical named artifacts | 14 | 14 | 0 |
+| baseline keys with an all-screens-passing witness | 0 | 0 | 0 |
+| baseline keys classified `gap` / `FIXTURE`, search-incomplete | 26 | 26 | 0 |
+| registered source documents / committed-golden sources | 170 / 153 | 170 / 153 | 0 / 0 |
+| schema features / golden / limitations / gap | 222 / 169 / 21 / 32 | 222 / 169 / 21 / 32 | 0 / 0 / 0 / 0 |
+| all features / golden / limitations / gap | 511 / 392 / 70 / 49 | 511 / 392 / 70 / 49 | 0 / 0 / 0 / 0 |
+| fixture backlog / probe backlog / unreachable gaps | 29 / 0 / 20 | 29 / 0 / 20 | 0 / 0 / 0 |
+
+These totals are derived from the six authoritative region tables and agree with
+[the surface index and backlog](../../openapi-surface-coverage.md#ranked-gap-backlog).
+The three other fixture-backlog keys already have screened witnesses and are
+outside this 26-key acquisition: `oneof-bare-object-example-variant`,
+`anyof-array-variant-struct-item`, and `ref-pointer-undeclared-component-head`.
+The fourth historically screened key, `anyof-sole-member`, was already golden
+before this run. Its PayPal registration is not an acquisition delta.
+
+### Settlement and outstanding sources
+
+Apply the operator's precedence per key: an artifact passing redistribution,
+immutable publisher provenance, Fern acceptance and retention establishes
+`witness-found` even if a source remains unanswered. With no passing artifact,
+`none-found` requires every answerable source to have answered zero; unresolved
+answerable sources leave `search-incomplete`. A `golden` classification separately
+requires registered byte parity. A declaration, a successful check alone, or an
+empty comparison file list establishes none of that parity.
+
+**Postman is excluded from this run and from its future obligations.** Its old
+queries and results remain historical evidence, byte-for-byte. This report adds
+no query to any source and does not replace an old query's result with the new
+acquisition. In particular, completing a finite publisher or catalogue inventory
+does not make an incapable search endpoint answer a body query.
+
+The following source codes refer to the unchanged per-key records in the
+[catalogue/portal report](../witness-search-redo/catalogue-portals.md) and
+[code/platform report](../witness-search-redo/code-platforms.md):
+
+- **V:** historical vendor-portals input remained partially unreadable; the new
+  publisher census closes only its 880 readable documents, leaving eight unreadable
+  paths explicit and supplying no replacement answer for the old query.
+- **S:** Sourcegraph's capped/incomplete funnels or unevaluated bodies prevent a
+  zero answer. Positive source answers are omitted from the outstanding column.
+- **G:** GitHub code-search windows or unevaluated bodies leave the recorded
+  funnel unresolved, including the timed-out CloudGuard pointer-anyOf body.
+- **H:** SwaggerHub returned metadata rather than immutable definition-body
+  matches. This endpoint cannot answer the selector query; no API retry is a
+  prerequisite to closing this run's finite inventory.
+
+Every key below has G outstanding; none therefore becomes global `none-found`
+even if H cannot answer. All also inherit this acquisition's 98 indexed versions
+without a YAML alternative and eight unreadable publisher files. The 3,992 JSON
+403 responses are fetch refusals, not zero declarations; 3,894 verified YAML
+alternatives are separate artifact evidence.
+
+### Every baseline key
+
+Each row retains its exact selector in [keys.md](keys.md) and its zero registered
+source census in [schemas.md](../schemas.md). **Every final row remains
+`search-incomplete`, `gap` / `FIXTURE`, with no registration or byte parity.**
+Historical artifact identities and individual screens are in [baseline.json](baseline.json).
+Below, B counts `witness-blocked`, R `fern-rejected`, I unfinished
+`search-incomplete` screens, and D artifacts explicitly discarding this key at
+retention. These are artifact-record counts, not distinct publishers or sites;
+a pass for another key cannot override D. An absent historical artifact is
+written explicitly. Current sites come only from the two complete acquisition
+censuses; publisher sites are zero for every key. Each current blocker links to
+the exact [candidate evidence](candidates.md), also independently audited by slot 1.
+
+| baseline key | historical artifact screens | acquired catalogue sites / registration blocker | outstanding sources |
+|---|---|---|---|
+| `annotated-ref-target-closed-object` | 16 B | 7 / PandaScore publisher grant unproven | V, S, G, H |
+| `annotated-ref-target-composed` | 35 B, 8 R, 4 I | 36 / Asana 3 errors; Box 23 errors; no SDK or retention | G, H |
+| `annotated-ref-target-oneof` | 21 B, 7 R | 4 / PandaScore publisher grant unproven | S, G, H |
+| `annotated-ref-target-string-const` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `anyof-array-variant-anyof-nullable-item` | 5 R | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `anyof-array-variant-closed-object-item` | 26 B, 5 R, 5 D | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `anyof-array-variant-empty-object-item` | 8 B, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `anyof-array-variant-oneof-nullable-item` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `array-item-inheritance-union` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `array-item-pointer-walk-anyof` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `array-item-pointer-walk-oneof` | 8 B, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-annotated-ref-item` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-anyof-discriminated-union-item` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-anyof-item` | 13 B, 10 R, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-anyof-nullable-item` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-closed-object-item` | 15 B | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-composed-item` | 8 B, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `oneof-array-variant-empty-object-item` | 3 B, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-anyof-closed-object-member` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-anyof-composed-member` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-anyof-empty-object-member` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-anyof-struct-member` | 23 B, 1 R, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | S, G, H |
+| `property-sole-oneof-closed-object-member` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-oneof-composed-member` | 3 B, 2 I | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `property-sole-oneof-empty-object-member` | 0 named artifacts | 0 / no declarer in acquired readable scope; no candidate to register | V, S, G, H |
+| `ref-pointer-unnamed-segment` | 55 B, 2 I | 580 / seven Codat versions lack evidenced publisher grants | V, S, G, H |
+
+The I cells preserve unfinished historical screening, including Attentive; a
+later acquisition that did not complete that artifact's screen supplies no
+refusal for it. B and R cells explain why named historical supply does not yet
+prove the key. For the twelve keys with no historical artifacts, the new census
+also found no declarer, but unresolved sources still prevent an absence verdict.
+
+### Queue handoff
+
+**Unattempted ranked candidates: none.** The header-only [ranking.tsv](ranking.tsv)
+contains zero ranks, so slot 1 exhausts this finite registration queue. There is
+no rank to dispatch, no exhaustion claim about inaccessible supply, and no graph
+node added by this worker. If a later acquisition supplies a rank, the manager
+can use this registration form without changing the frozen ranking:
+
+```text
+Assigned slot: <manager-assigned slot>
+Candidate: <link to the highest still-relevant unattempted ranking.tsv row>
+Prior outcomes: docs/openapi-surface/witness-scrape-wide/slots.md
+Deliverable: append the result and specific evidence using that ledger's contract.
+```
+
+A present unattempted rank must be reported to the manager using that form;
+it is not exhausted. Registration additionally needs the real Route A golden
+and Crozier byte comparison before any surface promotion.
 
 ## Reproduction and checks
 
@@ -215,8 +360,9 @@ measurement cited above. JSON remains schema version 1 whether stored directly o
 with deterministic gzip compression; absent optional document licences are omitted.
 
 The scoped checks are `just test-witness-search-redo`, `just test-surface-census`,
-`just lint-corpus-licensing` and `just lint-llm-diff` against the dispatch base
-`e88fcc24dbb8d865dbbdab0c65fd9672679bd8a1`. The witness tests drive real CLI, Git,
+`just lint-corpus-licensing` and `just lint-llm-diff` against each dispatch comparison base: discovery used
+`e88fcc24dbb8d865dbbdab0c65fd9672679bd8a1`; final reconciliation uses
+`95ceaa1f` (slot 1’s committed outcome). The witness tests drive real CLI, Git,
 filesystem and census boundaries, including corrupt caches, changed digests,
 unreachable/malformed inputs, partial inventories, selector/key drift, malformed
 ranks, missing evidence, conflicting slot claims and non-ASCII diagnostics.

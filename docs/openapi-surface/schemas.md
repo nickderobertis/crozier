@@ -1555,3 +1555,14 @@ SwaggerHub nor Postman has been relabelled as answered.
 Counts use the standard census, not the local search helper's custom-conjunction
 mode, which counts this standalone predicate twice. Preserved search query/results
 are historical evidence and remain unchanged.
+
+#### Wide acquisition reconciliation
+
+The [wide acquisition and slot reconciliation](witness-scrape-wide/README.md#finished-tree-reconciliation)
+retains all 26 search-incomplete baseline keys. Its ten declaring artifacts yield
+no passing witness: eight lack evidenced publisher grants and Fern refuses two.
+Slot 1 independently exhausted the empty ranked queue. No registered golden or
+category changes, so the region and fixture backlog retain their counts.
+The linked report names each key's outstanding search and registration reason.
+Postman is excluded from that run and its future obligations; the historical
+seven-source query/results above remain unchanged.
