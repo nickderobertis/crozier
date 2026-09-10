@@ -91,7 +91,7 @@ prior bytes, or the absence of such proof.
 The following committed evidence is fetchable without downloading bulk corpora
 into Git:
 
-- [`catalogue-entries.tsv`](catalogue-entries.tsv): every version, its indexed JSON
+- [`catalogue-entries.tsv.gz`](catalogue-entries.tsv.gz): every version, its indexed JSON
   refusal, indexed YAML association, tree hash and alternative outcome.
 - [`trees.json.gz`](trees.json.gz): all six repository pins, selected roots,
   excluded tooling/test/metadata paths, previous publisher coordinates and licence

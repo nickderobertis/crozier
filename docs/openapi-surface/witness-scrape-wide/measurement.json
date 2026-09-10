@@ -20,5 +20,10 @@
     "verified_alternatives": 3894,
     "missing_alternatives": 98,
     "method": "Raw Git blob identity plus SHA-256, at the recorded commit; clean-filter transformations are rejected."
+  },
+  "catalogue_ledger": {
+    "path": "catalogue-entries.tsv.gz",
+    "uncompressed_sha256": "cda40beb0e58626182e0f82b59755adfa751f227e4ca22b0b5e9310bddd19c29",
+    "rows": 3992
   }
 }
