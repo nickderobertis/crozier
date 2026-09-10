@@ -326,18 +326,13 @@ node added by this worker. If a later acquisition supplies a rank, the manager
 can use this registration form without changing the frozen ranking:
 
 ```text
-slot: <manager-assigned slot>
-rank: <highest still-relevant unattempted rank from ranking.tsv>
-artifact_sha256: <exact ranked SHA-256>
-artifact: <immutable URL and publisher/licence evidence>
-keys: <JSON array of retained, still-unproven baseline keys>
-fern_evidence: <ranked report path>
-comparison_evidence: <ranked report path, including differing files if red>
-prior_slots: docs/openapi-surface/witness-scrape-wide/slots.md
-required_result: registered | blocked | exhausted, with specific evidence
+Assigned slot: <manager-assigned slot>
+Candidate: <link to the highest still-relevant unattempted ranking.tsv row>
+Prior outcomes: docs/openapi-surface/witness-scrape-wide/slots.md
+Deliverable: append the result and specific evidence using that ledger's contract.
 ```
 
-A present unattempted rank must be reported to the manager using those fields;
+A present unattempted rank must be reported to the manager using that form;
 it is not exhausted. Registration additionally needs the real Route A golden
 and Crozier byte comparison before any surface promotion.
 
