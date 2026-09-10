@@ -10,3 +10,10 @@ Additional induced states after the judged coverage finding:
 omitted-local-paths: expected real-CLI test failure observed
 disabled-rank-order: expected real-CLI test failure observed
 disabled-registered-key-conflict: expected real-CLI test failure observed
+
+Additional induced states for report corruption, metadata, and census failure:
+disabled-table-validation: expected real-CLI test failure observed
+disabled-accounting-validation: expected real-CLI test failure observed
+lost-changed-byte-metadata: expected real-CLI test failure observed
+lost-document-licence: expected real-CLI test failure observed
+ignored-census-failure: expected real-CLI test failure observed

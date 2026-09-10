@@ -769,6 +769,36 @@ class WideWitnessTests(unittest.TestCase):
         recovered = self.validate()
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
+    def test_report_table_failures_identify_the_broken_contract_and_recover(self) -> None:
+        candidate_row = self.candidate.splitlines()[-1] + '\n'
+        exhausted = '| slot-1 | — | [] | exhausted | comparison.txt |\n'
+        changes = [
+            ('candidates.md', self.candidate.replace('redistribution', 'grant'), 'candidate header'),
+            ('candidates.md', self.candidate.replace(' | fern.txt |', ' |'), 'eight columns'),
+            ('candidates.md', self.candidate.replace('passed: grant', ''), 'missing a screen state'),
+            ('candidates.md', self.candidate + candidate_row, 'duplicate candidate artifact'),
+            ('candidates.md', self.candidate.replace(self.key, 'unknown-key'), 'candidate has unknown keys'),
+            ('ranking.tsv', (self.rank_header + self.rank_row).replace('rank\t', 'position\t', 1), 'ranking header'),
+            ('slots.md', self.slots_header.replace('disposition', 'result'), 'slot header'),
+            ('slots.md', self.slots_header + exhausted.replace(' | comparison.txt |', ' |'), 'five columns'),
+            ('slots.md', self.slots_header + exhausted * 2, 'duplicate or empty slot'),
+            ('slots.md', self.slots_header + exhausted.replace('slot-1', ''), 'duplicate or empty slot'),
+            ('slots.md', self.slots_header + exhausted.replace('exhausted', 'invented'), 'unknown slot disposition'),
+            ('slots.md', self.slots_header + exhausted.replace('—', self.sha), 'absent artifact and keys'),
+            ('slots.md', self.slots_header + exhausted.replace('[]', json.dumps([self.key])), 'absent artifact and keys'),
+        ]
+        for filename, broken, diagnostic in changes:
+            with self.subTest(diagnostic=diagnostic, broken=broken):
+                path = self.report / filename
+                original = path.read_text(encoding='utf-8')
+                path.write_text(broken, encoding='utf-8')
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(diagnostic, refused.stderr)
+                path.write_text(original, encoding='utf-8')
+        recovered = self.validate()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_slots_reject_conflicting_claims_and_accept_exhaustion(self) -> None:
         path = self.report / 'slots.md'
         row = f'| slot-1 | {self.sha} | {json.dumps([self.key])} | registered | comparison.txt |\n'
@@ -946,6 +976,55 @@ class WideWitnessTests(unittest.TestCase):
         self.assertNotEqual(0, partial.returncode)
         self.assertIn('partial inventory', partial.stderr)
 
+    def test_changed_publisher_bytes_record_the_document_licence(self) -> None:
+        import hashlib
+        spec = self.work / 'publisher.json'
+        document = {'openapi': '3.0.3', 'info': {'title': 'Éditeur', 'version': '2',
+                    'license': {'name': 'Publisher grant', 'url': 'https://publisher.example/grant'}}, 'paths': {}}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': '0' * 64}]}), encoding='utf-8')
+        output = self.work / 'acquisition.json'
+        run = self.cli('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                       '--contract', self.report / 'keys.md', '--output', output)
+        self.assertEqual(0, run.returncode, run.stderr)
+        row = json.loads(output.read_text(encoding='utf-8'))['sources'][0]
+        self.assertEqual('readable', row['status'])
+        self.assertEqual('changed-bytes', row['prior_relation'])
+        self.assertEqual(sha, row['sha256'])
+        self.assertEqual(document['info']['license'], row.get('document_license'))
+
+    def test_acquisition_preserves_failed_real_census_logs_and_recovers(self) -> None:
+        # JSON decoding succeeds, but a deeply nested schema exceeds the real
+        # census walk's recursion depth. No substitute census process is used.
+        spec = self.work / 'profond.json'
+        schema = {'type': 'string'}
+        for _ in range(700):
+            schema = {'items': schema}
+        document = {'openapi': '3.0.3', 'info': {'title': 'Profond', 'version': '1'},
+                    'paths': {}, 'components': {'schemas': {'Deep': schema}}}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [{'artifact': spec.as_uri()}]}), encoding='utf-8')
+        output = self.work / 'acquisition.json'
+        args = ('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                '--contract', self.report / 'keys.md', '--output', output)
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('census failed; see', refused.stderr)
+        self.assertIn(str(output.with_suffix('.census.log')), refused.stderr)
+        recorded = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual('readable', recorded['sources'][0]['status'])
+        self.assertNotEqual(0, recorded['census_exit'])
+        self.assertIn('RecursionError', output.with_suffix('.census.log').read_text(encoding='utf-8'))
+        document['components']['schemas']['Deep'] = {'type': 'string'}
+        spec.write_text(json.dumps(document), encoding='utf-8')
+        recovered = self.cli(*args)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual(0, json.loads(output.read_text(encoding='utf-8'))['census_exit'])
+
     def test_index_tree_joins_every_version_to_verified_git_bytes(self) -> None:
         import hashlib
         tree = self.work / 'tree'
@@ -1052,6 +1131,70 @@ class WideWitnessTests(unittest.TestCase):
         self.assertIn('unknown document, selector or key', failed.stderr)
         catalogue.write_text(text, encoding='utf-8')
         acquisition.write_bytes(original_acquisition)
+        recovered = run()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_consolidated_report_rejects_corrupt_accounting_and_recovers(self) -> None:
+        import gzip
+        import hashlib
+        root = self.work / 'consolidated'
+        shutil.copytree(REPO / 'docs/openapi-surface/witness-scrape-wide', root)
+        run = lambda: self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
+        fingerprints = root / 'historical-sha256.tsv'
+        original_fingerprints = fingerprints.read_text(encoding='utf-8')
+        lines = original_fingerprints.splitlines()
+        cells = lines[1].split('\t')
+        header = lines[0].split('\t')
+        cells[header.index('sha256')] = '0' * 64
+        lines[1] = '\t'.join(cells)
+        fingerprints.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+        refused = run()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('historical report bytes changed', refused.stderr)
+        fingerprints.write_text(original_fingerprints, encoding='utf-8')
+        acquisition = root / 'acquisition.json.gz'
+        original = acquisition.read_bytes()
+        for mode, message in [
+            ('outcome', 'missing acquisition outcome'),
+            ('diagnostic', 'failed acquisition missing diagnostic'),
+            ('runs', 'missing census runs'),
+            ('exit', 'unfinished or failed census'),
+            ('digest', 'census evidence digest changed'),
+            ('header', 'census evidence header changed'),
+            ('count', 'invalid declaration count'),
+        ]:
+            with self.subTest(mode=mode):
+                data = json.loads(gzip.decompress(original))
+                catalogue = root / 'catalogue-census.tsv'
+                census_bytes = catalogue.read_bytes()
+                if mode == 'outcome':
+                    data['sources'][0].pop('status')
+                elif mode == 'diagnostic':
+                    failed = next(row for row in data['sources'] if row['status'] != 'readable')
+                    failed.pop('diagnostic')
+                elif mode == 'runs':
+                    data['census_runs'] = []
+                elif mode == 'exit':
+                    data['census_runs'][0]['exit_code'] = 1
+                elif mode == 'digest':
+                    data['census_runs'][0]['stdout_sha256'] = '0' * 64
+                else:
+                    rows = census_bytes.decode('utf-8').splitlines()
+                    if mode == 'header':
+                        rows[0] = rows[0].replace('count', 'total')
+                    else:
+                        cells = rows[1].split('\t')
+                        cells[-1] = '0'
+                        rows[1] = '\t'.join(cells)
+                    catalogue.write_text('\n'.join(rows) + '\n', encoding='utf-8')
+                    record = next(row for row in data['census_runs'] if row['stdout'] == catalogue.name)
+                    record['stdout_sha256'] = hashlib.sha256(catalogue.read_bytes()).hexdigest()
+                acquisition.write_bytes(gzip.compress(json.dumps(data).encode('utf-8'), mtime=0))
+                refused = run()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(message, refused.stderr)
+                catalogue.write_bytes(census_bytes)
+                acquisition.write_bytes(original)
         recovered = run()
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
