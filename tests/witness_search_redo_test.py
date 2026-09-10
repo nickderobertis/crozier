@@ -737,6 +737,8 @@ class WideWitnessTests(unittest.TestCase):
         (self.report / 'ranking.tsv').write_text(self.rank_header + self.rank_row, encoding='utf-8')
         self.slots_header = '| slot | artifact_sha256 | keys | disposition | evidence |\n|---|---|---|---|---|\n'
         (self.report / 'slots.md').write_text(self.slots_header, encoding='utf-8')
+        (self.report / 'acquisition.json').write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': self.artifact, 'sha256': self.sha}]}), encoding='utf-8')
 
     def cli(self, *args) -> subprocess.CompletedProcess[str]:
         return subprocess.run([sys.executable, str(self.wide), *(str(a) for a in args)],
@@ -917,6 +919,65 @@ class WideWitnessTests(unittest.TestCase):
                 for rank, (sha, artifact, keys) in zip(numbers, candidates)]
         (self.report / 'ranking.tsv').write_text(self.rank_header + ''.join(rows), encoding='utf-8')
 
+    def test_ranked_bytes_must_match_acquisition_and_allow_provenance_aliases(self) -> None:
+        import hashlib
+        spec = self.work / 'publisher.json'
+        alias = self.work / 'miroir-é.json'
+        spec.write_text('{"openapi":"3.0.3","info":{"title":"Publisher","version":"1"},"paths":{}}', encoding='utf-8')
+        alias.write_bytes(spec.read_bytes())
+        sha = hashlib.sha256(spec.read_bytes()).hexdigest()
+        inventory = self.work / 'inventory.json'
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [
+            {'artifact': path.as_uri(), 'sha256': sha} for path in (spec, alias)]}), encoding='utf-8')
+        acquisition = self.report / 'acquisition.json'
+        acquired = self.cli('acquire', '--inventory', inventory, '--cache', self.work / 'cache',
+                            '--contract', self.report / 'keys.md', '--output', acquisition)
+        self.assertEqual(0, acquired.returncode, acquired.stderr)
+        original = acquisition.read_text(encoding='utf-8')
+        candidates = self.candidate.replace(self.artifact, spec.as_uri())
+        candidates += self.candidate.splitlines()[-1].replace(self.artifact, alias.as_uri()) + '\n'
+        (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+        slots = self.report / 'slots.md'
+        for identity in (spec.as_uri(), alias.as_uri()):
+            with self.subTest(identity=identity):
+                acquisition.write_text(original, encoding='utf-8')
+                (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+                self.write_ranks([(sha, identity, [self.key])])
+                slots.write_text(self.slots_header + f'| slot-1 | {sha} | {json.dumps([self.key])} | registered | comparison.txt |\n', encoding='utf-8')
+                valid = self.validate()
+                self.assertEqual(0, valid.returncode, valid.stderr)
+                substituted = 'f' * 64
+                self.assertNotEqual(sha, substituted)
+                self.write_ranks([(substituted, identity, [self.key])])
+                slots.write_text(slots.read_text(encoding='utf-8').replace(sha, substituted), encoding='utf-8')
+                # Keep only the ranked candidate so alias-completeness checks
+                # cannot accidentally catch the unrelated digest substitution.
+                (self.report / 'candidates.md').write_text(self.candidate.replace(self.artifact, identity), encoding='utf-8')
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranked digest differs from acquisition', refused.stderr)
+                self.assertIn(identity, refused.stderr)
+                self.write_ranks([(sha, identity, [self.key])])
+                slots.write_text(self.slots_header, encoding='utf-8')
+                for missing_digest in (False, True):
+                    data = json.loads(original)
+                    if missing_digest:
+                        next(row for row in data['sources'] if row['artifact'] == identity).pop('sha256')
+                    else:
+                        data['sources'] = [row for row in data['sources'] if row['artifact'] != identity]
+                    acquisition.write_text(json.dumps(data), encoding='utf-8')
+                    refused = self.validate()
+                    self.assertNotEqual(0, refused.returncode)
+                    self.assertIn('ranked artifact lacks acquisition digest', refused.stderr)
+                acquisition.unlink()
+                refused = self.validate()
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn('ranked artifact lacks acquisition digest', refused.stderr)
+                acquisition.write_text(original, encoding='utf-8')
+                (self.report / 'candidates.md').write_text(candidates, encoding='utf-8')
+                recovered = self.validate()
+                self.assertEqual(0, recovered.returncode, recovered.stderr)
+
     def test_multiple_ranks_freeze_coverage_firmness_and_digest_order(self) -> None:
         candidates, _keys = self.multiple_ranked_candidates()
         valid = self.validate()
@@ -987,6 +1048,8 @@ class WideWitnessTests(unittest.TestCase):
         self.assertEqual(0, run(missing_args).returncode)
 
     def test_acquisition_uses_real_files_cache_and_census_with_failure_recovery(self) -> None:
+        (self.report / 'ranking.tsv').write_text(self.rank_header, encoding='utf-8')
+        (self.report / 'candidates.md').write_text('\n'.join(self.candidate.splitlines()[:2]) + '\n', encoding='utf-8')
         import hashlib
         spec = self.work / 'publisher.yaml'  # publisher suffix may disagree with unchanged JSON bytes
         spec.write_text(json.dumps({'openapi': '3.0.3', 'info': {'title': 'Réel', 'version': '1'},

@@ -443,6 +443,12 @@ def validate(args) -> None:
                 else 0
             )
             firmness[sha] = max(firmness.get(sha, 0), grade)
+    for row in ranks.values():
+        artifact = row["artifact"]
+        if not aliases.get(artifact):
+            raise ValueError(f"ranked artifact lacks acquisition digest: {artifact}")
+        if aliases[artifact] != row["artifact_sha256"]:
+            raise ValueError(f"ranked digest differs from acquisition: {artifact}")
     for artifact, retained in passing.items():
         if (
             retained
