@@ -37,7 +37,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--schemas",
                 str(REPO / "docs/openapi-surface/schemas.md"),
             ]
-        return subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
 
     def changed(self, source: Path, old: str, new: str) -> Path:
         directory = Path(tempfile.mkdtemp())
@@ -130,7 +130,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
 
     def test_each_shard_is_independently_valid_and_outcome_invisible(
@@ -192,7 +192,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "--documents",
             f"test={directory}",
         ]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
         rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
         hits = {
@@ -203,7 +203,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
-        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True)
+        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, encoding="utf-8")
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
 
@@ -247,7 +247,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     ],
                     cwd=REPO,
                     capture_output=True,
-                    text=True,
+                    text=True, encoding="utf-8",
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
@@ -560,7 +560,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             [sys.executable, str(REPO / "scripts/openapi-surface-census.py"),
              "--fixture", "paypal-catalog-products", "--json",
              *(arg for selector in keys.values() for arg in ("--selector", selector))],
-            cwd=REPO, capture_output=True, text=True,
+            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         census = json.loads(result.stdout)
@@ -569,7 +569,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual(set(keys.values()) - set(counts), set(census["absent_selectors"]))
         # Authoritative entry rows use bare keys, unlike candidate tables.
         entries = {}
-        for line in (REPO / "docs/openapi-surface/schemas.md").read_text().splitlines():
+        for line in (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").splitlines():
             if line.startswith("| "):
                 cells = [cell.strip().strip("`") for cell in line.strip("|").split("|")]
                 if len(cells) == 8 and cells[0] in keys:
@@ -594,22 +594,22 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "passed: generated model | `witness-found` | model.py |\n"
         )
         candidates.write_text(row, encoding="utf-8")
-        schemas.write_text(schemas.read_text().replace(
+        schemas.write_text(schemas.read_text(encoding="utf-8").replace(
             "search outcome `search-incomplete`", "search outcome `witness-found`", 1
         ), encoding="utf-8")
         found = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, found.returncode, found.stderr)
         for screen in ("grant", "publisher pin", "non-empty generation", "generated model"):
             with self.subTest(screen=screen):
-                candidates.write_text(row.replace(f"passed: {screen}", f"blocked: {screen}"))
+                candidates.write_text(row.replace(f"passed: {screen}", f"blocked: {screen}"), encoding="utf-8")
                 rejected = self.reconcile_documents(shards, schemas)
                 self.assertNotEqual(0, rejected.returncode)
                 self.assertIn("search-incomplete", rejected.stderr)
-        candidates.write_text(row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"))
+        candidates.write_text(row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"), encoding="utf-8")
         discarded = self.reconcile_documents(shards, schemas)
         self.assertNotEqual(0, discarded.returncode)
         self.assertIn("search-incomplete", discarded.stderr)
-        candidates.write_text(row)
+        candidates.write_text(row, encoding="utf-8")
         recovered = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
@@ -659,7 +659,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         self.assertEqual(2, result.returncode)
         self.assertIn("--reconcile requires --schemas PATH", result.stderr)
