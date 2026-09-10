@@ -38,7 +38,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
         sources = census.registered_sources(
             REPO / "tests" / "fixtures", REPO / ".local" / "corpus", False
         )
-        self.assertEqual(169, len(sources))
+        self.assertEqual(170, len(sources))
         declared: list[str] = []
         for offset in range(0, len(sources), 30):
             fixture_args = list(
