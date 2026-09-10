@@ -154,7 +154,11 @@ def read_inventory(path: Path) -> dict:
         else path.read_text(encoding="utf-8")
     )
     value = json.loads(text)
-    if value.get("schema_version") != 1 or not isinstance(value.get("sources"), list):
+    if (
+        not isinstance(value, dict)
+        or value.get("schema_version") != 1
+        or not isinstance(value.get("sources"), list)
+    ):
         raise ValueError(
             f"{path}: expected inventory schema_version 1 and sources array"
         )
@@ -170,7 +174,10 @@ def read_inventory(path: Path) -> dict:
             raise ValueError(f"{path}: duplicate artifact {row['artifact']}")
         seen.add(row["artifact"])
         for field in ("sha256", "prior_sha256"):
-            if field in row and not re.fullmatch("[0-9a-f]{64}", row[field]):
+            if field in row and (
+                not isinstance(row[field], str)
+                or not re.fullmatch("[0-9a-f]{64}", row[field])
+            ):
                 raise ValueError(f"{path}: malformed {field}")
     return value
 

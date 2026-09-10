@@ -17,3 +17,11 @@ disabled-accounting-validation: expected real-CLI test failure observed
 lost-changed-byte-metadata: expected real-CLI test failure observed
 lost-document-licence: expected real-CLI test failure observed
 ignored-census-failure: expected real-CLI test failure observed
+
+Before the inventory type guards: real-CLI tests observed three intended failures: a top-level array produced AttributeError, and numeric sha256/prior_sha256 produced generic type errors instead of inventory diagnostics. The corrected reader rejects all three before cache creation.
+
+Additional induced states for derived screens, baseline version, measured keys, and requested pins:
+lost-derived-screen-state: expected real-CLI test failure observed
+ignored-baseline-version: expected real-CLI test failure observed
+ignored-declaration-key-mismatch: expected real-CLI test failure observed
+ignored-requested-pin: expected real-CLI test failure observed

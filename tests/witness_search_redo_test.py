@@ -745,6 +745,74 @@ class WideWitnessTests(unittest.TestCase):
     def validate(self, *args) -> subprocess.CompletedProcess[str]:
         return self.cli('validate', '--report', self.report, *args)
 
+    def test_derive_preserves_key_specific_screening_metadata(self) -> None:
+        root = self.work / 'history'
+        root.mkdir()
+        shutil.copyfile(CONTRACT, root / 'contract.md')
+        keys = list(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys'])
+        retained, discarded, absent = keys[:3]
+        screens = ['passed: publisher grant', 'passed: pinned publisher', 'passed: generated SDK',
+                   f'passed: retained first model; discarded keys: `{discarded}`']
+        blocked = ['blocked: no publisher grant', 'not reached', 'not reached', 'not reached']
+        table = '\n'.join(self.candidate.splitlines()[:2]) + '\n'
+        table += f'| `publisher/retained-é.json` | `{retained}`, `{discarded}` | ' + ' | '.join(screens) + ' | `witness-found` | evidence.txt |\n'
+        table += f'| `publisher/blocked.json` | `{discarded}` | ' + ' | '.join(blocked) + ' | `witness-blocked` | evidence.txt |\n'
+        (root / 'candidates.md').write_text(table, encoding='utf-8')
+        output = self.work / 'derived'
+        result = self.cli('derive', '--report', output, '--contract', root / 'contract.md')
+        self.assertEqual(0, result.returncode, result.stderr)
+        baseline = json.loads((output / 'baseline.json').read_text(encoding='utf-8'))
+        pin = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, encoding='utf-8').strip()
+        self.assertEqual(pin, baseline['source_commit'])
+        items = baseline['keys']
+        self.assertTrue(items[retained]['usable_witness'])
+        self.assertFalse(items[discarded]['usable_witness'])
+        self.assertFalse(items[absent]['usable_witness'])
+        self.assertEqual([], items[absent]['candidates'])
+        self.assertEqual([{'artifact': 'publisher/retained-é.json', 'screens': screens,
+                           'disposition': 'witness-found', 'discarded': False}], items[retained]['candidates'])
+        self.assertEqual([{'artifact': 'publisher/retained-é.json', 'screens': screens,
+                           'disposition': 'witness-found', 'discarded': True},
+                          {'artifact': 'publisher/blocked.json', 'screens': blocked,
+                           'disposition': 'witness-blocked', 'discarded': False}], items[discarded]['candidates'])
+        # Changing the frozen selector must refuse derivation before writing a report.
+        contract = root / 'contract.md'
+        contract.write_text(contract.read_text(encoding='utf-8').replace('schema.', 'unknown.', 1), encoding='utf-8')
+        refused = self.cli('derive', '--report', self.work / 'refused', '--contract', contract)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('selector', refused.stderr)
+        self.assertFalse((self.work / 'refused').exists())
+
+    def test_inventory_boundary_refusals_precede_acquisition_and_recover(self) -> None:
+        inventory = self.work / 'inventaire-é.json'
+        cache = self.work / 'cache'
+        output = self.work / 'acquisition.json'
+        source = {'artifact': (self.work / 'absent.json').as_uri()}
+        cases = [([], 'expected inventory'), ({}, 'expected inventory'),
+                 ({'schema_version': 2, 'sources': []}, 'expected inventory'),
+                 ({'schema_version': 1, 'sources': {}}, 'expected inventory')]
+        for row in (None, {}, {'artifact': ''}, {'artifact': 7}):
+            cases.append(({'schema_version': 1, 'sources': [row]}, 'missing artifact identity'))
+        cases.append(({'schema_version': 1, 'sources': [source, source]}, 'duplicate artifact'))
+        for field in ('sha256', 'prior_sha256'):
+            for value in ('A' * 64, 'a' * 63, 42):
+                cases.append(({'schema_version': 1, 'sources': [dict(source, **{field: value})]}, f'malformed {field}'))
+        args = ('acquire', '--inventory', inventory, '--cache', cache,
+                '--contract', self.report / 'keys.md', '--output', output)
+        for invalid, message in cases:
+            with self.subTest(invalid=invalid):
+                inventory.write_text(json.dumps(invalid), encoding='utf-8')
+                refused = self.cli(*args)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(message, refused.stderr)
+                self.assertIn('inventaire-é.json', refused.stderr)
+                self.assertFalse(cache.exists())
+                self.assertFalse(output.exists())
+        inventory.write_text(json.dumps({'schema_version': 1, 'sources': [source]}), encoding='utf-8')
+        recovered = self.cli(*args)
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual('inaccessible', json.loads(output.read_text(encoding='utf-8'))['sources'][0]['status'])
+
     def test_real_report_validator_rejects_contract_drift_and_recovers(self) -> None:
         good = self.validate()
         self.assertEqual(0, good.returncode, good.stderr)
@@ -772,7 +840,10 @@ class WideWitnessTests(unittest.TestCase):
     def test_report_table_failures_identify_the_broken_contract_and_recover(self) -> None:
         candidate_row = self.candidate.splitlines()[-1] + '\n'
         exhausted = '| slot-1 | — | [] | exhausted | comparison.txt |\n'
+        baseline = json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))
+        baseline['schema_version'] = 2
         changes = [
+            ('baseline.json', json.dumps(baseline), 'baseline schema_version must be 1'),
             ('candidates.md', self.candidate.replace('redistribution', 'grant'), 'candidate header'),
             ('candidates.md', self.candidate.replace(' | fern.txt |', ' |'), 'eight columns'),
             ('candidates.md', self.candidate.replace('passed: grant', ''), 'missing a screen state'),
@@ -1048,6 +1119,12 @@ class WideWitnessTests(unittest.TestCase):
         output = self.work / 'associated.json'
         args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
                 '--tree', tree, '--ref', pin, '--prior-ref', pin, '--local-paths', '--output', output)
+        wrong_pin = list(args)
+        wrong_pin[wrong_pin.index('--ref') + 1] = '0' * 40
+        refused = self.cli(*wrong_pin)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('tree commit differs from the requested pin', refused.stderr)
+        self.assertFalse(output.exists())
         result = self.cli(*args)
         self.assertEqual(0, result.returncode, result.stderr)
         measured = json.loads(output.read_text(encoding='utf-8'))
@@ -1108,6 +1185,14 @@ class WideWitnessTests(unittest.TestCase):
         failed = run()
         self.assertNotEqual(0, failed.returncode)
         self.assertIn('missing completed or blocked screens', failed.stderr)
+        candidates.write_text(original, encoding='utf-8')
+        owned = re.findall(r'`([^`]+)`', row.split('|')[2])
+        known = json.loads((root / 'baseline.json').read_text(encoding='utf-8'))['keys']
+        other = next(key for key in known if key not in owned)
+        candidates.write_text(original.replace(row, row.replace(f'`{owned[0]}`', f'`{other}`', 1), 1), encoding='utf-8')
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('candidate keys disagree with measured declarations', failed.stderr)
         candidates.write_text(original, encoding='utf-8')
         evidence = root / 'publisher-census.tsv'
         content = evidence.read_bytes()
