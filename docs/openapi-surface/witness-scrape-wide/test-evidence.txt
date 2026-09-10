@@ -1,0 +1,7 @@
+Induced-state evidence captured before the final enum and literal-Git-blob guards; none of these mutants modified the working tree.
+The repository census was not mocked or changed.
+
+disabled-validator: expected test failure observed: test_real_report_validator_rejects_contract_drift_and_recovers, test_slots_reject_conflicting_claims_and_accept_exhaustion, test_consolidated_report_rejects_lost_screens_and_census_evidence
+ignored-source-digest: expected test failure observed: test_acquisition_uses_real_files_cache_and_census_with_failure_recovery
+ignored-dirty-tree: expected test failure observed: test_index_tree_joins_every_version_to_verified_git_bytes
+ignored-supplements: expected retained-positive test failure observed

@@ -749,6 +749,7 @@ class WideWitnessTests(unittest.TestCase):
         good = self.validate()
         self.assertEqual(0, good.returncode, good.stderr)
         changes = [
+            ('candidates.md', self.candidate.replace('witness-found', 'invented'), 'unknown candidate disposition'),
             ('ranking.tsv', self.rank_header + self.rank_row * 2, 'duplicate rank'),
             ('ranking.tsv', self.rank_header + self.rank_row.replace('1\t', '0\t', 1), 'malformed'),
             ('ranking.tsv', self.rank_header + self.rank_row.replace(self.key, 'unknown-key'), 'unknown keys'),
@@ -796,6 +797,13 @@ class WideWitnessTests(unittest.TestCase):
         self.assertNotEqual(0, run([]).returncode)
         supplemental.write_text(supplemental.read_text(encoding='utf-8').replace('passed: retained model', f'passed: other model; discarded keys: `{key}`'), encoding='utf-8')
         self.assertIn("expected 'search-incomplete'", run(supplement).stderr)
+        missing = self.work / 'absent-supplément.md'
+        missing_args = ['--supplement-candidates', str(missing)]
+        refused = run(missing_args)
+        self.assertEqual(2, refused.returncode)
+        self.assertIn('requires a candidate file', refused.stderr)
+        missing.write_text(self.candidate.replace(self.key, key), encoding='utf-8')
+        self.assertEqual(0, run(missing_args).returncode)
 
     def test_acquisition_uses_real_files_cache_and_census_with_failure_recovery(self) -> None:
         import hashlib
@@ -809,6 +817,10 @@ class WideWitnessTests(unittest.TestCase):
         rows = [{'artifact': spec.as_uri(), 'sha256': sha, 'prior_sha256': sha},
                 {'artifact': malformed.as_uri()}, {'artifact': (self.work / 'absent.json').as_uri()}]
         inventory.write_text(json.dumps({'schema_version': 1, 'sources': rows}), encoding='utf-8')
+        import gzip
+        compressed = inventory.with_suffix('.json.gz')
+        compressed.write_bytes(gzip.compress(inventory.read_bytes(), mtime=0))
+        inventory = compressed
         cache = self.work / 'cache'
         output = self.report / 'acquisition.json'
         args = ('acquire', '--inventory', inventory, '--cache', cache,
@@ -819,6 +831,7 @@ class WideWitnessTests(unittest.TestCase):
         self.assertEqual(['readable', 'unreadable', 'inaccessible'], [r['status'] for r in outcomes])
         self.assertEqual('newly-fetched', outcomes[0]['acquisition'])
         self.assertEqual(sha + '.json', outcomes[0]['document'])
+        self.assertNotIn('document_license', outcomes[0])
         self.assertIn('property-sole-anyof-struct-member', output.with_suffix('.census.tsv').read_text(encoding='utf-8'))
         self.assertEqual(0, self.validate('--inventory', inventory).returncode)
         spec.unlink()  # exact cached bytes still support a real census offline
@@ -839,12 +852,102 @@ class WideWitnessTests(unittest.TestCase):
         self.assertNotEqual(0, partial.returncode)
         self.assertIn('partial inventory', partial.stderr)
 
+    def test_index_tree_joins_every_version_to_verified_git_bytes(self) -> None:
+        import hashlib
+        tree = self.work / 'tree'
+        tree.mkdir()
+        def git(*args):
+            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, encoding='utf-8', check=True)
+        git('init', '-q')
+        git('config', 'user.name', 'Witness test')
+        git('config', 'user.email', 'witness@example.invalid')
+        path = tree / 'APIs/publisher/1/openapi.yaml'
+        path.parent.mkdir(parents=True)
+        path.write_text('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n', encoding='utf-8')
+        git('add', 'APIs')
+        git('commit', '-qm', 'test: record publisher tree')
+        pin = git('rev-parse', 'HEAD').stdout.strip()
+        index = self.work / 'list.json'
+        index.write_text(json.dumps({'publisher': {'versions': {
+            '1': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.json', 'swaggerYamlUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.yaml'},
+            '2': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/2/openapi.json'}
+        }}}), encoding='utf-8')
+        output = self.work / 'associated.json'
+        args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
+                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--output', output)
+        result = self.cli(*args)
+        self.assertEqual(0, result.returncode, result.stderr)
+        measured = json.loads(output.read_text(encoding='utf-8'))
+        self.assertEqual(1, measured['schema_version'])
+        self.assertEqual(2, len(measured['sources']))
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured['sources'][0]['prior_sha256'])
+        self.assertIn('absent from pinned', measured['sources'][1]['tree_diagnostic'])
+        path.write_text('changed: bytes\n', encoding='utf-8')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('changed bytes', refused.stderr)
+        git('restore', 'APIs')
+        self.assertEqual(0, self.cli(*args).returncode)
+        original_bytes = path.read_bytes()
+        git('config', 'core.autocrlf', 'true')
+        path.write_bytes(original_bytes.replace(b'\n', b'\r\n'))
+        git('diff', '--quiet', 'HEAD', '--', 'APIs')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('changed literal bytes', refused.stderr)
+        git('config', 'core.autocrlf', 'false')
+        path.write_bytes(original_bytes)
+        self.assertEqual(0, self.cli(*args).returncode)
+        index.write_text('{}', encoding='utf-8')
+        refused = self.cli(*args)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('catalogue digest changed', refused.stderr)
+
     def test_committed_wide_report(self) -> None:
         root = REPO / 'docs/openapi-surface/witness-scrape-wide'
-        if not (root / 'README.md').exists():
-            self.skipTest('report acquisition still in progress')
-        result = self.cli('validate', '--report', root, '--inventory', root / 'inventory.json')
+        result = self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_consolidated_report_rejects_lost_screens_and_census_evidence(self) -> None:
+        import gzip
+        import hashlib
+        root = self.work / 'consolidated'
+        shutil.copytree(REPO / 'docs/openapi-surface/witness-scrape-wide', root)
+        run = lambda: self.cli('validate', '--report', root, '--inventory', root / 'inventory.json.gz')
+        good = run()
+        self.assertEqual(0, good.returncode, good.stderr)
+        candidates = root / 'candidates.md'
+        original = candidates.read_text(encoding='utf-8')
+        row = next(line for line in original.splitlines(keepends=True) if line.startswith('| `'))
+        candidates.write_text(original.replace(row, '', 1), encoding='utf-8')
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('missing completed or blocked screens', failed.stderr)
+        candidates.write_text(original, encoding='utf-8')
+        evidence = root / 'publisher-census.tsv'
+        content = evidence.read_bytes()
+        evidence.unlink()
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('missing or outside-report evidence', failed.stderr)
+        evidence.write_bytes(content)
+        acquisition = root / 'acquisition.json.gz'
+        original_acquisition = acquisition.read_bytes()
+        outcome = json.loads(gzip.decompress(original_acquisition))
+        catalogue = root / 'catalogue-census.tsv'
+        text = catalogue.read_text(encoding='utf-8')
+        catalogue.write_text(text.replace('schema.', 'unknown.', 1), encoding='utf-8')
+        for record in outcome['census_runs']:
+            if record['stdout'] == catalogue.name:
+                record['stdout_sha256'] = hashlib.sha256(catalogue.read_bytes()).hexdigest()
+        acquisition.write_bytes(gzip.compress(json.dumps(outcome).encode('utf-8'), mtime=0))
+        failed = run()
+        self.assertNotEqual(0, failed.returncode)
+        self.assertIn('unknown document, selector or key', failed.stderr)
+        catalogue.write_text(text, encoding='utf-8')
+        acquisition.write_bytes(original_acquisition)
+        recovered = run()
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
 
 
 if __name__ == "__main__":

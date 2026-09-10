@@ -1,0 +1,12 @@
+source	key	selector	document	count
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	15751f97e6e3fbaf48e880fe0425686daa7adb299adf8f0897641a38b2008b80.yaml	356
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	276911e771aaba2a137ebe3b323afca84cdd855175929236cfd3de910f579e42.yaml	40
+acquired	annotated-ref-target-composed	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf	4ce2c6eafa40cc6e3d40c1b2534cb95fd0d8511902a7cdb00a8c4847b239510d.yaml	2
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	86e433fe19b8cd4dc27f547c53cfa06377d8c7bee1b0ed38418fb8d983ba92e4.yaml	90
+acquired	annotated-ref-target-composed	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf	8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e.yaml	34
+acquired	annotated-ref-target-closed-object	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50.yaml	7
+acquired	annotated-ref-target-oneof	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50.yaml	4
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	ca9eeffc3d9e0d83a956be4e557837296de6695f00b3a09bf2eaa46bdbd4fbfd.yaml	16
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	d15ff1a38310c304a542b99bac2860fdfd5a3e857be6662d15e1f281f52a1be8.yaml	4
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	d6c4e8db7b3985d09a3a0fe8ccad730e0829442fb52d14143fd326c763394ff6.yaml	12
+acquired	ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	ffe0c71205dec68c801399259a33cf809efa396defe320f8d472aebb0e384fac.yaml	62

@@ -261,6 +261,9 @@ def main() -> int:
     parser.add_argument("--supplement-candidates", type=Path, action="append", default=[],
                         help="additional four-screen records; repeatable, historical inputs unchanged")
     args = parser.parse_args()
+    for supplement in args.supplement_candidates:
+        if not supplement.is_file():
+            parser.error(f"--supplement-candidates requires a candidate file: {supplement}")
     if args.reconcile and args.schemas is None:
         parser.error("--reconcile requires --schemas PATH")
     failures = (

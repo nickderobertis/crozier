@@ -1,0 +1,27 @@
+generate-fern-fixture: running Fern (python-sdk@5.20.0) locally...
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/nick/projects/ai-orchestrator/runs/Acquire-and-register-missing-Crozier-witnesses/scratch/336063-0/tmp.cQDQGknHtq/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> AddFollowersRequest
+                  __package__.yml
+                  [error] AddFollowersRequest is already declared in goals.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> AddFollowersRequest%0A__package__.yml%0A[error] AddFollowersRequest is already declared in goals.yml
+[api]: python-sdk __package__.yml -> types -> ProjectSaveAsTemplateRequest
+                  __package__.yml
+                  [error] ProjectSaveAsTemplateRequest is already declared in projects.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ProjectSaveAsTemplateRequest%0A__package__.yml%0A[error] ProjectSaveAsTemplateRequest is already declared in projects.yml
+[api]: python-sdk __package__.yml -> types -> RemoveFollowersRequest
+                  __package__.yml
+                  [error] RemoveFollowersRequest is already declared in goals.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> RemoveFollowersRequest%0A__package__.yml%0A[error] RemoveFollowersRequest is already declared in goals.yml
+[api]: python-sdk Found 3 errors and 0 warnings in 0.397 seconds.
+::error title=[api]%3A python-sdk::Found 3 errors and 0 warnings in 0.397 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "artifact": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/accounting/2.1.0/openapi.yaml",
+  "artifact_sha256": "15751f97e6e3fbaf48e880fe0425686daa7adb299adf8f0897641a38b2008b80",
+  "keys": {
+    "ref-pointer-unnamed-segment": 356
+  },
+  "aggregation_licence": {
+    "path": "LICENSE",
+    "url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/LICENSE",
+    "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+    "evidence": "licences/APIs-guru--openapi-directory--LICENSE"
+  },
+  "prior_candidate_identity": "codat.io:accounting/2.1.0",
+  "prior_screen": [
+    "`codat.io:accounting/2.1.0`",
+    "`ref-pointer-unnamed-segment`",
+    "blocked: see exact grant finding",
+    "not reached",
+    "not reached",
+    "not reached",
+    "`witness-blocked`",
+    "codat.io:accounting/2.1.0 (178): discarded at licence screen (no redistribution grant); publisher/ref/Fern not needed."
+  ],
+  "prior_evidence": "../../witness-search-redo/candidates.md",
+  "indexed_json_acquisition": "HTTP Error 403: Forbidden",
+  "provenance": "Pinned aggregation bytes verified; publisher equivalence of this YAML and the previously screened JSON has not been established.",
+  "fern": {
+    "status": "not-run",
+    "diagnostic": "Earlier publisher redistribution screen blocks generation."
+  },
+  "comparison": {
+    "status": "not-run",
+    "differing_files": [],
+    "diagnostics": [
+      "No Fern-accepted, retained candidate; no comparison or byte-match claim."
+    ]
+  }
+}
