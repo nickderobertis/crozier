@@ -206,12 +206,13 @@ just format      # rustfmt in place
 just upgrade     # cargo update, then re-run the gate
 ```
 
-Bootstrap enables the repository hooks. When `sccache` is already on `PATH`, new
-worktrees get an ignored, per-worktree Cargo config automatically: Cargo targets
-remain local to avoid cross-worktree locking, while compiler results are shared
-under `$ORCHESTRATOR_CACHE_DIR/sccache` (or the repository's common Git directory
-when that variable is unset). Without `sccache`, Cargo remains unconfigured and
-builds exactly as usual.
+Bootstrap enables the repository hooks (the `.githooks/pre-push` visual-regression
+guard). The tracked `.cargo/config.toml` is the build contract: every `cargo`
+invocation inside a clone builds into that clone's own `target/` (two worktrees
+never share one), and dev/test builds keep line tables only (`debug = 1`) so full
+debuginfo stays off the disk. Nothing in the tree configures `sccache`; to share
+compiler results across worktrees, set `[build] rustc-wrapper = "sccache"` in
+your user-level `~/.cargo/config.toml`, which Cargo merges with the repository's.
 
 See [`AGENTS.md`](AGENTS.md) for the durable contributor guide and
 [`docs/matching.md`](docs/matching.md) for the byte-matching strategy.

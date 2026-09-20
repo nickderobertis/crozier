@@ -16,8 +16,7 @@ bootstrap:
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
     @git config core.hooksPath .githooks
-    @./.githooks/post-checkout HEAD HEAD 1
-    @echo "enabled .githooks (shared sccache + visual-regression pre-push guard)"
+    @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
 check: test-witness-search-redo fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc

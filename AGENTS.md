@@ -84,6 +84,10 @@ and surfacing the rest as follow-ups:
 Use the `just` recipes; do not hand-roll equivalents.
 
 - `just bootstrap` — set up from a clean clone.
+- `.cargo/config.toml` is tracked and is the cargo build contract: per-clone
+  `target/` (never shared across worktrees) and `profile.dev.debug = 1`. It
+  configures no `sccache`; a compile cache is a user-level `~/.cargo/config.toml`
+  `[build] rustc-wrapper`, which cargo merges with this one.
 - `just check` — the full gate (the recipe's own dependency list is the step
   list). Must pass before any commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
