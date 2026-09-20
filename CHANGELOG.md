@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.76](https://github.com/nickderobertis/crozier/compare/v0.0.75...v0.0.76) - 2026-09-20
+
+### Other
+
+- *(cargo)* line-table debuginfo for dev and one target dir per clone ([#268](https://github.com/nickderobertis/crozier/pull/268))
+
 ## [0.0.75](https://github.com/nickderobertis/crozier/compare/v0.0.74...v0.0.75) - 2026-09-10
 
 ### Fixed
