@@ -375,6 +375,28 @@ class GitHubCapTests(GuardTestCase):
         self.assertGreaterEqual(calls[1].at - calls[0].at, 1.0)
         self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["backoff"])
 
+    def test_a_call_that_produced_no_response_still_closes_its_reservation(self) -> None:
+        for host, bucket in (("github", "core"), ("postman", "postman")):
+            with self.subTest(host=host):
+                guard = self.guard(host)
+                guard.acquire(bucket)
+                with self.assertRaises(urllib.error.URLError) as raised:
+                    urllib.request.urlopen("http://127.0.0.1:9/unreachable", timeout=5)
+                guard.record(raised.exception)
+                path = "/repos/o/r/contents" if host == "github" else "/postman/_api/ws/proxy"
+                self.assertEqual(self.call(guard, bucket, path)[1], 200)
+
+    def test_a_reading_without_the_bucket_is_refused_not_waited_on(self) -> None:
+        self.fixture.rate_limit_body = json.dumps({"resources": {"core": {"limit": 1, "used": 0, "reset": 0}}}).encode()
+        guard = self.guard()
+        with self.assertRaises(UnsupportedBucket):
+            guard.acquire("code_search")
+        self.assertEqual(guard.waits(), [])
+        self.fixture.rate_limit_body = b"{}"
+        with self.assertRaises(RuntimeError):
+            guard.acquire("code_search")
+        self.assertEqual([entry.path for entry in self.fixture.served], ["/rate_limit", "/rate_limit"])
+
     def test_cost_must_be_positive(self) -> None:
         guard = self.guard()
         with self.assertRaises(ValueError):
@@ -587,6 +609,13 @@ class QuotaStatusTests(GuardTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("malformed figures for 'core'", result.stderr)
         self.assertIn("CROZIER_GITHUB_API_URL", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_a_response_without_resources_fails_with_a_next_action(self) -> None:
+        self.fixture.rate_limit_body = b'{"message": "Not Found"}'
+        result = self.status(self.url)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no `resources` object", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
 
     def test_usage_error_exits_2(self) -> None:

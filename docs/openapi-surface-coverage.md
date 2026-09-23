@@ -2941,7 +2941,7 @@ row's own region file records that search as a line of its `### Witness search
 (issue #188)` table naming every source put to it and the exact query used
 against each. Any search that calls GitHub, Postman or Sourcegraph goes through
 [`scripts/rate_limit_guard.py`](../scripts/rate_limit_guard.py), whose docstring is
-the one statement of its 70%-per-bucket wait rule. What becomes of a row when that search *does* find a witness is
+the one statement of the per-bucket wait rule it enforces. What becomes of a row when that search *does* find a witness is
 [the settlement rule](#the-settlement-rule-as-amended) below, which every region
 file follows rather than restating.
 
