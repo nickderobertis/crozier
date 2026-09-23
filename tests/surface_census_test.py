@@ -6723,12 +6723,12 @@ class RankedBacklogTests(unittest.TestCase):
                     )
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
-        """Two facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
+        """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
         so this holds them to it rather than letting either copy drift: the
         verdicts each proof form establishes, read off the gate's own `match form`
         (which also admits `measured` on an `absent-tree` row, a value no
-        `limitations` row carries), and the refusal record's five fields, as the
-        index states them."""
+        `limitations` row carries), the six verdicts the gate admits, and the
+        refusal record's five fields, as the index states them."""
         gate = (REPO / "tests" / "e2e.rs").read_text(encoding="utf-8")
         arms = {
             form: tuple(v for v in re.findall(r'"([a-z]+)"', verdicts) if v != "measured")
@@ -6743,6 +6743,22 @@ class RankedBacklogTests(unittest.TestCase):
             re.findall(r'"([a-z_]+)"', fields.group(1)),
             "the gate's refusal fields are not the index's",
         )
+        self.assertEqual(
+            {"absent-tree"},
+            {form for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+             if '"measured"' in verdicts},
+            "`measured` is admitted on a form other than `absent-tree`",
+        )
+        admitted = re.search(r"\} else if !\[(.*?)\]\s*\.contains\(&verdict\)", gate, re.S)
+        refused = re.search(r"is not one Contract A admits \\\s*\((.*?)\)", gate, re.S)
+        vocabulary = re.search(r"`verdict` admits exactly six values: (.*?)\. ", " ".join(self.doc.split()))
+        self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
+        admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
+        self.assertEqual(6, len(admitted_verdicts))
+        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
+                         "the gate's refusal message states other verdicts than it admits")
+        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
+                         "the index states other verdicts than the gate admits")
         header = re.search(r'const PROBE_MANIFEST_HEADER: &str = "(.*?)";', gate)
         self.assertTrue(header, "the gate's manifest header no longer parses")
         self.assertIn(

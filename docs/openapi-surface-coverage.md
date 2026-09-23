@@ -3234,7 +3234,8 @@ own `evidence` cell ([the classification below](#the-limitations-rows-under-the-
 #### What a committed proof of non-generation is
 
 This is Contract A. [`openapi-surface/probe-expected/MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv)
-is the one declaration of every committed non-generation proof: tab-separated,
+is the one declaration of every committed probe measurement the gate reads —
+each non-generation proof, and each `measured` tree below: tab-separated,
 a header line, one row per key sorted by key, and six columns:
 
 ```
@@ -3244,16 +3245,17 @@ key	form	verdict	artifact	control	digest
 - `key` is the region-file row key the proof settles, spelled as that row spells
   it.
 - `form` is `absent-tree`, `refusal` or `differential`.
-- `verdict` is the [`fern-limitations.md`](fern-limitations.md#how-to-read-a-verdict)
-  verdict the proof establishes, and only `discards`, `ignores`, `refuses`,
-  `crashes` and `coincidence` are admissible. `implements` is refused by
-  construction: a shape Fern emits output derived from is not settleable by a
-  probe at all. One further value, `measured`, is admitted for `absent-tree` rows
-  only. It marks a committed Fern tree that records Fern **generating** output
-  from a hand-written probe. crozier is byte-gated against it, but it settles no
-  row and no gate or report counts it as a non-generation proof. The 29 trees the
-  `schemas` witness-supply probes committed are those rows. Their region rows stay
-  `gap` until a real specification lands.
+- `verdict` admits exactly six values: `discards`, `ignores`, `refuses`,
+  `crashes`, `coincidence` and `measured`. The first five are
+  [`fern-limitations.md`](fern-limitations.md#how-to-read-a-verdict) verdicts,
+  each naming the non-generation the proof establishes. `measured`, admitted on
+  `absent-tree` rows only, marks a committed Fern tree that records Fern
+  **generating** output from a hand-written probe. crozier is byte-gated against
+  it, but it settles no row and no gate or report counts it as a non-generation
+  proof. The 29 trees the `schemas` witness-supply probes committed are those
+  rows, and their region rows stay `gap` until a real specification lands.
+  `implements` is refused by construction: a shape Fern emits output derived
+  from is not settleable by a probe at all.
 - `artifact` is the path, from the repository root, where the proof is committed.
 - `control` is the control probe's key for a `differential` row, and `—` for the
   other two forms.
