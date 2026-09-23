@@ -2017,6 +2017,22 @@ fn probe_manifest_refuses_an_artifact_whose_digest_moved() {
     )
     .expect("edited record");
     fixture.assert_refused(FIXTURE_REFUSAL_KEY, "but MANIFEST.tsv declares");
+
+    // A still-valid exit value is caught by the digest alone.
+    let fixture = ProbeManifestFixture::new();
+    let text = std::fs::read_to_string(fixture.refusal_record()).expect("record");
+    std::fs::write(
+        fixture.refusal_record(),
+        text.replace("generate_exit: 1", "generate_exit: 2"),
+    )
+    .expect("edited record");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "but MANIFEST.tsv declares");
+
+    let fixture = ProbeManifestFixture::new();
+    let readme = fixture.tree(FIXTURE_DIFFERENTIAL_KEY).join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("probe README");
+    std::fs::write(&readme, format!("{text}\ntouched\n")).expect("touched README");
+    fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "but MANIFEST.tsv declares");
 }
 
 #[test]
@@ -2046,6 +2062,11 @@ fn probe_manifest_refuses_a_malformed_refusal_record() {
             "fern_python_sdk_version: ",
             "fern_python_sdk_version: 0.",
             "the corpus pins",
+        ),
+        (
+            "generate_exit: 1",
+            "generate_exit_code: 1",
+            "Contract A requires exactly",
         ),
         ("generate_exit: 1", "generate_exit: 0", "non-zero exit"),
         (
