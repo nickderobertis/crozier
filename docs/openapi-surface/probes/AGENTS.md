@@ -12,7 +12,10 @@ specifications only ([`../../../tests/fixtures/AGENTS.md`](../../../tests/fixtur
 so a probe never produces a `CORPUS.md` row, never counts as parity evidence in
 [`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md), and
 never moves a region row to `golden`. What a probe settles is a `limitations` row
-on a measured verdict; a real-world witness found later is what promotes it.
+on a measured **non-generation** verdict only
+([the amended rule](../../openapi-surface-coverage.md#what-a-probe-may-settle-as-amended-again));
+a shape Fern generates from is settled by a real specification alone, and a
+real-world witness found later is what promotes a settled row.
 
 ## Re-running one
 
@@ -33,7 +36,14 @@ as a Fern limitation.
 Keep a clean generation's complete comment-stripped output in the sibling
 `probe-expected/<key>/` directory. When Fern refuses a probe, preserve the
 versioned exit verdict as `probe-expected/<key>.fern-refusal.txt` instead; a
-refusal must never acquire a fabricated output tree.
+refusal must never acquire a fabricated output tree. Either artifact enters the
+gate only through its row in
+[`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) — its form,
+verdict and digest, as
+[Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is)
+defines them — and an undeclared artifact fails the gate. When a committed
+artifact's digest stops matching, restore the artifact; never re-declare the
+digest to match an edit.
 
 ## Naming
 
