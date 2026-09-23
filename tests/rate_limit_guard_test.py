@@ -612,11 +612,13 @@ class QuotaStatusTests(GuardTestCase):
         self.assertNotIn("Traceback", result.stderr)
 
     def test_a_response_without_resources_fails_with_a_next_action(self) -> None:
-        self.fixture.rate_limit_body = b'{"message": "Not Found"}'
-        result = self.status(self.url)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("no `resources` object", result.stderr)
-        self.assertNotIn("Traceback", result.stderr)
+        for body in (b'{"message": "Not Found"}', b"[]"):
+            with self.subTest(body=body):
+                self.fixture.rate_limit_body = body
+                result = self.status(self.url)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("no `resources` object", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
 
     def test_usage_error_exits_2(self) -> None:
         result = subprocess.run([sys.executable, str(SCRIPT)], capture_output=True, text=True, timeout=30)

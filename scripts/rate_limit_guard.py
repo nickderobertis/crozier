@@ -210,7 +210,7 @@ def read_rate_limit() -> dict[str, dict[str, int]]:
         request.add_header("Authorization", f"Bearer {token}")
     with urllib.request.urlopen(request, timeout=30) as response:
         body = json.load(response)
-    resources = body.get("resources")
+    resources = body.get("resources") if isinstance(body, dict) else None
     if not isinstance(resources, dict):
         raise RuntimeError("GET /rate_limit returned no `resources` object")
     return resources
