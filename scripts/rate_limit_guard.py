@@ -104,7 +104,9 @@ how the offline tests point the guard at a local server.
 
 ``python3 scripts/rate_limit_guard.py status`` (``just quota-status``) prints
 each GitHub bucket's live figures from one free ``/rate_limit`` read and the
-pacing in force for Postman and Sourcegraph. It never waits.
+pacing in force for Postman and Sourcegraph. It never waits. It exits 0 after
+printing, 1 when ``/rate_limit`` is unreadable or malformed, and 2 on a usage
+error.
 """
 
 from __future__ import annotations
@@ -128,24 +130,12 @@ CAP = 0.70
 
 GITHUB_API_URL = "https://api.github.com"
 
-GITHUB_BUCKETS = frozenset(
-    {
-        "core",
-        "search",
-        "code_search",
-        "integration_manifest",
-        "source_import",
-        "code_scanning_upload",
-        "code_scanning_autofix",
-        "actions_runner_registration",
-        "scim",
-        "dependency_snapshots",
-        "dependency_sbom",
-        "audit_log",
-        "audit_log_streaming",
-    }
-)
-"""The REST buckets ``/rate_limit`` reports; ``graphql`` is deliberately absent."""
+GITHUB_BUCKETS = frozenset({"core", "search", "code_search"})
+"""The REST buckets this repository's calls spend in; ``graphql`` is deliberately absent.
+
+A call that spends in any other bucket is caught by ``record``, which raises
+``UnsupportedBucket`` when a response's ``x-ratelimit-resource`` names a bucket
+other than the one acquired: add that bucket here, once a call needs it."""
 
 RESET_MARGIN_S = 1.0
 """Slept past a bucket's reset before reading again, to absorb clock skew."""
@@ -185,7 +175,11 @@ class UnsupportedBucket(ValueError):
 
 
 class SecondaryLimit(RuntimeError):
-    """Refusals persisted past the attempt budget: stop making this call."""
+    """Refusals persisted past the attempt budget: stop making this call.
+
+    Named for GitHub's secondary limiter, and raised on the same terms when a
+    paced lane exhausts its budget, because the contract handles a Postman or
+    Sourcegraph refusal the way it handles a secondary one."""
 
 
 def _now_iso() -> str:
@@ -300,8 +294,6 @@ class RateLimitGuard:
         self._meta = threading.Lock()
         self._waits: list[dict[str, Any]] = []
 
-    # -- public interface -------------------------------------------------
-
     def acquire(self, bucket: str, *, cost: int = 1) -> None:
         """Block until ``bucket`` admits a call of ``cost``; see the module docstring."""
         bucket = self._covered(bucket)
@@ -355,8 +347,6 @@ class RateLimitGuard:
         """Every wait made and every reading taken while waiting, oldest first."""
         with self._meta:
             return [dict(entry) for entry in self._waits]
-
-    # -- GitHub ------------------------------------------------------------
 
     def _covered(self, bucket: str) -> str:
         if self.host == "github":
@@ -425,6 +415,12 @@ class RateLimitGuard:
         if isinstance(spent.get("used"), int) and "used" in reading and spent.get("reset") == reading.get("reset"):
             spent["cost"] = spent["used"] - reading["used"]
         self._log_call(spent)
+        resource = spent.get("resource")
+        if resource is not None and resource != bucket:
+            raise UnsupportedBucket(
+                f"a call acquired on {bucket!r} spent in {resource!r}: acquire the bucket the call "
+                "spends in, adding it to GITHUB_BUCKETS if the guard does not cover it yet"
+            )
         refused = status == 429 or (
             status == 403 and (retry_after is not None or _header(response, "x-ratelimit-remaining") == "0")
         )
@@ -446,8 +442,6 @@ class RateLimitGuard:
                 state.until = max(state.until, time.time() + retry_after)
             return False
         return self._refused(state, retry_after, SECONDARY_BACKOFF_BASE_S, SECONDARY_ATTEMPT_BUDGET)
-
-    # -- paced lanes -------------------------------------------------------
 
     def _wait_lane(self, lane: str, state: _Backoff) -> None:
         pacing = PACED_LANES[lane]
@@ -481,8 +475,6 @@ class RateLimitGuard:
                 state.until = max(state.until, time.time() + retry_after)
             return False
         return self._refused(state, retry_after, pacing.backoff_base_s, pacing.attempt_budget)
-
-    # -- shared ------------------------------------------------------------
 
     def _refused(self, state: _Backoff, retry_after: float | None, base: float, budget: int) -> bool:
         state.refusals += 1
@@ -531,16 +523,22 @@ def status() -> int:
         print(f"quota-status: could not read {github_api_url()}/rate_limit: {error}", file=sys.stderr)
         print("quota-status: check network access, and set GITHUB_TOKEN to read the token's own buckets", file=sys.stderr)
         return 1
-    print(f"github ({'authenticated' if _token() else 'unauthenticated: set GITHUB_TOKEN'}; cap {CAP:.0%})")
-    for bucket in sorted(resources):
-        if bucket not in GITHUB_BUCKETS:
-            continue
+    lines = []
+    for bucket in sorted(set(resources) - {"graphql"}):
         figures = resources[bucket]
-        limit, used, reset = int(figures["limit"]), int(figures["used"]), int(figures["reset"])
+        try:
+            limit, used, reset = (int(figures[key]) for key in ("limit", "used", "reset"))
+        except (KeyError, TypeError, ValueError):
+            print(f"quota-status: GET /rate_limit reported malformed figures for {bucket!r}: {figures!r}", file=sys.stderr)
+            print("quota-status: check CROZIER_GITHUB_API_URL points at the GitHub REST API", file=sys.stderr)
+            return 1
         share = used / limit if limit else 0.0
         when = datetime.datetime.fromtimestamp(reset, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        guarded = "guarded" if bucket in GITHUB_BUCKETS else "not called here"
         over = "  OVER CAP" if share > CAP else ""
-        print(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}{over}")
+        lines.append(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}  {guarded}{over}")
+    print(f"github ({'authenticated' if _token() else 'unauthenticated: set GITHUB_TOKEN'}; cap {CAP:.0%})")
+    print("\n".join(lines))
     print("  graphql: not covered; this repository makes no GraphQL call")
     for lane, pacing in PACED_LANES.items():
         print(

@@ -13,6 +13,7 @@ for transport and refusal behaviour alone.
 from __future__ import annotations
 
 import dataclasses
+import email.utils
 import http.server
 import json
 import os
@@ -32,8 +33,8 @@ REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "rate_limit_guard.py"
 sys.path.insert(0, str(SCRIPT.parent))
 
-import rate_limit_guard as guard_module  # noqa: E402
-from rate_limit_guard import (  # noqa: E402
+import rate_limit_guard as guard_module  # noqa: E402 -- importable only once sys.path names scripts/
+from rate_limit_guard import (  # noqa: E402 -- importable only once sys.path names scripts/
     PacedLane,
     RateLimitGuard,
     SecondaryLimit,
@@ -62,6 +63,7 @@ class Fixture:
         self.served: list[Served] = []
         self.scripted: dict[str, list[tuple[int, dict[str, str]]]] = {}
         self.header_override: dict[str, dict[str, str]] = {}
+        self.rate_limit_body: bytes | None = None
         for name in ("core", "search", "code_search", "graphql"):
             self.set(name, limit=100, used=0, reset_in=3600)
 
@@ -99,7 +101,7 @@ class Fixture:
             if path == "/rate_limit":
                 resources = self.resources()
                 entry.reading = resources
-                body = json.dumps({"resources": resources, "rate": resources["core"]}).encode()
+                body = self.rate_limit_body or json.dumps({"resources": resources, "rate": resources["core"]}).encode()
             elif path == "/graphql":
                 headers = {"x-ratelimit-resource": "graphql"}
             elif path in GUARDED:
@@ -354,6 +356,38 @@ class GitHubCapTests(GuardTestCase):
             RateLimitGuard("gitlab")
 
 
+    def test_a_call_spending_in_another_bucket_is_refused_loudly(self) -> None:
+        guard = self.guard()
+        self.fixture.header_override["/repos/o/r/contents"] = {"x-ratelimit-resource": "integration_manifest"}
+        with self.assertRaises(UnsupportedBucket):
+            self.call(guard, "core", "/repos/o/r/contents")
+        # The reservation is closed, so the bucket is not wedged.
+        del self.fixture.header_override["/repos/o/r/contents"]
+        self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
+
+    def test_retry_after_on_a_successful_response_is_honoured(self) -> None:
+        guard = self.guard()
+        self.fixture.header_override["/search/code"] = {"Retry-After": "1"}
+        self.call(guard, "code_search", "/search/code")
+        del self.fixture.header_override["/search/code"]
+        self.call(guard, "code_search", "/search/code")
+        calls = self.fixture.requests("/search/code")
+        self.assertGreaterEqual(calls[1].at - calls[0].at, 1.0)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["backoff"])
+
+    def test_cost_must_be_positive(self) -> None:
+        guard = self.guard()
+        with self.assertRaises(ValueError):
+            guard.acquire("core", cost=0)
+        self.assertEqual(self.fixture.served, [])
+
+    def test_gh_token_is_the_fallback_credential(self) -> None:
+        del os.environ["GITHUB_TOKEN"]
+        os.environ["GH_TOKEN"] = SECRET
+        self.call(self.guard(), "core", "/repos/o/r/contents")
+        self.assertEqual(self.fixture.requests("/rate_limit")[0].authorization, f"Bearer {SECRET}")
+
+
 class GitHubSecondaryTests(GuardTestCase):
     def test_secondary_refusal_backs_off_then_raises_after_budget(self) -> None:
         self.fixture.set("code_search", limit=100, used=1, reset_in=3600)
@@ -438,6 +472,21 @@ class PacedLaneTests(GuardTestCase):
                 for entry in guard.waits():
                     self.assertFalse({"limit", "used", "reset", "remaining", "reading"} & entry.keys())
 
+    def test_retry_after_as_an_http_date_and_on_a_success_is_waited_out(self) -> None:
+        guard = self.guard("sourcegraph")
+        path = "/sourcegraph/.api/search/stream"
+        self.fixture.scripted[path] = [
+            (429, {"Retry-After": email.utils.formatdate(time.time() + 2, usegmt=True)}),
+            (200, {"Retry-After": "1"}),
+            (200, {}),
+        ]
+        for _ in range(3):
+            self.call(guard, "sourcegraph", path)
+        at = [entry.at for entry in self.fixture.requests(path)]
+        self.assertGreaterEqual(at[1] - at[0], 0.9)  # an HTTP date has whole-second resolution
+        self.assertGreaterEqual(at[2] - at[1], 1.0)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["backoff", "backoff"])
+
     def test_a_backoff_on_one_lane_does_not_delay_the_other(self) -> None:
         postman = self.guard("postman")
         sourcegraph = self.guard("sourcegraph")
@@ -518,6 +567,33 @@ class QuotaStatusTests(GuardTestCase):
             for word in ("limit", "used", "reset", "%"):
                 self.assertNotIn(word, line)
         self.assertNotIn(SECRET, result.stdout + result.stderr)
+
+    def test_unauthenticated_and_uncovered_buckets_are_reported_as_such(self) -> None:
+        self.fixture.set("integration_manifest", limit=5000, used=0, reset_in=3600)
+        del os.environ["GITHUB_TOKEN"]
+        result = self.status(self.url)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("unauthenticated: set GITHUB_TOKEN", result.stdout)
+        self.assertIsNone(self.fixture.served[0].authorization)
+        lines = result.stdout.splitlines()
+        self.assertTrue(next(line for line in lines if "integration_manifest" in line).endswith("not called here"))
+        self.assertTrue(next(line for line in lines if line.strip().startswith("core ")).endswith("guarded"))
+        graphql = [line for line in lines if "graphql" in line]
+        self.assertEqual(graphql, ["  graphql: not covered; this repository makes no GraphQL call"])
+
+    def test_malformed_figures_fail_with_a_next_action(self) -> None:
+        self.fixture.rate_limit_body = json.dumps({"resources": {"core": {"limit": 5000}}}).encode()
+        result = self.status(self.url)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("malformed figures for 'core'", result.stderr)
+        self.assertIn("CROZIER_GITHUB_API_URL", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    def test_usage_error_exits_2(self) -> None:
+        result = subprocess.run([sys.executable, str(SCRIPT)], capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("usage: rate_limit_guard.py status", result.stderr)
+        self.assertEqual(self.fixture.served, [])
 
     def test_unreachable_api_fails_with_a_next_action(self) -> None:
         result = self.status("http://127.0.0.1:9")
