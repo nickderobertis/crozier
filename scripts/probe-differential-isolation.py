@@ -62,11 +62,17 @@ def region_evidence(root: Path, key: str) -> str | None:
 def selector_for(census: Any, root: Path, key: str) -> str:
     evidence = region_evidence(root, key)
     if evidence is None:
-        raise SystemExit(f"{key}: no region row carries this key, so it names no census selector")
+        raise SystemExit(
+            f"{key}: no region row carries this key, so it names no census selector — "
+            "spell the manifest key exactly as its region row does"
+        )
     for span in re.findall(r"`([^`]+)`", evidence):
         if census.selector_error(span) is None:
             return span
-    raise SystemExit(f"{key}: its region row's evidence cell cites no census selector")
+    raise SystemExit(
+        f"{key}: its region row's evidence cell cites no census selector — cite the "
+        "shape's selector there in a code span, as `census <selector>`"
+    )
 
 
 def differences(left: Any, right: Any, path: tuple = ()) -> list[tuple]:
@@ -124,18 +130,28 @@ def failures(root: Path, key: str, probe_path: Path, control_path: Path) -> list
     declared = count(probe)
     found: list[str] = []
     if probe_path.read_bytes() == control_path.read_bytes():
-        found.append(f"{key}: the probe and its control are byte-identical documents")
+        found.append(
+            f"{key}: the probe and its control are byte-identical documents — the probe "
+            "must declare the feature and the control must not"
+        )
     if declared == 0:
-        found.append(f"{key}: the probe does not declare `{selector}`, the shape its row names")
+        found.append(
+            f"{key}: the probe does not declare `{selector}`, the shape its row names — "
+            "add the declaration to the probe document"
+        )
     if count(control):
-        found.append(f"{key}: the control declares `{selector}`, so the pair does not isolate it")
+        found.append(
+            f"{key}: the control declares `{selector}`, so the pair does not isolate it — "
+            "remove the declaration from the control document"
+        )
     if declared and not found:
         for path in differences(probe, control):
             if count(reverted(probe, control, path)) >= declared:
                 shown = "/".join(str(step) for step in path) or "(the document root)"
                 found.append(
                     f"{key}: the probe and control differ at `{shown}`, "
-                    f"outside the `{selector}` declaration"
+                    f"outside the `{selector}` declaration — make the two documents "
+                    "identical there, so they differ only in the feature"
                 )
     return found
 
@@ -147,7 +163,7 @@ def main(argv: list[str]) -> int:
     root, key, probe, control = Path(argv[0]), argv[1], Path(argv[2]), Path(argv[3])
     found = failures(root, key, probe, control)
     for line in found:
-        print(line)
+        print(line, file=sys.stderr)
     return 1 if found else 0
 
 

@@ -1240,8 +1240,6 @@ fn witness_supply_probes_match_fern_measurements() {
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
 const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
 const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";
-const PROBE_FERN_CLI_VERSION: &str = "5.67.1";
-const PROBE_FERN_PYTHON_SDK_VERSION: &str = "5.20.0";
 const REFUSAL_FIELDS: [&str; 5] = [
     "fern_cli_version",
     "fern_python_sdk_version",
@@ -1509,9 +1507,10 @@ fn refusal_proof_failures(
             .find(|(field, _)| *field == name)
             .map(|(_, value)| value.trim())
     };
+    let (cli_pin, sdk_pin) = probe_fern_pins();
     for (name, pin) in [
-        ("fern_cli_version", PROBE_FERN_CLI_VERSION),
-        ("fern_python_sdk_version", PROBE_FERN_PYTHON_SDK_VERSION),
+        ("fern_cli_version", cli_pin.as_str()),
+        ("fern_python_sdk_version", sdk_pin.as_str()),
     ] {
         if let Some(found) = value(name).filter(|found| *found != pin) {
             failures.push(format!(
@@ -1554,6 +1553,27 @@ fn refusal_proof_failures(
         ));
     }
     failures
+}
+
+/// The Fern CLI and `fernapi/fern-python-sdk` versions the corpus is pinned to,
+/// read from the one place crozier itself carries them — the `cliVersion` and
+/// `generatorVersion` of the `.fern/metadata.json` it emits — so a refusal record
+/// is held to the pin the goldens are, not to a second copy of it.
+fn probe_fern_pins() -> (String, String) {
+    let metadata: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/scaffolding/metadata.json"),
+        )
+        .expect("crozier's packaged Fern metadata"),
+    )
+    .expect("crozier's packaged Fern metadata is JSON");
+    let pin = |field: &str| {
+        metadata[field]
+            .as_str()
+            .unwrap_or_else(|| panic!("assets/scaffolding/metadata.json has no {field}"))
+            .to_string()
+    };
+    (pin("cliVersion"), pin("generatorVersion"))
 }
 
 /// crozier over one probe document, byte-compared against its committed tree
@@ -1857,10 +1877,14 @@ impl ProbeManifestFixture {
         for key in [FIXTURE_DIFFERENTIAL_KEY, FIXTURE_CONTROL_KEY] {
             fixture.write_stripped_tree(key);
         }
+        let (cli_pin, sdk_pin) = probe_fern_pins();
         std::fs::write(
             fixture.refusal_record(),
-            "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\n\
-             diagnostic: Type name must begin with a letter\noutput_tree: none\n",
+            format!(
+                "fern_cli_version: {cli_pin}\nfern_python_sdk_version: {sdk_pin}\n\
+                 generate_exit: 1\ndiagnostic: Type name must begin with a letter\n\
+                 output_tree: none\n"
+            ),
         )
         .expect("fixture refusal record");
         fixture.declare();
@@ -2018,8 +2042,8 @@ fn probe_manifest_refuses_a_malformed_refusal_record() {
             "Contract A requires exactly",
         ),
         (
-            "fern_python_sdk_version: 5.20.0",
-            "fern_python_sdk_version: 5.21.0",
+            "fern_python_sdk_version: ",
+            "fern_python_sdk_version: 0.",
             "the corpus pins",
         ),
         ("generate_exit: 1", "generate_exit: 0", "non-zero exit"),
