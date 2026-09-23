@@ -6722,6 +6722,28 @@ class RankedBacklogTests(unittest.TestCase):
                         [], exhaustive_search_failures(key, lines, self.REGIONS, capabilities)
                     )
 
+    def test_contract_a_restatements_agree_with_the_gate(self) -> None:
+        """Two facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
+        so this holds them to it rather than letting either copy drift: the
+        verdicts each proof form establishes, read off the gate's own `match form`
+        (which also admits `measured` on an `absent-tree` row, a value no
+        `limitations` row carries), and the refusal record's five fields, as the
+        index states them."""
+        gate = (REPO / "tests" / "e2e.rs").read_text(encoding="utf-8")
+        arms = {
+            form: tuple(v for v in re.findall(r'"([a-z]+)"', verdicts) if v != "measured")
+            for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+        }
+        self.assertEqual(self.PROOF_FORMS, arms, "the proof forms drifted from the manifest gate")
+        fields = re.search(r"const REFUSAL_FIELDS: \[&str; \d+\] = \[(.*?)\];", gate, re.S)
+        stated = re.search(r"holding five fields in this order and\s+spelling: (.*?)\. ", self.doc, re.S)
+        self.assertTrue(fields and stated, "a restatement of the refusal fields no longer parses")
+        self.assertEqual(
+            re.findall(r"`([a-z_]+)`", stated.group(1)),
+            re.findall(r'"([a-z_]+)"', fields.group(1)),
+            "the gate's refusal fields are not the index's",
+        )
+
     def test_the_rule_states_the_second_amendment(self) -> None:
         """The words a reader needs to follow Contracts A and B, where the rule is."""
         flat = " ".join(self.doc.split())

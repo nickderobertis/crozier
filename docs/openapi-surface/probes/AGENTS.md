@@ -36,14 +36,9 @@ as a Fern limitation.
 Keep a clean generation's complete comment-stripped output in the sibling
 `probe-expected/<key>/` directory. When Fern refuses a probe, preserve the
 versioned exit verdict as `probe-expected/<key>.fern-refusal.txt` instead; a
-refusal must never acquire a fabricated output tree. Either artifact enters the
-gate only through its row in
-[`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) — its form,
-verdict and digest, as
-[Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is)
-defines them — and an undeclared artifact fails the gate. When a committed
-artifact's digest stops matching, restore the artifact; never re-declare the
-digest to match an edit.
+refusal must never acquire a fabricated output tree. Either artifact is declared in
+[`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) under
+[Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is).
 
 ## Naming
 

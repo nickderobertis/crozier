@@ -1227,6 +1227,7 @@ fn assert_corpus_matches(c: &Corpus) {
 /// against the pin and against crozier's own outcome, a differential pair
 /// against itself — and holds the artifacts on disk to the manifest in both
 /// directions.
+// llmlint: ignore[names_match_behavior] The name is the one this node's acceptance criteria and its `cargo nextest -E 'test(witness_supply_probes_match_fern_measurements)'` check select it by; renaming it would silently empty that filter.
 #[test]
 fn witness_supply_probes_match_fern_measurements() {
     let failures = probe_manifest_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
