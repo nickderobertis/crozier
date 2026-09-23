@@ -6743,6 +6743,21 @@ class RankedBacklogTests(unittest.TestCase):
             re.findall(r'"([a-z_]+)"', fields.group(1)),
             "the gate's refusal fields are not the index's",
         )
+        header = re.search(r'const PROBE_MANIFEST_HEADER: &str = "(.*?)";', gate)
+        self.assertTrue(header, "the gate's manifest header no longer parses")
+        self.assertIn(
+            "\n" + header.group(1).replace("\\t", "\t") + "\n",
+            self.doc,
+            "the index does not state the gate's manifest header",
+        )
+
+    def test_the_evidence_kinds_are_the_indexs_own(self) -> None:
+        """`records.tsv`'s `kind` values are declared once, in the index's list of
+        what each row carries; the validator's copy is held to that list."""
+        section = self.doc.split("`key\tkind\tsubject\tresult\tfile`:", 1)[1]
+        section = section.split("`file` names the evidence file", 1)[0]
+        stated = tuple(re.findall(r"^ +- An? `([a-z]+)` row", section, re.M))
+        self.assertEqual(EVIDENCE_KINDS, stated, "the validator's evidence kinds are not the index's")
 
     def test_the_rule_states_the_second_amendment(self) -> None:
         """The words a reader needs to follow Contracts A and B, where the rule is."""
@@ -6755,7 +6770,6 @@ class RankedBacklogTests(unittest.TestCase):
             "all three corpus screens",
             "**A locally authored probe settles a row only where its own Fern measurement shows non-generation.**",
             "Routes 2 and 3 survive for non-generation verdicts alone",
-            "key form verdict artifact control digest",
         ):
             self.assertIn(" ".join(demanded.split()), flat.replace("\t", " "))
 

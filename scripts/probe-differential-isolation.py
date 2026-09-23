@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] this repository is a Cargo crate driven by `just`, with no Nx workspace (no nx.json or project.json anywhere); its scripts live together in scripts/, which is where this one sits beside the census scripts it shares an engine with.
 """Check that a `differential` probe pair isolates the feature its key names.
 
 Contract A's `differential` form proves non-generation by two committed Fern
