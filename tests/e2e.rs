@@ -2003,6 +2003,19 @@ fn probe_manifest_refuses_an_undeclared_or_missing_artifact() {
     fixture.assert_refused("sample-stray", "no MANIFEST.tsv row names it");
 
     let fixture = ProbeManifestFixture::new();
+    std::fs::copy(
+        fixture.refusal_record(),
+        fixture.path(&format!(
+            "{PROBE_EXPECTED_DIR}/sample-stray.fern-refusal.txt"
+        )),
+    )
+    .expect("stray record");
+    fixture.assert_refused(
+        "sample-stray.fern-refusal.txt",
+        "no MANIFEST.tsv row names it",
+    );
+
+    let fixture = ProbeManifestFixture::new();
     std::fs::remove_dir_all(fixture.tree(FIXTURE_DIFFERENTIAL_KEY)).expect("remove tree");
     fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "is missing");
 }
@@ -2061,6 +2074,11 @@ fn probe_manifest_refuses_a_malformed_refusal_record() {
         (
             "fern_python_sdk_version: ",
             "fern_python_sdk_version: 0.",
+            "the corpus pins",
+        ),
+        (
+            "fern_cli_version: ",
+            "fern_cli_version: 0.",
             "the corpus pins",
         ),
         (

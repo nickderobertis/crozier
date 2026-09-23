@@ -7491,6 +7491,14 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         )
         self.refused("which witness-search-sourcegraph/records.tsv does not carry")
 
+    def test_a_candidate_or_screen_outcome_its_evidence_does_not_carry_is_refused(self) -> None:
+        # A candidate the evidence never recorded has no census run behind it either.
+        self.table["github-code-search"][2] = "`d-org/d-repo/openapi.yaml`; `g-org/g-repo/openapi.yaml`"
+        self.refused("records no census confirmation for candidate `g-org/g-repo/openapi.yaml`")
+        self.table["github-code-search"][2] = self.LINES["github-code-search"][2]
+        self.table["jentic"][3] = self.LINES["jentic"][3].replace("fern `passed`", "fern `failed: E1`")
+        self.refused("which witness-search-jentic/records.tsv does not carry")
+
     def test_evidence_the_table_does_not_account_for_is_refused(self) -> None:
         with self.evidence("sourcegraph").open("a", encoding="utf-8") as index:
             index.write(f"{self.KEY}\tquery\t`third phrasing`\t2\tacquisition.json\n")
@@ -7509,12 +7517,14 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.assertEqual([], self.failures())
 
     def test_a_rate_limit_cap_recorded_unanswered_is_refused_at_any_outcome(self) -> None:
-        self.outcome = SEARCH_INCOMPLETE
         self.table["github-code-search"][0] = (
             "`\"x-sample\" filename:openapi.yaml` → unanswered: HTTP 403 API rate limit "
             "exceeded; `\"x-sample\" filename:openapi.json` → 0"
         )
-        self.refused("reads `github-code-search` unanswered for a rate-limit cap")
+        for outcome in (EXHAUSTED, SEARCH_INCOMPLETE):
+            with self.subTest(outcome=outcome):
+                self.outcome = outcome
+                self.refused("reads `github-code-search` unanswered for a rate-limit cap")
 
 
 
