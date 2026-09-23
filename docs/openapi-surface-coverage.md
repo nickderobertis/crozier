@@ -2939,7 +2939,9 @@ document. Nothing about the shape prevents a corpus row; the supply of documents
 does — the authoritative issue #188 search found **no witness at all**, and the
 row's own region file records that search as a line of its `### Witness search
 (issue #188)` table naming every source put to it and the exact query used
-against each. What becomes of a row when that search *does* find a witness is
+against each. Any search that calls GitHub, Postman or Sourcegraph goes through
+[`scripts/rate_limit_guard.py`](../scripts/rate_limit_guard.py), whose docstring is
+the one statement of the per-bucket wait rule it enforces. What becomes of a row when that search *does* find a witness is
 [the settlement rule](#the-settlement-rule-as-amended) below, which every region
 file follows rather than restating.
 
