@@ -1876,7 +1876,7 @@ def split_words(text: str) -> list[str]:
     current = ""
     chars = list(text)
     for index, char in enumerate(chars):
-        if char in "_- .":
+        if char in "_- .:":
             if current:
                 words.append(current)
                 current = ""
@@ -2067,7 +2067,7 @@ NAMING_PORT_DIGESTS = {
     "deburr": "fe8fc4199682035d",
     "deburr_letter": "f5488da97d3f0dde",
     "collapse_digit_boundaries": "24c31560b089ab63",
-    "split_words": "3a76409f152dcce6",
+    "split_words": "225b4ae99e3ce99a",
     "class_name": "add019f9b00f68ca",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
 }

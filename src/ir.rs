@@ -2705,7 +2705,24 @@ fn build_endpoint(
     };
     let response = response.map(|response| {
         if has_bodyless_success(op) && !has_text_response(op) {
-            optional_type_ref(response)
+            // A declared body beside an empty `204` is optional even when that
+            // body is unknown: ZipTax's `merchantCertDelete` (a `200` of
+            // `schema: {}` beside a `204`) returns `typing.Optional[typing.Any]`.
+            // When the typed success is itself the empty status — a lone `204`
+            // (Letta's `deleteClientSideAccessToken`) or a `200` declaring no
+            // schema (Microcks' `GetFeaturesConfiguration`) — it stays `Any`.
+            let empty_beside_body = success_response_schema(op).is_some()
+                && !success_response_entry(op).is_some_and(|entry| {
+                    op.responses
+                        .get("204")
+                        .is_some_and(|empty| std::ptr::eq(entry, empty))
+                });
+            match response {
+                TypeRef::Primitive(Prim::Any) if empty_beside_body => {
+                    TypeRef::Optional(Box::new(response))
+                }
+                other => optional_type_ref(other),
+            }
         } else {
             response
         }
@@ -5681,12 +5698,21 @@ fn has_markdown_response(op: &Operation) -> bool {
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
+    // Only a numeric `2xx` code counts, as in [`success_response_entry`]: Fern
+    // types a method from no range key, so OpenLink OSDB's `executeAction`, whose
+    // `2XX` carries an example and no schema beside a `default` `ErrorModel`,
+    // returns that `ErrorModel` rather than an optional one.
+    // A `204` is bodyless whatever content it declares — the status forbids a
+    // body — so ZipTax's `merchantCertDelete`, whose `200` and `204` both
+    // declare `schema: {}`, returns Fern's `typing.Optional[typing.Any]`.
     let bodyless = op.responses.iter().filter(|(code, response)| {
-        code.starts_with('2')
-            && !response
-                .content
-                .values()
-                .any(|media| media.schema.is_some())
+        code.parse::<u16>()
+            .is_ok_and(|status| (200..300).contains(&status))
+            && (code.as_str() == "204"
+                || !response
+                    .content
+                    .values()
+                    .any(|media| media.schema.is_some()))
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
     // A bodyless `201`/`202` beside a success body is not an empty-body case: it
@@ -11315,6 +11341,16 @@ mod tests {
         let none = operation(serde_json::json!({ "responses": { "404": {} } }));
         assert!(success_response_entry(&none).is_none());
         assert!(!super::has_bodyless_success(&none));
+
+        // A range key is no success code, bodyless or not: OpenLink OSDB's
+        // `executeAction` returns its `default` body, not an optional one.
+        let ranged = operation(serde_json::json!({
+            "responses": {
+                "2XX": { "content": { "*/*": { "example": { "description": "varies" } } } },
+                "default": { "content": { "application/json": { "schema": { "type": "string" } } } }
+            }
+        }));
+        assert!(!super::has_bodyless_success(&ranged));
     }
 
     #[test]

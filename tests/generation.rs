@@ -5203,6 +5203,73 @@ paths:
     assert!(raw.contains("def fallback("), "{raw}");
 }
 
+/// An unknown body is optional only beside a *separate* empty status. ZipTax's
+/// `merchantCertDelete` (`200` and `204`, both `schema: {}`) returns
+/// `typing.Optional[typing.Any]`; a lone `204` declaring `schema: {}` (Letta) and
+/// a `200` declaring no schema (Microcks) stay `typing.Any`; and a `2XX` range key
+/// types nothing, so OpenLink OSDB's example-only `2XX` beside a `default`
+/// `ErrorModel` returns that model, not an optional one.
+#[test]
+fn an_unknown_body_is_optional_only_beside_a_separate_empty_status() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Empty Statuses, version: 1.0.0 }
+paths:
+  /beside:
+    post:
+      operationId: probes_beside
+      tags: [Probes]
+      responses:
+        '200': { description: Relayed, content: { application/json: { schema: {} } } }
+        '204': { description: Deleted, content: { application/json: { schema: {} } } }
+  /alone:
+    delete:
+      operationId: probes_alone
+      tags: [Probes]
+      responses:
+        '204': { description: Deleted, content: { application/json: { schema: {} } } }
+  /schemaless:
+    get:
+      operationId: probes_schemaless
+      tags: [Probes]
+      responses:
+        '200': { description: Config, content: { application/json: {} } }
+  /ranged:
+    post:
+      operationId: probes_ranged
+      tags: [Probes]
+      responses:
+        2XX: { description: Varies, content: { '*/*': { example: { any: thing } } } }
+        default:
+          description: Error
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { message: { type: string } }
+"##,
+    );
+    let client = &files["src/acme/probes/client.py"];
+    let signature = |method: &str| {
+        let start = client
+            .find(&format!("def {method}("))
+            .unwrap_or_else(|| panic!("{client}"));
+        let rest = &client[start..];
+        rest[..rest.find(":\n").expect("signature ends")].to_string()
+    };
+    assert!(
+        signature("beside").ends_with("-> typing.Optional[typing.Any]"),
+        "{client}"
+    );
+    assert!(signature("alone").ends_with("-> typing.Any"), "{client}");
+    assert!(
+        signature("schemaless").ends_with("-> typing.Any"),
+        "{client}"
+    );
+    assert!(signature("ranged").ends_with("-> Problem"), "{client}");
+}
+
 #[test]
 fn off_string_parameter_examples_are_discarded_and_serialization_styles_survive() {
     let files = render(
