@@ -568,13 +568,16 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual("declares", result["disposition"])
         self.assertEqual(1, result["selector_count"])
 
-    def test_consolidated_index_tracks_each_source_record_and_screen(self) -> None:
+    def test_consolidated_index_tracks_source_verdicts_and_unfetched_results(
+        self,
+    ) -> None:
         root = self.root / "index"
         code = root / "witness-search-github-code-search"
         trees = root / "witness-search-github-publisher-trees"
         sourcegraph = root / "witness-search-sourcegraph"
         for directory in (code, trees, sourcegraph):
             directory.mkdir(parents=True)
+            (directory / "keys.json").write_text(json.dumps({"keys": {"shape": {}}}))
         identity = {
             "repository": "example/api",
             "path": "openapi.yaml",
@@ -582,7 +585,32 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "sha256": "d" * 64,
         }
         (code / "candidates.jsonl").write_text(
-            json.dumps({**identity, "key": "shape", "disposition": "declares"}) + "\n"
+            json.dumps(
+                {
+                    **identity,
+                    "key": "shape",
+                    "disposition": "declares",
+                    "selector_count": 1,
+                }
+            )
+            + "\n"
+        )
+        (code / "queries.jsonl").write_text(
+            json.dumps(
+                {
+                    "source": "github-code-search",
+                    "key": "shape",
+                    "outcome": "answered",
+                    "results": [
+                        {
+                            "repository": "example/other",
+                            "path": "openapi.yaml",
+                            "sha": "e" * 40,
+                        }
+                    ],
+                }
+            )
+            + "\n"
         )
         (trees / "documents.jsonl").write_text(
             json.dumps(
@@ -591,7 +619,15 @@ class WitnessSearchGithubTests(unittest.TestCase):
             + "\n"
         )
         (sourcegraph / "candidates.jsonl").write_text(
-            json.dumps({**identity, "key": "shape", "disposition": "declares"}) + "\n"
+            json.dumps(
+                {
+                    **identity,
+                    "key": "shape",
+                    "disposition": "declares",
+                    "selector_count": 1,
+                }
+            )
+            + "\n"
         )
         (sourcegraph / "screens.jsonl").write_text(
             json.dumps(
@@ -613,51 +649,26 @@ class WitnessSearchGithubTests(unittest.TestCase):
             str(root),
         ]
         subprocess.run(command, check=True, capture_output=True, text=True)
-        index = (root / "witness-search-github/candidates.tsv").read_text()
-        self.assertEqual(2, len(index.splitlines()))
-        self.assertIn("github-code-search,github-publisher-trees,sourcegraph", index)
-        self.assertIn("witness-found", index)
-        subprocess.run([*command, "--check"], check=True, capture_output=True)
-        (code / "candidates.jsonl").write_text(
-            (code / "candidates.jsonl").read_text()
-            + json.dumps({**identity, "key": "other", "disposition": "declares"})
-            + "\n"
+        with (root / "witness-search-github/candidates.tsv").open() as stream:
+            indexed = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual(4, len(indexed))
+        self.assertEqual(
+            {"github-code-search", "github-publisher-trees", "sourcegraph"},
+            {row["source"] for row in indexed},
         )
-        subprocess.run(command, check=True, capture_output=True, text=True)
-        with (root / "witness-search-github/candidates.tsv").open() as index_file:
-            candidate = next(csv.DictReader(index_file, delimiter="\t"))
-        screens = json.loads(candidate["key_screens"])
-        self.assertEqual("witness-found", screens["shape"]["disposition"])
-        self.assertEqual("outstanding-screen", screens["other"]["disposition"])
+        witness = next(row for row in indexed if row["source"] == "sourcegraph")
+        self.assertEqual("witness-found", witness["disposition"])
+        self.assertEqual("pass", witness["fern_screen"])
+        pending = next(
+            row for row in indexed if row["candidate"] == "example/other:openapi.yaml"
+        )
+        self.assertEqual("outstanding", pending["disposition"])
+        self.assertEqual("not-fetched", pending["digest"])
+        subprocess.run([*command, "--check"], check=True, capture_output=True)
         (sourcegraph / "screens.jsonl").write_text(
-            json.dumps(
-                {
-                    **identity,
-                    "keys": ["shape"],
-                    "license": "not-run: key closed by found witness",
-                    "ref": "not-run: key closed by found witness",
-                    "fern": "not-run: key closed by found witness",
-                    "disposition": "not-owed",
-                }
-            )
-            + "\n"
-        )
-        subprocess.run(command, check=True, capture_output=True, text=True)
-        self.assertIn(
-            "not-owed", (root / "witness-search-github/candidates.tsv").read_text()
-        )
-        subprocess.run([*command, "--check"], check=True, capture_output=True)
-        (code / "candidates.jsonl").write_text(
-            (code / "candidates.jsonl").read_text()
-            + json.dumps(
-                {
-                    **identity,
-                    "path": "new.yaml",
-                    "key": "other",
-                    "disposition": "declares",
-                }
-            )
-            + "\n"
+            (sourcegraph / "screens.jsonl")
+            .read_text()
+            .replace("witness-found", "fern-rejected")
         )
         failed = subprocess.run([*command, "--check"], capture_output=True, text=True)
         self.assertEqual(1, failed.returncode)
