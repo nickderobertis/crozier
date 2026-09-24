@@ -116,6 +116,11 @@ Use the `just` recipes; do not hand-roll equivalents.
   the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
+- `just golden-reach` — the same golden-only tier one golden test at a time,
+  joined per `golden` census row into its reach cell and the committed ranking;
+  outside `check` for the same reason. After editing the site table, `just
+  golden-reach-report` re-joins without re-measuring. See
+  [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md#golden-reach-row-by-row).
 - `just surface-census` — which OpenAPI shapes the registered golden **sources**
   declare, measured off each source document's object model (never a generated
   `expected/` tree). Outside `check` (fetches the `link-ok` half, so it needs

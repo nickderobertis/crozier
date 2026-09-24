@@ -7226,6 +7226,142 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(sum(counts.values()), int(total.group(1)))
         self.assertEqual(int(total.group(1)), int(population.group(1)))
 
+    # The golden reach measurement (`just golden-reach`): every `golden` row's
+    # `crozier sites` cell is its reach cell, generated from the committed ledger
+    # `docs/openapi-surface/golden-reach.tsv`, and the index publishes the ranking
+    # and the rows resting on one document off that same ledger.
+    REACH_RANKING = "#### The reach ranking"
+    REACH_OWNED = "#### The rows this measurement's first pass owned"
+    REACH_ONE_DOCUMENT = "#### Rows resting on one document"
+    REACH_NO_WITNESS = "#### Golden rows with no golden-only witness"
+
+    @staticmethod
+    def golden_reach():
+        spec = importlib.util.spec_from_file_location(
+            "golden_reach", REPO / "scripts" / "golden-reach.py"
+        )
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def reach_ledger(self):
+        return self.golden_reach().read_ledger()
+
+    def reach_table(self, heading: str, width: int) -> list[list[str]]:
+        """The body rows of the first table under `heading`, header and rule dropped."""
+        body = self.section(heading).split("\n#", 1)[0]
+        rows = []
+        for line in body.splitlines():
+            cells = table_cells(line, width)
+            if cells and not all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+                rows.append(cells)
+        self.assertTrue(rows, f"no table under {heading!r}")
+        return rows[1:]
+
+    def test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders(self) -> None:
+        """A `golden` row with no reach cell, or a stale one, is refused."""
+        module = self.golden_reach()
+        rendered = {
+            reach.key: module.reach_cell(reach, rank).replace("|", "\\|")
+            for rank, reach in self.reach_ledger()
+        }
+        for key, (region, cells) in sorted(self.entries.items()):
+            if cells[3].strip("`") != "golden":
+                continue
+            with self.subTest(region=region, key=key):
+                self.assertTrue(
+                    cells[5].startswith(module.CELL_PREFIX),
+                    f"`{key}` is golden and carries no reach cell in its `crozier sites` "
+                    "column; run `just golden-reach` (or `just golden-reach-report`)",
+                )
+                self.assertEqual(rendered.get(key), cells[5], f"`{key}`'s reach cell is not its ledger row's")
+
+    def test_the_reach_ledger_is_every_golden_row_in_ranking_order(self) -> None:
+        """One ledger row per golden row, owned by the right region, in rubric order."""
+        module = self.golden_reach()
+        ledger = self.reach_ledger()
+        golden = {
+            key: region
+            for key, (region, cells) in self.entries.items()
+            if cells[3].strip("`") == "golden"
+        }
+        self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
+        self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
+        self.assertEqual(
+            sorted((reach for _rank, reach in ledger), key=module.ranking_key),
+            [reach for _rank, reach in ledger],
+            "the ledger is not in ranking order: unreached sites, unreached regions, key",
+        )
+
+    def test_the_ledger_measures_exactly_the_declared_sites_and_every_site_resolves(self) -> None:
+        """The site table is what the ledger measured, and each site still bounds code."""
+        module = self.golden_reach()
+        table = module.read_sites_table()
+        for _rank, reach in self.reach_ledger():
+            with self.subTest(key=reach.key):
+                self.assertEqual(table[reach.key].sites, tuple(spec for spec, _h, _t in reach.sites))
+        for spec in sorted({spec for row in table.values() for spec in row.sites}):
+            with self.subTest(site=spec):
+                module.resolve_site(spec)
+        for key, row in sorted(table.items()):
+            named = [s.removeprefix("fixture=") for s in row.selectors if s.startswith("fixture=")]
+            for fixture in named:
+                with self.subTest(key=key, fixture=fixture):
+                    self.assertIn(
+                        f"`{fixture}`", self.entries[key][1][4],
+                        "a witness the site table names directly is not one the row's evidence names",
+                    )
+
+    def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
+        """The thin end, as a list: every single-witness and no-witness golden row."""
+        ledger = self.reach_ledger()
+        one = {
+            reach.key: (reach.region, reach.witnesses[0])
+            for _rank, reach in ledger
+            if len(reach.witnesses) == 1
+        }
+        published = {
+            cells[0].strip("`"): (cells[1].strip("`"), cells[2].strip("`"))
+            for cells in self.reach_table(self.REACH_ONE_DOCUMENT, 3)
+        }
+        self.assertEqual(one, published, "the index's one-document list is not the ledger's")
+        none = {
+            reach.key: (reach.region, ", ".join(f"`{f}`" for f in reach.outside))
+            for _rank, reach in ledger
+            if not reach.witnesses
+        }
+        published_none = {
+            cells[0].strip("`"): (cells[1].strip("`"), cells[2])
+            for cells in self.reach_table(self.REACH_NO_WITNESS, 3)
+        }
+        self.assertEqual(none, published_none, "the index's no-witness list is not the ledger's")
+        flat = " ".join(self.doc.split())
+        self.assertIn(f"**{len(one)}** golden rows rest on one document", flat)
+
+    def test_the_reach_ranking_is_every_row_with_an_unreached_site_and_its_boundary(self) -> None:
+        """The committed ranking, off the ledger, and each row's owner stated."""
+        ledger = self.reach_ledger()
+        expected = [
+            [str(rank), f"`{reach.key}`", f"`{reach.region}`", f"**{reach.unreached_sites}**",
+             f"**{reach.unreached}**", f"**{len(reach.witnesses)}**"]
+            for rank, reach in ledger
+            if reach.unreached_sites
+        ]
+        published = self.reach_table(self.REACH_RANKING, 7)
+        self.assertEqual(expected, [cells[:6] for cells in published])
+        owned = {cells[0].strip("`") for cells in self.reach_table(self.REACH_OWNED, 3)}
+        for cells in published:
+            with self.subTest(key=cells[1]):
+                disposition = "owned" if cells[1].strip("`") in owned else "open"
+                self.assertTrue(
+                    cells[6].startswith(disposition),
+                    f"{cells[1]} reads {cells[6]!r}; the boundary makes it `{disposition}`",
+                )
+        flat = " ".join(self.doc.split())
+        reaching = sum(1 for _rank, reach in ledger if not reach.unreached_sites)
+        self.assertIn(f"**{reaching}** golden rows reach every handling site", flat)
+
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
         """Six declared sources, both capabilities each, each one cited."""
         capabilities = source_capabilities(self.doc)

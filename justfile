@@ -269,6 +269,7 @@ test-fern-probe-refusal:
 # Part of `check` (the recipe itself is not — it needs network and is slow).
 test-fixtures-coverage:
     python3 tests/fixtures_coverage_test.py
+    python3 tests/golden_reach_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.
@@ -336,6 +337,21 @@ fixtures-diff corpus="" file="":
 # tests/fixtures/AGENTS.md.
 fixtures-coverage *args:
     ./scripts/fixtures-coverage.sh "$@"
+
+# Per `golden` census row: which of crozier's declared handling sites for it
+# (docs/openapi-surface/golden-reach-sites.tsv) the row's own witnesses execute
+# in the golden-only tier, one instrumented run per golden test. Writes the
+# ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden row's
+# reach cell. Outside `check`: needs network and runs the corpus instrumented.
+golden-reach:
+    ./scripts/fetch-corpus.sh
+    python3 scripts/golden-reach.py measure
+    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
+    python3 scripts/golden-reach.py report --write
+
+# Re-join the last `just golden-reach` measurement after the site table changes.
+golden-reach-report:
+    python3 scripts/golden-reach.py report --write
 
 # Census which OpenAPI shapes the registered golden sources DECLARE — the input
 # to docs/openapi-surface-coverage.md, and the only measurement of what the

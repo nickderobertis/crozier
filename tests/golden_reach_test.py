@@ -1,0 +1,312 @@
+#!/usr/bin/env python3
+"""Boundary tests for `just golden-reach` (run by `just test-fixtures-coverage`).
+
+`scripts/golden-reach.py` turns the golden-only coverage tier into a per-row
+reach cell. Its `measure` half needs an instrumented corpus run and the network,
+so it stays outside `just check` exactly as `just fixtures-coverage` does. What
+these cases drive instead is everything that decides what a cell *says*:
+
+* the site resolver, over the real `src/` — a declared arm must bound the code
+  the arm runs and nothing beside it, or a reached `else` reads as a reached
+  `if`;
+* the `report` subcommand as a subprocess, over a small repository laid out
+  the way this one is (a region file, a site table, `tests/e2e.rs`, a census and
+  a measurement directory), so the ledger and the rewritten region cells are the
+  CLI's own output rather than a function's return value.
+"""
+
+from __future__ import annotations
+
+import importlib.util
+import json
+import re
+import subprocess
+import sys
+import tempfile
+import textwrap
+import unittest
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+SCRIPT = REPO / "scripts" / "golden-reach.py"
+
+_spec = importlib.util.spec_from_file_location("golden_reach", SCRIPT)
+assert _spec and _spec.loader
+golden_reach = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(golden_reach)
+
+
+def recipe_body(name: str) -> str:
+    """The command lines of one justfile recipe, so a rewiring fails here."""
+    lines = (REPO / "justfile").read_text(encoding="utf-8").splitlines()
+    for index, line in enumerate(lines):
+        if re.match(rf"^{re.escape(name)}( +[\w*\"=]+)*:", line):
+            body = []
+            for follower in lines[index + 1 :]:
+                if not follower.startswith((" ", "\t")):
+                    break
+                body.append(follower.strip())
+            return "\n".join(body)
+    raise AssertionError(f"the justfile has no `{name}` recipe")
+
+
+class SiteResolutionTests(unittest.TestCase):
+    """Declared sites resolve against the real `src/`, at the grain of an arm."""
+
+    def resolve(self, spec: str):
+        return golden_reach.resolve_site(spec, REPO)
+
+    def line_of(self, file: str, number: int) -> str:
+        return (REPO / file).read_text(encoding="utf-8").splitlines()[number - 1]
+
+    def test_a_function_site_spans_its_whole_item(self) -> None:
+        site = self.resolve("src/openapi.rs::filter_ignored")
+        self.assertIn("pub fn filter_ignored", self.line_of(site.file, site.start))
+        self.assertEqual("}", self.line_of(site.file, site.end))
+        self.assertTrue(site.holds((site.start, 1, site.start, 9)))
+
+    def test_a_method_site_is_named_through_its_impl(self) -> None:
+        operation = self.resolve("src/openapi.rs::Operation::ignored")
+        schema = self.resolve("src/openapi.rs::Schema::ignored")
+        self.assertNotEqual(operation.start, schema.start)
+        for site in (operation, schema):
+            self.assertIn("pub fn ignored", self.line_of(site.file, site.start))
+
+    def test_an_arm_starts_at_its_brace_and_stops_before_the_next_arm(self) -> None:
+        taken = self.resolve(r"src/openapi.rs::filter_by_audience[if labels\.is_empty\(\) \{]")
+        other = self.resolve(r"src/openapi.rs::filter_by_audience[\} else \{]")
+        # The `} else {` line closes one arm and opens the other: a region
+        # starting at the `else` body belongs to the second arm only, and the
+        # condition before the first arm's brace belongs to neither.
+        else_body = (other.start, other.start_col, other.start, other.start_col + 1)
+        self.assertTrue(other.holds(else_body))
+        self.assertFalse(taken.holds(else_body))
+        condition = (taken.start, taken.start_col - 5, taken.start, taken.start_col - 1)
+        self.assertFalse(taken.holds(condition))
+        self.assertEqual(taken.end, other.start)
+
+    def test_a_multi_line_condition_opens_its_arm_on_a_later_line(self) -> None:
+        site = self.resolve(r"src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]")
+        self.assertEqual("{", self.line_of(site.file, site.start).strip())
+        self.assertIn("return TypeRef::Named(name);", self.line_of(site.file, site.end - 1))
+
+    def test_a_line_only_arm_holds_regions_from_its_match_onward(self) -> None:
+        site = self.resolve(r"src/ir.rs::auth_model[=_ => Auth::Bearer \{ required: false \}]")
+        self.assertEqual(site.start, site.end)
+        self.assertTrue(site.holds((site.start, site.start_col, site.start, site.start_col + 5)))
+        self.assertFalse(site.holds((site.start, 1, site.start, 2)))
+
+    def test_a_regex_may_hold_a_comma(self) -> None:
+        cell = r"src/ir.rs::resolve_request_body[\.find\(\|\(media_type, media\)\| \{],src/ir.rs::is_binary_response"
+        parts = golden_reach._split_sites(cell)
+        self.assertEqual(2, len(parts))
+        self.assertTrue(parts[0].endswith(r"\{]"))
+        self.resolve(parts[0])
+
+    def test_an_unqualified_method_or_a_missing_site_is_refused_with_its_name(self) -> None:
+        for spec, message in (
+            # `ignored` is a method of two types; a bare name means a free function.
+            ("src/openapi.rs::ignored", "qualify a method as `Type::name`"),
+            ("src/openapi.rs::no_such_function", "matches 0 functions"),
+            ("src/nowhere.rs::load", "does not exist"),
+            (r"src/openapi.rs::filter_ignored[no such text]", "matches 0 lines"),
+        ):
+            with self.subTest(spec=spec), self.assertRaises(SystemExit) as refused:
+                self.resolve(spec)
+            self.assertIn(message, str(refused.exception))
+            self.assertIn(spec, str(refused.exception))
+
+
+DEMO_SOURCE = textwrap.dedent(
+    """\
+    pub fn handles(flag: bool) -> u8 {
+        if flag {
+            1
+        } else {
+            2
+        }
+    }
+
+    pub fn unrelated() -> u8 {
+        3
+    }
+    """
+)
+
+# Counter regions as llvm-cov reports them: [line_start, col_start, line_end, col_end].
+UNIVERSE = [
+    [1, 1, 1, 35],   # `handles` entry
+    [2, 8, 2, 12],   # the condition
+    [3, 9, 3, 10],   # the `if` arm
+    [4, 12, 6, 6],   # the `else` arm
+    [9, 1, 10, 6],   # `unrelated`
+]
+
+REGION_FILE = textwrap.dedent(
+    """\
+    # demo
+
+    ## Entries
+
+    | key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |
+    |---|---|---|---|---|---|---|---|
+    | `flag-set` | both | Demo Object.flag | golden | census `demo.flag`: `demo-a` (1) |  |  |  |
+    | `flag-orphan` | both | Demo Object.orphan | golden | census `demo.orphan`: `dropped-doc` (1) |  |  |  |
+    | `flag-unread` | both | Demo Object.unread | golden | census `demo.unread`: `demo-b` (1) |  |  |  |
+    | `flag-gap` | both | Demo Object.gap | gap | census `demo.gap`: 0 | none | nothing | `UNREACHABLE` nothing to settle |
+    """
+)
+
+SITES = textwrap.dedent(
+    """\
+    key\tselectors\tsites
+    flag-set\tdemo.flag\tsrc/demo.rs::handles[if flag \\{],src/demo.rs::handles[\\} else \\{]
+    flag-orphan\tdemo.orphan\tsrc/demo.rs::unrelated
+    flag-unread\tdemo.unread\tnone
+    """
+)
+
+E2E = textwrap.dedent(
+    """\
+    const DEMO_A: Corpus = Corpus {
+        api: "demo-a",
+    };
+
+    const DEMO_B: Corpus = Corpus {
+        api: "demo-b",
+    };
+
+    #[test]
+    fn demo_a_matches_fern_output() {
+        assert_link_ok_corpus_matches(&DEMO_A);
+    }
+
+    #[test]
+    fn demo_b_matches_fern_output() {
+        assert_link_ok_corpus_matches(&DEMO_B);
+    }
+    """
+)
+
+CENSUS = {
+    "sources": [
+        {"fixture": "demo-a", "origin": "corpus", "path": None},
+        {"fixture": "demo-b", "origin": "corpus", "path": None},
+        {"fixture": "dropped-doc", "origin": "corpus", "path": None},
+    ],
+    "rows": [
+        {"selector": "demo.flag", "fixture": "demo-a", "count": 1},
+        {"selector": "demo.orphan", "fixture": "dropped-doc", "count": 1},
+        {"selector": "demo.unread", "fixture": "demo-b", "count": 1},
+    ],
+    "absent_selectors": [],
+}
+
+
+class ReportTests(unittest.TestCase):
+    """`golden-reach.py report` over a repository laid out like this one."""
+
+    def setUp(self) -> None:
+        self.scratch = tempfile.TemporaryDirectory(prefix="golden-reach-test-")
+        root = Path(self.scratch.name)
+        self.repo = root / "repo"
+        self.measurement = root / "measurement"
+        (self.repo / "src").mkdir(parents=True)
+        (self.repo / "src" / "demo.rs").write_text(DEMO_SOURCE, encoding="utf-8")
+        regions = self.repo / "docs" / "openapi-surface"
+        regions.mkdir(parents=True)
+        (regions / "demo.md").write_text(REGION_FILE, encoding="utf-8")
+        (regions / "golden-reach-sites.tsv").write_text(SITES, encoding="utf-8")
+        (self.repo / "tests" / "fixtures").mkdir(parents=True)
+        (self.repo / "tests" / "e2e.rs").write_text(E2E, encoding="utf-8")
+        (self.measurement / "tests").mkdir(parents=True)
+        (self.measurement / "universe.json").write_text(
+            json.dumps({"src/demo.rs": UNIVERSE}), encoding="utf-8"
+        )
+        # `demo-a` takes the `if` arm and never the `else` one.
+        (self.measurement / "tests" / "demo_a_matches_fern_output.json").write_text(
+            json.dumps({"src/demo.rs": UNIVERSE[:3]}), encoding="utf-8"
+        )
+        (self.measurement / "tests" / "demo_b_matches_fern_output.json").write_text(
+            json.dumps({"src/demo.rs": [UNIVERSE[4]]}), encoding="utf-8"
+        )
+        (self.measurement / "provenance.json").write_text(
+            json.dumps({"commit": "0123456789abcdef", "tests": 2}), encoding="utf-8"
+        )
+        (self.measurement / "census.json").write_text(json.dumps(CENSUS), encoding="utf-8")
+
+    def tearDown(self) -> None:
+        self.scratch.cleanup()
+
+    def run_report(self, *extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable, str(SCRIPT), "--repo-root", str(self.repo),
+                "--out", str(self.measurement), "report", *extra,
+            ],
+            capture_output=True, text=True,
+        )
+
+    def cells(self) -> dict[str, list[str]]:
+        text = (self.repo / "docs" / "openapi-surface" / "demo.md").read_text(encoding="utf-8")
+        return {cells[0].strip("`"): cells for cells in golden_reach.region_rows(text)}
+
+    def test_report_writes_the_ranked_ledger_and_every_golden_rows_reach_cell(self) -> None:
+        run = self.run_report("--write")
+        self.assertEqual(0, run.returncode, run.stderr)
+        ledger = golden_reach.read_ledger(self.repo / "docs" / "openapi-surface" / "golden-reach.tsv")
+        self.assertEqual(
+            ["flag-orphan", "flag-set", "flag-unread"],
+            [reach.key for _rank, reach in ledger],
+            "a row with an unreached site ranks above a row reaching all of its own",
+        )
+        rank, flag_set = ledger[1]
+        self.assertEqual(("demo-a",), flag_set.witnesses)
+        self.assertEqual(1, flag_set.unreached_sites)
+        cells = self.cells()
+        self.assertTrue(cells["flag-set"][5].startswith("reach: **1** of **2** handling sites"))
+        self.assertIn("its **one** golden-only witness `demo-a`", cells["flag-set"][5])
+        self.assertIn(r"unreached `src/demo.rs::handles[\} else \{]` 0/1", cells["flag-set"][5])
+        self.assertIn(f"rank {rank})", cells["flag-set"][5])
+        self.assertIn("no handling site", cells["flag-unread"][5])
+        self.assertEqual("none", cells["flag-gap"][5], "a gap row's cells are not the reach cell's")
+
+    def test_a_row_declared_only_by_a_source_without_a_golden_says_so(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        cell = self.cells()["flag-orphan"][5]
+        self.assertIn("**no** golden-only witness", cell)
+        self.assertIn("`dropped-doc`, which carries no committed golden", cell)
+
+    def test_report_is_idempotent_over_its_own_output(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        first = (self.repo / "docs" / "openapi-surface" / "demo.md").read_text(encoding="utf-8")
+        again = self.run_report("--write")
+        self.assertIn("wrote the ledger and 0 reach cell(s)", again.stdout)
+        self.assertEqual(first, (self.repo / "docs" / "openapi-surface" / "demo.md").read_text(encoding="utf-8"))
+
+    def test_a_site_table_missing_a_golden_row_is_refused(self) -> None:
+        table = self.repo / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
+        table.write_text("\n".join(SITES.splitlines()[:-1]) + "\n", encoding="utf-8")
+        run = self.run_report()
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("missing ['flag-unread']", run.stderr)
+
+    def test_a_missing_measurement_names_the_recipe_that_takes_it(self) -> None:
+        (self.measurement / "universe.json").unlink()
+        run = self.run_report()
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("just golden-reach", run.stderr)
+
+
+class RecipeTests(unittest.TestCase):
+    def test_the_recipes_drive_this_script_and_write_the_census_it_reads(self) -> None:
+        body = recipe_body("golden-reach")
+        self.assertIn("scripts/golden-reach.py measure", body)
+        self.assertIn("openapi-surface-census.py --json > .local/golden-reach/census.json", body)
+        self.assertIn("scripts/golden-reach.py report --write", body)
+        self.assertIn("scripts/golden-reach.py report --write", recipe_body("golden-reach-report"))
+        self.assertEqual(REPO / ".local" / "golden-reach", golden_reach.DEFAULT_OUT)
+
+
+if __name__ == "__main__":
+    unittest.main()
