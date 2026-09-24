@@ -493,6 +493,27 @@ class WitnessSearchGithubTests(unittest.TestCase):
         ]
         self.assertEqual(2, sum(row["status"] == "IncompleteRead" for row in calls))
 
+    def test_publisher_transfer_failure_stays_outstanding_after_retry_budget(
+        self,
+    ) -> None:
+        self.server.state["raw_incomplete_remaining"] = 3
+        publisher = {
+            "repository": "example/api",
+            "commit": "c" * 40,
+            "scope": "",
+            "derivation": "local API publisher",
+        }
+        with patch.object(SEARCH, "RAW_SPACING_S", 0.01), patch.object(
+            SEARCH, "RAW_BACKOFF_BASE_S", 0.01
+        ):
+            self.search.publisher_walk(publisher, {})
+        document = json.loads(
+            (self.root / "documents.jsonl").read_text().splitlines()[0]
+        )
+        self.assertEqual("acquisition-failure", document["status"])
+        self.assertIn("IncompleteRead after 3 attempts", document["diagnostic"])
+        self.assertEqual(3, self.server.state["raw_hits"])
+
     def test_newer_openapi_three_document_is_censused(self) -> None:
         self.server.state["raw_document"] = DOCUMENT.replace(
             b"openapi: 3.0.3", b"openapi: 3.2.0"
