@@ -1,0 +1,27 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 5 errors
+    [error]
+        path: __package__.yml -> types -> DataEntry
+        issue: Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: agent.yml -> service -> endpoints -> Generate
+        issue: GenerateRequest is already declared in playground.yml
+
+    [error]
+        path: prompt2025V2.yml -> service -> endpoints -> GetPrompt2025EnvironmentVersion
+        issue: GetPrompt2025EnvironmentVersionRequest is already declared in prompt2025.yml
+
+    [error]
+        path: prompt2025V2.yml -> service -> endpoints -> GetPrompt2025ProductionVersion
+        issue: GetPrompt2025ProductionVersionRequest is already declared in prompt2025.yml
+
+    [error]
+        path: prompt2025V2.yml -> service -> endpoints -> GetPrompt2025Version
+        issue: GetPrompt2025VersionRequest is already declared in prompt2025.yml
+
+Found 5 errors and 4 warnings in 0.003 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 5 errors and 4 warnings in 0.003 seconds. Run fern check --warnings to print out the warnings not shown.
