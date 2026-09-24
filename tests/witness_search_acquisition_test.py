@@ -6,10 +6,12 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import importlib.util
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
@@ -669,6 +671,13 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             cwd=REPO, capture_output=True, text=True, timeout=120,
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
+        spec = importlib.util.spec_from_file_location(
+            "registries_index", REPO / "scripts/witness-search-registries-index.py")
+        index = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(index)
+        readme = (REPO / "docs/openapi-surface/witness-search-registries/README.md").read_text()
+        section = readme.partition("## Outstanding items")[2].partition("\n## ")[0]
+        self.assertEqual(tuple(re.findall(r"^- `([a-z-]+)`:", section, re.MULTILINE)), index.KINDS)
 
     def test_key_derivation_reads_current_region_tables(self) -> None:
         completed = subprocess.run(

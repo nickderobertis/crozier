@@ -7,8 +7,7 @@ reconcile against the sibling search's consolidated ledger. The per-source
 seven-cell line reads `records.tsv` as `key kind subject result file`, which
 the candidate-record ledgers here do not use. Final reconciliation writes each
 key's row from this directory's `candidates.tsv` and `outstanding.tsv` and the
-per-source `records.tsv`. Postman carries no search obligation (see
-[`../witness-search-postman/`](../witness-search-postman/README.md)).
+per-source `records.tsv`. Postman carries no search obligation.
 
 `candidates.tsv` contains only documents confirmed to declare a key by that
 key's census selector. It has no `securityscheme-ref` row: the branch-point
@@ -19,7 +18,7 @@ Adding a candidate here requires a selector output over the parsed document;
 an earlier keyword hit or another key's census output does not qualify.
 
 `python3 scripts/witness-search-registries-index.py` rebuilds `candidates.tsv`
-from the `records.tsv` of `apis.guru`, `jentic` and `vendor-portals` and `outstanding.tsv` from their ledgers.
+from each of this node's sources' `records.tsv`, and `outstanding.tsv` from their ledgers.
 Its `--check` option, run by `just test-witness-search-acquisition`, fails when
 either committed file is stale.
 
@@ -29,7 +28,8 @@ either committed file is stale.
 search open, grouped by the blocker that keeps it open. Its `items` cell lists
 each identity and its `evidence` cell names the ledger that records it. A key
 with any row here does not read `exhausted`, and this node records none as
-`exhausted`. The kinds are:
+`exhausted`. The kinds, which the acquisition tier reconciles with the ones the
+script emits, are:
 
 - `selector-unavailable`: `securityscheme-ref`, whose selector the census does
   not support, in each of this node's sources. That search is delegated to
@@ -39,8 +39,7 @@ with any row here does not read `exhausted`, and this node records none as
 - `portal-unanswered`: a portal whose pinned tree could not be read.
 
 Postman is not a declared source, by the user's decision, so no key lists it as
-searched or outstanding. Its historical requests are in
-[`../witness-search-postman/`](../witness-search-postman/README.md).
+searched or outstanding.
 
 ## The eight grant-blocked artifacts
 

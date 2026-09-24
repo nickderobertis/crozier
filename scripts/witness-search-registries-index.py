@@ -22,6 +22,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = ("apis.guru", "jentic", "vendor-portals")
 FIELDS = ("key", "source", "kind", "count", "blocker", "items", "evidence")
+KINDS = ("selector-unavailable", "inconclusive-screen", "unreadable-document", "portal-unanswered")
 RECORD_FIELDS = ("source", "key", "candidate", "revision", "digest", "census", "licence_screen",
                  "revision_screen", "fern_screen", "disposition", "evidence")
 
@@ -46,6 +47,7 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
     groups: dict[tuple[str, str, str, str], dict] = {}
 
     def add(key: str, source: str, kind: str, blocker: str, item: str, evidence: str) -> None:
+        assert kind in KINDS, kind
         group = groups.setdefault((key, source, kind, blocker), {"items": [], "evidence": evidence})
         group["items"].append(item)
 
