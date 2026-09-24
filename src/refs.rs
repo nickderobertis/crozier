@@ -1244,4 +1244,62 @@ components:
         assert!(message.contains("schemas/absent.yml"), "{message}");
         assert!(message.contains("could not read"), "{message}");
     }
+
+    #[test]
+    fn a_missing_sibling_schema_pointer_in_a_response_field_becomes_unknown() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Missing, version: '1'}\npaths:\n  /feature:\n    get:\n      operationId: getFeature\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  geometry:\n                    $ref: ./geometry.yml#/components/schemas/Geometry\n",
+        )
+        .expect("root");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root)
+            .expect("Fern types the missing field as unknown");
+        let geometry = &document.paths["/feature"]
+            .get
+            .as_ref()
+            .expect("get")
+            .responses["200"]
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .expect("response schema")
+            .properties["geometry"];
+        assert!(geometry.reference.is_none());
+        assert!(geometry.ty.is_none());
+    }
+
+    #[test]
+    fn a_present_sibling_schema_pointer_in_a_response_field_resolves() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Present, version: '1'}\npaths:\n  /feature:\n    get:\n      operationId: getFeature\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  geometry:\n                    $ref: ./geometry.yml#/components/schemas/Geometry\n",
+        )
+        .expect("root");
+        std::fs::write(
+            directory.path().join("geometry.yml"),
+            "components:\n  schemas:\n    Geometry:\n      type: string\n",
+        )
+        .expect("sibling schema");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root).expect("resolve present sibling schema");
+        let geometry = &document.paths["/feature"]
+            .get
+            .as_ref()
+            .expect("get")
+            .responses["200"]
+            .content["application/json"]
+            .schema
+            .as_ref()
+            .expect("response schema")
+            .properties["geometry"];
+        assert_eq!(
+            geometry.ty.as_ref().and_then(|ty| ty.primary()),
+            Some("string")
+        );
+    }
 }
