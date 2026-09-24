@@ -1390,9 +1390,9 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     Ok(doc)
 }
 
-/// Fern's pinned Python generator refuses array headers and crashes while
-/// lowering object headers. Fail at the document boundary with an actionable
-/// error, before any output directory can be written.
+/// Fern's pinned Python generator refuses headers with inline string array
+/// items and crashes while lowering object headers. Arrays of referenced
+/// objects do generate (Komga's `Accept` header), so preserve those.
 fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
     for (route, item) in &doc.paths {
         for (method, operation) in item.operations() {
@@ -1405,7 +1405,17 @@ fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
                     .as_ref()
                     .and_then(|schema| schema.ty.as_ref())
                     .and_then(TypeField::primary);
-                if let Some(kind @ ("array" | "object")) = kind {
+                let refused = match kind {
+                    Some("object") => true,
+                    Some("array") => parameter.schema.as_ref().is_some_and(|schema| {
+                        schema.items.as_ref().is_some_and(|items| {
+                            items.ty.as_ref().and_then(TypeField::primary) == Some("string")
+                        })
+                    }),
+                    _ => false,
+                };
+                if refused {
+                    let kind = kind.expect("refused header has a schema kind");
                     return Err(Error::InvalidSpec {
                         path: path.to_path_buf(),
                         message: format!(

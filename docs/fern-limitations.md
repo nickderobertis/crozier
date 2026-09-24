@@ -143,9 +143,9 @@ none. crozier drops cookie parameters too (`src/ir.rs`, the
 Probe `param-content-path` emits `def op(self, probe_param: str, ...)`, losing the
 declared JSON object. Verdict *discards*.
 
-### Header parameters: array refuses, object crashes
+### Header parameters: inline scalar array refuses, object crashes
 
-An **array-typed header parameter fails `fern check`**. Fern synthesizes an
+The probe's **array-typed header with inline string items fails `fern check`**. Fern synthesizes an
 endpoint example for the header using the parameter *name* as a string, then
 rejects its own synthesized example against the array schema. Probe `header-array`,
 inner `fern check` exit **1** (the wrapper process exits 0 regardless, so the inner
@@ -163,7 +163,8 @@ Found 1 error and 0 warnings in 0.000 seconds.
 `fern generate` never ran — the runner guards it behind a zero check exit. This is
 the same failure [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md)
 records for `jaewook-epcis`, reproduced from first principles on a three-line
-specification.
+specification. The failure does not cover every array header: Komga's registered
+golden generates an `Accept` header whose array items reference an object schema.
 
 An **object-typed header parameter crashes the generator**. Probe `header-object`:
 `fern check` exit **0** (`All checks passed`), `fern generate` exit **1**, tail of
@@ -4193,7 +4194,7 @@ question a future probe could answer**, not a proven absence.
 | `extension-server-variable` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-server-variable`](openapi-surface/probe-expected/extension-server-variable/) and [`extension-server-variable-control`](openapi-surface/probe-expected/extension-server-variable-control/); the two complete SDK trees agree byte for byte. |
 | `extension-server` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-server`](openapi-surface/probe-expected/extension-server/) and [`extension-server-control`](openapi-surface/probe-expected/extension-server-control/); the two complete SDK trees agree byte for byte. |
 | `extension-xml` | 0 | 0 | ignores | Contract A differential measurement at Fern CLI 5.67.1 / Python SDK 5.20.0: **Committed Fern measurement:** [`extension-xml`](openapi-surface/probe-expected/extension-xml/) and [`extension-xml-control`](openapi-surface/probe-expected/extension-xml-control/); the two complete SDK trees agree byte for byte. |
-| `header-array` | 0 | 0 | refuses | `fern check` refuses an array-typed header parameter, exit 1; no candidate carried end to end at all; committed Fern measurement: [`header-array`](openapi-surface/probe-expected/header-array.fern-refusal.txt) |
+| `header-array` | 0 | 0 | refuses | `fern check` refuses the probe's array-typed header with inline string items, exit 1; Komga's registered golden accepts an array header with referenced object items, so the refusal applies only to the measured subtype; committed Fern measurement: [`header-array`](openapi-surface/probe-expected/header-array.fern-refusal.txt) |
 | `header-object` | 0 | 0 | crashes | `fern generate` crashes on an object-typed header parameter with an internal `KeyError`; no candidate carried end to end at all; committed Fern measurement: [`header-object`](openapi-surface/probe-expected/header-object.fern-refusal.txt) |
 | `http-digest` | 0 | 4 | discards + licence | the importer drops the scheme outright; and 0 eligible of 4 verified — 3× the specification declares CC BY-NC-SA 3.0 US, 1× licence tier Q Contract A measurement: **Committed Fern measurement:** [`http-digest`](openapi-surface/probe-expected/http-digest/), Fern CLI 5.67.1 and Python SDK 5.20.0. |
 | `label-array-or-object` | 0 | 3 | discards + licence | Fern discards the `label` style and renders `str(list)` into the path segment; 0 eligible of 3 verified — 3× licence untiered; committed Fern measurement: [`label-array-or-object`](openapi-surface/probe-expected/label-array-or-object/) |
