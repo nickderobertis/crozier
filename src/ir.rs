@@ -3633,7 +3633,20 @@ fn error_class_name(status: u16) -> Option<&'static str> {
 /// `Sequence`); an error with no `application/json` body takes Fern's
 /// `typing.Any` in Fern 5.20.
 fn error_body_type(resp: &Response, class: &str) -> TypeRef {
-    match response_schema(resp) {
+    // Fern imports an error's first declared concrete representation. FOLIO's
+    // shared 400 response writes `text/plain` before `application/json`, and
+    // the generated exception carries `str` even though the JSON body is typed.
+    let schema = resp
+        .content
+        .values()
+        .filter_map(|media| media.schema.as_ref())
+        .find(|schema| !is_unknown(schema))
+        .or_else(|| {
+            resp.content
+                .values()
+                .find_map(|media| media.schema.as_ref())
+        });
+    match schema {
         Some(schema)
             if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
                 && schema

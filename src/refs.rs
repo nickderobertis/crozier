@@ -41,7 +41,7 @@ use std::process::Command;
 use crate::error::{Error, Result};
 use crate::openapi::{
     for_each_root_schema, for_each_schema_in, referenced_component_schema, AdditionalProperties,
-    OpenApi, Schema,
+    OpenApi, Parameter, Schema,
 };
 
 /// How long `curl` may spend on one referenced document before crozier gives up
@@ -123,10 +123,26 @@ pub fn resolve(
         active: Vec::new(),
     };
     let remote_origin = register_component_schemas(doc, &mut resolver)?;
+    let root_spec = spec.to_path_buf();
+    for parameter in doc.components.parameters.values_mut() {
+        resolver.resolve_parameter(parameter, &root_spec)?;
+    }
+    for item in doc.paths.values_mut() {
+        for parameter in &mut item.parameters {
+            resolver.resolve_parameter(parameter, &root_spec)?;
+        }
+        for slot in item.operation_slots() {
+            if let Some(operation) = slot.as_mut() {
+                for parameter in &mut operation.parameters {
+                    resolver.resolve_parameter(parameter, &root_spec)?;
+                }
+            }
+        }
+    }
     let mut failure = None;
     for_each_root_schema(doc, &mut |schema| {
         if failure.is_none() {
-            if let Err(error) = resolver.resolve_schema(schema) {
+            if let Err(error) = resolver.resolve_schema(schema, &root_spec) {
                 failure = Some(error);
             }
         }
@@ -162,11 +178,12 @@ fn register_component_schemas(
         let Some(reference) = doc.components.schemas[&name].reference.clone() else {
             continue;
         };
-        let Some((_, fragment)) = split_remote(&reference) else {
+        let Some((_, fragment)) = split_external(&reference) else {
             continue;
         };
         let target = fragment.rsplit('/').next().unwrap_or_default().to_string();
-        let resolved = resolver.resolve_reference(&reference)?;
+        let source = resolver.spec.to_path_buf();
+        let resolved = resolver.resolve_reference(&reference, &source)?;
         if target.is_empty()
             || target == name
             || doc.components.schemas.contains_key(&target)
@@ -229,6 +246,19 @@ fn split_remote(reference: &str) -> Option<(&str, &str)> {
     })
 }
 
+/// A reference to another document, addressed either by HTTP(S) or by a path
+/// relative to the document that writes it. A leading `#` stays local.
+fn split_external(reference: &str) -> Option<(&str, &str)> {
+    if let Some(remote) = split_remote(reference) {
+        return Some(remote);
+    }
+    let (path, fragment) = reference.split_once('#').unwrap_or((reference, ""));
+    if path.is_empty() || path.contains(':') {
+        return None;
+    }
+    Some((path, fragment))
+}
+
 /// One load's resolution state: the fetcher, the documents already retrieved,
 /// and the references currently being resolved (for cycle detection).
 struct Resolver<'a> {
@@ -239,42 +269,83 @@ struct Resolver<'a> {
 }
 
 impl Resolver<'_> {
+    fn resolve_parameter(&mut self, parameter: &mut Parameter, source: &Path) -> Result<()> {
+        let Some(reference) = parameter.reference.clone() else {
+            return Ok(());
+        };
+        let Some((address, fragment)) = split_external(&reference) else {
+            return Ok(());
+        };
+        let remote = split_remote(&reference).is_some();
+        let path = if remote {
+            Path::new(address).to_path_buf()
+        } else {
+            source
+                .parent()
+                .unwrap_or_else(|| Path::new("."))
+                .join(address)
+        };
+        let node = pointer(self.document(&path, &reference, remote)?, fragment)
+            .cloned()
+            .ok_or_else(|| {
+                self.error(
+                    &reference,
+                    "the referenced document has no parameter at that pointer",
+                )
+            })?;
+        *parameter = serde_yaml_ng::from_value(node)
+            .map_err(|error| self.error(&reference, &format!("not a parameter: {error}")))?;
+        Ok(())
+    }
+
     /// Resolve `schema` in place, then every schema nested inside it.
-    fn resolve_schema(&mut self, schema: &mut Schema) -> Result<()> {
+    fn resolve_schema(&mut self, schema: &mut Schema, source: &Path) -> Result<()> {
         if let Some(reference) = schema.reference.clone() {
-            if split_remote(&reference).is_some() {
-                *schema = self.resolve_reference(&reference)?;
+            if split_external(&reference).is_some() {
+                *schema = self.resolve_reference(&reference, source)?;
                 return Ok(());
             }
         }
         for property in schema.properties.values_mut() {
-            self.resolve_schema(property)?;
+            self.resolve_schema(property, source)?;
         }
         if let Some(items) = &mut schema.items {
-            self.resolve_schema(items)?;
+            self.resolve_schema(items, source)?;
         }
         if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
-            self.resolve_schema(value)?;
+            self.resolve_schema(value, source)?;
         }
         for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of] {
             for member in members.iter_mut().flatten() {
-                self.resolve_schema(member)?;
+                self.resolve_schema(member, source)?;
             }
         }
         Ok(())
     }
 
     /// Fetch, locate and fully resolve the schema `reference` names.
-    fn resolve_reference(&mut self, reference: &str) -> Result<Schema> {
+    fn resolve_reference(&mut self, reference: &str, source: &Path) -> Result<Schema> {
         // A reference cycle across documents has no name to emit, so it degrades
         // to the unknown type — the same shape an unresolvable local pointer
         // takes — rather than recursing forever.
         if self.active.iter().any(|active| active == reference) {
             return Ok(Schema::default());
         }
-        let (url, fragment) =
-            split_remote(reference).expect("caller checked the reference is remote");
-        let node = pointer(self.document(url, reference)?, fragment).cloned();
+        let (address, fragment) =
+            split_external(reference).expect("caller checked the reference is external");
+        let path = if split_remote(reference).is_some() {
+            Path::new(address).to_path_buf()
+        } else {
+            source
+                .parent()
+                .unwrap_or_else(|| Path::new("."))
+                .join(address)
+        };
+        let node = pointer(
+            self.document(&path, reference, split_remote(reference).is_some())?,
+            fragment,
+        )
+        .cloned();
         let node = node.ok_or_else(|| {
             self.error(
                 reference,
@@ -284,7 +355,7 @@ impl Resolver<'_> {
         let mut resolved: Schema = serde_yaml_ng::from_value(node)
             .map_err(|error| self.error(reference, &format!("not a schema: {error}")))?;
         self.active.push(reference.to_string());
-        let nested = self.resolve_schema(&mut resolved);
+        let nested = self.resolve_schema(&mut resolved, &path);
         self.active.pop();
         nested?;
         Ok(resolved)
@@ -292,17 +363,31 @@ impl Resolver<'_> {
 
     /// The parsed document at `url`, fetched once per load. YAML is a superset of
     /// JSON, so one parser reads both `.yaml` and `.json` references.
-    fn document(&mut self, url: &str, reference: &str) -> Result<&serde_yaml_ng::Value> {
-        if !self.documents.contains_key(url) {
-            let text = self
-                .fetcher
-                .fetch(url)
-                .map_err(|message| self.error(reference, &message))?;
+    fn document(
+        &mut self,
+        path: &Path,
+        reference: &str,
+        remote: bool,
+    ) -> Result<&serde_yaml_ng::Value> {
+        let key = path.to_string_lossy().to_string();
+        if !self.documents.contains_key(&key) {
+            let text = if remote {
+                self.fetcher
+                    .fetch(&key)
+                    .map_err(|message| self.error(reference, &message))?
+            } else {
+                std::fs::read_to_string(path).map_err(|error| {
+                    self.error(
+                        reference,
+                        &format!("could not read {}: {error}", path.display()),
+                    )
+                })?
+            };
             let value = serde_yaml_ng::from_str(&text)
                 .map_err(|error| self.error(reference, &format!("could not parse it: {error}")))?;
-            self.documents.insert(url.to_string(), value);
+            self.documents.insert(key.clone(), value);
         }
-        Ok(&self.documents[url])
+        Ok(&self.documents[&key])
     }
 
     fn error(&self, reference: &str, message: &str) -> Error {

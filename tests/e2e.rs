@@ -962,6 +962,35 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
         .into_iter()
         .map(|name| fetched.join(name))
         .find(|path| path.exists())
+        .or_else(|| {
+            let pins = std::fs::read_to_string(
+                Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("tests/fixtures/corpus-remote-ref-pins.tsv"),
+            )
+            .ok()?;
+            let corpus = std::fs::read_to_string(
+                Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/CORPUS.md"),
+            )
+            .ok()?;
+            let row = corpus
+                .lines()
+                .find(|line| line.contains(&format!("| `{api}` |")))?;
+            let source_url = row.split('|').nth(4)?.trim();
+            pins.lines()
+                .filter_map(|line| {
+                    let fields: Vec<_> = line.split('\t').collect();
+                    if fields.len() == 5
+                        && fields[0] == "tree"
+                        && fields[1] == api
+                        && fields[3] == source_url
+                    {
+                        Some(fetched.join(fields[2]))
+                    } else {
+                        None
+                    }
+                })
+                .find(|path| path.is_file())
+        })
 }
 
 /// Fresh `crozier` command bound to the built binary.
@@ -3146,6 +3175,7 @@ const CORPORA: &[&Corpus] = &[
     &AUDIOBOOKSHELF,
     &STEAMINPUTDB,
     &PAYPAL_CATALOG_PRODUCTS,
+    &FOLIO_MOD_AUTHTOKEN,
 ];
 
 #[test]
@@ -5442,6 +5472,18 @@ const SAC_BACKEND: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// FOLIO's token API keeps six component schemas in sibling JSON files.
+const FOLIO_MOD_AUTHTOKEN: Corpus = Corpus {
+    api: "folio-mod-authtoken",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -5826,6 +5868,11 @@ fn assert_link_ok_corpus_matches(corpus: &Corpus) {
         return;
     }
     assert_corpus_matches(corpus);
+}
+
+#[test]
+fn folio_mod_authtoken_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
 }
 
 #[test]
