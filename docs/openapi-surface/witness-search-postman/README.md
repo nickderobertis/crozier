@@ -2,8 +2,7 @@
 
 **Postman is not a declared witness-search source.** The user excluded it:
 reading a body there needs a Postman API key, which this host does not hold and
-will not get. See
-[the exclusion](../../openapi-surface-coverage.md#the-settlement-rule-as-amended).
+will not get.
 Nothing in this directory is counted by any gate, cited as a search of any
 key, or listed as outstanding for one. It is kept only as a record of the
 requests that were issued before the exclusion.

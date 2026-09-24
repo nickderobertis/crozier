@@ -34,7 +34,7 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle, dialect="excel-tab"))
 
 
-def derive(root: Path) -> list[dict[str, str]]:
+def outstanding_rows(root: Path) -> list[dict[str, str]]:
     keys = read_tsv(root / "witness-search-keys.tsv")
     supported = [row["key"] for row in keys if row["census_status"] == "supported"]
     groups: dict[tuple[str, str, str, str], dict] = {}
@@ -107,7 +107,7 @@ def main() -> int:
     try:
         expected = {
             directory / "candidates.tsv": render(candidates(args.root), (*RECORD_FIELDS[:-1], "record")),
-            directory / "outstanding.tsv": render(derive(args.root)),
+            directory / "outstanding.tsv": render(outstanding_rows(args.root)),
         }
     except (OSError, KeyError, ValueError) as error:
         print(f"witness-search-registries-index: {error}; repair the ledger it names", file=sys.stderr)
