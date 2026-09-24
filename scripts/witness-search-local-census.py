@@ -93,9 +93,12 @@ def census_one(
                     import yaml
                 except ImportError:
                     raise original
-                loader = f"PyYAML {yaml.__version__} CSafeLoader"
+                # CSafeLoader needs libyaml; a pure-Python PyYAML has only
+                # SafeLoader, which reads the same documents more slowly.
+                yaml_loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+                loader = f"PyYAML {yaml.__version__} {yaml_loader.__name__}"
                 try:
-                    document = yaml.load(raw, Loader=yaml.CSafeLoader)
+                    document = yaml.load(raw, Loader=yaml_loader)
                 except yaml.YAMLError as error:
                     raise ValueError(f"PyYAML parse failure: {error}") from error
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""

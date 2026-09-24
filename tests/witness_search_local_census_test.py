@@ -28,37 +28,67 @@ POSTMAN = REPO / "scripts/witness-search-postman.py"
 PORTAL_TREES = REPO / "scripts/witness-search-portal-trees.py"
 
 
+def run_explicit_key_census(interpreter_flags: list[str]) -> tuple[int, dict]:
+    """Census a YAML tree only PyYAML reads, under the given interpreter flags."""
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        documents = root / "documents"
+        documents.mkdir()
+        (documents / "hit.yaml").write_text(
+            "? openapi\n: 3.0.0\npaths: {}\ncomponents:\n  schemas:\n"
+            "    Shape:\n      type: array\n      items: {type: string}\n",
+            encoding="utf-8",
+        )
+        (documents / "broken.yaml").write_text(
+            "? openapi\n: [unterminated\n", encoding="utf-8"
+        )
+        contract = root / "keys.md"
+        contract.write_text(
+            "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
+            encoding="utf-8",
+        )
+        completed = subprocess.run(
+            [sys.executable, *interpreter_flags, str(SCRIPT),
+             "--contract", str(contract),
+             "--documents", f"local={documents}", "--all-documents-jsonl"],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        return completed.returncode, {
+            row["document"]: row
+            for row in map(json.loads, completed.stdout.splitlines())
+        }
+
+
+def pyyaml_importable(interpreter_flags: list[str]) -> bool:
+    return subprocess.run(
+        [sys.executable, *interpreter_flags, "-c", "import yaml"],
+        capture_output=True, timeout=30,
+    ).returncode == 0
+
+
 class LocalCensusTest(unittest.TestCase):
     def test_explicit_yaml_mapping_key_uses_optional_parser(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            documents = root / "documents"
-            documents.mkdir()
-            (documents / "hit.yaml").write_text(
-                "? openapi\n: 3.0.0\npaths: {}\ncomponents:\n  schemas:\n"
-                "    Shape:\n      type: array\n      items: {type: string}\n",
-                encoding="utf-8",
-            )
-            (documents / "broken.yaml").write_text(
-                "? openapi\n: [unterminated\n", encoding="utf-8"
-            )
-            contract = root / "keys.md"
-            contract.write_text(
-                "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
-                encoding="utf-8",
-            )
-            completed = subprocess.run(
-                [sys.executable, str(SCRIPT), "--contract", str(contract),
-                 "--documents", f"local={documents}", "--all-documents-jsonl"],
-                cwd=REPO, capture_output=True, text=True, timeout=30,
-            )
-            self.assertEqual(completed.returncode, 1)
-            rows = {row["document"]: row for row in
-                    map(json.loads, completed.stdout.splitlines())}
-            self.assertGreater(rows["hit.yaml"]["selectors"]["array"], 0)
-            self.assertIn("PyYAML", rows["hit.yaml"]["loader"])
-            self.assertEqual(rows["broken.yaml"]["classification"], "unreadable")
-            self.assertIn("PyYAML parse failure", rows["broken.yaml"]["error"])
+        if not pyyaml_importable([]):
+            self.skipTest("PyYAML is not installed for this interpreter")
+        returncode, rows = run_explicit_key_census([])
+        self.assertEqual(returncode, 1)
+        self.assertGreater(rows["hit.yaml"]["selectors"]["array"], 0)
+        self.assertIn("PyYAML", rows["hit.yaml"]["loader"])
+        self.assertEqual(rows["broken.yaml"]["classification"], "unreadable")
+        self.assertIn("PyYAML parse failure", rows["broken.yaml"]["error"])
+
+    def test_explicit_yaml_mapping_key_without_pyyaml_is_unreadable(self) -> None:
+        # `-S` drops site-packages, which is where an installed PyYAML lives;
+        # the census scripts themselves are stdlib-only.
+        if pyyaml_importable(["-S"]):
+            self.skipTest("PyYAML is importable even without site-packages")
+        returncode, rows = run_explicit_key_census(["-S"])
+        self.assertEqual(returncode, 1)
+        for document in ("hit.yaml", "broken.yaml"):
+            self.assertEqual(rows[document]["classification"], "unreadable")
+            self.assertEqual(rows[document]["loader"], "stdlib-census-yaml")
+            self.assertNotIn("selectors", rows[document])
+            self.assertNotIn("PyYAML", rows[document]["error"])
 
     def test_invalid_json_is_recorded_as_a_parse_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
