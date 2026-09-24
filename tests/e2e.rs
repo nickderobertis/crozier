@@ -7889,7 +7889,7 @@ fn multipart_request_enums_hoist_through_the_cli() {
 }
 
 #[test]
-fn non_json_multipart_part_uses_declared_content_type_through_the_cli() {
+fn non_json_multipart_part_serializes_value_through_the_cli() {
     let (_dir, out) = generate_ok(
         r#"openapi: 3.1.0
 info: { title: Widget API, version: 1.0.0 }
@@ -7921,8 +7921,10 @@ components:
     let raw = std::fs::read_to_string(out.join("src/acme/uploads/raw_client.py"))
         .expect("multipart raw client is generated");
     assert!(
-        raw.contains("\"metadata\": (None, jsonable_encoder(metadata), \"text/plain\")"),
-        "non-JSON part uses its declared content type without JSON stringification: {raw}"
+        raw.contains(
+            "\"metadata\": (None, json.dumps(jsonable_encoder(metadata)), \"text/plain\")"
+        ),
+        "non-JSON part serializes the value and keeps its declared content type: {raw}"
     );
 }
 
