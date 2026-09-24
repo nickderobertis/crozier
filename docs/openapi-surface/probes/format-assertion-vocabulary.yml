@@ -1,0 +1,28 @@
+openapi: 3.1.0
+info:
+  title: format-assertion-vocabulary
+  version: 1.0.0
+servers:
+- url: https://probe.invalid
+paths:
+  /probe:
+    get:
+      operationId: getProbe
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeResult'
+components:
+  schemas:
+    ProbeResult:
+      type: object
+      properties:
+        value:
+          type: string
+      required:
+      - value
+      $vocabulary:
+        https://json-schema.org/draft/2020-12/vocab/format-assertion: true
