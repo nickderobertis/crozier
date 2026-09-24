@@ -494,9 +494,9 @@ screenshots-bless: screenshots
 test-witness-search-redo:
     "$(./scripts/census-python.sh)" tests/witness_search_redo_test.py
 
-# Drive complete local-tree selector acquisition through the real CLI.
+# Drive witness-search acquisition, census and ledger derivation through the real CLIs.
 test-witness-search-acquisition:
-    "$(./scripts/census-python.sh)" tests/witness_search_local_census_test.py
+    "$(./scripts/census-python.sh)" tests/witness_search_acquisition_test.py
 
 # Offline HTTP journey for the GitHub/Sourcegraph witness acquisition path.
 test-witness-search-github:

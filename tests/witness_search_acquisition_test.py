@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this subprocess and loopback-server suite is wired into just test-witness-search-acquisition and the deterministic check gate.
-"""End-to-end coverage of complete local-tree selector evidence."""
+"""End-to-end coverage of the witness-search acquisition, census and ledger scripts."""
 
 from __future__ import annotations
 
@@ -66,7 +66,9 @@ def pyyaml_importable(interpreter_flags: list[str]) -> bool:
     ).returncode == 0
 
 
-class LocalCensusTest(unittest.TestCase):
+class WitnessSearchAcquisitionTest(unittest.TestCase):
+    """Registry, portal, Postman and local-tree acquisition driven through the real CLIs."""
+
     def test_explicit_yaml_mapping_key_uses_optional_parser(self) -> None:
         if not pyyaml_importable([]):
             self.skipTest("PyYAML is not installed for this interpreter")

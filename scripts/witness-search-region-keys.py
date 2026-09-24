@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this region-key derivation command lives with the just-driven census scripts and is drift-checked by the acquisition tier.
-"""Derive the witness-search key set from six region tables at this checkout."""
+"""Derive the witness-search key set from the region tables at this checkout."""
 
 from __future__ import annotations
 
@@ -11,10 +11,17 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-REGIONS = (
-    "document-paths.md", "parameters.md", "bodies-media.md",
-    "schemas.md", "security.md", "oas31-extensions.md",
-)
+COVERAGE = REPO / "docs/openapi-surface-coverage.md"
+
+
+def region_files(coverage: Path = COVERAGE) -> list[str]:
+    """The region files named by the coverage document's `## The region files` table."""
+    section = coverage.read_text(encoding="utf-8").partition("\n## The region files\n")[2]
+    section = section.partition("\n## ")[0]
+    names = re.findall(r"^\| `[^`]+` \| \[`openapi-surface/([^`/]+\.md)`\]", section, re.MULTILINE)
+    if not names:
+        raise ValueError(f"{coverage} has no `## The region files` table")
+    return names
 
 
 def census_module():
@@ -30,7 +37,7 @@ def census_module():
 def keys(regions: Path) -> list[tuple[str, str, str, str]]:
     census = census_module()
     found: dict[str, tuple[str, str, str, str]] = {}
-    for name in REGIONS:
+    for name in region_files():
         path = regions / name
         for line in path.read_text(encoding="utf-8").splitlines():
             if not line.startswith("|"):
