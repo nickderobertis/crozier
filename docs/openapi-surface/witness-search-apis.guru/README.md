@@ -32,5 +32,12 @@ is blocked, and Fern acceptance was not reached. It is a confirmed declarer,
 not a registrable witness. A second fetch at 2026-09-24 05:57 UTC returned
 HTTP 403, so this run retains the first response's hash and census result.
 
-This redo answers the historical 98-entry hole. It does not itself enumerate
-the APIs.guru repository tree or replace the earlier tree census.
+The repository half was read separately from the `openapi-directory` archive at
+commit `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`. Its archive response and
+digest are in `acquisitions.jsonl`; `acquisition-manifest.tsv` names all 4,138
+JSON/YAML entries and their individual hashes, and `tree-census.jsonl.gz`
+records their parsed selector results. `enumeration.tsv` joins those entries
+with the 3,992 served-index versions. The manifest and census both use the
+same pinned tree bytes; the served-index half reuses only the historical
+3,894 YAML associations whose index digest matched, and measures the other 98
+from the responses retained here.
