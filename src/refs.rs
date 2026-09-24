@@ -1158,6 +1158,41 @@ components:
     }
 
     #[test]
+    fn a_windows_path_keeps_local_schema_dependencies_in_the_same_document() {
+        let fetcher = FakeFetcher::new(&[]);
+        let spec = Path::new("openapi.yml");
+        let path = DocumentLocation::Local(PathBuf::from(r"C:\api\schemas\models.yml"));
+        let mut resolver = Resolver {
+            fetcher: &fetcher,
+            spec,
+            documents: HashMap::from([(
+                path.key(),
+                serde_yaml_ng::from_str(
+                    "HealthResponse:\n  type: object\n  properties:\n    status:\n      $ref: '#/Status'\nStatus:\n  type: string\n  enum: [ok, down]\n",
+                )
+                .expect("sibling document"),
+            )]),
+            active: Vec::new(),
+            imported: IndexMap::new(),
+            importing: HashSet::new(),
+        };
+        assert_eq!(
+            resolver
+                .import_named_schema_at_path(&path, "HealthResponse", "models.yml#/HealthResponse")
+                .expect("import the schema and its local dependency"),
+            Some("HealthResponse".to_string())
+        );
+        assert_eq!(
+            resolver.imported["HealthResponse"].properties["status"]
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/Status")
+        );
+        assert!(resolver.imported.contains_key("Status"));
+        assert!(fetcher.fetched.borrow().is_empty());
+    }
+
+    #[test]
     fn a_missing_relative_path_item_is_an_actionable_error() {
         let directory = tempfile::tempdir().expect("temporary spec tree");
         let root = directory.path().join("openapi.yml");
