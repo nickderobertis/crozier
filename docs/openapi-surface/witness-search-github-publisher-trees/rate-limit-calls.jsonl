@@ -604,3 +604,13 @@
 {"at": "2026-09-24T07:14:42.385+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4986, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 14}
 {"at": "2026-09-24T07:14:44.928+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4985, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 15}
 {"at": "2026-09-24T07:17:12.607+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4980, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 20}
+{"at": "2026-09-24T07:17:58.892+00:00", "bucket": "core", "host": "github", "reserved": 1, "status": null}
+{"at": "2026-09-24T07:18:00.001+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4978, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 22}
+{"at": "2026-09-24T07:18:02.173+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4977, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 23}
+{"at": "2026-09-24T07:20:05.205+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4976, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 24}
+{"at": "2026-09-24T07:20:08.023+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4975, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 25}
+{"at": "2026-09-24T07:20:31.802+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4974, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 26}
+{"at": "2026-09-24T07:20:33.880+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4973, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 27}
+{"at": "2026-09-24T07:21:06.872+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4972, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 28}
+{"at": "2026-09-24T07:21:09.816+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4971, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 29}
+{"at": "2026-09-24T07:21:29.983+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4970, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 30}

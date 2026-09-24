@@ -309,6 +309,33 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
         self.assertEqual(2, self.server.state["searches"])
 
+    def test_old_empty_page_is_marked_outstanding_on_resume(self) -> None:
+        query = "additionalProperties"
+        records = [
+            {
+                "source": "github-code-search",
+                "key": "closed-object",
+                "query": query,
+                "outcome": "answered",
+                "page": page,
+                "page_count": count,
+                "result_count": 2,
+                "retrieved_total": 1,
+                "results": [],
+            }
+            for page, count in ((1, 1), (2, 0))
+        ]
+        (self.root / "queries.jsonl").write_text(
+            "".join(json.dumps(row) + "\n" for row in records)
+        )
+        self.assertIsNone(self.search.github_search("closed-object", query))
+        rows = [
+            json.loads(line)
+            for line in (self.root / "queries.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual("outstanding-index-truncation", rows[-1]["outcome"])
+        self.assertEqual(0, self.server.state["searches"])
+
     def test_large_code_search_is_partitioned_before_paging(self) -> None:
         self.server.state["partition"] = True
         results = self.search.github_search("closed-object", "additionalProperties")

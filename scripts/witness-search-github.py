@@ -652,6 +652,22 @@ class Acquirer:
         ):
             return [item for row in answered for item in row["results"]]
         if answered and answered[-1].get("page_count") == 0:
+            if not any(
+                row.get("outcome") == "outstanding-index-truncation"
+                for row in previous
+            ):
+                self.write(
+                    "queries.jsonl",
+                    {
+                        "source": "github-code-search",
+                        "key": key,
+                        "query": query,
+                        "outcome": "outstanding-index-truncation",
+                        "reported": answered[-1]["result_count"],
+                        "retrieved": answered[-1]["retrieved_total"],
+                        "page": answered[-1]["page"],
+                    },
+                )
             return None
         found = [item for row in answered for item in row["results"]]
         page = len(answered) + 1
