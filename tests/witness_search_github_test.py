@@ -288,6 +288,10 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 for q in pointer_queries["github-code-search"]
             )
         )
+        security_queries = SEARCH.query_plan(keys["securityscheme-ref"]["selector"])
+        self.assertEqual(7, len(security_queries["github-code-search"]))
+        self.assertEqual(2, len(security_queries["sourcegraph"]))
+        self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))
 
     def test_registered_publishers_are_prioritized_without_dropping_results(
         self,

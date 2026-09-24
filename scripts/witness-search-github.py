@@ -120,6 +120,8 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
 def ingredients(selector: str) -> list[str]:
     """The required field spellings visible in a selector."""
     fields = list(dict.fromkeys(FIELD.findall(selector)))
+    if selector == "securityScheme:$ref":
+        fields.extend(("securitySchemes", "$ref"))
     for composition in ("oneOf", "anyOf"):
         if f"pointer-walk-reaches={composition}" in selector:
             fields.append(composition)

@@ -1928,3 +1928,12 @@
 {"at": "2026-09-24T08:30:41.128+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790238666, "resource": "code_search", "status": 200, "used": 2}
 {"at": "2026-09-24T08:31:13.308+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790238733, "resource": "code_search", "status": 200, "used": 1}
 {"at": "2026-09-24T08:31:46.369+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790238733, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-24T08:37:31.968+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790239110, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-24T08:38:07.513+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790239110, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-24T08:38:40.892+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790239179, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-24T08:39:13.249+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790239179, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-24T08:39:45.283+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790239244, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-24T08:40:18.333+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790239244, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-24T08:40:51.231+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790239309, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-24T08:41:24.308+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790239309, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-24T08:41:57.604+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790239375, "resource": "code_search", "status": 200, "used": 1}

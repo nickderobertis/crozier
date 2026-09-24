@@ -1,0 +1,2259 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "TeamPass REST API",
+        "description": "Collaborative password manager REST API. Authenticate via POST /authorize (login + password + apikey) or POST /authorizeToken (OAuth2 Personal Access Token), then pass the returned JWT as 'Authorization: Bearer <jwt>'. Errors use the RFC 9457 application/problem+json envelope; the legacy 'error' member is kept for backward compatibility.",
+        "version": "1",
+        "license": {
+            "name": "GPL-3.0-only",
+            "identifier": "GPL-3.0-only"
+        }
+    },
+    "servers": [
+        {
+            "url": "/api/v1",
+            "description": "Versioned base path (preferred)"
+        },
+        {
+            "url": "/api",
+            "description": "Legacy unversioned base path (treated as v1)"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "paths": {
+        "/authorize": {
+            "post": {
+                "operationId": "authorize",
+                "summary": "Get a JWT from login + password + API key",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "login",
+                                    "password",
+                                    "apikey"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "apikey": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "login",
+                                    "password",
+                                    "apikey"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "apikey": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/JwtToken"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/HttpsRequired"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "503": {
+                        "$ref": "#/components/responses/ApiDisabled"
+                    }
+                }
+            }
+        },
+        "/authorizeToken": {
+            "post": {
+                "operationId": "authorizeToken",
+                "summary": "Get a JWT from a Personal Access Token (OAuth2/SSO users)",
+                "security": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "login",
+                                    "token"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                    }
+                                }
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "login",
+                                    "token"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "pattern": "^[a-f0-9]{64}$"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/JwtToken"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/HttpsRequired"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "503": {
+                        "$ref": "#/components/responses/ApiDisabled"
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "operationId": "authLogout",
+                "summary": "Revoke the current API session",
+                "description": "Flags the api_sessions row matching the token's jti as revoked — the JWT is then rejected on every endpoint until it expires. Legacy tokens without a session row invalidate the user's single legacy API session instead.",
+                "responses": {
+                    "200": {
+                        "description": "Session revoked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    }
+                }
+            }
+        },
+        "/item/get": {
+            "get": {
+                "operationId": "itemGet",
+                "summary": "Get item(s) by id, label or description",
+                "description": "Exactly one of 'id', 'label' or 'description' is required. 'label' and 'description' lookups are searches: they accept 'like', 'limit' and 'offset' and return X-Total-Count. renewal_period contains the stored individual renewal setting, not the effective folder/item deadline.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "label",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "description",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "like",
+                        "in": "query",
+                        "description": "1 = LIKE %value% search ('%' and '_' are escaped)",
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matching items (empty array when none)",
+                        "headers": {
+                            "X-Total-Count": {
+                                "$ref": "#/components/headers/X-Total-Count"
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Item"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/inFolders": {
+            "get": {
+                "operationId": "itemInFolders",
+                "summary": "Get items contained in a list of folders",
+                "parameters": [
+                    {
+                        "name": "folders",
+                        "in": "query",
+                        "required": true,
+                        "description": "Comma-separated or JSON array of folder ids",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "1,2,3"
+                    },
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Items in the requested folders (empty array when none)",
+                        "headers": {
+                            "X-Total-Count": {
+                                "$ref": "#/components/headers/X-Total-Count"
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Item"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/findByUrl": {
+            "get": {
+                "operationId": "itemFindByUrl",
+                "summary": "Find items whose URL matches",
+                "parameters": [
+                    {
+                        "name": "url",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Matching items (empty array when none)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/ItemSummary"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/getOtp": {
+            "get": {
+                "operationId": "itemGetOtp",
+                "summary": "Get the current TOTP code of an item",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current TOTP code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "otp_code": {
+                                            "type": "string"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer"
+                                        },
+                                        "item_id": {
+                                            "type": "integer"
+                                        },
+                                        "algorithm": {
+                                            "type": "string",
+                                            "enum": [
+                                                "sha1",
+                                                "sha256",
+                                                "sha512"
+                                            ]
+                                        },
+                                        "digits": {
+                                            "type": "integer",
+                                            "enum": [
+                                                6,
+                                                8
+                                            ]
+                                        },
+                                        "period": {
+                                            "type": "integer",
+                                            "minimum": 1,
+                                            "maximum": 86400
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/changes": {
+            "get": {
+                "operationId": "itemChanges",
+                "summary": "Changes to apply to a client cache since a revision",
+                "description": "Delta feed for offline clients. Returns the items that changed after the given revision, and the ones the client must drop. Cursor based: store the returned cursor and pass it as `since` on the next call, repeating while `has_more` is true. A `full_sync_required` of true means the cursor cannot be served — read the vault through item/inFolders and adopt the returned cursor. Start there on a first synchronization, with `since=0`.",
+                "parameters": [
+                    {
+                        "name": "since",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        "description": "Cursor returned by the previous call, exclusive. 0 on a first synchronization."
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 1000,
+                            "default": 200
+                        },
+                        "description": "Maximum journal entries scanned in one call."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Changes since the given revision",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cursor": {
+                                            "type": "integer",
+                                            "description": "Cursor to store and send as `since` on the next call."
+                                        },
+                                        "has_more": {
+                                            "type": "boolean",
+                                            "description": "More changes are waiting: call again with the returned cursor."
+                                        },
+                                        "full_sync_required": {
+                                            "type": "boolean",
+                                            "description": "The cursor cannot be served. Rebuild the cache and adopt the returned cursor."
+                                        },
+                                        "changed": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Item"
+                                            }
+                                        },
+                                        "removed": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "revision": {
+                                                        "type": "integer"
+                                                    },
+                                                    "revision_changed_at": {
+                                                        "type": "integer",
+                                                        "description": "Unix UTC timestamp in seconds of the winning journal revision."
+                                                    },
+                                                    "reason": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "deleted",
+                                                            "purged",
+                                                            "out_of_scope"
+                                                        ],
+                                                        "description": "deleted: soft deleted. purged: permanently removed. out_of_scope: still exists but no longer readable by the caller."
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    }
+                }
+            }
+        },
+        "/item/allTags": {
+            "get": {
+                "operationId": "itemAllTags",
+                "summary": "Get the distinct item tags the caller can read",
+                "responses": {
+                    "200": {
+                        "description": "Tag list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/create": {
+            "post": {
+                "operationId": "itemCreate",
+                "summary": "Create a new item",
+                "description": "All required fields must be present, even if empty. renewal_period is optional and defaults to 0. Idempotency-Key is optional; within the configured offline synchronization window (90 days by default, 0 for no limit) the same user, key and canonical creation intent return the original 201 response without repeating side effects.",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/IdempotencyKey"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ItemCreateBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Item created",
+                        "headers": {
+                            "Location": {
+                                "description": "Path-absolute reference of the created resource (item/get?id=N)",
+                                "schema": {
+                                    "type": "string"
+                                }
+                            },
+                            "Idempotency-Replayed": {
+                                "$ref": "#/components/headers/Idempotency-Replayed"
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatedResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/item/update": {
+            "put": {
+                "operationId": "itemUpdate",
+                "summary": "Update an existing item",
+                "description": "Requires 'id' plus at least one updatable field (label, password, description, login, email, url, tags, anyone_can_modify, icon, folder_id, totp, fields, renewal_period). Moving an item out of a personal folder into a shared one redistributes its encryption keys synchronously, so it must be requested on its own: combining it with any other updatable field returns 422. It returns 422 as well when a source encryption key cannot be recovered (the item stays personal), and 409 when the item was modified concurrently. Moving a shared item into the caller's personal folder deletes the other users' encryption keys in the same step; it returns 422 when the caller does not hold every key of the item yet. A move requires the delete right on the item's current folder and the edit right on the target folder, like the web interface: it returns 403 on a current folder granted as ND or NDNE, or a target folder granted as NE, NDNE or R. Omitting renewal_period preserves it; 0 disables the individual policy without resetting password age. A change to renewal_period returns 409 for an item linked to LAPR while the module is enabled (managed account or endpoint connection credential); an unchanged value is accepted.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ItemUpdateBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Item updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "item_id": {
+                                            "type": "integer"
+                                        },
+                                        "revision": {
+                                            "type": "integer",
+                                            "description": "Revision of the item after the update"
+                                        },
+                                        "revision_changed_at": {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ],
+                                            "description": "Unix UTC timestamp in seconds paired with the returned revision; null when the date is unknown."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/Unauthorized"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict",
+                        "description": "Concurrent modification, or an attempt to change the ordinary renewal period of an LAPR-linked item while LAPR is enabled."
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    }
+                }
+            }
+        },
+        "/item/delete": {
+            "delete": {
+                "operationId": "itemDelete",
+                "summary": "Soft-delete an item",
+                "description": "The optional revision is an optimistic-concurrency precondition. Idempotency-Key makes a successful deletion replayable for the configured offline synchronization window (90 days by default, 0 for no limit) without allocating another revision or repeating side effects.",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/IdempotencyKey"
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "revision",
+                        "in": "query",
+                        "required": false,
+                        "allowEmptyValue": true,
+                        "description": "Current item revision expected by the caller. A mismatch returns 409 before any mutation; an empty value is treated as omitted.",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 4294967295
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item deleted",
+                        "headers": {
+                            "Idempotency-Replayed": {
+                                "$ref": "#/components/headers/Idempotency-Replayed"
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "item_id": {
+                                            "type": "integer"
+                                        },
+                                        "revision": {
+                                            "type": "integer",
+                                            "description": "Deletion revision exposed by item/changes"
+                                        },
+                                        "revision_changed_at": {
+                                            "type": [
+                                                "integer",
+                                                "null"
+                                            ],
+                                            "description": "Unix UTC timestamp paired with the deletion revision"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "409": {
+                        "$ref": "#/components/responses/Conflict"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/folder/listFolders": {
+            "get": {
+                "operationId": "folderListFolders",
+                "summary": "List the folder tree accessible to the user",
+                "description": "Returns a hierarchical tree. Pagination ('offset'/'limit') applies to the root-level entries; X-Total-Count is the total number of root entries.",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/components/parameters/offset"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder tree (empty array when the user has no accessible folder)",
+                        "headers": {
+                            "X-Total-Count": {
+                                "$ref": "#/components/headers/X-Total-Count"
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/FolderNode"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/folder/writableFolders": {
+            "get": {
+                "operationId": "folderWritableFolders",
+                "summary": "List accessible folders with item and folder-management capabilities",
+                "description": "Historical name — returns ALL accessible folders. access_type, is_readonly, can_create, can_edit and can_delete describe operations on items contained in the folder. The can_*_folder fields describe folder-management UI capabilities and never replace the authoritative checks performed by POST /folder/create, PUT /folder/update and DELETE /folder/delete. Rows are ordered by 'position' (MPTT pre-order), so parent_id + level + position rebuild the exact folder hierarchy, sibling order included.",
+                "responses": {
+                    "200": {
+                        "description": "Flat folder list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WritableFolder"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/folder/create": {
+            "post": {
+                "operationId": "folderCreate",
+                "summary": "Create a new folder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FolderCreateBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Folder created (no Location header: the API has no folder get-by-id endpoint yet; the body carries newId)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreatedResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/folder/update": {
+            "put": {
+                "operationId": "folderUpdate",
+                "summary": "Update an existing folder (partial update)",
+                "description": "PUT only. Every field except 'id' is optional; unspecified fields keep their current value. 'access_rights' is not updatable here (roles-management concern). Personal root folders cannot be renamed or moved, and cross-domain (personal ↔ shared) moves are rejected.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FolderUpdateBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Folder updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FolderUpdateResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/folder/delete": {
+            "delete": {
+                "operationId": "folderDelete",
+                "summary": "Soft-delete a folder and its descendants",
+                "description": "DELETE only. The folder and all its descendants go to the recycle bin (restorable from Utilities → Recycled bin); contained items are soft-deleted. Personal root folders and folder id 0 cannot be deleted.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "description": "Folder id to delete (may also be sent in the JSON body)",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Folder deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FolderDeleteResult"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/user/list": {
+            "get": {
+                "operationId": "userList",
+                "summary": "List users (admin only)",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/limit"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User list (sensitive columns are never returned)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/Forbidden"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/misc/refreshExtensionSettings": {
+            "get": {
+                "operationId": "miscRefreshExtensionSettings",
+                "summary": "Get browser extension connection settings",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ExtensionSettings"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "miscRefreshExtensionSettingsPost",
+                "summary": "Get browser extension connection settings (POST variant)",
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/ExtensionSettings"
+                    },
+                    "405": {
+                        "$ref": "#/components/responses/MethodNotAllowed"
+                    },
+                    "500": {
+                        "$ref": "#/components/responses/InternalError"
+                    },
+                    "429": {
+                        "$ref": "#/components/responses/RateLimited"
+                    }
+                }
+            }
+        },
+        "/openapi.json": {
+            "get": {
+                "operationId": "getOpenApiSpec",
+                "summary": "This OpenAPI 3.1 contract",
+                "security": [],
+                "responses": {
+                    "200": {
+                        "description": "The OpenAPI document",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "$ref": "#/components/responses/ApiDisabled"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "parameters": {
+            "limit": {
+                "name": "limit",
+                "in": "query",
+                "description": "Maximum number of results (capped at 500)",
+                "schema": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 500
+                }
+            },
+            "offset": {
+                "name": "offset",
+                "in": "query",
+                "description": "Number of results to skip (pagination)",
+                "schema": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "IdempotencyKey": {
+                "name": "Idempotency-Key",
+                "in": "header",
+                "required": false,
+                "description": "Opaque 1-128 character visible-ASCII key, scoped to the authenticated user and API operation. Raw keys are never persisted.",
+                "schema": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[!-~]+$"
+                }
+            }
+        },
+        "headers": {
+            "X-Total-Count": {
+                "description": "Total number of matching entries before pagination",
+                "schema": {
+                    "type": "integer"
+                }
+            },
+            "Idempotency-Replayed": {
+                "description": "Present with value true when the stored response was replayed without executing the mutation.",
+                "schema": {
+                    "type": "string",
+                    "enum": [
+                        "true"
+                    ]
+                }
+            }
+        },
+        "schemas": {
+            "Problem": {
+                "type": "object",
+                "description": "RFC 9457 problem details; the legacy 'error' member duplicates 'detail' for backward compatibility.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "default": "about:blank"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "integer"
+                    },
+                    "detail": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Item": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "revision": {
+                        "type": "integer",
+                        "description": "Monotonic revision of the item, bumped on every content change. Compare it against a cached copy to detect staleness; the larger value is the newer one."
+                    },
+                    "revision_changed_at": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Unix UTC timestamp in seconds paired with revision. It changes on functional content revisions, never on reads or ciphertext-only rewrites; null means the date is unknown."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "pwd": {
+                        "type": "string",
+                        "description": "Decrypted password"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "login": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "viewed_no": {
+                        "type": "integer"
+                    },
+                    "fa_icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "inactif": {
+                        "type": "integer"
+                    },
+                    "perso": {
+                        "type": "integer"
+                    },
+                    "id_tree": {
+                        "type": "integer"
+                    },
+                    "folder_label": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "totp": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "totp_algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "sha1",
+                            "sha256",
+                            "sha512"
+                        ]
+                    },
+                    "totp_digits": {
+                        "type": "integer",
+                        "enum": [
+                            6,
+                            8
+                        ]
+                    },
+                    "totp_period": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 86400
+                    },
+                    "favicon_url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "tags": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "anyone_can_modify": {
+                        "type": [
+                            "integer",
+                            "string"
+                        ]
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CustomField"
+                        }
+                    },
+                    "renewal_period": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 36500,
+                        "description": "Stored individual password renewal period in days; 0 disables only the individual policy. Available for personal and shared items, independently of folder expiration. The shortest active item/folder period applies. This value is not the calculated effective period. Expiration is advisory and does not block authorized reading. Ordinary renewal is inactive for all LAPR-linked items while the LAPR module is enabled."
+                    }
+                }
+            },
+            "ItemSummary": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "revision": {
+                        "type": "integer",
+                        "description": "Monotonic revision of the item, bumped on every content change. Compare it against a cached copy to detect staleness; the larger value is the newer one."
+                    },
+                    "revision_changed_at": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Unix UTC timestamp in seconds paired with revision; null when the date is unknown."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "login": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "folder_id": {
+                        "type": "integer"
+                    },
+                    "has_otp": {
+                        "type": "integer"
+                    },
+                    "favicon_url": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CustomField": {
+                "type": "object",
+                "description": "A custom field value attached to an item. Fields restricted via 'Restrict Visibility to' (categories.role_visibility) are omitted entirely for users holding none of the required roles; their value is never decrypted nor returned. No admin bypass.",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "masked": {
+                        "type": "integer"
+                    },
+                    "value": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ItemCreateBody": {
+                "type": "object",
+                "required": [
+                    "label",
+                    "folder_id",
+                    "password",
+                    "login",
+                    "email",
+                    "url",
+                    "tags",
+                    "anyone_can_modify"
+                ],
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "folder_id": {
+                        "type": "integer"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "login": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "string"
+                    },
+                    "anyone_can_modify": {
+                        "type": "integer"
+                    },
+                    "icon": {
+                        "type": "string"
+                    },
+                    "totp": {
+                        "type": "string",
+                        "description": "Base32 secret or otpauth://totp provisioning URI"
+                    },
+                    "totp_algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "sha1",
+                            "sha256",
+                            "sha512"
+                        ],
+                        "default": "sha1"
+                    },
+                    "totp_digits": {
+                        "type": "integer",
+                        "enum": [
+                            6,
+                            8
+                        ],
+                        "default": 6
+                    },
+                    "totp_period": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 86400,
+                        "default": 30
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "value": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "renewal_period": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 36500,
+                        "default": 0,
+                        "description": "Stored individual password renewal period in days; 0 disables only the individual policy. Available for personal and shared items, independently of folder expiration. The shortest active item/folder period applies. This value is not the calculated effective period. Expiration is advisory and does not block authorized reading. Ordinary renewal is inactive for all LAPR-linked items while the LAPR module is enabled."
+                    }
+                }
+            },
+            "ItemUpdateBody": {
+                "type": "object",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "revision": {
+                        "type": "integer",
+                        "description": "Optional precondition, not an updatable field: the revision the edit was based on. The update is refused with 409 when the server has moved on since. Omitting it keeps the previous last-writer-wins behaviour."
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "login": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "tags": {
+                        "type": "string"
+                    },
+                    "anyone_can_modify": {
+                        "type": "integer"
+                    },
+                    "icon": {
+                        "type": "string"
+                    },
+                    "folder_id": {
+                        "type": "integer"
+                    },
+                    "totp": {
+                        "type": "string",
+                        "description": "Base32 secret, otpauth://totp provisioning URI, or an empty string to remove TOTP"
+                    },
+                    "totp_algorithm": {
+                        "type": "string",
+                        "enum": [
+                            "sha1",
+                            "sha256",
+                            "sha512"
+                        ]
+                    },
+                    "totp_digits": {
+                        "type": "integer",
+                        "enum": [
+                            6,
+                            8
+                        ]
+                    },
+                    "totp_period": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 86400
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer"
+                                },
+                                "value": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "renewal_period": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 36500,
+                        "description": "Stored individual password renewal period in days; 0 disables only the individual policy. Available for personal and shared items, independently of folder expiration. The shortest active item/folder period applies. This value is not the calculated effective period. Expiration is advisory and does not block authorized reading. Omission preserves the stored value. Changing the period does not reset password age. While LAPR is enabled, changing this value for a managed account or an endpoint connection credential returns HTTP 409; omitting it or resending the current value is allowed."
+                    }
+                }
+            },
+            "FolderCreateBody": {
+                "type": "object",
+                "required": [
+                    "title"
+                ],
+                "allOf": [
+                    {
+                        "if": {
+                            "properties": {
+                                "private": {
+                                    "const": true
+                                }
+                            },
+                            "required": [
+                                "private"
+                            ]
+                        },
+                        "else": {
+                            "required": [
+                                "parent_id",
+                                "complexity"
+                            ]
+                        }
+                    }
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "parent_id": {
+                        "type": "integer",
+                        "description": "Parent folder id (0 = root, requires user_can_create_root_folder). Optional when 'private' is true — defaults to the caller's personal root."
+                    },
+                    "complexity": {
+                        "type": "integer",
+                        "description": "Password complexity level. Required for a shared target; optional (default 0) when the resolved target is personal (e.g. 'private' is true)."
+                    },
+                    "private": {
+                        "type": "boolean",
+                        "description": "Optional. When true, creates a personal (private) folder under the caller's personal root without needing its id (requires personal folders to be enabled for the user). The personal_folder flag is never accepted directly from the client — it is derived server-side from the resolved parent."
+                    },
+                    "duration": {
+                        "type": "integer"
+                    },
+                    "create_auth_without": {
+                        "type": "integer",
+                        "description": "Allow item creation below the folder's minimum password strength (0/1). Omitted: inherit the parent's value, or 0 at root. Explicit 0 disables the exception. Does not relax the subfolder complexity floor."
+                    },
+                    "edit_auth_without": {
+                        "type": "integer",
+                        "description": "Allow item editing below the folder's minimum password strength (0/1). Omitted: inherit the parent's value, or 0 at root. Explicit 0 disables the exception. Inheritance is a one-time copy, independent of role permission inheritance."
+                    },
+                    "icon": {
+                        "type": "string"
+                    },
+                    "icon_selected": {
+                        "type": "string"
+                    },
+                    "access_rights": {
+                        "type": "string",
+                        "default": "W",
+                        "description": "Access level granted to the caller's roles on the new folder. Defaults to W when omitted.",
+                        "enum": [
+                            "R",
+                            "W",
+                            "NE",
+                            "ND",
+                            "NDNE"
+                        ]
+                    }
+                }
+            },
+            "FolderUpdateBody": {
+                "type": "object",
+                "required": [
+                    "id"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "Folder id to update (required)."
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "parent_id": {
+                        "type": "integer",
+                        "description": "New parent id (move). Cross-domain personal ↔ shared moves are rejected (422)."
+                    },
+                    "complexity": {
+                        "type": "integer",
+                        "description": "Password complexity level. Must be one of the TeamPass levels; any other value is rejected with 422.",
+                        "enum": [
+                            0,
+                            20,
+                            38,
+                            48,
+                            60
+                        ]
+                    },
+                    "duration": {
+                        "type": "integer"
+                    },
+                    "create_auth_without": {
+                        "type": "integer",
+                        "description": "Allow item creation below the folder's minimum password strength (0/1). Omitted: preserve the current value, including when moving the folder."
+                    },
+                    "edit_auth_without": {
+                        "type": "integer",
+                        "description": "Allow item editing below the folder's minimum password strength (0/1). Omitted: preserve the current value, including when moving the folder."
+                    },
+                    "icon": {
+                        "type": "string"
+                    },
+                    "icon_selected": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreatedResult": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "newId": {
+                        "type": "integer"
+                    },
+                    "revision": {
+                        "type": "integer",
+                        "description": "Revision allocated to the new item"
+                    },
+                    "revision_changed_at": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "description": "Unix UTC timestamp in seconds paired with the allocated revision; null when the date is unknown."
+                    }
+                }
+            },
+            "FolderUpdateResult": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "FolderDeleteResult": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "deleted_folders": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer"
+                        },
+                        "description": "Ids of the folder and every descendant that was soft-deleted."
+                    },
+                    "deleted_items_count": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "FolderNode": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "isVisible": {
+                        "type": "boolean"
+                    },
+                    "complexity": {
+                        "type": "integer",
+                        "description": "Minimum password strength required for items in this folder. 0 when no rule is set.",
+                        "enum": [
+                            0,
+                            20,
+                            38,
+                            48,
+                            60
+                        ]
+                    },
+                    "childrens": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FolderNode"
+                        }
+                    }
+                }
+            },
+            "WritableFolder": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "label",
+                    "level",
+                    "parent_id",
+                    "first_position",
+                    "position",
+                    "complexity",
+                    "is_readonly",
+                    "access_type",
+                    "can_create",
+                    "can_edit",
+                    "can_delete",
+                    "is_personal",
+                    "is_personal_root",
+                    "can_create_subfolder",
+                    "can_rename_folder",
+                    "can_move_folder",
+                    "can_delete_folder"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "level": {
+                        "type": "integer"
+                    },
+                    "parent_id": {
+                        "type": "integer"
+                    },
+                    "first_position": {
+                        "type": "integer"
+                    },
+                    "position": {
+                        "type": "integer",
+                        "description": "MPTT left bound. The list is already sorted on it; use it to restore tree order after a client-side re-sort."
+                    },
+                    "complexity": {
+                        "type": "integer",
+                        "description": "Minimum password strength required for items in this folder. 0 when no rule is set.",
+                        "enum": [
+                            0,
+                            20,
+                            38,
+                            48,
+                            60
+                        ]
+                    },
+                    "is_readonly": {
+                        "type": "integer",
+                        "description": "1 when the resolved item access type is R. ND/NE/NDNE are NOT read-only — check can_edit and can_delete.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "access_type": {
+                        "type": "string",
+                        "description": "Effective access level for items contained in this folder, least-permissive-wins across all the user's roles (R > NDNE > NE = ND > W).",
+                        "enum": [
+                            "R",
+                            "W",
+                            "NE",
+                            "ND",
+                            "NDNE"
+                        ]
+                    },
+                    "can_create": {
+                        "type": "integer",
+                        "description": "Item right: 1 when the user may create an item in this folder (false only for R). This does not authorize creating a subfolder.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_edit": {
+                        "type": "integer",
+                        "description": "Item right: 1 when the user may edit existing items in this folder (false for NE, NDNE and R). This does not authorize renaming or moving the folder.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_delete": {
+                        "type": "integer",
+                        "description": "Item right: 1 when the user may delete items in this folder (false for ND, NDNE and R). This does not authorize deleting the folder.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "is_personal": {
+                        "type": "integer",
+                        "description": "1 when the folder is part of a personal folder tree; 0 for the shared domain. This endpoint only ever lists the caller's own personal folders, so in practice 1 means 'mine'.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "is_personal_root": {
+                        "type": "integer",
+                        "description": "1 for the protected root of the personal folder domain. A personal root cannot be renamed, moved or deleted.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_create_subfolder": {
+                        "type": "integer",
+                        "description": "Folder-management hint: 1 when POST /folder/create may use this folder as its parent according to the current access, read-only state, API create permission and global folder-management rules. The create route performs the final validation.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_rename_folder": {
+                        "type": "integer",
+                        "description": "Folder-management hint: 1 when the source folder is eligible for rename according to the current access, read-only state, API update permission, global folder-management rules and personal-root protection. PUT /folder/update performs the final validation.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_move_folder": {
+                        "type": "integer",
+                        "description": "Folder-management hint for the source only: 1 when the source folder is eligible to move. PUT /folder/update separately validates the chosen destination, including access, read-only state, cycles, personal/shared domain boundaries and root permission.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    },
+                    "can_delete_folder": {
+                        "type": "integer",
+                        "description": "Folder-management hint: 1 when the source folder is eligible for deletion according to the current access, read-only state, API delete permission, global folder-management rules and personal-root protection. DELETE /folder/delete performs the final validation.",
+                        "enum": [
+                            0,
+                            1
+                        ]
+                    }
+                }
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "login": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "lastname": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "admin": {
+                        "type": "integer"
+                    },
+                    "gestionnaire": {
+                        "type": "integer"
+                    },
+                    "disabled": {
+                        "type": "integer"
+                    },
+                    "last_connection_time": {
+                        "type": [
+                            "integer",
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "is_ready_for_usage": {
+                        "type": "integer"
+                    },
+                    "personal_folder": {
+                        "type": "integer"
+                    },
+                    "auth_type": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "responses": {
+            "JwtToken": {
+                "description": "Authentication succeeded",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "token",
+                                "teampass_version",
+                                "teampass_version_major",
+                                "teampass_version_minor"
+                            ],
+                            "properties": {
+                                "token": {
+                                    "type": "string"
+                                },
+                                "teampass_version": {
+                                    "type": "string",
+                                    "description": "Complete TeamPass server release version returned in the response body, outside the JWT.",
+                                    "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+                                    "example": "3.2.1.2"
+                                },
+                                "teampass_version_major": {
+                                    "type": "string",
+                                    "description": "Base TeamPass server version (major.minor.patch) returned in the response body.",
+                                    "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                                    "example": "3.2.1"
+                                },
+                                "teampass_version_minor": {
+                                    "type": "string",
+                                    "description": "Final TeamPass release revision component returned in the response body.",
+                                    "pattern": "^\\d+$",
+                                    "example": "2"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "ExtensionSettings": {
+                "description": "Browser extension connection settings",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "required": [
+                                "extension_fqdn",
+                                "extension_key",
+                                "extension_url",
+                                "teampass_version",
+                                "teampass_version_major",
+                                "teampass_version_minor"
+                            ],
+                            "properties": {
+                                "extension_fqdn": {
+                                    "type": "string"
+                                },
+                                "extension_key": {
+                                    "type": "string"
+                                },
+                                "extension_url": {
+                                    "type": "string"
+                                },
+                                "teampass_version": {
+                                    "type": "string",
+                                    "description": "Complete TeamPass server release version, refreshed independently of authentication.",
+                                    "pattern": "^\\d+\\.\\d+\\.\\d+\\.\\d+$",
+                                    "example": "3.2.1.2"
+                                },
+                                "teampass_version_major": {
+                                    "type": "string",
+                                    "description": "Base TeamPass server version (major.minor.patch).",
+                                    "pattern": "^\\d+\\.\\d+\\.\\d+$",
+                                    "example": "3.2.1"
+                                },
+                                "teampass_version_minor": {
+                                    "type": "string",
+                                    "description": "Final TeamPass release revision component.",
+                                    "pattern": "^\\d+$",
+                                    "example": "2"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BadRequest": {
+                "description": "Missing or invalid parameters",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "Unauthorized": {
+                "description": "Missing, invalid or expired credentials/token",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "Forbidden": {
+                "description": "Permission denied",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Resource not found",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "MethodNotAllowed": {
+                "description": "HTTP method not supported for this endpoint (Allow header lists supported methods)",
+                "headers": {
+                    "Allow": {
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "Conflict": {
+                "description": "The resource changed while the request was being processed",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "UnprocessableEntity": {
+                "description": "Validation failed",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "InternalError": {
+                "description": "Internal server error",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "ApiDisabled": {
+                "description": "API disabled in TeamPass settings",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "RateLimited": {
+                "description": "Rate limit exceeded (api_rate_limit_per_minute, per user and per IP)",
+                "headers": {
+                    "Retry-After": {
+                        "description": "Seconds to wait before retrying",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            },
+            "HttpsRequired": {
+                "description": "Request rejected because api_require_https is enabled and the request was sent over plain HTTP",
+                "content": {
+                    "application/problem+json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/Problem"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
