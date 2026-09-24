@@ -372,7 +372,7 @@ anyof-array-variant-struct-item	document	cloudflare--api-schemas/openapi.yaml	ce
 anyof-array-variant-struct-item	candidate	cloudflare--api-schemas/openapi.yaml	census 3	census.jsonl.gz
 anyof-array-variant-struct-item	screen	cloudflare--api-schemas/openapi.yaml licence	pass	candidates.tsv
 anyof-array-variant-struct-item	screen	cloudflare--api-schemas/openapi.yaml ref	pass	candidates.tsv
-anyof-array-variant-struct-item	screen	cloudflare--api-schemas/openapi.yaml fern	not-run	candidates.tsv
+anyof-array-variant-struct-item	screen	cloudflare--api-schemas/openapi.yaml fern	failed	candidates.tsv
 anyof-array-variant-struct-item	document	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 2	census.jsonl.gz
 anyof-array-variant-struct-item	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 2	census.jsonl.gz
 anyof-array-variant-struct-item	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json licence	pass	candidates.tsv
@@ -1848,12 +1848,12 @@ property-sole-anyof-struct-member	document	cloudflare--api-schemas/openapi.json	
 property-sole-anyof-struct-member	candidate	cloudflare--api-schemas/openapi.json	census 3	census.jsonl.gz
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.json licence	pass	candidates.tsv
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.json ref	pass	candidates.tsv
-property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.json fern	not-run	candidates.tsv
+property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.json fern	inconclusive	candidates.tsv
 property-sole-anyof-struct-member	document	cloudflare--api-schemas/openapi.yaml	census 3	census.jsonl.gz
 property-sole-anyof-struct-member	candidate	cloudflare--api-schemas/openapi.yaml	census 3	census.jsonl.gz
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml licence	pass	candidates.tsv
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml ref	pass	candidates.tsv
-property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml fern	not-run	candidates.tsv
+property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml fern	failed	candidates.tsv
 property-sole-oneof-closed-object-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv

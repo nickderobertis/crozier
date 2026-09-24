@@ -43,3 +43,12 @@ Fern runs completed before the ruling are retained in `fern-screens.jsonl`. If
 that witness does not register, the remaining declarers become owed again.
 `rate-limit-waits.jsonl` is empty because these acquisitions caused no guard
 wait; the guarded REST responses are in `rate-limit-calls.jsonl`.
+
+Cloudflare's pinned JSON and YAML descriptions both declare
+`property-sole-anyof-struct-member` and pass the rights and revision screens.
+`fern-screens.jsonl` records a 900-second Fern check timeout for each. The
+manager-required 60-minute retry of the smaller YAML description returned a
+Fern check rejection after 2,130 seconds. The JSON description retains an
+inconclusive Fern screen and an `outstanding` disposition. Its key remains
+`search-incomplete` for this source; the timeout is neither a refusal nor an
+absence claim. A later search should retry that exact pinned JSON document.
