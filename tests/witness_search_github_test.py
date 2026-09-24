@@ -83,7 +83,9 @@ class LocalServer(BaseHTTPRequestHandler):
                 self.reply(
                     200,
                     {
-                        "total_count": 1,
+                        "total_count": 1
+                        if not state["partition"] or "size%3A" in self.path
+                        else 1001,
                         "items": [
                             {
                                 "repository": {"full_name": "example/api"},
@@ -96,10 +98,47 @@ class LocalServer(BaseHTTPRequestHandler):
                 )
         elif self.path.startswith("/repos/example/api/contents/openapi.yaml"):
             state["contents"] += 1
+            if (
+                state["large"]
+                and self.headers.get("Accept") == "application/vnd.github.raw+json"
+            ):
+                self.send_response(200)
+                self.send_header("Content-Type", "application/yaml")
+                self.send_header("X-Ratelimit-Resource", "core")
+                self.send_header("Content-Length", str(len(DOCUMENT)))
+                self.end_headers()
+                self.wfile.write(DOCUMENT)
+            elif state["large"]:
+                self.reply(200, {"encoding": "none", "download_url": "unused"})
+            else:
+                self.reply(
+                    200,
+                    {
+                        "encoding": "base64",
+                        "content": base64.b64encode(DOCUMENT).decode(),
+                    },
+                )
+        elif self.path.startswith("/repos/example/api/git/trees/"):
+            state["trees"] += 1
             self.reply(
                 200,
-                {"encoding": "base64", "content": base64.b64encode(DOCUMENT).decode()},
+                {
+                    "truncated": False,
+                    "tree": [
+                        {"type": "blob", "path": "openapi.yaml", "sha": "a" * 40},
+                        {"type": "blob", "path": "README.md", "sha": "b" * 40},
+                    ],
+                },
             )
+        elif self.path.startswith("/example/api/"):
+            state["raw_hits"] += 1
+            if state["raw_refuse"] and state["raw_hits"] == 1:
+                self.reply(429, {"message": "wait"}, {"Retry-After": "0.1"})
+            else:
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(DOCUMENT)))
+                self.end_headers()
+                self.wfile.write(DOCUMENT)
         elif self.path.startswith("/.api/search/stream"):
             state["sourcegraph"] += 1
             if state["refuse_sourcegraph"] and state["sourcegraph"] == 1:
@@ -143,9 +182,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "cap": False,
             "searches": 0,
             "secondary": False,
+            "partition": False,
             "contents": 0,
             "sourcegraph": 0,
             "refuse_sourcegraph": False,
+            "raw_hits": 0,
+            "raw_refuse": False,
+            "trees": 0,
+            "large": False,
         }
         thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         thread.start()
@@ -159,7 +203,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.rate_url.start()
         self.addCleanup(self.rate_url.stop)
         self.search = SEARCH.Acquirer(
-            self.root, github_url=self.url, sourcegraph_url=self.url
+            self.root,
+            github_url=self.url,
+            sourcegraph_url=self.url,
+            raw_github_url=self.url,
+            code_search_spacing_s=0.01,
+            code_search_refusal_cooldown_s=0.05,
+            sourcegraph_spacing_s=0.01,
+            sourcegraph_refusal_cooldown_s=0.05,
         )
 
     def test_key_derivation_and_both_serialization_query_plan(self) -> None:
@@ -181,6 +232,35 @@ class WitnessSearchGithubTests(unittest.TestCase):
             any("language:YAML" in q for q in queries["github-code-search"])
         )
         self.assertTrue(any(".json" in q for q in queries["sourcegraph"]))
+        pointer_queries = SEARCH.query_plan(
+            keys["ref-pointer-unnamed-segment"]["selector"]
+        )
+        self.assertTrue(
+            all(
+                "/$defs/" in q or "/definitions/" in q
+                for q in pointer_queries["github-code-search"]
+            )
+        )
+
+    def test_registered_publishers_are_prioritized_without_dropping_results(
+        self,
+    ) -> None:
+        items = [
+            (
+                (
+                    "shape",
+                    "github.com/APIs-guru/openapi-directory",
+                    "APIs/a/openapi.yaml",
+                    "a",
+                ),
+                {},
+            ),
+            (("shape", "github.com/livepeer/ai-runner", "openapi.yaml", "b"), {}),
+        ]
+        self.assertEqual(
+            "github.com/livepeer/ai-runner",
+            sorted(items, key=SEARCH.candidate_priority)[0][0][1],
+        )
 
     def test_cap_waits_and_census_overrides_query_ingredients(self) -> None:
         self.server.state["cap"] = True
@@ -193,15 +273,15 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertTrue(any(row.get("cause") == "cap" for row in waits))
         item = {**items[0], "selector": "schema.additionalProperties=false"}
         verdict = self.search.github_document("closed-object", item)
+        self.assertEqual("b" * 40, verdict["commit"])
         self.assertEqual("does-not-declare", verdict["disposition"])
         self.assertEqual(0, verdict["selector_count"])
         self.assertEqual(1, self.server.state["contents"])
 
     def test_secondary_refusal_is_outstanding(self) -> None:
         self.server.state["secondary"] = True
-        self.assertIsNone(
+        with self.assertRaises(SEARCH.SearchStopped):
             self.search.github_search("closed-object", "additionalProperties")
-        )
         rows = [
             json.loads(line)
             for line in (self.root / "queries.jsonl").read_text().splitlines()
@@ -210,23 +290,115 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(403, rows[-1]["status"])
         self.assertEqual(1, self.server.state["searches"])
 
+    def test_large_code_search_is_partitioned_before_paging(self) -> None:
+        self.server.state["partition"] = True
+        results = self.search.github_search("closed-object", "additionalProperties")
+        self.assertEqual(2, len(results))
+        rows = [
+            json.loads(line)
+            for line in (self.root / "queries.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual("partitioned", rows[0]["outcome"])
+        self.assertEqual(2, sum(row["outcome"] == "answered" for row in rows))
+        self.assertEqual(3, self.server.state["searches"])
+
+    def test_publisher_tree_lists_and_censuses_every_spec_path(self) -> None:
+        publisher = {
+            "repository": "example/api",
+            "commit": "c" * 40,
+            "scope": "",
+            "derivation": "local API publisher",
+        }
+        keys = {"closed-object": {"selector": "schema.additionalProperties=false"}}
+        self.search.publisher_walk(publisher, keys)
+        trees = [
+            json.loads(x) for x in (self.root / "trees.jsonl").read_text().splitlines()
+        ]
+        documents = [
+            json.loads(x)
+            for x in (self.root / "documents.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual(1, trees[0]["candidate_document_count"])
+        self.assertEqual("openapi.yaml", documents[0]["path"])
+        self.assertEqual(0, documents[0]["selector_counts"]["closed-object"])
+        self.assertEqual(1, self.server.state["trees"])
+        self.assertEqual(1, self.server.state["contents"])
+
+    def test_missing_named_publisher_scope_is_measured_without_losing_siblings(
+        self,
+    ) -> None:
+        publisher = {
+            "repository": "example/api",
+            "commit": "c" * 40,
+            "scope": ["", "missing"],
+            "derivation": "local API publisher",
+        }
+        self.search.publisher_walk(publisher, {})
+        tree = json.loads((self.root / "trees.jsonl").read_text().splitlines()[0])
+        self.assertEqual(1, tree["candidate_document_count"])
+        self.assertIn("missing", tree["missing_scopes"][0])
+
+    def test_large_contents_use_the_same_guarded_contents_endpoint(self) -> None:
+        self.server.state["large"] = True
+        path = "/repos/example/api/contents/openapi.yaml?ref=" + "c" * 40
+        status, data, evidence = self.search.github_contents(path)
+        self.assertEqual(200, status)
+        self.assertEqual(DOCUMENT, data)
+        self.assertEqual("application/vnd.github.raw+json", evidence["raw_media_type"])
+        self.assertEqual(2, self.server.state["contents"])
+
     def test_sourcegraph_refusal_then_spacing_are_waited_out(self) -> None:
         self.server.state["refuse_sourcegraph"] = True
         lane = guard_module.PacedLane(
             spacing_s=0.05, backoff_base_s=0.05, attempt_budget=5
         )
         with patch.dict(guard_module.PACED_LANES, {"sourcegraph": lane}):
-            self.assertIsNone(self.search.sourcegraph_search("closed-object", "first"))
             self.assertEqual(
-                [], self.search.sourcegraph_search("closed-object", "second")
+                [], self.search.sourcegraph_search("closed-object", "first")
             )
             self.assertEqual(
-                [], self.search.sourcegraph_search("closed-object", "third")
+                [], self.search.sourcegraph_search("closed-object", "second")
             )
         waits = self.search.guards["sourcegraph"].waits()
         self.assertTrue(any(row.get("cause") == "backoff" for row in waits))
         self.assertTrue(any(row.get("cause") == "spacing" for row in waits))
         self.assertEqual(3, self.server.state["sourcegraph"])
+        index_waits = [
+            json.loads(line)
+            for line in (self.root / "index-pacing-waits.jsonl")
+            .read_text()
+            .splitlines()
+        ]
+        self.assertTrue(any(row["cause"] == "refusal-cooldown" for row in index_waits))
+        self.assertEqual(
+            1, len((self.root / "refusals.jsonl").read_text().splitlines())
+        )
+
+    def test_sourcegraph_github_match_uses_pinned_raw_route_and_waits(self) -> None:
+        self.server.state["raw_refuse"] = True
+        item = {
+            "repository": "github.com/example/api",
+            "path": "openapi.yaml",
+            "commit": "c" * 40,
+        }
+        with patch.object(SEARCH, "RAW_SPACING_S", 0.05), patch.object(
+            SEARCH, "RAW_BACKOFF_BASE_S", 0.05
+        ):
+            result = self.search.sourcegraph_document(
+                "closed-object", "schema.additionalProperties=false", item
+            )
+            self.search.sourcegraph_document(
+                "closed-object", "schema.additionalProperties=false", item
+            )
+        self.assertEqual("pinned-raw-github", result["acquisition_route"])
+        self.assertEqual("does-not-declare", result["disposition"])
+        self.assertEqual(3, self.server.state["raw_hits"])
+        waits = [
+            json.loads(x)
+            for x in (self.root / "raw-github-waits.jsonl").read_text().splitlines()
+        ]
+        self.assertTrue(any("backoff" in row["cause"] for row in waits))
+        self.assertTrue(any(row["cause"] == "spacing" for row in waits))
 
 
 if __name__ == "__main__":

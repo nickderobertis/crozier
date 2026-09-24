@@ -861,6 +861,17 @@ def exhaustive_line_failures(
             for r in records
             if r.get("kind") == "candidate" and r.get("subject") == candidate
         ]
+        outstanding = [
+            result for result in census_run
+            if re.fullmatch(r"(?:parse|acquisition)-failure: .+", result)
+        ]
+        if len(census_run) == 1 and outstanding:
+            if exhausted:
+                failures.append(
+                    f"{key}: `exhausted` keeps candidate `{candidate}` with "
+                    f"outstanding {outstanding[0]}"
+                )
+            continue
         confirmed = [re.fullmatch(r"census (\d+)", result) for result in census_run]
         if not census_run or not all(confirmed):
             failures.append(
@@ -7486,6 +7497,18 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             text.replace("census 0", "keyword match"), encoding="utf-8"
         )
         self.refused("records no census confirmation for candidate `d-org/d-repo/openapi.yaml`")
+
+    def test_candidate_failures_remain_outstanding_without_becoming_absence(self) -> None:
+        path = self.evidence("github-code-search")
+        original = path.read_text(encoding="utf-8")
+        for result in ("parse-failure: duplicate mapping key",
+                       "acquisition-failure: HTTP 503 after attempt budget"):
+            with self.subTest(result=result):
+                path.write_text(original.replace("census 0", result), encoding="utf-8")
+                self.outcome = "search-incomplete"
+                self.assertEqual([], self.failures())
+                self.outcome = "exhausted"
+                self.refused("outstanding " + result)
 
     def test_a_declaring_candidate_screened_on_fewer_than_three_screens_is_refused(self) -> None:
         self.table["jentic"][3] = (

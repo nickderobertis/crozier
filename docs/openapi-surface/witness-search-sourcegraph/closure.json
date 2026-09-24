@@ -1,0 +1,16 @@
+{
+  "acquired_result_identities": 833,
+  "confirmed_witness": {
+    "commit": "5adde289683b642203b06b39ca687e9d977ca7a5",
+    "path": ".github/fern/openapi/openapi.json",
+    "repository": "github.com/truefoundry/trueforge",
+    "screen": "screens.jsonl; publisher MIT grant, immutable commit, Fern check and generation pass",
+    "sha256": "842dbc04a149cccccdf3891791018bb899101838d3646724ffc50e9195a52b7e"
+  },
+  "key": "annotated-ref-target-closed-object",
+  "only_reduction": "deduplication by repository, path, and digest after bytes fetched; before fetch, repository, path, and commit identify query results",
+  "outcome": "witness-found pending register-witnesses",
+  "query_result_identities": 12154,
+  "unacquired_disposition": "not acquired because the key closed on a found witness, not dropped; all identities remain in queries.jsonl and this key reopens if registration or byte matching fails",
+  "unacquired_result_identities": 11321
+}

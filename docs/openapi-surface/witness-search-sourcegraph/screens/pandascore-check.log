@@ -1,0 +1,5 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+Found 0 errors and 12 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

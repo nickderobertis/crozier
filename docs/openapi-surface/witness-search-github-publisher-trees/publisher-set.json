@@ -1,0 +1,91 @@
+{
+  "derivation": "five wide-scrape publisher trees plus every link-ok corpus github-raw row whose root-level file is openapi.* or swagger.*, excluding example repositories",
+  "publishers": [
+    {
+      "commit": "f82d1fe674e536cc2c6b0d7946e0e827873a4fbf",
+      "derivation": "witness-scrape-wide publisher tree",
+      "repository": "Adyen/adyen-openapi",
+      "scope": [
+        "json",
+        "yaml"
+      ]
+    },
+    {
+      "commit": "5aa7f31977ce5812f7b7bc1f46a38555ebaa2888",
+      "derivation": "witness-scrape-wide publisher tree",
+      "repository": "twilio/twilio-oai",
+      "scope": [
+        "spec"
+      ]
+    },
+    {
+      "commit": "b0e6417568f530e79579c5bcd6bbeac799a47669",
+      "derivation": "witness-scrape-wide publisher tree",
+      "repository": "kubernetes/kubernetes",
+      "scope": [
+        "api/openapi-spec/v3"
+      ]
+    },
+    {
+      "commit": "1e4aeea7d2d63f749bcae619cf836fbe52c62447",
+      "derivation": "witness-scrape-wide publisher tree",
+      "repository": "mongodb/openapi",
+      "scope": [
+        "openapi",
+        "outputs"
+      ]
+    },
+    {
+      "commit": "3cef12e8a02d612ad032473d4fb87266f2befeae",
+      "derivation": "witness-scrape-wide publisher tree",
+      "repository": "github/rest-api-description",
+      "scope": [
+        "descriptions",
+        "descriptions-next",
+        "descriptions-safe"
+      ]
+    },
+    {
+      "commit": "e5f47309d1ca6fd28267de041e7ed2f61e477723",
+      "derivation": "CORPUS.md row 78 root-level openapi.json",
+      "repository": "cnorlander/BuildRelay",
+      "scope": ""
+    },
+    {
+      "commit": "50a742cee7c5789ef4a10f8117f30de3758366a9",
+      "derivation": "CORPUS.md row 81 root-level openapi.yaml",
+      "repository": "livepeer/ai-runner",
+      "scope": ""
+    },
+    {
+      "commit": "269f4482ecd4125dc1c115e059dbce26b7269216",
+      "derivation": "CORPUS.md row 85 root-level openapi.yml",
+      "repository": "kytos-ng/sdntrace_cp",
+      "scope": ""
+    },
+    {
+      "commit": "0d2775dbf1c0830671a9efd878f03ae1eaf97995",
+      "derivation": "CORPUS.md row 86 root-level openapi.yaml",
+      "repository": "WithSecureOpenSource/gdpr-subject-rights-api",
+      "scope": ""
+    },
+    {
+      "commit": "e8f34d411564e6c0e6542fe67d0604c23de1cf91",
+      "derivation": "CORPUS.md row 112 root-level openapi.json",
+      "repository": "emergentmethods/flowdapt",
+      "scope": ""
+    },
+    {
+      "commit": "37423cbc93982e05eac255db6226ed599a5baace",
+      "derivation": "CORPUS.md row 123 root-level openapi.yaml",
+      "repository": "OpenBanking-Brasil/specs-directory",
+      "scope": ""
+    },
+    {
+      "commit": "a2bd0c37fd3d22e6b9e153b49e9a6e7de5a00393",
+      "derivation": "CORPUS.md row 137 root-level openapi.yaml",
+      "repository": "Alia5/steaminputdb.com",
+      "scope": ""
+    }
+  ]
+}
