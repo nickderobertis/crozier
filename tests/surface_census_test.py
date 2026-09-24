@@ -32,6 +32,7 @@ import sys
 import tempfile
 import textwrap
 import unittest
+import unicodedata
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -985,6 +986,13 @@ class GrammarContractTests(unittest.TestCase):
         documented = self.backticked("themselves a closed list:", "\n\nA **count**")
         self.assertEqual(census.VALUED, documented)
 
+    def test_the_documented_example_kinds_are_the_closed_valued_family(self) -> None:
+        text = self.DOC.read_text(encoding="utf-8")
+        body = text.split("The six example values are", 1)[1].split("Selection reads", 1)[0]
+        documented = set(re.findall(r"`schema\.example=([a-z]+)`", body))
+        self.assertEqual(census.EXAMPLE_KINDS, documented)
+        self.assertEqual(6, len(documented))
+
     def test_the_documented_predicate_selectors_are_the_ones_the_script_declares(self) -> None:
         """The third kind of selector: `<selector>:<predicate>`.
 
@@ -1082,6 +1090,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
+            "Thirty-eight": 38,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -1951,16 +1960,12 @@ class ConjunctionCensusTests(unittest.TestCase):
                 "schema.example=object", "schema.example:schema-shaped", selector
             }},
         )
-        self.assertFalse(
-            any(key.startswith("schema.example=") and key != "schema.example=object"
-                for key, _fixture in counted),
-            "a scalar example emitted a valued selector",
-        )
+        self.assertEqual(2, counted.get(("schema.example=string", "examples")))
         refused = run(
             "--vendored-only", "--selector", "schema.example=scalar",
         )
         self.assertEqual(1, refused.returncode, refused.stdout)
-        self.assertIn("literal valued selector schema.example=object", refused.stderr)
+        self.assertIn("six example value kinds", refused.stderr)
 
     def test_a_misspelling_of_a_conjunction_is_refused_by_name(self) -> None:
         for selector, expected in (
@@ -2883,7 +2888,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PRE_EXISTING_PREDICATES
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
-        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS
+        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
+        - {name for name in census.PREDICATES
+           if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
+        - {"components.schemas:nonidentifier-name"}
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -5763,7 +5771,7 @@ class RankedBacklogTests(unittest.TestCase):
         )
         stated = re.search(r"(\w+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
-        self.assertEqual(len(shared), {"Thirteen": 13}.get(stated.group(1)))
+        self.assertEqual(len(shared), {"Fifteen": 15}.get(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
             if f"`{location}`" not in flat:
@@ -8019,6 +8027,55 @@ class NamingMirrorTests(unittest.TestCase):
             with self.subTest(wire=wire):
                 self.assertEqual(expected, census.field_name(wire))
 
+    def test_enum_port_reproduces_croziers_own_member_expectations(self) -> None:
+        for wire, expected in self.cases("enum_member_name", minimum=30):
+            with self.subTest(wire=wire):
+                identifier = census.enum_identifier(wire).upper()
+                if not identifier:
+                    identifier = "_"
+                if identifier[0].isdigit():
+                    identifier = "_" + identifier
+                if census.is_reserved(identifier):
+                    identifier += "_"
+                self.assertEqual(expected, identifier)
+
+    def test_enum_port_tracks_its_rust_functions_and_deburr_table(self) -> None:
+        lines = self.NAMING.read_text(encoding="utf-8").splitlines()
+        for name, pinned in census.NAMING_PORT_DIGESTS.items():
+            if name == "DEBURRED_LATIN":
+                body = self.NAMING.read_text(encoding="utf-8").split(
+                    "const DEBURRED_LATIN:", 1
+                )[1].split("];", 1)[0]
+                actual = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
+                entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
+                exceptions = {
+                    char: folded for char, folded in entries
+                    if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode() != folded
+                }
+                self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
+            else:
+                start = next(
+                    (index for index, line in enumerate(lines)
+                     if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+                )
+                self.assertIsNotNone(start, f"src/naming.rs declares no fn {name}")
+                depth, started = 0, False
+                for end in range(start, len(lines)):
+                    for char in lines[end]:
+                        if char == "{":
+                            depth, started = depth + 1, True
+                        elif char == "}":
+                            depth -= 1
+                    if started and depth == 0:
+                        break
+                kept = [
+                    " ".join(line.split()) for line in lines[start:end + 1]
+                    if line.strip() and not line.strip().startswith("//")
+                ]
+                actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
+            with self.subTest(name=name):
+                self.assertEqual(pinned, actual, f"re-derive {name}'s enum predicates from src/naming.rs")
+
     def test_the_port_reproduces_croziers_own_class_name_expectations(self) -> None:
         """The class-name side of the same mirror.
 
@@ -8070,6 +8127,130 @@ class NamingMirrorTests(unittest.TestCase):
             census.normalized_path("/users/{userId}/roles/{roleID}"),
         )
         self.assertEqual("/users/userId", census.normalized_path("/users/userId"))
+
+
+class ExampleAndEnumSelectorControls(unittest.TestCase):
+    """The real CLI must distinguish each new spelling from a nearby decoy."""
+
+    ENUM_CASES = {
+        "empty-member": ([""], ["a"]),
+        "empty-identifier-member": (["!"], ["a"]),
+        "wildcard-member": (["*"], ["a"]),
+        "apostrophe-member": (["don't"], ["dont"]),
+        "digit-word-member": (["6a9dfcad-600b-46c8-9e08-ce6e5057921e"],
+                              ["98777886-76d0-44c8-865e-bb40e669e934"]),
+        "numeric-prefix-member": (["10bps"], ["2bps"]),
+        "leading-zero-member": (["01"], ["10"]),
+        "leading-digit-identifier": (["01"], ["1"]),
+        "uuid-member": (["00000000-0000-0000-0000-000000000001"], ["widget"]),
+        "reserved-member": (["global"], ["widget"]),
+        "normalized-collision": (["foo-bar", "foo_bar"], ["foo", "bar"]),
+        "numeric-member": ([7], ["7"]),
+    }
+    EXAMPLE_VALUES = {
+        "object": {}, "array": [], "string": "value", "number": 3,
+        "boolean": True, "null": None,
+    }
+
+    @staticmethod
+    def source(schema: dict) -> str:
+        return json.dumps({
+            "openapi": "3.1.0", "info": {"title": "control", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Control": schema}},
+        })
+
+    def count_pair(self, selector: str, positive: dict, decoy: dict) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "positive", self.source(positive))
+            write_fixture(root, "decoy", self.source(decoy))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_each_enum_member_branch_has_a_positive_and_decoy(self) -> None:
+        for predicate, (positive, decoy) in self.ENUM_CASES.items():
+            with self.subTest(predicate=predicate):
+                self.count_pair("schema.enum:" + predicate,
+                                {"enum": positive}, {"enum": decoy})
+
+    def test_each_example_kind_has_a_positive_and_decoy(self) -> None:
+        for kind, value in self.EXAMPLE_VALUES.items():
+            with self.subTest(kind=kind):
+                decoy = [] if kind != "array" else {}
+                self.count_pair("schema.example=" + kind,
+                                {"examples": [None]} if kind == "null" else {"example": value},
+                                {"example": None} if kind == "null" else {"example": decoy})
+
+    def test_explicit_null_falls_through_to_first_examples_member(self) -> None:
+        self.count_pair("schema.example=object",
+                        {"example": None, "examples": [{"answer": 42}]},
+                        {"example": "scalar", "examples": [{"answer": 42}]})
+
+    def test_named_example_object_map_selects_its_first_value(self) -> None:
+        self.count_pair("schema.example=object",
+                        {"examples": {"first": {"value": {"answer": 42}}}},
+                        {"examples": {"first": {"value": "scalar"}}})
+
+    def test_scalar_examples_is_one_member_list(self) -> None:
+        self.count_pair("schema.example=string",
+                        {"examples": "scalar"}, {"examples": []})
+
+    def test_schema_name_sanitization_has_a_positive_and_decoy(self) -> None:
+        selector = "components.schemas:nonidentifier-name"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, name in (
+                ("positive", "Café"), ("decoy", "Cafe"),
+                ("numeric", "123"), ("digit-leading", "1Foo"),
+            ):
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": {"schemas": {name: {"type": "string"}}},
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_new_value_rows_cite_the_offline_census_own_counts(self) -> None:
+        selectors = (
+            {name for name in census.PREDICATES if name.startswith("schema.enum:")
+             and name != "schema.enum:string-valued"}
+            | {"components.schemas:nonidentifier-name"}
+            | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
+        )
+        document = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        evidence = {}
+        for line in document.splitlines():
+            cells = table_cells(line, 8)
+            if cells is None:
+                continue
+            match = re.search(r"census `([^`]+)`:", cells[4])
+            if match and match.group(1) in selectors:
+                evidence[match.group(1)] = cells[4]
+        self.assertEqual(selectors, set(evidence))
+        completed = run("--vendored-only", "--json",
+                        *(arg for selector in sorted(selectors)
+                          for arg in ("--selector", selector)))
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        reported = {
+            (row["selector"], row["fixture"]): row["count"]
+            for row in json.loads(completed.stdout)["rows"]
+        }
+        vendored = {source.fixture for source in census.registered_sources(
+            FIXTURES, REPO / ".local/corpus", True
+        )}
+        checked = 0
+        for selector, cell in evidence.items():
+            for fixture, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cell):
+                if fixture not in vendored:
+                    continue
+                checked += 1
+                with self.subTest(selector=selector, fixture=fixture):
+                    self.assertEqual(int(count), reported.get((selector, fixture), 0))
+        self.assertGreater(checked, 0)
 
 
 if __name__ == "__main__":

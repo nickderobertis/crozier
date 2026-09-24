@@ -43,6 +43,7 @@ import argparse
 import difflib
 import json
 import re
+import unicodedata
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
@@ -834,6 +835,7 @@ VALUED = {
 # two shapes rather than one presence. A schema-valued `additionalProperties`
 # emits no valued selector at all, exactly as an open set would not.
 VALUED_BOOL = {"schema.additionalProperties"}
+EXAMPLE_KINDS = {"array", "object", "string", "number", "boolean", "null"}
 
 # `$ref` inside these kinds is a declared field of the kind itself (a JSON Schema
 # keyword, a Path Item reference); anywhere else a `$ref` makes the node a
@@ -864,6 +866,19 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.enum:empty-member": "one per Schema Object with an empty string enum member, which enum_words renders as empty",
+    "schema.enum:empty-identifier-member": "one per Schema Object with a non-empty string enum member that normalizes to no identifier characters, which finalize_enum_ident changes to _",
+    "schema.enum:wildcard-member": "one per Schema Object with a string enum member containing *, which enum_words spells all",
+    "schema.enum:apostrophe-member": "one per Schema Object with a string enum member containing an ASCII or curly apostrophe, which enum_words removes",
+    "schema.enum:digit-word-member": "one per Schema Object with a UUID-shaped string enum member beginning with exactly one digit before a letter, which digit_word spells in English",
+    "schema.enum:numeric-prefix-member": "one per Schema Object with a string enum member beginning with a canonical integer from 10 through 9999, which numeric_enum_identifier spells in English",
+    "schema.enum:leading-zero-member": "one per Schema Object with a string enum member containing a multi-digit leading-zero token, which numeric_enum_identifier refuses",
+    "schema.enum:leading-digit-identifier": "one per Schema Object with a string enum member whose enum_words result starts with a digit, which finalize_enum_ident prefixes with _",
+    "schema.enum:uuid-member": "one per Schema Object with a UUID-shaped string enum member, which enum_identifier sends to uuid_enum_identifier",
+    "schema.enum:reserved-member": "one per Schema Object with a string enum member whose normalized visit parameter is reserved and finalize_enum_ident suffixes",
+    "schema.enum:normalized-collision": "one per Schema Object with two string enum members that collide after crozier enum identifier normalization",
+    "schema.enum:numeric-member": "one per Schema Object with a numeric enum member; string_enum_values does not generate a named member for it",
+    "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
     ),
@@ -2015,6 +2030,138 @@ def class_name(schema_key: str) -> str:
     return sanitize_identifier(pascal)
 
 
+# The entries in naming.rs's DEBURRED_LATIN that NFKD does not spell the same
+# way. NamingMirrorTests reconciles both the table and these exceptions.
+_ENUM_DEBURR_EXCEPTIONS = dict(zip(
+    "ÆÐØÞßæðøþĐđĦħıĸŁłŉŊŋŒœŦŧ",
+    ("Ae", "D", "O", "Th", "ss", "ae", "d", "o", "th", "D", "d",
+     "H", "h", "i", "k", "L", "l", "'n", "N", "n", "Oe", "oe", "T", "t"),
+))
+
+# The enum-member predicates mirror these Rust functions. The offline tier
+# recomputes each normalized-body digest and the DEBURRED_LATIN table digest,
+# so an upstream branch or mapping edit requires a fresh case reading here.
+NAMING_PORT_DIGESTS = {
+    "sanitize_identifier": "9da64b4ddcfd04c9",
+    "digit_word": "4d705bf2bae3d676",
+    "enum_words": "d2b7d6ba3787b00b",
+    "numeric_enum_identifier": "34ad46d37aed1b81",
+    "finalize_enum_ident": "2c40bdccda3bcf5f",
+    "uuid_enum_identifier": "17b81a4e21fde4fe",
+    "enum_identifier": "796740d7c0aea104",
+    "is_uuid": "91c78d64735a36ee",
+    "deburr": "fe8fc4199682035d",
+    "deburr_letter": "f5488da97d3f0dde",
+    "collapse_digit_boundaries": "24c31560b089ab63",
+    "split_words": "3a76409f152dcce6",
+    "class_name": "add019f9b00f68ca",
+    "DEBURRED_LATIN": "0a6e4bed130d170a",
+}
+
+
+def enum_identifier(value: str) -> str:
+    """The enum_words path of naming.rs, including its numeric and join rules."""
+    folded = "".join(
+        _ENUM_DEBURR_EXCEPTIONS[char] if char in _ENUM_DEBURR_EXCEPTIONS else
+        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode()
+        if "\u00c0" <= char <= "\u017f" and unicodedata.normalize("NFKD", char).encode("ascii", "ignore")
+        else char
+        for char in value
+    )
+    uuid_parts = folded.split("-")
+    if len(uuid_parts) == 5 and all(
+        len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
+        for part, size in zip(uuid_parts, (8, 4, 4, 4, 12))
+    ):
+        words = split_words(folded)
+        if words:
+            first = words[0]
+            digits = len(first) - len(first.lstrip("0123456789"))
+            if digits:
+                words[0] = numeric_enum_name(int(first[:digits])) if digits == 1 else "undefined"
+                if first[digits:]:
+                    words.insert(1, first[digits:])
+        collapsed = _collapse_enum_digit_boundaries("_".join(words))
+        chars = list(collapsed)
+        return "".join(
+            char for index, char in enumerate(chars)
+            if not (
+                char == "_" and index >= 2 and index + 2 < len(chars)
+                and chars[index - 2].isdigit() and chars[index - 1].isascii()
+                and chars[index - 1].isalpha() and chars[index + 1].isascii()
+                and chars[index + 1].isalpha() and chars[index + 2].isdigit()
+            )
+        )
+    if not folded:
+        return "empty"
+    spaced = "".join(
+        " all " if char == "*" else "" if char in "'\u2019" else
+        char if char.isascii() and char.isalnum() else " "
+        for char in folded
+    )
+    words = split_words(spaced)
+    leading_zero = "_" in folded and any(
+        len(word) > 1 and word[0] == "0" and word.isascii() and word.isdigit()
+        for word in words
+    )
+    if words:
+        first = words[0]
+        digits = len(first) - len(first.lstrip("0123456789"))
+        if digits:
+            number = first[:digits]
+            if len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
+                words[0] = numeric_enum_name(int(number)) + ("_" + first[digits:] if first[digits:] else "")
+    join_letters = any(char.isascii() and char.isdigit() for char in folded) or all(
+        not char.isascii() or not char.isalpha() or char.isupper() for char in folded
+    )
+    merged: list[str] = []
+    previous_single = False
+    for word in words:
+        single = len(word) == 1 and word.isascii() and word.isalpha()
+        if join_letters and single and previous_single:
+            merged[-1] += word
+        else:
+            merged.append(word)
+        previous_single = single
+    index = 1
+    while index < len(merged):
+        previous, current = merged[index - 1:index + 1]
+        short_letters = len(current) <= 2 and current.isascii() and current.isalpha()
+        numeric_letter = len(previous) > 1 and previous[-1].isalpha() and previous[:-1].isascii() and previous[:-1].isdigit()
+        single_letter = len(previous) == 1 and previous.isascii() and previous.isalpha()
+        letter_digits = len(current) > 1 and current[0].isalpha() and current[1:].isascii() and current[1:].isdigit()
+        if short_letters and numeric_letter or single_letter and letter_digits:
+            merged[index - 1] += merged.pop(index)
+        else:
+            index += 1
+    identifier = "_".join(merged)
+    return identifier if leading_zero else _collapse_enum_digit_boundaries(identifier)
+
+
+def _collapse_enum_digit_boundaries(name: str) -> str:
+    chars = list(name)
+    return "".join(
+        char for index, char in enumerate(chars)
+        if char != "_" or not (
+            index > 0 and _is_digit(chars[index - 1])
+            or index + 1 < len(chars) and _is_digit(chars[index + 1])
+        )
+    )
+
+
+def numeric_enum_name(value: int) -> str:
+    """numeric_enum_identifier's canonical 0..9999 spelling."""
+    small = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+             "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
+    tens = ("", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
+    if value < 20:
+        return small[value]
+    if value < 100:
+        return tens[value // 10] + ("_" + small[value % 10] if value % 10 else "")
+    divisor, label = (100, "hundred") if value < 1000 else (1000, "thousand")
+    return small[value // divisor] + "_" + label + ("_" + numeric_enum_name(value % divisor) if value % divisor else "")
+
+
 def normalized_path(template: str) -> str:
     """One Paths Object key with every template expression's name normalized.
 
@@ -2379,13 +2526,86 @@ def string_enum_values(node: Any) -> list[str] | None:
 
 
 def schema_example(node: dict[Any, Any]) -> Any:
-    """`schema_example` of `src/ir.rs`: `example`, else the first of `examples`."""
-    if written(node, "example"):
+    """`schema_example` after `de_schema_examples` of `src/openapi.rs`."""
+    # serde's Option<Value> treats an explicit JSON null as None; the vector of
+    # `examples` does not, so a null first member there is still selected.
+    if written(node, "example") and node["example"] is not None:
         return node["example"]
     examples = node.get("examples")
     if isinstance(examples, list) and examples:
         return examples[0]
+    if isinstance(examples, dict) and examples:
+        first = next(iter(examples.values()))
+        return first.get("value") if isinstance(first, dict) else first
+    if examples is not None and not isinstance(examples, (list, dict)):
+        return examples
     return None
+
+
+def selected_example_kind(node: dict[Any, Any]) -> str | None:
+    """The six JSON arms read by emit.rs, after ir.rs's example selection."""
+    examples = node.get("examples")
+    has_examples = bool(examples) if isinstance(examples, (list, dict)) else examples is not None
+    if node.get("example") is None and not has_examples:
+        return None
+    value = schema_example(node)
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, dict):
+        return "object"
+    if isinstance(value, list):
+        return "array"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "string"
+    return None
+
+
+def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
+    """Count the member spellings that naming.rs branches on, once per schema."""
+    values = node.get("enum")
+    if not isinstance(values, list):
+        return []
+    found: set[str] = set()
+    names: dict[str, int] = defaultdict(int)
+    for value in values:
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            found.add("schema.enum:numeric-member")
+            continue
+        if not isinstance(value, str):
+            continue
+        if value == "":
+            found.add("schema.enum:empty-member")
+        if "*" in value:
+            found.add("schema.enum:wildcard-member")
+        if "'" in value or "\u2019" in value:
+            found.add("schema.enum:apostrophe-member")
+        words = split_words(re.sub(r"[^A-Za-z0-9]", " ", value))
+        prefix = re.match(r"[0-9]+", value)
+        if prefix and 1 < len(prefix.group()) <= 4 and prefix.group()[0] != "0":
+            found.add("schema.enum:numeric-prefix-member")
+        if any(len(word) > 1 and word[0] == "0" and word.isdigit() for word in words):
+            found.add("schema.enum:leading-zero-member")
+        parts = value.split("-")
+        if len(parts) == 5 and all(len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part) for part, size in zip(parts, (8, 4, 4, 4, 12))):
+            found.add("schema.enum:uuid-member")
+            first = split_words(value)[0]
+            if len(first) > 1 and first[0].isdigit() and not first[1].isdigit():
+                found.add("schema.enum:digit-word-member")
+        name = enum_identifier(value)
+        if value and not name:
+            found.add("schema.enum:empty-identifier-member")
+        if name and name[0].isdigit():
+            found.add("schema.enum:leading-digit-identifier")
+        if is_reserved(name):
+            found.add("schema.enum:reserved-member")
+        names[name.upper()] += 1
+    if any(count > 1 for count in names.values()):
+        found.add("schema.enum:normalized-collision")
+    return sorted(found)
 
 
 def example_is_schema_definition(example: Any) -> bool:
@@ -2768,10 +2988,10 @@ def selector_error(text: str) -> str | None:
         )
     if equals and not value:
         return f"{text!r} is a valued selector with no value"
-    if equals and base == "schema.example" and value != "object":
+    if equals and base == "schema.example" and value not in EXAMPLE_KINDS:
         return (
-            f"{text!r} is not the literal valued selector schema.example=object. "
-            "The selected example value emits a valued selector only when it is an object."
+            f"{text!r} is not one of the six example value kinds: "
+            f"{', '.join(sorted(EXAMPLE_KINDS))}."
         )
     if equals and base not in VALUED:
         return (
@@ -2853,10 +3073,12 @@ class Census:
             found += self.path_key_templates(node)
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
+            found += self.class_name_sanitizations(node.get("schemas"))
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
-            if isinstance(schema_example(node), dict):
-                found.append("schema.example=object")
+            example_kind = selected_example_kind(node)
+            if example_kind is not None:
+                found.append(f"schema.example={example_kind}")
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
             found += [
@@ -3108,6 +3330,7 @@ class Census:
                 found.append(f"schema.{field}:sole-member")
         if "enum" in node and string_valued(node, node.get("enum")):
             found.append("schema.enum:string-valued")
+        found += enum_member_predicates(node)
         if "const" in node and string_valued(node, [node.get("const")]):
             found.append("schema.const:string-valued")
         if example_is_schema_definition(schema_example(node)):
@@ -3214,6 +3437,26 @@ class Census:
             "components.schemas:normalized-collision"
             for key in keys
             if collisions[class_name(key)] > 1
+        ]
+
+    @staticmethod
+    def class_name_sanitizations(node: Any) -> list[str]:
+        if not isinstance(node, dict):
+            return []
+        def needs_sanitizing(key: str) -> bool:
+            # class_name spells leading digits first and short-circuits wholly
+            # canonical numbers before it ever calls sanitize_identifier.
+            if re.fullmatch(r"0|[1-9][0-9]{0,3}", key):
+                return False
+            pascal = to_pascal_case(key)
+            if pascal and _is_digit(pascal[0]):
+                pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
+            return sanitize_identifier(pascal) != pascal
+        return [
+            "components.schemas:nonidentifier-name"
+            for key in node
+            if isinstance(key, str) and not key.startswith("x-")
+            and needs_sanitizing(key)
         ]
 
     @staticmethod
