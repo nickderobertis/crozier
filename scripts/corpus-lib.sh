@@ -46,6 +46,15 @@ corpus_pin_verify() {
     verify "$name" "$file" >/dev/null 2>&1
 }
 
+corpus_tree_root() {
+  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" tree-root "$1"
+}
+
+corpus_tree_verify() {
+  python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
+    verify-tree "$1" "$2" >/dev/null 2>&1
+}
+
 corpus_fixture_for() {
   local aliases
   aliases="$(corpus_aliases_file)"
@@ -142,6 +151,13 @@ corpus_spec_cache_filename() {
 
 corpus_fetch_source() {
   local fetch_root="$1" name="$2" url="$3" ref="$4"
+  local tree_root
+  tree_root="$(corpus_tree_root "$name")" || return 1
+  if [ -n "$tree_root" ]; then
+    python3 "$(corpus_scripts_dir)/corpus_remote_ref_pins.py" \
+      fetch-tree "$name" "$fetch_root/$name"
+    return
+  fi
   if corpus_is_direct_spec_url "$url"; then
     local target_dir="$fetch_root/$name" target temporary stale
     mkdir -p "$target_dir"

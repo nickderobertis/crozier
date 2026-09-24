@@ -83,7 +83,14 @@ it is usually already done).
 1. Create a feature branch. Add or update one numbered, eight-cell `CORPUS.md`
    row with its unique spec name, credential-free HTTPS source URL, and pinned
    source ref. A direct spec URL must end in `.json`, `.yaml`, or `.yml`. A
-   generator setting no OpenAPI document can express needs no new spec: give the
+   multi-file source adds one `tree` record per document to
+   [`corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv):
+   repository-relative path, immutable URL at that row's commit, and SHA-256.
+   Include the root document. The pin guard verifies the exact fetched file
+   set, every digest, and that relative references stay within it. Fern receives
+   those files under `openapi/` at their pinned relative paths; crozier receives
+   the root at the same location in its cached tree. A generator setting no
+   OpenAPI document can express needs no new spec: give the
    already-registered source a second row name and declare the setting for that
    name in `fern-generator-config.txt`.
 2. Register the same name as a `Corpus` in `tests/e2e.rs` with `unmatched: &[]`,
@@ -204,7 +211,8 @@ records the substitution — `corpus_name`, the `mutable_url` upstream writes, t
 `pinned_url` replacing it, and the SHA-256 of the bytes that URL serves.
 `scripts/fetch-corpus.sh` applies a row's records to the fetched document before
 publishing it, so Fern generates from, and crozier byte-matches against, the same
-pinned inputs. `helios-verifiable-api` is the only row with records today.
+pinned inputs. The manifest also records complete multi-file trees as `tree`
+rows; those use one row revision and one digest per member.
 
 The provenance rides along: `expected_state` writes those records into
 `expected/.crozier-fern-golden.json` for a row that has them, and omits the key

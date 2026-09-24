@@ -1,0 +1,22 @@
+{
+  "sources": [
+    {
+      "fixture": "raybot",
+      "origin": "corpus",
+      "path": ".local/corpus/raybot/api/openapi/openapi.yml"
+    }
+  ],
+  "rows": [
+    {
+      "selector": "pathItem.$ref:relative-file",
+      "fixture": "raybot",
+      "count": 23
+    },
+    {
+      "selector": "schema.$ref:cross-document",
+      "fixture": "raybot",
+      "count": 69
+    }
+  ],
+  "absent_selectors": []
+}

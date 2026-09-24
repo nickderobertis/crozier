@@ -370,6 +370,12 @@ def expected_state(root: Path, row: CorpusRow, version: str) -> bytes:
     pins = corpus_remote_ref_pins(root, row)
     if pins:
         state["corpus_remote_ref_pins"] = pins
+    tree = load_pins_module(root).tree_records_for(row.name, root)
+    if tree:
+        state["corpus_tree_pins"] = [
+            {"path": member.path, "pinned_url": member.pinned_url, "sha256": member.sha256}
+            for member in tree
+        ]
     return (json.dumps(state, indent=2) + "\n").encode()
 
 

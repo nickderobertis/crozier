@@ -1,0 +1,7 @@
+components:
+  schemas:
+    Hidden:
+      type: object
+      properties:
+        outsideOnly:
+          type: string

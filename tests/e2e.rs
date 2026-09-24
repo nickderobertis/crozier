@@ -962,6 +962,23 @@ fn corpus_spec(api: &str) -> Option<PathBuf> {
         .into_iter()
         .map(|name| fetched.join(name))
         .find(|path| path.exists())
+        .or_else(|| {
+            let interpreter = if cfg!(windows) { "python" } else { "python3" };
+            let output = std::process::Command::new(interpreter)
+                .arg(
+                    Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/corpus_remote_ref_pins.py"),
+                )
+                .arg("tree-root")
+                .arg(api)
+                .output()
+                .ok()?;
+            if !output.status.success() {
+                return None;
+            }
+            let relative = String::from_utf8(output.stdout).ok()?;
+            let path = fetched.join(relative.trim());
+            path.is_file().then_some(path)
+        })
 }
 
 /// Fresh `crozier` command bound to the built binary.
@@ -3196,6 +3213,8 @@ const CORPORA: &[&Corpus] = &[
     &AUDIOBOOKSHELF,
     &STEAMINPUTDB,
     &PAYPAL_CATALOG_PRODUCTS,
+    &FOLIO_MOD_AUTHTOKEN,
+    &RAYBOT,
 ];
 
 #[test]
@@ -5492,6 +5511,30 @@ const SAC_BACKEND: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// FOLIO's token API keeps six component schemas in sibling JSON files.
+const FOLIO_MOD_AUTHTOKEN: Corpus = Corpus {
+    api: "folio-mod-authtoken",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Raybot keeps Path Items, parameters, and schemas in sibling documents.
+const RAYBOT: Corpus = Corpus {
+    api: "raybot",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -5876,6 +5919,16 @@ fn assert_link_ok_corpus_matches(corpus: &Corpus) {
         return;
     }
     assert_corpus_matches(corpus);
+}
+
+#[test]
+fn folio_mod_authtoken_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FOLIO_MOD_AUTHTOKEN);
+}
+
+#[test]
+fn raybot_matches_fern_output() {
+    assert_link_ok_corpus_matches(&RAYBOT);
 }
 
 #[test]
@@ -10784,6 +10837,153 @@ fn a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message() {
         !dir.path().join("sdk").exists(),
         "a failed fetch should write no SDK"
     );
+}
+
+#[test]
+fn a_missing_relative_path_item_is_discarded_without_losing_other_endpoints() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    let sdk = dir.path().join("sdk");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    $ref: './parts.yaml#/item'\n  /live:\n    get:\n      operationId: getLive\n      responses:\n        '204': {description: No content}\n",
+    )
+    .unwrap();
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .assert()
+        .success();
+    let reference = std::fs::read_to_string(sdk.join("reference.md")).expect("reference guide");
+    assert!(reference.contains("get_live"), "{reference}");
+    assert!(!reference.contains("get_ping"), "{reference}");
+}
+
+#[test]
+fn relative_path_item_refs_report_missing_pointers_and_wrong_shapes() {
+    for (document, reference, message) in [
+        (
+            "other: {}\n",
+            "./parts.yaml#/item",
+            "no Path Item at that pointer",
+        ),
+        ("item: []\n", "./parts.yaml#/item", "not a Path Item"),
+    ] {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("openapi.yml");
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Ref API, version: '1'}}\npaths:\n  /ping:\n    $ref: '{reference}'\n"
+            ),
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("parts.yaml"), document).unwrap();
+        crozier()
+            .args(["generate", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(dir.path().join("sdk"))
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(message));
+        assert!(!dir.path().join("sdk").exists());
+    }
+}
+
+#[test]
+fn relative_parameter_refs_report_missing_pointers_and_wrong_shapes() {
+    for (document, message) in [
+        ("other: {}\n", "no parameter at that pointer"),
+        ("item: []\n", "not a parameter"),
+    ] {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("openapi.yml");
+        std::fs::write(
+            &spec,
+            "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      parameters:\n        - $ref: './params.yaml#/item'\n      responses:\n        '200': {description: OK}\n",
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("params.yaml"), document).unwrap();
+        crozier()
+            .args(["generate", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(dir.path().join("sdk"))
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(message));
+        assert!(!dir.path().join("sdk").exists());
+    }
+}
+
+#[test]
+fn an_absolute_path_item_ref_fetches_its_relative_parameter_sibling() {
+    let server = LocalDocumentServer::start(&[
+        (
+            "/path.yaml",
+            "item:\n  get:\n    operationId: getVersion\n    parameters:\n      - $ref: './params.yaml#/param'\n    responses:\n      '200': {description: OK}\n",
+        ),
+        (
+            "/params.yaml",
+            "param:\n  name: filter\n  in: query\n  schema: {type: string}\n",
+        ),
+    ]);
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(
+        &spec,
+        format!(
+            "openapi: 3.0.3\ninfo: {{title: Remote Path, version: '1'}}\npaths:\n  /version:\n    $ref: '{}/path.yaml#/item'\n",
+            server.base_url
+        ),
+    )
+    .unwrap();
+    let out = dir.path().join("sdk");
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(out.join("src/fern/client.py")).expect("client");
+    assert!(
+        client.contains("filter:"),
+        "the remote parameter must reach the SDK: {client}"
+    );
+}
+
+#[test]
+fn relative_schema_refs_report_missing_files_pointers_and_wrong_shapes() {
+    for (document, message) in [
+        (None, "could not read"),
+        (Some("Other: {type: string}\n"), "no node at that pointer"),
+        (Some("Bad: []\n"), "not a schema"),
+    ] {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let spec = dir.path().join("openapi.yml");
+        std::fs::write(
+            &spec,
+            "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                $ref: './schemas.yaml#/Bad'\n",
+        )
+        .unwrap();
+        if let Some(document) = document {
+            std::fs::write(dir.path().join("schemas.yaml"), document).unwrap();
+        }
+        crozier()
+            .args(["generate", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(dir.path().join("sdk"))
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(message));
+        assert!(!dir.path().join("sdk").exists());
+    }
 }
 
 #[test]

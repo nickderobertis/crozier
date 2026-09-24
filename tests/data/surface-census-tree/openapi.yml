@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info: {title: Tree census boundary, version: "1"}
+paths:
+  /reachable:
+    $ref: nested/pathitem.yml
+components:
+  schemas:
+    First:
+      $ref: nested/defs.yml#/components/schemas/Reachable
+    Second:
+      $ref: nested/defs.yml#/components/schemas/Reachable
+    Outside:
+      $ref: outside.yml#/components/schemas/Hidden

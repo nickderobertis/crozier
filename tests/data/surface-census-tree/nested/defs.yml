@@ -1,0 +1,12 @@
+components:
+  schemas:
+    Reachable:
+      type: object
+      properties:
+        insideOnly:
+          type: string
+    Unreachable:
+      type: object
+      properties:
+        notReferenced:
+          type: string
