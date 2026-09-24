@@ -651,6 +651,8 @@ class Acquirer:
             "result_count"
         ):
             return [item for row in answered for item in row["results"]]
+        if answered and answered[-1].get("page_count") == 0:
+            return None
         found = [item for row in answered for item in row["results"]]
         page = len(answered) + 1
         while True:
@@ -745,8 +747,22 @@ class Acquirer:
                     },
                 )
                 return None
-            if len(found) >= total or not items:
+            if len(found) >= total:
                 return found
+            if not items:
+                self.write(
+                    "queries.jsonl",
+                    {
+                        "source": "github-code-search",
+                        "key": key,
+                        "query": query,
+                        "outcome": "outstanding-index-truncation",
+                        "reported": total,
+                        "retrieved": len(found),
+                        "page": page,
+                    },
+                )
+                return None
             if len(found) >= 1000:
                 self.write(
                     "queries.jsonl",

@@ -80,13 +80,16 @@ class LocalServer(BaseHTTPRequestHandler):
                     {"X-Ratelimit-Remaining": "9", "Retry-After": "1"},
                 )
             else:
+                early_empty = state["early_empty"] and "page=2" in self.path
                 self.reply(
                     200,
                     {
-                        "total_count": 1
+                        "total_count": 2
+                        if state["early_empty"]
+                        else 1
                         if not state["partition"] or "size%3A" in self.path
                         else 1001,
-                        "items": [
+                        "items": [] if early_empty else [
                             {
                                 "repository": {"full_name": "example/api"},
                                 "path": "openapi.yaml",
@@ -183,6 +186,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "searches": 0,
             "secondary": False,
             "partition": False,
+            "early_empty": False,
             "contents": 0,
             "sourcegraph": 0,
             "refuse_sourcegraph": False,
@@ -289,6 +293,19 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual("refused", rows[-1]["outcome"])
         self.assertEqual(403, rows[-1]["status"])
         self.assertEqual(1, self.server.state["searches"])
+
+    def test_index_truncation_remains_outstanding_on_resume(self) -> None:
+        self.server.state["early_empty"] = True
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        rows = [
+            json.loads(line)
+            for line in (self.root / "queries.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual("outstanding-index-truncation", rows[-1]["outcome"])
+        self.assertEqual(2, rows[-1]["reported"])
+        self.assertEqual(1, rows[-1]["retrieved"])
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertEqual(2, self.server.state["searches"])
 
     def test_large_code_search_is_partitioned_before_paging(self) -> None:
         self.server.state["partition"] = True
