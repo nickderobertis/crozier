@@ -7,8 +7,10 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -35,7 +37,13 @@ def main() -> int:
     parser.add_argument("--bucket", default="core")
     args = parser.parse_args()
     guard = GUARD.RateLimitGuard("github", evidence_dir=args.evidence_dir)
-    request = urllib.request.Request(args.url, headers={"User-Agent": "crozier-witness-acquisition/1"})
+    headers = {"User-Agent": "crozier-witness-acquisition/1"}
+    api_root = os.environ.get("CROZIER_GITHUB_API_URL", "https://api.github.com")
+    if urllib.parse.urlsplit(args.url).netloc == urllib.parse.urlsplit(api_root).netloc:
+        token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+    request = urllib.request.Request(args.url, headers=headers)
     record = {"url": args.url, "taken_utc": datetime.now(timezone.utc).isoformat(timespec="seconds")}
     temporary = args.output.with_suffix(args.output.suffix + ".part")
     args.output.parent.mkdir(parents=True, exist_ok=True)

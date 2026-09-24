@@ -3486,8 +3486,8 @@ in both directions.
     document in each named pinned walk, under
     `walk\tdocument\trevision\tsha256\tmatched_keys\tstatus`. `matched_keys`
     is the comma-separated set of gap keys whose selector matched, empty when
-    none did; `status` is `readable` or `unreadable: <reason>`. A `document`
-    row in `records.tsv` exists only when that key matched, with `census <n>`
+    none did; `status` is `readable` or `unreadable: <reason>`.
+  - A `document` row in `records.tsv` exists only when that key matched, with `census <n>`
     for positive `n`. This compact form avoids repeating a zero for every
     `(key, document)` pair in a large tree. The independent pinned listing is
     `acquisition-manifest.tsv`, under

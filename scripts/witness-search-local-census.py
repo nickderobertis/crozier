@@ -31,15 +31,26 @@ CENSUS = load_census()
 
 def contract_keys(path: Path) -> list[tuple[str, str]]:
     keys = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("| `") and line.count("|") == 3:
-            cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
-            if not cells[0] or any(key == cells[0] for key, _ in keys):
-                raise ValueError(f"empty or duplicate contract key: {cells[0]!r}")
-            error = CENSUS.selector_error(cells[1])
-            if error:
-                raise ValueError(error)
-            keys.append((cells[0], cells[1]))
+    if path.suffix == ".tsv":
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            if not {"key", "selector", "census_status"} <= set(reader.fieldnames or ()):
+                raise ValueError("TSV contract requires key, selector, and census_status")
+            rows = [(row["key"], row["selector"]) for row in reader
+                    if row["census_status"] == "supported"]
+    else:
+        rows = []
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("| `") and line.count("|") == 3:
+                cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
+                rows.append((cells[0], cells[1]))
+    for key, selector in rows:
+        if not key or any(existing == key for existing, _ in keys):
+            raise ValueError(f"empty or duplicate contract key: {key!r}")
+        error = CENSUS.selector_error(selector)
+        if error:
+            raise ValueError(error)
+        keys.append((key, selector))
     if not keys:
         raise ValueError("no key/selector rows found")
     return keys
@@ -54,7 +65,10 @@ def census_one(
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         document = CENSUS.load_document(path)
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
-        counts = CENSUS.census_document(document, conjunctions=conjunctions)
+        # A repository may contain generated metadata with an OpenAPI document
+        # nested inside it. Only a root OpenAPI 3 document is a source document.
+        counts = (CENSUS.census_document(document, conjunctions=conjunctions)
+                  if version.startswith("3.") else {})
         return (
             path,
             digest,

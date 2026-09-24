@@ -134,7 +134,7 @@ class LocalCensusTest(unittest.TestCase):
         )
 
     def test_guarded_acquisition_waits_for_cap_and_records_refusal(self) -> None:
-        state = {"reads": 0, "downloads": 0}
+        state = {"reads": 0, "downloads": 0, "authorized": False}
 
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
@@ -148,6 +148,7 @@ class LocalCensusTest(unittest.TestCase):
                     self.send_response(200)
                 elif self.path == "/tree.tar.gz":
                     state["downloads"] += 1
+                    state["authorized"] = self.headers.get("Authorization") == "Bearer local-test-token"
                     body = b"real local tree archive bytes"
                     self.send_response(200)
                     self.send_header("x-ratelimit-resource", "core")
@@ -169,7 +170,8 @@ class LocalCensusTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             url = f"http://127.0.0.1:{server.server_port}"
-            env = {**os.environ, "CROZIER_GITHUB_API_URL": url}
+            env = {**os.environ, "CROZIER_GITHUB_API_URL": url,
+                   "GITHUB_TOKEN": "local-test-token"}
             evidence = root / "evidence"
             output = root / "tree.tar.gz"
             completed = subprocess.run(
@@ -181,6 +183,7 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(output.read_bytes(), b"real local tree archive bytes")
             self.assertGreaterEqual(state["reads"], 2)
             self.assertEqual(state["downloads"], 1)
+            self.assertTrue(state["authorized"])
             waits = [json.loads(line) for line in
                      (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
             self.assertTrue(any(row["kind"] == "wait" and row["cause"] == "cap"
@@ -221,6 +224,9 @@ class LocalCensusTest(unittest.TestCase):
             }).encode()
             (documents / "hit.json").write_bytes(hit)
             (documents / "miss.json").write_bytes(miss)
+            (documents / "metadata.json").write_text(
+                json.dumps({"bundle": json.loads(hit)}), encoding="utf-8"
+            )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
@@ -228,10 +234,12 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-            self.assertEqual(len(rows), 2)
+            self.assertEqual(len(rows), 3)
             by_name = {row["document"]: row for row in rows}
             self.assertEqual(by_name["hit.json"]["count"], "1")
             self.assertEqual(by_name["miss.json"]["count"], "0")
+            self.assertEqual(by_name["metadata.json"]["count"], "0")
+            self.assertEqual(by_name["metadata.json"]["openapi_version"], "")
             self.assertEqual(by_name["hit.json"]["sha256"], hashlib.sha256(hit).hexdigest())
             self.assertEqual(by_name["miss.json"]["sha256"], hashlib.sha256(miss).hexdigest())
             compact = subprocess.run(
@@ -241,9 +249,28 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
-            self.assertEqual(len(objects), 2)
+            self.assertEqual(len(objects), 3)
             self.assertEqual({row["document"]: row["selectors"]["array"] for row in objects},
-                             {"hit.json": 1, "miss.json": 0})
+                             {"hit.json": 1, "miss.json": 0, "metadata.json": 0})
+
+            derived = root / "region-keys.tsv"
+            derived.write_text(
+                "key\tselector\tregion\tcensus_status\n"
+                "array\tschema.oneOf>schema.type:primary=array&schema.items>schema.anyOf\t"
+                "schemas.md\tsupported\n"
+                "pending\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
+                encoding="utf-8",
+            )
+            from_regions = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(derived),
+                 "--documents", f"local={documents}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(from_regions.returncode, 0, from_regions.stderr)
+            derived_rows = [json.loads(line) for line in from_regions.stdout.splitlines()]
+            self.assertEqual({row["document"]: row["selectors"] for row in derived_rows},
+                             {"hit.json": {"array": 1}, "miss.json": {"array": 0},
+                              "metadata.json": {"array": 0}})
 
 
 if __name__ == "__main__":
