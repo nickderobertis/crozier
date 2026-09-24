@@ -632,8 +632,10 @@ COMPACT_RECORD_FIELDS = _index_module.FIELDS
 COMPACT_DISPOSITIONS = _index_module.DISPOSITIONS
 COMPACT_SEGMENT = re.compile(
     r"(?P<source>[\w.-]+): (?P<total>\d+) candidates "
-    r"\((?P<found>\d+) witness-found, (?P<rejected>\d+) rejected, "
-    r"(?P<outstanding>\d+) outstanding, (?P<not_owed>\d+) not-owed\) "
+    "\\(" + ", ".join(
+        rf"(?P<{name.replace('-', '_')}>\d+) {re.escape(name)}"
+        for name in COMPACT_DISPOSITIONS
+    ) + "\\) "
     r"\[records\]\(witness-search-(?P<directory>[\w.-]+)/records\.tsv\)"
     r"(?: witness `(?P<witness>[^`]+)` at `(?P<revision>[^`]+)`)?"
 )
@@ -747,7 +749,7 @@ def compact_record_failures(
             ]
         counts = Counter(row["disposition"] for _, row in rows)
         expected = {
-            "witness-found": int(segment["found"]),
+            "witness-found": int(segment["witness_found"]),
             "rejected": int(segment["rejected"]),
             "outstanding": int(segment["outstanding"]),
             "not-owed": int(segment["not_owed"]),
@@ -7637,6 +7639,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         self.sources = list(DECLARED_SOURCES)
         self.count_override = {}
         self.rejected_override = {}
+        self.directory_override = {}
         self.extra_source = None
         self.write_records()
 
@@ -7694,7 +7697,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
             f"{source}: {self.count_override.get(source, 1)} candidates "
             f"(0 witness-found, {self.rejected_override.get(source, 1)} rejected, "
             "0 outstanding, 0 not-owed) "
-            f"[records](witness-search-{source}/records.tsv)"
+            f"[records](witness-search-{self.directory_override.get(source, source)}/records.tsv)"
             for source in self.sources
         ]
         if self.extra_source:
@@ -7722,6 +7725,48 @@ class CompactWitnessRecordTests(unittest.TestCase):
     def test_count_drift_is_refused(self) -> None:
         self.count_override["sourcegraph"] = 2
         self.assertIn("count differs from records.tsv", "\n".join(self.failures()))
+
+    def test_malformed_segment_is_refused(self) -> None:
+        self.sources[0] = "bad source"
+        self.assertIn("malformed compact search segment", "\n".join(self.failures()))
+
+    def test_cross_source_record_link_is_refused(self) -> None:
+        self.directory_override["sourcegraph"] = "github-code-search"
+        self.assertIn("links another source's records.tsv", "\n".join(self.failures()))
+
+    def test_unscreened_witness_is_refused(self) -> None:
+        source = "sourcegraph"
+        path = self.root / f"witness-search-{source}/records.tsv"
+        with path.open(encoding="utf-8", newline="") as stream:
+            row = next(csv.DictReader(stream, delimiter="\t"))
+        row["disposition"] = "witness-found"
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t")
+            writer.writeheader()
+            writer.writerow(row)
+        self.rejected_override[source] = 0
+        self.assertIn("is not a screened witness", "\n".join(self.failures()))
+
+    def test_indexed_candidate_field_drift_is_refused(self) -> None:
+        path = self.root / "witness-search-github/candidates.tsv"
+        with path.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream, delimiter="\t"))
+        rows[0]["digest"] = "c" * 64
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"), delimiter="\t")
+            writer.writeheader()
+            writer.writerows(rows)
+        self.assertIn("differs from candidates.tsv", "\n".join(self.failures()))
+
+    def test_missing_indexed_candidate_is_refused(self) -> None:
+        path = self.root / "witness-search-github/candidates.tsv"
+        with path.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream, delimiter="\t"))
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"), delimiter="\t")
+            writer.writeheader()
+            writer.writerows(rows[1:])
+        self.assertIn("disagree on candidates", "\n".join(self.failures()))
 
     def test_witness_segment_names_its_candidate_and_revision(self) -> None:
         source = "sourcegraph"

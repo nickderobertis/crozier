@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Rust CLI with Python maintenance scripts in scripts/ and no Nx project; this acquisition command belongs beside the surface census and quota guard it calls.
 """Acquire GitHub and Sourcegraph witness-search results through Contract C.
 
 The search index supplies document identities. Only the surface census over the
@@ -227,16 +228,21 @@ def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
     """Prior trees, registered publishers, and publisher-owned declarer repositories."""
     wide = root / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
     trees = json.load(gzip.open(wide, "rt", encoding="utf-8"))["trees"]
-    selected = [
-        {
-            "repository": item["repo"],
-            "commit": item["ref"],
-            "scope": item["scope"],
+    if not isinstance(trees, list):
+        raise ValueError(f"{wide}: trees must be a list")
+    selected = []
+    for item in trees:
+        if not isinstance(item, dict):
+            raise ValueError(f"{wide}: tree must be an object")
+        publisher = {
+            "repository": item.get("repo"),
+            "commit": item.get("ref"),
+            "scope": item.get("scope"),
             "derivation": "witness-scrape-wide publisher tree",
         }
-        for item in trees
-        if item["repo"] != "APIs-guru/openapi-directory"
-    ]
+        validate_publisher(publisher)
+        if publisher["repository"] != "APIs-guru/openapi-directory":
+            selected.append(publisher)
     corpus = root / "tests/fixtures/CORPUS.md"
     for line in corpus.read_text(encoding="utf-8").splitlines():
         if not re.match(r"^\| \d+ \|", line):
@@ -280,7 +286,27 @@ def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
                     "derivation": f"{item['source']} declarer: {item['ownership_evidence']}",
                 }
             )
+    for publisher in selected:
+        validate_publisher(publisher)
     return selected
+
+
+def validate_publisher(publisher: dict[str, Any]) -> None:
+    """Require an API publisher and a pinned revision before any tree or raw read."""
+    repository = publisher.get("repository")
+    commit = publisher.get("commit")
+    scope = publisher.get("scope")
+    if not isinstance(repository, str) or not re.fullmatch(
+        r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository
+    ):
+        raise ValueError(f"invalid publisher repository: {repository!r}")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-fA-F]{40}", commit):
+        raise ValueError(f"{repository}: publisher commit must be a 40-hex SHA")
+    if not isinstance(scope, (str, list)) or (
+        isinstance(scope, list)
+        and any(not isinstance(item, str) for item in scope)
+    ):
+        raise ValueError(f"{repository}: publisher scope must be a path or path list")
 
 
 class Acquirer:
@@ -545,6 +571,7 @@ class Acquirer:
     def publisher_walk(
         self, publisher: dict[str, Any], keys: dict[str, dict[str, str]]
     ) -> None:
+        validate_publisher(publisher)
         repository = publisher["repository"]
         commit = publisher["commit"]
         prior = next(
@@ -1453,12 +1480,13 @@ def _main() -> int:
                 publishers = publisher_input["publishers"]
             except (OSError, ValueError, KeyError, TypeError) as error:
                 parser.error(f"--publisher-file cannot be read: {error}")
-            if not isinstance(publishers, list) or any(
-                not isinstance(row, dict)
-                or any(not isinstance(row.get(field), str) for field in ("repository", "commit", "scope"))
-                for row in publishers
-            ):
-                parser.error("--publisher-file must contain publisher rows with repository, commit and scope")
+            if not isinstance(publishers, list) or any(not isinstance(row, dict) for row in publishers):
+                parser.error("--publisher-file must contain publisher objects")
+            try:
+                for publisher in publishers:
+                    validate_publisher(publisher)
+            except ValueError as error:
+                parser.error(str(error))
         else:
             try:
                 publishers = publisher_set(args.publisher_root)
@@ -1612,13 +1640,7 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
             raise EvidenceError(f"{path}:{number}: {error}") from error
         if not isinstance(row, dict):
             raise EvidenceError(f"{path}:{number}: expected a JSON object")
-        required = (
-            ("source", "key", "query", "outcome")
-            if path.name == "queries.jsonl"
-            else ("source", "key", "repository", "path", "disposition")
-            if path.name == "candidates.jsonl"
-            else ()
-        )
+        required = INDEX.LEDGER_REQUIRED_FIELDS.get(path.name, ())
         for field in required:
             if not isinstance(row.get(field), str) or not row[field]:
                 raise EvidenceError(f"{path}:{number}: missing or invalid {field}")

@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier's Python maintenance tests live in tests/ and run through just; no Nx workspace or project boundary exists for this offline HTTP tier.
 """Exercise witness acquisition through real local HTTP responses and the census."""
 
 from __future__ import annotations
@@ -693,7 +694,16 @@ class WitnessSearchGithubTests(unittest.TestCase):
             env=env, capture_output=True, text=True,
         )
         self.assertEqual(2, invalid_file.returncode)
-        self.assertIn("publisher rows", invalid_file.stderr)
+        self.assertIn("invalid publisher repository", invalid_file.stderr)
+        bad_publishers.write_text('{"publishers": [{"repository": "publisher/api", "commit": "main", "scope": ""}]}')
+        mutable_ref = subprocess.run(
+            [sys.executable, str(script), "--evidence", str(self.root / "cli-mutable-publisher"),
+             "--source", "github-publisher-trees", "--stage", "walk",
+             "--publisher-file", str(bad_publishers)],
+            env=env, capture_output=True, text=True,
+        )
+        self.assertEqual(2, mutable_ref.returncode)
+        self.assertIn("publisher commit must be a 40-hex SHA", mutable_ref.stderr)
         bad_publishers.write_text("{broken json}")
         invalid_json_file = subprocess.run(
             [sys.executable, str(script), "--evidence", str(self.root / "cli-bad-json-publishers"),
