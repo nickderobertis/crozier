@@ -2,8 +2,9 @@
 
 `keys.json` in each source directory is derived by `RankedBacklogTests.region_rows`
 from the six region files, retaining every `FIXTURE` `gap` row. This checkpoint
-has 32 keys. The source-specific `queries.jsonl`, `candidates.jsonl`,
-`trees.jsonl`, and `documents.jsonl` are the acquisition and census ledgers.
+has the keys recorded in `keys.json`. The source-specific `queries.jsonl`,
+`candidates.jsonl`, `trees.jsonl`, and `documents.jsonl` are the acquisition and
+census ledgers.
 Each fetched candidate row is a parsed selector result, parser diagnostic, or
 acquisition failure; unfetched query results stay outstanding. The only result reduction is repeated hits of the same repository,
 path, and pinned revision. Each source's `records.tsv` retains the resulting

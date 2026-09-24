@@ -4,12 +4,16 @@
 The search index supplies document identities. Only the surface census over the
 fetched document supplies a declaration verdict. Evidence is append-only JSONL
 so an interrupted search retains every answered query and outstanding result.
+
+Exit 0 means the requested stage completed, 1 means acquisition or evidence needs
+repair or resumption, and 2 means the command arguments are invalid.
 """
 
 from __future__ import annotations
 
 import argparse
 import base64
+import binascii
 import csv
 import datetime
 import email.utils
@@ -38,14 +42,6 @@ from rate_limit_guard import (
 )
 
 REPO = Path(__file__).resolve().parent.parent
-REGIONS = (
-    "bodies-media",
-    "document-paths",
-    "oas31-extensions",
-    "parameters",
-    "schemas",
-    "security",
-)
 SOURCEGRAPH_URL = "https://sourcegraph.com"
 RAW_GITHUB_URL = "https://raw.githubusercontent.com"
 RAW_SPACING_S = 2.0
@@ -74,6 +70,10 @@ class MissingScope(ValueError):
     """A named publisher subtree is absent at the pinned commit."""
 
 
+class EvidenceError(ValueError):
+    """A recorded acquisition cannot be resumed until its ledger is repaired."""
+
+
 def load(name: str, path: Path) -> Any:
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
@@ -84,7 +84,8 @@ def load(name: str, path: Path) -> Any:
 
 
 CENSUS = load("witness_github_census", REPO / "scripts/openapi-surface-census.py")
-ROWS = load(
+INDEX = load("witness_github_index", REPO / "scripts/witness-search-github-index.py")
+REGION_ROWS = load(
     "witness_github_rows", REPO / "tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
 
@@ -92,8 +93,12 @@ ROWS = load(
 def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
     """Read the dispatch key set from the authoritative eight-cell rows."""
     keys = {}
-    for region in REGIONS:
-        for row in ROWS((regions / f"{region}.md").read_text(encoding="utf-8")):
+    paths = sorted(regions.glob("*.md"))
+    if not paths:
+        raise ValueError(f"no region files under {regions}")
+    for path in paths:
+        region = path.stem
+        for row in REGION_ROWS(path.read_text(encoding="utf-8")):
             if row[3].strip("`") != "gap" or not re.search(r"\bFIXTURE\b", row[7]):
                 continue
             key = row[0].strip("`")
@@ -115,6 +120,17 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
                 ),
             }
     return dict(sorted(keys.items()))
+
+
+def checked_service_url(value: str, name: str, expected_host: str) -> str:
+    """Allow the intended HTTPS host and local HTTP servers used by the offline tier."""
+    parsed = urllib.parse.urlsplit(value)
+    if not parsed.hostname or (
+        not (parsed.scheme == "https" and parsed.hostname == expected_host)
+        and not (parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"})
+    ):
+        raise ValueError(f"{name} must use https://{expected_host} or a loopback HTTP URL")
+    return value
 
 
 def ingredients(selector: str) -> list[str]:
@@ -207,9 +223,9 @@ def query_plan(selector: str) -> dict[str, list[str]]:
     return {"github-code-search": github, "sourcegraph": sourcegraph}
 
 
-def publisher_set() -> list[dict[str, Any]]:
+def publisher_set(root: Path = REPO) -> list[dict[str, Any]]:
     """Prior trees, registered publishers, and publisher-owned declarer repositories."""
-    wide = REPO / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
+    wide = root / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
     trees = json.load(gzip.open(wide, "rt", encoding="utf-8"))["trees"]
     selected = [
         {
@@ -221,7 +237,7 @@ def publisher_set() -> list[dict[str, Any]]:
         for item in trees
         if item["repo"] != "APIs-guru/openapi-directory"
     ]
-    corpus = REPO / "tests/fixtures/CORPUS.md"
+    corpus = root / "tests/fixtures/CORPUS.md"
     for line in corpus.read_text(encoding="utf-8").splitlines():
         if not re.match(r"^\| \d+ \|", line):
             continue
@@ -248,7 +264,7 @@ def publisher_set() -> list[dict[str, Any]]:
             }
         )
     declarers = (
-        REPO
+        root
         / "docs/openapi-surface/witness-search-github-publisher-trees/publisher-declarers.tsv"
     )
     with declarers.open(encoding="utf-8", newline="") as stream:
@@ -287,7 +303,9 @@ class Acquirer:
         evidence.mkdir(parents=True, exist_ok=True)
         self.cache = cache or evidence
         self.cache.mkdir(parents=True, exist_ok=True)
-        self.github_url = (github_url or github_api_url()).rstrip("/")
+        self.github_url = checked_service_url(
+            github_url or github_api_url(), "CROZIER_GITHUB_API_URL", "api.github.com"
+        ).rstrip("/")
         self.sourcegraph_url = sourcegraph_url.rstrip("/")
         self.raw_github_url = raw_github_url.rstrip("/")
         self.raw_last_request: float | None = None
@@ -307,6 +325,10 @@ class Acquirer:
         }
 
     def write(self, filename: str, record: dict[str, Any]) -> None:
+        if filename in ("candidates.jsonl", "documents.jsonl"):
+            status = record.get("disposition") or record.get("status")
+            if status not in INDEX.RAW_STATUSES:
+                raise ValueError(f"unknown acquisition status: {status}")
         record = {
             "at": datetime.datetime.now(datetime.timezone.utc).isoformat(
                 timespec="milliseconds"
@@ -318,7 +340,7 @@ class Acquirer:
 
     def request(
         self, host: str, bucket: str, url: str, *, accept: str | None = None
-    ) -> tuple[int, bytes, Any]:
+    ) -> tuple[int, bytes, http.client.HTTPMessage]:
         """Bracket one HTTP request, including a refused HTTP response."""
         guard = self.guards[host]
         headers = {"User-Agent": "crozier-witness-search"}
@@ -363,7 +385,9 @@ class Acquirer:
             (
                 row
                 for row in reversed(calls)
-                if row.get("status") in ((403, 429) if host == "github" else (429, 503))
+                if row.get("status") in (
+                    REFUSAL_STATUSES | {403} if host == "github" else REFUSAL_STATUSES
+                )
             ),
             None,
         )
@@ -391,7 +415,7 @@ class Acquirer:
                 },
             )
 
-    def github_json(self, bucket: str, path: str) -> tuple[int, Any, Any]:
+    def github_json(self, bucket: str, path: str) -> tuple[int, Any, http.client.HTTPMessage]:
         status, body, headers = self.request("github", bucket, self.github_url + path)
         try:
             return status, json.loads(body), headers
@@ -403,8 +427,16 @@ class Acquirer:
         status, payload, _ = self.github_json("core", path)
         if status != 200:
             return status, None, payload
+        if not isinstance(payload, dict):
+            return status, None, {"diagnostic": "GitHub contents response is not an object"}
         if payload.get("encoding") == "base64":
-            return status, base64.b64decode(payload["content"]), payload
+            content = payload.get("content")
+            if not isinstance(content, str):
+                return status, None, {"diagnostic": "GitHub contents response lacks base64 content"}
+            try:
+                return status, base64.b64decode("".join(content.split()), validate=True), payload
+            except binascii.Error as error:
+                return status, None, {"diagnostic": f"invalid GitHub base64 content: {error}"}
         if payload.get("encoding") == "none":
             status, data, _ = self.request(
                 "github",
@@ -448,6 +480,18 @@ class Acquirer:
         if status != 200:
             raise SearchStopped(
                 f"GitHub git tree {repository}@{sha}: HTTP {status}; publisher walk outstanding"
+            )
+        if (
+            not isinstance(payload, dict)
+            or not isinstance(payload.get("tree"), list)
+            or any(
+                not isinstance(item, dict)
+                or any(not isinstance(item.get(field), str) for field in ("path", "type", "sha"))
+                for item in payload["tree"]
+            )
+        ):
+            raise SearchStopped(
+                f"GitHub git tree {repository}@{sha} returned malformed entries; publisher walk outstanding"
             )
         return payload
 
@@ -671,6 +715,14 @@ class Acquirer:
                     found.extend(part)
             return found if complete else None
         answered = [row for row in previous if row.get("outcome") == "answered"]
+        if any(
+            not isinstance(row.get("result_count"), int)
+            or not isinstance(row.get("retrieved_total"), int)
+            for row in answered
+        ):
+            raise EvidenceError(
+                f"{self.evidence / 'queries.jsonl'}: answered GitHub query {query!r} lacks integer result counts"
+            )
         if answered and answered[0].get("result_count", 0) > 1000:
             return self._partition_window(
                 key, query, lower, upper, answered[0]["result_count"]
@@ -748,6 +800,35 @@ class Acquirer:
                 raise SearchStopped(
                     f"GitHub refused {query!r} page {page}: HTTP {status}; key {key} outstanding"
                 )
+            if (
+                not isinstance(payload, dict)
+                or not isinstance(payload.get("total_count"), int)
+                or not isinstance(payload.get("items"), list)
+                or any(
+                    not isinstance(item, dict)
+                    or not isinstance(item.get("repository"), dict)
+                    or not isinstance(item["repository"].get("full_name"), str)
+                    or any(
+                        not isinstance(item.get(field), str)
+                        for field in ("path", "sha", "url")
+                    )
+                    for item in payload["items"]
+                )
+            ):
+                self.write(
+                    "queries.jsonl",
+                    {
+                        "source": "github-code-search",
+                        "key": key,
+                        "query": query,
+                        "page": page,
+                        "outcome": "outstanding-malformed-response",
+                        "diagnostic": "GitHub search response lacks a valid total_count or item identity",
+                    },
+                )
+                raise SearchStopped(
+                    f"GitHub search returned malformed results for {query!r} page {page}"
+                )
             items = payload.get("items", [])
             total = payload.get("total_count", 0)
             if page == 1 and total > 1000:
@@ -803,19 +884,6 @@ class Acquirer:
                         "reported": total,
                         "retrieved": len(found),
                         "page": page,
-                    },
-                )
-                return None
-            if len(found) >= 1000:
-                self.write(
-                    "queries.jsonl",
-                    {
-                        "source": "github-code-search",
-                        "key": key,
-                        "query": query,
-                        "outcome": "outstanding-index-cap",
-                        "reported": total,
-                        "retrieved": len(found),
                     },
                 )
                 return None
@@ -919,15 +987,43 @@ class Acquirer:
                     "diagnostic": data.decode("utf-8", "replace")[:1000],
                 },
             )
-            return None
+            raise SearchStopped(
+                f"Sourcegraph refused search {query!r}: HTTP {status}; key {key} outstanding"
+            )
         events = []
-        for block in data.decode("utf-8", "replace").split("\n\n"):
-            event = re.search(r"^event: (.+)$", block, re.M)
-            body = re.search(r"^data: (.+)$", block, re.M)
-            if event and body:
-                events.append((event.group(1), json.loads(body.group(1))))
-        matches = [item for name, body in events if name == "matches" for item in body]
-        progress = [body for name, body in events if name == "progress"]
+        try:
+            for block in data.decode("utf-8", "replace").split("\n\n"):
+                event = re.search(r"^event: (.+)$", block, re.M)
+                body = re.search(r"^data: (.+)$", block, re.M)
+                if event and body:
+                    events.append((event.group(1), json.loads(body.group(1))))
+            matches = [
+                item for name, body in events if name == "matches" for item in body
+            ]
+            progress = [body for name, body in events if name == "progress"]
+            if any(
+                not isinstance(item, dict)
+                or any(
+                    not isinstance(item.get(field), str) or not item[field]
+                    for field in ("repository", "path", "commit")
+                )
+                for item in matches
+            ) or any(not isinstance(item, dict) for item in progress):
+                raise ValueError("match identity or progress is malformed")
+        except (ValueError, TypeError, KeyError) as error:
+            self.write(
+                "queries.jsonl",
+                {
+                    "source": "sourcegraph",
+                    "key": key,
+                    "query": query,
+                    "outcome": "outstanding-malformed-response",
+                    "diagnostic": f"{type(error).__name__}: {error}",
+                },
+            )
+            raise SearchStopped(
+                f"Sourcegraph returned malformed results for {query!r}: {error}"
+            ) from error
         done = progress[-1] if progress else {}
         record = {
             "source": "sourcegraph",
@@ -968,9 +1064,9 @@ class Acquirer:
     def sourcegraph_document(
         self, key: str, selector: str, item: dict[str, Any]
     ) -> dict[str, Any]:
-        repo = item["repository"]
-        path = item["path"]
-        commit = item["commit"]
+        repo = item.get("repository")
+        path = item.get("path")
+        commit = item.get("commit")
         identity = {
             "source": "sourcegraph",
             "key": key,
@@ -979,6 +1075,16 @@ class Acquirer:
             "path": path,
             "commit": commit,
         }
+        if any(
+            not isinstance(value, str) or not value for value in (repo, path, commit)
+        ):
+            record = {
+                **identity,
+                "disposition": "acquisition-failure",
+                "diagnostic": "Sourcegraph result lacks a repository, path or commit",
+            }
+            self.write("candidates.jsonl", record)
+            return record
         github_repo = (
             repo.removeprefix("github.com/") if repo.startswith("github.com/") else None
         )
@@ -1036,7 +1142,7 @@ class Acquirer:
             }
             self.write("candidates.jsonl", record)
             return record
-        return self.classify(identity, data)
+        return self.classify_and_record(identity, data)
 
     def raw_github_get(self, url: str, key: str, subject: str) -> tuple[int, bytes]:
         """The manager-authorized exact-commit raw route has its own paced lane."""
@@ -1099,13 +1205,14 @@ class Acquirer:
             try:
                 retry_seconds = float(retry) if retry is not None else 0.0
             except ValueError:
-                stamp = email.utils.parsedate_to_datetime(retry)
-                retry_seconds = max(
-                    (
-                        stamp - datetime.datetime.now(datetime.timezone.utc)
-                    ).total_seconds(),
-                    0,
-                )
+                try:
+                    stamp = email.utils.parsedate_to_datetime(retry)
+                    retry_seconds = max(
+                        (stamp - datetime.datetime.now(datetime.timezone.utc)).total_seconds(),
+                        0,
+                    )
+                except (TypeError, ValueError, OverflowError):
+                    retry_seconds = 0.0
             self._raw_wait(
                 max(retry_seconds, RAW_BACKOFF_BASE_S * 2 ** (refusals - 1)),
                 f"HTTP {status} backoff",
@@ -1145,7 +1252,13 @@ class Acquirer:
         }
         url = item["url"]
         if not url.startswith(self.github_url + "/"):
-            raise ValueError(f"untrusted GitHub content URL: {url}")
+            record = {
+                **identity,
+                "disposition": "acquisition-failure",
+                "diagnostic": f"untrusted GitHub content URL: {url}",
+            }
+            self.write("candidates.jsonl", record)
+            return record
         try:
             status, data, diagnostic = self.github_contents(url[len(self.github_url) :])
         except OSError as error:
@@ -1177,10 +1290,12 @@ class Acquirer:
                     f"GitHub refused contents read for {identity['repository']}/{identity['path']}: HTTP {status}"
                 )
             return record
-        return self.classify(identity, data)
+        return self.classify_and_record(identity, data)
 
-    def classify(self, identity: dict[str, Any], data: bytes) -> dict[str, Any]:
-        """The selector engine is the sole source of a declaration verdict."""
+    def classify_and_record(
+        self, identity: dict[str, Any], data: bytes
+    ) -> dict[str, Any]:
+        """Cache bytes and record the selector engine's declaration verdict."""
         digest = hashlib.sha256(data).hexdigest()
         suffix = (
             ".json"
@@ -1237,27 +1352,44 @@ class Acquirer:
         return record
 
 
-def main() -> int:
+def _main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--cache", type=Path)
     parser.add_argument("--regions", type=Path, default=REPO / "docs/openapi-surface")
     parser.add_argument("--derive-only", action="store_true")
+    parser.add_argument("--publisher-file", type=Path)
+    parser.add_argument("--publisher-root", type=Path, default=REPO)
     parser.add_argument(
         "--source",
-        choices=("github-code-search", "github-publisher-trees", "sourcegraph"),
+        choices=INDEX.SOURCES,
     )
     parser.add_argument("--key", action="append", default=[])
     parser.add_argument("--stage", choices=("search", "evaluate", "walk"))
     args = parser.parse_args()
-    keys = derive_keys(args.regions)
+    try:
+        keys = derive_keys(args.regions)
+    except (OSError, ValueError) as error:
+        print(
+            f"witness-search-github: cannot derive keys from {args.regions}: {error}; repair the region file and rerun",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        source_commit = subprocess.check_output(
+            ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True
+        ).strip()
+    except (OSError, subprocess.CalledProcessError) as error:
+        print(
+            f"witness-search-github: cannot derive source commit: {error}; fetch origin/main and rerun",
+            file=sys.stderr,
+        )
+        return 1
     args.evidence.mkdir(parents=True, exist_ok=True)
     (args.evidence / "keys.json").write_text(
         json.dumps(
             {
-                "source_commit": subprocess.check_output(
-                    ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True
-                ).strip(),
+                "source_commit": source_commit,
                 "derivation": "RankedBacklogTests.region_rows over six region files: category gap and settlement FIXTURE",
                 "keys": keys,
             },
@@ -1283,12 +1415,59 @@ def main() -> int:
     if args.source.startswith("github-") and not (
         os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
     ):
-        os.environ["GH_TOKEN"] = subprocess.check_output(
-            ["gh", "auth", "token"], text=True
-        ).strip()
-    acquirer = Acquirer(args.evidence, cache=args.cache)
+        try:
+            os.environ["GH_TOKEN"] = subprocess.check_output(
+                ["gh", "auth", "token"], text=True, stderr=subprocess.DEVNULL
+            ).strip()
+        except (OSError, subprocess.CalledProcessError) as error:
+            print(
+                f"witness-search-github: GitHub credential unavailable: {error}; set GITHUB_TOKEN or run gh auth login",
+                file=sys.stderr,
+            )
+            return 1
+    try:
+        github_url = checked_service_url(
+            github_api_url(), "CROZIER_GITHUB_API_URL", "api.github.com"
+        )
+        sourcegraph_url = checked_service_url(
+            os.environ.get("CROZIER_SOURCEGRAPH_URL", SOURCEGRAPH_URL),
+            "CROZIER_SOURCEGRAPH_URL", "sourcegraph.com",
+        )
+        raw_github_url = checked_service_url(
+            os.environ.get("CROZIER_RAW_GITHUB_URL", RAW_GITHUB_URL),
+            "CROZIER_RAW_GITHUB_URL", "raw.githubusercontent.com",
+        )
+    except ValueError as error:
+        parser.error(str(error))
+    acquirer = Acquirer(
+        args.evidence,
+        cache=args.cache,
+        github_url=github_url,
+        sourcegraph_url=sourcegraph_url,
+        raw_github_url=raw_github_url,
+    )
     if args.stage == "walk":
-        publishers = publisher_set()
+        if args.publisher_file:
+            try:
+                publisher_input = json.loads(args.publisher_file.read_text(encoding="utf-8"))
+                publishers = publisher_input["publishers"]
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                parser.error(f"--publisher-file cannot be read: {error}")
+            if not isinstance(publishers, list) or any(
+                not isinstance(row, dict)
+                or any(not isinstance(row.get(field), str) for field in ("repository", "commit", "scope"))
+                for row in publishers
+            ):
+                parser.error("--publisher-file must contain publisher rows with repository, commit and scope")
+        else:
+            try:
+                publishers = publisher_set(args.publisher_root)
+            except (OSError, ValueError, KeyError) as error:
+                print(
+                    f"witness-search-github: cannot derive publisher set: {error}; repair the publisher manifests and rerun --stage walk",
+                    file=sys.stderr,
+                )
+                return 1
         (args.evidence / "publisher-set.json").write_text(
             json.dumps(
                 {
@@ -1311,7 +1490,7 @@ def main() -> int:
                     {**publisher, "status": "outstanding", "diagnostic": str(error)},
                 )
                 print(
-                    f"witness-search-github: {error}; publisher walk outstanding",
+                    f"witness-search-github: {error}; publisher walk outstanding; rerun --source github-publisher-trees --stage walk to resume",
                     file=sys.stderr,
                 )
                 return 1
@@ -1346,7 +1525,7 @@ def main() -> int:
                         acquirer.sourcegraph_search(key, query)
                     except SearchStopped as error:
                         print(
-                            f"witness-search-github: {error}; source remains outstanding",
+                            f"witness-search-github: {error}; wait for the guard's backoff, then rerun --source sourcegraph --stage search",
                             file=sys.stderr,
                         )
                         return 1
@@ -1394,17 +1573,99 @@ def main() -> int:
                     acquirer.github_document(key, {**item, "selector": selector})
             except SearchStopped as error:
                 print(
-                    f"witness-search-github: {error}; source remains outstanding",
+                    f"witness-search-github: {error}; wait for the guard's backoff, then rerun --source {args.source} --stage evaluate",
                     file=sys.stderr,
                 )
                 return 1
     return 0
 
 
+def main() -> int:
+    try:
+        return _main()
+    except OSError as error:
+        print(
+            f"witness-search-github: filesystem error: {error}; make --evidence and --cache writable, then rerun",
+            file=sys.stderr,
+        )
+        return 1
+    except (EvidenceError, KeyError, TypeError, AttributeError, ValueError) as error:
+        print(
+            f"witness-search-github: invalid acquisition ledger: {error}; repair the named evidence file and rerun",
+            file=sys.stderr,
+        )
+        return 1
+
+
 def jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError as error:
+        raise EvidenceError(f"{path}: {error}") from error
+    records = []
+    for number, line in enumerate(lines, 1):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise EvidenceError(f"{path}:{number}: {error}") from error
+        if not isinstance(row, dict):
+            raise EvidenceError(f"{path}:{number}: expected a JSON object")
+        required = (
+            ("source", "key", "query", "outcome")
+            if path.name == "queries.jsonl"
+            else ("source", "key", "repository", "path", "disposition")
+            if path.name == "candidates.jsonl"
+            else ()
+        )
+        for field in required:
+            if not isinstance(row.get(field), str) or not row[field]:
+                raise EvidenceError(f"{path}:{number}: missing or invalid {field}")
+        if path.name == "queries.jsonl" and row["outcome"] == "answered":
+            items = row.get("results")
+            if not isinstance(items, list) or any(
+                not isinstance(item, dict)
+                or not isinstance(item.get("repository"), str)
+                or not isinstance(item.get("path"), str)
+                for item in items
+            ):
+                raise EvidenceError(f"{path}:{number}: answered query lacks result identities")
+        if path.name == "queries.jsonl" and "windows" in row:
+            windows = row["windows"]
+            if not isinstance(windows, list) or any(
+                not isinstance(window, dict)
+                or not isinstance(window.get("query"), str)
+                or not isinstance(window.get("lower"), int)
+                or (window.get("upper") is not None and not isinstance(window["upper"], int))
+                for window in windows
+            ):
+                raise EvidenceError(f"{path}:{number}: invalid partition windows")
+        if path.name == "trees.jsonl" and "paths" in row:
+            paths = row["paths"]
+            if not isinstance(paths, list) or any(
+                not isinstance(item, dict)
+                or not isinstance(item.get("path"), str)
+                or not isinstance(item.get("blob"), str)
+                for item in paths
+            ):
+                raise EvidenceError(f"{path}:{number}: invalid tree paths")
+        if path.name == "documents.jsonl":
+            if any(
+                not isinstance(row.get(field), str) or not row[field]
+                for field in ("repository", "path", "commit")
+            ):
+                raise EvidenceError(f"{path}:{number}: invalid document identity")
+        if path.name == "rate-limit-calls.jsonl":
+            stamp = row.get("at")
+            if not isinstance(stamp, str):
+                raise EvidenceError(f"{path}:{number}: missing call timestamp")
+            try:
+                datetime.datetime.fromisoformat(stamp)
+            except ValueError as error:
+                raise EvidenceError(f"{path}:{number}: invalid call timestamp: {error}") from error
+        records.append(row)
+    return records
 
 
 def candidate_priority(

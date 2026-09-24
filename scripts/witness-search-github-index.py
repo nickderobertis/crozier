@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Reconcile acquired search results into per-source and consolidated candidate rows."""
+"""Reconcile acquired search results into per-source and consolidated candidate rows.
+
+Exit 0 means the index is current or was regenerated; exit 1 means evidence or
+committed output needs repair. Invalid arguments exit 2.
+"""
 
 from __future__ import annotations
 
@@ -7,10 +11,17 @@ import argparse
 import csv
 import io
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 SOURCES = ("github-code-search", "github-publisher-trees", "sourcegraph")
+RAW_DECLARING = frozenset({"declares", "readable"})
+RAW_OUTSTANDING = frozenset({
+    "acquisition-failure", "parse-failure", "acquisition-outstanding", "selector-unavailable",
+})
+RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
+RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO
 FIELDS = (
     "source",
     "key",
@@ -25,15 +36,73 @@ FIELDS = (
     "evidence",
 )
 CENTRAL_FIELDS = (*FIELDS[:-1], "record")
+DISPOSITIONS = ("witness-found", "rejected", "outstanding", "not-owed")
 
 
 def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
     if not path.is_file():
         return []
-    return [
-        (i, json.loads(line))
-        for i, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1)
-    ]
+    rows = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"{path}:{number}: {error}") from error
+        if not isinstance(row, dict):
+            raise ValueError(f"{path}:{number}: expected a JSON object")
+        required = (
+            ("source", "key", "repository", "path")
+            if path.name == "candidates.jsonl"
+            else ("source", "repository", "path")
+            if path.name in ("documents.jsonl", "screens.jsonl")
+            else ("source", "key", "query", "outcome")
+            if path.name == "queries.jsonl"
+            else ()
+        )
+        for field in required:
+            if not isinstance(row.get(field), str) or not row[field]:
+                raise ValueError(f"{path}:{number}: missing or invalid {field}")
+        if path.name == "screens.jsonl":
+            for field in ("license", "ref", "fern", "disposition"):
+                if not isinstance(row.get(field), str) or not row[field]:
+                    raise ValueError(f"{path}:{number}: missing or invalid {field}")
+            keys = row.get("keys") or [row.get("key")]
+            if not isinstance(keys, list) or any(
+                not isinstance(key, str) or not key for key in keys
+            ):
+                raise ValueError(f"{path}:{number}: missing or invalid keys")
+        if path.name == "documents.jsonl" and "selector_counts" in row:
+            counts = row["selector_counts"]
+            if not isinstance(counts, dict) or any(
+                not isinstance(key, str) or not isinstance(value, int)
+                for key, value in counts.items()
+            ):
+                raise ValueError(f"{path}:{number}: invalid selector_counts")
+        if path.name == "trees.jsonl" and "paths" in row:
+            paths = row["paths"]
+            if not isinstance(row.get("repository"), str) or not isinstance(row.get("commit"), str) or not isinstance(paths, list) or any(
+                not isinstance(item, dict)
+                or not isinstance(item.get("path"), str)
+                or not isinstance(item.get("blob"), str)
+                for item in paths
+            ):
+                raise ValueError(f"{path}:{number}: invalid publisher tree paths")
+        if path.name == "queries.jsonl" and row["outcome"] == "answered":
+            results = row.get("results")
+            if not isinstance(results, list) or any(
+                not isinstance(item, dict)
+                or not isinstance(item.get("repository"), str)
+                or not isinstance(item.get("path"), str)
+                for item in results
+            ):
+                raise ValueError(f"{path}:{number}: invalid answered query results")
+        if path.name == "candidates.jsonl":
+            if not isinstance(row.get("disposition"), str) or (
+                "selector_count" in row and not isinstance(row["selector_count"], int)
+            ):
+                raise ValueError(f"{path}:{number}: invalid candidate disposition or selector_count")
+        rows.append((number, row))
+    return rows
 
 
 def normalize_repo(value: str) -> str:
@@ -77,7 +146,9 @@ def classify(
     digest = row.get("sha256") or "not-fetched"
     count = row.get("selector_count", row.get("selector_counts", {}).get(key, 0))
     status = row.get("disposition") or row.get("status") or "acquisition-outstanding"
-    if status in ("declares", "readable") and count:
+    if status not in RAW_STATUSES:
+        raise ValueError(f"unknown acquisition status: {status}")
+    if status in RAW_DECLARING and count:
         census = f"census {count}"
         screen = screened.get((key, name, digest))
         if screen:
@@ -95,7 +166,7 @@ def classify(
                 else "not-run: declaration screen outstanding"
             )
             disposition = "not-owed" if closed else "outstanding"
-    elif status in ("acquisition-failure", "parse-failure", "acquisition-outstanding"):
+    elif status in RAW_OUTSTANDING:
         census = f"{status}: {row.get('diagnostic') or 'document not yet fetched'}"
         licence = ref = fern = f"not-run: {status}"
         disposition = (
@@ -129,9 +200,12 @@ def classify(
 def source_rows(root: Path, source: str) -> list[dict[str, str]]:
     directory = root / f"witness-search-{source}"
     screened = screens(directory)
-    keys = sorted(
-        json.loads((directory / "keys.json").read_text(encoding="utf-8"))["keys"]
-    )
+    key_data = json.loads((directory / "keys.json").read_text(encoding="utf-8"))
+    if not isinstance(key_data, dict) or not isinstance(key_data.get("keys"), dict):
+        raise ValueError(f"{directory / 'keys.json'}: keys must be a mapping")
+    if any(not isinstance(key, str) or not key for key in key_data["keys"]):
+        raise ValueError(f"{directory / 'keys.json'}: keys must be nonempty strings")
+    keys = sorted(key_data["keys"])
     latest: dict[tuple[str, str, str], dict[str, str]] = {}
     resolved_blobs = set()
     filename = (
@@ -205,6 +279,9 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
 
 
 def render(rows: list[dict[str, str]], fields: tuple[str, ...]) -> str:
+    for row in rows:
+        if row["disposition"] not in DISPOSITIONS:
+            raise ValueError(f"unknown candidate disposition: {row['disposition']}")
     output = io.StringIO()
     writer = csv.DictWriter(
         output, fieldnames=fields, delimiter="\t", lineterminator="\n"
@@ -250,7 +327,12 @@ def main() -> int:
         if not target.is_file() or target.read_text(encoding="utf-8") != expected:
             changed.append(str(target))
         if changed:
-            print("candidate records differ from evidence: " + ", ".join(changed))
+            print(
+                "candidate records differ from evidence: "
+                + ", ".join(changed)
+                + "; rerun scripts/witness-search-github-index.py without --check",
+                file=sys.stderr,
+            )
             return 1
         return 0
     target.write_text(expected, encoding="utf-8")
@@ -259,4 +341,11 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (OSError, ValueError, KeyError) as error:
+        print(
+            f"witness-search-github-index: {error}; inspect the source evidence and rerun the index",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from error

@@ -622,20 +622,14 @@ DECLARED_SOURCES = (
 )
 EXHAUSTED = "exhausted"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
-COMPACT_RECORD_FIELDS = (
-    "source",
-    "key",
-    "candidate",
-    "revision",
-    "digest",
-    "census",
-    "licence_screen",
-    "revision_screen",
-    "fern_screen",
-    "disposition",
-    "evidence",
+_index_spec = importlib.util.spec_from_file_location(
+    "witness_search_github_index", REPO / "scripts/witness-search-github-index.py"
 )
-COMPACT_DISPOSITIONS = ("witness-found", "rejected", "outstanding", "not-owed")
+assert _index_spec and _index_spec.loader
+_index_module = importlib.util.module_from_spec(_index_spec)
+_index_spec.loader.exec_module(_index_module)
+COMPACT_RECORD_FIELDS = _index_module.FIELDS
+COMPACT_DISPOSITIONS = _index_module.DISPOSITIONS
 COMPACT_SEGMENT = re.compile(
     r"(?P<source>[\w.-]+): (?P<total>\d+) candidates "
     r"\((?P<found>\d+) witness-found, (?P<rejected>\d+) rejected, "
@@ -7728,6 +7722,55 @@ class CompactWitnessRecordTests(unittest.TestCase):
     def test_count_drift_is_refused(self) -> None:
         self.count_override["sourcegraph"] = 2
         self.assertIn("count differs from records.tsv", "\n".join(self.failures()))
+
+    def test_witness_segment_names_its_candidate_and_revision(self) -> None:
+        source = "sourcegraph"
+        path = self.root / f"witness-search-{source}/records.tsv"
+        with path.open(encoding="utf-8", newline="") as stream:
+            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+        row["disposition"] = "witness-found"
+        for field in ("licence_screen", "revision_screen", "fern_screen"):
+            row[field] = "pass"
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t")
+            writer.writeheader()
+            writer.writerow(row)
+        central = self.root / "witness-search-github/candidates.tsv"
+        with central.open(encoding="utf-8", newline="") as stream:
+            rows = list(csv.DictReader(stream, delimiter="\t"))
+        for item in rows:
+            if item["source"] == source:
+                item["disposition"] = "witness-found"
+                for field in ("licence_screen", "revision_screen", "fern_screen"):
+                    item[field] = "pass"
+        with central.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"), delimiter="\t")
+            writer.writeheader()
+            writer.writerows(rows)
+
+        def reconcile(witness: str) -> list[str]:
+            segments = []
+            for item in DECLARED_SOURCES:
+                found = int(item == source)
+                segments.append(
+                    f"{item}: 1 candidates ({found} witness-found, {1 - found} rejected, "
+                    "0 outstanding, 0 not-owed) "
+                    f"[records](witness-search-{item}/records.tsv)"
+                    + (f" {witness}" if item == source and witness else "")
+                )
+            region = self.root / "witness.md"
+            region.write_text(
+                f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
+                "| key | outcome | search | note |\n|---|---|---|---|\n"
+                f"| `{self.KEY}` | `witness-found` | {'; '.join(segments)} | measured |\n",
+                encoding="utf-8",
+            )
+            line = compact_search_lines(region.read_text(encoding="utf-8"))[self.KEY]
+            return compact_record_failures(self.KEY, line, self.root, self.capabilities)
+
+        self.assertIn("omits its witness candidate and revision", "\n".join(reconcile("")))
+        self.assertEqual([], reconcile(f"witness `{row['candidate']}` at `{row['revision']}`"))
+        self.assertIn("omits its witness candidate and revision", "\n".join(reconcile(f"witness `{row['candidate']}` at `wrong`")))
 
     def test_same_candidate_at_two_revisions_is_retained(self) -> None:
         source = "sourcegraph"
