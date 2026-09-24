@@ -227,6 +227,9 @@ class LocalCensusTest(unittest.TestCase):
             (documents / "metadata.json").write_text(
                 json.dumps({"bundle": json.loads(hit)}), encoding="utf-8"
             )
+            (documents / "notes.yaml").write_text(
+                "title: no OpenAPI document\n", encoding="utf-8"
+            )
             completed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents"],
@@ -234,12 +237,13 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-            self.assertEqual(len(rows), 3)
+            self.assertEqual(len(rows), 4)
             by_name = {row["document"]: row for row in rows}
             self.assertEqual(by_name["hit.json"]["count"], "1")
             self.assertEqual(by_name["miss.json"]["count"], "0")
             self.assertEqual(by_name["metadata.json"]["count"], "0")
             self.assertEqual(by_name["metadata.json"]["openapi_version"], "")
+            self.assertEqual(by_name["notes.yaml"]["count"], "0")
             self.assertEqual(by_name["hit.json"]["sha256"], hashlib.sha256(hit).hexdigest())
             self.assertEqual(by_name["miss.json"]["sha256"], hashlib.sha256(miss).hexdigest())
             compact = subprocess.run(
@@ -249,9 +253,21 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
-            self.assertEqual(len(objects), 3)
+            self.assertEqual(len(objects), 4)
             self.assertEqual({row["document"]: row["selectors"]["array"] for row in objects},
-                             {"hit.json": 1, "miss.json": 0, "metadata.json": 0})
+                             {"hit.json": 1, "miss.json": 0, "metadata.json": 0,
+                              "notes.yaml": 0})
+            resumed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={documents}", "--all-documents-jsonl",
+                 "--start-after", "miss.json"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(resumed.returncode, 0, resumed.stderr)
+            self.assertEqual(
+                [json.loads(line)["document"] for line in resumed.stdout.splitlines()],
+                ["notes.yaml"],
+            )
 
             derived = root / "region-keys.tsv"
             derived.write_text(
@@ -270,7 +286,8 @@ class LocalCensusTest(unittest.TestCase):
             derived_rows = [json.loads(line) for line in from_regions.stdout.splitlines()]
             self.assertEqual({row["document"]: row["selectors"] for row in derived_rows},
                              {"hit.json": {"array": 1}, "miss.json": {"array": 0},
-                              "metadata.json": {"array": 0}})
+                              "metadata.json": {"array": 0},
+                              "notes.yaml": {"array": 0}})
 
 
 if __name__ == "__main__":

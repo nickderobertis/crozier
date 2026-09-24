@@ -62,7 +62,10 @@ def census_one(
     path, conjunctions, keys = job
     digest = ""
     try:
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        if path.suffix.lower() in {".yaml", ".yml"} and b"openapi" not in raw:
+            return path, digest, "", None, [(key, 0) for key, _ in keys]
         document = CENSUS.load_document(path)
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
         # A repository may contain generated metadata with an OpenAPI document
@@ -84,6 +87,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--contract", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--start-after", default="",
+                        help="resume a sorted tree after this relative document path")
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--all-documents", action="store_true",
                         help="emit one TSV selector result per document, including zeroes and SHA-256")
@@ -126,6 +131,7 @@ def main() -> int:
             path
             for path in root.rglob("*")
             if path.suffix.lower() in {".json", ".yaml", ".yml"}
+            and path.relative_to(root).as_posix() > args.start_after
         )
         jobs = ((path, conjunctions, keys) for path in paths)
         with concurrent.futures.ProcessPoolExecutor(
