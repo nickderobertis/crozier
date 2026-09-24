@@ -248,7 +248,8 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(by_name["miss.json"]["sha256"], hashlib.sha256(miss).hexdigest())
             compact = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
-                 "--documents", f"local={documents}", "--all-documents-jsonl"],
+                 "--documents", f"local={documents}", "--all-documents-jsonl",
+                 "--progress-log", str(root / "progress.jsonl")],
                 cwd=REPO, capture_output=True, text=True, timeout=30,
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
@@ -257,6 +258,14 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual({row["document"]: row["selectors"]["array"] for row in objects},
                              {"hit.json": 1, "miss.json": 0, "metadata.json": 0,
                               "notes.yaml": 0})
+            progress = [json.loads(line) for line in
+                        (root / "progress.jsonl").read_text().splitlines()]
+            self.assertEqual(len(progress), 8)
+            self.assertEqual(
+                {name: sum(row["event"] == name for row in progress)
+                 for name in ("start", "end")},
+                {"start": 4, "end": 4},
+            )
             resumed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
                  "--documents", f"local={documents}", "--all-documents-jsonl",

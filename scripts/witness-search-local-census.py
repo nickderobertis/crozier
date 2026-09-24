@@ -6,9 +6,11 @@ from __future__ import annotations
 import argparse
 import csv
 import concurrent.futures
+import datetime
 import hashlib
 import importlib.util
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -57,9 +59,14 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
 
 
 def census_one(
-    job: tuple[Path, dict[str, Any], list[tuple[str, str]]],
+    job: tuple[Path, dict[str, Any], list[tuple[str, str]], Path | None],
 ) -> tuple[Path, str, str, str | None, list[tuple[str, int]]]:
-    path, conjunctions, keys = job
+    path, conjunctions, keys, progress = job
+    if progress is not None:
+        with progress.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"event": "start", "document": str(path),
+                                     "pid": os.getpid(), "taken_utc": datetime.datetime.now(
+                                         datetime.timezone.utc).isoformat()}) + "\n")
     digest = ""
     try:
         raw = path.read_bytes()
@@ -81,6 +88,12 @@ def census_one(
         )
     except (OSError, ValueError, CENSUS.DocumentError) as error:
         return path, digest, "", str(error), []
+    finally:
+        if progress is not None:
+            with progress.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps({"event": "end", "document": str(path),
+                                         "pid": os.getpid(), "taken_utc": datetime.datetime.now(
+                                             datetime.timezone.utc).isoformat()}) + "\n")
 
 
 def main() -> int:
@@ -89,6 +102,8 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--start-after", default="",
                         help="resume a sorted tree after this relative document path")
+    parser.add_argument("--progress-log", type=Path,
+                        help="append per-worker document start/end events for long enumerations")
     output = parser.add_mutually_exclusive_group()
     output.add_argument("--all-documents", action="store_true",
                         help="emit one TSV selector result per document, including zeroes and SHA-256")
@@ -133,7 +148,7 @@ def main() -> int:
             if path.suffix.lower() in {".json", ".yaml", ".yml"}
             and path.relative_to(root).as_posix() > args.start_after
         )
-        jobs = ((path, conjunctions, keys) for path in paths)
+        jobs = ((path, conjunctions, keys, args.progress_log) for path in paths)
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=args.workers
         ) as executor:
