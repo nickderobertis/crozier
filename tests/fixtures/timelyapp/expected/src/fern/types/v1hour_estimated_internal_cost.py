@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .v1hour_estimated_internal_cost_amount import V1HourEstimatedInternalCostAmount
+from .v1hour_estimated_internal_cost_one import V1HourEstimatedInternalCostOne
+
+V1HourEstimatedInternalCost = typing.Union[V1HourEstimatedInternalCostAmount, V1HourEstimatedInternalCostOne]

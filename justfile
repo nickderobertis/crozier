@@ -203,6 +203,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e truefoundry_trueforge_5adde28_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e fergus_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e groupe_psa_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e timelyapp_matches_fern_output
 
 # Format the codebase in place.
 format:

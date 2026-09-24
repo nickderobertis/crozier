@@ -3222,6 +3222,7 @@ const CORPORA: &[&Corpus] = &[
     &TRUEFOUNDRY_TRUEFORGE_5ADDE28,
     &FERGUS,
     &GROUPE_PSA,
+    &TIMELYAPP,
 ];
 
 #[test]
@@ -5604,6 +5605,18 @@ const FERGUS: Corpus = Corpus {
 /// Groupe PSA Connected Car annotates `$ref`s to composed targets.
 const GROUPE_PSA: Corpus = Corpus {
     api: "groupe-psa",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Timely declares `anyOf` array variants with struct items.
+const TIMELYAPP: Corpus = Corpus {
+    api: "timelyapp",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11156,4 +11169,9 @@ fn fergus_matches_fern_output() {
 #[test]
 fn groupe_psa_matches_fern_output() {
     assert_link_ok_corpus_matches(&GROUPE_PSA);
+}
+
+#[test]
+fn timelyapp_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TIMELYAPP);
 }

@@ -9185,3 +9185,45 @@ components:
         "{remote}"
     );
 }
+
+/// The Timely shapes: an empty-object union member and a property extending a
+/// `$ref` with properties of its own.
+#[test]
+fn timely_shaped_objects_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Timely, version: 1.0.0 }
+paths: {}
+components:
+  schemas:
+    State:
+      type: object
+      properties: { id: { type: integer } }
+    Project:
+      type: object
+      properties:
+        cost:
+          description: A cost or an empty object.
+          anyOf:
+            - type: object
+              required: [amount]
+              properties: { amount: { type: number } }
+            - { type: object, properties: {} }
+        state:
+          type: object
+          description: Workflow state.
+          allOf: [{ $ref: "#/components/schemas/State" }]
+          properties:
+            name: { type: string }
+"##,
+    );
+    assert!(files["src/acme/types/project_cost.py"].contains("ProjectCostOne"));
+    assert!(files["src/acme/types/project_cost_one.py"]
+        .contains("class ProjectCostOne(UniversalBaseModel):"));
+    let project = &files["src/acme/types/project.py"];
+    assert!(
+        project.contains("state: typing.Optional[ProjectState]"),
+        "{project}"
+    );
+    assert!(files["src/acme/types/project_state.py"].contains("Workflow state."));
+}

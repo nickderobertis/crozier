@@ -8582,8 +8582,14 @@ impl Builder<'_> {
             // `{Owner}{Prop}` (Fern: `Meta.cursors` → `MetaCursors`), rather than
             // degrading to `typing.Any`. A bare `type: object` map (no properties
             // declaration) is left to `base_type_ref`.
+            // A lone `allOf` `$ref` beside properties of the property's own is a
+            // model extending (or flattening) that `$ref`, not the `$ref` itself:
+            // Timely's `V1.Hour.state` adds eleven properties to `V1.State`, and
+            // Fern declares `V1HourState` under the property's description.
+            let extends_with_own_properties =
+                single_all_of_ref(prop_schema).is_some() && !prop_schema.properties.is_empty();
             if is_inline_struct(prop_schema)
-                && single_all_of_ref(prop_schema).is_none()
+                && (single_all_of_ref(prop_schema).is_none() || extends_with_own_properties)
                 && prop_schema.one_of.is_none()
                 && prop_schema.any_of.is_none()
             {
@@ -8593,9 +8599,7 @@ impl Builder<'_> {
                     &name,
                     module,
                     prop_schema,
-                    prop_schema
-                        .all_of
-                        .is_none()
+                    (prop_schema.all_of.is_none() || extends_with_own_properties)
                         .then(|| clean_doc(prop_schema.description.as_deref()))
                         .flatten(),
                 );
@@ -9003,7 +9007,7 @@ impl Builder<'_> {
                             member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                         })
                         .map(|(index, m)| {
-                            if is_inline_object(m) {
+                            if is_inline_object(m) || is_declared_empty_object(m) {
                                 return self.variant_ref(&name, index, m, members);
                             }
                             if string_enum_values(m).is_some() {
@@ -9218,7 +9222,10 @@ impl Builder<'_> {
                 return type_ref;
             }
         }
-        if is_inline_object(variant) {
+        // An object declaring `properties: {}` is an empty model, not a map:
+        // Timely's `V1.Project.cost` offers a cost object or `{type: object,
+        // properties: {}}`, and Fern declares `V1ProjectCostOne`.
+        if is_inline_object(variant) || is_declared_empty_object(variant) {
             let name = variant_class_name(parent, index, variant, siblings);
             let module = naming::module_name(&name);
             self.add_object(
@@ -9459,6 +9466,19 @@ fn is_map(schema: &Schema) -> bool {
 /// named type when it appears as a union variant.
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
+}
+
+/// An inline `type: object` that declares `properties: {}` and nothing else. A
+/// union member written so is an empty model to Fern, not a map: Timely's
+/// `V1.Project.cost` offers a cost object or one, and Fern declares
+/// `V1ProjectCostOne`.
+fn is_declared_empty_object(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema.properties.declared()
+        && schema.properties.is_empty()
+        && schema.all_of.is_none()
+        && schema.additional_properties.is_none()
+        && is_object_type(schema)
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or
