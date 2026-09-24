@@ -3482,8 +3482,18 @@ in both directions.
     `result`.
   - A `walk` row has `<tree>@<ref>` as its `subject` and the document count as
     its `result`.
-  - A `document` row has the document's path as its `subject`, and a `result` of
-    `census <n>` or `unreadable: <reason>`.
+  - For an enumerable source, `enumeration.tsv` carries one row for every
+    document in each named pinned walk, under
+    `walk\tdocument\trevision\tsha256\tmatched_keys\tstatus`. `matched_keys`
+    is the comma-separated set of gap keys whose selector matched, empty when
+    none did; `status` is `readable` or `unreadable: <reason>`. A `document`
+    row in `records.tsv` exists only when that key matched, with `census <n>`
+    for positive `n`. This compact form avoids repeating a zero for every
+    `(key, document)` pair in a large tree. The independent pinned listing is
+    `acquisition-manifest.tsv`, under
+    `walk\tdocument\trevision\tsha256`; its path set and digests must equal
+    `enumeration.tsv` exactly. A query source keeps its ordinary candidate
+    census records in `records.tsv`.
   - A `candidate` row has the candidate as its `subject` and `census <n>` as its
     `result`.
   - A `screen` row has `<candidate> licence|ref|fern` as its `subject` and the
@@ -3494,9 +3504,13 @@ in both directions.
 
 Every query, count, walk, candidate and screen outcome in the table must be a
 row of the evidence directory, and every row there must be accounted for in the
-table. Every file in the directory must be named by some row, and every named
-file must exist. So an unsupported table cell fails, and so does an unaccounted
-evidence file.
+table. The gate checks that `enumeration.tsv` has exactly the named walk's
+document count with no duplicate identity, that its paths and digests equal
+the independent pinned acquisition manifest, and that every matched key has
+exactly one positive `document` record
+and no positive record exists without a census match. Every other evidence file
+must be named by a record, and every named file must exist. So an unsupported
+table cell, an absent document, and an unaccounted evidence file all fail.
 
 **The gate reads all of it.** `RankedBacklogTests` refuses an `exhausted` record
 that does any of the following:

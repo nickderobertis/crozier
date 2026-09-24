@@ -1,0 +1,28 @@
+repository	pinned_ref	prior_path	derivation	acquisition
+Adyen/adyen-openapi	f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	json/CheckoutService-v71.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+Redocly/museum-openapi-example	2770b2b2e59832d245c7b0eb0badf6568d7efb53	openapi.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+advplyr/audiobookshelf	0a797ab8bee15dc3ca92d1d76155259c46dbec62	docs/openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+apache/superset	485008224719a7b42162429fccb4a910347c532b	docs/static/resources/openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+asana/openapi	700bc9a7970c747209137f83aae07923e7477574	defs/asana_oas.yaml	prior portal source list (catalogue-portals-sources.tsv); registered corpus and APIs.guru declarers	planned
+box/box-openapi	933ec4c5d9f4dbdaaa823efa3a083cf177aecbde	openapi.json	prior portal source list (catalogue-portals-sources.tsv); registered corpus and APIs.guru declarers	planned
+cloudflare/api-schemas	f2df0ca75c0fec9047e91a34c20dd666c2dcd1ba	openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+cohere-ai/cohere-developer-experience	c26cd7f411d63adb703b92ab2653e77b537c0e40	cohere-openapi.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+digitalocean/openapi	e3df8b7958867470943845c80b5d4c6fc2edff3b	specification/DigitalOcean-public.v2.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+discord/discord-api-spec	e54b849b5c10f74ad1db4fd4ec219e3ef382cbe8	specs/openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+docker/docker-py	afc6d1ee308e78b908b96a94298c37fa8c465588	docs/api.md	prior portal source list (catalogue-portals-sources.tsv)	planned
+drakkan/sftpgo	c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842	openapi/openapi.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+dropbox/dropbox-api-spec	6d985dfaf901f1a909aa5e268bcfa524b0b7966e	files.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+elevenlabs/elevenlabs-docs	—	fern/apis/api/openapi.json	prior portal source list (catalogue-portals-sources.tsv)	pin-unavailable
+github/rest-api-description	3cef12e8a02d612ad032473d4fb87266f2befeae	descriptions/api.github.com/api.github.com.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+gotson/komga	656001eb03bf8b54ca909f3e74fe2ec1b95dac48	komga/docs/openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+intercom/Intercom-OpenAPI	3d5adcb2eeb0df209d83035c2f5bc69c932b2644	descriptions/2.11/api.intercom.io.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+kubernetes/kubernetes	b2ec8b6fefac451a2dedafc4dd71f2f16c7a6abe	api/openapi-spec/v3/apis__apps__v1_openapi.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+mongodb/openapi	20d74e290115694fd3efd36e2f1cd46869bc8483	openapi/v2.json	prior portal source list (catalogue-portals-sources.tsv)	planned
+openai/openai-openapi	b53b169f44dc0fbf878db3f9a1d3b66f43831f8d	openapi.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+stripe/openapi	58e06a3214ae1574600fba64d40b770e5da6d505	openapi/spec3.json	prior portal source list (catalogue-portals-sources.tsv); registered corpus and APIs.guru declarers	planned
+traccar/traccar	b15554cf3f9808dc462d412834896fe0634a4e0e	openapi.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+twilio/twilio-oai	ef1d81e7b6e49e602530601e913eedc21aedd6da	spec/yaml/twilio_api_v2010.yaml	prior portal source list (catalogue-portals-sources.tsv)	planned
+webflow/openapi-spec	f6db607359a412dd6aa6cd304674731d7f2dbe10	openapi/v2.yml	prior portal source list (catalogue-portals-sources.tsv); registered corpus and APIs.guru declarers	planned
+codatio/oas	no-immutable-ref: earlier APIs.guru origin names mutable main	json/Codat-Accounting.json	APIs.guru Codat declarer and earlier publisher trace	pin-resolution-needed
+PandaScore developer portal	no-immutable-ref: catalogue origin is a mutable browser blob	https://developers.pandascore.co/	APIs.guru PandaScore declarer and earlier publisher trace	portal-enumeration-needed
+Zulip API portal	no-immutable-ref: earlier jentic import traces mutable https://zulip.com/api/rest	https://zulip.com/api/rest	jentic declarer and prior accepted Fern screen	portal-enumeration-needed

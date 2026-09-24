@@ -8,6 +8,7 @@ import csv
 import concurrent.futures
 import hashlib
 import importlib.util
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -46,29 +47,34 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
 
 def census_one(
     job: tuple[Path, dict[str, Any], list[tuple[str, str]]],
-) -> tuple[Path, str, str | None, list[tuple[str, int]]]:
+) -> tuple[Path, str, str, str | None, list[tuple[str, int]]]:
     path, conjunctions, keys = job
+    digest = ""
     try:
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
-        counts = CENSUS.census_document(
-            CENSUS.load_document(path), conjunctions=conjunctions
-        )
+        document = CENSUS.load_document(path)
+        version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
+        counts = CENSUS.census_document(document, conjunctions=conjunctions)
         return (
             path,
             digest,
+            version,
             None,
             [(key, counts.get(selector, 0)) for key, selector in keys],
         )
     except (OSError, ValueError, CENSUS.DocumentError) as error:
-        return path, "", str(error), []
+        return path, digest, "", str(error), []
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--contract", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=1)
-    parser.add_argument("--all-documents", action="store_true",
-                        help="emit one selector result per document, including zeroes and SHA-256")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--all-documents", action="store_true",
+                        help="emit one TSV selector result per document, including zeroes and SHA-256")
+    output.add_argument("--all-documents-jsonl", action="store_true",
+                        help="emit one JSON object per document with all selector counts")
     parser.add_argument(
         "--documents",
         action="append",
@@ -87,8 +93,11 @@ def main() -> int:
         selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
     }
     selector_by_key = dict(keys)
-    rows: list[tuple[str, ...]] = []
     failures: list[str] = []
+    writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
+    header = ("source", "key", "selector", "document", "count")
+    if not args.all_documents_jsonl:
+        writer.writerow((*header, "sha256", "openapi_version") if args.all_documents else header)
     for value in args.documents:
         source, separator, root_text = value.partition("=")
         root = Path(root_text)
@@ -106,20 +115,24 @@ def main() -> int:
             max_workers=args.workers
         ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
-            for path, digest, error, hits in results:
+            for path, digest, version, error, hits in results:
+                identity = {"source": source, "document": str(path.relative_to(root)),
+                            "sha256": digest, "openapi_version": version}
                 if error:
                     failures.append(f"{source}/{path.relative_to(root)}: {error}")
+                    if args.all_documents_jsonl:
+                        print(json.dumps({**identity, "classification": "unreadable", "error": error}, sort_keys=True))
+                    continue
+                if args.all_documents_jsonl:
+                    print(json.dumps({**identity, "classification": "openapi-3" if version.startswith("3.") else "other-version",
+                                      "selectors": {key: count for key, count in hits}}, sort_keys=True))
                     continue
                 for key, count in hits:
                     if not args.all_documents and not count:
                         continue
                     selector = selector_by_key[key]
                     row = (source, key, selector, str(path.relative_to(root)), str(count))
-                    rows.append((*row, digest) if args.all_documents else row)
-    writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
-    header = ("source", "key", "selector", "document", "count")
-    writer.writerow((*header, "sha256") if args.all_documents else header)
-    writer.writerows(rows)
+                    writer.writerow((*row, digest, version) if args.all_documents else row)
     if failures:
         print("\n".join(failures), file=sys.stderr)
         return 1
