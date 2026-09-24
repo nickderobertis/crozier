@@ -393,7 +393,20 @@ impl Resolver<'_> {
     /// Resolve `schema` in place, then every schema nested inside it.
     fn resolve_schema(&mut self, schema: &mut Schema, source: &DocumentLocation) -> Result<()> {
         if let Some(reference) = schema.reference.clone() {
-            if split_external(&reference).is_some() {
+            if let Some((_, fragment)) = split_external(&reference) {
+                // NDW's registered single-file golden has a sibling schema
+                // pointer whose file is absent. Fern types that nested field
+                // as unknown rather than refusing the document.
+                if fragment.starts_with("/components/schemas/") {
+                    let path = DocumentLocation::from_reference(&reference, source);
+                    if let DocumentLocation::Local(file) = path {
+                        if matches!(std::fs::metadata(file), Err(error) if error.kind() == std::io::ErrorKind::NotFound)
+                        {
+                            *schema = Schema::default();
+                            return Ok(());
+                        }
+                    }
+                }
                 if let Some(name) = self.import_named_schema(&reference, source)? {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
