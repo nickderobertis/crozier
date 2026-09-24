@@ -6927,14 +6927,6 @@ class RankedBacklogTests(unittest.TestCase):
         ):
             self.assertIn(" ".join(demanded.split()), flat.replace("\t", " "))
 
-    def committed_proofs(self) -> dict[str, str]:
-        manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
-        return {
-            fields[0]: fields[1]
-            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
-            if len(fields := line.split("\t")) == 6
-        }
-
     def test_committed_schema_proofs_are_cited_by_the_fern_ledger(self) -> None:
         """Schema proof citations and verdicts track their manifest rows."""
         manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
