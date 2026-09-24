@@ -217,6 +217,59 @@ components:
         self.assertEqual(records[1]["status"], 403)
         self.assertEqual((evidence / "index.json").exists(), True)
 
+    def test_redo_reuses_tree_read_versions_without_refetching_them(self) -> None:
+        requested: list[str] = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                requested.append(self.path)
+                port = self.server.server_port
+                if self.path == "/list.json":
+                    payload = json.dumps({
+                        "read.example": {"versions": {"1": {
+                            "swaggerUrl": f"http://127.0.0.1:{port}/read.json"}}},
+                        "unread.example": {"versions": {"1": {
+                            "swaggerUrl": f"http://127.0.0.1:{port}/unread.json"}}},
+                    }).encode()
+                    self.send_response(200)
+                else:
+                    payload = b"Forbidden"
+                    self.send_response(403)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"read.example\t1\t{base}/read.json\tAPIs/read.example/1/openapi.yaml\tread\n"
+            f"unread.example\t1\t{base}/unread.json\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        evidence = self.root / "evidence"
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", f"{base}/list.json",
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("/read.json", requested)
+        records = [json.loads(line) for line in
+                   (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual([r["api_id"] for r in records], ["unread.example"])
+        self.assertEqual(records[0]["classification"], "source-refused")
+        index = json.loads((evidence / "index.json").read_text())
+        self.assertEqual((index["versions"], index["unread"]), (2, 1))
+        self.assertIn("recorded 1 unread versions", result.stdout)
+
     def test_redo_refuses_historical_manifest_changed_from_served_index(self) -> None:
         served = self.spec("served.json", '{"openapi":"3.0.0","paths":{}}')
         stale = self.spec("stale.json", '{"openapi":"3.0.0","paths":{}}')
