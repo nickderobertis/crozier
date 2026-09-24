@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.77](https://github.com/nickderobertis/crozier/compare/v0.0.76...v0.0.77) - 2026-09-24
+
+### Added
+
+- *(census)* commit non-generation proofs for security and media ([#287](https://github.com/nickderobertis/crozier/pull/287))
+
 ## [0.0.76](https://github.com/nickderobertis/crozier/compare/v0.0.75...v0.0.76) - 2026-09-20
 
 ### Other
