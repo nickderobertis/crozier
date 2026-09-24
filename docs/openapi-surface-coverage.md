@@ -3445,15 +3445,15 @@ naming the source, rather than being believed.
 The 70 rows that read `limitations` before this amendment were each read against
 their own [`fern-limitations.md`](fern-limitations.md) verdict. Each row's cell
 was read for the feature *that row* is about. Where a compound cell rules on two
-features, the row says so. Every row's own `evidence` cell now records which of
-four classes it falls in: a non-generation row names the proof it owes after
-**`proof outstanding:`**, and a demoted row names the verdict that demoted it after
-**`demoted to gap:`**.
+features, the row says so. Every row's own `evidence` cell records which of four
+classes it falls in: a non-generation row cites its committed proof or names the
+proof it still owes after **`proof outstanding:`**; a demoted row names the verdict
+that demoted it after **`demoted to gap:`**.
 
 | class | rows | what the row now owes |
 |---|---:|---|
-| non-generation, owing a Contract A artifact (`absent-tree` or `refusal`) | 63 | its tree or refusal record, declared in the manifest |
-| non-generation, owing a `differential` pair | 5 | a probe and control isolating the feature, and their two identical trees |
+| non-generation, requiring a Contract A artifact (`absent-tree` or `refusal`) | 63 | its tree or refusal record, declared in the manifest when committed |
+| non-generation, requiring a `differential` pair | 5 | a probe and control isolating the feature, and their two identical trees |
 | demoted to `gap` for a generation verdict (`implements`) | 1 | a registered real-world specification |
 | demoted to `gap` as `unmeasured` | 1 | a real specification, or first a measurement of what Fern does |
 | **total** | **70** | |
@@ -3469,7 +3469,8 @@ cells rule this way:
   so beside the refusal record the object form also owes.
 - `encoding-allow-reserved` reads only the `ignores` half, so it owes a pair.
 - `boolean-schema-true` reads `coincidence` at `items` and `discards` at a
-  property. It owes a pair for the first and names the tree the second owes.
+  property. Its committed pair measures the first; the ledger records the
+  candidate measurement for the second.
 
 #### The rows, and how they are derived
 

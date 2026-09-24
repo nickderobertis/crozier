@@ -6625,28 +6625,91 @@ class RankedBacklogTests(unittest.TestCase):
         "differential": ("ignores", "coincidence"),
     }
 
+    def committed_proofs(self) -> dict[str, str]:
+        manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
+        return {
+            fields[0]: fields[1]
+            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
+            if len(fields := line.split("\t")) == 6
+        }
+
+    def test_committed_schema_proofs_are_cited_by_the_fern_ledger(self) -> None:
+        """Schema proof citations and verdicts track their manifest rows."""
+        manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        rows = [
+            line.split("\t")
+            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
+        ]
+        for key, _form, verdict, artifact, _control, _digest in rows:
+            entry = self.entries.get(key)
+            if entry is None or entry[0] != "schemas":
+                continue
+            cells = entry[1]
+            if cells[3] != "limitations" and "UNREACHABLE" not in cells[7]:
+                continue
+            with self.subTest(key=key):
+                matching = [
+                    line
+                    for line in ledger.splitlines()
+                    if line.startswith(f"| `{key}` |")
+                ]
+                self.assertTrue(
+                    any(
+                        artifact.removeprefix("docs/openapi-surface/") + "/" in line
+                        and re.search(rf"\b{verdict}\b", line)
+                        for line in matching
+                    ),
+                    f"{key}: fern-limitations.md does not cite the manifest artifact and verdict",
+                )
+
+    def test_dynamic_schema_probe_names_share_the_measured_document(self) -> None:
+        """The two manifest keys keep using the already measured joint probe."""
+        probes = REPO / "docs/openapi-surface/probes"
+        joint = (probes / "dollar-dynamic-recursion.yml").read_bytes()
+        for key in ("dollar-dynamic-anchor", "dollar-dynamic-ref"):
+            with self.subTest(key=key):
+                self.assertEqual(joint, (probes / f"{key}.yml").read_bytes())
+
     def ledger_cell(self, key: str) -> str:
         """The verdict cell the index's own join reads for `key`."""
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
-        row = re.search(rf"^\| `{re.escape(key)}` \| *\d+ \| *\d+ \| ([^|]+) \|", ledger, re.M)
+        row = re.search(
+            rf"^\| `{re.escape(key)}` \| *\d+ \| *\d+ \| ([^|]+) \|", ledger, re.M
+        )
         return row.group(1) if row else ""
 
     def test_every_limitations_row_records_the_one_proof_it_owes(self) -> None:
-        """A `limitations` row names its outstanding Contract A proof, once, and
-        that proof's form is one its own evidence cell's verdict can establish."""
+        """A `limitations` row cites its committed proof or names the one it owes."""
+        committed = self.committed_proofs()
         for key, (_region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") != "limitations":
                 continue
             with self.subTest(key=key):
                 forms = self.PROOF_OUTSTANDING.findall(cells[4])
-                self.assertEqual(1, len(forms), f"{key}: names {forms} after `proof outstanding:`")
-                self.assertIn(forms[0], self.PROOF_FORMS)
-                self.assertFalse(self.DEMOTED.search(cells[4]), f"{key}: is `limitations` and demoted")
-                verdicts = self.PROOF_FORMS[forms[0]]
+                if key in committed:
+                    self.assertFalse(
+                        forms, f"{key}: a committed proof is still outstanding"
+                    )
+                    self.assertIn(f"probe-expected/{key}/", cells[4])
+                    form = committed[key]
+                else:
+                    self.assertEqual(
+                        1,
+                        len(forms),
+                        f"{key}: names {forms} after `proof outstanding:`",
+                    )
+                    form = forms[0]
+                self.assertIn(form, self.PROOF_FORMS)
+                self.assertFalse(
+                    self.DEMOTED.search(cells[4]),
+                    f"{key}: is `limitations` and demoted",
+                )
+                verdicts = self.PROOF_FORMS[form]
                 ruled = cells[4].split("**proof outstanding:**", 1)[0]
                 self.assertTrue(
                     any(re.search(rf"\b{v}\b", ruled) for v in verdicts),
-                    f"{key}: owes a `{forms[0]}` proof, which establishes {verdicts}, "
+                    f"{key}: owes a `{form}` proof, which establishes {verdicts}, "
                     "and its evidence cell carries none of them",
                 )
 
@@ -6664,7 +6727,9 @@ class RankedBacklogTests(unittest.TestCase):
                 verdict = self.DEMOTED.search(cells[4]).group(1)
                 self.assertIn(verdict, ("implements", "unmeasured"))
                 self.assertFalse(self.PROOF_OUTSTANDING.search(cells[4]))
-                self.assertIn("now needs", cells[4], f"{key}: says not what it now needs")
+                self.assertIn(
+                    "now needs", cells[4], f"{key}: says not what it now needs"
+                )
                 if verdict == "implements":
                     self.assertIn("implements", self.ledger_cell(key))
                     self.assertEqual("FIXTURE", self.settlement_of(cells))
@@ -6682,17 +6747,29 @@ class RankedBacklogTests(unittest.TestCase):
         """Four classes, each counted off the cells, adding up to the population
         that read `limitations` before the amendment."""
         counts = {"artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0}
-        for _region, cells in self.entries.values():
+        committed = self.committed_proofs()
+        for key, (_region, cells) in self.entries.items():
             form = self.PROOF_OUTSTANDING.search(cells[4])
             demoted = self.DEMOTED.search(cells[4])
-            if form:
-                counts["differential" if form.group(1) == "differential" else "artifact"] += 1
+            proof_form = (
+                committed.get(key) if cells[3].strip("`") == "limitations" else None
+            )
+            if form or proof_form:
+                selected = proof_form or form.group(1)
+                counts[
+                    "differential" if selected == "differential" else "artifact"
+                ] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
         table = self.classification_table()
         stated = [
             next(n for label, n in table.items() if marker in label)
-            for marker in ("Contract A artifact", "`differential` pair", "(`implements`)", "`unmeasured`")
+            for marker in (
+                "Contract A artifact",
+                "`differential` pair",
+                "(`implements`)",
+                "`unmeasured`",
+            )
         ]
         self.assertEqual(list(counts.values()), stated)
         body = self.section("#### The limitations rows under the amended rule", "\n#### ")
