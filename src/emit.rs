@@ -17,8 +17,8 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, Ir, ObjectType,
-    Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field,
+    GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -4672,12 +4672,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
             for f in &form.fields {
                 if let Some(content_type) = &f.form_content_type {
                     if f.form_json {
-                        imports.add_plain("json");
                         imports.add_core("jsonable_encoder", "jsonable_encoder");
-                        let tuple = format!(
-                            "(None, json.dumps(jsonable_encoder({})), \"{content_type}\")",
-                            f.py_name
-                        );
+                        let array_part = matches!(&f.type_ref, TypeRef::List(_))
+                            || matches!(&f.type_ref, TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::List(_)));
+                        let encoded = if array_part && !is_json_like_media_type(content_type) {
+                            format!("jsonable_encoder({})", f.py_name)
+                        } else {
+                            imports.add_plain("json");
+                            format!("json.dumps(jsonable_encoder({}))", f.py_name)
+                        };
+                        let tuple = format!("(None, {encoded}, \"{content_type}\")");
                         if f.optional {
                             files.push_str(&format!(
                                 "                **(\n                    {{\"{}\": {tuple}}}\n                    if {} is not OMIT\n                    else {{}}\n                ),\n",
