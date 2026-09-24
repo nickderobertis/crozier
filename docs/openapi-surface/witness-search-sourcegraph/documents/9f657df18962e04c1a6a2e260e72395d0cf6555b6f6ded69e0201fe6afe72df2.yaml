@@ -1,0 +1,2927 @@
+# Telemt Panel v2 — HTTP contract (source of truth).
+# Server stubs: oapi-codegen. TS client + TanStack Query hooks: hey-api/openapi-ts.
+# Conventions (differ from v1 — no {ok,data} envelope):
+#   - plain HTTP status codes; success bodies are the resource itself
+#   - errors: application/json {code, message} with proper status (schema Error)
+#   - auth: opaque session id in HttpOnly cookie "panel_session" (see 05-auth.md)
+#   - realtime is SSE (/api/events*), documented here as text/event-stream;
+#     event payload shapes live in 02-hub-sse.md and the generated topic types
+#   - x-status: planned marks a path with no route registered yet in
+#     internal/httpapi/server.go (M3 backlog) — audited against the actual
+#     route table, not aspirational; absence of the tag means implemented
+openapi: 3.1.0
+info:
+  title: Telemt Panel API
+  version: 2.0.0-draft1
+  description: >
+    Admin API of Telemt Panel v2 plus the unauthenticated subscription page.
+    Telemt-shaped payloads follow the upstream source catalog (specs/07-telemt-sdk.md).
+
+servers:
+  - url: /
+    description: Same origin; base_path is prepended by the SPA runtime when configured.
+
+tags:
+  - { name: auth }
+  - { name: users }
+  - { name: telemt }
+  - { name: host }
+  - { name: updates }
+  - { name: realtime }
+  - { name: misc }
+  - { name: subpage }
+
+security:
+  - session: []
+
+paths:
+  /api/branding:
+    get:
+      tags: [misc]
+      operationId: getPublicBranding
+      security: []
+      description: Public appearance only. Never includes the server image path.
+      responses:
+        "200":
+          description: Login and panel appearance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicBranding" }
+  /api/branding/logo:
+    get:
+      tags: [misc]
+      operationId: getBrandingLogo
+      security: []
+      description: Cached, validated local image. No filesystem path parameter is accepted.
+      responses:
+        "200":
+          description: PNG, JPEG or WebP logo
+          content:
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        "304": { description: Image unchanged }
+        "404": { description: No custom logo available }
+  /api/branding/icon:
+    get:
+      tags: [misc]
+      operationId: getBrandingIcon
+      security: []
+      parameters:
+        - { name: size, in: query, schema: { type: integer, enum: [192, 512], default: 192 } }
+      responses:
+        "200":
+          description: PNG favicon/PWA icon; transparent when the logo is hidden or unavailable
+          content:
+            image/png: { schema: { type: string, format: binary } }
+        "304": { description: Icon unchanged }
+  /api/settings/links:
+    get:
+      tags: [misc]
+      operationId: getLinkSettings
+      responses:
+        "200":
+          description: Panel-wide link presentation settings; disabled by default.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LinkSettings" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "500": { $ref: "#/components/responses/InternalError" }
+    put:
+      tags: [misc]
+      operationId: putLinkSettings
+      description: Save in local panel state without restart. Only affects the address selector in a user's Access tab, never quick links, subscriptions or WEB profiles.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LinkSettings" }
+      responses:
+        "200":
+          description: Saved link presentation settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LinkSettings" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { description: CSRF rejected, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /api/settings/branding:
+    get:
+      tags: [misc]
+      operationId: getBrandingSettings
+      responses:
+        "200":
+          description: Administrator-only appearance settings
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BrandingSettings" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    put:
+      tags: [misc]
+      operationId: putBrandingSettings
+      description: Save in local state and reload the image, including an unchanged path. No restart required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BrandingConfig" }
+      responses:
+        "200":
+          description: Saved appearance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BrandingSettings" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { description: CSRF rejected, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /api/settings/tls:
+    parameters:
+      - { name: target, in: query, schema: { type: string, enum: [panel, subscription], default: panel } }
+    get:
+      tags: [misc]
+      operationId: getPanelTls
+      description: Active runtime status of the panel listener, not Telemt TLS masking. Saved transport changes become active only after restart.
+      responses:
+        "200":
+          description: Panel transport and certificate status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PanelTlsStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /api/settings/tls/config:
+    parameters:
+      - { name: target, in: query, schema: { type: string, enum: [panel, subscription], default: panel } }
+    get:
+      tags: [misc]
+      operationId: getPanelTlsConfig
+      description: Active and disk transport configurations, preparation state and manual capabilities. Admin only; never returns key/config contents.
+      responses:
+        "200":
+          description: Transport settings; configured is omitted if startup file is unavailable
+          content: { application/json: { schema: { $ref: "#/components/schemas/PanelTlsSettings" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    put:
+      tags: [misc]
+      operationId: putPanelTlsConfig
+      description: >
+        Atomically save the exact normalized candidate returned by preparation.
+        Receipt expires after five minutes, is single-use, and binds the original file revision.
+        PEM certificate/key availability is rechecked at save. ACME apply verifies the exact prepared chain and matching key from the cache, current validity/system trust and cache write permissions without contacting the CA or reissuing. Only the selected endpoint's listen, TLS, public URL, path and enabled flag change; TOML formatting/comments are normalized. First subscription enable creates a missing signing key; existing keys are retained.
+        A fixed .bak file retains original bytes; saved file and backup use mode 0600.
+        Requires config-write capability. Restart may be performed manually. Does not restart or change firewall rules.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [receipt, candidate]
+              properties:
+                receipt: { type: string }
+                candidate: { $ref: "#/components/schemas/PanelTlsCandidate" }
+      responses:
+        "200":
+          description: Saved; running transport remains unchanged until restart
+          content: { application/json: { schema: { $ref: "#/components/schemas/PanelTlsSaved" } } }
+        "400": { $ref: "#/components/responses/PanelTlsError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/PanelTlsError" }
+        "409": { $ref: "#/components/responses/PanelTlsError" }
+        "422": { $ref: "#/components/responses/PanelTlsError" }
+        "503": { $ref: "#/components/responses/PanelTlsError" }
+  /api/settings/tls/prepare:
+    parameters:
+      - { name: target, in: query, schema: { type: string, enum: [panel, subscription], default: panel } }
+    post:
+      tags: [misc]
+      operationId: preparePanelTls
+      description: >
+        Validate and acquire certificates before saving, with current access kept alive.
+        One operation at a time; deadline 110 seconds, canceled on disconnect/shutdown.
+        ACME runs in the same executable/UID as a bounded subprocess. Public CA trust is verified.
+        No CA directory override is accepted. Public reachability of the new panel port is not verified.
+        An omitted ACME cache uses the active configured cache, otherwise certs beside the startup config.
+        HTTP behind a reverse proxy is represented by mode http with a loopback listen address.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [listen, tls]
+              properties:
+                listen: { type: string, description: "Bind host:port; numeric port 1..65535" }
+                tls: { $ref: "#/components/schemas/PanelTlsConfig" }
+                base_path: { type: string, description: Strict URL prefix; reverse proxies must preserve it }
+                public_url: { type: string, description: External HTTP(S) origin; a supplied path must match base_path }
+                enabled: { type: boolean, description: Only used for target subscription }
+                confirm_http: { type: boolean, default: false, description: Required true for non-loopback plain HTTP or an explicit external HTTP URL }
+      responses:
+        "200":
+          description: Prepared; no configuration was saved
+          content: { application/json: { schema: { $ref: "#/components/schemas/PanelTlsPrepared" } } }
+        "400": { $ref: "#/components/responses/PanelTlsError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/PanelTlsError" }
+        "409": { $ref: "#/components/responses/PanelTlsError" }
+        "422": { $ref: "#/components/responses/PanelTlsError" }
+        "503": { $ref: "#/components/responses/PanelTlsError" }
+        "504": { $ref: "#/components/responses/PanelTlsError" }
+  /api/settings/tls/restart:
+    post:
+      tags: [misc]
+      operationId: restartPanelTls
+      description: >
+        Restart only for a transport change saved by this process, after verifying the saved file revision.
+        Flush the accepted response before invoking the existing allowlisted service Runner.
+        A 202 acknowledges scheduling, not successful service startup. GET config exposes restart_failed if the Runner fails.
+      responses:
+        "202":
+          description: Restart scheduled after response delivery
+          content: { application/json: { schema: { $ref: "#/components/schemas/PanelTlsSaved" } } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/PanelTlsError" }
+        "409": { $ref: "#/components/responses/PanelTlsError" }
+        "503": { $ref: "#/components/responses/PanelTlsError" }
+  # ───────────────────────── auth ─────────────────────────
+  /api/auth/login:
+    post:
+      tags: [auth]
+      security: []
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string }
+                password: { type: string }
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "204": { description: Logged in; session cookie set }
+        "400": { description: bad_request — malformed request body, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "401":
+          description: invalid_credentials
+          content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      operationId: logout
+      responses:
+        "204": { description: Session revoked server-side; cookie cleared }
+        "403": { description: Authentication disabled or request rejected, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/auth/methods:
+    get:
+      tags: [auth]
+      security: []
+      operationId: getAuthMethods
+      description: Public authentication mode and passkey availability. Disabled mode is configured locally, never through this API.
+      responses:
+        "200":
+          description: Available passwordless methods
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [passkey_available]
+                properties:
+                  passkey_available: { type: boolean }
+                  auth_disabled: { type: boolean, default: false }
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      operationId: getMe
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "200":
+          description: Current admin identity and enabled auth options
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [username, passkeys]
+                properties:
+                  auth_disabled: { type: boolean, default: false, description: "When true, access is anonymous with full admin privileges and no session is issued." }
+                  username: { type: string }
+                  passkeys:
+                    type: array
+                    items: { $ref: "#/components/schemas/PasskeyInfo" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/auth/sessions:
+    get:
+      tags: [auth]
+      operationId: listSessions
+      description: Active panel sessions, newest first with the current session pinned. Cursor-paged and searchable by browser/User-Agent or IP address.
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 30 } }
+        - { name: cursor, in: query, schema: { type: string }, description: Opaque cursor returned by the previous page }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 }, description: Case-insensitive User-Agent or IP substring }
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "200":
+          description: Page of active sessions (current one flagged)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionPage" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+    delete:
+      tags: [auth]
+      operationId: revokeOtherSessions
+      description: Revoke all sessions except the current one.
+      responses:
+        "204": { description: Revoked }
+        "403": { description: Authentication disabled or request rejected, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/auth/sessions/{sessionId}:
+    delete:
+      tags: [auth]
+      operationId: revokeSession
+      parameters: [ { name: sessionId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "204": { description: Revoked }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # WebAuthn: public_key and credential are the standard WebAuthn JSON shapes.
+  /api/auth/webauthn/register/begin:
+    post:
+      tags: [auth]
+      operationId: webauthnRegisterBegin
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WebAuthnRegisterBeginRequest" } } }
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "200": { description: CredentialCreationOptions and one-time flow ID, content: { application/json: { schema: { $ref: "#/components/schemas/WebAuthnBeginResponse" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/webauthn/register/finish:
+    post:
+      tags: [auth]
+      operationId: webauthnRegisterFinish
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/WebAuthnFinishRequest" } } } }
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "201": { description: Registered, content: { application/json: { schema: { $ref: "#/components/schemas/PasskeyInfo" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: Credential already registered, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+  /api/auth/webauthn/login/begin:
+    post:
+      tags: [auth]
+      security: []
+      operationId: webauthnLoginBegin
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "200": { description: CredentialRequestOptions and one-time flow ID, content: { application/json: { schema: { $ref: "#/components/schemas/WebAuthnBeginResponse" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/webauthn/login/finish:
+    post:
+      tags: [auth]
+      security: []
+      operationId: webauthnLoginFinish
+      requestBody: { required: true, content: { application/json: { schema: { $ref: "#/components/schemas/WebAuthnFinishRequest" } } } }
+      responses:
+        "403": { description: "Authentication disabled, unapproved anonymous host, or cross-site request", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "204": { description: Logged in; session cookie set }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /api/auth/webauthn/credentials/{credentialId}:
+    delete:
+      tags: [auth]
+      operationId: webauthnDeleteCredential
+      parameters: [ { name: credentialId, in: path, required: true, schema: { type: string } } ]
+      responses:
+        "204": { description: Deleted }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { description: Authentication disabled or request rejected, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/settings/quota-schedule:
+    get:
+      tags: [settings]
+      operationId: getQuotaSchedule
+      responses:
+        "200":
+          description: Common quota schedule and durable execution summary. Disabled by default.
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaScheduleView" } } }
+        default: { $ref: "#/components/responses/QuotaResetError" }
+    put:
+      tags: [settings]
+      operationId: saveQuotaSchedule
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/GlobalQuotaSchedule" } } }
+      responses:
+        "200":
+          description: Saved for future slots only; does not reset quotas immediately.
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaScheduleView" } } }
+        default: { $ref: "#/components/responses/QuotaResetError" }
+  /api/settings/quota-schedule/preview:
+    post:
+      tags: [settings]
+      operationId: previewQuotaSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rule, timezone]
+              properties:
+                rule: { $ref: "#/components/schemas/QuotaScheduleRule" }
+                timezone: { type: string }
+      responses:
+        "200":
+          description: Three next instants calculated with the execution calendar; no task is created.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [next_runs, effective_timezone]
+                properties:
+                  next_runs: { type: array, items: { type: string, format: date-time } }
+                  effective_timezone: { type: string }
+        default: { $ref: "#/components/responses/QuotaResetError" }
+  /api/users/{username}/quota-schedule:
+    parameters:
+      - { in: path, name: username, required: true, schema: { type: string } }
+    get:
+      tags: [users]
+      operationId: getUserQuotaSchedule
+      responses:
+        "200":
+          description: User override and effective common schedule.
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaScheduleView" } } }
+        default: { $ref: "#/components/responses/QuotaResetError" }
+    put:
+      tags: [users]
+      operationId: saveUserQuotaSchedule
+      parameters:
+        - { in: header, name: If-Match, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/UserQuotaSchedule" } } }
+      responses:
+        "200":
+          description: Saved user policy for future slots only.
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaScheduleView" } } }
+        default: { $ref: "#/components/responses/QuotaResetError" }
+  /api/users/operations/quota-reset/prepare:
+    post:
+      tags: [users]
+      operationId: prepareBulkQuotaReset
+      description: Prepare all configured users with a fresh revision. No quota is changed. Confirmation expires in two minutes.
+      responses:
+        "200":
+          description: Explicit confirmation required
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaResetConfirmation" } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/QuotaResetError" }
+        "409": { $ref: "#/components/responses/QuotaResetError" }
+        "501": { $ref: "#/components/responses/QuotaResetError" }
+        "502": { $ref: "#/components/responses/QuotaResetError" }
+        "503": { $ref: "#/components/responses/QuotaResetError" }
+  /api/users/operations/quota-reset:
+    post:
+      tags: [users]
+      operationId: startBulkQuotaReset
+      description: >
+        Start one sequential operation for the confirmed revision. An accepted token
+        returns the same operation when repeated, never a second reset. No automatic
+        retry or restart recovery; limits and panel traffic/IP history stay unchanged.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [token], properties: { token: { type: string, minLength: 32, maxLength: 32 } } } } }
+      responses:
+        "202":
+          description: Accepted or previously accepted operation
+          content: { application/json: { schema: { $ref: "#/components/schemas/QuotaResetOperation" } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/QuotaResetError" }
+        "409": { $ref: "#/components/responses/QuotaResetError" }
+        "501": { $ref: "#/components/responses/QuotaResetError" }
+        "502": { $ref: "#/components/responses/QuotaResetError" }
+        "503": { $ref: "#/components/responses/QuotaResetError" }
+    get:
+      tags: [users]
+      operationId: getBulkQuotaReset
+      description: Current/last in-memory operation; null before any start. A requested id that was lost/replaced returns 404, never fabricated success.
+      parameters:
+        - { name: id, in: query, schema: { type: string, maxLength: 32 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        "200":
+          description: Progress and at most 50 exception records
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [operation]
+                properties:
+                  operation: { anyOf: [{ $ref: "#/components/schemas/QuotaResetOperation" }, { type: "null" }] }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/QuotaResetError" }
+        "404": { $ref: "#/components/responses/QuotaResetError" }
+
+  # ───────────────────────── users ─────────────────────────
+  /api/users:
+    get:
+      tags: [users]
+      operationId: listUsers
+      description: >
+        Composite of Telemt GET /v1/users merged with quota usage (when the
+        `quota` capability is present) and the panel's subscription URL.
+      responses:
+        "200":
+          description: All users
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/User" } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+    post:
+      tags: [users]
+      operationId: createUser
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/UserCreate" } } }
+      responses:
+        "201":
+          description: Created; secret returned exactly once
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user, secret]
+                properties:
+                  user: { $ref: "#/components/schemas/User" }
+                  secret: { type: string }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: user_exists, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/users/{username}:
+    parameters: [ { $ref: "#/components/parameters/Username" } ]
+    get:
+      tags: [users]
+      operationId: getUser
+      responses:
+        "200": { description: User, content: { application/json: { schema: { $ref: "#/components/schemas/User" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+    patch:
+      tags: [users]
+      operationId: patchUser
+      description: >
+        JSON Merge Patch semantics forwarded to Telemt: omitted = unchanged,
+        null = remove the limit, value = set.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/UserPatch" } } }
+      responses:
+        "200": { description: Updated user, content: { application/json: { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+    delete:
+      tags: [users]
+      operationId: deleteUser
+      responses:
+        "204": { description: Deleted }
+        "409": { description: last_user_forbidden, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/users/{username}/reset-quota:
+    post:
+      tags: [users]
+      operationId: resetUserQuota
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      responses:
+        "200":
+          description: Usage zeroed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [username, used_bytes, last_reset_epoch_secs]
+                properties:
+                  username: { type: string }
+                  used_bytes: { type: integer, const: 0 }
+                  last_reset_epoch_secs: { type: integer, format: int64 }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "409": { $ref: "#/components/responses/QuotaResetError" }
+        "503": { $ref: "#/components/responses/QuotaResetError" }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/users/{username}/ip-history:
+    get:
+      tags: [users]
+      operationId: getUserIPHistory
+      description: >
+        Panel-observed address history, not a connection log. Ranges end now
+        and filter last observation. Live pagination may move updated rows;
+        clients should deduplicate by IP and offer refresh. No-store response.
+      parameters:
+        - { $ref: "#/components/parameters/Username" }
+        - { name: range, in: query, schema: { type: string, enum: [24h, 7d, 30d, all], default: 30d } }
+        - { name: family, in: query, schema: { type: string, enum: [all, "4", "6"], default: all } }
+        - { name: q, in: query, schema: { type: string, maxLength: 64 }, description: Literal IP substring; full addresses are canonicalized. }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: cursor, in: query, schema: { type: string, maxLength: 2048 }, description: Opaque cursor bound to user and filters. }
+      responses:
+        "200": { description: Observed addresses and collection limitations, content: { application/json: { schema: { $ref: "#/components/schemas/UserIPHistory" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/users/{username}/ip-history/reset:
+    post:
+      tags: [users]
+      operationId: resetUserIPHistory
+      description: Clears only address history, including pending writes. Later observations may create new history. Does not reset traffic or Telemt IP limits.
+      parameters:
+        - { $ref: "#/components/parameters/Username" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [confirm]
+              properties:
+                confirm: { type: boolean, const: true }
+      responses:
+        "204": { description: IP history cleared }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/users/{username}/traffic-history:
+    get:
+      tags: [users]
+      operationId: getUserTrafficHistory
+      description: >
+        Optional sparse per-user traffic history. Values are bytes transferred
+        inside each bucket, not cumulative Telemt counters. The recent day uses
+        15-minute buckets and older history uses hourly buckets; zero intervals
+        are omitted.
+      parameters:
+        - { $ref: "#/components/parameters/Username" }
+        - { name: range, in: query, required: true, schema: { type: string, enum: [24h, 7d, 30d, 1y] } }
+      responses:
+        "200": { description: User traffic series and collection state, content: { application/json: { schema: { $ref: "#/components/schemas/UserTrafficHistorySeries" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/users/{username}/traffic/reset:
+    post:
+      tags: [users]
+      operationId: resetUserTraffic
+      description: >
+        Irreversibly removes the panel-observed total, current baseline and
+        graph history for one account. The next coherent collector snapshot
+        establishes a new baseline.
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DestructiveConfirmationRequest" }
+      responses:
+        "204": { description: User traffic reset }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/traffic/summary:
+    get:
+      tags: [users]
+      operationId: getTrafficSummary
+      parameters:
+        - { name: range, in: query, required: true, schema: { $ref: "#/components/schemas/TrafficRange" } }
+      responses:
+        "200": { description: Aggregate user traffic report, content: { application/json: { schema: { $ref: "#/components/schemas/TrafficSummary" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/traffic/users:
+    get:
+      tags: [users]
+      operationId: getTrafficUsers
+      parameters:
+        - { name: range, in: query, required: true, schema: { $ref: "#/components/schemas/TrafficRange" } }
+        - { name: include_deleted, in: query, schema: { type: boolean, default: false } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200": { description: Ranked user traffic page, content: { application/json: { schema: { $ref: "#/components/schemas/TrafficUsersPage" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/traffic/reset:
+    post:
+      tags: [users]
+      operationId: resetAllUserTraffic
+      description: >
+        Irreversibly removes every panel-observed user traffic total, baseline
+        and graph bucket. The next coherent collector snapshot establishes new
+        baselines.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DestructiveConfirmationRequest" }
+      responses:
+        "204": { description: All user traffic reset }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/users/{username}/rotate-secret:
+    post:
+      tags: [users]
+      operationId: rotateUserSecret
+      description: Rotates the user's secret; implicitly invalidates the old subscription link.
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      responses:
+        "200":
+          description: New secret returned exactly once
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user, secret]
+                properties:
+                  user: { $ref: "#/components/schemas/User" }
+                  secret: { type: string }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "501": { description: capability_absent — not supported on this Telemt build, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/users/{username}/enabled:
+    put:
+      tags: [users]
+      operationId: setUserEnabled
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [enabled], properties: { enabled: { type: boolean } } }
+      responses:
+        "200": { description: Updated user, content: { application/json: { schema: { $ref: "#/components/schemas/User" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "501": { description: capability_absent — not supported on this Telemt build, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/users/{username}/sublink:
+    get:
+      tags: [users]
+      operationId: getUserSublink
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      responses:
+        "200":
+          description: Current subscription URL for sharing
+          content: { application/json: { schema: { $ref: "#/components/schemas/Sublink" } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { description: sublink_unavailable — user has no valid classic/secure/TLS link to derive one from, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+    post:
+      tags: [users]
+      operationId: regenerateUserSublink
+      description: Rotates the per-user nonce; the previous subscription URL stops working.
+      parameters: [ { $ref: "#/components/parameters/Username" } ]
+      responses:
+        "200": { description: New URL, content: { application/json: { schema: { $ref: "#/components/schemas/Sublink" } } } }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { description: sublink_unavailable — user has no valid classic/secure/TLS link to derive one from, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  # ───────────────────────── telemt ─────────────────────────
+  /api/telemt/info:
+    get:
+      tags: [telemt]
+      operationId: getTelemtInfo
+      responses:
+        "200":
+          description: Version, connectivity and capability flags (07-telemt-sdk.md §3)
+          content: { application/json: { schema: { $ref: "#/components/schemas/TelemtInfo" } } }
+
+  /api/telemt/config:
+    get:
+      tags: [telemt]
+      operationId: getTelemtConfig
+      description: >
+        Passthrough of Telemt's GET /v1/config: editable sections plus the revision to
+        chain into a later PATCH's If-Match. Editing requires the Telemt Config API;
+        the legacy telemt.config_edit_mode value does not select a file writer.
+      responses:
+        "200":
+          description: Editable sections + revision
+          content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfig" } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — this Telemt build/config does not expose the config API, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+    patch:
+      tags: [telemt]
+      operationId: patchTelemtConfig
+      description: >
+        Passthrough of Telemt's PATCH /v1/config. The revision travels as an `If-Match`
+        header (required — from a prior GET's `revision`), not a body field. An inline
+        reload can be requested via query parameters, forwarded to Telemt's own
+        `reload`/`timeout_secs`/`failure_policy` query (07-telemt-sdk.md §Config);
+        omitting `reload` patches without reloading.
+      parameters:
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: reload, in: query, schema: { type: string, enum: [instant, drain] } }
+        - { name: timeout_secs, in: query, schema: { type: integer, minimum: 1, maximum: 3600 } }
+        - { name: failure_policy, in: query, schema: { type: string, enum: [keep_new, rollback] } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatch" } } }
+      responses:
+        "200": { description: Applied, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "202": { description: Applied and inline reload accepted, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409":
+          description: revision_conflict — re-read and merge
+          content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "422":
+          description: >
+            access_not_editable | section_not_editable | field_not_editable |
+            config_patch_not_atomic | ambiguous_listeners — the patch itself is not
+            applicable, regardless of the HTTP status Telemt used internally.
+          content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — this Telemt build/config does not expose the config API, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/config/toml:
+    get:
+      tags: [telemt]
+      operationId: getTelemtConfigTOML
+      description: >
+        Returns a normalized TOML projection of the managed Config API sections. It is
+        not the source telemt.toml: comments, includes, source ownership and the
+        explicit/default distinction are not available through Telemt's Config API.
+      responses:
+        "200": { description: TOML projection and revision, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigTOML" } } } }
+        "500": { description: toml_projection_failed — a Config API value cannot be represented as exact TOML, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+    patch:
+      tags: [telemt]
+      operationId: patchTelemtConfigTOML
+      description: >
+        Parses the normalized TOML on the panel backend, validates managed paths,
+        builds a sparse patch against the current revision and forwards it to Telemt.
+        Removing map keys is rejected because the current Config API cannot unset them.
+      parameters:
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+        - { name: reload, in: query, schema: { type: string, enum: [instant, drain] } }
+        - { name: timeout_secs, in: query, schema: { type: integer, minimum: 1, maximum: 3600 } }
+        - { name: failure_policy, in: query, schema: { type: string, enum: [keep_new, rollback] } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigTOMLRequest" } } }
+      responses:
+        "200": { description: Applied, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "202": { description: Applied and inline reload accepted, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: revision_conflict, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "422": { description: Telemt rejected the generated patch, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/telemt/config/catalog:
+    get:
+      tags: [telemt]
+      operationId: getTelemtConfigCatalog
+      description: Versioned metadata for every Telemt 3.5.5 Config API field used by validation and structured settings forms.
+      responses:
+        "200": { description: Config field catalog, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigCatalog" } } } }
+
+  /api/telemt/config/toml/preview:
+    post:
+      tags: [telemt]
+      operationId: previewTelemtConfigTOML
+      description: >
+        Parses and validates a TOML projection without applying it. Returns the exact
+        sparse JSON patch plus materialized sections and wholesale array replacements.
+      parameters:
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigTOMLRequest" } } }
+      responses:
+        "200": { description: Validated preview, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigTOMLPreview" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: revision_conflict, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/telemt/reload:
+    post:
+      tags: [telemt]
+      operationId: reloadTelemt
+      description: >
+        Passthrough of Telemt's POST /v1/system/reload — config re-read via the reload
+        API (capability `reload_api`), not a service restart. `If-Match`, when sent, is
+        forwarded as the mutation's revision.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode: { type: string, enum: [instant, drain], default: instant }
+                timeout_secs: { type: integer, minimum: 1, maximum: 3600 }
+                failure_policy: { type: string, enum: [keep_new, rollback], default: keep_new }
+      responses:
+        "202": { description: Reload accepted, content: { application/json: { schema: { $ref: "#/components/schemas/ReloadAccepted" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/TelemtReadOnly" }
+        "409": { description: reload_in_progress, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "501": { description: capability_absent — offer service restart instead, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/telemt/reload/{id}:
+    get:
+      tags: [telemt]
+      operationId: getTelemtReloadStatus
+      description: Passthrough of Telemt's GET /v1/system/reload/{id} — poll until State reaches a terminal phase.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, format: int64, minimum: 0 } }
+      responses:
+        "200": { description: Reload status, content: { application/json: { schema: { $ref: "#/components/schemas/ReloadStatus" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: reload_not_found — unknown or aged-out id, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "501": { description: capability_absent, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/telemt/service:
+    get:
+      tags: [telemt]
+      operationId: getTelemtService
+      description: State of the configured service/container on the panel host, observed independently of the Telemt API. Unknown is not equivalent to stopped.
+      responses:
+        "200":
+          description: Service state and independently checked operation capabilities.
+          content: { application/json: { schema: { $ref: "#/components/schemas/TelemtServiceState" } } }
+  /api/telemt/start:
+    post:
+      tags: [telemt]
+      operationId: startTelemtService
+      description: Starts the configured Telemt service, not the panel. Requires explicit host rights; serialized with updates and manual service operations. Does not enable boot startup.
+      responses:
+        "202": { description: Start command completed; re-read service state rather than assuming readiness. }
+        "409": { $ref: "#/components/responses/ServiceControlError" }
+        "502": { $ref: "#/components/responses/ServiceControlError" }
+        "503": { $ref: "#/components/responses/ServiceControlError" }
+  /api/telemt/stop:
+    post:
+      tags: [telemt]
+      operationId: stopTelemtService
+      description: Stops only the configured Telemt service/container. Does not disable boot startup, remove containers or delete data. No automatic retry after an unconfirmed result.
+      responses:
+        "202": { description: Stop command completed; re-read service state to observe the result. }
+        "409": { $ref: "#/components/responses/ServiceControlError" }
+        "502": { $ref: "#/components/responses/ServiceControlError" }
+        "503": { $ref: "#/components/responses/ServiceControlError" }
+  /api/telemt/restart:
+    post:
+      tags: [telemt]
+      operationId: restartTelemtService
+      description: >
+        Service-level restart through the host layer (01-host-matrix.md), independent of
+        the reload endpoints above — restarts the whole process rather than re-reading
+        config. Disabled when host cap restart_telemt=false.
+      responses:
+        "202": { description: Restart initiated }
+        "409": { description: update_locked — another service or update operation is running, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "503": { description: manual_restart_required — automatic restart unavailable on this host; message carries the manual command (same info as /api/host manual_commands), content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { description: internal_error — the restart op itself failed, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/zero:
+    get:
+      tags: [telemt]
+      operationId: getTelemtZero
+      description: >
+        Passthrough of Telemt's GET /v1/stats/zero/all — the deep counter dump
+        (core/upstream/middle_proxy/pool/desync). Display-only: the panel never
+        branches on these values, only shows them (web's Диагностика → Счётчики page).
+        Fetched on visit, not a hub topic.
+      responses:
+        "200": { description: Deep counter dump, content: { application/json: { schema: { $ref: "#/components/schemas/ZeroAllData" } } } }
+        "501": { description: capability_absent — this Telemt build/config does not expose zero/all, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+
+  /api/telemt/tls-fingerprints:
+    get:
+      tags: [telemt]
+      operationId: getTelemtTlsFingerprints
+      description: >
+        Passthrough of Telemt's GET /v1/runtime/tls-fingerprints — JA3/JA4 aggregates
+        grouped by fingerprint, IP, CIDR and user. Deliberately NOT part of the `security`
+        SSE topic: the live payload is ~120 KB per call (four lists of 50), so it is
+        fetched on visit at the page's own cadence instead of polled for every client.
+        Gated behind Telemt's runtime_edge_enabled — a build/config with it off answers
+        503 capability_unavailable, which the UI renders as its Gated hint, not an error.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+      responses:
+        "200": { description: Gated TLS fingerprint aggregates, content: { application/json: { schema: { $ref: "#/components/schemas/GatedTlsFingerprints" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "501": { description: capability_absent — this Telemt build predates the runtime edge routes, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — runtime_edge_enabled is off, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web-access:
+    get:
+      tags: [telemt, users]
+      operationId: getTelemtWebAccess
+      description: User-oriented projection of WEB vhosts and access profiles, backed directly by Telemt Config API data.
+      responses:
+        "200": { description: WEB access relationships and source config revision, content: { application/json: { schema: { $ref: "#/components/schemas/WebAccessView" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — Config API is unavailable, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web-access/users/{username}:
+    put:
+      tags: [telemt, users]
+      operationId: putTelemtUserWebAccess
+      description: Replaces one user's WEB profile relationships while preserving every unrelated vhost and profile. Applied with an instant runtime reload.
+      parameters:
+        - { $ref: "#/components/parameters/Username" }
+        - { name: If-Match, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WebUserAccessUpdate" } } }
+      responses:
+        "200": { description: Configuration updated, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "202": { description: Configuration updated and reload accepted, content: { application/json: { schema: { $ref: "#/components/schemas/TelemtConfigPatchResult" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: web_vhost_not_found, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "409": { description: revision_conflict or web_profile_required, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — Config API is unavailable, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web/sessions:
+    get:
+      tags: [telemt]
+      operationId: getTelemtWebSessions
+      description: >
+        Passthrough of Telemt's GET /v1/runtime/web/sessions (Telemt >= 3.5.3): the live
+        WEB sessions, filtered and cursor-paged. Fetch-on-visit, not part of the `web` SSE
+        topic — the topic carries only the status snapshot. The query parameters below are
+        the EXACT whitelist Telemt accepts; any other or repeated name is 400 bad_request.
+        A WEB runtime that is not running answers 503 capability_unavailable (a gate the UI
+        renders, not an error); a build predating the routes answers 501 capability_absent.
+      parameters:
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 200 } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+        - { name: session_ref, in: query, required: false, schema: { type: string } }
+        - { name: ip, in: query, required: false, schema: { type: string } }
+        - { name: host, in: query, required: false, schema: { type: string } }
+        - { name: user, in: query, required: false, schema: { type: string } }
+        - { name: user_agent_id, in: query, required: false, schema: { type: string } }
+        - { name: key_id, in: query, required: false, schema: { type: string } }
+        - { name: carrier, in: query, required: false, schema: { type: string, enum: [https, https-lanes, websocket, websocket-lanes] } }
+        - { name: state, in: query, required: false, schema: { type: string, enum: [provisional, replacing, committed, superseded, healthy, closing, closed] } }
+      responses:
+        "200": { description: One page of live WEB sessions, content: { application/json: { schema: { $ref: "#/components/schemas/WebSessionPage" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "501": { description: capability_absent — this Telemt build predates the WEB runtime routes, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — the WEB runtime is not running, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web/sessions/{ref}:
+    get:
+      tags: [telemt]
+      operationId: getTelemtWebSession
+      description: >
+        Passthrough of Telemt's GET /v1/runtime/web/sessions/{session_ref}. Both outcomes
+        are 200: `row` for a live session, `closed` for a retained tombstone (Telemt answers
+        that with HTTP 410 wrapping an ordinary success envelope, which is a result, not a
+        failure). A ref with neither answers 404 web_session_not_found.
+      parameters:
+        - { name: ref, in: path, required: true, schema: { type: string }, description: "Canonical ws1.<instance>.<id> reference" }
+      responses:
+        "200": { description: The live row or the closed-session tombstone, content: { application/json: { schema: { $ref: "#/components/schemas/WebSessionLookup" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: web_session_not_found, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "501": { description: capability_absent — this Telemt build predates the WEB runtime routes, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable, or web_snapshot_busy when an exact lookup lost a lock race, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web/sessions/close:
+    post:
+      tags: [telemt]
+      operationId: closeTelemtWebSessions
+      description: >
+        Passthrough of Telemt's POST /v1/runtime/web/sessions/close — the panel's ONE WEB
+        mutation. Asynchronous: the 202 carries an `operation_id` to poll through
+        /api/telemt/web/operations/{id}. `runtime_instance` is the process fence and comes
+        from the `web` topic's status snapshot; a Telemt that has restarted since answers
+        409 web_runtime_mismatch. The `all` selector additionally requires WEB issuance to
+        be off (409 web_issuance_enabled). Recorded in the audit journal as
+        `web.sessions.close`. Telemt's debug/clear and carrier-learning/reset mutations are
+        deliberately NOT exposed by the panel.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/WebCloseRequest" } } }
+      responses:
+        "202": { description: Close operation accepted, content: { application/json: { schema: { $ref: "#/components/schemas/WebControlOperationStatus" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { description: read_only — the Telemt API runs in read-only mode, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "409": { description: web_runtime_mismatch, web_issuance_enabled or web_operation_in_progress, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "413": { description: payload_too_large — the close body exceeds Telemt's own 64 KiB control-body cap, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "415": { description: "unsupported_media_type — Telemt's control routes require exactly one byte-exact `Content-Type: application/json`. Unreachable through the panel (the SDK sets the header itself) but declared because the code is Telemt's own.", content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "501": { description: capability_absent — this Telemt build predates the WEB runtime routes, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — the WEB runtime is not running, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/telemt/web/operations/{id}:
+    get:
+      tags: [telemt]
+      operationId: getTelemtWebOperation
+      description: >
+        Passthrough of Telemt's GET /v1/runtime/web/operations/{operation_id}: the status of
+        one close operation. Telemt retains the last 32; an older id answers 404
+        web_operation_not_found.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string }, description: "Canonical wo1.<instance>.<sequence> id" }
+      responses:
+        "200": { description: Operation status, content: { application/json: { schema: { $ref: "#/components/schemas/WebControlOperationStatus" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { description: web_operation_not_found, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "501": { description: capability_absent — this Telemt build predates the WEB runtime routes, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { $ref: "#/components/responses/TelemtUnreachable" }
+        "503": { description: capability_unavailable — the WEB runtime is not running, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  # ───────────────────────── host ─────────────────────────
+  /api/host:
+    get:
+      tags: [host]
+      operationId: getHost
+      responses:
+        "200":
+          description: Detected platform and capabilities (01-host-matrix.md)
+          content: { application/json: { schema: { $ref: "#/components/schemas/HostInfo" } } }
+
+  # ───────────────────────── updates ─────────────────────────
+  /api/updates:
+    get:
+      tags: [updates]
+      operationId: getUpdates
+      responses:
+        "200":
+          description: Both targets — versions, releases, active run, journal
+          content: { application/json: { schema: { $ref: "#/components/schemas/UpdatesStatus" } } }
+
+  /api/updates/{target}/apply:
+    post:
+      tags: [updates]
+      operationId: applyUpdate
+      description: Install an explicitly selected release. Panel targets accept only the 1.x line; legacy and other major versions are rejected before starting an operation.
+      parameters:
+        - { name: target, in: path, required: true, schema: { type: string, enum: [telemt, panel] } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [version], properties: { version: { type: string } } }
+      responses:
+        "202": { description: Run started (progress via SSE topic `update`) }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: update_locked — another update run holds the global lock, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/updates/auto:
+    get:
+      tags: [updates]
+      operationId: getAutoUpdate
+      responses:
+        "200": { description: Settings, content: { application/json: { schema: { $ref: "#/components/schemas/AutoUpdateSettings" } } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+    put:
+      tags: [updates]
+      operationId: putAutoUpdate
+      description: Persisted to the store — the panel never rewrites its config file.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/AutoUpdateSettings" } } }
+      responses:
+        "204": { description: Saved }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/settings/storage:
+    get:
+      tags: [misc]
+      operationId: getStorageSettings
+      description: Returns optional history policies and the active store footprint. Mandatory panel state is not configurable here.
+      responses:
+        "200": { description: Storage settings, content: { application/json: { schema: { $ref: "#/components/schemas/StorageSettings" } } } }
+    put:
+      tags: [misc]
+      operationId: putStorageSettings
+      description: Replaces the complete optional-history policy set. Reducing any retention requires confirm_retention_reduction. Disabling a category stops future writes but does not delete retained data or disable live RAM graphs. Existing mixed policies remain unchanged until explicitly saved.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/StorageSettingsUpdate" } } }
+      responses:
+        "204": { description: Saved }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/settings/storage/purge:
+    post:
+      tags: [misc]
+      operationId: purgeStorageHistory
+      description: Permanently deletes retained history for one category without changing its write policy.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/StoragePurgeRequest" } } }
+      responses:
+        "204": { description: History deleted }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/settings/geoip:
+    get:
+      tags: [misc]
+      operationId: getGeoIpSettings
+      responses:
+        "200":
+          description: Saved GeoIP configuration and active database status.
+          headers:
+            Cache-Control: { schema: { type: string }, description: Always `no-store`. }
+          content: { application/json: { schema: { $ref: "#/components/schemas/GeoIpSettings" } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+    put:
+      tags: [misc]
+      operationId: putGeoIpSettings
+      description: Persists the complete desired configuration and starts asynchronous atomic application.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/GeoIpConfig" } } }
+      responses:
+        "202":
+          description: Configuration saved; application started, or GeoIP disabled.
+          headers:
+            Cache-Control: { schema: { type: string }, description: Always `no-store`. }
+          content: { application/json: { schema: { $ref: "#/components/schemas/GeoIpSettings" } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: conflict, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /api/settings/geoip/update:
+    post:
+      tags: [misc]
+      operationId: updateGeoIp
+      description: Downloads or rereads the saved enabled configuration and atomically replaces the complete active set after validation.
+      responses:
+        "202":
+          description: Update started.
+          headers:
+            Cache-Control: { schema: { type: string }, description: Always `no-store`. }
+          content: { application/json: { schema: { $ref: "#/components/schemas/GeoIpSettings" } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: conflict, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  # ───────────────────────── realtime ─────────────────────────
+  /api/events:
+    get:
+      tags: [realtime]
+      operationId: streamEvents
+      description: >
+        SSE stream. Events: one per subscribed topic (users|stats|runtime|upstreams|security|web|update)
+        carrying full topic snapshots, plus `event: heartbeat` (data `{}`, every ~25s of
+        quiet) and source_error. Supports Last-Event-ID. Protocol: 02-hub-sse.md.
+      parameters:
+        - { name: topics, in: query, required: true, schema: { type: string }, example: "users,stats,runtime" }
+      responses:
+        "200": { description: Event stream, content: { text/event-stream: { schema: { type: string } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/events/logs:
+    get:
+      tags: [realtime]
+      operationId: streamLogs
+      description: >
+        SSE stream of LogLine events (`event: log`), plus the same `event: heartbeat`
+        frame as /api/events during quiet periods.
+      parameters:
+        - { name: service, in: query, required: true, schema: { type: string, enum: [telemt, panel] } }
+      responses:
+        "200": { description: SSE of LogLine events, content: { text/event-stream: { schema: { type: string } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "501": { description: log_stream_unavailable — host cap log_stream=false, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { description: log_source_error — the log source failed to start streaming, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/snapshot:
+    get:
+      tags: [realtime]
+      operationId: getSnapshot
+      description: >
+        One-shot topic snapshots (initial render / no-SSE fallback). Same payloads as SSE
+        events. A topic whose on-demand fetch fails is omitted from the response object
+        entirely — never a bare JSON null — so every key present is a real snapshot.
+      parameters:
+        - { name: topics, in: query, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Map topic → snapshot; a topic with no data yet is simply absent as a key
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: { type: object, additionalProperties: true }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "502": { description: telemt_unreachable — every requested topic's fetch failed, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/history:
+    get:
+      tags: [realtime]
+      operationId: getHistory
+      description: >
+        Metric history from the active store. Live samples use a bounded two-hour
+        RAM buffer even when disk persistence is disabled. Durable stores also return non-overlapping
+        5-minute aggregates for seven days and hourly aggregates for older history.
+        Existing 1-minute / 15-minute rows remain readable during migration.
+        Responses exceeding 4096 points are combined into hourly aggregates,
+        preserving extrema and sample weights rather than discarding points.
+        Aggregate points expose the average or last counter value (`v`),
+        minimum and maximum, observation bounds, sample counts and detected gaps.
+        Never errors on empty/partial history — a metric with nothing recorded yet
+        (or a `range` longer than what's retained) is 200 with however many points
+        actually exist, even zero.
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          description: >
+            Global series name or a typed entity series such as
+            `dc.-2.rtt_ms`, `dc.2.coverage_pct`, `upstream.7.healthy`.
+          schema: { type: string }
+        - { name: range, in: query, required: true, schema: { type: string, enum: [15m, 30m, 1h, 24h, 7d, 30d, 90d] } }
+      responses:
+        "200": { description: Series (possibly empty), content: { application/json: { schema: { $ref: "#/components/schemas/HistorySeries" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/history/events:
+    get:
+      tags: [realtime]
+      operationId: getHistoryEvents
+      description: >
+        Safe structured state transitions recorded by the panel, newest first.
+        The stream deliberately excludes raw logs, IP history, endpoint addresses,
+        secrets and complete configuration snapshots. Empty or disabled event
+        history returns 200 with an empty array and retention_secs=0 when disabled.
+      parameters:
+        - { name: range, in: query, required: true, schema: { type: string, enum: [15m, 30m, 1h, 24h, 7d, 30d, 90d] } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 500, default: 200 } }
+        - { name: kind, in: query, schema: { type: string } }
+        - { name: entity, in: query, schema: { type: string } }
+      responses:
+        "200": { description: Structured events (possibly empty), content: { application/json: { schema: { $ref: "#/components/schemas/HistoryEvents" } } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ───────────────────────── misc ─────────────────────────
+  /api/health:
+    get:
+      tags: [misc]
+      security: []
+      operationId: getHealth
+      description: Unauthenticated liveness probe; no Telemt or store dependency.
+      responses:
+        "200":
+          description: Panel is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, version, variant, drivers, state_durable]
+                properties:
+                  status: { type: string, enum: [ok] }
+                  version: { type: string }
+                  variant: { type: string, enum: [full, lite] }
+                  drivers:
+                    type: array
+                    items: { type: string, enum: [memory, sqlite] }
+                  state_durable: { type: boolean, description: Whether local panel state survives a restart. }
+
+  /api/logs/tail:
+    get:
+      tags: [misc]
+      operationId: tailLogs
+      parameters:
+        - { name: service, in: query, required: true, schema: { type: string, enum: [telemt, panel] } }
+        - { name: lines, in: query, schema: { type: integer, default: 200, maximum: 1000 } }
+      responses:
+        "200":
+          description: Recent lines
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/LogLine" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "501": { description: log_tail_unavailable — host cap log_tail=false, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+        "502": { description: log_source_error — the log source failed, content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } } }
+
+  /api/audit:
+    get:
+      tags: [misc]
+      operationId: getAudit
+      description: >
+        Panel operation journal (logins, user changes, config patches, updates), newest
+        first, read from the store's audit ring (at most 500 entries retained).
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, default: 100, maximum: 500 } }
+        - name: before
+          in: query
+          description: >
+            Cursor for paging further back: an entry's own `ts` value from a previous
+            response (RFC3339Nano — the exact format encoding/json produces for a Go
+            time.Time). Returns entries strictly older than this timestamp. There is no
+            separate opaque cursor token; `ts` doubles as one.
+          schema: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Entries newest-first (possibly empty)
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/AuditEntry" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  # ───────────────────────── subpage ─────────────────────────
+  /sub/{token}:
+    get:
+      tags: [subpage]
+      security: []
+      operationId: getSubscriptionPage
+      description: >
+        Unauthenticated per-user subscription page (04-subpage.md). Server-rendered HTML,
+        no required JS; uniform 404 for unknown tokens; rate limited per IP.
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Page, content: { text/html: { schema: { type: string } } } }
+        "404": { description: Unknown token (uniform, no details) }
+        "429": { $ref: "#/components/responses/RateLimited" }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: panel_session
+
+  parameters:
+    Username:
+      name: username
+      in: path
+      required: true
+      schema: { type: string, pattern: "^[A-Za-z0-9_.-]{1,64}$" }
+
+  responses:
+    ServiceControlError:
+      description: Service control is busy, unavailable or has an unconfirmed result. Inspect the current service state before retrying a command.
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    QuotaResetError:
+      description: Quota operation refused or unavailable; no automatic retry of mutations.
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    PanelTlsError:
+      description: Actionable transport error; current listener stays active. Error code is stable and message contains no key/account data.
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    InternalError:
+      description: Internal panel error
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Unauthorized:
+      description: No valid session
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    NotFound:
+      description: Not found
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    BadRequest:
+      description: Invalid input
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    RateLimited:
+      description: Too many requests
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    TelemtUnreachable:
+      description: telemt_unreachable | telemt_auth_failed
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    TelemtReadOnly:
+      description: Telemt API is in read_only mode
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
+  schemas:
+    QuotaScheduleRule:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [interval, cron] }
+        days: { type: integer, minimum: 1, maximum: 3650000 }
+        start: { type: string, format: date }
+        time: { type: string, description: 'Local HH:mm in the panel schedule timezone.' }
+        cron: { type: string, maxLength: 160, description: 'Five fields; no seconds, command, macros or extensions. Day-of-month and weekday use OR.' }
+    GlobalQuotaSchedule:
+      type: object
+      required: [enabled, timezone, rule]
+      properties:
+        enabled: { type: boolean }
+        timezone: { type: string, description: 'IANA timezone; server resolves to the current server zone on save.' }
+        rule: { $ref: "#/components/schemas/QuotaScheduleRule" }
+    UserQuotaSchedule:
+      type: object
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [inherit, custom, off] }
+        rule: { $ref: "#/components/schemas/QuotaScheduleRule" }
+    ScheduledQuotaRun:
+      type: object
+      required: [id, state, started_at, total]
+      properties:
+        id: { type: string }
+        state: { type: string }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        total: { type: integer }
+        confirmed: { type: integer, description: 'Absent when a restart prevented observing the result; not zero.' }
+        unknown: { type: integer }
+        rejected: { type: integer }
+        remaining: { type: integer }
+        reason: { type: string }
+    QuotaScheduleView:
+      type: object
+      required: [revision, global, effective, server_timezone, effective_timezone, durable, next_runs, custom_count, excluded_count]
+      properties:
+        revision: { type: string }
+        global: { $ref: "#/components/schemas/GlobalQuotaSchedule" }
+        policy: { $ref: "#/components/schemas/UserQuotaSchedule" }
+        effective: { type: boolean }
+        server_timezone: { type: string }
+        effective_timezone: { type: string }
+        durable: { type: boolean }
+        next_runs: { type: array, items: { type: string, format: date-time } }
+        next_due: { type: string, format: date-time }
+        custom_count: { type: integer }
+        excluded_count: { type: integer }
+        last: { $ref: "#/components/schemas/ScheduledQuotaRun" }
+        error: { type: string }
+    QuotaResetConfirmation:
+      type: object
+      required: [token, total, expires_at]
+      properties:
+        token: { type: string, minLength: 32, maxLength: 32 }
+        total: { type: integer, minimum: 1 }
+        expires_at: { type: string, format: date-time }
+    QuotaResetIssue:
+      type: object
+      required: [username, outcome, code]
+      properties:
+        username: { type: string }
+        outcome: { type: string, enum: [rejected, unknown] }
+        code: { type: string, enum: [not_found, read_only, revision_conflict, telemt_auth_failed, capability_absent, reset_unconfirmed] }
+    QuotaResetOperation:
+      type: object
+      required: [id, state, total, processed, confirmed, rejected, unknown, remaining, reason, started_at, issues, issues_total]
+      properties:
+        id: { type: string }
+        trigger: { type: string, enum: [schedule], description: Absent for manually confirmed operations. }
+        state: { type: string, enum: [running, completed, stopped] }
+        total: { type: integer }
+        processed: { type: integer }
+        confirmed: { type: integer }
+        rejected: { type: integer }
+        unknown: { type: integer }
+        remaining: { type: integer }
+        reason: { type: string }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        issues: { type: array, items: { $ref: "#/components/schemas/QuotaResetIssue" } }
+        issues_total: { type: integer }
+        next_offset: { type: integer }
+    LinkSettings:
+      type: object
+      additionalProperties: false
+      required: [allow_address_override]
+      properties:
+        allow_address_override:
+          type: boolean
+          default: false
+          description: Allow explicit selection of a configured censorship.tls_domains value as the connection address in the Access tab. Does not modify Telemt configuration or TLS secrets.
+    BrandingConfig:
+      type: object
+      required: [title, logo_mode, logo_path]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 80 }
+        logo_mode: { type: string, enum: [default, custom, hidden] }
+        logo_path: { type: string, maxLength: 4096, description: Absolute server path; required for custom mode. PNG/WebP/JPEG, up to 5 MiB, 4096px per side and 8 million pixels. }
+    PublicBranding:
+      type: object
+      required: [title, logo_mode, logo_url, icon_url]
+      properties:
+        title: { type: string }
+        logo_mode: { type: string, enum: [default, custom, hidden] }
+        logo_url: { type: string }
+        icon_url: { type: string }
+    BrandingSettings:
+      allOf:
+        - $ref: "#/components/schemas/BrandingConfig"
+        - type: object
+          required: [logo_status, public]
+          properties:
+            logo_status: { type: string, enum: [none, ready, unavailable] }
+            public: { $ref: "#/components/schemas/PublicBranding" }
+    PanelTlsConfig:
+      type: object
+      additionalProperties: false
+      required: [mode]
+      properties:
+        mode: { type: string, enum: [http, certificate, acme] }
+        cert_file: { type: string }
+        key_file: { type: string }
+        acme_domain: { type: string }
+        acme_cache_dir: { type: string }
+    PanelTlsCandidate:
+      type: object
+      additionalProperties: false
+      required: [listen, tls]
+      properties:
+        listen: { type: string }
+        tls: { $ref: "#/components/schemas/PanelTlsConfig" }
+        base_path: { type: string }
+        public_url: { type: string }
+        enabled: { type: boolean, description: Only used for target subscription }
+    PanelTlsCertificate:
+      type: object
+      required: [expires_at, publicly_trusted]
+      properties:
+        domain: { type: string }
+        expires_at: { type: string, format: date-time }
+        publicly_trusted: { type: boolean }
+    PanelTlsWarning:
+      type: string
+      enum: [toml_formatting, public_reachability_unverified, password_login, firewall_port, acme_port_80, http_unencrypted, certificate_private]
+    PanelTlsPrepared:
+      type: object
+      required: [receipt, expires_at, candidate, new_url, warnings]
+      properties:
+        receipt: { type: string, description: Opaque single-use receipt; valid for five minutes }
+        expires_at: { type: string, format: date-time }
+        candidate: { $ref: "#/components/schemas/PanelTlsCandidate" }
+        new_url: { type: string, format: uri }
+        warnings: { type: array, items: { $ref: "#/components/schemas/PanelTlsWarning" } }
+        certificate: { $ref: "#/components/schemas/PanelTlsCertificate" }
+    PanelTlsSaved:
+      type: object
+      required: [new_url, restart_required]
+      properties:
+        new_url: { type: string, format: uri }
+        restart_required: { type: boolean }
+    PanelTlsSettings:
+      type: object
+      required: [active, capabilities, manual_hints, manual_restart_command, default_acme_cache_dir, state, restart_required]
+      properties:
+        active: { $ref: "#/components/schemas/PanelTlsCandidate" }
+        certificate_status: { $ref: "#/components/schemas/PanelTlsStatus" }
+        configured: { $ref: "#/components/schemas/PanelTlsCandidate" }
+        capabilities:
+          type: object
+          required: [config_writable, restart, prepare, acme_prepare]
+          properties:
+            config_writable: { type: boolean }
+            restart: { type: boolean }
+            prepare: { type: boolean }
+            acme_prepare: { type: boolean, description: Helper support; actual port 80 bind permissions are checked before CA acquisition }
+        manual_hints:
+          type: array
+          items: { type: string, enum: [edit_startup_config_manually, restart_panel_manually] }
+        default_acme_cache_dir: { type: string }
+        config_path: { type: string, description: Trusted startup file path for manual instructions; never accepted from API requests }
+        manual_restart_command: { type: string, description: Existing service-manager command or manual hint; display only, never executed from request input }
+        state: { type: string, enum: [idle, preparing, prepared, saved, restarting, restart_failed] }
+        prepared: { $ref: "#/components/schemas/PanelTlsPrepared" }
+        restart_required: { type: boolean }
+        new_url: { type: string, format: uri }
+        error: { type: string, enum: [tls_restart_failed] }
+    PanelTlsStatus:
+      type: object
+      required: [mode, state]
+      properties:
+        mode: { type: string, enum: [http, certificate, acme] }
+        state: { type: string, enum: [http, waiting, ready, warning, error] }
+        domain: { type: string }
+        expires_at: { type: string, format: date-time }
+        stage: { type: string }
+        error: { type: string, maxLength: 800 }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum:
+            - bad_request
+            - tls_invalid_candidate
+            - tls_manual_required
+            - tls_prepare_busy
+            - tls_prepare_unavailable
+            - tls_listener_unavailable
+            - tls_challenge_unavailable
+            - tls_cache_unavailable
+            - tls_certificate_invalid
+            - tls_certificate_untrusted
+            - tls_acquisition_failed
+            - tls_prepare_failed
+            - tls_prepare_timeout
+            - tls_config_changed
+            - tls_receipt_invalid
+            - tls_save_failed
+            - tls_restart_not_pending
+            - tls_restart_failed
+            - conflict
+            - confirmation_required
+            - invalid_credentials
+            - rate_limited
+            - session_expired
+            - csrf_rejected
+            - auth_disabled
+            - quota_reset_busy
+            - invalid_quota_schedule
+            - quota_schedule_conflict
+            - quota_schedule_storage
+            - quota_schedule_unavailable
+            - quota_confirmation_expired
+            - quota_operation_unavailable
+            - internal_error
+            - branding_invalid_title
+            - branding_invalid_mode
+            - branding_invalid_path
+            - branding_logo_unreadable
+            - branding_invalid_image
+            - not_found
+            - telemt_unreachable
+            - capability_absent
+            - capability_unavailable
+            - manual_restart_required
+            - manual_service_control_required
+            - service_action_unconfirmed
+            - update_locked
+            - update_version_unsupported
+            - sublink_unavailable
+            - log_tail_unavailable
+            - log_stream_unavailable
+            - log_source_error
+            - invalid_webauthn_origin
+            - invalid_webauthn_challenge
+            - invalid_webauthn_response
+            - webauthn_credential_exists
+            - passkey_unavailable
+            - telemt_auth_failed
+            - user_exists
+            - last_user_forbidden
+            - read_only
+            - revision_conflict
+            - invalid_toml
+            - invalid_config_path
+            - config_unset_unsupported
+            - no_changes
+            - toml_projection_failed
+            - reload_in_progress
+            - reload_not_found
+            - ambiguous_listeners
+            - access_not_editable
+            - section_not_editable
+            - field_not_editable
+            - unauthorized
+            - forbidden
+            - method_not_allowed
+            - config_patch_not_atomic
+            - payload_too_large
+            - api_disabled
+            - maestro_unavailable
+            - unsupported_media_type
+            - web_runtime_unavailable
+            - web_snapshot_busy
+            - web_runtime_mismatch
+            - web_issuance_enabled
+            - web_operation_in_progress
+            - web_session_not_found
+            - web_operation_not_found
+            - web_vhost_not_found
+            - web_profile_required
+          description: >
+            Machine code. Panel codes actually emitted today (grepped from every
+            WriteError call site): bad_request, invalid_credentials, rate_limited,
+            session_expired, csrf_rejected, auth_disabled, internal_error, not_found,
+            telemt_unreachable, capability_absent, capability_unavailable,
+            manual_restart_required, update_locked, sublink_unavailable,
+            log_tail_unavailable, log_stream_unavailable, log_source_error,
+            invalid_webauthn_origin,
+            invalid_webauthn_challenge, invalid_webauthn_response,
+            webauthn_credential_exists, passkey_unavailable,
+            quota_reset_busy, quota_confirmation_expired, quota_operation_unavailable,
+            invalid_toml, invalid_config_path, config_unset_unsupported,
+            no_changes, toml_projection_failed.
+            capability_absent (501) vs capability_unavailable (503) are
+            deliberately distinct, not aliases: capability_absent means the
+            route itself doesn't exist on this Telemt build (a bare 404/405
+            with no error envelope — detected reactively, after attempting
+            the call: rotate-secret, enable/disable, POST /api/telemt/reload,
+            GET /api/telemt/reload/{id}); capability_unavailable means the
+            route exists but the feature behind it is switched off on this
+            Telemt — either known up front from the SDK's cached Capabilities
+            probe (GET/PATCH /api/telemt/config, config_api) or reported by
+            the response itself (GET /api/telemt/tls-fingerprints, whose
+            enabled:false means runtime_edge_enabled is off; read from the
+            response rather than probed so an unreachable Telemt still maps
+            to 502 telemt_unreachable).
+            Reserved for milestones not yet implemented: telemt_auth_failed
+            (superseded on /api/telemt/info by a reachable:false
+            body, not an error status — kept here for /api/telemt/config, M3).
+            A well-formed Telemt *APIError whose status is 4xx and isn't otherwise
+            mapped above is passed through verbatim with Telemt's own code — notably
+            user_exists, last_user_forbidden, read_only, revision_conflict,
+            reload_in_progress, reload_not_found, ambiguous_listeners (the latter two
+            absent from Telemt's own documented error-code table but confirmed against
+            its source, M3), plus any other code in Telemt's own set (07-telemt-sdk.md):
+            bad_request, access_not_editable, section_not_editable, field_not_editable,
+            unauthorized, forbidden, method_not_allowed, config_patch_not_atomic,
+            payload_too_large, api_disabled, maestro_unavailable — except
+            access_not_editable/section_not_editable/field_not_editable/
+            config_patch_not_atomic/ambiguous_listeners on PATCH /api/telemt/config,
+            which the panel remaps to HTTP 422 regardless of Telemt's own status.
+            The WEB group (Telemt >= 3.5.3, internal/telemt/types_web.go) adds
+            web_runtime_mismatch, web_issuance_enabled, web_operation_in_progress,
+            web_snapshot_busy, web_session_not_found, web_operation_not_found and
+            unsupported_media_type; web_runtime_unavailable is listed because it is
+            Telemt's own code, but the panel remaps it to capability_unavailable
+            (rule R5) so the closed-capability gate is drawn instead of an error.
+            Every code in this enum must carry a message in BOTH dictionaries —
+            web/src/i18n/i18n.test.ts walks this list.
+        message: { type: string }
+
+    User:
+      type: object
+      description: Telemt UserInfo merged with quota usage and panel extras.
+      required: [username, enabled, current_connections, active_unique_ips, total_octets, links]
+      properties:
+        username: { type: string }
+        enabled: { type: boolean }
+        in_runtime: { type: boolean }
+        user_ad_tag: { type: string }
+        max_tcp_conns: { type: integer }
+        max_unique_ips: { type: integer }
+        data_quota_bytes: { type: integer, format: int64 }
+        expiration_rfc3339: { type: string, format: date-time }
+        rate_limit_up_bps: { type: integer, format: int64 }
+        rate_limit_down_bps: { type: integer, format: int64 }
+        current_connections: { type: integer, format: int64 }
+        active_unique_ips: { type: integer }
+        active_unique_ips_list: { type: array, items: { type: string } }
+        recent_unique_ips: { type: integer }
+        recent_unique_ips_list: { type: array, items: { type: string } }
+        total_octets: { type: integer, format: int64, deprecated: true, description: Raw Telemt process counter retained for compatibility. }
+        links: { $ref: "#/components/schemas/UserLinks" }
+        quota:
+          type: object
+          description: Present when the quota capability is available and the user has a quota.
+          required: [used_bytes, last_reset_epoch_secs]
+          properties:
+            used_bytes: { type: integer, format: int64 }
+            last_reset_epoch_secs: { type: integer, format: int64 }
+        traffic: { $ref: "#/components/schemas/UserTraffic" }
+        ip_history: { $ref: "#/components/schemas/UserIPSummary" }
+        sub_url: { type: string, description: Absolute subscription page URL }
+
+    UserTraffic:
+      type: object
+      required: [observed_total_bytes, current_month_bytes, month_key, observed_since_epoch_secs, last_activity_epoch_secs, continuity]
+      properties:
+        observed_total_bytes: { type: integer, format: int64, minimum: 0 }
+        current_month_bytes: { type: integer, format: int64, minimum: 0 }
+        month_key: { type: integer, description: UTC month in YYYYMM form }
+        observed_since_epoch_secs: { type: integer, format: int64 }
+        last_activity_epoch_secs: { type: integer, format: int64 }
+        continuity: { $ref: "#/components/schemas/TrafficContinuity" }
+
+    UserLinks:
+      type: object
+      required: [classic, secure, tls, tls_domains]
+      properties:
+        classic: { type: array, items: { type: string } }
+        secure: { type: array, items: { type: string } }
+        tls: { type: array, items: { type: string } }
+        tls_domains:
+          type: array
+          items:
+            type: object
+            required: [domain, link]
+            properties:
+              domain: { type: string }
+              link: { type: string }
+
+    UserCreate:
+      type: object
+      required: [username]
+      properties:
+        username: { type: string, pattern: "^[A-Za-z0-9_.-]{1,64}$" }
+        secret: { type: string, pattern: "^[0-9a-fA-F]{32}$" }
+        user_ad_tag: { type: string, pattern: "^[0-9a-fA-F]{32}$" }
+        max_tcp_conns: { type: integer, minimum: 1 }
+        max_unique_ips: { type: integer, minimum: 1 }
+        data_quota_bytes: { type: integer, format: int64, minimum: 1 }
+        expiration_rfc3339: { type: string, format: date-time }
+        rate_limit_up_bps: { type: integer, format: int64, minimum: 1 }
+        rate_limit_down_bps: { type: integer, format: int64, minimum: 1 }
+        enabled: { type: boolean, default: true }
+
+    UserPatch:
+      type: object
+      description: JSON Merge Patch — null removes a limit, omitted leaves unchanged.
+      properties:
+        secret: { type: string, pattern: "^[0-9a-fA-F]{32}$" }
+        user_ad_tag: { type: [string, "null"] }
+        max_tcp_conns: { type: [integer, "null"] }
+        max_unique_ips: { type: [integer, "null"] }
+        data_quota_bytes: { type: [integer, "null"], format: int64 }
+        expiration_rfc3339: { type: [string, "null"] }
+        rate_limit_up_bps: { type: [integer, "null"], format: int64 }
+        rate_limit_down_bps: { type: [integer, "null"], format: int64 }
+        enabled: { type: [boolean, "null"] }
+
+    Sublink:
+      type: object
+      required: [url, enabled]
+      properties:
+        url: { type: string }
+        enabled: { type: boolean, description: false when subpage module is disabled }
+
+    TelemtInfo:
+      type: object
+      required: [reachable, capabilities]
+      properties:
+        reachable: { type: boolean }
+        version: { type: string }
+        arch: { type: string }
+        os: { type: string }
+        uptime_seconds: { type: number }
+        config_path: { type: string }
+        config_edit_mode:
+          type: string
+          enum: [api, file]
+          description: Deprecated compatibility value from 0.x; editing always requires the Telemt Config API.
+        capabilities:
+          type: object
+          description: Detected per 07-telemt-sdk.md §SDK-3.
+          required: [quota, runtime_edge, reload_api, config_api, user_enable_disable, rotate_secret]
+          properties:
+            quota: { type: boolean }
+            runtime_edge: { type: boolean }
+            reload_api: { type: boolean }
+            config_api: { type: boolean }
+            user_enable_disable: { type: boolean }
+            rotate_secret: { type: boolean }
+        hint:
+          type: string
+          description: Actionable diagnostic (e.g. "check [server.api].whitelist — connection dropped").
+
+    ZeroAllData:
+      type: object
+      description: >
+        GET /v1/stats/zero/all's deep counter dump, passed through as-is. Only the top
+        level (five named sections) is typed — each section's leaves are a display-only
+        object mixing u64 counters with bools/strings/nested arrays (07-telemt-sdk.md),
+        never branched on by the panel.
+      required: [generated_at_epoch_secs, core, upstream, middle_proxy, pool, desync]
+      properties:
+        generated_at_epoch_secs: { type: integer }
+        core: { type: object, additionalProperties: true }
+        upstream: { type: object, additionalProperties: true }
+        middle_proxy: { type: object, additionalProperties: true }
+        pool: { type: object, additionalProperties: true }
+        desync: { type: object, additionalProperties: true }
+
+    TlsFingerprintRow:
+      type: object
+      description: >
+        One aggregated JA3/JA4 row. `scope` is present only in the by_ip/by_cidr/by_user
+        lists (the grouping key), absent in by_fingerprint — TELEMT_LIVE_API_DATA.md §19.
+      required: [ja3, ja3_raw, ja4, ja4_raw, total, auth_success, bad_or_probe, first_seen_epoch_secs, last_seen_epoch_secs]
+      properties:
+        scope: { type: string }
+        ja3: { type: string }
+        ja3_raw: { type: string }
+        ja4: { type: string }
+        ja4_raw: { type: string }
+        total: { type: integer }
+        auth_success: { type: integer }
+        bad_or_probe: { type: integer }
+        first_seen_epoch_secs: { type: integer }
+        last_seen_epoch_secs: { type: integer }
+
+    TlsFingerprints:
+      type: object
+      required: [limit, retention_secs, capacity, dropped_total, parse_error_total, by_fingerprint, by_ip, by_cidr, by_user]
+      properties:
+        limit: { type: integer }
+        retention_secs: { type: integer }
+        capacity: { type: integer }
+        dropped_total: { type: integer }
+        parse_error_total: { type: integer }
+        by_fingerprint: { type: array, items: { $ref: "#/components/schemas/TlsFingerprintRow" } }
+        by_ip: { type: array, items: { $ref: "#/components/schemas/TlsFingerprintRow" } }
+        by_cidr: { type: array, items: { $ref: "#/components/schemas/TlsFingerprintRow" } }
+        by_user: { type: array, items: { $ref: "#/components/schemas/TlsFingerprintRow" } }
+
+    GatedTlsFingerprints:
+      type: object
+      description: >
+        Telemt's Gated[T] wrapper, passed through as-is: `data` is omitted when the
+        source is off or unavailable, and `reason` says why (07-telemt-sdk.md).
+      required: [enabled, generated_at_epoch_secs]
+      properties:
+        enabled: { type: boolean }
+        reason: { type: string }
+        generated_at_epoch_secs: { type: integer }
+        data: { $ref: "#/components/schemas/TlsFingerprints" }
+
+    WebAccessProfile:
+      type: object
+      required: [user, secret_mode]
+      properties:
+        user: { type: string }
+        secret_mode: { type: string, enum: [plain, dd] }
+        max_sessions: { type: integer, format: uint64, minimum: 1 }
+        max_streams: { type: integer, format: uint64, minimum: 1 }
+        max_streams_per_session: { type: integer, format: uint64, minimum: 1 }
+
+    WebAccessVhost:
+      type: object
+      required: [host, public_addr, profiles]
+      properties:
+        host: { type: string }
+        public_addr: { type: string }
+        profiles: { type: array, items: { $ref: "#/components/schemas/WebAccessProfile" } }
+
+    WebAccessView:
+      type: object
+      required: [revision, enabled, vhosts]
+      properties:
+        revision: { type: string }
+        enabled: { type: boolean }
+        vhosts: { type: array, items: { $ref: "#/components/schemas/WebAccessVhost" } }
+
+    WebUserAccessProfile:
+      type: object
+      required: [vhost, secret_mode]
+      properties:
+        vhost: { type: string }
+        secret_mode: { type: string, enum: [plain, dd] }
+        max_sessions: { type: integer, format: uint64, minimum: 1 }
+        max_streams: { type: integer, format: uint64, minimum: 1 }
+        max_streams_per_session: { type: integer, format: uint64, minimum: 1 }
+
+    WebUserAccessUpdate:
+      type: object
+      required: [profiles]
+      properties:
+        profiles: { type: array, items: { $ref: "#/components/schemas/WebUserAccessProfile" } }
+
+    WebSessionRow:
+      type: object
+      description: >
+        One live WEB session. `session_ref` plus the optional user-agent pair sit at the
+        same level as the 23 WebSessionStatus fields — Telemt flattens the status struct
+        into the row (`#[serde(flatten)]`, src/web/session/status.rs).
+      required: [session_ref, trace_session_id, client_ip, host, user, key_id, carrier, attempt, client_class, automatic, state, streams, tasks, lanes, lane_open_waits, websocket_lane_reservations, websocket_active, pending_bytes, pending_items, control_bytes, control_items, age_ms, idle_ms]
+      properties:
+        session_ref: { type: string }
+        user_agent: { type: string }
+        user_agent_id: { type: string }
+        trace_session_id: { type: integer }
+        client_ip: { type: string }
+        host: { type: string }
+        user: { type: string }
+        key_id: { type: string }
+        carrier: { type: string, enum: [https, https-lanes, websocket, websocket-lanes] }
+        attempt: { type: integer }
+        client_class: { type: string }
+        automatic: { type: boolean }
+        state: { type: string }
+        streams: { type: integer }
+        tasks: { type: integer }
+        lanes: { type: integer }
+        lane_open_waits: { type: integer }
+        websocket_lane_reservations: { type: integer }
+        websocket_active: { type: boolean }
+        pending_bytes: { type: integer }
+        pending_items: { type: integer }
+        control_bytes: { type: integer }
+        control_items: { type: integer }
+        age_ms: { type: integer }
+        idle_ms: { type: integer }
+        negotiation_remaining_ms: { type: integer }
+
+    WebSessionPage:
+      type: object
+      description: >
+        One page of the ordered scan. There is no total: the scan is bounded (Telemt caps it
+        at 1000 candidates, reporting `scan_truncated`) and paging is by opaque cursor.
+        `partial` is `["manager"]` when the manager lock was contended — an empty page that
+        means "busy", not "no sessions".
+      required: [sessions, next_cursor, scanned, scan_truncated, partial_sessions, partial]
+      properties:
+        sessions: { type: array, items: { $ref: "#/components/schemas/WebSessionRow" } }
+        next_cursor: { type: [string, "null"] }
+        scanned: { type: integer }
+        scan_truncated: { type: boolean }
+        partial_sessions: { type: integer }
+        partial: { type: array, items: { type: string } }
+
+    WebSessionClosed:
+      type: object
+      description: The retained tombstone of a session that has already closed.
+      required: [session_ref, state, attempt]
+      properties:
+        session_ref: { type: string }
+        state: { type: string }
+        attempt: { type: integer }
+
+    WebSessionLookup:
+      type: object
+      description: >
+        Exactly one of the two is present: `row` for a live session, `closed` for a
+        tombstone.
+      properties:
+        row: { $ref: "#/components/schemas/WebSessionRow" }
+        closed: { $ref: "#/components/schemas/WebSessionClosed" }
+
+    WebCloseSelector:
+      type: object
+      description: >
+        Internally tagged by `kind`. `refs` carries 1..200 canonical refs; `filter` needs at
+        least one of the filter fields; `all` is the whole registry and is refused while WEB
+        issuance is still enabled.
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [refs, filter, all] }
+        session_refs: { type: array, items: { type: string } }
+        session_ref: { type: string }
+        ip: { type: string }
+        host: { type: string }
+        user: { type: string }
+        user_agent_id: { type: string }
+        key_id: { type: string }
+        carrier: { type: string, enum: [https, https-lanes, websocket, websocket-lanes] }
+        state: { type: string }
+
+    WebCloseRequest:
+      type: object
+      required: [runtime_instance, selector]
+      properties:
+        runtime_instance:
+          type: string
+          description: >
+            The process fence, read from the `web` topic's status snapshot. A Telemt that
+            has restarted since answers 409 web_runtime_mismatch instead of closing whatever
+            now holds those ids.
+        selector: { $ref: "#/components/schemas/WebCloseSelector" }
+
+    WebControlOperationStatus:
+      type: object
+      description: >
+        The 202 body of a close and the 200 body of its poll — the same shape. `requested`
+        is the explicit ref count for a `refs` selector and 0 for `filter`/`all`, which have
+        no up-front size.
+      required: [operation_id, state, high_water_session_ref, requested, scanned, matched, close_signalled, conflicted, created_epoch_millis, updated_epoch_millis]
+      properties:
+        operation_id: { type: string }
+        state: { type: string, enum: [queued, running, completed, cancelled, failed] }
+        high_water_session_ref: { type: [string, "null"] }
+        requested: { type: integer }
+        scanned: { type: integer }
+        matched: { type: integer }
+        close_signalled: { type: integer }
+        conflicted: { type: integer }
+        created_epoch_millis: { type: integer, format: int64 }
+        updated_epoch_millis: { type: integer, format: int64 }
+        failure: { type: string }
+
+    TelemtConfig:
+      type: object
+      description: >
+        Editable configuration obtained through the Telemt Config API.
+        Direct file editing is not supported, regardless of telemt.config_edit_mode.
+      required: [revision, sections]
+      properties:
+        revision: { type: string }
+        sections:
+          type: object
+          additionalProperties: {}
+          description: >
+            Map of section name → that section's JSON, including arrays such as upstreams, straight from Telemt (integers
+            preserved). Open-ended: a section a newer Telemt adds (`web`, since 3.5.3)
+            passes through unchanged rather than being dropped, and a section value the
+            panel received as null is passed on as null rather than synthesized into {}.
+
+    TelemtConfigPatch:
+      type: object
+      description: >
+        The revision travels as the request's `If-Match` header (required), not a body
+        field here — see PATCH /api/telemt/config's description.
+      required: [sections]
+      properties:
+        sections:
+          type: object
+          additionalProperties: true
+          description: Sparse map of section name → JSON Merge Patch value for that section.
+
+    TelemtConfigTOML:
+      type: object
+      required: [revision, toml_projection, source_sections, projection_kind]
+      properties:
+        revision: { type: string }
+        toml_projection: { type: string }
+        source_sections: { type: array, items: { type: string } }
+        projection_kind:
+          type: string
+          enum: [normalized_config_api]
+          description: Stable code describing the projection's limitations; localized by the client.
+
+    TelemtConfigCatalog:
+      type: object
+      required: [version, source_commit, documented_fields, runtime_additions, groups, fields]
+      properties:
+        version: { type: string }
+        source_commit: { type: string }
+        documented_fields: { type: integer }
+        runtime_additions: { type: array, items: { type: string } }
+        groups: { type: array, items: { $ref: "#/components/schemas/TelemtConfigGroup" } }
+        fields: { type: array, items: { $ref: "#/components/schemas/TelemtConfigField" } }
+
+    TelemtConfigGroup:
+      type: object
+      required: [id, title, short]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        short: { type: string }
+
+    TelemtConfigField:
+      type: object
+      required: [path, data_type, kind, default_value, doc_hot, apply, tier, group, secret]
+      properties:
+        path: { type: string }
+        data_type: { type: string }
+        kind: { type: string, enum: [boolean, integer, decimal, string, enum, string_list, integer_list, map, structure] }
+        options: { type: array, items: { type: string } }
+        default_value: { type: string }
+        doc_hot: { type: boolean }
+        apply: { type: string }
+        tier: { type: string, enum: [normal, advanced] }
+        group: { type: string }
+        secret: { type: boolean }
+        runtime_addition: { type: boolean }
+
+    TelemtConfigTOMLRequest:
+      type: object
+      required: [toml_projection]
+      properties:
+        toml_projection: { type: string }
+
+    TelemtConfigTOMLPreview:
+      type: object
+      required: [revision, patch, patch_json, changed_paths, materialized_sections, array_replacements]
+      properties:
+        revision: { type: string }
+        patch:
+          type: object
+          additionalProperties: true
+        patch_json:
+          type: string
+          description: Exact JSON text of the sparse patch, preserving integer literals for preview.
+        changed_paths: { type: array, items: { type: string } }
+        materialized_sections: { type: array, items: { type: string } }
+        array_replacements: { type: array, items: { type: string } }
+
+    TelemtConfigPatchResult:
+      type: object
+      description: Telemt's PATCH /v1/config response, passed through as-is.
+      required: [revision, changed]
+      properties:
+        revision: { type: string }
+        changed: { type: array, items: { type: string } }
+        restart_required: { type: boolean, description: Legacy field, still sent by current Telemt builds. }
+        runtime_reload_required: { type: boolean }
+        process_restart_required: { type: boolean }
+        deferred_process_fields: { type: array, items: { type: string } }
+        reload:
+          description: Present only when the request's `reload` query parameter triggered an inline reload.
+          allOf: [{ $ref: "#/components/schemas/ReloadAccepted" }]
+
+    ReloadAccepted:
+      type: object
+      description: The 202 payload of Telemt's POST /v1/system/reload, passed through as-is.
+      required: [reload_id, target_generation, config_revision, state, mode, failure_policy]
+      properties:
+        reload_id: { type: integer, format: int64 }
+        target_generation: { type: integer, format: int64 }
+        config_revision: { type: string }
+        state: { type: string, enum: [accepted, preparing, activating, draining, succeeded, rolled_back, failed] }
+        mode: { type: string, enum: [instant, drain] }
+        failure_policy: { type: string, enum: [keep_new, rollback] }
+
+    ReloadStatus:
+      type: object
+      description: Telemt's GET /v1/system/reload/{id} response, passed through as-is.
+      required: [reload_id, target_generation, config_revision, state, mode, failure_policy, requested_at_epoch_secs]
+      properties:
+        reload_id: { type: integer, format: int64 }
+        target_generation: { type: integer, format: int64 }
+        config_revision: { type: string }
+        state: { type: string, enum: [accepted, preparing, activating, draining, succeeded, rolled_back, failed] }
+        mode: { type: string, enum: [instant, drain] }
+        failure_policy: { type: string, enum: [keep_new, rollback] }
+        requested_at_epoch_secs: { type: integer, format: int64 }
+        started_at_epoch_secs: { type: integer, format: int64 }
+        finished_at_epoch_secs: { type: integer, format: int64 }
+        deferred_process_fields: { type: array, items: { type: string } }
+        warnings: { type: array, items: { type: string } }
+        error: { type: string }
+
+    HostInfo:
+      type: object
+      required: [service_manager, log_source, privileges_mode, os, arch, panel_variant, storage_drivers, active_store, history_temporary, caps]
+      properties:
+        service_manager: { type: string, enum: [systemd, openrc, procd, sysvinit, docker, custom, none] }
+        log_source: { type: string, enum: [journald, logread, syslog, docker, file, none] }
+        privileges_mode: { type: string, enum: [sudo, direct, manual] }
+        os: { type: string, description: Go runtime operating system identifier, example: linux }
+        arch: { type: string, description: Go runtime architecture identifier, example: amd64 }
+        os_release: { type: string }
+        panel_variant: { type: string, enum: [full, lite] }
+        storage_drivers:
+          type: array
+          items: { type: string, enum: [memory, sqlite] }
+        active_store: { type: string, enum: [memory, sqlite] }
+        history_temporary:
+          type: boolean
+          description: SQLite could not be opened at daemon startup; history is temporarily in memory until restart. False for intentionally configured memory storage. Panel state persistence is independent.
+        caps:
+          type: object
+          required: [restart_telemt, restart_panel, log_tail, log_stream, self_update]
+          properties:
+            restart_telemt: { type: boolean }
+            restart_panel: { type: boolean }
+            log_tail: { type: boolean }
+            log_stream: { type: boolean }
+            self_update: { type: boolean }
+            start_telemt: { type: boolean, description: Independently permitted start of the configured Telemt service. }
+            stop_telemt: { type: boolean, description: Independently permitted stop of the configured Telemt service. }
+        manual_commands:
+          type: object
+          additionalProperties: { type: string }
+          description: Copyable shell commands or actionable manual instructions for operations with cap=false.
+
+    TelemtServiceState:
+      type: object
+      required: [service, manager, status, status_supported, binding_conflict, caps, manual_commands, busy]
+      properties:
+        service: { type: string }
+        manager: { type: string }
+        status: { type: string, enum: [running, stopped, unknown] }
+        status_supported: { type: boolean }
+        status_error: { type: string, enum: [service_status_unavailable] }
+        binding_conflict: { type: boolean, description: The configured start/stop target collides with the panel binding. }
+        busy: { type: boolean, description: Shared host lock is held by a service command or an update. }
+        caps:
+          type: object
+          required: [start, stop, restart]
+          properties:
+            start: { type: boolean }
+            stop: { type: boolean }
+            restart: { type: boolean }
+        manual_commands: { type: object, additionalProperties: { type: string } }
+    UpdatesStatus:
+      type: object
+      required: [targets, lock_held]
+      properties:
+        lock_held: { type: boolean }
+        targets:
+          type: array
+          items:
+            type: object
+            required: [target, current_version, releases]
+            properties:
+              target: { type: string, enum: [telemt, panel] }
+              current_version: { type: string }
+              releases_error:
+                type: string
+                enum: [update_catalog_unavailable]
+                description: Release lookup failed. An empty releases array with this field is not evidence that the installed version is current.
+              releases:
+                type: array
+                items:
+                  type: object
+                  required: [version, published_at]
+                  properties:
+                    version: { type: string }
+                    published_at: { type: string, format: date-time }
+                    prerelease: { type: boolean }
+                    newer: { type: boolean }
+              active_run: { $ref: "#/components/schemas/UpdateRun" }
+              journal: { type: array, items: { $ref: "#/components/schemas/UpdateRun" } }
+
+    UpdateRun:
+      type: object
+      required: [run_id, target, phase, version_to, started_at]
+      properties:
+        run_id: { type: string }
+        target: { type: string, enum: [telemt, panel] }
+        phase:
+          type: string
+          enum: [checking, downloading, verifying, staging, installing, restarting, health, done, rolling_back, rolled_back, failed]
+        version_from: { type: string }
+        version_to: { type: string }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time }
+        detail: { type: string }
+
+    AutoUpdateSettings:
+      type: object
+      required: [telemt, panel, interval]
+      properties:
+        telemt: { type: string, enum: [off, check, apply] }
+        panel: { type: string, enum: [off, check, apply] }
+        interval: { type: string, description: Go duration ≥ 1h, e.g. "6h" }
+
+    SessionInfo:
+      type: object
+      required: [id, created, last_seen, current]
+      properties:
+        id: { type: string }
+        created: { type: string, format: date-time }
+        last_seen: { type: string, format: date-time }
+        ip: { type: string }
+        user_agent_label: { type: string, description: Parsed, human-readable ("iPhone · Safari") }
+        auth_method: { type: string, enum: [password, passkey] }
+        current: { type: boolean }
+
+    SessionPage:
+      type: object
+      required: [items, total, device_count]
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/SessionInfo" }
+        total: { type: integer, minimum: 0 }
+        device_count: { type: integer, minimum: 0, description: Distinct User-Agent and IP pairs in the filtered result }
+        next_cursor: { type: string, description: Opaque cursor for the next page; absent on the last page }
+
+    PasskeyInfo:
+      type: object
+      required: [id, name, created]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        created: { type: string, format: date-time }
+        last_used: { type: string, format: date-time }
+
+    WebAuthnRegisterBeginRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+
+    WebAuthnBeginResponse:
+      type: object
+      required: [flow_id, public_key]
+      properties:
+        flow_id: { type: string }
+        public_key: { type: object, additionalProperties: true }
+
+    WebAuthnFinishRequest:
+      type: object
+      required: [flow_id, credential]
+      properties:
+        flow_id: { type: string }
+        credential: { type: object, additionalProperties: true }
+
+    LogLine:
+      type: object
+      required: [ts, msg]
+      properties:
+        ts: { type: string, format: date-time }
+        level: { type: string, enum: [debug, info, warn, error, unknown] }
+        unit: { type: string }
+        msg: { type: string }
+
+    AuditEntry:
+      type: object
+      required: [ts, id, action, outcome]
+      properties:
+        ts: { type: string, format: date-time }
+        id: { type: string, description: Stable identifier of this retained audit entry }
+        action: { type: string, description: "login | user.create | user.patch | user.delete | quota.reset | config.patch | update.apply | ..." }
+        actor: { type: string, description: Authenticated administrator or attempted login name }
+        target: { type: string, description: User, service, config, or panel resource affected by the action }
+        outcome: { type: string, enum: [success, accepted, rejected, partial, unknown] }
+        ip: { type: string, description: Trusted client address captured by the panel }
+        subject: { type: string, description: Username / target / section }
+        detail: { type: string }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+          description: Structured key/value details when the action supplies them
+
+    TrafficRange:
+      type: string
+      enum: [24h, 7d, 30d, month, 1y]
+
+    TrafficSourceState:
+      type: string
+      enum: [collecting, paused, unavailable]
+
+    TrafficContinuity:
+      type: string
+      enum: [normal, partial]
+
+    TrafficCollection:
+      type: object
+      required: [source_state, continuity, durability, retention_secs]
+      properties:
+        source_state: { $ref: "#/components/schemas/TrafficSourceState" }
+        continuity: { $ref: "#/components/schemas/TrafficContinuity" }
+        durability: { type: string, enum: [durable, volatile] }
+        retention_secs: { type: integer, format: int64, minimum: 0 }
+        observed_since_epoch_secs: { type: integer, format: int64 }
+        observed_through_epoch_secs: { type: integer, format: int64 }
+
+    UserTrafficPoint:
+      type: object
+      required: [ts, v, tier]
+      properties:
+        ts: { type: integer, format: int64 }
+        v: { type: integer, format: int64, minimum: 0 }
+        tier: { type: string, enum: [15m, 1h, 1d] }
+
+    UserTrafficRank:
+      type: object
+      required: [username, bytes, observed_total_bytes, current_month_bytes, continuity]
+      properties:
+        username: { type: string }
+        bytes: { type: integer, format: int64, minimum: 0 }
+        observed_total_bytes: { type: integer, format: int64, minimum: 0 }
+        current_month_bytes: { type: integer, format: int64, minimum: 0 }
+        deleted_epoch_secs: { type: integer, format: int64 }
+        continuity: { $ref: "#/components/schemas/TrafficContinuity" }
+
+    UserTrafficHistorySeries:
+      type: object
+      required: [metric, range, state, requested_from_epoch_secs, retention_secs, source_state, continuity, durability, points]
+      properties:
+        metric: { type: string }
+        range: { type: string, enum: [24h, 7d, 30d, 1y] }
+        state: { type: string, enum: [ready, disabled, empty, partial] }
+        requested_from_epoch_secs: { type: integer, format: int64 }
+        retention_secs: { type: integer, format: int64, minimum: 0 }
+        available_from_epoch_secs: { type: integer, format: int64 }
+        source_available: { type: boolean, deprecated: true }
+        source_state: { $ref: "#/components/schemas/TrafficSourceState" }
+        continuity: { $ref: "#/components/schemas/TrafficContinuity" }
+        durability: { type: string, enum: [durable, volatile] }
+        observed_since_epoch_secs: { type: integer, format: int64 }
+        observed_through_epoch_secs: { type: integer, format: int64 }
+        points: { type: array, items: { $ref: "#/components/schemas/UserTrafficPoint" } }
+
+    TrafficSummary:
+      type: object
+      required: [range, state, requested_from_epoch_secs, total_bytes, points, top_users, collection]
+      properties:
+        range: { $ref: "#/components/schemas/TrafficRange" }
+        state: { type: string, enum: [ready, disabled, empty, partial] }
+        requested_from_epoch_secs: { type: integer, format: int64 }
+        total_bytes: { type: integer, format: int64, minimum: 0 }
+        previous_total_bytes: { type: integer, format: int64, minimum: 0 }
+        points: { type: array, items: { $ref: "#/components/schemas/UserTrafficPoint" } }
+        top_users: { type: array, maxItems: 5, items: { $ref: "#/components/schemas/UserTrafficRank" } }
+        collection: { $ref: "#/components/schemas/TrafficCollection" }
+
+    TrafficUsersPage:
+      type: object
+      required: [range, users, collection]
+      properties:
+        range: { $ref: "#/components/schemas/TrafficRange" }
+        users: { type: array, items: { $ref: "#/components/schemas/UserTrafficRank" } }
+        next_cursor: { type: string }
+        collection: { $ref: "#/components/schemas/TrafficCollection" }
+
+    HistorySeries:
+      type: object
+      required: [metric, range, state, requested_from_epoch_secs, retention_secs, points]
+      properties:
+        metric: { type: string }
+        range: { type: string }
+        state:
+          type: string
+          enum: [ready, disabled, empty, partial]
+          description: Explicit collection state; source availability is reported independently.
+        requested_from_epoch_secs: { type: integer, format: int64 }
+        retention_secs:
+          type: integer
+          format: int64
+          description: >
+            Maximum available retention for this metric. Disk-disabled and memory
+            stores still provide a two-hour live window; point capacity and gaps
+            may shorten actual coverage. 0 means no history is available.
+        available_from_epoch_secs:
+          type: integer
+          format: int64
+          description: Oldest returned point; absent when the series is empty.
+        source_available:
+          type: boolean
+          description: Current Telemt source state; absent until availability has been observed.
+        points:
+          type: array
+          items:
+            type: object
+            required: [ts, v]
+            properties:
+              ts: { type: integer, format: int64, description: epoch seconds }
+              v: { type: number }
+              tier: { type: string, enum: [1m, 5m, 15m, 1h, 1d], description: Omitted for raw points; new disk history uses 5m and 1h }
+              max: { type: number, description: Bucket maximum; present for aggregate points }
+              min: { type: number, description: Bucket minimum; absent for legacy aggregates without observed minima }
+              samples: { type: integer, format: int64, minimum: 1, description: Number of observed samples in the aggregate }
+              first_observed_epoch_secs: { type: integer, format: int64, description: First actual observation; absent for legacy aggregates }
+              first_observed_value: { type: number, description: Value at the first actual observation; absent for raw points and legacy aggregates. Allows counter continuity checks across adjacent buckets. }
+              last_observed_epoch_secs: { type: integer, format: int64, description: Last actual observation; absent for legacy aggregates }
+              observed_delta: { type: number, minimum: 0, description: Counter movement between observed samples only; excludes resets and unobserved gaps. Not an exact total for the nominal bucket. Absent for gauges or unknown continuity. }
+              observed_seconds: { type: integer, format: int64, minimum: 0, description: Observed duration excluding gaps and resets; absent when legacy metadata is unknown }
+              gaps: { type: integer, format: int64, minimum: 0, description: Detected gaps or counter resets inside the aggregate; absent for legacy aggregates }
+
+    HistoryEvent:
+      type: object
+      required: [id, ts, category, kind, entity, state, previous_state, severity]
+      properties:
+        id: { type: integer, format: int64 }
+        ts: { type: string, format: date-time }
+        category: { $ref: "#/components/schemas/StorageCategory" }
+        kind: { type: string, example: dc.coverage.changed }
+        entity: { type: string, example: "dc:-203" }
+        state: { type: string, example: "66" }
+        previous_state: { type: string, example: "100" }
+        severity: { type: string, enum: [info, warning, critical] }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+
+    HistoryEvents:
+      type: object
+      required: [range, state, requested_from_epoch_secs, retention_secs, events]
+      properties:
+        range: { type: string, enum: [15m, 30m, 1h, 24h, 7d, 30d, 90d] }
+        state: { type: string, enum: [ready, disabled, empty, partial] }
+        requested_from_epoch_secs: { type: integer, format: int64 }
+        retention_secs:
+          type: integer
+          format: int64
+          description: Configured event retention in seconds; 0 means disabled.
+        available_from_epoch_secs:
+          type: integer
+          format: int64
+          description: Oldest returned event; absent when the stream is empty.
+        source_available:
+          type: boolean
+          description: Current Telemt source state; absent until availability has been observed.
+        events:
+          type: array
+          items: { $ref: "#/components/schemas/HistoryEvent" }
+
+    UserIPSummary:
+      type: object
+      required: [unique, from, collected_through, history_limited, collection_gap]
+      properties:
+        unique: { type: integer, format: int64, minimum: 0 }
+        from: { type: integer, format: int64, description: Last 30 days, clipped by effective retention. }
+        collected_through: { type: integer, format: int64 }
+        history_limited: { type: boolean }
+        collection_gap: { type: boolean }
+
+    UserIPHistoryItem:
+      type: object
+      required: [username, ip, family, first_observed_at, last_observed_at, observations, last_source_mask, active_now, geo]
+      properties:
+        username: { type: string }
+        ip: { type: string, description: Canonical individual address; mapped IPv4 is unmapped. }
+        family: { type: integer, enum: [4, 6] }
+        first_observed_at: { type: integer, format: int64 }
+        last_observed_at: { type: integer, format: int64 }
+        observations: { type: integer, format: int64, minimum: 1, description: Periodic observations, not number of connections. }
+        last_active_observed_at: { type: integer, format: int64 }
+        last_source_mask: { type: integer, enum: [1, 2, 3], description: Active list (1), recent list (2), both (3). }
+        active_now: { type: [boolean, "null"], description: Null if the active source is missing, invalid or older than 30 seconds. }
+        geo:
+          description: Null when no verified GeoIP database set is active.
+          anyOf:
+            - $ref: "#/components/schemas/GeoIpResult"
+            - type: "null"
+
+    UserIPCollection:
+      type: object
+      required: [observed_since, collected_through, history_limited, collection_gap]
+      properties:
+        batch_id: { type: string }
+        observed_since: { type: integer, format: int64 }
+        collected_through: { type: integer, format: int64 }
+        history_limited: { type: boolean }
+        collection_gap: { type: boolean }
+
+    UserIPSourceStatus:
+      type: object
+      required: [state, last_success_at, age_secs, recent_window_secs, pending, history_limited, collection_gap]
+      properties:
+        state: { type: string, enum: [collecting, unavailable] }
+        last_success_at: { type: integer, format: int64 }
+        age_secs:
+          type: [integer, 'null']
+          minimum: 0
+          description: Age of the last successful observation at response time, measured on the panel server; null before collection or if the server clock moved backwards.
+        recent_window_secs: { type: [integer, "null"], format: int64, minimum: 1 }
+        pending: { type: boolean }
+        history_limited: { type: boolean }
+        collection_gap: { type: boolean }
+
+    UserIPHistory:
+      type: object
+      required: [items, total, matched, new, next_cursor, range, retention_days, durable, collection, source, active_now_count, geoip]
+      properties:
+        active_now_count: { type: [integer, "null"], minimum: 0, description: All distinct active addresses for this user, independent of history pagination. Null if the active source is unavailable or stale. }
+        items: { type: array, items: { $ref: "#/components/schemas/UserIPHistoryItem" } }
+        total: { type: integer, format: int64, description: Addresses in the range before family/search filters. }
+        matched: { type: integer, format: int64, description: Addresses matching all filters before pagination. }
+        new: { type: integer, format: int64, description: Retained addresses first observed in the range, not a daily time series. }
+        next_cursor: { type: string, description: Empty when there is no next page. }
+        range: { type: string, enum: [24h, 7d, 30d, all] }
+        retention_days: { type: integer, minimum: 1 }
+        durable: { type: boolean }
+        collection: { $ref: "#/components/schemas/UserIPCollection" }
+        source: { $ref: "#/components/schemas/UserIPSourceStatus" }
+        geoip: { $ref: "#/components/schemas/GeoIpStatus" }
+
+    StorageCategory:
+      type: string
+      enum: [technical, events, audit, connection_issues, traffic, user_traffic, user_ip_history, diagnostics]
+
+    StoragePolicy:
+      type: object
+      required: [category, enabled, retention_days]
+      properties:
+        category: { $ref: "#/components/schemas/StorageCategory" }
+        enabled: { type: boolean }
+        retention_days: { type: integer, minimum: 1, maximum: 3650 }
+
+    StorageCategoryStats:
+      type: object
+      required: [category, records]
+      properties:
+        category: { $ref: "#/components/schemas/StorageCategory" }
+        records: { type: integer, format: int64, minimum: 0 }
+        entities: { type: integer, format: int64, minimum: 0, description: Retained user totals for user_traffic. }
+        collector: { $ref: "#/components/schemas/TrafficCollectorState" }
+
+    TrafficCollectorState:
+      type: object
+      required: [last_success_ts, source_started_at, source_state, continuity]
+      properties:
+        last_success_ts: { type: integer, format: int64 }
+        source_started_at: { type: integer, format: int64 }
+        source_state: { $ref: "#/components/schemas/TrafficSourceState" }
+        continuity: { $ref: "#/components/schemas/TrafficContinuity" }
+
+    StorageStats:
+      type: object
+      required: [driver, durable, database_bytes, categories]
+      properties:
+        driver: { type: string, enum: [memory, sqlite] }
+        durable: { type: boolean }
+        database_bytes: { type: integer, format: int64, minimum: 0 }
+        categories:
+          type: array
+          items: { $ref: "#/components/schemas/StorageCategoryStats" }
+
+    StorageSettings:
+      type: object
+      required: [policies, stats, state_durable]
+      properties:
+        policies:
+          type: array
+          items: { $ref: "#/components/schemas/StoragePolicy" }
+        stats: { $ref: "#/components/schemas/StorageStats" }
+        state_durable:
+          type: boolean
+          description: Whether panel-state.json is enabled and control-plane state survives a restart.
+
+    StorageSettingsUpdate:
+      type: object
+      required: [policies]
+      properties:
+        confirm_retention_reduction: { type: boolean, default: false, description: Explicitly acknowledges deletion of data outside a shorter retention. }
+        policies:
+          type: array
+          items: { $ref: "#/components/schemas/StoragePolicy" }
+
+    StoragePurgeRequest:
+      type: object
+      required: [category, confirm]
+      properties:
+        category: { $ref: "#/components/schemas/StorageCategory" }
+        confirm: { type: boolean, const: true }
+
+    DestructiveConfirmationRequest:
+      type: object
+      additionalProperties: false
+      required: [confirm]
+      properties:
+        confirm: { type: boolean, const: true }
+
+    GeoIpConfig:
+      type: object
+      additionalProperties: false
+      required: [enabled, source, schedule, country, asn, city]
+      properties:
+        enabled: { type: boolean, default: false }
+        source: { type: string, enum: [community, urls, files], default: community }
+        schedule: { type: string, enum: [weekly, daily, manual], default: weekly }
+        country: { $ref: "#/components/schemas/GeoIpDatabaseConfig" }
+        asn: { $ref: "#/components/schemas/GeoIpDatabaseConfig" }
+        city: { $ref: "#/components/schemas/GeoIpDatabaseConfig" }
+
+    GeoIpDatabaseConfig:
+      type: object
+      additionalProperties: false
+      required: [enabled, location]
+      properties:
+        enabled: { type: boolean }
+        location: { type: string }
+
+    GeoIpDatabaseStatus:
+      type: object
+      required: [kind, build_epoch_secs, loaded_epoch_secs]
+      properties:
+        kind: { type: string, enum: [country, asn, city] }
+        build_epoch_secs: { type: integer, format: int64 }
+        loaded_epoch_secs: { type: integer, format: int64 }
+
+    GeoIpStatus:
+      type: object
+      required: [state, available, active_source, databases, last_error]
+      properties:
+        state: { type: string, enum: [disabled, empty, ready, updating, error] }
+        available: { type: boolean }
+        active_source: { type: [string, "null"], enum: [community, urls, files, null] }
+        databases: { type: array, items: { $ref: "#/components/schemas/GeoIpDatabaseStatus" } }
+        last_error:
+          type: [string, "null"]
+          description: Stable safe GeoIP error code; never a URL, filesystem path, query, or exception text.
+
+    GeoIpSettings:
+      type: object
+      required: [config, status]
+      properties:
+        config: { $ref: "#/components/schemas/GeoIpConfig" }
+        status: { $ref: "#/components/schemas/GeoIpStatus" }
+
+    GeoIpResult:
+      type: object
+      required: [state, country_code, country_name, country_name_ru, city, city_ru, asn, organization]
+      properties:
+        state: { type: string, enum: [found, private, not_found] }
+        country_code: { type: string }
+        country_name: { type: string }
+        country_name_ru: { type: string }
+        city: { type: string }
+        city_ru: { type: string }
+        asn: { type: integer, format: int64, minimum: 0 }
+        organization: { type: string }

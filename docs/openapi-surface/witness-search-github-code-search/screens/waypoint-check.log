@@ -1,0 +1,11 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> 
+        issue: Type name must begin with a letter
+
+Found 1 error and 2 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 1 error and 2 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,17 @@
+{
+  "acquired_result_identities": 1790,
+  "confirmed_witness": {
+    "commit": "5d31c27b11c36a018754f34830954d836a55afe5",
+    "path": "releases/v1.0/artifacts/openapi-rest.yaml",
+    "repository": "github.com/auto-agent-protocol/auto-agent-protocol",
+    "screen": "witness-search-sourcegraph/screens.jsonl",
+    "sha256": "52963c1be05dd4ba470319127c7c5728c7b455a6a8d91544c0c6404fd9a9ec46"
+  },
+  "key": "ref-pointer-unnamed-segment",
+  "only_reduction": "deduplication by repository, path and digest after fetch; before fetch, repository, path and commit identify query results",
+  "outcome": "witness-found pending register-witnesses",
+  "query_result_identities": 1966,
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while the key is closed on a licensed Fern-accepted witness; identities remain in queries.jsonl and reopen if registration or byte matching fails",
+  "unacquired_result_identities": 176
+}

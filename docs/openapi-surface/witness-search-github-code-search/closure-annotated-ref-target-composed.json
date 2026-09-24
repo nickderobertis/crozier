@@ -1,0 +1,11 @@
+{
+  "confirmed_witness": {
+    "candidate": "PaloAltoNetworks/pan.dev:openapi-specs/cspm/Alerts.json",
+    "revision": "4e989cdd4bbda669dc73c0d3f5db90bb4989bee3",
+    "screen_record": "witness-search-sourcegraph/records.tsv:15315",
+    "sha256": "2cf5ddfd5920e09c92edd7445feff4b74bdd6f12de9b3016fe317788592ec172"
+  },
+  "key": "annotated-ref-target-composed",
+  "outcome": "witness-found pending register-witnesses",
+  "unacquired_disposition": "not owed while this key is closed on a licensed Fern-accepted witness; reopen if registration or byte matching fails"
+}

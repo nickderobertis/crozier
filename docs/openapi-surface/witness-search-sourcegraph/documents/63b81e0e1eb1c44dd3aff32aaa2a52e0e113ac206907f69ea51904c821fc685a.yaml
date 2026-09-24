@@ -1,0 +1,845 @@
+# OpenAPI description of the docling-serve HTTP API. Served verbatim at
+# /openapi.yaml, so a running server always describes itself — keep it in sync
+# with `ConvertOptions` and the router in lib.rs.
+openapi: 3.1.0
+info:
+  title: docling-serve
+  description: |
+    HTTP conversion API over [docling.rs](https://github.com/docling-project/docling.rs):
+    documents (PDF, DOCX, XLSX, PPTX, HTML, EPUB, images, audio, video, …) to
+    Markdown, docling `DoclingDocument` JSON, DocLang (`.dclx`) archives,
+    LaTeX, or chunk records.
+
+    Options may be sent as query parameters, multipart text fields, or JSON
+    keys; a body value wins over the same option in the query string.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://github.com/docling-project/docling.rs/blob/master/LICENSE
+externalDocs:
+  description: docling-serve README
+  url: https://github.com/docling-project/docling.rs/tree/master/crates/docling-serve
+servers:
+  - url: /
+    description: This server
+
+paths:
+  /v1/convert:
+    post:
+      summary: Convert a document
+      description: |
+        Upload a file (`multipart/form-data`) or point the server at a URL
+        (`application/json`). The input format is selected by the filename's
+        extension — the uploaded part's filename, `file_name`, or the last
+        segment of the URL path.
+
+        `to=md` streams the Markdown as it converts (chunked response);
+        `to=dclx` returns the archive as a download; `to=images` skips
+        conversion entirely and rasterizes a PDF's pages to PNG (base64 in
+        JSON), honoring `pages` and `scale`.
+
+        **Batch**: several `file` parts in one multipart request convert as a
+        batch — the response is then `{"results": [...]}` with per-item
+        status (one bad file fails its item, not the batch), regardless of
+        `to`; binary dclx output is base64 in `dclx_base64`.
+
+        **Confidence** (PDF/image ML conversions): every response carries an
+        `X-Docling-Confidence` header with the document-level summary, and
+        `to=json` bodies additionally embed the full report (per-page
+        breakdown) under a top-level `confidence` key. Declarative
+        conversions have no ML stages and omit both.
+      operationId: convert
+      parameters:
+        - { $ref: "#/components/parameters/to" }
+        - { $ref: "#/components/parameters/strict" }
+        - { $ref: "#/components/parameters/images" }
+        - { $ref: "#/components/parameters/no_ocr" }
+        - { $ref: "#/components/parameters/skip_ocr" }
+        - { $ref: "#/components/parameters/force_full_page_ocr" }
+        - { $ref: "#/components/parameters/no_table_former" }
+        - { $ref: "#/components/parameters/no_text_panels" }
+        - { $ref: "#/components/parameters/heading_hierarchy" }
+        - { $ref: "#/components/parameters/do_picture_classification" }
+        - { $ref: "#/components/parameters/do_code_enrichment" }
+        - { $ref: "#/components/parameters/do_formula_enrichment" }
+        - { $ref: "#/components/parameters/fetch_images" }
+        - { $ref: "#/components/parameters/skip_empty_cells" }
+        - { $ref: "#/components/parameters/compact_tables" }
+        - { $ref: "#/components/parameters/md_page_break_placeholder" }
+        - { $ref: "#/components/parameters/list_attachments" }
+        - { $ref: "#/components/parameters/ebcdic_layout" }
+        - { $ref: "#/components/parameters/pages" }
+        - { $ref: "#/components/parameters/scale" }
+        - { $ref: "#/components/parameters/ocr_lang" }
+        - { $ref: "#/components/parameters/ocr_mode" }
+        - { $ref: "#/components/parameters/ocr_scale" }
+        - { $ref: "#/components/parameters/asr_model" }
+        - { $ref: "#/components/parameters/asr_lang" }
+        - { $ref: "#/components/parameters/encoding" }
+        - { $ref: "#/components/parameters/video_frames" }
+        - { $ref: "#/components/parameters/chunker" }
+        - { $ref: "#/components/parameters/chunk_tokenizer" }
+        - { $ref: "#/components/parameters/chunk_max_tokens" }
+        - { $ref: "#/components/parameters/chunk_merge_peers" }
+        - { $ref: "#/components/parameters/pipeline" }
+        - { $ref: "#/components/parameters/vlm_endpoint" }
+        - { $ref: "#/components/parameters/vlm_model" }
+        - { $ref: "#/components/parameters/vlm_api_key" }
+        - { $ref: "#/components/parameters/vlm_prompt" }
+        - { $ref: "#/components/parameters/vlm_max_tokens" }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The document. Its filename selects the input format.
+                to: { $ref: "#/components/schemas/To" }
+                strict: { type: boolean }
+                images: { $ref: "#/components/schemas/Images" }
+                no_ocr: { type: boolean }
+                force_full_page_ocr: { type: boolean }
+                no_table_former: { type: boolean }
+                no_text_panels: { type: boolean }
+                heading_hierarchy: { type: boolean }
+                do_picture_classification: { type: boolean }
+                do_code_enrichment: { type: boolean }
+                do_formula_enrichment: { type: boolean }
+                fetch_images: { type: boolean }
+                skip_empty_cells: { type: boolean }
+                compact_tables: { type: boolean }
+                md_page_break_placeholder: { type: string, examples: ["<!-- page break -->"] }
+                pages: { type: string, examples: ["2-5"] }
+                ocr_lang: { $ref: "#/components/schemas/OcrLang" }
+                ocr_mode: { $ref: "#/components/schemas/OcrMode" }
+                ocr_scale: { $ref: "#/components/schemas/OcrScale" }
+                asr_model: { type: string }
+                asr_lang: { type: string, examples: ["auto", "en", "de"] }
+                encoding: { type: string, examples: ["shift_jis", "koi8-r", "windows-1251"] }
+                video_frames: { type: integer, minimum: 0 }
+                chunker: { $ref: "#/components/schemas/Chunker" }
+                chunk_tokenizer: { type: string }
+                chunk_max_tokens: { type: integer, minimum: 1 }
+                chunk_merge_peers: { type: boolean }
+                pipeline: { $ref: "#/components/schemas/Pipeline" }
+                vlm_endpoint: { type: string, format: uri }
+                vlm_model: { type: string }
+                vlm_api_key: { type: string }
+                vlm_prompt: { type: string }
+                vlm_max_tokens: { type: integer, minimum: 1 }
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  properties:
+                    url:
+                      type: string
+                      format: uri
+                      description: >
+                        Source URL shorthand (mutually exclusive with `sources`).
+                        Honored only when the server runs with
+                        `--allow-url-fetch`, otherwise the request is rejected.
+                    file_name:
+                      type: string
+                      description: Overrides the format-selecting name taken from the URL path.
+                    sources:
+                      type: array
+                      minItems: 1
+                      items: { $ref: "#/components/schemas/SourceSpec" }
+                      description: >
+                        docling service-datamodel sources (#139) — mutually
+                        exclusive with `url`. `http` and the cloud kinds need
+                        `--allow-url-fetch`; cloud kinds additionally need a
+                        server built with the `cloud` cargo feature.
+                    target:
+                      $ref: "#/components/schemas/TargetSpec"
+                - $ref: "#/components/schemas/Options"
+            examples:
+              markdown:
+                summary: URL to Markdown
+                value: { url: "https://example.com/doc.pdf", to: "md" }
+              s3_pipeline:
+                summary: Convert an S3 prefix into another S3 prefix (#139)
+                value:
+                  sources:
+                    - { kind: s3, endpoint: "s3.us-east-2.amazonaws.com",
+                        access_key: "…", secret_key: "…", bucket: "in",
+                        key_prefix: "reports/", max_num_elements: 25 }
+                  target:
+                    { kind: s3, endpoint: "s3.us-east-2.amazonaws.com",
+                      access_key: "…", secret_key: "…", bucket: "out",
+                      key_prefix: "converted/" }
+                  to: "json"
+      responses:
+        "200":
+          description: The converted document.
+          content:
+            text/markdown:
+              schema: { type: string }
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/DoclingDocument"
+                  - $ref: "#/components/schemas/Chunks"
+            application/vnd.openxmlformats-officedocument.doclang:
+              schema: { type: string, format: binary }
+            text/x-tex:
+              schema: { type: string }
+            application/zip:
+              schema: { type: string, format: binary }
+          headers:
+            Content-Disposition:
+              description: "Present for `to=dclx` and `target: {kind: zip}` (attachment filename)."
+              schema: { type: string }
+            X-Docling-Confidence:
+              description: >
+                Document-level conversion-confidence summary (compact JSON —
+                the `ConfidenceReport` without its `pages` breakdown).
+                Present when the PDF/image ML pipeline ran.
+              schema: { type: string }
+        "400":
+          description: Bad request — unreadable input, invalid option, or a URL input on a server without `--allow-url-fetch`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "413":
+          description: Payload larger than the server's `--max-body-bytes`.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "415":
+          description: Unsupported input format.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "500":
+          description: Conversion failed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/convert/async:
+    post:
+      summary: Submit an async conversion job
+      description: |
+        Accepts exactly the `POST /v1/convert` request (including batches) but
+        answers immediately with a task id instead of holding the connection
+        for the duration of the conversion — submit → poll
+        `GET /v1/status/{id}` → fetch `GET /v1/result/{id}`. Jobs queue on
+        the same concurrency bound as sync requests and reuse the warm model
+        pipeline. At most `--queue-size` jobs may be queued or unfetched at
+        once; results are evicted `--result-ttl` seconds after completion.
+      operationId: convertAsync
+      responses:
+        "202":
+          description: The job was accepted and queued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskStatus" }
+        "400":
+          description: Bad request (validated synchronously, nothing is queued).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429":
+          description: The job queue is full — retry after results are fetched or expire.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/status/{id}:
+    get:
+      summary: Async job status
+      operationId: jobStatus
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: The job's current state (`error` is set on failure).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskStatus" }
+        "404":
+          description: Unknown task id — never submitted, or its result already expired.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/result/{id}:
+    get:
+      summary: Async job result
+      description: >
+        The finished conversion, with the same body, content type, and headers
+        the sync endpoint would have answered with (batches: the JSON results
+        array). Stays fetchable until the TTL evicts it.
+      operationId: jobResult
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: The converted output (see `POST /v1/convert` responses).
+        "202":
+          description: Not finished yet — the status body is returned instead.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TaskStatus" }
+        "404":
+          description: Unknown task id — never submitted, or its result expired.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "422":
+          description: The conversion failed; the stored error is returned.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /v1/config:
+    get:
+      summary: Server capabilities
+      operationId: getConfig
+      responses:
+        "200":
+          description: What this server allows; the built-in playground adapts to it.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  allow_url_fetch:
+                    type: boolean
+                    description: Whether URL inputs and `fetch_images` are enabled.
+                  models:
+                    type: array
+                    description: >
+                      Which model file each ML pipeline stage would load right
+                      now (resolved live: CWD-relative with env overrides).
+                      When two servers convert the same PDF differently, diff
+                      this list first.
+                    items:
+                      type: object
+                      properties:
+                        stage: { type: string, examples: [layout, tableformer.decoder, ocr.rec, pdfium] }
+                        path: { type: string }
+                        found: { type: boolean }
+                        bytes: { type: integer, description: File size (0 when missing) — tells an int8 quant from an fp32 graph at a glance. }
+                      required: [stage, path, found, bytes]
+                required: [allow_url_fetch, models]
+
+  /health:
+    get:
+      summary: Liveness probe
+      operationId: health
+      responses:
+        "200":
+          description: The process is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, const: ok }
+
+  /ready:
+    get:
+      summary: Readiness probe
+      operationId: ready
+      description: 503 until `--warmup` finishes loading the ML models; 200 immediately when the server runs without it.
+      responses:
+        "200":
+          description: Ready to serve conversions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, const: ready }
+        "503":
+          description: Still loading models.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, const: loading }
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      operationId: metrics
+      description: >
+        Prometheus text exposition (version 0.0.4) of request counts by status
+        class, an in-flight gauge, a request-latency histogram, and per-outcome
+        conversion counts. Scrapes of `/metrics`, `/health` and `/ready` are
+        excluded from the request metrics.
+      responses:
+        "200":
+          description: Current metric values.
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /openapi.yaml:
+    get:
+      summary: This document
+      operationId: openapi
+      responses:
+        "200":
+          description: The OpenAPI description of the running server.
+          content:
+            application/yaml:
+              schema: { type: string }
+
+components:
+  schemas:
+    To:
+      type: string
+      enum: [md, json, dclx, chunks, latex, images]
+      default: md
+      description: |
+        `md` — Markdown, streamed as it converts.
+        `json` — docling `DoclingDocument` JSON.
+        `dclx` — DocLang OPC archive, returned as a download.
+        `latex` — a complete LaTeX document (docling 2.124's `--to latex`,
+        #317), `text/x-tex`; in a batch, inline under `latex`.
+        `chunks` — chunker records (hierarchical, plus hybrid when a tokenizer is installed).
+        `images` — PDF only: per-page PNG renders as
+        `{"pages": [{"page", "width", "height", "png_base64"}]}` (no
+        conversion, no models; capped at `DOCLING_RS_MAX_RASTER_PAGES`
+        pages per request, default 100 — narrow with `pages=A-B`).
+    Images:
+      type: string
+      enum: [placeholder, embedded]
+      default: placeholder
+      description: Markdown picture handling — `embedded` inlines base64 data URIs.
+    OcrLang:
+      type: string
+      default: en
+      examples: [en, ch, en-US, eng, zh, zh-Hans, zh-TW, "iso:zh-CN"]
+      description: >
+        OCR recognition language for scanned pages: `en` (default; the English
+        PP-OCRv3 recognizer) or `ch` (the multilingual docling-conformance
+        recognizer), or a BCP-47 tag for either language — `en-US`, `eng`,
+        `zh`, `zh-Hans`, `zh-TW`; docling's `iso:` prefix is accepted and
+        script/region subtags are ignored (#388). Any other language is a
+        400 — only these two recognition models ship.
+    OcrMode:
+      type: string
+      enum: [default, full_page, layout_regions, pdf_aware_layout_regions]
+      default: default
+      description: >-
+        Which regions feed the OCR (docling's `OcrMode`) —
+        `full_page`/`layout_regions` discard the embedded text layer like
+        `force_full_page_ocr`; `pdf_aware_layout_regions` (= `default`) is the
+        standard text-layer-aware behavior.
+    OcrScale:
+      type: number
+      exclusiveMinimum: 0
+      description: >-
+        OCR render scale in pixels per PDF point (docling's
+        `OcrOptions.scale`). Unset reads the pipeline's own 2.0 px/pt render;
+        docling's default is 3 (216 dpi).
+    Scale:
+      type: number
+      minimum: 0.1
+      maximum: 4.0
+      default: 2.0
+      description: >-
+        `to=images` render scale in pixels per PDF point — 2.0 = 144 dpi,
+        the ML pipeline's own render scale.
+    Options:
+      type: object
+      description: Conversion options, shared by every transport.
+      properties:
+        to: { $ref: "#/components/schemas/To" }
+        strict:
+          type: boolean
+          default: false
+          description: Cleaner strict Markdown dialect instead of byte-for-byte docling-legacy output.
+        images: { $ref: "#/components/schemas/Images" }
+        skip_ocr:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — keep layout detection and TableFormer but never run OCR
+            (docling's independent `do_ocr=False`, #244): structure survives,
+            text that exists only as pixels comes back empty. `no_ocr` (the
+            whole-stack skip) wins when both are set.
+        no_ocr:
+          type: boolean
+          default: false
+          description: PDF/image — skip layout/OCR/TableFormer; emit the embedded text layer only.
+        force_full_page_ocr:
+          type: boolean
+          default: false
+          description: PDF — OCR every page even when it carries a text layer.
+        no_table_former:
+          type: boolean
+          default: false
+          description: PDF/image — geometric table reconstruction instead of the TableFormer model.
+        no_text_panels:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — keep every detected picture as a picture: disable the
+            demotion of uncaptioned dense-text "picture" regions into
+            paragraphs (the escape hatch for image-extraction workflows).
+        heading_hierarchy:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — infer section-header levels after assembly (docling's
+            HeadingHierarchyModel): PDF bookmarks are authoritative, then
+            legal/outline numbering, then font style. Off by default; headings
+            then keep the flat level the pipeline emits.
+        do_picture_classification:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — classify every picture with DocumentFigureClassifier
+            (docling's `do_picture_classification`, #423): the 26-class
+            prediction lands on the JSON picture item as its `classification`
+            annotation; Markdown is unchanged. Needs
+            `.models/picture_classifier.onnx` on the server — a missing model
+            warns and skips the pass.
+        do_code_enrichment:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — rewrite detected code blocks (and detect their
+            language, JSON `code_language`) with the CodeFormulaV2 VLM
+            (docling's `do_code_enrichment`, #423). Needs
+            `.models/code_formula/`; slow on CPU — an autoregressive decode per
+            code region.
+        do_formula_enrichment:
+          type: boolean
+          default: false
+          description: >
+            PDF/image — decode display formulas to LaTeX with CodeFormulaV2
+            (docling's `do_formula_enrichment`, #423): Markdown renders
+            `$$latex$$` instead of the formula placeholder comment, the JSON
+            formula item carries the LaTeX in `text`. Same model and cost as
+            `do_code_enrichment`.
+        ebcdic_layout:
+          type: string
+          description: >
+            EBCDIC (.ebc) — the copybook layout as inline `EbcdicLayout` JSON
+            (docling's schema). Mandatory for the format: the record bytes are
+            meaningless without their copybook.
+        list_attachments:
+          type: boolean
+          default: false
+          description: >
+            Email (.eml/.msg) — append an Attachments section listing names and
+            content types; the attachments' bytes are never embedded.
+        fetch_images:
+          type: boolean
+          default: false
+          description: >
+            HTML/EPUB — resolve external `<img src>` and embed the bytes.
+            Outbound fetch; honored only with `--allow-url-fetch`.
+        skip_empty_cells:
+          type: boolean
+          default: false
+          description: >
+            XLSX/XLS — omit empty cells from sparse-sheet table grids instead
+            of materialising each region's full bounding box (docling.rs
+            extension; a table that loses cells drops its span overlay).
+        compact_tables:
+          type: boolean
+          default: false
+          description: >
+            Render Markdown tables in the compact `| a | b |` form instead of
+            the width-padded GitHub style (docling.rs extension, all formats).
+        md_page_break_placeholder:
+          type: string
+          examples: ["<!-- page break -->"]
+          description: >
+            Text inserted between pages in Markdown output (docling-serve's
+            option of the same name; docling-core's
+            `MarkdownParams.page_break_placeholder`). A break lands only
+            between two rendered blocks on different pages — never first or
+            last, empty pages collapse. Unset: no page breaks (docling's
+            default). Markdown only.
+        pages:
+          type: string
+          pattern: '^\d+(-\d+)?$'
+          description: PDF page window, `A-B` or a single `N` (1-based, inclusive).
+          examples: ["2-5", "3"]
+        ocr_lang: { $ref: "#/components/schemas/OcrLang" }
+        ocr_mode: { $ref: "#/components/schemas/OcrMode" }
+        ocr_scale: { $ref: "#/components/schemas/OcrScale" }
+        scale: { $ref: "#/components/schemas/Scale" }
+        asr_model:
+          type: string
+          description: Audio/video — Whisper preset directory under `.models/asr/`.
+        asr_lang:
+          type: string
+          description: >-
+            Audio/video — transcription language: a Whisper code (`en`, `de`,
+            `zh`, …) or `auto` (default) to detect it from the first 30
+            seconds. English-only presets always transcribe English.
+        encoding:
+          type: string
+          description: >-
+            Text inputs (Markdown, CSV, AsciiDoc, WebVTT, XML, …) — the
+            character encoding to decode the file with, a WHATWG label such
+            as `shift_jis`, `koi8-r` or `windows-1251` (docling's
+            `TextBackendOptions.encoding`). Unset detects it: byte-order
+            mark, then UTF-8, then windows-1252. Bytes the named encoding
+            cannot decode fail the request instead of being guessed.
+          examples: ["auto", "en", "de"]
+        video_frames:
+          type: integer
+          minimum: 0
+          description: Video — max frames sampled as pictures (0 = transcript only; needs ffmpeg on the server).
+        chunker: { $ref: "#/components/schemas/Chunker" }
+        chunk_tokenizer:
+          type: string
+          description: >
+            `to=chunks` — hybrid tokenizer: a server-local *relative* path to a
+            HuggingFace `tokenizer.json` (absolute paths and `..` are
+            rejected). Default: the server's `DOCLING_CHUNK_TOKENIZER`, else
+            `.models/chunk/tokenizer.json`.
+        chunk_max_tokens:
+          type: integer
+          minimum: 1
+          default: 256
+          description: >
+            `to=chunks` — hybrid chunk budget in tokens (docling's
+            `max_tokens`; server default overridable via
+            `DOCLING_CHUNK_MAX_TOKENS`).
+        chunk_merge_peers:
+          type: boolean
+          default: true
+          description: >
+            `to=chunks` — merge undersized successive hybrid chunks with the
+            same headings (docling's `merge_peers`).
+        pipeline: { $ref: "#/components/schemas/Pipeline" }
+        vlm_endpoint:
+          type: string
+          format: uri
+          description: >
+            `pipeline=vlm` — the OpenAI-compatible endpoint (base `/v1` URL or
+            full `…/chat/completions`). Request-supplied values need
+            `--allow-url-fetch`; unset falls back to the server's
+            `DOCLING_RS_VLM_ENDPOINT`.
+        vlm_model:
+          type: string
+          description: >-
+            `pipeline=vlm` — model name as the endpoint knows it; falls back
+            to `DOCLING_RS_VLM_MODEL`.
+        vlm_api_key:
+          type: string
+          description: >-
+            `pipeline=vlm` — Bearer token; falls back to
+            `DOCLING_RS_VLM_API_KEY`.
+        vlm_prompt:
+          type: string
+          description: >-
+            `pipeline=vlm` — per-page instruction; falls back to
+            `DOCLING_RS_VLM_PROMPT`, else docling's DocLang-eliciting prompt.
+        vlm_max_tokens:
+          type: integer
+          minimum: 1
+          default: 8192
+          description: "`pipeline=vlm` — max_tokens per completion."
+    DoclingDocument:
+      type: object
+      description: >
+        docling-core's native document JSON (schema 1.10.0): a `body` tree of
+        `$ref`s into `texts` / `groups` / `tables` / `pictures`. Loads back into
+        Python docling-core via `DoclingDocument.load_from_json`.
+      properties:
+        schema_name: { type: string }
+        version: { type: string }
+        name: { type: string }
+        body: { type: object }
+        texts: { type: array, items: { type: object } }
+        groups: { type: array, items: { type: object } }
+        tables: { type: array, items: { type: object } }
+        pictures: { type: array, items: { type: object } }
+    SourceSpec:
+      type: object
+      required: [kind]
+      description: >
+        docling `kind`-tagged source (#139). `file`: {base64_string, filename}.
+        `http`: {url, headers?}. `s3`: {endpoint, access_key, secret_key,
+        bucket, key_prefix?, verify_ssl?, max_num_elements?}. `azure_blob`:
+        {account_name, container, connection_string, blob_prefix?,
+        max_num_elements?}. `google_cloud_storage`: {bucket, key_prefix?,
+        project?, service_account_key?, max_num_elements?}. Field names mirror
+        docling's service-datamodel models; credentials ride in the request
+        (trusted-client + TLS assumption, as upstream).
+      properties:
+        kind:
+          type: string
+          enum: [file, http, s3, azure_blob, google_cloud_storage]
+      additionalProperties: true
+    TargetSpec:
+      type: object
+      required: [kind]
+      description: >
+        docling `kind`-tagged output target (#139, #303): `inbody` (default —
+        the response body); a cloud store with the same coordinate fields as
+        the matching source kind (each converted document uploads as
+        `<stem>.<ext>` under the prefix, response is a `RemoteTargetResult`
+        acknowledgment with per-item outcomes); `zip` (one `application/zip`
+        archive of the `<stem>.<ext>` rendered outputs in the response body —
+        no gate, nothing outbound; a failed batch item becomes a
+        `<stem>.<ext>.error.txt` entry); or `put`: {url} (HTTP PUT each
+        rendered output to that — typically pre-signed — URL; needs
+        `--allow-url-fetch`, same SSRF check as URL inputs, answers with the
+        `RemoteTargetResult` acknowledgment, query string redacted).
+      properties:
+        kind:
+          type: string
+          enum: [inbody, s3, azure_blob, google_cloud_storage, zip, put]
+      additionalProperties: true
+    Pipeline:
+      type: string
+      enum: [standard, vlm]
+      default: standard
+      description: >
+        Conversion pipeline (#304). `vlm` sends every PDF page / image to a
+        remote OpenAI-compatible vision model instead of the local ML stack;
+        the `vlm_*` options apply (and fall back to the server's
+        `DOCLING_RS_VLM_*` environment — the operator-pinned mode). A
+        request-supplied `vlm_endpoint` needs `--allow-url-fetch` (SSRF
+        surface) and must not resolve to a private address. With `standard`
+        the `vlm_*` options are ignored.
+    Chunker:
+      type: string
+      enum: [hierarchical, hybrid]
+      description: >
+        `to=chunks` — return only this chunker's records (docling's
+        `ChunkerType`, #256). Unset returns both: `hierarchical` always,
+        `hybrid` when a tokenizer is available. An explicit `hybrid` without a
+        usable tokenizer is a 400.
+    Chunks:
+      type: object
+      description: Chunker output for `to=chunks`.
+      properties:
+        chunks:
+          type: array
+          items:
+            type: object
+            properties:
+              text: { type: string }
+              headings: { type: array, items: { type: string } }
+    TaskStatus:
+      type: object
+      description: An async conversion job's state.
+      properties:
+        task_id: { type: string }
+        task_status:
+          type: string
+          enum: [pending, started, success, failure]
+        error:
+          type: string
+          description: Present when `task_status` is `failure`.
+      required: [task_id, task_status]
+    ConfidenceReport:
+      type: object
+      description: >
+        Conversion-confidence scores (docling `ConfidenceReport` semantics):
+        each score is 0–1 or null when its stage didn't run; grades bucket the
+        aggregate (`poor` < 0.5 ≤ `fair` < 0.8 ≤ `good` < 0.9 ≤ `excellent`,
+        `unspecified` when nothing scored). `pages` is keyed by the real
+        1-based page number and carries the same fields per page.
+      properties:
+        layout_score: { type: [number, "null"], description: Mean confidence of the kept layout regions. }
+        ocr_score: { type: [number, "null"], description: Mean recognition confidence of OCR'd cells. }
+        parse_score: { type: [number, "null"], description: 10th-percentile text-layer extraction quality. }
+        table_score: { type: [number, "null"], description: Reserved (never set — matches Python docling). }
+        mean_score: { type: [number, "null"] }
+        low_score: { type: [number, "null"] }
+        mean_grade: { type: string, enum: [poor, fair, good, excellent, unspecified] }
+        low_grade: { type: string, enum: [poor, fair, good, excellent, unspecified] }
+        pages: { type: object, additionalProperties: { type: object } }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+  parameters:
+    to:
+      { name: to, in: query, schema: { $ref: "#/components/schemas/To" } }
+    strict:
+      { name: strict, in: query, schema: { type: boolean } }
+    images:
+      { name: images, in: query, schema: { $ref: "#/components/schemas/Images" } }
+    no_ocr:
+      { name: no_ocr, in: query, schema: { type: boolean } }
+    skip_ocr:
+      { name: skip_ocr, in: query, schema: { type: boolean } }
+    force_full_page_ocr:
+      { name: force_full_page_ocr, in: query, schema: { type: boolean } }
+    no_table_former:
+      { name: no_table_former, in: query, schema: { type: boolean } }
+    no_text_panels:
+      { name: no_text_panels, in: query, schema: { type: boolean } }
+    heading_hierarchy:
+      { name: heading_hierarchy, in: query, schema: { type: boolean } }
+    do_picture_classification:
+      { name: do_picture_classification, in: query, schema: { type: boolean } }
+    do_code_enrichment:
+      { name: do_code_enrichment, in: query, schema: { type: boolean } }
+    do_formula_enrichment:
+      { name: do_formula_enrichment, in: query, schema: { type: boolean } }
+    fetch_images:
+      { name: fetch_images, in: query, schema: { type: boolean } }
+    skip_empty_cells:
+      { name: skip_empty_cells, in: query, schema: { type: boolean } }
+    compact_tables:
+      { name: compact_tables, in: query, schema: { type: boolean } }
+    md_page_break_placeholder:
+      { name: md_page_break_placeholder, in: query, schema: { type: string } }
+    list_attachments:
+      { name: list_attachments, in: query, schema: { type: boolean } }
+    ebcdic_layout:
+      { name: ebcdic_layout, in: query, schema: { type: string } }
+    pages:
+      { name: pages, in: query, schema: { type: string }, example: "2-5" }
+    scale:
+      { name: scale, in: query, schema: { $ref: "#/components/schemas/Scale" } }
+    ocr_lang:
+      { name: ocr_lang, in: query, schema: { $ref: "#/components/schemas/OcrLang" } }
+    ocr_mode:
+      { name: ocr_mode, in: query, schema: { $ref: "#/components/schemas/OcrMode" } }
+    ocr_scale:
+      { name: ocr_scale, in: query, schema: { $ref: "#/components/schemas/OcrScale" } }
+    asr_model:
+      { name: asr_model, in: query, schema: { type: string } }
+    asr_lang:
+      { name: asr_lang, in: query, schema: { type: string } }
+    encoding:
+      { name: encoding, in: query, schema: { type: string } }
+    video_frames:
+      { name: video_frames, in: query, schema: { type: integer, minimum: 0 } }
+    chunker:
+      { name: chunker, in: query, schema: { $ref: "#/components/schemas/Chunker" } }
+    chunk_tokenizer:
+      { name: chunk_tokenizer, in: query, schema: { type: string } }
+    chunk_max_tokens:
+      { name: chunk_max_tokens, in: query, schema: { type: integer, minimum: 1 } }
+    chunk_merge_peers:
+      { name: chunk_merge_peers, in: query, schema: { type: boolean } }
+    pipeline:
+      { name: pipeline, in: query, schema: { $ref: "#/components/schemas/Pipeline" } }
+    vlm_endpoint:
+      { name: vlm_endpoint, in: query, schema: { type: string, format: uri } }
+    vlm_model:
+      { name: vlm_model, in: query, schema: { type: string } }
+    vlm_api_key:
+      { name: vlm_api_key, in: query, schema: { type: string } }
+    vlm_prompt:
+      { name: vlm_prompt, in: query, schema: { type: string } }
+    vlm_max_tokens:
+      { name: vlm_max_tokens, in: query, schema: { type: integer, minimum: 1 } }

@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -495,6 +495,10 @@ test-witness-search-redo:
 # Drive complete local-tree selector acquisition through the real CLI.
 test-witness-search-acquisition:
     "$(./scripts/census-python.sh)" tests/witness_search_local_census_test.py
+
+# Offline HTTP journey for the GitHub/Sourcegraph witness acquisition path.
+test-witness-search-github:
+    "$(./scripts/census-python.sh)" tests/witness_search_github_test.py
 
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:

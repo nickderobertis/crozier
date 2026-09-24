@@ -1,0 +1,3576 @@
+openapi: 3.1.0
+info:
+  title: ClickClack API
+  version: 0.1.0
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:8080
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Process liveness
+      security: []
+      responses:
+        "200":
+          description: Process is live
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ok
+  /readyz:
+    get:
+      operationId: getReadiness
+      summary: Database readiness
+      security: []
+      responses:
+        "200":
+          description: Database is reachable
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: ready
+        "503":
+          description: Database is unavailable; internal error details are omitted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    const: unavailable
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Opt-in metadata-only Prometheus metrics
+      security: []
+      responses:
+        "200":
+          description: Prometheus text exposition when metrics are enabled
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Metrics are disabled
+  /api/home-link:
+    get:
+      operationId: getHomeLink
+      summary: Workspace rail home destination and label
+      description: Public deployment metadata, read once when the chat shell starts. Relative paths resolve on the frontend origin. Integrated desktop chrome uses /app when url is /; other non-app HTTP(S) destinations open in the system browser.
+      security: []
+      responses:
+        "200":
+          description: Validated deployment settings with defaults applied independently
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeLink"
+              examples:
+                default:
+                  value: { url: "/", label: "cc" }
+                product:
+                  value: { url: "https://product.example.com/portal", label: "Product" }
+  /api/auth/magic/request:
+    post:
+      operationId: requestMagicLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestMagicLinkRequest"
+      responses:
+        "201":
+          description: Created local magic-link token in dev-bootstrap mode
+        "403":
+          description: Dev-bootstrap token minting requires a loopback client and local request host
+        "501":
+          description: Magic-link delivery is not configured
+  /api/auth/magic/consume:
+    post:
+      operationId: consumeMagicLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsumeMagicLinkRequest"
+      responses:
+        "200":
+          description: Created session
+  /api/auth/password/login:
+    post:
+      operationId: passwordLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordLoginRequest"
+      responses:
+        "200":
+          description: Created session
+        "400":
+          description: Missing identifier or password
+        "401":
+          description: Unknown identifier, wrong password, an account without a password set, or a password replaced while this request verified it
+        "403":
+          description: Cross-site login requests are not allowed
+        "415":
+          description: Content-Type must be application/json
+        "429":
+          description: Too many attempts for this client address or identifier
+        "501":
+          description: Password login is not configured
+  /api/auth/password/change:
+    post:
+      operationId: changePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password replaced; the account's other sessions were revoked
+        "400":
+          description: Missing or unacceptable password
+        "401":
+          description: Not signed in, the current password is wrong, or the calling session was revoked before the change committed
+        "403":
+          description: Cross-site requests are not allowed, and bot tokens cannot change passwords
+        "409":
+          description: The account has no password set and an administrator enrolls it first, or another change replaced the password first and nothing was written
+        "415":
+          description: Content-Type must be application/json
+        "429":
+          description: Too many attempts for this account
+        "501":
+          description: Password login is not configured
+  /api/auth/logout:
+    post:
+      operationId: logout
+      responses:
+        "200":
+          description: The bearer or cookie session that authenticated the call was revoked and the cookie expired
+        "403":
+          description: Cross-site sign-out requests are not allowed
+        "415":
+          description: Content-Type must be application/json
+  /api/auth/github/start:
+    get:
+      operationId: startGitHubOAuth
+      responses:
+        "302":
+          description: Redirect to GitHub OAuth authorization
+        "400":
+          description: Ambiguous OAuth browser-binding cookies
+        "429":
+          description: Deployment edge rate limit exceeded, when configured
+        "500":
+          description: OAuth browser binding, state, PKCE generation, or persistence failed
+        "501":
+          description: GitHub OAuth not configured
+        "503":
+          description: OAuth transaction capacity exhausted or canonical callback origin unavailable
+  /api/auth/github/desktop/start:
+    get:
+      operationId: startDesktopGitHubOAuth
+      parameters:
+        - name: code_challenge
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 43
+            maxLength: 43
+            pattern: "^[A-Za-z0-9_-]+$"
+        - name: desktop_protocol
+          in: query
+          required: false
+          description: Desktop OAuth handoff version. Omitted clients use legacy protocol 1.
+          schema:
+            type: integer
+            enum: [1, 2]
+      responses:
+        "302":
+          description: Redirect the system browser to GitHub OAuth authorization
+        "400":
+          description: Invalid desktop code challenge, unsupported protocol, or ambiguous OAuth browser-binding cookies
+        "426":
+          description: Desktop app upgrade required before a namespaced server can begin authentication
+        "429":
+          description: Deployment edge rate limit exceeded, when configured
+        "500":
+          description: OAuth browser binding, state, PKCE generation, or persistence failed
+        "501":
+          description: GitHub OAuth not configured
+        "503":
+          description: OAuth transaction capacity exhausted or canonical callback origin unavailable
+  /api/auth/github/desktop/consume:
+    post:
+      operationId: consumeDesktopGitHubOAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsumeDesktopGitHubOAuthRequest"
+      responses:
+        "200":
+          description: One-time desktop grant consumed and session cookie created
+        "400":
+          description: Malformed request or invalid, expired, or previously consumed desktop grant
+        "403":
+          description: Cross-site redemption rejected
+        "413":
+          description: JSON request body exceeds the application limit
+        "415":
+          description: Request content type is not application/json
+        "429":
+          description: Deployment edge rate limit exceeded, when configured
+        "500":
+          description: Desktop grant consumption or session persistence failed
+  /api/auth/github/callback:
+    get:
+      operationId: finishGitHubOAuth
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Browser session created and redirected to the web app, or one-time desktop grant created and redirected to the desktop callback
+        "400":
+          description: Invalid OAuth callback
+        "403":
+          description: GitHub account is not allowed
+        "500":
+          description: Identity, workspace, session, or desktop grant generation or persistence failed
+        "502":
+          description: GitHub provider request failed
+        "503":
+          description: Desktop grant capacity exhausted or canonical callback origin unavailable
+  /api/auth/openclaw/start:
+    get:
+      operationId: startOpenClawIDOAuth
+      responses:
+        "302":
+          description: Redirect to OpenClaw ID OIDC authorization
+        "400":
+          description: Ambiguous OAuth browser-binding cookies
+        "429":
+          description: Deployment edge rate limit exceeded, when configured
+        "500":
+          description: OAuth browser binding, state, PKCE generation, or persistence failed
+        "501":
+          description: OpenClaw ID sign-in not configured
+        "503":
+          description: OAuth transaction capacity exhausted or canonical callback origin unavailable
+  /api/auth/openclaw/callback:
+    get:
+      operationId: finishOpenClawIDOAuth
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Browser session created and redirected to the web app
+        "400":
+          description: Invalid OAuth callback
+        "403":
+          description: OpenClaw ID token invalid or account email not verified
+        "500":
+          description: Identity, workspace, or session persistence failed
+        "502":
+          description: OpenClaw ID provider request failed
+        "503":
+          description: Canonical callback origin unavailable
+  /api/me:
+    get:
+      operationId: getMe
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateMe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMeRequest"
+      responses:
+        "200":
+          description: Updated user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+  /api/event-types:
+    get:
+      operationId: listEventTypes
+      responses:
+        "200":
+          description: Durable event types accepted by outgoing event subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventTypesResponse"
+  /api/me/bots:
+    get:
+      operationId: listMyBots
+      responses:
+        "200":
+          description: User-owned bots installed in workspaces
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bots]
+                properties:
+                  bots:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OwnedBotEntry"
+        "403":
+          description: Bot tokens cannot list owned bots
+  /api/workspaces:
+    get:
+      operationId: listWorkspaces
+      responses:
+        "200":
+          description: Workspace list
+    post:
+      operationId: createWorkspace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkspaceRequest"
+      responses:
+        "201":
+          description: Created workspace
+  /api/routes/{workspace_route_id}/{target_route_id}:
+    get:
+      operationId: resolveRoute
+      parameters:
+        - $ref: "#/components/parameters/workspace_route_id"
+        - $ref: "#/components/parameters/target_route_id"
+      responses:
+        "200":
+          description: Resolved route target and canonical public URL path
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [route]
+                properties:
+                  route:
+                    $ref: "#/components/schemas/RouteTarget"
+        "404":
+          description: Route was missing or inaccessible
+  /api/workspaces/{workspace_id}:
+    get:
+      operationId: getWorkspace
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Workspace
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [workspace]
+                properties:
+                  workspace:
+                    $ref: "#/components/schemas/Workspace"
+    patch:
+      operationId: updateWorkspace
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkspaceRequest"
+      responses:
+        "200":
+          description: Updated workspace profile
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [workspace]
+                properties:
+                  workspace:
+                    $ref: "#/components/schemas/Workspace"
+                  event:
+                    type: object
+        "403":
+          description: Workspace manager permission required
+    delete:
+      operationId: deleteWorkspace
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "204":
+          description: Workspace metadata deleted; queued upload-object cleanup may continue asynchronously
+        "403":
+          description: Workspace owner permission required
+  /api/workspaces/{workspace_id}/transfer-ownership:
+    post:
+      operationId: transferWorkspaceOwnership
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferWorkspaceOwnershipRequest"
+      responses:
+        "200":
+          description: Workspace ownership transferred
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [workspace]
+                properties:
+                  workspace:
+                    $ref: "#/components/schemas/Workspace"
+                  event:
+                    type: object
+        "403":
+          description: Workspace owner permission required
+  /api/workspaces/{workspace_id}/members:
+    get:
+      operationId: listWorkspaceMembers
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 100
+        - name: cursor
+          in: query
+          schema:
+            type: string
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [owner, moderator, member, bot, guest]
+      responses:
+        "200":
+          description: Paginated workspace members visible to any workspace member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceMemberPage"
+  /api/workspaces/{workspace_id}/moderation/members:
+    get:
+      operationId: listWorkspaceMembersForModeration
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Workspace members with moderation state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [members]
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/MemberModeration"
+  /api/workspaces/{workspace_id}/moderation/members/{user_id}:
+    patch:
+      operationId: updateWorkspaceMemberModeration
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMemberModerationRequest"
+      responses:
+        "200":
+          description: Updated member moderation state
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [member]
+                properties:
+                  member:
+                    $ref: "#/components/schemas/MemberModeration"
+                  event:
+                    type: object
+  /api/workspaces/{workspace_id}/channels:
+    get:
+      operationId: listChannels
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Channel list
+    post:
+      operationId: createChannel
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChannelRequest"
+      responses:
+        "201":
+          description: Created channel
+  /api/workspaces/{workspace_id}/topics:
+    get:
+      operationId: listTopics
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Workspace topics
+    post:
+      operationId: createTopic
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTopicRequest"
+      responses:
+        "201":
+          description: Created topic
+  /api/workspaces/{workspace_id}/bots:
+    get:
+      operationId: listBots
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Workspace bot identities and redacted tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bots]
+                properties:
+                  bots:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BotWithTokens"
+    post:
+      operationId: createBot
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBotRequest"
+      responses:
+        "201":
+          description: Created bot and one-time raw bot token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateBotResponse"
+        "403":
+          description: Service bots require a workspace manager. User-owned bots must be created by their owner.
+  /api/workspaces/{workspace_id}/bot-commands:
+    get:
+      operationId: listBotCommands
+      summary: List active bot-declared command menus for a workspace
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Bot commands sorted by bot handle and command
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceBotCommandListResponse"
+        "403":
+          description: Workspace membership required. Bot tokens also require workspaces:read and a matching workspace binding.
+  /api/workspaces/{workspace_id}/bots/{bot_user_id}/membership:
+    delete:
+      operationId: removeBotFromWorkspace
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Bot removed from workspace and workspace-scoped tokens revoked
+        "403":
+          description: Workspace manager permission required
+        "404":
+          description: Bot membership not found
+  /api/workspaces/{workspace_id}/bots/{bot_user_id}/tokens:
+    get:
+      operationId: listWorkspaceBotTokens
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Redacted workspace-scoped bot tokens
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [bot_tokens]
+                properties:
+                  bot_tokens:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BotToken"
+        "403":
+          description: Workspace membership required
+    post:
+      operationId: createWorkspaceBotToken
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBotTokenRequest"
+      responses:
+        "201":
+          description: Created one-time raw workspace-scoped bot token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotTokenResponse"
+        "403":
+          description: Service bot tokens require a workspace manager. User-owned bot tokens require the bot owner.
+  /api/workspaces/{workspace_id}/bots/{bot_user_id}/setup-codes:
+    post:
+      operationId: createWorkspaceBotSetupCode
+      summary: Mint a short-lived single-use setup code that defers bot token creation to claim time
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBotSetupCodeRequest"
+      responses:
+        "201":
+          description: Pending setup code. The plaintext code is returned once and only its hash is stored. No bot token exists until the code is claimed. Re-minting for the same bot and token name replaces any pending code.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSetupCodeResponse"
+        "403":
+          description: Service bot setup codes require a workspace manager. User-owned bot setup codes require the bot owner. Bot tokens are rejected.
+  /api/bot-setup-codes/claim:
+    post:
+      operationId: claimBotSetupCode
+      summary: Claim a setup code, minting the bot token at claim time
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimBotSetupCodeRequest"
+      responses:
+        "200":
+          description: Setup code claimed. The minted one-time raw token and installer context are returned. Codes are single use.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSetupCodeClaimResponse"
+        "404":
+          description: Unknown, expired, or already claimed code. The response is deliberately uniform.
+        "429":
+          description: Too many claim attempts from this address.
+  /api/bots/{bot_user_id}:
+    delete:
+      operationId: deleteBot
+      summary: Permanently retire a bot identity and release its handle
+      parameters:
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bot retired, credentials revoked, history preserved, and handle released
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteBotResponse"
+        "403":
+          description: User-owned bots require their owner. Service bots require manager permission in every affected workspace.
+        "404":
+          description: Active bot not found
+  /api/bots/{bot_user_id}/tokens:
+    get:
+      operationId: listBotTokens
+      parameters:
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Redacted bot tokens for bots installed in exactly one workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotTokenListResponse"
+        "403":
+          description: Workspace membership required
+    post:
+      operationId: createBotToken
+      parameters:
+        - name: bot_user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBotTokenRequest"
+      responses:
+        "201":
+          description: Created one-time raw bot token for bots installed in exactly one workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotTokenResponse"
+        "403":
+          description: Service bot tokens require a workspace manager. User-owned bot tokens require the bot owner.
+  /api/bots/self/commands:
+    put:
+      operationId: setBotCommands
+      summary: Atomically replace the authenticated bot's command menu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetBotCommandsRequest"
+      responses:
+        "200":
+          description: Replaced bot command menu sorted by command
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotCommandListResponse"
+        "400":
+          description: Invalid command menu. The previous menu remains unchanged.
+        "403":
+          description: Bot token with commands:write required. Human sessions are rejected.
+  /api/bot-tokens/{token_id}/revoke:
+    post:
+      operationId: revokeBotToken
+      parameters:
+        - name: token_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked bot token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotTokenResponse"
+        "403":
+          description: Service bot tokens require a workspace manager. User-owned bot tokens require the bot owner.
+  /api/workspaces/{workspace_id}/app-installations:
+    get:
+      operationId: listAppInstallations
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Active app installations for a workspace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppInstallationListResponse"
+    post:
+      operationId: createAppInstallation
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAppInstallationRequest"
+      responses:
+        "201":
+          description: Installed app binding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppInstallationResponse"
+        "403":
+          description: Workspace manager permission required
+  /api/app-installations/{installation_id}/revoke:
+    post:
+      operationId: revokeAppInstallation
+      parameters:
+        - name: installation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeAppInstallationRequest"
+      responses:
+        "200":
+          description: Revoked app installation and requested attached resources
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevokeAppInstallationResponse"
+        "403":
+          description: Workspace manager permission required
+  /api/workspaces/{workspace_id}/slash-commands:
+    get:
+      operationId: listSlashCommands
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Active registered slash commands
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlashCommandListResponse"
+    post:
+      operationId: createSlashCommand
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSlashCommandRequest"
+      responses:
+        "201":
+          description: Registered slash command and one-time signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlashCommandResponse"
+        "403":
+          description: Workspace manager permission required
+  /api/slash-commands/{command_id}/revoke:
+    post:
+      operationId: revokeSlashCommand
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked slash command
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlashCommandResponse"
+        "403":
+          description: Workspace manager permission required
+  /api/slash-commands/{command_id}/rotate-secret:
+    post:
+      operationId: rotateSlashCommandSecret
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Slash command with its fresh one-time signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SlashCommandResponse"
+        "400":
+          description: Cannot rotate a revoked slash command
+        "403":
+          description: Workspace manager permission required
+  /api/workspaces/{workspace_id}/event-subscriptions:
+    get:
+      operationId: listEventSubscriptions
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Active outgoing event subscriptions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSubscriptionListResponse"
+    post:
+      operationId: createEventSubscription
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEventSubscriptionRequest"
+      responses:
+        "201":
+          description: Created event subscription and one-time signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSubscriptionResponse"
+        "400":
+          description: Invalid or unknown event type
+        "403":
+          description: Workspace manager permission required
+  /api/event-subscriptions/{subscription_id}/revoke:
+    post:
+      operationId: revokeEventSubscription
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked event subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSubscriptionResponse"
+        "403":
+          description: Workspace manager permission required
+  /api/event-subscriptions/{subscription_id}/rotate-secret:
+    post:
+      operationId: rotateEventSubscriptionSecret
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Event subscription with its fresh one-time signing secret
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSubscriptionResponse"
+        "400":
+          description: Cannot rotate a revoked event subscription
+        "403":
+          description: Workspace manager permission required
+  /api/event-subscriptions/{subscription_id}/deliveries:
+    get:
+      operationId: listEventDeliveryAttempts
+      parameters:
+        - name: subscription_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: before
+          in: query
+          description: Delivery attempt ID; returns attempts strictly older than this cursor.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Event delivery attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDeliveryAttemptsResponse"
+        "400":
+          description: Invalid or stale delivery cursor
+  /api/workspaces/{workspace_id}/audit-log:
+    get:
+      operationId: listAuditLogEntries
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Workspace audit log entries
+  /api/workspaces/{workspace_id}/connected-accounts:
+    get:
+      operationId: listConnectedAccounts
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      responses:
+        "200":
+          description: Active connected accounts
+    post:
+      operationId: createConnectedAccount
+      parameters:
+        - $ref: "#/components/parameters/workspace_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConnectedAccountRequest"
+      responses:
+        "201":
+          description: Created connected account
+  /api/connected-accounts/{account_id}/revoke:
+    post:
+      operationId: revokeConnectedAccount
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Revoked connected account
+  /api/channels/{channel_id}:
+    patch:
+      operationId: updateChannel
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChannelRequest"
+      responses:
+        "200":
+          description: Updated channel
+  /api/channels/{channel_id}/messages:
+    get:
+      operationId: listMessages
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+        - name: after_seq
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: before_seq
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: around_seq
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+        - name: topic_id
+          in: query
+          schema:
+            type: string
+            minLength: 1
+          description: Return only root messages assigned to this active workspace or channel topic.
+        - name: mode
+          in: query
+          schema:
+            type: string
+            enum: [latest]
+          description: Explicitly request the latest window. Mutually exclusive with cursor parameters.
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+      responses:
+        "200":
+          description: Root channel messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagePage"
+    post:
+      operationId: createMessage
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMessageRequest"
+      responses:
+        "200":
+          description: Existing message returned for an idempotent nonce replay
+        "201":
+          description: Created message
+  /api/channels/{channel_id}/notification-settings:
+    get:
+      operationId: getChannelNotificationSettings
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      responses:
+        "200":
+          description: Current user's notification preference for the channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChannelNotificationSettings"
+    patch:
+      operationId: updateChannelNotificationSettings
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChannelNotificationSettingsRequest"
+      responses:
+        "200":
+          description: Updated notification preference for the channel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChannelNotificationSettings"
+  /api/channels/{channel_id}/read:
+    post:
+      operationId: markChannelRead
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkReadRequest"
+      responses:
+        "200":
+          description: Updated channel read receipt
+  /api/channels/{channel_id}/pins:
+    get:
+      operationId: listPinnedMessages
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 100
+      responses:
+        "200":
+          description: Messages pinned in the channel, newest pin first
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [messages]
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Message"
+    post:
+      operationId: pinMessage
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinMessageRequest"
+      responses:
+        "201":
+          description: Pinned the message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinMessageResponse"
+  /api/channels/{channel_id}/pins/{message_id}:
+    delete:
+      operationId: unpinMessage
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+        - $ref: "#/components/parameters/message_id"
+      responses:
+        "200":
+          description: Unpinned the message
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [event]
+                properties:
+                  event:
+                    $ref: "#/components/schemas/Event"
+  /api/messages/by-nonce:
+    get:
+      operationId: getMessageByNonce
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: nonce
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+      responses:
+        "200":
+          description: Message created by the authenticated owner with this nonce
+          headers:
+            X-ClickClack-Message-Nonce:
+              description: Indicates that durable message nonce lookup is supported.
+              schema:
+                type: string
+                enum: [supported]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: No message exists for this owner and nonce
+          headers:
+            X-ClickClack-Message-Nonce:
+              description: Indicates that durable message nonce lookup is supported.
+              schema:
+                type: string
+                enum: [supported]
+        "409":
+          description: The nonce belongs to a message in another workspace
+  /api/messages/{message_id}:
+    get:
+      operationId: getMessage
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      responses:
+        "200":
+          description: Message visible to the current user
+    patch:
+      operationId: updateMessage
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageRequest"
+      responses:
+        "200":
+          description: Updated message
+    delete:
+      operationId: deleteMessage
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      responses:
+        "200":
+          description: Soft-deleted message
+  /api/messages/{message_id}/route:
+    post:
+      operationId: ensureMessageRoute
+      summary: Ensure an immutable public route for a channel root message
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      responses:
+        "200":
+          description: Channel root with its existing or newly allocated route ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: Message was missing, inaccessible, a reply, or outside a channel
+  /api/messages/{message_id}/thread:
+    get:
+      operationId: getThread
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+        - name: limit
+          in: query
+          description: Maximum number of replies to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 100
+        - name: latest
+          in: query
+          description: Return the latest bounded reply window in chronological order instead of the earliest window.
+          schema:
+            type: boolean
+            default: false
+        - name: before_seq
+          in: query
+          description: Return the nearest replies before this exclusive thread sequence; mutually exclusive with after_seq, around_seq and latest=true.
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: after_seq
+          in: query
+          description: Return the nearest replies after this exclusive thread sequence.
+          schema: { type: integer, format: int64, minimum: 0 }
+        - name: around_seq
+          in: query
+          description: Return a balanced reply window around this thread sequence.
+          schema: { type: integer, format: int64, minimum: 0 }
+      responses:
+        "200":
+          description: Thread root, chronological replies and authoritative history edges
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThreadPage"
+  /api/messages/{message_id}/thread/replies:
+    post:
+      operationId: createThreadReply
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateThreadReplyRequest"
+      responses:
+        "200":
+          description: Existing thread reply returned for an idempotent nonce replay
+        "201":
+          description: Created thread reply
+  /api/messages/{message_id}/reactions:
+    post:
+      operationId: addReaction
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddReactionRequest"
+      responses:
+        "200":
+          description: Reaction already existed; no event created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReactionMutationResponse"
+        "201":
+          description: Added reaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReactionMutationResponse"
+  /api/messages/{message_id}/attachments:
+    post:
+      operationId: attachUpload
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttachUploadRequest"
+      responses:
+        "200":
+          description: Attached upload to message
+  /api/messages/{message_id}/reactions/{emoji}:
+    delete:
+      operationId: removeReaction
+      parameters:
+        - $ref: "#/components/parameters/message_id"
+        - name: emoji
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Removed reaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReactionMutationResponse"
+  /api/realtime/events:
+    get:
+      operationId: listEvents
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: after_cursor
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: include_tail
+          in: query
+          description: Include the latest durable cursor visible at request start.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Durable events after cursor
+  /api/realtime/ephemeral:
+    post:
+      operationId: publishEphemeral
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EphemeralEventRequest"
+      responses:
+        "202":
+          description: Ephemeral event accepted
+  /api/realtime/ws:
+    get:
+      operationId: realtimeWebSocket
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: after_cursor
+          in: query
+          schema:
+            type: string
+      responses:
+        "101":
+          description: WebSocket upgrade
+  /api/search:
+    get:
+      operationId: search
+      summary: Search messages visible to the authenticated actor
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 500
+        - name: channel_id
+          in: query
+          description: Limit results to one channel. Mutually exclusive with direct_conversation_id.
+          schema:
+            type: string
+        - name: direct_conversation_id
+          in: query
+          description: Limit results to one direct conversation. The actor must be a conversation member. Mutually exclusive with channel_id.
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [relevance, newest]
+            default: relevance
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: cursor
+          in: query
+          description: Opaque next_cursor from a previous response with the same search scope, query, and sort.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One page of search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+        "400":
+          description: Invalid search scope, sort, limit, query, or cursor
+        "403":
+          description: Bot token lacks messages:read, the requested workspace binding, or dms:read for direct-conversation search.
+  /api/uploads:
+    post:
+      operationId: createUpload
+      parameters:
+        - name: workspace_id
+          in: query
+          description: Optional workspace id for multipart clients that cannot send fields before the file part. If omitted, workspace_id must be included as a form field before file.
+          schema:
+            type: string
+        - name: nonce
+          in: query
+          description: Optional idempotency nonce. Requires workspace_id in the query. Replays return the original upload without reading the multipart body.
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                workspace_id:
+                  type: string
+                  description: Workspace id. Required when the workspace_id query parameter is omitted.
+                file:
+                  type: string
+                  format: binary
+                width:
+                  type: integer
+                  minimum: 0
+                height:
+                  type: integer
+                  minimum: 0
+                duration_ms:
+                  type: integer
+                  minimum: 0
+      responses:
+        "200":
+          description: Existing upload replayed by nonce
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "201":
+          description: Created upload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "409":
+          description: The nonce belongs to an upload in another workspace
+  /api/uploads/by-nonce:
+    get:
+      operationId: getUploadByNonce
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: nonce
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+      responses:
+        "200":
+          description: Upload metadata
+          headers:
+            X-ClickClack-Upload-Nonce:
+              description: Indicates that durable upload nonce lookup is supported.
+              schema:
+                type: string
+                enum: [supported]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "404":
+          description: No upload exists for this nonce
+          headers:
+            X-ClickClack-Upload-Nonce:
+              description: Indicates that durable upload nonce lookup is supported.
+              schema:
+                type: string
+                enum: [supported]
+        "409":
+          description: The nonce belongs to an upload in another workspace
+  /api/uploads/{upload_id}:
+    get:
+      operationId: getUpload
+      parameters:
+        - name: upload_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Upload bytes
+  /api/dms:
+    get:
+      operationId: listDirectConversations
+      parameters:
+        - name: workspace_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: DM list
+    post:
+      operationId: createDirectConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDirectConversationRequest"
+      responses:
+        "201":
+          description: Created DM
+  /api/dms/{conversation_id}:
+    get:
+      operationId: getDirectConversation
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      responses:
+        "200":
+          description: Direct conversation
+    delete:
+      operationId: hideDirectConversation
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      responses:
+        "200":
+          description: Closed direct conversation for the current user
+  /api/dms/{conversation_id}/open:
+    post:
+      operationId: reopenDirectConversation
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      responses:
+        "200":
+          description: Reopened direct conversation for the current user
+  /api/dms/{conversation_id}/messages:
+    get:
+      operationId: listDirectMessages
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+        - name: after_seq
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Direct messages
+    post:
+      operationId: createDirectMessage
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMessageRequest"
+      responses:
+        "200":
+          description: Existing direct message returned for an idempotent nonce replay
+        "201":
+          description: Created direct message
+  /api/dms/{conversation_id}/read:
+    post:
+      operationId: markDirectRead
+      parameters:
+        - $ref: "#/components/parameters/conversation_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkReadRequest"
+      responses:
+        "200":
+          description: Updated direct-conversation read receipt
+  /api/hooks/mattermost/{channel_id}:
+    post:
+      operationId: mattermostIncomingWebhook
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MattermostWebhookRequest"
+      responses:
+        "201":
+          description: Created message from incoming webhook
+  /api/hooks/slash/{channel_id}:
+    post:
+      operationId: slashCommand
+      parameters:
+        - $ref: "#/components/parameters/channel_id"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/SlashCommandRequest"
+      responses:
+        "201":
+          description: Slash-command callback response
+components:
+  parameters:
+    workspace_id:
+      name: workspace_id
+      in: path
+      required: true
+      schema:
+        type: string
+    channel_id:
+      name: channel_id
+      in: path
+      required: true
+      schema:
+        type: string
+    message_id:
+      name: message_id
+      in: path
+      required: true
+      schema:
+        type: string
+    conversation_id:
+      name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+    workspace_route_id:
+      name: workspace_route_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^(T[A-Z0-9]{16}|wsp_[A-Za-z0-9-]+)$"
+    target_route_id:
+      name: target_route_id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^([CDM][A-Z0-9]{16}|(chn|dm|msg)_[A-Za-z0-9-]+)$"
+  schemas:
+    HomeLink:
+      type: object
+      required: [url, label]
+      properties:
+        url:
+          type: string
+          minLength: 1
+          default: "/"
+          description: Absolute HTTP(S) URL without credentials, or a path starting with a single slash on the frontend origin. Control characters, backslashes, and protocol-relative URLs are forbidden. Query strings and fragments are allowed.
+        label:
+          type: string
+          minLength: 1
+          maxLength: 32
+          default: cc
+          description: Badge text, limited to 32 Unicode code points. Visually truncated to fit the tile; the accessible title retains the full label.
+    CreateWorkspaceRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+    UpdateMemberModerationRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [moderator, member, guest]
+        timeout_until:
+          type: string
+          format: date-time
+        timeout_minutes:
+          type: integer
+        clear_timeout:
+          type: boolean
+        blocked:
+          type: boolean
+        moderation_note:
+          type: string
+    RequestMagicLinkRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+    ConsumeMagicLinkRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    PasswordLoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          description: Account email address or handle
+        password:
+          type: string
+    ChangePasswordRequest:
+      type: object
+      required: [current_password, new_password]
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+    ConsumeDesktopGitHubOAuthRequest:
+      type: object
+      required: [code, code_verifier]
+      properties:
+        code:
+          description: Opaque one-time grant from a legacy protocol-1 or current protocol-2 desktop callback
+          oneOf:
+            - type: string
+              title: Desktop OAuth protocol 1 grant
+              minLength: 32
+              maxLength: 32
+              pattern: "^[a-f0-9]{32}$"
+            - type: string
+              title: Desktop OAuth protocol 2 grant
+              minLength: 43
+              maxLength: 43
+              pattern: "^[A-Za-z0-9_-]{43}$"
+        code_verifier:
+          type: string
+          minLength: 43
+          maxLength: 128
+          pattern: "^[A-Za-z0-9_-]+$"
+    UpdateMeRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          maxLength: 80
+        handle:
+          type: string
+          description: Unique user handle. Accepts an optional leading @ and stores the normalized value without it.
+          pattern: "^[a-zA-Z0-9@][a-zA-Z0-9_-]{1,32}$"
+        avatar_url:
+          type: string
+          format: uri
+        notification_settings:
+          $ref: "#/components/schemas/NotificationSettings"
+        appearance_preferences:
+          $ref: "#/components/schemas/AppearancePreferencesPatch"
+    User:
+      type: object
+      required: [id, kind, display_name, handle, avatar_url, created_at]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [human, bot]
+          description: Human users sign in directly. Bot users authenticate with bot tokens and may be service-owned or owned by a human.
+        owner_user_id:
+          type: string
+          description: Human owner for a user-owned bot. Empty for humans and service bots.
+        display_name:
+          type: string
+        handle:
+          type: string
+        former_handle:
+          type: string
+          description: Last active handle for a deleted bot identity. Present only on historical records.
+        deleted_at:
+          type: string
+          format: date-time
+          description: Present only when the immutable bot identity has been retired.
+        avatar_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        notification_settings:
+          $ref: "#/components/schemas/NotificationSettings"
+        appearance_preferences:
+          $ref: "#/components/schemas/AppearancePreferences"
+        password_enrolled:
+          type: boolean
+          description: Whether this account has a password on file. Reported only for the signed-in caller, on /api/me.
+    BotToken:
+      type: object
+      required: [id, bot_user_id, workspace_id, name, scopes, created_at]
+      properties:
+        id:
+          type: string
+        bot_user_id:
+          type: string
+        workspace_id:
+          type: string
+        owner_user_id:
+          type: string
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+        token:
+          type: string
+          description: One-time raw ccb_ token. Present only immediately after creation.
+    BotWithTokens:
+      type: object
+      required: [bot, tokens]
+      properties:
+        bot:
+          $ref: "#/components/schemas/User"
+        tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/BotToken"
+    BotCommandInput:
+      type: object
+      required: [command, description]
+      properties:
+        command:
+          type: string
+          description: Trimmed, accepted with or without a leading slash, then validated and stored in lowercase canonical form.
+        description:
+          type: string
+          minLength: 1
+          maxLength: 100
+        args_hint:
+          type: string
+          maxLength: 100
+    BotCommand:
+      type: object
+      required:
+        [id, workspace_id, bot_user_id, command, description, args_hint, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        bot_user_id:
+          type: string
+        command:
+          type: string
+          pattern: "^/[a-z0-9_-]{1,32}$"
+        description:
+          type: string
+        args_hint:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    BotCommandBot:
+      type: object
+      required: [id, handle, display_name, avatar_url]
+      properties:
+        id:
+          type: string
+        handle:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+    WorkspaceBotCommand:
+      type: object
+      required: [id, command, description, args_hint, bot, created_at, updated_at]
+      properties:
+        id:
+          type: string
+        command:
+          type: string
+          pattern: "^/[a-z0-9_-]{1,32}$"
+        description:
+          type: string
+        args_hint:
+          type: string
+        bot:
+          $ref: "#/components/schemas/BotCommandBot"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    SetBotCommandsRequest:
+      type: object
+      required: [commands]
+      properties:
+        commands:
+          type: array
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/BotCommandInput"
+    BotCommandListResponse:
+      type: object
+      required: [bot_commands]
+      properties:
+        bot_commands:
+          type: array
+          items:
+            $ref: "#/components/schemas/BotCommand"
+    WorkspaceBotCommandListResponse:
+      type: object
+      required: [bot_commands]
+      properties:
+        bot_commands:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceBotCommand"
+    CreateBotResponse:
+      type: object
+      required: [bot]
+      properties:
+        bot:
+          $ref: "#/components/schemas/User"
+        bot_token:
+          $ref: "#/components/schemas/BotToken"
+          description: Omitted when the request set initial_token=false.
+    BotTokenResponse:
+      type: object
+      required: [bot_token]
+      properties:
+        bot_token:
+          $ref: "#/components/schemas/BotToken"
+    BotTokenListResponse:
+      type: object
+      required: [bot_tokens]
+      properties:
+        bot_tokens:
+          type: array
+          items:
+            $ref: "#/components/schemas/BotToken"
+    OwnedBotWorkspace:
+      type: object
+      required: [id, route_id, name]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+        name:
+          type: string
+    OwnedBotEntry:
+      type: object
+      required: [bot, workspace, active_token_count]
+      properties:
+        bot:
+          $ref: "#/components/schemas/User"
+        workspace:
+          $ref: "#/components/schemas/OwnedBotWorkspace"
+        active_token_count:
+          type: integer
+          minimum: 0
+    CreateBotRequest:
+      type: object
+      required: [display_name]
+      properties:
+        owner_user_id:
+          type: string
+        display_name:
+          type: string
+          maxLength: 80
+        handle:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        token_name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        setup_nonce:
+          type: string
+          minLength: 16
+          maxLength: 128
+          description: Retry key for integration setup. Replays reuse the same bot identity; when an initial token is requested, they also reuse its token row while returning a fresh raw token.
+        initial_token:
+          type: boolean
+          description: Optional and true when omitted. Set to false to create the bot without minting an initial token, for setup-code installs where the token is minted at claim time.
+    CreateBotTokenRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        setup_nonce:
+          type: string
+          minLength: 16
+          maxLength: 128
+          description: Retry key for integration setup. Replays reuse the same token row while returning a fresh raw token.
+    CreateBotSetupCodeRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Token name captured at mint time. Defaults to "default".
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Scopes captured and validated at mint time.
+        defaults:
+          $ref: "#/components/schemas/BotSetupCodeClaimDefaults"
+    BotSetupCode:
+      type: object
+      required:
+        [id, bot_user_id, workspace_id, token_name, scopes, defaults, created_at, expires_at]
+      properties:
+        id:
+          type: string
+        bot_user_id:
+          type: string
+        workspace_id:
+          type: string
+        token_name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        defaults:
+          $ref: "#/components/schemas/BotSetupCodeClaimDefaults"
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        code:
+          type: string
+          description: One-time plaintext setup code (XXXX-XXXX-XXXX). Present only in the mint response; only a hash is stored.
+        contract_version:
+          type: integer
+          enum: [1]
+          description: Present with claim_url and api_base_url when the server has a trusted canonical API base. Version 1 means claim_url is the exact endpoint and must not be extended by consumers.
+        claim_url:
+          type: string
+          format: uri
+          description: Exact server-issued claim endpoint. Derived only from validated administrator configuration, except for trusted loopback development.
+        api_base_url:
+          type: string
+          format: uri
+          description: Canonical API base URL, including any configured base path.
+    BotSetupCodeResponse:
+      type: object
+      required: [setup_code]
+      properties:
+        setup_code:
+          $ref: "#/components/schemas/BotSetupCode"
+    ClaimBotSetupCodeRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: Setup code. Case-insensitive; separators are ignored.
+    BotSetupCodeClaimResponse:
+      type: object
+      required: [token, bot, workspace, defaults]
+      properties:
+        token:
+          type: string
+          description: One-time plaintext bot token minted by this claim.
+        bot:
+          $ref: "#/components/schemas/BotSetupCodeClaimBot"
+        workspace:
+          $ref: "#/components/schemas/BotSetupCodeClaimWorkspace"
+        defaults:
+          $ref: "#/components/schemas/BotSetupCodeClaimDefaults"
+        contract_version:
+          type: integer
+          enum: [1]
+          description: Version of the setup-code endpoint contract.
+        api_base_url:
+          type: string
+          format: uri
+          description: Canonical API base URL the installer should persist, including any configured base path.
+    BotSetupCodeClaimBot:
+      type: object
+      required: [id, handle, display_name]
+      properties:
+        id:
+          type: string
+        handle:
+          type: string
+        display_name:
+          type: string
+    BotSetupCodeClaimWorkspace:
+      type: object
+      required: [id, route_id, slug, name]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+    BotSetupCodeClaimDefaults:
+      type: object
+      properties:
+        defaultTo:
+          type: string
+          maxLength: 256
+          description: OpenClaw outbound target captured at mint time, such as channel:general. When omitted, claim falls back to the workspace's active default channel.
+        allowFrom:
+          type: array
+          maxItems: 500
+          items:
+            type: string
+            maxLength: 256
+          description: OpenClaw inbound sender allowlist captured at mint time.
+        agentActivity:
+          type: boolean
+          description: Whether OpenClaw agent activity streaming should be enabled. True requires the agent_activity:write scope.
+    AppInstallation:
+      type: object
+      required: [id, workspace_id, app_slug, display_name, bot_user_id, config, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        app_slug:
+          type: string
+        display_name:
+          type: string
+        bot_user_id:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    CreateAppInstallationRequest:
+      type: object
+      required: [app_slug, bot_user_id]
+      properties:
+        app_slug:
+          type: string
+        display_name:
+          type: string
+          maxLength: 80
+        bot_user_id:
+          type: string
+        config:
+          type: object
+          additionalProperties: true
+        setup_nonce:
+          type: string
+          minLength: 16
+          maxLength: 128
+          description: Retry key that returns the original installation instead of creating a duplicate.
+    DeletedBot:
+      type: object
+      required: [id, display_name, former_handle, deleted_at]
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        former_handle:
+          type: string
+        deleted_at:
+          type: string
+          format: date-time
+    DeleteBotResponse:
+      type: object
+      required: [deleted_bot]
+      properties:
+        deleted_bot:
+          $ref: "#/components/schemas/DeletedBot"
+    AppInstallationResponse:
+      type: object
+      required: [app_installation]
+      properties:
+        app_installation:
+          $ref: "#/components/schemas/AppInstallation"
+    AppInstallationListResponse:
+      type: object
+      required: [app_installations]
+      properties:
+        app_installations:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppInstallation"
+    RevokeAppInstallationRequest:
+      type: object
+      properties:
+        revoke_slash_commands:
+          type: boolean
+          description: Defaults to true when omitted.
+          example: true
+        revoke_event_subscriptions:
+          type: boolean
+          description: Defaults to true when omitted.
+          example: true
+        revoke_bot_tokens:
+          type: boolean
+          description: Defaults to false when omitted.
+          example: false
+        delete_bot:
+          type: boolean
+          description: Defaults to false. When true, globally retires the installation bot, revokes all of its resources, preserves historical attribution, and releases its handle.
+          example: false
+    AppInstallationRevokedCounts:
+      type: object
+      required: [slash_commands, event_subscriptions, bot_tokens]
+      properties:
+        slash_commands:
+          type: integer
+          minimum: 0
+        event_subscriptions:
+          type: integer
+          minimum: 0
+        bot_tokens:
+          type: integer
+          minimum: 0
+    RevokeAppInstallationResponse:
+      type: object
+      required: [installation, revoked]
+      properties:
+        installation:
+          $ref: "#/components/schemas/AppInstallation"
+        revoked:
+          $ref: "#/components/schemas/AppInstallationRevokedCounts"
+        deleted_bot:
+          $ref: "#/components/schemas/DeletedBot"
+    SlashCommand:
+      type: object
+      required: [id, workspace_id, command, description, callback_url, bot_user_id, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        app_installation_id:
+          type: string
+        command:
+          type: string
+          description: Slash command name, normalized with a leading slash.
+        description:
+          type: string
+        callback_url:
+          type: string
+          format: uri
+        signing_secret:
+          type: string
+          description: One-time callback signing secret. Present only immediately after registration.
+        bot_user_id:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    CreateSlashCommandRequest:
+      type: object
+      required: [command, callback_url, bot_user_id]
+      properties:
+        app_installation_id:
+          type: string
+        command:
+          type: string
+        description:
+          type: string
+          maxLength: 500
+        callback_url:
+          type: string
+          format: uri
+        bot_user_id:
+          type: string
+    SlashCommandResponse:
+      type: object
+      required: [slash_command]
+      properties:
+        slash_command:
+          $ref: "#/components/schemas/SlashCommand"
+    SlashCommandListResponse:
+      type: object
+      required: [slash_commands]
+      properties:
+        slash_commands:
+          type: array
+          items:
+            $ref: "#/components/schemas/SlashCommand"
+    EventSubscription:
+      type: object
+      required: [id, workspace_id, event_types, callback_url, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        app_installation_id:
+          type: string
+        event_types:
+          type: array
+          items:
+            type: string
+        callback_url:
+          type: string
+          format: uri
+        signing_secret:
+          type: string
+          description: One-time callback signing secret. Present only immediately after creation.
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    CreateEventSubscriptionRequest:
+      type: object
+      required: [event_types, callback_url]
+      properties:
+        app_installation_id:
+          type: string
+        event_types:
+          type: array
+          items:
+            type: string
+        callback_url:
+          type: string
+          format: uri
+    EventSubscriptionResponse:
+      type: object
+      required: [event_subscription]
+      properties:
+        event_subscription:
+          $ref: "#/components/schemas/EventSubscription"
+    EventSubscriptionListResponse:
+      type: object
+      required: [event_subscriptions]
+      properties:
+        event_subscriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventSubscription"
+    EventDeliveryAttempt:
+      type: object
+      required:
+        [
+          id,
+          subscription_id,
+          event_id,
+          workspace_id,
+          event_type,
+          attempt,
+          response_status,
+          created_at,
+          completed_at,
+        ]
+      properties:
+        id:
+          type: string
+        subscription_id:
+          type: string
+        event_id:
+          type: string
+        workspace_id:
+          type: string
+        event_type:
+          type: string
+        attempt:
+          type: integer
+        request_json:
+          type: string
+        response_status:
+          type: integer
+        response_body:
+          type: string
+        error:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+    EventDeliveryAttemptsResponse:
+      type: object
+      required: [deliveries, next_cursor]
+      properties:
+        deliveries:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventDeliveryAttempt"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+    EventTypesResponse:
+      type: object
+      required: [event_types]
+      properties:
+        event_types:
+          type: array
+          items:
+            type: string
+    AuditLogEntry:
+      type: object
+      required:
+        [id, workspace_id, actor_user_id, action, target_type, target_id, metadata, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        actor_user_id:
+          type: string
+        action:
+          type: string
+        target_type:
+          type: string
+        target_id:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+    ConnectedAccount:
+      type: object
+      required:
+        [
+          id,
+          workspace_id,
+          user_id,
+          provider,
+          provider_account_id,
+          display_name,
+          scopes,
+          metadata,
+          created_at,
+        ]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        user_id:
+          type: string
+        provider:
+          type: string
+        provider_account_id:
+          type: string
+        display_name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+    CreateConnectedAccountRequest:
+      type: object
+      required: [user_id, provider, provider_account_id]
+      properties:
+        user_id:
+          type: string
+        provider:
+          type: string
+        provider_account_id:
+          type: string
+        display_name:
+          type: string
+        scopes:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+    NotificationSettings:
+      type: object
+      required: [pushover_enabled, pushover_user_key]
+      properties:
+        pushover_enabled:
+          type: boolean
+        pushover_user_key:
+          type: string
+          description: Current user's Pushover user key. Must be set when Pushover notifications are enabled.
+          pattern: "^$|^[A-Za-z0-9]{30}$"
+    AppearancePreferences:
+      type: object
+      description: Current user's complete appearance preference snapshot. Empty properties use client defaults.
+      properties:
+        color_mode:
+          type: string
+          enum: ["", light, dark]
+        board_theme:
+          type: string
+          enum: ["", ember, moss, iris]
+        message_layout:
+          type: string
+          enum: ["", outlined]
+        density:
+          type: string
+          enum: ["", compact]
+    AppearancePreferencesPatch:
+      type: object
+      description: Partial appearance update. Omitted properties are unchanged and empty strings reset to defaults.
+      properties:
+        color_mode:
+          type: string
+          enum: ["", system, light, dark]
+        board_theme:
+          type: string
+          enum: ["", signal, ember, moss, iris]
+        message_layout:
+          type: string
+          enum: ["", standard, outlined]
+        density:
+          type: string
+          enum: ["", comfortable, compact]
+    CreateChannelRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        display_title:
+          type: string
+          description: Optional presentation-only title. Whitespace-only values clear it; longer values are truncated to 200 Unicode code points.
+        kind:
+          type: string
+          default: public
+        external_managed:
+          type: boolean
+        external_ref:
+          type: string
+          description: Opaque identity in the external managing system.
+        external_url:
+          type: string
+          format: uri
+          description: Deep link into the external managing application.
+        sidebar_section:
+          type: string
+          description: Optional client sidebar grouping label.
+    Topic:
+      type: object
+      required: [id, workspace_id, name, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        name:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        archived_at:
+          type: string
+          format: date-time
+    CreateTopicRequest:
+      type: object
+      required: [name]
+      properties:
+        channel_id:
+          type: string
+        name:
+          type: string
+          maxLength: 80
+    UpdateChannelRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        display_title:
+          type: string
+          description: Presentation-only title. Send an empty string to clear it; longer values are truncated to 200 Unicode code points.
+        kind:
+          type: string
+        archived:
+          type: boolean
+        external_managed:
+          type: boolean
+        external_ref:
+          type: string
+          description: Opaque external identity. Send an empty string to clear it.
+        external_url:
+          oneOf:
+            - type: string
+              format: uri
+              minLength: 1
+            - type: string
+              maxLength: 0
+          description: External deep link. Send an empty string to clear it.
+        sidebar_section:
+          type: string
+          description: Sidebar grouping label. Send an empty string to clear it.
+    CreateMessageRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+        body_format:
+          type: string
+          enum: [markdown]
+          default: markdown
+        quoted_message_id:
+          type: string
+          description: |
+            Optional ID of a message to quote. The quoted message must live in
+            the same channel, DM conversation, or thread as the new message;
+            cross-context quoting is rejected with 400. The server captures a
+            soft snapshot of the quoted body at send time.
+        nonce:
+          type: string
+          maxLength: 128
+          description: |
+            Optional client idempotency key for retry-safe message creation.
+            Reusing the same nonce with the same body and quote returns the
+            existing message with HTTP 200 instead of creating a duplicate.
+        topic_id:
+          type: string
+          description: Optional topic id. Channel-scoped topics can only be used in their channel.
+        upload_id:
+          type: string
+          description: |
+            Optional upload to attach atomically before message.created is
+            published. The upload must be visible in the message workspace;
+            bot tokens also require uploads:write.
+        kind:
+          type: string
+          enum: [message, agent_commentary, agent_tool]
+          description: |
+            Durable message kind; omitted values default to message. Agent
+            activity kinds require bot-token auth
+            with the explicit agent_activity:write scope and are supported on
+            channel and direct-message create endpoints.
+        turn_id:
+          type: string
+          description: |
+            Optional agent-turn correlation ID. Allowed only with
+            agent_commentary or agent_tool; ordinary messages reject it.
+    CreateThreadReplyRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+        quoted_message_id:
+          type: string
+        nonce:
+          type: string
+          maxLength: 128
+    UpdateMessageRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+    MarkReadRequest:
+      type: object
+      required: [seq]
+      properties:
+        seq:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Last visible channel or DM sequence to mark as read.
+    ReadReceipt:
+      type: object
+      required: [scope_id, user_id, last_read_seq, last_read_at]
+      properties:
+        scope_id:
+          type: string
+        user_id:
+          type: string
+        last_read_seq:
+          type: integer
+          format: int64
+        last_read_at:
+          type: string
+          format: date-time
+    UpdateWorkspaceRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        icon_url:
+          type: string
+    TransferWorkspaceOwnershipRequest:
+      type: object
+      required: [user_id]
+      properties:
+        user_id:
+          type: string
+    Workspace:
+      type: object
+      required: [id, route_id, name, slug, icon_url, created_at]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+          description: Immutable public route ID used in app URLs.
+        name:
+          type: string
+        slug:
+          type: string
+        icon_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        role:
+          type: string
+          enum: [owner, moderator, member, guest, bot]
+    WorkspaceMember:
+      type: object
+      required: [workspace_id, user, role, joined_at]
+      properties:
+        workspace_id:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        role:
+          type: string
+          enum: [owner, moderator, member, bot, guest]
+        joined_at:
+          type: string
+          format: date-time
+    WorkspaceMemberPage:
+      type: object
+      required: [members, has_more]
+      properties:
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkspaceMember"
+        next_cursor:
+          type: string
+        has_more:
+          type: boolean
+        total_count:
+          type: integer
+          description: Exact filtered member count, included only on the first page.
+        total_by_role:
+          allOf:
+            - $ref: "#/components/schemas/WorkspaceMemberRoleCounts"
+          description: Exact unfiltered role totals, included only on the unfiltered first page.
+    WorkspaceMemberRoleCounts:
+      type: object
+      required: [owner, moderator, member, bot, guest]
+      properties:
+        owner:
+          type: integer
+          minimum: 0
+        moderator:
+          type: integer
+          minimum: 0
+        member:
+          type: integer
+          minimum: 0
+        bot:
+          type: integer
+          minimum: 0
+        guest:
+          type: integer
+          minimum: 0
+    MemberModeration:
+      type: object
+      required: [workspace_id, user, role, posts_remaining, post_limit]
+      properties:
+        workspace_id:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        role:
+          type: string
+          enum: [owner, moderator, member, guest, bot]
+        posts_remaining:
+          type: integer
+        post_limit:
+          type: integer
+        timeout_until:
+          type: string
+          format: date-time
+        blocked_at:
+          type: string
+          format: date-time
+        moderation_note:
+          type: string
+        moderation_by:
+          type: string
+        moderation_at:
+          type: string
+          format: date-time
+    Channel:
+      type: object
+      required: [id, route_id, workspace_id, name, kind, created_at, external_managed]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+          description: Immutable public route ID used in app URLs.
+        workspace_id:
+          type: string
+        name:
+          type: string
+        display_title:
+          type: string
+          description: Optional presentation-only title; channel routing and uniqueness continue to use name.
+        kind:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        archived_at:
+          type: string
+          format: date-time
+        external_managed:
+          type: boolean
+        external_ref:
+          type: string
+          description: Opaque identity in the external managing system.
+        external_url:
+          type: string
+          format: uri
+          description: Deep link into the external managing application.
+        sidebar_section:
+          type: string
+          description: Optional client sidebar grouping label.
+        last_seq:
+          type: integer
+          format: int64
+        last_read_seq:
+          type: integer
+          format: int64
+        unread_count:
+          type: integer
+          format: int64
+    DirectConversation:
+      type: object
+      required: [id, route_id, workspace_id, created_at, members, can_send]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+          description: Immutable public route ID used in app URLs.
+        workspace_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        can_send:
+          type: boolean
+          description: Whether the current user can send to at least one active recipient.
+        last_seq:
+          type: integer
+          format: int64
+        last_read_seq:
+          type: integer
+          format: int64
+        unread_count:
+          type: integer
+          format: int64
+    ThreadPage:
+      type: object
+      required: [root, replies, thread_state, oldest_seq, newest_seq, has_older, has_newer]
+      properties:
+        root:
+          $ref: "#/components/schemas/Message"
+        replies:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        thread_state:
+          $ref: "#/components/schemas/ThreadState"
+        oldest_seq:
+          type: integer
+          format: int64
+          description: Oldest returned thread sequence, or zero for an empty page.
+        newest_seq:
+          type: integer
+          format: int64
+          description: Newest returned thread sequence, or zero for an empty page.
+        has_older:
+          type: boolean
+        has_newer:
+          type: boolean
+    ThreadState:
+      type: object
+      required: [root_message_id, reply_count, last_reply_author_ids]
+      properties:
+        root_message_id:
+          type: string
+        reply_count:
+          type: integer
+          format: int64
+        last_reply_at:
+          type: string
+          format: date-time
+        last_reply_author_ids:
+          type: array
+          items:
+            type: string
+    ReactionSummary:
+      type: object
+      required: [emoji, count, reacted_by_me]
+      properties:
+        emoji:
+          type: string
+        count:
+          type: integer
+          format: int64
+          minimum: 1
+        reacted_by_me:
+          type: boolean
+    Event:
+      type: object
+      required: [id, cursor, type, workspace_id, created_at, payload]
+      properties:
+        id:
+          type: string
+        cursor:
+          type: string
+        type:
+          type: string
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        seq:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          nullable: true
+          additionalProperties: true
+        mentioned_user_ids:
+          type: array
+          items:
+            type: string
+          description: Workspace user IDs explicitly mentioned by a message event.
+    ChannelNotificationSettings:
+      type: object
+      required: [preference]
+      properties:
+        preference:
+          type: string
+          enum: [all, mentions, muted]
+    UpdateChannelNotificationSettingsRequest:
+      type: object
+      required: [preference]
+      properties:
+        preference:
+          type: string
+          enum: [all, mentions, muted]
+    ReactionMutationResponse:
+      type: object
+      required: [event, reactions]
+      properties:
+        event:
+          $ref: "#/components/schemas/Event"
+        reactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReactionSummary"
+    PinnedMessage:
+      type: object
+      required: [id, workspace_id, channel_id, message_id, pinned_by, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        message_id:
+          type: string
+        pinned_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    PinMessageRequest:
+      type: object
+      required: [message_id]
+      properties:
+        message_id:
+          type: string
+    PinMessageResponse:
+      type: object
+      required: [pinned_message, event]
+      properties:
+        pinned_message:
+          $ref: "#/components/schemas/PinnedMessage"
+        event:
+          $ref: "#/components/schemas/Event"
+    Message:
+      type: object
+      required: [id, workspace_id, author_id, thread_root_id, body, body_format, created_at]
+      properties:
+        id:
+          type: string
+        route_id:
+          type: string
+          description: Immutable public route ID for root messages. Omitted until a thread or channel citation needs one.
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        direct_conversation_id:
+          type: string
+        author_id:
+          type: string
+        parent_message_id:
+          type: string
+        thread_root_id:
+          type: string
+        topic_id:
+          type: string
+        channel_seq:
+          type: integer
+          format: int64
+        thread_seq:
+          type: integer
+          format: int64
+        body:
+          type: string
+        body_format:
+          type: string
+          enum: [markdown]
+        created_at:
+          type: string
+          format: date-time
+        edited_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+        kind:
+          type: string
+          enum: [message, agent_commentary, agent_tool]
+          description: Defaults to message for ordinary human and bot messages.
+        turn_id:
+          type: string
+          description: Correlates durable agent activity rows from one agent turn.
+        author:
+          $ref: "#/components/schemas/User"
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Upload"
+        quoted_message_id:
+          type: string
+        quoted_body_snapshot:
+          type: string
+        quoted_author_id:
+          type: string
+        quoted_author:
+          $ref: "#/components/schemas/User"
+        thread_state:
+          $ref: "#/components/schemas/ThreadState"
+        nonce:
+          type: string
+        reactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReactionSummary"
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          $ref: "#/components/schemas/Message"
+    MessagePage:
+      type: object
+      required: [messages, oldest_seq, newest_seq, has_older, has_newer]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        oldest_seq:
+          type: integer
+          format: int64
+        newest_seq:
+          type: integer
+          format: int64
+        has_older:
+          type: boolean
+        has_newer:
+          type: boolean
+    SearchHighlight:
+      type: object
+      required: [start, end]
+      properties:
+        start:
+          type: integer
+          minimum: 0
+          description: Inclusive Unicode code-point offset into snippet.
+        end:
+          type: integer
+          minimum: 0
+          description: Exclusive Unicode code-point offset into snippet.
+    SearchResult:
+      type: object
+      required:
+        [id, workspace_id, author, thread_root_id, created_at, reply_count, snippet, highlights]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        channel_name:
+          type: string
+        direct_conversation_id:
+          type: string
+        author:
+          $ref: "#/components/schemas/User"
+        parent_message_id:
+          type: string
+        thread_root_id:
+          type: string
+        channel_seq:
+          type: integer
+          format: int64
+        thread_seq:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+        edited_at:
+          type: string
+          format: date-time
+        reply_count:
+          type: integer
+          minimum: 0
+        last_reply_at:
+          type: string
+          format: date-time
+        snippet:
+          type: string
+          description: Bounded plain-text excerpt containing the matched terms.
+        highlights:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchHighlight"
+    SearchResponse:
+      type: object
+      required: [results, next_cursor]
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchResult"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+    Upload:
+      type: object
+      required: [id, workspace_id, owner_id, filename, content_type, byte_size, created_at]
+      properties:
+        id:
+          type: string
+        workspace_id:
+          type: string
+        owner_id:
+          type: string
+        nonce:
+          type: string
+        filename:
+          type: string
+        content_type:
+          type: string
+        byte_size:
+          type: integer
+          format: int64
+        width:
+          type: integer
+          minimum: 0
+        height:
+          type: integer
+          minimum: 0
+        duration_ms:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+    UploadResponse:
+      type: object
+      required: [upload]
+      properties:
+        upload:
+          $ref: "#/components/schemas/Upload"
+    RouteTarget:
+      type: object
+      required:
+        [workspace_id, workspace_route_id, target_type, target_id, target_route_id, canonical_path]
+      properties:
+        workspace_id:
+          type: string
+        workspace_route_id:
+          type: string
+        target_type:
+          type: string
+          enum: [channel, direct, thread]
+        target_id:
+          type: string
+        target_route_id:
+          type: string
+        parent_type:
+          type: string
+          enum: [channel, direct]
+        parent_id:
+          type: string
+        parent_route_id:
+          type: string
+        canonical_path:
+          type: string
+    AddReactionRequest:
+      type: object
+      required: [emoji]
+      properties:
+        emoji:
+          type: string
+    AttachUploadRequest:
+      type: object
+      required: [upload_id]
+      properties:
+        upload_id:
+          type: string
+    CreateDirectConversationRequest:
+      type: object
+      required: [workspace_id, member_ids]
+      properties:
+        workspace_id:
+          type: string
+        member_ids:
+          type: array
+          items:
+            type: string
+    EphemeralEventRequest:
+      type: object
+      required: [workspace_id, type]
+      properties:
+        workspace_id:
+          type: string
+        channel_id:
+          type: string
+        direct_conversation_id:
+          type: string
+        type:
+          type: string
+          enum: [typing.started, typing.stopped, presence.changed, agent.progress]
+        payload:
+          type: object
+          additionalProperties: true
+    MattermostWebhookRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+    SlashCommandRequest:
+      type: object
+      properties:
+        command:
+          type: string
+        text:
+          type: string
+        user_name:
+          type: string

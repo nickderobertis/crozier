@@ -1,0 +1,11 @@
+{
+  "confirmed_witness": {
+    "candidate": "truefoundry/trueforge:.github/fern/openapi/openapi.json",
+    "revision": "5adde289683b642203b06b39ca687e9d977ca7a5",
+    "screen_record": "witness-search-sourcegraph/records.tsv:11911",
+    "sha256": "842dbc04a149cccccdf3891791018bb899101838d3646724ffc50e9195a52b7e"
+  },
+  "key": "annotated-ref-target-closed-object",
+  "outcome": "witness-found pending register-witnesses",
+  "unacquired_disposition": "not owed while this key is closed on a licensed Fern-accepted witness; reopen if registration or byte matching fails"
+}

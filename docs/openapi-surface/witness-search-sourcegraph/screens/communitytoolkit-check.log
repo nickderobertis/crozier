@@ -1,0 +1,60 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 14 errors
+    [error]
+        path: kitchenreader.yml -> service -> endpoints -> query -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchenreader.yml -> service -> endpoints -> read -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> create -> examples[0] -> request
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> create -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> query -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> read -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> replace -> examples[0] -> request
+        issue: Unexpected property "id"
+
+    [error]
+        path: kitchensink.yml -> service -> endpoints -> replace -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> create -> examples[0] -> request
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> create -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> query -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> read -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> replace -> examples[0] -> request
+        issue: Unexpected property "id"
+
+    [error]
+        path: todoitem.yml -> service -> endpoints -> replace -> examples[0] -> response
+        issue: Unexpected property "id"
+
+Found 14 errors and 0 warnings in 0.014 seconds.
