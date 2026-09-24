@@ -1238,6 +1238,56 @@ fn witness_supply_probes_match_fern_measurements() {
     );
 }
 
+#[test]
+fn refused_probe_inputs_report_the_unsupported_shape() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let probes = root.join(PROBE_DOCUMENTS_DIR);
+    let path_item = tempfile::tempdir().expect("path-item probe tempdir");
+    let path_item_probe = path_item.path().join("header-at-path-item.yml");
+    std::fs::write(
+        &path_item_probe,
+        "openapi: 3.0.3\ninfo:\n  title: header-at-path-item\n  version: 1.0.0\npaths:\n  /probe:\n    parameters:\n      - name: probeParam\n        in: header\n        schema:\n          type: array\n          items:\n            type: string\n    get:\n      operationId: probe\n      responses:\n        '200':\n          description: OK\n",
+    )
+    .expect("write path-item probe");
+
+    for (probe, diagnostic) in [
+        (
+            probes.join("header-array.yml"),
+            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+        ),
+        (
+            probes.join("header-object.yml"),
+            "GET /probe: header parameter `probeParam` has an unsupported object schema",
+        ),
+        (
+            path_item_probe,
+            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+        ),
+        (
+            probes.join("nonascii-operationId.yml"),
+            "GET /probe: operationId `データを取得` has no ASCII identifier characters",
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("probe output tempdir");
+        let target = out.path().join("sdk");
+        let result = probe_command(&probe, &target)
+            .output()
+            .expect("run crozier over refused probe");
+        assert!(!result.status.success(), "{} was accepted", probe.display());
+        assert!(
+            String::from_utf8_lossy(&result.stderr).contains(diagnostic),
+            "{} did not report {diagnostic:?}: {}",
+            probe.display(),
+            String::from_utf8_lossy(&result.stderr)
+        );
+        assert!(
+            !target.exists() || walk_files(&target).is_empty(),
+            "{} wrote an SDK despite refusing the input",
+            probe.display()
+        );
+    }
+}
+
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
 const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
 const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";
