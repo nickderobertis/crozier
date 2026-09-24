@@ -431,7 +431,17 @@ impl Resolver<'_> {
             return Ok(None);
         }
         let path = DocumentLocation::from_reference(reference, source);
-        let Some(node) = pointer(self.document(&path, reference)?, fragment).cloned() else {
+        self.import_named_schema_at_path(&path, name, reference)
+    }
+
+    fn import_named_schema_at_path(
+        &mut self,
+        path: &DocumentLocation,
+        name: &str,
+        reference: &str,
+    ) -> Result<Option<String>> {
+        let fragment = format!("/{name}");
+        let Some(node) = pointer(self.document(path, reference)?, &fragment).cloned() else {
             return Ok(None);
         };
         let identity = (path.key(), name.to_string());
@@ -454,12 +464,11 @@ impl Resolver<'_> {
             }
         });
         for local in local_names {
-            let local_ref = format!("{}#/{local}", path.key());
-            // The target is addressed from the root file's directory; using
-            // the resolved path avoids rebasing a sibling's local pointer.
-            self.import_named_schema(&local_ref, &DocumentLocation::Local(PathBuf::from(".")))?;
+            // Keep the document location as a path. Turning it into a `$ref`
+            // would put a Windows drive prefix in the reference string.
+            self.import_named_schema_at_path(path, &local, reference)?;
         }
-        self.resolve_schema(&mut schema, &path)?;
+        self.resolve_schema(&mut schema, path)?;
         self.imported.insert(name.to_string(), schema);
         self.importing.remove(&identity);
         Ok(Some(name.to_string()))
