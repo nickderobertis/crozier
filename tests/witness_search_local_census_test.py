@@ -577,6 +577,25 @@ class LocalCensusTest(unittest.TestCase):
                              ["bad.json@abc"])
             self.assertEqual(found["shape-a", "vendor-portals", "portal-unanswered"]["items"], '["gone/docs"]')
             self.assertEqual(len(rows), 6)
+            (root / "witness-search-jentic/records.tsv").write_text("source\tkey\n", encoding="utf-8")
+            broken = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            self.assertEqual(broken.returncode, 1)
+            self.assertIn("does not have the candidate-record header", broken.stderr)
+            self.assertIn("repair the ledger it names", broken.stderr)
+
+    def test_postman_hit_acquisition_without_a_search_gives_repair_action(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir",
+                 str(root / "postman"), "--acquire-hits"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 1)
+            self.assertIn("run the search stage first", completed.stderr)
+            self.assertFalse((root / "postman" / "hit-access.jsonl").exists())
 
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(

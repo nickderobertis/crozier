@@ -101,7 +101,7 @@ def render(rows: list[dict[str, str]], fields: tuple[str, ...] = FIELDS) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO / "docs/openapi-surface")
-    parser.add_argument("--check", action="store_true", help="fail when outstanding.tsv is stale")
+    parser.add_argument("--check", action="store_true", help="fail when candidates.tsv or outstanding.tsv is stale")
     args = parser.parse_args()
     directory = args.root / "witness-search-registries"
     try:
