@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import concurrent.futures
+import hashlib
 import importlib.util
 import sys
 from pathlib import Path
@@ -45,29 +46,29 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
 
 def census_one(
     job: tuple[Path, dict[str, Any], list[tuple[str, str]]],
-) -> tuple[Path, str | None, list[tuple[str, int]]]:
+) -> tuple[Path, str, str | None, list[tuple[str, int]]]:
     path, conjunctions, keys = job
     try:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
         counts = CENSUS.census_document(
             CENSUS.load_document(path), conjunctions=conjunctions
         )
         return (
             path,
+            digest,
             None,
-            [
-                (key, counts.get(selector, 0))
-                for key, selector in keys
-                if counts.get(selector, 0)
-            ],
+            [(key, counts.get(selector, 0)) for key, selector in keys],
         )
     except (OSError, ValueError, CENSUS.DocumentError) as error:
-        return path, str(error), []
+        return path, "", str(error), []
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--contract", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--all-documents", action="store_true",
+                        help="emit one selector result per document, including zeroes and SHA-256")
     parser.add_argument(
         "--documents",
         action="append",
@@ -81,16 +82,12 @@ def main() -> int:
     try:
         keys = contract_keys(args.contract)
     except (OSError, ValueError) as error:
-        parser.error(
-            f"invalid --contract {args.contract}: {error}; "
-            "pass a readable contract such as "
-            "docs/openapi-surface/witness-search-redo/contract.md"
-        )
+        parser.error(f"invalid --contract {args.contract}: {error}")
     conjunctions = {
         selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
     }
     selector_by_key = dict(keys)
-    rows: list[tuple[str, str, str, str, int]] = []
+    rows: list[tuple[str, ...]] = []
     failures: list[str] = []
     for value in args.documents:
         source, separator, root_text = value.partition("=")
@@ -109,17 +106,19 @@ def main() -> int:
             max_workers=args.workers
         ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
-            for path, error, hits in results:
+            for path, digest, error, hits in results:
                 if error:
                     failures.append(f"{source}/{path.relative_to(root)}: {error}")
                     continue
                 for key, count in hits:
+                    if not args.all_documents and not count:
+                        continue
                     selector = selector_by_key[key]
-                    rows.append(
-                        (source, key, selector, str(path.relative_to(root)), count)
-                    )
+                    row = (source, key, selector, str(path.relative_to(root)), str(count))
+                    rows.append((*row, digest) if args.all_documents else row)
     writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
-    writer.writerow(("source", "key", "selector", "document", "count"))
+    header = ("source", "key", "selector", "document", "count")
+    writer.writerow((*header, "sha256") if args.all_documents else header)
     writer.writerows(rows)
     if failures:
         print("\n".join(failures), file=sys.stderr)
