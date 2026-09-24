@@ -1101,6 +1101,10 @@ pub struct Endpoint {
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
+    /// Whether Fern's importer builds no worked example for this operation, so
+    /// its IR's fallback generator writes it instead (two-item lists, sized
+    /// string samples); see `fern_imports_no_endpoint_example`.
+    pub importer_example_missing: bool,
     /// Whether the success schema itself declares `format: binary` (as opposed
     /// to merely using an `image/*` media type with a plain string schema).
     pub binary_schema_response: bool,
@@ -2434,8 +2438,8 @@ fn build_endpoint(
                 parameter_example_value(doc, p).is_none() && array_item_example(p).is_none();
             // A synthesized sample is only taken where Fern's importer builds no
             // worked example of its own; see [`fern_imports_no_endpoint_example`].
-            let omit_synthesized_example =
-                without_declared_example && (!required || !fern_imports_no_endpoint_example(op));
+            let omit_synthesized_example = without_declared_example
+                && (!required || !fern_imports_no_endpoint_example(doc, op));
             // Fern leaves an optional enum-typed query parameter out of a worked
             // call however its enum and its example are declared: measured on Fern
             // 5.20.0, an inline `enum` carrying a schema example, the same enum
@@ -2499,6 +2503,24 @@ fn build_endpoint(
                     // its golden takes `typing.Optional[typing.Sequence[str]]`.
                     && !schema.nullable.unwrap_or(false)
             });
+            // A `$ref` to an array component is that array's element to Fern's
+            // allow-multiple shorthand, not the alias: Groupe PSA's `extension`
+            // references `VehicleExtensionType`, a list of an enum, and its
+            // argument is `Union[VehicleExtensionTypeItem, Sequence[…]]`.
+            let type_ref = match &type_ref {
+                TypeRef::Named(name) if allow_multiple => types
+                    .iter()
+                    .find_map(|decl| match decl {
+                        TypeDecl::Alias(alias)
+                            if alias.name == *name && matches!(alias.target, TypeRef::List(_)) =>
+                        {
+                            Some(alias.target.clone())
+                        }
+                        _ => None,
+                    })
+                    .unwrap_or(type_ref),
+                _ => type_ref,
+            };
             let aliased_datetime = schema
                 .and_then(|schema| schema.reference.as_deref())
                 .and_then(|reference| resolve_ref(doc, reference))
@@ -2647,6 +2669,22 @@ fn build_endpoint(
                 }));
                 Some(TypeRef::Named(name))
             }
+        }
+        // An `allOf` of one `$ref` and nothing else is that `$ref` to Fern's
+        // importer, which converts a lone `allOf` element in the schema's place:
+        // Groupe PSA's `getVehicleByid` answers `allOf: [$ref Vehicle]` and
+        // returns `Vehicle`.
+        Some(schema)
+            if schema.reference.is_none()
+                && schema.properties.is_empty()
+                && schema.additional_properties.is_none()
+                && single_all_of_ref(schema).is_some()
+                && schema
+                    .all_of
+                    .as_ref()
+                    .is_some_and(|members| members.len() == 1) =>
+        {
+            single_all_of_ref(schema).map(|reference| TypeRef::Named(ref_to_class(reference)))
         }
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
@@ -3169,6 +3207,7 @@ fn build_endpoint(
         text_response: has_text_response(op),
         markdown_response: has_markdown_response(op),
         binary_response: is_binary_response(doc, op),
+        importer_example_missing: fern_imports_no_endpoint_example(doc, op),
         binary_schema_response: has_binary_schema_response(doc, op),
         wildcard_binary_response: has_wildcard_binary_response(doc, op),
         emittable,
@@ -3356,7 +3395,7 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
 /// `download_sandbox_file` take the sample; TrueForge's JSON `list_versions`,
 /// Adyen's `accountHolderId` and discord's `query` pass their names, and so does
 /// CloudFormation's `SignalResource`, whose `200` has no content at all.
-fn fern_imports_no_endpoint_example(op: &Operation) -> bool {
+fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     let unsupported_request = op.request_body.as_ref().is_some_and(|body| {
         !body.content.is_empty()
             && selected_json_request_media(body).is_none()
@@ -3370,7 +3409,136 @@ fn fern_imports_no_endpoint_example(op: &Operation) -> bool {
                 media == "*/*" || media == "text/event-stream" || is_json_like_media_type(media)
             })
     });
-    unsupported_request || unsupported_response
+    unsupported_request || unsupported_response || request_example_fails(doc, op)
+}
+
+/// Whether Fern's importer gives up on the operation's request example because a
+/// property the body's `$ref` parent requires is restated optional by an inline
+/// `allOf` member and nothing under the restatement carries an example: its
+/// object example treats the parent's `required` as binding, and an optional
+/// with no example reachable (`hasExample`) builds nothing for a request. Groupe
+/// PSA's `RemoteCallbackSubscribe` extends `CallbackSubscribe`, which requires
+/// `callback`, and restates `callback` without one; Fern logs *Failed to generate
+/// required request example* for both operations posting it.
+fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
+    let Some(schema) = op
+        .request_body
+        .as_ref()
+        .and_then(selected_json_request_media)
+        .and_then(|(_, media)| media.schema.as_ref())
+    else {
+        return false;
+    };
+    let schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    let Some(members) = schema.all_of.as_deref() else {
+        return false;
+    };
+    let mut parent_required = std::collections::HashSet::new();
+    for member in members {
+        if let Some(parent) = member
+            .reference
+            .as_deref()
+            .and_then(|r| resolve_ref(doc, r))
+        {
+            collect_required_through_all_of(doc, parent, &mut parent_required, 0);
+        }
+    }
+    let own_required: std::collections::HashSet<&str> = schema
+        .required
+        .iter()
+        .chain(
+            members
+                .iter()
+                .filter(|m| m.reference.is_none())
+                .flat_map(|m| &m.required),
+        )
+        .map(String::as_str)
+        .collect();
+    members
+        .iter()
+        .filter(|member| member.reference.is_none())
+        .flat_map(|member| &member.properties)
+        .any(|(key, restated)| {
+            parent_required.contains(key.as_str())
+                && !own_required.contains(key.as_str())
+                && !fern_has_example(doc, restated, 0, &mut Vec::new())
+        })
+}
+
+fn collect_required_through_all_of<'a>(
+    doc: &'a OpenApi,
+    schema: &'a Schema,
+    required: &mut std::collections::HashSet<&'a str>,
+    depth: usize,
+) {
+    if depth > 8 {
+        return;
+    }
+    required.extend(schema.required.iter().map(String::as_str));
+    for member in schema.all_of.iter().flatten() {
+        let member = member
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref(doc, reference))
+            .unwrap_or(member);
+        collect_required_through_all_of(doc, member, required, depth + 1);
+    }
+}
+
+/// Fern's `hasExample`: whether any example is reachable from `schema` within
+/// five levels, reading an object's own properties (not its `allOf` parents).
+fn fern_has_example<'a>(
+    doc: &'a OpenApi,
+    schema: &'a Schema,
+    depth: usize,
+    visited: &mut Vec<&'a str>,
+) -> bool {
+    if depth > 5 {
+        return false;
+    }
+    if let Some(reference) = schema.reference.as_deref() {
+        if visited.contains(&reference) {
+            return false;
+        }
+        let Some(target) = resolve_ref(doc, reference) else {
+            return false;
+        };
+        visited.push(reference);
+        let found = fern_has_example(doc, target, depth, visited);
+        visited.pop();
+        return found;
+    }
+    if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+        return members
+            .iter()
+            .any(|member| fern_has_example(doc, member, depth, visited));
+    }
+    // An array answers for its items alone; its own `example` is not read.
+    if schema.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+        return schema
+            .items
+            .as_deref()
+            .is_some_and(|items| fern_has_example(doc, items, depth + 1, visited));
+    }
+    if schema_example(schema).is_some() {
+        return true;
+    }
+    schema
+        .properties
+        .values()
+        .chain(
+            schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|member| member.reference.is_none())
+                .flat_map(|member| member.properties.values()),
+        )
+        .any(|property| fern_has_example(doc, property, depth + 1, visited))
 }
 
 /// The value Fern's IR example generator gives a string query parameter with no
@@ -7427,8 +7595,27 @@ impl Builder<'_> {
             }
         }
 
+        // A component that only annotates one object `$ref` is a copy of that
+        // object under its own name, as a property's would be: Groupe PSA's
+        // `VehicleStatusAlarm` is `allOf: [$ref Alarm, {description}]`, and Fern
+        // declares a flat model with `Alarm`'s fields and the annotation's docs.
+        if let Some((reference, description)) = described_all_of_ref(schema) {
+            if let Some(target) = resolve_ref_from_schemas(self.schemas, reference).cloned() {
+                if !is_map(&target)
+                    && !is_bare_object(&target)
+                    && target.one_of.is_none()
+                    && target.any_of.is_none()
+                    && string_enum_values(&target).is_none()
+                    && (!target.properties.is_empty() || is_object_type(&target))
+                {
+                    self.use_site_copy(name, &target, description);
+                    return;
+                }
+            }
+        }
         // Object with properties, an `allOf`, or an explicit `type: object`.
         if !schema.properties.is_empty() || schema.all_of.is_some() || is_object_type(schema) {
+            let docstring = docstring.or_else(|| short_circuit_description(schema, self.schemas));
             self.add_object(name, module, schema, docstring);
             return;
         }
@@ -7462,6 +7649,26 @@ impl Builder<'_> {
                 if let Some(element) = self.annotated_ref_type(&item_name, items) {
                     self.push_alias(name, module, sequence_of(schema, element), docstring);
                     return;
+                }
+                // An inline string enum element is an enum class of its own:
+                // Groupe PSA's `AlarmTypeEnum` is an array of two strings, and Fern
+                // declares `AlarmTypeEnumItem` for them.
+                if items.reference.is_none() {
+                    if let Some(values) = string_enum_values(items) {
+                        self.types.push(TypeDecl::Enum(build_enum(
+                            items,
+                            &item_name,
+                            values,
+                            clean_doc(items.description.as_deref()),
+                        )));
+                        self.push_alias(
+                            name,
+                            module,
+                            sequence_of(schema, TypeRef::Named(item_name)),
+                            docstring,
+                        );
+                        return;
+                    }
                 }
                 if is_inline_struct(items) {
                     let item_doc = clean_doc(items.description.as_deref());
@@ -7576,6 +7783,8 @@ impl Builder<'_> {
         }
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
+        let inherited = merge_restated_parent_properties(schema, self.schemas);
+        let schema = inherited.as_ref().unwrap_or(schema);
         // `allOf` merges members: `$ref`s become base classes, inline members
         // contribute properties, and `required` applies across the whole set.
         let required: Vec<&str> = schema
@@ -7692,10 +7901,16 @@ impl Builder<'_> {
                     else {
                         continue;
                     };
+                    // Fern compares the child's property, wrapped optional unless
+                    // required, against the base's unwrapped one, so only a
+                    // property both require can restate it: Groupe PSA's
+                    // `RemoteAction` restates `RemoteRef`'s optional
+                    // `remoteActionId` and `status` unchanged, and Fern flattens it.
                     if local.type_ref == field.type_ref
                         && local.optional == field.optional
                         && local.nullable == field.nullable
                         && local.spec_required == field.spec_required
+                        && local.spec_required
                         && local.docstring == field.docstring
                     {
                         restated.insert(field.wire_name.clone());
@@ -7796,15 +8011,17 @@ impl Builder<'_> {
                 // `AlertFilterSuggestion` annotates `FilterSuggestion` with
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
-                docstring: declared_doc(property_description(prop_schema, optional).or_else(
-                    || {
-                        described_all_of_ref(prop_schema)
-                            .and_then(|(reference, _)| {
-                                resolve_ref_from_schemas(self.schemas, reference)
-                            })
-                            .and_then(|target| target.description.as_deref())
-                    },
-                )),
+                docstring: declared_doc(
+                    annotation_lost_description(prop_schema, self.schemas)
+                        .unwrap_or_else(|| property_description(prop_schema, optional))
+                        .or_else(|| {
+                            described_all_of_ref(prop_schema)
+                                .and_then(|(reference, _)| {
+                                    resolve_ref_from_schemas(self.schemas, reference)
+                                })
+                                .and_then(|target| target.description.as_deref())
+                        }),
+                ),
                 example: schema_example_literal(prop_schema)
                     .or_else(|| {
                         prop_schema
@@ -8127,6 +8344,14 @@ impl Builder<'_> {
     /// `List[ActiveTrustedSignersItemsItem]`); anything else is a scalar or
     /// collection alias that resolves straight to its underlying type.
     fn use_site_copy(&mut self, ctx: &str, target: &Schema, description: Option<&str>) -> TypeRef {
+        // A target that is only an `allOf` around one inline element is that
+        // element to Fern, and the annotation's description does not survive the
+        // short-circuit (`maybeInjectDescriptionOrGroupName` injects nothing into
+        // an object): Groupe PSA's `Alert.startPosition` annotates `Position`,
+        // which wraps one titled object, and `AlertStartPosition` has no docstring.
+        if let Some(inner) = sole_inline_all_of_element(target) {
+            return self.use_site_copy(ctx, inner, None);
+        }
         // The copy documents itself with the annotation that named it, and keeps the
         // target's own description when the annotation carried none — an element
         // annotated only with an XML name (`SignerList.items`) still documents
@@ -9714,6 +9939,157 @@ fn flatten_nested_all_of(schema: &Schema) -> Option<Schema> {
     Some(flattened)
 }
 
+/// The one element of an `allOf` that Fern's importer converts in its place: a
+/// schema declaring no properties of its own and no open `additionalProperties`,
+/// whose `allOf` holds exactly one non-empty member, an inline one.
+fn sole_inline_all_of_element(schema: &Schema) -> Option<&Schema> {
+    if !schema.properties.is_empty()
+        || matches!(
+            schema.additional_properties,
+            Some(AdditionalProperties::Bool(true) | AdditionalProperties::Schema(_))
+        )
+    {
+        return None;
+    }
+    let mut members = schema
+        .all_of
+        .as_deref()?
+        .iter()
+        .filter(|member| member.reference.is_some() || !is_empty_schema(member));
+    let only = members.next()?;
+    (members.next().is_none() && only.reference.is_none()).then_some(only)
+}
+
+/// The description a schema without one of its own takes from the `allOf`
+/// element Fern's importer converts in its place: with the non-object members
+/// (a lone `description`, say) merged over the one object member, the last of
+/// them to carry a description wins, else the object member's own. Groupe PSA's
+/// `Preconditioning` wraps one described object and `TelemetryExtension` pairs a
+/// `{description}` member with a `{properties}` one; both golden models carry the
+/// description.
+fn short_circuit_description(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<String> {
+    if !schema.properties.is_empty() || schema.additional_properties.is_some() {
+        return None;
+    }
+    let members: Vec<&Schema> = schema
+        .all_of
+        .as_deref()?
+        .iter()
+        .filter(|member| member.reference.is_some() || !is_empty_schema(member))
+        .collect();
+    let object_member = |member: &Schema| {
+        member.reference.is_some() || is_object_type(member) || member.properties.declared()
+    };
+    let objects: Vec<&Schema> = members
+        .iter()
+        .copied()
+        .filter(|m| object_member(m))
+        .collect();
+    let [object] = objects.as_slice() else {
+        return None;
+    };
+    let object_description = if let Some(reference) = object.reference.as_deref() {
+        resolve_ref_from_schemas(schemas, reference)?
+            .description
+            .as_deref()
+    } else {
+        object.description.as_deref()
+    };
+    members
+        .iter()
+        .rev()
+        .filter(|member| !object_member(member))
+        .find_map(|member| member.description.as_deref())
+        .or(object_description)
+        .and_then(|description| clean_doc(Some(description)))
+}
+
+/// Whether `schema` declares nothing at all (`{}`).
+fn is_empty_schema(schema: &Schema) -> bool {
+    is_unknown(schema)
+        && schema.description.is_none()
+        && schema.title.is_none()
+        && !schema.properties.declared()
+        && schema.required.is_empty()
+        && schema.nullable.is_none()
+}
+
+/// The field description Fern keeps for an annotated `$ref` whose target it
+/// short-circuits to one inline `allOf` element — that element's own, the
+/// annotation being lost — or `None` when the property is not that shape.
+fn annotation_lost_description<'a>(
+    prop_schema: &'a Schema,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<Option<&'a str>> {
+    let (reference, _) = described_all_of_ref(prop_schema)?;
+    let target = resolve_ref_from_schemas(schemas, reference)?;
+    sole_inline_all_of_element(target).map(|inner| inner.description.as_deref())
+}
+
+/// `schema` with each inline property an inline `allOf` member restates laid
+/// over the same property of a sibling `$ref` member, key by key, the way Fern's
+/// importer spreads `{...base, ...override}`; `None` when nothing is restated.
+/// Groupe PSA's `TimeTriggerEntry` restates `Program.occurence` without a
+/// `required` of its own, and takes `Program`'s `required: [day]` with it.
+fn merge_restated_parent_properties(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Schema> {
+    let members = schema.all_of.as_deref()?;
+    let parents: Vec<&Schema> = members
+        .iter()
+        .filter_map(|member| resolve_ref_from_schemas(schemas, member.reference.as_deref()?))
+        .collect();
+    let mut changed = false;
+    let merged: Vec<Schema> = members
+        .iter()
+        .map(|member| {
+            let mut member = member.clone();
+            if member.reference.is_some() {
+                return member;
+            }
+            for (key, restated) in member.properties.iter_mut() {
+                if restated.reference.is_some() {
+                    continue;
+                }
+                let Some(base) = parents.iter().find_map(|parent| {
+                    parent
+                        .properties
+                        .get(key)
+                        .filter(|base| base.reference.is_none())
+                }) else {
+                    continue;
+                };
+                if restated.required.is_empty() && !base.required.is_empty() {
+                    restated.required.clone_from(&base.required);
+                    changed = true;
+                }
+                if restated.ty.is_none() && base.ty.is_some() {
+                    restated.ty.clone_from(&base.ty);
+                    changed = true;
+                }
+                if restated.items.is_none() && base.items.is_some() {
+                    restated.items.clone_from(&base.items);
+                    changed = true;
+                }
+                if !restated.properties.declared() && base.properties.declared() {
+                    restated.properties = base.properties.clone();
+                    changed = true;
+                }
+            }
+            member
+        })
+        .collect();
+    changed.then(|| {
+        let mut schema = schema.clone();
+        schema.all_of = Some(merged);
+        schema
+    })
+}
+
 /// The one member of a `oneOf`/`anyOf` beside a `type: null` alternative,
 /// whatever that member is.
 fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
@@ -9777,6 +10153,16 @@ fn string_enum_values(schema: &Schema) -> Option<Vec<String>> {
         if !omitted_type || !all_strings {
             return None;
         }
+    }
+    // One member of another kind makes it no enum at all (a `null` member is
+    // nullability, not a kind): Groupe PSA's `Adas.accr` lists six strings and
+    // `false`, and Fern types it `str`.
+    if values
+        .iter()
+        .any(|value| !value.is_string() && !value.is_null())
+        && values.iter().any(serde_json::Value::is_string)
+    {
+        return None;
     }
     let strings: Vec<String> = values
         .iter()
@@ -9865,7 +10251,20 @@ fn is_object_type(schema: &Schema) -> bool {
 /// docstrings only because the CRLF it forms there is normalized by `ruff
 /// format`, so trimming it here would lose it from the Markdown writers too.
 fn trim_doc_end(text: &str) -> &str {
-    text.trim_end_matches(|character: char| character.is_whitespace() && character != '\r')
+    let trimmed =
+        text.trim_end_matches(|character: char| character.is_whitespace() && character != '\r');
+    // A last line of nothing but indentation is a line of its own: Groupe PSA's
+    // `RemoteFailedEventStatus` description ends `state. \n \n`, and its enum
+    // docstring ends on a blank line.
+    let lines_trimmed = text.trim_end_matches('\n');
+    match lines_trimmed.rsplit_once('\n') {
+        Some((before, last))
+            if !last.is_empty() && last.trim().is_empty() && !before.trim().is_empty() =>
+        {
+            lines_trimmed
+        }
+        _ => trimmed,
+    }
 }
 
 /// Normalize a description into a docstring, dropping empty ones.
@@ -9877,11 +10276,15 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
         // A single intentional leading space in legacy specs is preserved by
         // Fern, while ordinary multi-space indentation is trimmed. Tabs in prose
         // are expanded to four spaces by its importer.
+        // A description that opens on a line break keeps it: Groupe PSA's
+        // `CallbackSubscribe.batchNotify` begins `\nNotification batch…`, and its
+        // model docstring opens on a blank line.
         let text = if text.starts_with("    ") && text.contains("\n\n    Attributes:")
             || text.starts_with(' ')
                 && text
                     .get(1..)
                     .is_some_and(|rest| rest.chars().next().is_some_and(|ch| !ch.is_whitespace()))
+            || text.starts_with('\n')
         {
             text
         } else {
@@ -10654,6 +11057,7 @@ mod tests {
 
     #[test]
     fn fern_builds_its_own_example_unless_the_request_or_response_is_unsupported() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({})).expect("document");
         let op = |value: serde_json::Value| -> Operation {
             serde_json::from_value(value).expect("operation deserializes")
         };
@@ -10661,26 +11065,26 @@ mod tests {
             "description": "ok",
             "content": { "application/json": { "schema": { "type": "object" } } }
         } } }));
-        assert!(!fern_imports_no_endpoint_example(&json));
+        assert!(!fern_imports_no_endpoint_example(&doc, &json));
         let empty = op(serde_json::json!({ "responses": { "200": { "description": "ok" } } }));
-        assert!(!fern_imports_no_endpoint_example(&empty));
+        assert!(!fern_imports_no_endpoint_example(&doc, &empty));
         let file = op(serde_json::json!({ "responses": { "200": {
             "description": "ok",
             "content": { "application/octet-stream": {
                 "schema": { "type": "string", "format": "binary" }
             } }
         } } }));
-        assert!(fern_imports_no_endpoint_example(&file));
+        assert!(fern_imports_no_endpoint_example(&doc, &file));
         let text_body = op(serde_json::json!({
             "requestBody": { "content": { "text/plain": { "schema": { "type": "string" } } } },
             "responses": { "204": { "description": "none" } }
         }));
-        assert!(fern_imports_no_endpoint_example(&text_body));
+        assert!(fern_imports_no_endpoint_example(&doc, &text_body));
         let form_body = op(serde_json::json!({
             "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object" } } } },
             "responses": { "204": { "description": "none" } }
         }));
-        assert!(!fern_imports_no_endpoint_example(&form_body));
+        assert!(!fern_imports_no_endpoint_example(&doc, &form_body));
     }
 
     #[test]

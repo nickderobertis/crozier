@@ -834,7 +834,7 @@ pub struct Schema {
     #[serde(default, deserialize_with = "de_properties")]
     pub properties: SchemaProperties,
     /// Required property names.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_required")]
     pub required: Vec<String>,
     /// Array item schema.
     #[serde(default, deserialize_with = "de_items")]
@@ -1138,6 +1138,26 @@ where
 /// Deserialize a Schema Object's `examples` from either spelling: JSON Schema's
 /// sequence of values, or a map of named Example Objects whose `value` each entry
 /// carries. Both flatten to the values in declaration order.
+/// Deserialize `required`, keeping only its string entries. A non-string entry
+/// names no property, and Fern reads the list as-is, so it requires nothing:
+/// Groupe PSA's `RemoteLights` declares `required: [true]` beside a property named
+/// `"true"`, and the golden's `true` field is optional.
+fn de_required<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(match serde_json::Value::deserialize(deserializer)? {
+        serde_json::Value::Array(values) => values
+            .into_iter()
+            .filter_map(|value| match value {
+                serde_json::Value::String(name) => Some(name),
+                _ => None,
+            })
+            .collect(),
+        _ => Vec::new(),
+    })
+}
+
 fn de_schema_examples<'de, D>(
     deserializer: D,
 ) -> std::result::Result<Vec<serde_json::Value>, D::Error>

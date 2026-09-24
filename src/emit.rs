@@ -6731,9 +6731,17 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                // Several wrapped items keep Python's magic trailing comma, as
+                // Groupe PSA's two-item `remote_types` example does; one does not.
+                let trailing_comma = if items.len() == 1 { "" } else { "," };
                 let body = items
                     .iter()
-                    .map(|it| format!("{inner_pad}{}", it.render_at(indent + 4, indent + 4)))
+                    .map(|it| {
+                        format!(
+                            "{inner_pad}{}{trailing_comma}",
+                            it.render_at(indent + 4, indent + 4)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
@@ -8434,9 +8442,14 @@ fn build_example_inner(
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 let synthesized_items =
-                    ((ep.text_response || ep.binary_response) && f.spec_required).then_some(2);
+                    ((ep.text_response || ep.binary_response || ep.importer_example_missing)
+                        && f.spec_required)
+                        .then_some(2);
                 if let Some(min_items) = synthesized_items {
-                    if let Example::List(items) | Example::ReferenceList(items) = &mut v {
+                    if let Example::List(items)
+                    | Example::ExplicitList(items)
+                    | Example::ReferenceList(items) = &mut v
+                    {
                         if let Some(first) = items.first().cloned() {
                             items.resize(min_items, first);
                         }
@@ -9874,6 +9887,7 @@ mod tests {
             text_response: false,
             markdown_response: false,
             binary_response: false,
+            importer_example_missing: false,
             binary_schema_response: false,
             wildcard_binary_response: false,
             emittable: true,

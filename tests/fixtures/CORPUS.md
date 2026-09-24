@@ -169,6 +169,7 @@ re-measure with `just fixtures-gaps`.
 | 147 | `thrivecart` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/thrivecart.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | ThriveCart API; `$ref` pointers under an undeclared component head |
 | 148 | `truefoundry-trueforge-5adde28` | github-raw | https://raw.githubusercontent.com/truefoundry/trueforge/5adde289683b642203b06b39ca687e9d977ca7a5/docs/openapi.json | `5adde289683b642203b06b39ca687e9d977ca7a5` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | TrueForge API at a later revision than row 108; annotated `$ref`s to closed-object targets |
 | 149 | `fergus` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/fergus.com/fergus-api/v1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Fergus API; `anyOf` array variants with struct items |
+| 150 | `groupe-psa` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/groupe-psa.io/main/3.19.2/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Groupe PSA Licence`) | link-ok | Groupe PSA Connected Car B2B API; annotated `$ref`s to composed targets |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -742,6 +743,7 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 147 | `thrivecart` | `ref-pointer-undeclared-component-head` | ✅ byte-matched with no repair of its own |
 | 148 | `truefoundry-trueforge-5adde28` | `annotated-ref-target-closed-object` | ✅ byte-matched after this batch's repairs |
 | 149 | `fergus` | `anyof-array-variant-struct-item` | ✅ byte-matched after this batch's repairs |
+| 150 | `groupe-psa` | `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -767,7 +769,18 @@ nested `allOf` flattens into one object, whose repeated property is one field or
 in an inline body, one prefixed argument; an `allOf` of inline objects is no
 composition for the content-type rule; a description's indentation-only last line
 is a line of its own; and a datetime example is moved to UTC. Together they also
-close twelve of `short-io`'s residual files (77 -> 65). Row 148 is a later revision of row 108's document, registered
+close twelve of `short-io`'s residual files (77 -> 65). Row 150's repairs, each
+read off Fern's importer source or a `fern ir` bisection of the document: a
+non-string `required` entry requires nothing; an enum mixing kinds is its base
+type; an `allOf` around one inline element is that element, so an annotation on
+a `$ref` to it loses its description while a component so written keeps the
+element's; an annotated `$ref` component is a flat copy; a restated base property
+takes the base's schema keys with it, and extends only where both require it; an
+array component's enum element is a class, and a query `$ref` to such an array is
+allow-multiple; a lone-`allOf` response is its `$ref`; descriptions keep an opening
+line break and an indentation-only last line; and a request body whose base
+requires a property its restatement leaves optional and example-less gets no
+importer example, so Fern's fallback lists two items. Row 148 is a later revision of row 108's document, registered
 under a name of its own because the shape it witnesses is absent at row 108's
 commit. The three Prisma Cloud documents are separate descriptions in
 Palo Alto Networks' own `pan.dev` repository; each is a row of its own because

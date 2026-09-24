@@ -9022,3 +9022,166 @@ components:
         "{customers}"
     );
 }
+
+/// The Groupe PSA shapes, each the way Fern 5.20.0 generates it.
+#[test]
+fn groupe_psa_shaped_documents_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Psa, version: 1.0.0 }
+paths:
+  /vehicles/{vid}:
+    get:
+      operationId: getVehicle
+      tags: [vehicles]
+      parameters:
+        - { in: path, name: vid, required: true, schema: { type: string } }
+        - { in: query, name: extension, schema: { $ref: "#/components/schemas/ExtensionType" } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { allOf: [{ $ref: "#/components/schemas/Vehicle" }] }
+  /callbacks:
+    post:
+      operationId: postCallback
+      tags: [remote]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoteSubscribe" }
+      responses: { "200": { description: ok } }
+  /callbacks/{cbid}:
+    put:
+      operationId: putCallback
+      tags: [remote]
+      parameters:
+        - { in: path, name: cbid, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoteSubscribe" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    ExtensionType:
+      type: array
+      items: { type: string, enum: [odometer, fuel] }
+    Vehicle:
+      type: object
+      description: "\nA vehicle.\n \n"
+      required: [true]
+      properties:
+        "true": { type: boolean }
+        accr: { type: string, enum: [On, false] }
+        position: { allOf: [{ $ref: "#/components/schemas/Position" }, { description: Lost. }] }
+    Position:
+      allOf:
+        - type: object
+          title: Position
+          properties: { lat: { type: number } }
+    Telemetry:
+      allOf:
+        - { description: Telemetry data. }
+        - { properties: { speed: { type: number } } }
+    Alarm:
+      type: object
+      properties: { status: { type: string } }
+    StatusAlarm:
+      allOf:
+        - { $ref: "#/components/schemas/Alarm" }
+        - { description: The current alarm. }
+    RemoteRef:
+      type: object
+      properties: { id: { type: string } }
+    RemoteAction:
+      allOf:
+        - { $ref: "#/components/schemas/RemoteRef" }
+        - type: object
+          properties:
+            id: { type: string }
+            label: { type: string }
+    Program:
+      type: object
+      properties:
+        occurence:
+          type: object
+          required: [day]
+          properties: { day: { type: array, items: { type: string } } }
+    Entry:
+      allOf:
+        - { $ref: "#/components/schemas/Program" }
+        - properties:
+            occurence:
+              type: object
+              properties:
+                day: { type: array, items: { type: string } }
+                week: { type: string }
+    Subscribe:
+      type: object
+      required: [callback]
+      properties:
+        callback: { type: object, properties: { url: { type: string } } }
+    RemoteSubscribe:
+      allOf:
+        - { $ref: "#/components/schemas/Subscribe" }
+        - type: object
+          required: [kinds]
+          properties:
+            kinds: { type: array, items: { type: string, enum: [horn, lights] } }
+            callback:
+              type: object
+              properties:
+                hook: { allOf: [{ $ref: "#/components/schemas/Alarm" }, { properties: {} }] }
+"##,
+    );
+    let vehicle = &files["src/acme/types/vehicle.py"];
+    // A non-string `required` entry requires nothing; a mixed-kind enum is `str`.
+    assert!(
+        vehicle.contains("true: typing.Optional[bool] = None"),
+        "{vehicle}"
+    );
+    assert!(
+        vehicle.contains("accr: typing.Optional[str] = None"),
+        "{vehicle}"
+    );
+    // An opening line break and an indentation-only last line both survive.
+    assert!(
+        vehicle.contains("\"\"\"\n\n    A vehicle.\n\n    \"\"\""),
+        "{vehicle}"
+    );
+    // A target wrapping one `allOf` element loses the annotation's docs.
+    assert!(!vehicle.contains("Lost."), "{vehicle}");
+    assert!(!files["src/acme/types/vehicle_position.py"].contains("\"\"\""));
+    // A short-circuited component keeps the merged description.
+    assert!(files["src/acme/types/telemetry.py"].contains("Telemetry data."));
+    // An annotated component `$ref` is a flat copy, not a subclass.
+    let status_alarm = &files["src/acme/types/status_alarm.py"];
+    assert!(
+        status_alarm.contains("class StatusAlarm(UniversalBaseModel):"),
+        "{status_alarm}"
+    );
+    // An optional restatement of a base property flattens rather than extends.
+    assert!(files["src/acme/types/remote_action.py"]
+        .contains("class RemoteAction(UniversalBaseModel):"));
+    // A restatement takes the base's `required` with it.
+    let occurence = &files["src/acme/types/entry_occurence.py"];
+    assert!(occurence.contains("day: typing.List[str]\n"), "{occurence}");
+    // An array component's enum element is a class of its own, and a query
+    // `$ref` to it takes the allow-multiple shorthand.
+    assert!(files.contains_key("src/acme/types/extension_type_item.py"));
+    let vehicles = &files["src/acme/vehicles/raw_client.py"];
+    assert!(
+        vehicles.contains("typing.Union[ExtensionTypeItem, typing.Sequence[ExtensionTypeItem]]"),
+        "{vehicles}"
+    );
+    // A lone-`allOf` response is its `$ref`.
+    assert!(vehicles.contains("HttpResponse[Vehicle]"), "{vehicles}");
+    // Fern's importer gives up on this body, so its fallback lists two items.
+    let remote = &files["src/acme/remote/client.py"];
+    assert!(
+        remote.contains("kinds=[RemoteSubscribeKindsItem.HORN, RemoteSubscribeKindsItem.HORN],"),
+        "{remote}"
+    );
+}
