@@ -84,11 +84,9 @@ class LocalServer(BaseHTTPRequestHandler):
                 self.reply(
                     200,
                     {
-                        "total_count": 2
-                        if state["early_empty"]
-                        else 1
-                        if not state["partition"] or "size%3A" in self.path
-                        else 1001,
+                        "total_count": 1001
+                        if state["partition"] and "size%3A" not in self.path
+                        else 2 if state["early_empty"] else 1,
                         "items": [] if early_empty else [
                             {
                                 "repository": {"full_name": "example/api"},
@@ -335,6 +333,19 @@ class WitnessSearchGithubTests(unittest.TestCase):
         ]
         self.assertEqual("outstanding-index-truncation", rows[-1]["outcome"])
         self.assertEqual(0, self.server.state["searches"])
+
+    def test_partition_walk_records_both_incomplete_children(self) -> None:
+        self.server.state["partition"] = True
+        self.server.state["early_empty"] = True
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        rows = [
+            json.loads(line)
+            for line in (self.root / "queries.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual(
+            2, sum(row["outcome"] == "outstanding-index-truncation" for row in rows)
+        )
+        self.assertEqual(5, self.server.state["searches"])
 
     def test_large_code_search_is_partitioned_before_paging(self) -> None:
         self.server.state["partition"] = True

@@ -634,14 +634,16 @@ class Acquirer:
         )
         if partition:
             found = []
+            complete = True
             for child in partition["windows"]:
                 part = self._github_window(
                     key, child["query"], child["lower"], child["upper"]
                 )
                 if part is None:
-                    return None
-                found.extend(part)
-            return found
+                    complete = False
+                else:
+                    found.extend(part)
+            return found if complete else None
         answered = [row for row in previous if row.get("outcome") == "answered"]
         if answered and answered[0].get("result_count", 0) > 1000:
             return self._partition_window(
