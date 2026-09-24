@@ -600,6 +600,327 @@ def unread_source_failures(
     return []
 
 
+# Contract B — what makes a search exhaustive for a shape — stated in
+# `docs/openapi-surface-coverage.md#what-makes-a-search-exhaustive`. Its record is
+# a `### Witness search (exhaustive)` table in the row's own region file, one line
+# per `(key, source)`, reconciled against the per-source evidence directory
+# `docs/openapi-surface/witness-search-<source>/` in both directions. The
+# obligations a line owes are read from the index's source-capability table,
+# never from the record.
+
+DECLARED_SOURCES = (
+    "apis.guru",
+    "jentic",
+    "github-code-search",
+    "github-publisher-trees",
+    "sourcegraph",
+    "postman",
+    "vendor-portals",
+)
+EXHAUSTED = "exhausted"
+EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+CAPABILITY_SECTION = "#### What makes a search exhaustive"
+SCREENS = ("licence", "ref", "fern")
+EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
+# A bucket reaching its cap is the search's to wait out, never a source declining
+# to answer, so an `unanswered` giving any of these as its reason is refused.
+RATE_LIMIT_REASON = re.compile(
+    r"(?i)rate[- ]?limit|limiter|quota|too many requests|\b429\b|\bcap(?:ped)?\b|reset"
+)
+IMMUTABLE_READ = re.compile(r"[0-9a-f]{40}|sha256:[0-9a-f]{64}|pages? \d+[–-]\d+")
+
+
+def source_capabilities(doc: str) -> dict[str, tuple[bool, bool, str]]:
+    """source -> (accepts a text query, enumerable, how that was established)."""
+    if CAPABILITY_SECTION not in doc:
+        return {}
+    section = doc.split(CAPABILITY_SECTION, 1)[1].split("\n#### ", 1)[0]
+    found = {}
+    for line in section.splitlines():
+        cells = table_cells(line, 4)
+        if not cells or cells[1] not in ("yes", "no") or cells[2] not in ("yes", "no"):
+            continue
+        found[cells[0].strip("`")] = (cells[1] == "yes", cells[2] == "yes", cells[3])
+    return found
+
+
+def exhaustive_search_lines(text: str) -> dict[str, list[list[str]]]:
+    """key -> its lines of one region file's exhaustive-search table, seven cells each."""
+    if EXHAUSTIVE_SEARCH_HEADING not in text:
+        return {}
+    body = text.split(EXHAUSTIVE_SEARCH_HEADING, 1)[1].split("\n#", 1)[0]
+    found: dict[str, list[list[str]]] = {}
+    for line in body.splitlines():
+        cells = table_cells(line, 7)
+        if cells and cells[0].startswith("`"):
+            found.setdefault(cells[0].strip("`"), []).append(cells)
+    return found
+
+
+def recorded_queries(cell: str) -> list[tuple[str, str]]:
+    """(phrasing, what it returned) for every query a `queries` cell records."""
+    return [
+        (query, result.strip())
+        for query, result in re.findall(r"`([^`]+)`\s*→\s*([^;]+)", cell)
+    ]
+
+
+def recorded_walk(cell: str) -> tuple[str, str, str] | None:
+    """(tree or index, ref or page range, document count) of a `walk` cell."""
+    walk = re.search(r"`([^`]+)` at `([^`]+)` → (\d+) documents?", cell)
+    return walk.groups() if walk else None
+
+
+def recorded_screens(cell: str) -> dict[str, dict[str, str]]:
+    """candidate -> screen -> outcome, off a `screens` cell."""
+    found: dict[str, dict[str, str]] = {}
+    for segment in cell.split(";"):
+        candidate = re.match(r"\s*`([^`]+)`", segment)
+        if candidate:
+            found[candidate.group(1)] = dict(
+                re.findall(r"\b(licence|ref|fern) `([^`]+)`", segment[candidate.end():])
+            )
+    return found
+
+
+def evidence_records(directory: Path) -> list[dict[str, str]]:
+    """The rows of one source's `records.tsv`, as dicts."""
+    index = directory / "records.tsv"
+    if not index.is_file():
+        return []
+    lines = index.read_text(encoding="utf-8").splitlines()
+    header = lines[0].split("\t") if lines else []
+    return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
+
+
+def evidence_directory_failures(key: str, directory: Path) -> list[str]:
+    """Every file under the directory is named by a row, and every named file exists."""
+    name = directory.name
+    records = evidence_records(directory)
+    failures = []
+    named = {record.get("file", "") for record in records}
+    for record in records:
+        if record.get("kind") not in EVIDENCE_KINDS:
+            failures.append(
+                f"{key}: {name}/records.tsv carries kind `{record.get('kind')}`, "
+                f"which is none of {list(EVIDENCE_KINDS)}"
+            )
+        if not (directory / record.get("file", "")).is_file():
+            failures.append(
+                f"{key}: {name}/records.tsv names `{record.get('file')}`, which is "
+                "not in the evidence directory"
+            )
+    for path in sorted(directory.rglob("*")):
+        rel = path.relative_to(directory).as_posix()
+        if path.is_file() and rel != "records.tsv" and rel not in named:
+            failures.append(
+                f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
+                "no records.tsv row names it"
+            )
+    return failures
+
+
+def exhaustive_search_failures(
+    key: str,
+    lines: list[list[str]],
+    evidence_root: Path,
+    capabilities: dict[str, tuple[bool, bool, str]],
+) -> list[str]:
+    """Every way one key's exhaustive-search record falls short of Contract B.
+
+    `lines` are the key's lines of its region file's exhaustive-search table and
+    `evidence_root` the directory the `witness-search-<source>/` directories sit
+    in. Refused at any outcome: a source read `unanswered` for a rate-limit cap,
+    and a table that disagrees with its evidence directory either way. Refused
+    under `exhausted`: every obligation the five conditions name.
+    """
+    failures: list[str] = []
+    outcomes = {line[2].strip("`* ") for line in lines}
+    if len(outcomes) != 1:
+        failures.append(f"{key}: its lines read different outcomes {sorted(outcomes)}")
+    exhausted = outcomes == {EXHAUSTED}
+    sources = [line[1].strip("`* ") for line in lines]
+
+    for source, line in zip(sources, lines):
+        for cell in (line[3], line[4]):
+            for reason in re.findall(r"unanswered\b([^;|]*)", cell):
+                if RATE_LIMIT_REASON.search(reason):
+                    failures.append(
+                        f"{key}: reads `{source}` unanswered for a rate-limit cap; a "
+                        "capped bucket is waited out and the search continues — it "
+                        "is never recorded `unanswered`"
+                    )
+
+    if exhausted:
+        for source in sources:
+            if source not in DECLARED_SOURCES:
+                failures.append(
+                    f"{key}: counts `{source}`, which is not a declared source, among "
+                    "the sources an `exhausted` search answered for"
+                )
+        dropped = [source for source in DECLARED_SOURCES if source not in sources]
+        if dropped:
+            failures.append(f"{key}: an `exhausted` search drops declared source(s) {dropped}")
+
+    for source, line in zip(sources, lines):
+        if source not in DECLARED_SOURCES:
+            # An undeclared source answers for nothing and owes nothing.
+            continue
+        directory = evidence_root / f"witness-search-{source}"
+        records = [r for r in evidence_records(directory) if r.get("key") == key]
+        if not directory.is_dir():
+            failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
+        failures += evidence_directory_failures(key, directory) if directory.is_dir() else []
+        failures += exhaustive_line_failures(
+            key, source, line, records, capabilities.get(source), exhausted
+        )
+    return failures
+
+
+def exhaustive_line_failures(
+    key: str,
+    source: str,
+    line: list[str],
+    records: list[dict[str, str]],
+    capability: tuple[bool, bool, str] | None,
+    exhausted: bool,
+) -> list[str]:
+    """One `(key, source)` line against its evidence and, when exhausted, its obligations."""
+    failures: list[str] = []
+    where = f"witness-search-{source}/records.tsv"
+
+    def recorded(kind: str, subject: str, result: str | None = None) -> bool:
+        return any(
+            r.get("kind") == kind
+            and r.get("subject") == subject
+            and (result is None or r.get("result") == result)
+            for r in records
+        )
+
+    queries = recorded_queries(line[3])
+    walk = recorded_walk(line[4])
+    candidates = [] if line[5].strip() == "—" else re.findall(r"`([^`]+)`", line[5])
+    screens = recorded_screens(line[6])
+
+    # The table against the evidence, and the evidence against the table.
+    for query, result in queries:
+        if not recorded("query", query, result):
+            failures.append(
+                f"{key}: asserts `{query}` → {result} for `{source}`, which {where} "
+                "does not carry"
+            )
+    if walk and not recorded("walk", f"{walk[0]}@{walk[1]}", walk[2]):
+        failures.append(
+            f"{key}: asserts a walk of `{walk[0]}` at `{walk[1]}` for `{source}`, "
+            f"which {where} does not carry"
+        )
+    for candidate, outcomes in screens.items():
+        for screen, outcome in outcomes.items():
+            if not recorded("screen", f"{candidate} {screen}", outcome):
+                failures.append(
+                    f"{key}: asserts `{candidate}`'s {screen} screen `{outcome}` for "
+                    f"`{source}`, which {where} does not carry"
+                )
+    table = {("query", q, r) for q, r in queries}
+    if walk:
+        table.add(("walk", f"{walk[0]}@{walk[1]}", walk[2]))
+    for candidate in candidates:
+        table.add(("candidate", candidate, None))
+    for candidate, outcomes in screens.items():
+        for screen, outcome in outcomes.items():
+            table.add(("screen", f"{candidate} {screen}", outcome))
+    for r in records:
+        kind = r.get("kind")
+        if kind not in ("query", "walk", "candidate", "screen"):
+            continue
+        result = None if kind == "candidate" else r.get("result")
+        if (kind, r.get("subject"), result) not in table:
+            failures.append(
+                f"{key}: {where} carries {kind} `{r.get('subject')}` that the table "
+                "accounts for nowhere"
+            )
+    documents = [r for r in records if r.get("kind") == "document"]
+    if walk and len(documents) != int(walk[2]):
+        failures.append(
+            f"{key}: the walk of `{source}` counts {walk[2]} documents and {where} "
+            f"lists {len(documents)}"
+        )
+    for document in documents:
+        result = document.get("result", "")
+        if not (re.fullmatch(r"census \d+", result) or re.fullmatch(r"unreadable: .+", result)):
+            failures.append(
+                f"{key}: leaves `{document.get('subject')}` in `{source}`'s walk with "
+                "neither a census-selector output nor a recorded reason it could not be read"
+            )
+
+    # Condition 3 and 4 hold at every outcome a candidate is recorded under.
+    for candidate in candidates:
+        census_run = [
+            r.get("result", "")
+            for r in records
+            if r.get("kind") == "candidate" and r.get("subject") == candidate
+        ]
+        confirmed = [re.fullmatch(r"census (\d+)", result) for result in census_run]
+        if not census_run or not all(confirmed):
+            failures.append(
+                f"{key}: records no census confirmation for candidate `{candidate}` "
+                f"in `{source}` — the census decides a declaration, never a keyword"
+            )
+            continue
+        if int(confirmed[0].group(1)) == 0:
+            continue
+        done = screens.get(candidate, {})
+        if len(set(done) & set(SCREENS)) < len(SCREENS):
+            failures.append(
+                f"{key}: screens candidate `{candidate}` in `{source}` on "
+                f"{sorted(done)}; a declaring candidate is screened on licence, ref "
+                "and fern"
+            )
+        elif exhausted and all(done[s] == "passed" for s in SCREENS):
+            failures.append(
+                f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
+                "three screens — that is a witness, not an absence"
+            )
+
+    if not exhausted:
+        return failures
+    if capability is None:
+        return failures + [
+            f"{key}: `{source}` has no row in the source-capability table, so what "
+            "it owes cannot be read"
+        ]
+    text_query, enumerable, _cited = capability
+    if "unanswered" in line[3] or "unanswered" in line[4]:
+        failures.append(
+            f"{key}: reads `{source}` `unanswered` under an `exhausted` outcome; an "
+            "exhausted search has every declared source answered"
+        )
+    if text_query:
+        phrasings = [query for query, _ in queries]
+        if len(phrasings) != len(set(phrasings)):
+            failures.append(
+                f"{key}: records the same query phrasing twice for `{source}`; two "
+                "phrasings are two different strings"
+            )
+        if len(set(phrasings)) < 2:
+            failures.append(
+                f"{key}: records {len(set(phrasings))} query phrasing(s) for "
+                f"`{source}`, which the source-capability table says accepts a text "
+                "query; it owes two"
+            )
+        for query, result in queries:
+            if not result.isdigit():
+                failures.append(
+                    f"{key}: `{query}` against `{source}` returned `{result}`, not a count"
+                )
+    if enumerable and not (walk and IMMUTABLE_READ.fullmatch(walk[1])):
+        failures.append(
+            f"{key}: records no tree or index at an immutable ref or page range for "
+            f"`{source}`, which the source-capability table says is enumerable"
+        )
+    return failures
+
+
 class RecipeWiringTests(unittest.TestCase):
     """The gate must run this file, and this file must test the recipe's script."""
 
@@ -6165,7 +6486,7 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_blocked_witness_probe_row_meets_the_amended_settlement_rule(self) -> None:
         """Route 2, read over every region row in the tree that claims it.
 
-        Twenty-one rows claim it today, across four of the six region files, so
+        Twenty rows claim it today, across four of the six region files, so
         this reads the real documents end to end: every one of those rows is held
         to the recorded search, the blocker form and the ledger verdict at the
         gate rather than at review, over the real six region files and the real
@@ -6289,6 +6610,184 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             (len(sources), golden), (int(stated.group(1)), int(stated.group(2)))
         )
+
+
+    # ------------------------------------------------------------------
+    # The amended settlement rule's second amendment: what each former
+    # `limitations` row now owes, and the source-capability table.
+    # ------------------------------------------------------------------
+
+    PROOF_OUTSTANDING = re.compile(r"\*\*proof outstanding:\*\* `([a-z-]+)`")
+    DEMOTED = re.compile(r"\*\*demoted to gap:\*\* `([a-z]+)`")
+    PROOF_FORMS = {
+        "absent-tree": ("discards",),
+        "refusal": ("refuses", "crashes"),
+        "differential": ("ignores", "coincidence"),
+    }
+
+    def ledger_cell(self, key: str) -> str:
+        """The verdict cell the index's own join reads for `key`."""
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        row = re.search(rf"^\| `{re.escape(key)}` \| *\d+ \| *\d+ \| ([^|]+) \|", ledger, re.M)
+        return row.group(1) if row else ""
+
+    def test_every_limitations_row_records_the_one_proof_it_owes(self) -> None:
+        """A `limitations` row names its outstanding Contract A proof, once, and
+        that proof's form is one its own evidence cell's verdict can establish."""
+        for key, (_region, cells) in sorted(self.entries.items()):
+            if cells[3].strip("`") != "limitations":
+                continue
+            with self.subTest(key=key):
+                forms = self.PROOF_OUTSTANDING.findall(cells[4])
+                self.assertEqual(1, len(forms), f"{key}: names {forms} after `proof outstanding:`")
+                self.assertIn(forms[0], self.PROOF_FORMS)
+                self.assertFalse(self.DEMOTED.search(cells[4]), f"{key}: is `limitations` and demoted")
+                verdicts = self.PROOF_FORMS[forms[0]]
+                ruled = cells[4].split("**proof outstanding:**", 1)[0]
+                self.assertTrue(
+                    any(re.search(rf"\b{v}\b", ruled) for v in verdicts),
+                    f"{key}: owes a `{forms[0]}` proof, which establishes {verdicts}, "
+                    "and its evidence cell carries none of them",
+                )
+
+    def test_every_demoted_row_is_a_gap_naming_its_verdict_and_its_need(self) -> None:
+        """A row the amended rule demoted says why, and says what settles it now."""
+        demoted = {
+            key: cells
+            for key, (_region, cells) in self.entries.items()
+            if self.DEMOTED.search(cells[4])
+        }
+        self.assertTrue(demoted, "no row records a demotion by the amended rule")
+        for key, cells in sorted(demoted.items()):
+            with self.subTest(key=key):
+                self.assertEqual("gap", cells[3].strip("`"))
+                verdict = self.DEMOTED.search(cells[4]).group(1)
+                self.assertIn(verdict, ("implements", "unmeasured"))
+                self.assertFalse(self.PROOF_OUTSTANDING.search(cells[4]))
+                self.assertIn("now needs", cells[4], f"{key}: says not what it now needs")
+                if verdict == "implements":
+                    self.assertIn("implements", self.ledger_cell(key))
+                    self.assertEqual("FIXTURE", self.settlement_of(cells))
+
+    def classification_table(self) -> dict[str, int]:
+        body = self.section(
+            "#### The limitations rows under the amended rule", "\n#### "
+        )
+        return {
+            label.strip(): int(count)
+            for label, count in re.findall(r"^\| ([^|*]+) \| (\d+) \|", body, re.M)
+        }
+
+    def test_the_classification_table_is_the_region_cells_own(self) -> None:
+        """Four classes, each counted off the cells, adding up to the population
+        that read `limitations` before the amendment."""
+        counts = {"artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0}
+        for _region, cells in self.entries.values():
+            form = self.PROOF_OUTSTANDING.search(cells[4])
+            demoted = self.DEMOTED.search(cells[4])
+            if form:
+                counts["differential" if form.group(1) == "differential" else "artifact"] += 1
+            elif demoted:
+                counts[demoted.group(1)] += 1
+        table = self.classification_table()
+        stated = [
+            next(n for label, n in table.items() if marker in label)
+            for marker in ("Contract A artifact", "`differential` pair", "(`implements`)", "`unmeasured`")
+        ]
+        self.assertEqual(list(counts.values()), stated)
+        body = self.section("#### The limitations rows under the amended rule", "\n#### ")
+        total = re.search(r"\| \*\*total\*\* \| \*\*(\d+)\*\*", body)
+        population = re.search(r"The (\d+) rows that read `limitations` before", body)
+        self.assertTrue(total and population, "the classification states no total")
+        self.assertEqual(sum(counts.values()), int(total.group(1)))
+        self.assertEqual(int(total.group(1)), int(population.group(1)))
+
+    def test_the_source_capability_table_is_complete_and_cited(self) -> None:
+        """Seven declared sources, both capabilities each, each one cited."""
+        capabilities = source_capabilities(self.doc)
+        self.assertEqual(set(DECLARED_SOURCES), set(capabilities))
+        for source, (_query, _enumerable, cited) in sorted(capabilities.items()):
+            with self.subTest(source=source):
+                self.assertNotRegex(cited, r"(?i)\bTODO\b|\bTBD\b|placeholder|^\s*[—-]?\s*$")
+                self.assertRegex(cited, r"\]\(|`", "a capability cites no interface or record")
+                self.assertIn("Recorded acquisition", cited)
+
+    def test_every_exhaustive_search_record_in_the_tree_meets_contract_b(self) -> None:
+        """Every `(key, source)` line any region file records, against its evidence."""
+        capabilities = source_capabilities(self.doc)
+        for path in sorted(self.REGIONS.glob("*.md")):
+            for key, lines in sorted(exhaustive_search_lines(path.read_text(encoding="utf-8")).items()):
+                with self.subTest(region=path.stem, key=key):
+                    self.assertEqual(
+                        [], exhaustive_search_failures(key, lines, self.REGIONS, capabilities)
+                    )
+
+    def test_contract_a_restatements_agree_with_the_gate(self) -> None:
+        """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
+        so this holds them to it rather than letting either copy drift: the
+        verdicts each proof form establishes, read off the gate's own `match form`
+        (which also admits `measured` on an `absent-tree` row, a value no
+        `limitations` row carries), the six verdicts the gate admits, and the
+        refusal record's five fields, as the index states them."""
+        gate = (REPO / "tests" / "e2e.rs").read_text(encoding="utf-8")
+        arms = {
+            form: tuple(v for v in re.findall(r'"([a-z]+)"', verdicts) if v != "measured")
+            for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+        }
+        self.assertEqual(self.PROOF_FORMS, arms, "the proof forms drifted from the manifest gate")
+        fields = re.search(r"const REFUSAL_FIELDS: \[&str; \d+\] = \[(.*?)\];", gate, re.S)
+        stated = re.search(r"holding five fields in this order and\s+spelling: (.*?)\. ", self.doc, re.S)
+        self.assertTrue(fields and stated, "a restatement of the refusal fields no longer parses")
+        self.assertEqual(
+            re.findall(r"`([a-z_]+)`", stated.group(1)),
+            re.findall(r'"([a-z_]+)"', fields.group(1)),
+            "the gate's refusal fields are not the index's",
+        )
+        self.assertEqual(
+            {"absent-tree"},
+            {form for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+             if '"measured"' in verdicts},
+            "`measured` is admitted on a form other than `absent-tree`",
+        )
+        admitted = re.search(r"\} else if !\[(.*?)\]\s*\.contains\(&verdict\)", gate, re.S)
+        refused = re.search(r"is not one Contract A admits \\\s*\((.*?)\)", gate, re.S)
+        vocabulary = re.search(r"`verdict` admits exactly six values: (.*?)\. ", " ".join(self.doc.split()))
+        self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
+        admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
+        self.assertEqual(6, len(admitted_verdicts))
+        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
+                         "the gate's refusal message states other verdicts than it admits")
+        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
+                         "the index states other verdicts than the gate admits")
+        header = re.search(r'const PROBE_MANIFEST_HEADER: &str = "(.*?)";', gate)
+        self.assertTrue(header, "the gate's manifest header no longer parses")
+        self.assertIn(
+            "\n" + header.group(1).replace("\\t", "\t") + "\n",
+            self.doc,
+            "the index does not state the gate's manifest header",
+        )
+
+    def test_the_evidence_kinds_are_the_indexs_own(self) -> None:
+        """`records.tsv`'s `kind` values are declared once, in the index's list of
+        what each row carries; the validator's copy is held to that list."""
+        section = self.doc.split("`key\tkind\tsubject\tresult\tfile`:", 1)[1]
+        section = section.split("`file` names the evidence file", 1)[0]
+        stated = tuple(re.findall(r"^ +- An? `([a-z]+)` row", section, re.M))
+        self.assertEqual(EVIDENCE_KINDS, stated, "the validator's evidence kinds are not the index's")
+
+    def test_the_rule_states_the_second_amendment(self) -> None:
+        """The words a reader needs to follow Contracts A and B, where the rule is."""
+        flat = " ".join(self.doc.split())
+        for demanded in (
+            "**`exhausted`**",
+            "**A rate-limit cap is never `unanswered`.**",
+            "At least two query phrasings per shape",
+            "never by a keyword grep",
+            "all three corpus screens",
+            "**A locally authored probe settles a row only where its own Fern measurement shows non-generation.**",
+            "Routes 2 and 3 survive for non-generation verdicts alone",
+        ):
+            self.assertIn(" ".join(demanded.split()), flat.replace("\t", " "))
 
 
 class RegionFixture:
@@ -6791,6 +7290,241 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
             "records no probe and no verdict",
             self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
         )
+
+
+
+class ExhaustiveSearchRecordTests(unittest.TestCase):
+    """Contract B, driven over a real region file and real evidence directories.
+
+    No key in the tree carries an exhaustive-search record yet, so the pass over
+    the real six region files observes nothing about the rule. These write one
+    complete record to a real temporary tree — a region file carrying the
+    `### Witness search (exhaustive)` table, and the seven
+    `witness-search-<source>/` directories its lines rest on — and run the gate's
+    own `exhaustive_search_failures` over it. The obligations come from the real
+    index's source-capability table, as the gate reads them. The record is
+    accepted as written, and each way of falling short of the contract is induced
+    on a fresh copy and refused.
+    """
+
+    KEY = "sample-shape"
+    COMMIT = "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c"
+    # source -> (queries, walk, candidates, screens, evidence rows beyond the table's)
+    LINES = {
+        "apis.guru": (
+            "—",
+            f"`APIs-guru/openapi-directory` at `{COMMIT}` → 2 documents",
+            "—",
+            "—",
+            [
+                ("document", "APIs/a.example/1.0/openapi.yaml", "census 0", "census.tsv"),
+                ("document", "APIs/b.example/1.0/openapi.yaml", "unreadable: duplicate mapping key", "census.tsv"),
+            ],
+        ),
+        "jentic": (
+            "—",
+            f"`jentic/jentic-public-apis` at `{COMMIT}` → 1 documents",
+            "`apis/openapi/c.example/openapi.json`",
+            "`apis/openapi/c.example/openapi.json` licence `failed: AGPL-3.0` ref `passed` fern `passed`",
+            [("document", "apis/openapi/c.example/openapi.json", "census 3", "census.tsv")],
+        ),
+        "github-code-search": (
+            "`\"x-sample\" filename:openapi.yaml` → 1; `\"x-sample\" filename:openapi.json` → 0",
+            "—",
+            "`d-org/d-repo/openapi.yaml`",
+            "—",
+            [],
+        ),
+        "github-publisher-trees": (
+            "—",
+            f"`e-org/e-api` at `{COMMIT}` → 1 documents",
+            "—",
+            "—",
+            [("document", "spec/openapi.yaml", "census 0", "census.tsv")],
+        ),
+        "sourcegraph": (
+            "`file:openapi.yaml content:\"x-sample\"` → 0; `file:openapi.json content:\"x-sample\"` → 0",
+            "—",
+            "—",
+            "—",
+            [],
+        ),
+        "postman": (
+            "`x-sample` → 0; `sample extension` → 0",
+            "—",
+            "—",
+            "—",
+            [("wait", "search bucket", "waited 60s for the reset", "wait.log")],
+        ),
+        "vendor-portals": (
+            "—",
+            "`f.example developer portal` at `pages 1–3` → 1 documents",
+            "—",
+            "—",
+            [("document", "f.example/openapi.yaml", "census 0", "census.tsv")],
+        ),
+    }
+    CANDIDATE_CENSUS = {
+        "apis/openapi/c.example/openapi.json": "census 3",
+        "d-org/d-repo/openapi.yaml": "census 0",
+    }
+
+    def setUp(self) -> None:
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        self.root = Path(directory)
+        self.capabilities = source_capabilities(RankedBacklogTests.DOC.read_text(encoding="utf-8"))
+        self.table = {source: list(cells[:4]) for source, cells in self.LINES.items()}
+        self.outcome = EXHAUSTED
+        for source, (queries, walk, candidates, screens, extra) in self.LINES.items():
+            rows = [("query", query, result, "acquisition.json") for query, result in recorded_queries(queries)]
+            parsed = recorded_walk(walk)
+            if parsed:
+                rows.append(("walk", f"{parsed[0]}@{parsed[1]}", parsed[2], "listing.txt"))
+            for candidate in re.findall(r"`([^`]+)`", candidates):
+                rows.append(("candidate", candidate, self.CANDIDATE_CENSUS[candidate], "census.tsv"))
+            for candidate, outcomes in recorded_screens(screens).items():
+                for screen, outcome in outcomes.items():
+                    rows.append(("screen", f"{candidate} {screen}", outcome, "screens.md"))
+            self.write_evidence(source, rows + extra)
+
+    def write_evidence(self, source: str, rows: list[tuple[str, str, str, str]]) -> None:
+        directory = self.root / f"witness-search-{source}"
+        directory.mkdir(exist_ok=True)
+        lines = ["key\tkind\tsubject\tresult\tfile"]
+        for kind, subject, result, file in rows:
+            lines.append("\t".join((self.KEY, kind, subject, result, file)))
+            (directory / file).write_text(f"{kind} {subject}\n", encoding="utf-8")
+        (directory / "records.tsv").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def evidence(self, source: str) -> Path:
+        return self.root / f"witness-search-{source}" / "records.tsv"
+
+    def failures(self) -> list[str]:
+        """Write the region file as the table now stands, and run the gate over it."""
+        lines = [
+            f"| `{self.KEY}` | `{source}` | `{self.outcome}` | {' | '.join(cells)} |"
+            for source, cells in self.table.items()
+        ]
+        region = self.root / "sample.md"
+        region.write_text(
+            "# A sample region\n\n"
+            f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
+            "| key | source | outcome | queries | walk | candidates | screens |\n"
+            "|---|---|---|---|---|---|---|\n" + "\n".join(lines) + "\n",
+            encoding="utf-8",
+        )
+        read = exhaustive_search_lines(region.read_text(encoding="utf-8"))
+        self.assertEqual([self.KEY], list(read), "the sample table no longer parses")
+        return exhaustive_search_failures(self.KEY, read[self.KEY], self.root, self.capabilities)
+
+    def refused(self, message: str) -> None:
+        failures = self.failures()
+        self.assertTrue(
+            any(f.startswith(f"{self.KEY}: ") and message in f for f in failures),
+            f"expected a refusal saying {message!r}; got {failures}",
+        )
+
+    def test_a_record_meeting_all_five_conditions_is_accepted(self) -> None:
+        """The same interface, no special case: a complete record passes."""
+        self.assertEqual([], self.failures())
+
+    def test_a_record_dropping_a_declared_source_is_refused(self) -> None:
+        del self.table["postman"]
+        self.refused("drops declared source(s) ['postman']")
+
+    def test_a_record_reading_a_declared_source_unanswered_is_refused(self) -> None:
+        self.table["sourcegraph"][0] = (
+            "`file:openapi.yaml content:\"x-sample\"` → unanswered: HTTP 502 on every "
+            "attempt; `file:openapi.json content:\"x-sample\"` → 0"
+        )
+        self.refused("reads `sourcegraph` `unanswered` under an `exhausted` outcome")
+
+    def test_one_query_phrasing_for_a_text_query_source_is_refused(self) -> None:
+        self.table["postman"][0] = "`x-sample` → 0"
+        self.refused("records 1 query phrasing(s) for `postman`")
+
+    def test_two_phrasings_that_are_the_same_string_are_refused(self) -> None:
+        self.table["postman"][0] = "`x-sample` → 0; `x-sample` → 0"
+        self.refused("records the same query phrasing twice for `postman`")
+
+    def test_queries_never_stand_in_for_an_unwalked_tree(self) -> None:
+        """An enumerable source owes its walk, whatever its queries returned."""
+        self.table["apis.guru"][0] = "`x-sample` → 0; `sample extension` → 0"
+        self.table["apis.guru"][1] = "— (the catalogue was queried instead)"
+        self.refused("records no tree or index at an immutable ref or page range for `apis.guru`")
+
+    def test_a_record_claiming_a_source_offers_less_than_the_table_is_refused(self) -> None:
+        """The table decides what `jentic` owes, not the record's own claim about it."""
+        self.table["jentic"][1] = "— (jentic is not enumerable)"
+        self.table["jentic"][2] = "—"
+        self.table["jentic"][3] = "—"
+        self.refused("which the source-capability table says is enumerable")
+
+    def test_a_walk_at_a_mutable_ref_is_refused(self) -> None:
+        self.table["github-publisher-trees"][1] = "`e-org/e-api` at `main` → 1 documents"
+        self.refused("records no tree or index at an immutable ref or page range for `github-publisher-trees`")
+
+    def test_a_walked_document_with_no_census_output_or_reason_is_refused(self) -> None:
+        text = self.evidence("apis.guru").read_text(encoding="utf-8")
+        self.evidence("apis.guru").write_text(
+            text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8"
+        )
+        self.refused("neither a census-selector output nor a recorded reason")
+
+    def test_a_candidate_with_no_census_confirmation_is_refused(self) -> None:
+        text = self.evidence("github-code-search").read_text(encoding="utf-8")
+        self.evidence("github-code-search").write_text(
+            text.replace("census 0", "keyword match"), encoding="utf-8"
+        )
+        self.refused("records no census confirmation for candidate `d-org/d-repo/openapi.yaml`")
+
+    def test_a_declaring_candidate_screened_on_fewer_than_three_screens_is_refused(self) -> None:
+        self.table["jentic"][3] = (
+            "`apis/openapi/c.example/openapi.json` licence `failed: AGPL-3.0` ref `passed`"
+        )
+        self.refused("screens candidate `apis/openapi/c.example/openapi.json` in `jentic` on ['licence', 'ref']")
+
+    def test_a_table_cell_its_evidence_does_not_carry_is_refused(self) -> None:
+        self.table["sourcegraph"][0] = (
+            "`file:openapi.yaml content:\"x-sample\"` → 4; `file:openapi.json content:\"x-sample\"` → 0"
+        )
+        self.refused("which witness-search-sourcegraph/records.tsv does not carry")
+
+    def test_a_candidate_or_screen_outcome_its_evidence_does_not_carry_is_refused(self) -> None:
+        # A candidate the evidence never recorded has no census run behind it either.
+        self.table["github-code-search"][2] = "`d-org/d-repo/openapi.yaml`; `g-org/g-repo/openapi.yaml`"
+        self.refused("records no census confirmation for candidate `g-org/g-repo/openapi.yaml`")
+        self.table["github-code-search"][2] = self.LINES["github-code-search"][2]
+        self.table["jentic"][3] = self.LINES["jentic"][3].replace("fern `passed`", "fern `failed: E1`")
+        self.refused("which witness-search-jentic/records.tsv does not carry")
+
+    def test_evidence_the_table_does_not_account_for_is_refused(self) -> None:
+        with self.evidence("sourcegraph").open("a", encoding="utf-8") as index:
+            index.write(f"{self.KEY}\tquery\t`third phrasing`\t2\tacquisition.json\n")
+        self.refused("carries query ``third phrasing`` that the table accounts for nowhere")
+        (self.root / "witness-search-postman" / "stray.json").write_text("{}\n", encoding="utf-8")
+        self.refused("witness-search-postman/stray.json is evidence the table accounts for nowhere")
+
+    def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
+        self.table["swaggerhub"] = ["`x-sample` → 0; `sample extension` → 0", "—", "—", "—"]
+        self.refused("counts `swaggerhub`, which is not a declared source")
+
+    def test_an_undeclared_source_owes_nothing_outside_an_exhausted_record(self) -> None:
+        """Named under another outcome, it answers for nothing and is not refused."""
+        self.outcome = SEARCH_INCOMPLETE
+        self.table["swaggerhub"] = ["`x-sample` → unanswered: HTTP 502", "—", "—", "—"]
+        self.assertEqual([], self.failures())
+
+    def test_a_rate_limit_cap_recorded_unanswered_is_refused_at_any_outcome(self) -> None:
+        self.table["github-code-search"][0] = (
+            "`\"x-sample\" filename:openapi.yaml` → unanswered: HTTP 403 API rate limit "
+            "exceeded; `\"x-sample\" filename:openapi.json` → 0"
+        )
+        for outcome in (EXHAUSTED, SEARCH_INCOMPLETE):
+            with self.subTest(outcome=outcome):
+                self.outcome = outcome
+                self.refused("reads `github-code-search` unanswered for a rate-limit cap")
 
 
 

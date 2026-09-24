@@ -1218,84 +1218,959 @@ fn assert_corpus_matches(c: &Corpus) {
     }
 }
 
-/// Drive every witness-supply probe through the public CLI and compare the full
-/// packaged tree with the committed Fern 5.20.0 measurement. These are probe
-/// expectations, not corpus goldens: they settle a Fern verdict where no
-/// registrable real-world document exists and do not enter `CORPUS.md`.
+/// Every committed Fern probe measurement, driven from the one declaration of
+/// them: `docs/openapi-surface/probe-expected/MANIFEST.tsv` (Contract A in
+/// `docs/openapi-surface-coverage.md`). These are probe expectations, not corpus
+/// goldens: a probe never enters `CORPUS.md` and never counts as parity
+/// evidence. The manifest names each proof's form, and this reads every row the
+/// way its form requires — crozier against a committed tree, a refusal record
+/// against the pin and against crozier's own outcome, a differential pair
+/// against itself — and holds the artifacts on disk to the manifest in both
+/// directions.
+// llmlint: ignore[names_match_behavior] The name is the one this node's acceptance criteria and its `cargo nextest -E 'test(witness_supply_probes_match_fern_measurements)'` check select it by; renaming it would silently empty that filter.
 #[test]
 fn witness_supply_probes_match_fern_measurements() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let probes = root.join("docs/openapi-surface/probes");
-    let expected_base = root.join("docs/openapi-surface/probe-expected");
-    let mut keys: Vec<String> = std::fs::read_dir(&expected_base)
-        .expect("probe expectation directory")
-        .filter_map(|entry| {
-            let entry = entry.expect("probe expectation entry");
-            entry
-                .file_type()
-                .expect("probe expectation file type")
-                .is_dir()
-                .then(|| entry.file_name().to_string_lossy().into_owned())
-        })
-        .collect();
-    keys.sort();
-    assert_eq!(
-        keys.len(),
-        29,
-        "every cleanly generating assigned probe is measured"
+    let failures = probe_manifest_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
+    assert!(
+        failures.is_empty(),
+        "the committed probe measurements disagree with MANIFEST.tsv:\n{}",
+        failures.join("\n")
     );
+}
 
-    for key in keys {
-        let expected_root = expected_base.join(&key);
-        let out = tempfile::tempdir().expect("probe output tempdir");
-        crozier()
-            .args(["generate", "python", "--spec"])
-            .arg(probes.join(format!("{key}.yml")))
-            .arg("--output")
-            .arg(out.path())
-            .args([
-                "--package-name",
-                "fern",
-                "--project-name",
-                "default_package_name",
-            ])
-            .assert()
-            .success()
-            .stderr(predicate::str::contains("generated"));
+const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
+const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
+const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";
+const REFUSAL_FIELDS: [&str; 5] = [
+    "fern_cli_version",
+    "fern_python_sdk_version",
+    "generate_exit",
+    "diagnostic",
+    "output_tree",
+];
 
-        let expected_files = walk_files(&expected_root);
-        let generated_files = walk_files(out.path());
-        assert_eq!(
-            generated_files, expected_files,
-            "{key}: generated file set differs"
-        );
-        for rel in expected_files {
-            let generated = std::fs::read_to_string(out.path().join(&rel))
-                .unwrap_or_else(|error| panic!("{key}: missing generated {rel}: {error}"));
-            let expected = std::fs::read_to_string(expected_root.join(&rel))
-                .unwrap_or_else(|error| panic!("{key}: missing expected {rel}: {error}"));
-            if !generated_matches_fixture(&rel, &generated, &expected) {
-                let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-                let diff = unified_diff(&expected, &actual).unwrap_or_default();
-                panic!("{key}: generated {rel} differs from Fern 5.20.0\n{diff}");
+/// One row of `MANIFEST.tsv`.
+struct ProbeProof {
+    key: String,
+    form: String,
+    artifact: String,
+    control: String,
+    digest: String,
+}
+
+/// Read `MANIFEST.tsv` under `root` and return every way the committed probe
+/// measurements fail to agree with it, each naming the key it is about. `root`
+/// is the repository root for the real gate, and a scratch tree laid out the
+/// same way for the fixture tests below, so both go through this one path.
+fn probe_manifest_failures(root: &Path) -> Vec<String> {
+    let expected_base = root.join(PROBE_EXPECTED_DIR);
+    let manifest_path = expected_base.join("MANIFEST.tsv");
+    let text = match std::fs::read_to_string(&manifest_path) {
+        Ok(text) => text,
+        Err(error) => return vec![format!("MANIFEST.tsv: cannot be read: {error}")],
+    };
+    let (proofs, mut failures) = parse_probe_manifest(&text);
+
+    // Both directions: every row's artifact exists, and nothing under
+    // `probe-expected/` exists that no row names.
+    let mut named: std::collections::BTreeSet<String> =
+        std::collections::BTreeSet::from(["MANIFEST.tsv".to_string()]);
+    for proof in &proofs {
+        if let Some(name) = proof
+            .artifact
+            .strip_prefix(&format!("{PROBE_EXPECTED_DIR}/"))
+        {
+            named.insert(name.to_string());
+        }
+        if proof.form == "differential" {
+            named.insert(proof.control.clone());
+        }
+    }
+    match std::fs::read_dir(&expected_base) {
+        Ok(entries) => {
+            let mut present: Vec<String> = entries
+                .filter_map(Result::ok)
+                .map(|entry| entry.file_name().to_string_lossy().into_owned())
+                .collect();
+            present.sort();
+            for name in present {
+                if !named.contains(&name) {
+                    failures.push(format!(
+                        "{name}: is under {PROBE_EXPECTED_DIR}/ but no MANIFEST.tsv row names it \
+                         — declare it with a row, or remove it"
+                    ));
+                }
+            }
+        }
+        Err(error) => failures.push(format!("{PROBE_EXPECTED_DIR}: cannot be listed: {error}")),
+    }
+
+    for proof in &proofs {
+        failures.extend(probe_proof_failures(root, proof));
+    }
+    failures
+}
+
+/// The manifest's own shape: the header, six columns, sorted keys, and each
+/// row's form, verdict, artifact path, control and digest spelled as Contract A
+/// requires. Rows that parse are returned for the artifact checks even when a
+/// sibling row failed, so one bad row cannot hide another.
+fn parse_probe_manifest(text: &str) -> (Vec<ProbeProof>, Vec<String>) {
+    let mut failures = Vec::new();
+    let mut lines = text.lines();
+    if lines.next() != Some(PROBE_MANIFEST_HEADER) {
+        failures.push(format!(
+            "MANIFEST.tsv: the header line must be exactly {PROBE_MANIFEST_HEADER:?}"
+        ));
+    }
+    let mut proofs: Vec<ProbeProof> = Vec::new();
+    for (index, line) in lines.enumerate() {
+        let fields: Vec<&str> = line.split('\t').collect();
+        let [key, form, verdict, artifact, control, digest] = fields[..] else {
+            failures.push(format!(
+                "MANIFEST.tsv line {}: {} column(s); every row has the six {PROBE_MANIFEST_HEADER:?}",
+                index + 2,
+                fields.len()
+            ));
+            continue;
+        };
+        if let Some(previous) = proofs
+            .last()
+            .filter(|previous| previous.key.as_str() >= key)
+        {
+            failures.push(format!(
+                "{key}: MANIFEST.tsv rows must be sorted by key with no key twice; it follows {}",
+                previous.key
+            ));
+        }
+        let expected_verdicts: &[&str] = match form {
+            "absent-tree" => &["discards", "measured"],
+            "refusal" => &["refuses", "crashes"],
+            "differential" => &["ignores", "coincidence"],
+            _ => {
+                failures.push(format!(
+                    "{key}: form `{form}` is not one of `absent-tree`, `refusal`, `differential`"
+                ));
+                &[]
+            }
+        };
+        if verdict == "implements" {
+            failures.push(format!(
+                "{key}: verdict `implements` — a shape Fern emits output derived from is not \
+                 settleable by a probe; only a registered real-world specification settles it"
+            ));
+        } else if ![
+            "discards",
+            "ignores",
+            "refuses",
+            "crashes",
+            "coincidence",
+            "measured",
+        ]
+        .contains(&verdict)
+        {
+            failures.push(format!(
+                "{key}: verdict `{verdict}` is not one Contract A admits \
+                 (`discards`, `ignores`, `refuses`, `crashes`, `coincidence`, or `measured`)"
+            ));
+        } else if !expected_verdicts.is_empty() && !expected_verdicts.contains(&verdict) {
+            failures.push(format!(
+                "{key}: a `{form}` proof establishes {expected_verdicts:?}, not `{verdict}`"
+            ));
+        }
+        let expected_artifact = if form == "refusal" {
+            format!("{PROBE_EXPECTED_DIR}/{key}.fern-refusal.txt")
+        } else {
+            format!("{PROBE_EXPECTED_DIR}/{key}")
+        };
+        if artifact != expected_artifact {
+            failures.push(format!(
+                "{key}: artifact `{artifact}` must be `{expected_artifact}` for a `{form}` proof"
+            ));
+        }
+        if form == "differential" {
+            if control == "—" || control == key || control.is_empty() {
+                failures.push(format!(
+                    "{key}: a `differential` proof names its control probe's key in `control`"
+                ));
+            }
+        } else if control != "—" {
+            failures.push(format!("{key}: `control` is `—` for a `{form}` proof"));
+        }
+        if digest.len() != 64
+            || !digest
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        {
+            failures.push(format!(
+                "{key}: digest `{digest}` is not a lower-case hex SHA-256"
+            ));
+        }
+        proofs.push(ProbeProof {
+            key: key.to_string(),
+            form: form.to_string(),
+            artifact: artifact.to_string(),
+            control: control.to_string(),
+            digest: digest.to_string(),
+        });
+    }
+    (proofs, failures)
+}
+
+/// Every way one row's committed artifact fails its form, its digest, or
+/// crozier's own run over the named probe.
+fn probe_proof_failures(root: &Path, proof: &ProbeProof) -> Vec<String> {
+    let key = proof.key.as_str();
+    let artifact = root.join(&proof.artifact);
+    let probe = root.join(PROBE_DOCUMENTS_DIR).join(format!("{key}.yml"));
+    let mut failures = Vec::new();
+    if !artifact.exists() {
+        return vec![format!(
+            "{key}: its artifact {} is missing — a declaration cannot outlive its artifact",
+            proof.artifact
+        )];
+    }
+    match probe_artifact_digest(&artifact) {
+        Ok(actual) if actual == proof.digest => {}
+        Ok(actual) => failures.push(format!(
+            "{key}: {} hashes to {actual}, but MANIFEST.tsv declares {} — a committed Fern \
+             artifact changed; restore it, never re-declare it to match",
+            proof.artifact, proof.digest
+        )),
+        Err(error) => failures.push(format!("{key}: {error}")),
+    }
+    if !probe.is_file() {
+        failures.push(format!(
+            "{key}: its probe document {PROBE_DOCUMENTS_DIR}/{key}.yml is missing"
+        ));
+        return failures;
+    }
+    match proof.form.as_str() {
+        "refusal" => failures.extend(refusal_proof_failures(root, proof, &artifact, &probe)),
+        "absent-tree" => failures.extend(probe_tree_failures(key, &probe, &artifact)),
+        "differential" => {
+            let control_key = proof.control.as_str();
+            let control = root
+                .join(PROBE_DOCUMENTS_DIR)
+                .join(format!("{control_key}.yml"));
+            let control_tree = root.join(PROBE_EXPECTED_DIR).join(control_key);
+            failures.extend(probe_tree_failures(key, &probe, &artifact));
+            if !control.is_file() || !control_tree.is_dir() {
+                failures.push(format!(
+                    "{key}: its control `{control_key}` needs both \
+                     {PROBE_DOCUMENTS_DIR}/{control_key}.yml and {PROBE_EXPECTED_DIR}/{control_key}/"
+                ));
+                return failures;
+            }
+            failures.extend(probe_tree_failures(key, &control, &control_tree));
+            failures.extend(differential_tree_failures(key, &artifact, &control_tree));
+            failures.extend(differential_isolation_failures(root, key, &probe, &control));
+        }
+        _ => {}
+    }
+    failures
+}
+
+/// A `refusal` row: the five-field record, the pin, no tree beside it, and
+/// crozier's own run over the probe agreeing that nothing is generated.
+fn refusal_proof_failures(
+    root: &Path,
+    proof: &ProbeProof,
+    record: &Path,
+    probe: &Path,
+) -> Vec<String> {
+    let key = proof.key.as_str();
+    let mut failures = Vec::new();
+    if root.join(PROBE_EXPECTED_DIR).join(key).exists() {
+        failures.push(format!(
+            "{key}: Fern emitted no SDK for a refused probe, so {PROBE_EXPECTED_DIR}/{key}/ \
+             must not exist"
+        ));
+    }
+    let text = match std::fs::read_to_string(record) {
+        Ok(text) => text,
+        Err(error) => return vec![format!("{key}: refusal record cannot be read: {error}")],
+    };
+    let fields: Vec<(&str, &str)> = text
+        .lines()
+        .map(|line| line.split_once(": ").unwrap_or((line, "")))
+        .collect();
+    let names: Vec<&str> = fields.iter().map(|(name, _)| *name).collect();
+    if names != REFUSAL_FIELDS {
+        failures.push(format!(
+            "{key}: the refusal record carries fields {names:?}; Contract A requires exactly \
+             {REFUSAL_FIELDS:?}, in that order and spelling"
+        ));
+    }
+    let value = |name: &str| {
+        fields
+            .iter()
+            .find(|(field, _)| *field == name)
+            .map(|(_, value)| value.trim())
+    };
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    for (name, pin) in [
+        ("fern_cli_version", cli_pin.as_str()),
+        ("fern_python_sdk_version", sdk_pin.as_str()),
+    ] {
+        if let Some(found) = value(name).filter(|found| *found != pin) {
+            failures.push(format!(
+                "{key}: {name} is `{found}`, but the corpus pins `{pin}`"
+            ));
+        }
+    }
+    if let Some(exit) =
+        value("generate_exit").filter(|exit| !exit.parse::<i64>().is_ok_and(|code| code != 0))
+    {
+        failures.push(format!(
+            "{key}: generate_exit is `{exit}`; a refusal records Fern's non-zero exit"
+        ));
+    }
+    if value("diagnostic") == Some("") {
+        failures.push(format!(
+            "{key}: diagnostic is empty; a refusal quotes the phrase Fern printed"
+        ));
+    }
+    if let Some(tree) = value("output_tree").filter(|tree| *tree != "none") {
+        failures.push(format!(
+            "{key}: output_tree is `{tree}`; a refusal records that Fern produced `none`"
+        ));
+    }
+
+    // crozier is measured, not trusted: over a probe Fern refused it must
+    // refuse too and write nothing.
+    let out = tempfile::tempdir().expect("probe output tempdir");
+    let target = out.path().join("sdk");
+    match probe_command(probe, &target).output() {
+        Ok(result) if result.status.success() => failures.push(format!(
+            "{key}: crozier generated successfully over a probe the record says Fern refused"
+        )),
+        Ok(_) => {}
+        Err(error) => failures.push(format!("{key}: could not run crozier: {error}")),
+    }
+    if target.exists() && !walk_files(&target).is_empty() {
+        failures.push(format!(
+            "{key}: crozier emitted an output tree for a probe the record says Fern emitted none for"
+        ));
+    }
+    failures
+}
+
+/// The Fern CLI and `fernapi/fern-python-sdk` versions the corpus is pinned to,
+/// read from the one place crozier itself carries them — the `cliVersion` and
+/// `generatorVersion` of the `.fern/metadata.json` it emits — so a refusal record
+/// is held to the pin the goldens are, not to a second copy of it.
+fn probe_fern_pins() -> (String, String) {
+    let metadata: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("assets/scaffolding/metadata.json"),
+        )
+        .expect("crozier's packaged Fern metadata"),
+    )
+    .expect("crozier's packaged Fern metadata is JSON");
+    let pin = |field: &str| {
+        metadata[field]
+            .as_str()
+            .unwrap_or_else(|| panic!("assets/scaffolding/metadata.json has no {field}"))
+            .to_string()
+    };
+    (pin("cliVersion"), pin("generatorVersion"))
+}
+
+/// crozier over one probe document, byte-compared against its committed tree
+/// under the corpus gate's own normalization.
+fn probe_tree_failures(key: &str, probe: &Path, expected_root: &Path) -> Vec<String> {
+    let out = tempfile::tempdir().expect("probe output tempdir");
+    let result = match probe_command(probe, out.path()).output() {
+        Ok(result) => result,
+        Err(error) => return vec![format!("{key}: could not run crozier: {error}")],
+    };
+    if !result.status.success() {
+        return vec![format!(
+            "{key}: crozier failed over {}: {}",
+            probe.display(),
+            String::from_utf8_lossy(&result.stderr)
+        )];
+    }
+    let expected_files = walk_files(expected_root);
+    let generated_files = walk_files(out.path());
+    if generated_files != expected_files {
+        return vec![format!(
+            "{key}: crozier's file set over {} differs from {}",
+            probe.display(),
+            expected_root.display()
+        )];
+    }
+    let mut failures = Vec::new();
+    for rel in expected_files {
+        let generated = std::fs::read_to_string(out.path().join(&rel)).unwrap_or_default();
+        let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
+        if !generated_matches_fixture(&rel, &generated, &expected) {
+            let (actual, expected) = normalized_pair(&rel, &generated, &expected);
+            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            failures.push(format!(
+                "{key}: generated {rel} differs from the committed Fern measurement \
+                 (fix the generator, never the measurement)\n{diff}"
+            ));
+        }
+    }
+    failures
+}
+
+/// A `differential` pair's two committed trees are the same bytes under the
+/// gate's normalization; if they are not, the feature is generation and no
+/// probe settles it.
+fn differential_tree_failures(key: &str, tree: &Path, control_tree: &Path) -> Vec<String> {
+    let files = walk_files(tree);
+    if files != walk_files(control_tree) {
+        return vec![format!(
+            "{key}: the probe's and control's committed trees hold different files, so the \
+             feature is generation — remove the row and route it to a real specification"
+        )];
+    }
+    let mut failures = Vec::new();
+    for rel in files {
+        let left = std::fs::read_to_string(tree.join(&rel)).unwrap_or_default();
+        let right = std::fs::read_to_string(control_tree.join(&rel)).unwrap_or_default();
+        if !generated_matches_fixture(&rel, &left, &right) {
+            failures.push(format!(
+                "{key}: the probe's and control's committed {rel} differ, so the feature is \
+                 generation — remove the row and route it to a real specification"
+            ));
+        }
+    }
+    failures
+}
+
+/// The three checks that make a pair isolate its feature, read off the parsed
+/// documents by the census's own selector engine.
+fn differential_isolation_failures(
+    root: &Path,
+    key: &str,
+    probe: &Path,
+    control: &Path,
+) -> Vec<String> {
+    let Some(python) = python_interpreter() else {
+        return vec![format!(
+            "{key}: no python3/python on PATH to run the census selector over the pair"
+        )];
+    };
+    let script =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/probe-differential-isolation.py");
+    match std::process::Command::new(python)
+        .arg(script)
+        .arg(root)
+        .arg(key)
+        .arg(probe)
+        .arg(control)
+        .output()
+    {
+        Ok(result) if result.status.success() => Vec::new(),
+        Ok(result) => {
+            let said = format!(
+                "{}{}",
+                String::from_utf8_lossy(&result.stdout),
+                String::from_utf8_lossy(&result.stderr)
+            );
+            let lines: Vec<String> = said.lines().map(str::to_string).collect();
+            if lines.is_empty() {
+                vec![format!(
+                    "{key}: the isolation check failed and said nothing"
+                )]
+            } else {
+                lines
+            }
+        }
+        Err(error) => vec![format!("{key}: could not run the isolation check: {error}")],
+    }
+}
+
+/// The CLI invocation every probe is generated with.
+fn probe_command(probe: &Path, output: &Path) -> Command {
+    let mut command = crozier();
+    command
+        .args(["generate", "python", "--spec"])
+        .arg(probe)
+        .arg("--output")
+        .arg(output)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ]);
+    command
+}
+
+/// Contract A's digest: SHA-256 of a refusal record's bytes, or of a tree's
+/// canonical stream — every file sorted by `/`-separated relative path, each
+/// contributing its path, a NUL, its decimal byte length, a NUL, and its bytes.
+fn probe_artifact_digest(artifact: &Path) -> Result<String, String> {
+    let bytes = if artifact.is_dir() {
+        let mut files = try_walk_files(artifact)?;
+        files.sort();
+        let mut stream = Vec::new();
+        for rel in files {
+            let content = std::fs::read(artifact.join(&rel))
+                .map_err(|error| format!("cannot read {rel}: {error}"))?;
+            stream.extend_from_slice(rel.as_bytes());
+            stream.push(0);
+            stream.extend_from_slice(content.len().to_string().as_bytes());
+            stream.push(0);
+            stream.extend_from_slice(&content);
+        }
+        stream
+    } else {
+        std::fs::read(artifact)
+            .map_err(|error| format!("cannot read {}: {error}", artifact.display()))?
+    };
+    Ok(sha256_hex(&bytes))
+}
+
+/// FIPS 180-4 SHA-256, so the digest check needs no hashing dev-dependency for
+/// one use (the suite hand-rolls [`walk_files`] and [`unified_diff`] the same way).
+fn sha256_hex(message: &[u8]) -> String {
+    const K: [u32; 64] = [
+        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4,
+        0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe,
+        0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f,
+        0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+        0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc,
+        0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
+        0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116,
+        0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
+        0xc67178f2,
+    ];
+    let mut state: [u32; 8] = [
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab,
+        0x5be0cd19,
+    ];
+    let mut padded = message.to_vec();
+    padded.push(0x80);
+    while padded.len() % 64 != 56 {
+        padded.push(0);
+    }
+    padded.extend_from_slice(&((message.len() as u64) * 8).to_be_bytes());
+    for block in padded.chunks(64) {
+        let mut w = [0u32; 64];
+        for (index, word) in block.chunks(4).enumerate() {
+            w[index] = u32::from_be_bytes([word[0], word[1], word[2], word[3]]);
+        }
+        for i in 16..64 {
+            let s0 = w[i - 15].rotate_right(7) ^ w[i - 15].rotate_right(18) ^ (w[i - 15] >> 3);
+            let s1 = w[i - 2].rotate_right(17) ^ w[i - 2].rotate_right(19) ^ (w[i - 2] >> 10);
+            w[i] = w[i - 16]
+                .wrapping_add(s0)
+                .wrapping_add(w[i - 7])
+                .wrapping_add(s1);
+        }
+        let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = state;
+        for i in 0..64 {
+            let s1 = e.rotate_right(6) ^ e.rotate_right(11) ^ e.rotate_right(25);
+            let choice = (e & f) ^ (!e & g);
+            let t1 = h
+                .wrapping_add(s1)
+                .wrapping_add(choice)
+                .wrapping_add(K[i])
+                .wrapping_add(w[i]);
+            let s0 = a.rotate_right(2) ^ a.rotate_right(13) ^ a.rotate_right(22);
+            let majority = (a & b) ^ (a & c) ^ (b & c);
+            let t2 = s0.wrapping_add(majority);
+            h = g;
+            g = f;
+            f = e;
+            e = d.wrapping_add(t1);
+            d = c;
+            c = b;
+            b = a;
+            a = t1.wrapping_add(t2);
+        }
+        for (slot, value) in state.iter_mut().zip([a, b, c, d, e, f, g, h]) {
+            *slot = slot.wrapping_add(value);
+        }
+    }
+    state.iter().map(|word| format!("{word:08x}")).collect()
+}
+
+#[test]
+fn sha256_matches_the_fips_180_4_test_vectors() {
+    assert_eq!(
+        sha256_hex(b""),
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    );
+    assert_eq!(
+        sha256_hex(b"abc"),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    );
+    assert_eq!(
+        sha256_hex(b"abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
+        "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"
+    );
+}
+
+/// A scratch repository laid out as the real one is, holding one valid
+/// `differential` pair and one valid `refusal`, for the gate to be driven over
+/// through the same [`probe_manifest_failures`] the real manifest takes. The
+/// two trees are crozier's own comment-stripped output standing in for Fern's —
+/// this exercises the gate's reading of a manifest, not any Fern verdict.
+struct ProbeManifestFixture {
+    dir: tempfile::TempDir,
+}
+
+const FIXTURE_DIFFERENTIAL_KEY: &str = "sample-extension";
+const FIXTURE_CONTROL_KEY: &str = "sample-extension-control";
+const FIXTURE_REFUSAL_KEY: &str = "sample-refused";
+const FIXTURE_PROBE: &str = "openapi: 3.1.0
+info:
+  title: sample
+  version: 1.0.0
+  x-sample-extension: true
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        \"200\":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+";
+
+impl ProbeManifestFixture {
+    fn new() -> Self {
+        let dir = tempfile::tempdir().expect("fixture repository");
+        let fixture = Self { dir };
+        let root = fixture.root();
+        let probes = root.join(PROBE_DOCUMENTS_DIR);
+        let expected = root.join(PROBE_EXPECTED_DIR);
+        std::fs::create_dir_all(&probes).expect("fixture probes directory");
+        std::fs::create_dir_all(&expected).expect("fixture expectation directory");
+        std::fs::write(
+            root.join("docs/openapi-surface/sample.md"),
+            format!(
+                "| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |\n\
+                 |---|---|---|---|---|---|---|---|\n\
+                 | `{FIXTURE_DIFFERENTIAL_KEY}` | both | Info Object.x-sample-extension | limitations | census `info.x-sample-extension`: 0 declarations |  |  |  |\n"
+            ),
+        )
+        .expect("fixture region file");
+        let control = FIXTURE_PROBE.replace("  x-sample-extension: true\n", "");
+        std::fs::write(
+            probes.join(format!("{FIXTURE_DIFFERENTIAL_KEY}.yml")),
+            FIXTURE_PROBE,
+        )
+        .expect("fixture probe");
+        std::fs::write(probes.join(format!("{FIXTURE_CONTROL_KEY}.yml")), control)
+            .expect("fixture control");
+        std::fs::copy(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(PROBE_DOCUMENTS_DIR)
+                .join("ref-pointer-unnamed-segment.yml"),
+            probes.join(format!("{FIXTURE_REFUSAL_KEY}.yml")),
+        )
+        .expect("fixture refused probe");
+        for key in [FIXTURE_DIFFERENTIAL_KEY, FIXTURE_CONTROL_KEY] {
+            fixture.write_stripped_tree(key);
+        }
+        let (cli_pin, sdk_pin) = probe_fern_pins();
+        std::fs::write(
+            fixture.refusal_record(),
+            format!(
+                "fern_cli_version: {cli_pin}\nfern_python_sdk_version: {sdk_pin}\n\
+                 generate_exit: 1\ndiagnostic: Type name must begin with a letter\n\
+                 output_tree: none\n"
+            ),
+        )
+        .expect("fixture refusal record");
+        fixture.declare();
+        fixture
+    }
+
+    fn root(&self) -> &Path {
+        self.dir.path()
+    }
+
+    fn path(&self, rel: &str) -> PathBuf {
+        self.root().join(rel)
+    }
+
+    fn tree(&self, key: &str) -> PathBuf {
+        self.root().join(PROBE_EXPECTED_DIR).join(key)
+    }
+
+    fn refusal_record(&self) -> PathBuf {
+        self.root()
+            .join(PROBE_EXPECTED_DIR)
+            .join(format!("{FIXTURE_REFUSAL_KEY}.fern-refusal.txt"))
+    }
+
+    /// crozier's output for `key`'s probe, stripped the way a Fern golden is.
+    fn write_stripped_tree(&self, key: &str) {
+        let tree = self.tree(key);
+        probe_command(
+            &self
+                .root()
+                .join(PROBE_DOCUMENTS_DIR)
+                .join(format!("{key}.yml")),
+            &tree,
+        )
+        .assert()
+        .success();
+        for rel in walk_files(&tree) {
+            if rel.ends_with(".py") {
+                let path = tree.join(&rel);
+                let text = std::fs::read_to_string(&path).expect("generated module");
+                std::fs::write(&path, crozier::strip_python_comments(&text))
+                    .expect("stripped module");
             }
         }
     }
 
-    let refused = probes.join("ref-pointer-unnamed-segment.yml");
-    assert!(refused.is_file(), "the refused probe remains reproducible");
-    assert_eq!(
-        std::fs::read_to_string(
-            expected_base.join("ref-pointer-unnamed-segment.fern-refusal.txt")
+    /// Write `MANIFEST.tsv` declaring the two proofs at their current digests.
+    fn declare(&self) {
+        let tree = format!("{PROBE_EXPECTED_DIR}/{FIXTURE_DIFFERENTIAL_KEY}");
+        let record = format!("{PROBE_EXPECTED_DIR}/{FIXTURE_REFUSAL_KEY}.fern-refusal.txt");
+        let tree_digest = probe_artifact_digest(&self.path(&tree)).expect("tree digest");
+        let record_digest = probe_artifact_digest(&self.path(&record)).expect("record digest");
+        self.write_manifest(&format!(
+            "{PROBE_MANIFEST_HEADER}\n\
+             {FIXTURE_DIFFERENTIAL_KEY}\tdifferential\tignores\t{tree}\t{FIXTURE_CONTROL_KEY}\t{tree_digest}\n\
+             {FIXTURE_REFUSAL_KEY}\trefusal\trefuses\t{record}\t—\t{record_digest}\n"
+        ));
+    }
+
+    fn manifest(&self) -> String {
+        std::fs::read_to_string(self.path(&format!("{PROBE_EXPECTED_DIR}/MANIFEST.tsv")))
+            .expect("fixture manifest")
+    }
+
+    fn write_manifest(&self, text: &str) {
+        std::fs::write(
+            self.path(&format!("{PROBE_EXPECTED_DIR}/MANIFEST.tsv")),
+            text,
         )
-        .expect("committed Fern refusal verdict"),
-        "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n",
-        "the refused probe's measured Fern verdict must remain explicit"
+        .expect("fixture manifest");
+    }
+
+    fn edit_manifest(&self, from: &str, to: &str) {
+        let text = self.manifest();
+        assert!(text.contains(from), "fixture manifest has no {from:?}");
+        self.write_manifest(&text.replacen(from, to, 1));
+    }
+
+    fn edit_record(&self, from: &str, to: &str) {
+        let text = std::fs::read_to_string(self.refusal_record()).expect("fixture record");
+        assert!(text.contains(from), "fixture record has no {from:?}");
+        std::fs::write(self.refusal_record(), text.replacen(from, to, 1)).expect("fixture record");
+        // Re-declare, so the failure observed is the one induced and not the
+        // digest that any edit to a record also trips.
+        self.declare();
+    }
+
+    fn failures(&self) -> Vec<String> {
+        probe_manifest_failures(self.root())
+    }
+
+    /// The one failure an induced case is expected to produce, naming its key.
+    fn assert_refused(&self, key: &str, message: &str) {
+        let failures = self.failures();
+        assert!(
+            failures.iter().any(
+                |failure| failure.starts_with(&format!("{key}: ")) && failure.contains(message)
+            ),
+            "expected a failure naming {key} and saying {message:?}; got:\n{}",
+            failures.join("\n")
+        );
+    }
+}
+
+#[test]
+fn probe_manifest_accepts_a_valid_differential_pair_and_refusal() {
+    let fixture = ProbeManifestFixture::new();
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+}
+
+#[test]
+fn probe_manifest_refuses_an_undeclared_or_missing_artifact() {
+    let fixture = ProbeManifestFixture::new();
+    std::fs::create_dir(fixture.tree("sample-stray")).expect("stray tree");
+    fixture.assert_refused("sample-stray", "no MANIFEST.tsv row names it");
+
+    let fixture = ProbeManifestFixture::new();
+    std::fs::copy(
+        fixture.refusal_record(),
+        fixture.path(&format!(
+            "{PROBE_EXPECTED_DIR}/sample-stray.fern-refusal.txt"
+        )),
+    )
+    .expect("stray record");
+    fixture.assert_refused(
+        "sample-stray.fern-refusal.txt",
+        "no MANIFEST.tsv row names it",
     );
-    assert!(
-        !expected_base.join("ref-pointer-unnamed-segment").exists(),
-        "Fern emitted no SDK for the refused probe, so it must have no expectation tree"
+
+    let fixture = ProbeManifestFixture::new();
+    std::fs::remove_dir_all(fixture.tree(FIXTURE_DIFFERENTIAL_KEY)).expect("remove tree");
+    fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "is missing");
+}
+
+#[test]
+fn probe_manifest_refuses_an_artifact_whose_digest_moved() {
+    let fixture = ProbeManifestFixture::new();
+    let text = std::fs::read_to_string(fixture.refusal_record()).expect("record");
+    std::fs::write(
+        fixture.refusal_record(),
+        text.replace("must begin with a letter", "must begin with a digit"),
+    )
+    .expect("edited record");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "but MANIFEST.tsv declares");
+
+    // A still-valid exit value is caught by the digest alone.
+    let fixture = ProbeManifestFixture::new();
+    let text = std::fs::read_to_string(fixture.refusal_record()).expect("record");
+    std::fs::write(
+        fixture.refusal_record(),
+        text.replace("generate_exit: 1", "generate_exit: 2"),
+    )
+    .expect("edited record");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "but MANIFEST.tsv declares");
+
+    let fixture = ProbeManifestFixture::new();
+    let readme = fixture.tree(FIXTURE_DIFFERENTIAL_KEY).join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("probe README");
+    std::fs::write(&readme, format!("{text}\ntouched\n")).expect("touched README");
+    fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "but MANIFEST.tsv declares");
+}
+
+#[test]
+fn probe_manifest_refuses_an_implements_verdict() {
+    let fixture = ProbeManifestFixture::new();
+    fixture.edit_manifest("\tignores\t", "\timplements\t");
+    fixture.assert_refused(
+        FIXTURE_DIFFERENTIAL_KEY,
+        "a shape Fern emits output derived from is not settleable by a probe",
     );
+}
+
+#[test]
+fn probe_manifest_refuses_a_malformed_refusal_record() {
+    for (from, to, message) in [
+        (
+            "diagnostic: Type name must begin with a letter\n",
+            "",
+            "Contract A requires exactly",
+        ),
+        (
+            "generate_exit: 1\ndiagnostic: Type name must begin with a letter\n",
+            "diagnostic: Type name must begin with a letter\ngenerate_exit: 1\n",
+            "Contract A requires exactly",
+        ),
+        (
+            "fern_python_sdk_version: ",
+            "fern_python_sdk_version: 0.",
+            "the corpus pins",
+        ),
+        (
+            "fern_cli_version: ",
+            "fern_cli_version: 0.",
+            "the corpus pins",
+        ),
+        (
+            "generate_exit: 1",
+            "generate_exit_code: 1",
+            "Contract A requires exactly",
+        ),
+        ("generate_exit: 1", "generate_exit: 0", "non-zero exit"),
+        (
+            "diagnostic: Type name must begin with a letter",
+            "diagnostic: ",
+            "diagnostic is empty",
+        ),
+        (
+            "output_tree: none",
+            "output_tree: fern-python-sdk/",
+            "output_tree is",
+        ),
+    ] {
+        let fixture = ProbeManifestFixture::new();
+        fixture.edit_record(from, to);
+        fixture.assert_refused(FIXTURE_REFUSAL_KEY, message);
+    }
+}
+
+#[test]
+fn probe_manifest_refuses_a_refusal_crozier_does_not_share() {
+    let fixture = ProbeManifestFixture::new();
+    std::fs::create_dir(fixture.tree(FIXTURE_REFUSAL_KEY)).expect("tree beside refusal");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "must not exist");
+
+    // A probe crozier generates, declared as one Fern refused.
+    let fixture = ProbeManifestFixture::new();
+    std::fs::copy(
+        fixture.path(&format!("{PROBE_DOCUMENTS_DIR}/{FIXTURE_CONTROL_KEY}.yml")),
+        fixture.path(&format!("{PROBE_DOCUMENTS_DIR}/{FIXTURE_REFUSAL_KEY}.yml")),
+    )
+    .expect("generating probe");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "crozier generated successfully");
+    fixture.assert_refused(FIXTURE_REFUSAL_KEY, "crozier emitted an output tree");
+}
+
+#[test]
+fn probe_manifest_refuses_a_tree_crozier_diverges_from() {
+    let fixture = ProbeManifestFixture::new();
+    let readme = fixture.tree(FIXTURE_DIFFERENTIAL_KEY).join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("tree README");
+    std::fs::write(&readme, format!("{text}\ndrift\n")).expect("drifted README");
+    fixture.declare();
+    fixture.assert_refused(
+        FIXTURE_DIFFERENTIAL_KEY,
+        "differs from the committed Fern measurement",
+    );
+}
+
+#[test]
+fn probe_manifest_refuses_a_differential_pair_that_does_not_isolate_its_feature() {
+    // The two committed trees disagree: the feature is generation.
+    let fixture = ProbeManifestFixture::new();
+    let readme = fixture.tree(FIXTURE_CONTROL_KEY).join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("control README");
+    std::fs::write(&readme, format!("{text}\ndrift\n")).expect("drifted README");
+    fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "so the feature is generation");
+
+    let probe = format!("{PROBE_DOCUMENTS_DIR}/{FIXTURE_DIFFERENTIAL_KEY}.yml");
+    let control = format!("{PROBE_DOCUMENTS_DIR}/{FIXTURE_CONTROL_KEY}.yml");
+    for (document, text, message) in [
+        (
+            probe.as_str(),
+            FIXTURE_PROBE.replace("  x-sample-extension: true\n", ""),
+            "byte-identical",
+        ),
+        (
+            probe.as_str(),
+            FIXTURE_PROBE.replace("x-sample-extension", "x-other-extension"),
+            "the probe does not declare",
+        ),
+        (
+            control.as_str(),
+            FIXTURE_PROBE.to_string(),
+            "the control declares",
+        ),
+        (
+            probe.as_str(),
+            FIXTURE_PROBE.replace("description: ok", "description: fine"),
+            "outside the `info.x-sample-extension` declaration",
+        ),
+    ] {
+        let fixture = ProbeManifestFixture::new();
+        std::fs::write(fixture.path(document), text).expect("edited pair document");
+        fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, message);
+    }
 }
 
 /// Re-run the one refused witness-supply probe through Fern itself. Kept out of
