@@ -6656,6 +6656,59 @@ class RankedBacklogTests(unittest.TestCase):
         row = re.search(rf"^\| `{re.escape(key)}` \| *\d+ \| *\d+ \| ([^|]+) \|", ledger, re.M)
         return row.group(1) if row else ""
 
+    def test_committed_security_media_and_extension_citations_track_manifest(self) -> None:
+        """The three proof regions and Fern ledger cite their declared measurements."""
+        expected = REPO / "docs/openapi-surface/probe-expected"
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        regions = {"security", "bodies-media", "oas31-extensions"}
+        for line in (expected / "MANIFEST.tsv").read_text(encoding="utf-8").splitlines()[1:]:
+            key, form, verdict, artifact, control, _digest = line.split("\t")
+            entry = self.entries.get(key)
+            if entry is None or entry[0] not in regions:
+                continue
+            cells = entry[1]
+            with self.subTest(key=key):
+                suffix = "" if form == "refusal" else "/"
+                local_artifact = artifact.removeprefix("docs/openapi-surface/") + suffix
+                self.assertIn(f"({local_artifact})", cells[4])
+                self.assertTrue((REPO / artifact).exists())
+                ledger_key = (
+                    "encoding-explode-or-allowReserved"
+                    if key in {"encoding-explode", "encoding-allow-reserved"}
+                    else key
+                )
+                ledger_rows = [
+                    row for row in ledger.splitlines()
+                    if row.startswith(f"| `{ledger_key}` |")
+                    and f"(openapi-surface/{local_artifact})" in row
+                ]
+                self.assertTrue(ledger_rows, f"{key}: ledger citation drifted")
+                for ledger_row in ledger_rows:
+                    self.assertIn(
+                        f"**Committed Fern measurement:** [`{key}`]"
+                        f"(openapi-surface/{local_artifact})",
+                        ledger_row,
+                    )
+                    self.assertRegex(ledger_row, rf"\b{re.escape(verdict)}\b")
+                if form == "differential":
+                    self.assertIn(f"(probe-expected/{control}/)", cells[4] + cells[7])
+                    self.assertTrue((expected / control).is_dir())
+                if cells[3] == "limitations":
+                    self.assertIn(
+                        f"**Committed Fern measurement:** [`{key}`]({local_artifact})",
+                        cells[4],
+                    )
+                elif cells[3] == "gap":
+                    self.assertEqual("UNREACHABLE", self.settlement_of(cells))
+                metadata = json.loads((REPO / artifact / ".fern/metadata.json").read_text())
+                for text in (cells[4], *ledger_rows):
+                    for label, version, field in (
+                        ("Fern CLI", metadata["cliVersion"], "cliVersion"),
+                        ("Python SDK", metadata["generatorVersion"], "generatorVersion"),
+                    ):
+                        for claimed in re.findall(rf"{label} (\d+\.\d+\.\d+)", text):
+                            self.assertEqual(version, claimed, f"{key}: {field} citation drifted")
+
     def test_every_limitations_row_records_the_one_proof_it_owes(self) -> None:
         """A `limitations` row names one outstanding or committed proof, whose
         form agrees with its own evidence cell's verdict."""
@@ -6680,17 +6733,36 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertEqual(key, named_key)
                     self.assertIn(key, manifest, f"{key}: cited proof has no manifest row")
                     row = manifest[key]
+                    self.assertIn(row[1], self.PROOF_FORMS)
+                    self.assertIn(
+                        row[2],
+                        ("discards", "ignores", "refuses", "crashes", "coincidence"),
+                        f"{key}: the cited proof has no non-generation verdict",
+                    )
+                    self.assertTrue(
+                        (REPO / row[3]).exists(),
+                        f"{key}: the manifest artifact is missing",
+                    )
                     artifact = row[3].removeprefix("docs/openapi-surface/")
                     suffix = "" if row[1] == "refusal" else "/"
                     self.assertEqual(f"{artifact}{suffix}", link)
+                    ledger_key = (
+                        "encoding-explode-or-allowReserved"
+                        if key in {"encoding-explode", "encoding-allow-reserved"}
+                        else key
+                    )
                     ledger_rows = [
-                        line for line in ledger.splitlines() if line.startswith(f"| `{key}` |")
+                        line for line in ledger.splitlines() if line.startswith(f"| `{ledger_key}` |")
                     ]
                     self.assertTrue(ledger_rows, f"{key}: has no Fern limitation row")
                     self.assertIn(f"(openapi-surface/{artifact}{suffix})", ledger_rows[-1])
-                    self.assertRegex(self.ledger_cell(key), rf"\b{row[2]}\b")
+                    self.assertRegex(self.ledger_cell(ledger_key), rf"\b{row[2]}\b")
                     if row[1] == "differential":
                         self.assertIn(f"(probe-expected/{row[4]}/)", cells[4])
+                        self.assertTrue(
+                            (REPO / "docs/openapi-surface/probe-expected" / row[4]).is_dir(),
+                            f"{key}: the cited control tree is missing",
+                        )
                     forms = [row[1]]
                 else:
                     forms = outstanding

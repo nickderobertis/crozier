@@ -393,12 +393,48 @@ pub struct Operation {
     #[serde(rename = "x-codegen-request-body-name", default)]
     pub codegen_request_body_name: Option<String>,
     /// Responses, keyed by status code (or `default`), in document order.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_responses")]
     pub responses: IndexMap<String, Response>,
     /// Per-operation security requirement. `Some(vec![])` opts out of the
     /// document default (no auth); `None` inherits it.
     #[serde(default)]
     pub security: Option<Vec<SecurityRequirement>>,
+}
+
+/// A Responses Object permits `x-*` members beside status codes. They carry
+/// metadata, not response definitions, so skip them before decoding responses.
+fn deserialize_responses<'de, D>(
+    deserializer: D,
+) -> std::result::Result<IndexMap<String, Response>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct ResponsesVisitor;
+
+    impl<'de> Visitor<'de> for ResponsesVisitor {
+        type Value = IndexMap<String, Response>;
+
+        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            formatter.write_str("an OpenAPI responses object")
+        }
+
+        fn visit_map<A>(self, mut map: A) -> std::result::Result<Self::Value, A::Error>
+        where
+            A: MapAccess<'de>,
+        {
+            let mut responses = IndexMap::new();
+            while let Some(key) = map.next_key::<String>()? {
+                if key.starts_with("x-") {
+                    map.next_value::<IgnoredAny>()?;
+                } else {
+                    responses.insert(key, map.next_value()?);
+                }
+            }
+            Ok(responses)
+        }
+    }
+
+    deserializer.deserialize_map(ResponsesVisitor)
 }
 
 impl Operation {

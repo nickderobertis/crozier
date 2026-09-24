@@ -7939,6 +7939,88 @@ fn multipart_request_enums_hoist_through_the_cli() {
 }
 
 #[test]
+fn non_json_multipart_part_serializes_value_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.1.0
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /uploads:
+    post:
+      operationId: createUpload
+      tags: [uploads]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [metadata]
+              properties:
+                metadata: { $ref: '#/components/schemas/Metadata' }
+            encoding:
+              metadata: { contentType: text/plain }
+      responses:
+        '204': { description: Created }
+components:
+  schemas:
+    Metadata:
+      type: object
+      properties:
+        note: { type: string }
+"#,
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/uploads/raw_client.py"))
+        .expect("multipart raw client is generated");
+    assert!(
+        raw.contains(
+            "\"metadata\": (None, json.dumps(jsonable_encoder(metadata)), \"text/plain\")"
+        ),
+        "non-JSON part serializes the value and keeps its declared content type: {raw}"
+    );
+}
+
+#[test]
+fn non_json_multipart_array_part_keeps_encoded_list_through_the_cli() {
+    let (_dir, out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/encoding-explode.yml"
+    ));
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
+        .expect("multipart raw client is generated");
+    let part = "\"tags\": (None, jsonable_encoder(tags), \"text/plain\")";
+    assert_eq!(
+        raw.matches(part).count(),
+        2,
+        "sync and async list parts: {raw}"
+    );
+    assert!(
+        !raw.contains("json.dumps(jsonable_encoder(tags))"),
+        "non-JSON array parts keep the encoded list instead of serializing it: {raw}"
+    );
+}
+
+#[test]
+fn responses_extension_beside_status_code_is_ignored_through_the_cli() {
+    let (_probe_dir, probe_out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/extension-responses.yml"
+    ));
+    let (_control_dir, control_out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/extension-responses-control.yml"
+    ));
+    let path = "src/acme/raw_client.py";
+    let probe =
+        std::fs::read_to_string(probe_out.join(path)).expect("response client is generated");
+    let control =
+        std::fs::read_to_string(control_out.join(path)).expect("control client is generated");
+    assert!(
+        probe.contains("def probe("),
+        "status response is retained: {probe}"
+    );
+    assert_eq!(
+        probe, control,
+        "the Responses Object extension has no SDK effect"
+    );
+}
+
+#[test]
 fn short_multiple_request_enum_imports_stay_flat() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widget:\n    post:\n      operationId: createWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema:\n              type: object\n              required: [mode, status]\n              properties:\n                mode: { type: string, enum: [FAST, SAFE] }\n                status: { type: string, enum: [ACTIVE, PAUSED] }\n      responses:\n        '204': { description: Created }\n",
