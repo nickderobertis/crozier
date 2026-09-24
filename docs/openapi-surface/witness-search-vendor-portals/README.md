@@ -1,6 +1,6 @@
 # Vendor portal census
 
-`../witness-search-portal-plan.tsv` identifies the 27 publisher portals and how
+`../witness-search-portal-plan.tsv` identifies the 28 publisher portals and how
 this list was derived from the registered corpus, the APIs.guru catalogue, and
 the earlier publisher traces. The 25 pinned publisher sources were downloaded
 at their exact commit URLs. `acquisitions.jsonl` records each response and
@@ -13,8 +13,8 @@ results for the Contract B record. `records.tsv` indexes confirmed declarers;
 selector result per readable document. The exact source bytes can be recovered
 from the pinned archive URLs and checked against those manifests.
 
-The census covers 13,906 JSON/YAML files across the 25 pinned publishers and
-the mutable PandaScore response. Twelve OpenAPI 3 YAML files use syntax the
+The census covers 13,907 JSON/YAML files across the 25 pinned publishers and
+the mutable PandaScore and ElevenLabs responses. Twelve OpenAPI 3 YAML files use syntax the
 standard-library census reader refuses; their rows name the acquisition-side
 `PyYAML 6.0.3 CSafeLoader` fallback, which fed the same selector engine. The 39
 remaining parse failures retain their exact reason and byte hash in the census
@@ -23,7 +23,14 @@ comma; the others do not carry an OpenAPI 3 root marker. No parser failure is
 counted as a zero selector result.
 
 The `elevenlabs/elevenlabs-docs` commit endpoint returned HTTP 404 at the time
-in `acquisitions.jsonl`, so its portal remains a recorded non-answer. The live
+in `acquisitions.jsonl`, and its repository endpoint again at 2026-09-24T15:42:43Z
+(`elevenlabs-probes.jsonl`), so that pinned tree remains a recorded non-answer.
+ElevenLabs' MIT-licensed `elevenlabs/elevenlabs-python` tree at
+`39d7bc9d02023f7a19a7356711832a47facf3aa4` carries no OpenAPI description.
+The portal's live `https://api.elevenlabs.io/openapi.json` answered; its
+selector output declares `anyof-array-variant-anyof-nullable-item` once. It
+has no immutable revision and no evidenced redistribution grant
+(`info.license` is absent), so it is a rejected declarer, not a witness. The live
 PandaScore OpenAPI endpoint answered, but offered neither an immutable revision
 nor an evidenced redistribution grant; `pandascore-probes.jsonl` records its
 response and selector result. Codat's publisher repository was pinned and

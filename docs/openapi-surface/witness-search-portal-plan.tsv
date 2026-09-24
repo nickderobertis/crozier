@@ -26,3 +26,4 @@ webflow/openapi-spec	f6db607359a412dd6aa6cd304674731d7f2dbe10	openapi/v2.yml	pri
 codatio/oas	2dbdc1f7bcdefaf769ab17fcc99fbb098ef2610b	json/Codat-Accounting.json	APIs.guru Codat declarer and earlier publisher trace	acquired
 PandaScore developer portal	no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	https://api.pandascore.co/openapi.json	APIs.guru PandaScore declarer and earlier publisher trace	acquired-mutable
 zulip/zulip	6a82f40579f8adb9149aa0b04ff795c397baae73	zerver/openapi/zulip.yaml	jentic declarer and Zulip API portal (https://zulip.com/api/rest)	acquired
+ElevenLabs developer portal	no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	https://api.elevenlabs.io/openapi.json	live description of the elevenlabs/elevenlabs-docs portal, whose repository returned HTTP 404 at 2026-09-24T15:42:43+00:00	acquired-mutable

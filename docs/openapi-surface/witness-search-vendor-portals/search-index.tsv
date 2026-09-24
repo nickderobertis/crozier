@@ -1,5 +1,6 @@
 key	kind	subject	result	file
 annotated-ref-target-closed-object	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+annotated-ref-target-closed-object	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-closed-object	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-closed-object	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 annotated-ref-target-closed-object	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -36,6 +37,7 @@ annotated-ref-target-closed-object	screen	zulip--zulip/zerver/openapi/zulip.yaml
 annotated-ref-target-closed-object	screen	zulip--zulip/zerver/openapi/zulip.yaml ref	pass	candidates.tsv
 annotated-ref-target-closed-object	screen	zulip--zulip/zerver/openapi/zulip.yaml fern	pass	candidates.tsv
 annotated-ref-target-composed	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+annotated-ref-target-composed	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-composed	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-composed	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 annotated-ref-target-composed	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -147,6 +149,7 @@ annotated-ref-target-composed	screen	zulip--zulip/zerver/openapi/zulip.yaml lice
 annotated-ref-target-composed	screen	zulip--zulip/zerver/openapi/zulip.yaml ref	pass	candidates.tsv
 annotated-ref-target-composed	screen	zulip--zulip/zerver/openapi/zulip.yaml fern	pass	candidates.tsv
 annotated-ref-target-oneof	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+annotated-ref-target-oneof	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-oneof	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-oneof	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 annotated-ref-target-oneof	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -208,6 +211,7 @@ annotated-ref-target-oneof	screen	zulip--zulip/zerver/openapi/zulip.yaml licence
 annotated-ref-target-oneof	screen	zulip--zulip/zerver/openapi/zulip.yaml ref	pass	candidates.tsv
 annotated-ref-target-oneof	screen	zulip--zulip/zerver/openapi/zulip.yaml fern	pass	candidates.tsv
 annotated-ref-target-string-const	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+annotated-ref-target-string-const	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-string-const	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 annotated-ref-target-string-const	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 annotated-ref-target-string-const	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -234,6 +238,7 @@ annotated-ref-target-string-const	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601
 annotated-ref-target-string-const	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 annotated-ref-target-string-const	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+anyof-array-variant-anyof-nullable-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -259,7 +264,13 @@ anyof-array-variant-anyof-nullable-item	walk	traccar/traccar@b15554cf3f9808dc462
 anyof-array-variant-anyof-nullable-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913eedc21aedd6da	133	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 anyof-array-variant-anyof-nullable-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
+anyof-array-variant-anyof-nullable-item	document	https://api.elevenlabs.io/openapi.json	census 1	census.jsonl.gz
+anyof-array-variant-anyof-nullable-item	candidate	https://api.elevenlabs.io/openapi.json	census 1	census.jsonl.gz
+anyof-array-variant-anyof-nullable-item	screen	https://api.elevenlabs.io/openapi.json licence	failed	candidates.tsv
+anyof-array-variant-anyof-nullable-item	screen	https://api.elevenlabs.io/openapi.json ref	failed	candidates.tsv
+anyof-array-variant-anyof-nullable-item	screen	https://api.elevenlabs.io/openapi.json fern	not-run	candidates.tsv
 anyof-array-variant-closed-object-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+anyof-array-variant-closed-object-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-closed-object-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-closed-object-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 anyof-array-variant-closed-object-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -286,6 +297,7 @@ anyof-array-variant-closed-object-item	walk	twilio/twilio-oai@ef1d81e7b6e49e6025
 anyof-array-variant-closed-object-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 anyof-array-variant-closed-object-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 anyof-array-variant-empty-object-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+anyof-array-variant-empty-object-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-empty-object-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-empty-object-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 anyof-array-variant-empty-object-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -312,6 +324,7 @@ anyof-array-variant-empty-object-item	walk	twilio/twilio-oai@ef1d81e7b6e49e60253
 anyof-array-variant-empty-object-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 anyof-array-variant-empty-object-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 anyof-array-variant-oneof-nullable-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+anyof-array-variant-oneof-nullable-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-oneof-nullable-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-oneof-nullable-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 anyof-array-variant-oneof-nullable-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -338,6 +351,7 @@ anyof-array-variant-oneof-nullable-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602
 anyof-array-variant-oneof-nullable-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 anyof-array-variant-oneof-nullable-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 anyof-array-variant-struct-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+anyof-array-variant-struct-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-struct-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 anyof-array-variant-struct-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 anyof-array-variant-struct-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1424,6 +1438,7 @@ anyof-array-variant-struct-item	screen	stripe--openapi/preview/openapi.spec3.sdk
 anyof-array-variant-struct-item	screen	stripe--openapi/preview/openapi.spec3.sdk.yaml ref	pass	candidates.tsv
 anyof-array-variant-struct-item	screen	stripe--openapi/preview/openapi.spec3.sdk.yaml fern	not-run	candidates.tsv
 array-item-inheritance-union	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+array-item-inheritance-union	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-inheritance-union	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-inheritance-union	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 array-item-inheritance-union	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1450,6 +1465,7 @@ array-item-inheritance-union	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913e
 array-item-inheritance-union	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 array-item-inheritance-union	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 array-item-pointer-walk-anyof	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+array-item-pointer-walk-anyof	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-pointer-walk-anyof	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-pointer-walk-anyof	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 array-item-pointer-walk-anyof	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1476,6 +1492,7 @@ array-item-pointer-walk-anyof	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913
 array-item-pointer-walk-anyof	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 array-item-pointer-walk-anyof	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 array-item-pointer-walk-oneof	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+array-item-pointer-walk-oneof	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-pointer-walk-oneof	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 array-item-pointer-walk-oneof	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 array-item-pointer-walk-oneof	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1502,6 +1519,7 @@ array-item-pointer-walk-oneof	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913
 array-item-pointer-walk-oneof	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 array-item-pointer-walk-oneof	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oauth2-password	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oauth2-password	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oauth2-password	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oauth2-password	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oauth2-password	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1528,6 +1546,7 @@ oauth2-password	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913eedc21aedd6da	
 oauth2-password	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oauth2-password	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-annotated-ref-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-annotated-ref-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-annotated-ref-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-annotated-ref-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-annotated-ref-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1554,6 +1573,7 @@ oneof-array-variant-annotated-ref-item	walk	twilio/twilio-oai@ef1d81e7b6e49e6025
 oneof-array-variant-annotated-ref-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-annotated-ref-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-discriminated-union-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-anyof-discriminated-union-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-discriminated-union-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-discriminated-union-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-anyof-discriminated-union-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1580,6 +1600,7 @@ oneof-array-variant-anyof-discriminated-union-item	walk	twilio/twilio-oai@ef1d81
 oneof-array-variant-anyof-discriminated-union-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-discriminated-union-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-anyof-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-anyof-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1606,6 +1627,7 @@ oneof-array-variant-anyof-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e91
 oneof-array-variant-anyof-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-nullable-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-anyof-nullable-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-nullable-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-anyof-nullable-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-anyof-nullable-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1632,6 +1654,7 @@ oneof-array-variant-anyof-nullable-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602
 oneof-array-variant-anyof-nullable-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-anyof-nullable-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-closed-object-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-closed-object-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-closed-object-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-closed-object-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-closed-object-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1663,6 +1686,7 @@ oneof-array-variant-closed-object-item	screen	zulip--zulip/zerver/openapi/zulip.
 oneof-array-variant-closed-object-item	screen	zulip--zulip/zerver/openapi/zulip.yaml ref	pass	candidates.tsv
 oneof-array-variant-closed-object-item	screen	zulip--zulip/zerver/openapi/zulip.yaml fern	pass	candidates.tsv
 oneof-array-variant-composed-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-composed-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-composed-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-composed-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-composed-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1689,6 +1713,7 @@ oneof-array-variant-composed-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601
 oneof-array-variant-composed-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-composed-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-array-variant-empty-object-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-array-variant-empty-object-item	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-empty-object-item	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-array-variant-empty-object-item	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-array-variant-empty-object-item	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1715,6 +1740,7 @@ oneof-array-variant-empty-object-item	walk	twilio/twilio-oai@ef1d81e7b6e49e60253
 oneof-array-variant-empty-object-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-array-variant-empty-object-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 oneof-bare-object-example-variant	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+oneof-bare-object-example-variant	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-bare-object-example-variant	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 oneof-bare-object-example-variant	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 oneof-bare-object-example-variant	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1741,6 +1767,7 @@ oneof-bare-object-example-variant	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601
 oneof-bare-object-example-variant	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 oneof-bare-object-example-variant	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-anyof-closed-object-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-anyof-closed-object-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-closed-object-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-closed-object-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-anyof-closed-object-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1767,6 +1794,7 @@ property-sole-anyof-closed-object-member	walk	twilio/twilio-oai@ef1d81e7b6e49e60
 property-sole-anyof-closed-object-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-anyof-closed-object-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-anyof-composed-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-anyof-composed-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-composed-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-composed-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-anyof-composed-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1793,6 +1821,7 @@ property-sole-anyof-composed-member	walk	twilio/twilio-oai@ef1d81e7b6e49e6025306
 property-sole-anyof-composed-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-anyof-composed-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-anyof-empty-object-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-anyof-empty-object-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-empty-object-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-empty-object-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-anyof-empty-object-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1819,6 +1848,7 @@ property-sole-anyof-empty-object-member	walk	twilio/twilio-oai@ef1d81e7b6e49e602
 property-sole-anyof-empty-object-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-anyof-empty-object-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-anyof-struct-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-anyof-struct-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-struct-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-anyof-struct-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-anyof-struct-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1855,6 +1885,7 @@ property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml li
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml ref	pass	candidates.tsv
 property-sole-anyof-struct-member	screen	cloudflare--api-schemas/openapi.yaml fern	failed	candidates.tsv
 property-sole-oneof-closed-object-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-oneof-closed-object-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1881,6 +1912,7 @@ property-sole-oneof-closed-object-member	walk	twilio/twilio-oai@ef1d81e7b6e49e60
 property-sole-oneof-closed-object-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-oneof-closed-object-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-oneof-composed-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-oneof-composed-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-composed-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-composed-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-oneof-composed-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1907,6 +1939,7 @@ property-sole-oneof-composed-member	walk	twilio/twilio-oai@ef1d81e7b6e49e6025306
 property-sole-oneof-composed-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-oneof-composed-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 property-sole-oneof-empty-object-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+property-sole-oneof-empty-object-member	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-empty-object-member	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 property-sole-oneof-empty-object-member	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 property-sole-oneof-empty-object-member	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1933,6 +1966,7 @@ property-sole-oneof-empty-object-member	walk	twilio/twilio-oai@ef1d81e7b6e49e602
 property-sole-oneof-empty-object-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	acquisition-manifest.tsv
 property-sole-oneof-empty-object-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	acquisition-manifest.tsv
 ref-pointer-undeclared-component-head	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+ref-pointer-undeclared-component-head	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 ref-pointer-undeclared-component-head	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 ref-pointer-undeclared-component-head	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 ref-pointer-undeclared-component-head	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -1984,6 +2018,7 @@ ref-pointer-undeclared-component-head	screen	intercom--Intercom-OpenAPI/descript
 ref-pointer-undeclared-component-head	screen	intercom--Intercom-OpenAPI/descriptions/2.9/api.intercom.io.yaml ref	pass	candidates.tsv
 ref-pointer-undeclared-component-head	screen	intercom--Intercom-OpenAPI/descriptions/2.9/api.intercom.io.yaml fern	not-run	candidates.tsv
 ref-pointer-unnamed-segment	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+ref-pointer-unnamed-segment	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 ref-pointer-unnamed-segment	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 ref-pointer-unnamed-segment	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 ref-pointer-unnamed-segment	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
@@ -2210,6 +2245,7 @@ ref-pointer-unnamed-segment	screen	codatio--oas/yaml/Codat-Sync-Payroll.yaml lic
 ref-pointer-unnamed-segment	screen	codatio--oas/yaml/Codat-Sync-Payroll.yaml ref	pass	candidates.tsv
 ref-pointer-unnamed-segment	screen	codatio--oas/yaml/Codat-Sync-Payroll.yaml fern	not-run	candidates.tsv
 schema-name-nonidentifier-name	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	acquisition-manifest.tsv
+schema-name-nonidentifier-name	walk	ElevenLabs developer portal@no-immutable-ref: https://api.elevenlabs.io/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 schema-name-nonidentifier-name	walk	PandaScore developer portal@no-immutable-ref: https://api.pandascore.co/openapi.json is a mutable live endpoint	1	acquisition-manifest.tsv
 schema-name-nonidentifier-name	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	acquisition-manifest.tsv
 schema-name-nonidentifier-name	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	acquisition-manifest.tsv
