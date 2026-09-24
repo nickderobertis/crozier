@@ -493,7 +493,7 @@ class LocalCensusTest(unittest.TestCase):
                     "team": [{"document": {"id": 7, "publicHandle": "acme-team"}}],
                     "collection": [{"document": {"id": "1-openapi"}}],
                     "request": [{"document": {"id": "r", "collection": {"id": "2-coll"}}}],
-                    "api": [{"document": {"id": "api-9"}}],
+                    "api": [{"document": {"id": "api-9"}}, {"document": {"id": "../x?y"}}],
                 }}) + "\n", encoding="utf-8")
             completed = subprocess.run(
                 [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
@@ -503,7 +503,8 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = {row["id"]: row for row in (json.loads(line) for line in
                     (evidence / "hit-access.jsonl").read_text().splitlines())}
-            self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "api-9"})
+            self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "api-9", "../x?y"})
+            self.assertIn("/apis/..%2Fx%3Fy", received)
             self.assertEqual(rows["1-openapi"]["classification"], "openapi-3")
             self.assertEqual(rows["1-openapi"]["selectors"], {"query-says-nothing": 1})
             self.assertEqual(rows["1-openapi"]["sha256"], hashlib.sha256(openapi).hexdigest())
@@ -582,6 +583,11 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(broken.returncode, 1)
             self.assertIn("does not have the candidate-record header", broken.stderr)
             self.assertIn("repair the ledger it names", broken.stderr)
+            (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8")
+            (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8")
+            unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            self.assertEqual(unnamed.returncode, 1)
+            self.assertIn("witness-search-keys.tsv lacks column(s) census_status", unnamed.stderr)
 
     def test_postman_hit_acquisition_without_a_search_gives_repair_action(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

@@ -12,6 +12,7 @@ import json
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -157,8 +158,11 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
     output = args.evidence_dir / "hit-access.jsonl"
     with output.open("w", encoding="utf-8") as handle:
         for (kind, identifier), entry in sorted(hits.items()):
-            url = HIT_ROUTES[kind].format(web=args.web_base.rstrip("/"), api=args.api_base.rstrip("/"),
-                                          id=identifier, handle=entry["handle"] or identifier)
+            # Both values come from Postman's response, so they are quoted into one path segment.
+            url = HIT_ROUTES[kind].format(
+                web=args.web_base.rstrip("/"), api=args.api_base.rstrip("/"),
+                id=urllib.parse.quote(identifier, safe=""),
+                handle=urllib.parse.quote(entry["handle"] or identifier, safe=""))
             request = urllib.request.Request(url, headers={
                 "User-Agent": "crozier-witness-search/1", "Accept": "application/json"})
             while True:

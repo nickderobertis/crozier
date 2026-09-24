@@ -17,7 +17,6 @@ import csv
 import io
 import json
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -27,15 +26,22 @@ RECORD_FIELDS = ("source", "key", "candidate", "revision", "digest", "census", "
                  "revision_screen", "fern_screen", "disposition", "evidence")
 
 
-def read_tsv(path: Path) -> list[dict[str, str]]:
+def read_tsv(path: Path, columns: tuple[str, ...], *, optional: bool = False) -> list[dict[str, str]]:
+    """A ledger's rows, refused by name when it or a column it needs is missing."""
     if not path.is_file():
-        return []
+        if optional:
+            return []
+        raise ValueError(f"{path} is missing")
     with path.open(encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, dialect="excel-tab"))
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        missing = sorted(set(columns) - set(reader.fieldnames or ()))
+        if missing:
+            raise ValueError(f"{path} lacks column(s) {', '.join(missing)}")
+        return list(reader)
 
 
 def outstanding_rows(root: Path) -> list[dict[str, str]]:
-    keys = read_tsv(root / "witness-search-keys.tsv")
+    keys = read_tsv(root / "witness-search-keys.tsv", ("key", "selector", "census_status"))
     supported = [row["key"] for row in keys if row["census_status"] == "supported"]
     groups: dict[tuple[str, str, str, str], dict] = {}
 
@@ -51,20 +57,24 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
                     row["key"], "witness-search-keys.tsv")
     for source in SOURCES:
         directory = root / f"witness-search-{source}"
-        for row in read_tsv(directory / "records.tsv"):
+        for row in read_tsv(directory / "records.tsv", RECORD_FIELDS):
             if row["disposition"] == "outstanding":
                 blocker = next(row[f] for f in ("licence_screen", "revision_screen", "fern_screen")
                                if row[f] != "pass")
                 add(row["key"], source, "inconclusive-screen", blocker,
                     f"{row['candidate']}@{row['revision']}", f"witness-search-{source}/records.tsv")
-        unreadable = [row for row in read_tsv(directory / "enumeration.tsv")
+        enumeration = read_tsv(directory / "enumeration.tsv",
+                               ("document", "revision", "status"), optional=True)
+        unreadable = [row for row in enumeration
                       if row["status"].startswith("unreadable")]
         for key in supported:
             for row in unreadable:
                 add(key, source, "unreadable-document",
                     "the document does not parse; each path's parser reason is in enumeration.tsv",
                     f"{row['document']}@{row['revision']}", f"witness-search-{source}/enumeration.tsv")
-    for row in read_tsv(root / "witness-search-portal-plan.tsv"):
+    plan = read_tsv(root / "witness-search-portal-plan.tsv",
+                    ("repository", "pinned_ref", "acquisition"))
+    for row in plan:
         if row["acquisition"] == "source-refused":
             for key in supported:
                 add(key, "vendor-portals", "portal-unanswered", row["pinned_ref"],
@@ -109,7 +119,7 @@ def main() -> int:
             directory / "candidates.tsv": render(candidates(args.root), (*RECORD_FIELDS[:-1], "record")),
             directory / "outstanding.tsv": render(outstanding_rows(args.root)),
         }
-    except (OSError, KeyError, ValueError) as error:
+    except (OSError, ValueError) as error:
         print(f"witness-search-registries-index: {error}; repair the ledger it names", file=sys.stderr)
         return 1
     for output, text in expected.items():
