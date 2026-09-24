@@ -1,0 +1,2 @@
+{"at": "2026-09-24T07:50:01.028+00:00", "bucket": "sourcegraph", "cause": "refusal-cooldown", "duration_s": 381.1497323513031, "host": "sourcegraph", "last_status": 429, "started_at": "2026-09-24T07:43:33.918273+00:00"}
+{"at": "2026-09-24T07:50:23.054+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 9.923442125320435, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-24T07:50:13.130561+00:00"}

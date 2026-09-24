@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import threading
@@ -86,8 +87,12 @@ class LocalServer(BaseHTTPRequestHandler):
                     {
                         "total_count": 1001
                         if state["partition"] and "size%3A" not in self.path
-                        else 2 if state["early_empty"] else 1,
-                        "items": [] if early_empty else [
+                        else 2
+                        if state["early_empty"]
+                        else 1,
+                        "items": []
+                        if early_empty
+                        else [
                             {
                                 "repository": {"full_name": "example/api"},
                                 "path": "openapi.yaml",
@@ -296,7 +301,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
     def test_index_truncation_remains_outstanding_on_resume(self) -> None:
         self.server.state["early_empty"] = True
-        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertIsNone(
+            self.search.github_search("closed-object", "additionalProperties")
+        )
         rows = [
             json.loads(line)
             for line in (self.root / "queries.jsonl").read_text().splitlines()
@@ -304,7 +311,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual("outstanding-index-truncation", rows[-1]["outcome"])
         self.assertEqual(2, rows[-1]["reported"])
         self.assertEqual(1, rows[-1]["retrieved"])
-        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertIsNone(
+            self.search.github_search("closed-object", "additionalProperties")
+        )
         self.assertEqual(2, self.server.state["searches"])
 
     def test_old_empty_page_is_marked_outstanding_on_resume(self) -> None:
@@ -337,7 +346,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
     def test_partition_walk_records_both_incomplete_children(self) -> None:
         self.server.state["partition"] = True
         self.server.state["early_empty"] = True
-        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertIsNone(
+            self.search.github_search("closed-object", "additionalProperties")
+        )
         rows = [
             json.loads(line)
             for line in (self.root / "queries.jsonl").read_text().splitlines()
@@ -460,7 +471,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
     def test_newer_openapi_three_document_is_censused(self) -> None:
         self.server.state["raw_document"] = DOCUMENT.replace(
             b"openapi: 3.0.3", b"openapi: 3.2.0"
-        ).replace(b"type: string", b"type: object\n          additionalProperties: false")
+        ).replace(
+            b"type: string", b"type: object\n          additionalProperties: false"
+        )
         result = self.search.sourcegraph_document(
             "closed-object",
             "schema.additionalProperties=false",
@@ -472,6 +485,80 @@ class WitnessSearchGithubTests(unittest.TestCase):
         )
         self.assertEqual("declares", result["disposition"])
         self.assertEqual(1, result["selector_count"])
+
+    def test_consolidated_index_tracks_each_source_record_and_screen(self) -> None:
+        root = self.root / "index"
+        code = root / "witness-search-github-code-search"
+        trees = root / "witness-search-github-publisher-trees"
+        sourcegraph = root / "witness-search-sourcegraph"
+        for directory in (code, trees, sourcegraph):
+            directory.mkdir(parents=True)
+        identity = {
+            "repository": "example/api",
+            "path": "openapi.yaml",
+            "commit": "c" * 40,
+            "sha256": "d" * 64,
+        }
+        (code / "candidates.jsonl").write_text(
+            json.dumps({**identity, "key": "shape", "disposition": "declares"}) + "\n"
+        )
+        (trees / "documents.jsonl").write_text(
+            json.dumps(
+                {**identity, "status": "readable", "selector_counts": {"shape": 1}}
+            )
+            + "\n"
+        )
+        (sourcegraph / "candidates.jsonl").write_text(
+            json.dumps({**identity, "key": "shape", "disposition": "declares"}) + "\n"
+        )
+        (sourcegraph / "screens.jsonl").write_text(
+            json.dumps(
+                {
+                    **identity,
+                    "license": "passed: publisher grant",
+                    "ref": "passed: immutable",
+                    "fern": "passed: generated SDK",
+                    "disposition": "witness-found",
+                }
+            )
+            + "\n"
+        )
+        command = [
+            sys.executable,
+            str(REPO / "scripts/witness-search-github-index.py"),
+            "--evidence-root",
+            str(root),
+        ]
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        index = (root / "witness-search-github/candidates.tsv").read_text()
+        self.assertEqual(2, len(index.splitlines()))
+        self.assertIn("github-code-search,github-publisher-trees,sourcegraph", index)
+        self.assertIn("witness-found", index)
+        subprocess.run([*command, "--check"], check=True, capture_output=True)
+        (code / "candidates.jsonl").write_text(
+            (code / "candidates.jsonl").read_text()
+            + json.dumps(
+                {
+                    **identity,
+                    "path": "new.yaml",
+                    "key": "other",
+                    "disposition": "declares",
+                }
+            )
+            + "\n"
+        )
+        failed = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        self.assertEqual(1, failed.returncode)
+
+    def test_committed_index_matches_per_source_evidence(self) -> None:
+        command = [
+            sys.executable,
+            str(REPO / "scripts/witness-search-github-index.py"),
+            "--evidence-root",
+            str(REPO / "docs/openapi-surface"),
+            "--check",
+        ]
+        subprocess.run(command, check=True, capture_output=True, text=True)
 
 
 if __name__ == "__main__":
