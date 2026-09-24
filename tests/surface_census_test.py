@@ -1182,7 +1182,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38,
+            "Thirty-eight": 38, "Thirty-nine": 39,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -1693,6 +1693,19 @@ class GrammarContractTests(unittest.TestCase):
 
 class CensusReportTests(unittest.TestCase):
     """What the instrument answers: who declares a feature, and who does not."""
+
+    def test_non_ascii_info_title_distinguishes_the_probe_from_its_control(self) -> None:
+        probes = REPO / "docs" / "openapi-surface" / "probes"
+        for name, expected in (
+            ("nonascii-info-title", 1),
+            ("nonascii-info-title-control", 0),
+        ):
+            with self.subTest(name=name):
+                document = census.load_document(probes / f"{name}.yml")
+                self.assertEqual(
+                    expected,
+                    census.census_document(document).get("info.title:non-ascii", 0),
+                )
 
     def test_a_declared_feature_names_its_sources_and_its_declaration_count(self) -> None:
         completed = run("--vendored-only", "--selector", "operation.callbacks")
@@ -2961,24 +2974,25 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         },
     )
 
-    # The predicates declared before this family was named: the three that compare
-    # one document's values against each other, and the two key-shape readings the
-    # path-template pass added. Everything else in the two closed lists is a
-    # selector this node declared, and is what the table has to cover.
-    PRE_EXISTING_PREDICATES = (
+    # Predicates outside this discrimination table: the three that compare one
+    # document's values, two path-key readings, and the title probe. Everything
+    # else in the two closed lists is a selector this node declared, and is what
+    # the table has to cover.
+    PREDICATES_OUTSIDE_TABLE = (
         "operation.tags:multiple",
         "operation.operationId:duplicate",
         "openapi.paths:normalized-collision",
         "openapi.paths:templated-key",
         "openapi.paths:several-template-expressions",
         "components.schemas:normalized-collision",
+        "info.title:non-ascii",
     )
     DECLARED_HERE = frozenset(
         set(census.PREDICATES)
         | set(census.CONJUNCTIONS)
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
-        PRE_EXISTING_PREDICATES
+        PREDICATES_OUTSIDE_TABLE
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
         - {name for name in census.PREDICATES
@@ -7004,6 +7018,44 @@ class RankedBacklogTests(unittest.TestCase):
             "Routes 2 and 3 survive for non-generation verdicts alone",
         ):
             self.assertIn(" ".join(demanded.split()), flat.replace("\t", " "))
+
+    def test_committed_schema_proofs_are_cited_by_the_fern_ledger(self) -> None:
+        """Schema proof citations and verdicts track their manifest rows."""
+        manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        rows = [
+            line.split("\t")
+            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
+        ]
+        for key, _form, verdict, artifact, _control, _digest in rows:
+            entry = self.entries.get(key)
+            if entry is None or entry[0] != "schemas":
+                continue
+            cells = entry[1]
+            if cells[3] != "limitations" and "UNREACHABLE" not in cells[7]:
+                continue
+            with self.subTest(key=key):
+                matching = [
+                    line
+                    for line in ledger.splitlines()
+                    if line.startswith(f"| `{key}` |")
+                ]
+                self.assertTrue(
+                    any(
+                        artifact.removeprefix("docs/openapi-surface/") + "/" in line
+                        and re.search(rf"\b{verdict}\b", line)
+                        for line in matching
+                    ),
+                    f"{key}: fern-limitations.md does not cite the manifest artifact and verdict",
+                )
+
+    def test_dynamic_schema_probe_names_share_the_measured_document(self) -> None:
+        """The two manifest keys keep using the already measured joint probe."""
+        probes = REPO / "docs/openapi-surface/probes"
+        joint = (probes / "dollar-dynamic-recursion.yml").read_bytes()
+        for key in ("dollar-dynamic-anchor", "dollar-dynamic-ref"):
+            with self.subTest(key=key):
+                self.assertEqual(joint, (probes / f"{key}.yml").read_bytes())
 
 
 class RegionFixture:
