@@ -3219,6 +3219,7 @@ const CORPORA: &[&Corpus] = &[
     &PALOALTO_CSPM_REPORTS,
     &PALOALTO_CSPM_SEARCH_MANAGER,
     &THRIVECART,
+    &TRUEFOUNDRY_TRUEFORGE_5ADDE28,
 ];
 
 #[test]
@@ -5237,7 +5238,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_event.py",
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_resource_operation.py",
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_source.py",
-        "src/fern/sites/client.py",
         "src/fern/sites/comments/raw_client.py",
         "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_by.py",
         "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_order.py",
@@ -5578,6 +5578,18 @@ const PALOALTO_CSPM_SEARCH_MANAGER: Corpus = Corpus {
 /// ThriveCart points `$ref`s under an undeclared component head.
 const THRIVECART: Corpus = Corpus {
     api: "thrivecart",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// A later TrueForge revision annotates `$ref`s to closed-object targets.
+const TRUEFOUNDRY_TRUEFORGE_5ADDE28: Corpus = Corpus {
+    api: "truefoundry-trueforge-5adde28",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -9483,10 +9495,10 @@ fn strict_audience_excludes_unannotated_ops_through_the_binary() {
 #[test]
 fn ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid() {
     // Drive the real binary over a spec carrying both ignore spellings (issue #78).
-    // `x-fern-ignore` and `x-crozier-ignore` each drop their operation and the type
-    // it exclusively referenced, while an explicit `x-crozier-ignore: false`
-    // overrides a sibling `x-fern-ignore: true` (the Overlay un-ignore pattern). The
-    // pruned SDK must still compile — no dangling import to a removed type.
+    // `x-fern-ignore` and `x-crozier-ignore` each drop their operation and keep the
+    // type it exclusively referenced, as Fern's TrueForge golden does, while an
+    // explicit `x-crozier-ignore: false` overrides a sibling `x-fern-ignore: true`
+    // (the Overlay un-ignore pattern). The pruned SDK must still compile.
     let ignore_spec = r##"
 openapi: 3.0.3
 info: { title: Widget API, version: 1.0.0 }
@@ -9560,7 +9572,7 @@ components:
     );
     assert!(out.join("src/widgetapi/types/kept.py").is_file());
 
-    // Both ignore spellings drop their client and their exclusive type.
+    // Both ignore spellings drop their client and keep their exclusive type.
     assert!(
         !out.join("src/widgetapi/fern").exists(),
         "x-fern-ignore op should be pruned"
@@ -9569,8 +9581,8 @@ components:
         !out.join("src/widgetapi/crozier").exists(),
         "x-crozier-ignore op should be pruned"
     );
-    assert!(!out.join("src/widgetapi/types/only_fern.py").exists());
-    assert!(!out.join("src/widgetapi/types/only_crozier.py").exists());
+    assert!(out.join("src/widgetapi/types/only_fern.py").is_file());
+    assert!(out.join("src/widgetapi/types/only_crozier.py").is_file());
     assert_valid_python(&out);
 }
 
@@ -11115,4 +11127,9 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
             "{relative}"
         );
     }
+}
+
+#[test]
+fn truefoundry_trueforge_5adde28_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
 }

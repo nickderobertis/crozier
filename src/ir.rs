@@ -2432,15 +2432,10 @@ fn build_endpoint(
             // The parameter's declared example, where Fern keeps it at all.
             let without_declared_example =
                 parameter_example_value(doc, p).is_none() && array_item_example(p).is_none();
-            // A synthesized sample needs a *body* on the success response, not a
-            // response crozier can type: CloudFormation's `SignalResource` declares
-            // `200` with no content at all and passes parameter names, while
-            // TrueForge's `download_sandbox_file` returns
-            // `application/octet-stream` and still takes the sample.
-            let omit_synthesized_example = without_declared_example
-                && (!required
-                    || success_response_entry(op)
-                        .is_none_or(|response| response.content.is_empty()));
+            // A synthesized sample is only taken where Fern's importer builds no
+            // worked example of its own; see [`fern_imports_no_endpoint_example`].
+            let omit_synthesized_example =
+                without_declared_example && (!required || !fern_imports_no_endpoint_example(op));
             // Fern leaves an optional enum-typed query parameter out of a worked
             // call however its enum and its example are declared: measured on Fern
             // 5.20.0, an inline `enum` carrying a schema example, the same enum
@@ -3345,53 +3340,77 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
     example_literal(value)
 }
 
+/// Whether Fern's OpenAPI importer declines to build a worked example for the
+/// operation, which it does when the request or the success response is neither
+/// JSON, a form nor a stream (`ExampleEndpointFactory.buildEndpointExample`
+/// returns none for an *unsupported* schema). Its own example passes every string
+/// query parameter its name; only without one does Fern's IR fall back to the
+/// constraint-driven sample [`query_parameter_example`] synthesizes.
+/// CloudFormation's XML responses and TrueForge's `application/octet-stream`
+/// `download_sandbox_file` take the sample; TrueForge's JSON `list_versions`,
+/// Adyen's `accountHolderId` and discord's `query` pass their names, and so does
+/// CloudFormation's `SignalResource`, whose `200` has no content at all.
+fn fern_imports_no_endpoint_example(op: &Operation) -> bool {
+    let unsupported_request = op.request_body.as_ref().is_some_and(|body| {
+        !body.content.is_empty()
+            && selected_json_request_media(body).is_none()
+            && !body.content.keys().any(|media| {
+                media.starts_with("multipart/") || media == "application/x-www-form-urlencoded"
+            })
+    });
+    let unsupported_response = success_response_entry(op).is_some_and(|response| {
+        !response.content.is_empty()
+            && !response.content.keys().any(|media| {
+                media == "*/*" || media == "text/event-stream" || is_json_like_media_type(media)
+            })
+    });
+    unsupported_request || unsupported_response
+}
+
+/// The value Fern's IR example generator gives a string query parameter with no
+/// declared example (`generatePrimitiveStringExample`): its `default`, else a
+/// sample exactly `minLength` long, else one `maxLength` long when that is under
+/// ten, else nothing and the call passes the parameter's name.
 fn query_parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Option<String> {
     parameter_example(doc, parameter).or_else(|| {
-        // Fern synthesizes constrained query-string placeholders from the
-        // minimum length: its short `"x"` sample or a ten-character sample.
-        //
-        // Only for a string it considers constrained, though, and `minLength`
-        // alone does not make it one: Adyen's required `accountHolderId` declares
-        // `minLength: 1` and nothing else, and Fern's worked call passes the
-        // parameter's own name. CloudFormation's `StackName` declares
-        // `minLength: 1` beside a `pattern` and gets `"x"`, and its
-        // `SchemaHandlerPackage` declares one beside a `maxLength` and gets the
-        // same, so either of those two keywords is what turns the synthesis on.
-        // Whether a schema carries a `description` of its own turns the rule around,
-        // which is a table rather than a principle — these are the four shapes the
-        // corpus witnesses, each on a *required* query parameter:
-        //
-        // | schema `description` | `maxLength`/`pattern` | sample | witness |
-        // |---|---|---|---|
-        // | absent | present | synthesized | CloudFormation `StackDriftDetectionId`, `StackName` |
-        // | absent | absent | parameter name | Adyen Capital `accountHolderId` |
-        // | present | absent | synthesized | TrueForge `path` |
-        // | present | present | parameter name | TrueForge `agent_id` |
-        //
-        // No registered source declares a described schema beside a `pattern`, so
-        // that corner is taken with the `maxLength` one it shares a column with.
-        //
-        // The table's fifth shape is an *undocumented parameter*: discord's
-        // required `query` declares `{minLength: 1, maxLength: 100}` with no
-        // description on either the parameter or its schema, and Fern's worked
-        // call passes the parameter's own name. Every synthesizing witness above
-        // documents the parameter itself, so the synthesis needs that first.
-        parameter.description.as_ref()?;
         let schema = parameter
             .schema
             .as_ref()
-            .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))
-            .filter(|schema| {
-                let constrained = schema.max_length.is_some() || schema.pattern.is_some();
-                constrained != schema.description.is_some()
-            })?;
-        let minimum = schema.min_length?;
-        Some(if minimum > 1 {
-            "\"strawberry\"".to_string()
-        } else {
-            "\"x\"".to_string()
-        })
+            .filter(|schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("string"))?;
+        if let Some(default) = schema.default.as_ref().filter(|value| value.is_string()) {
+            return example_literal(default);
+        }
+        let length = schema
+            .min_length
+            .filter(|minimum| *minimum > 0)
+            .or_else(|| schema.max_length.filter(|maximum| *maximum < 10))?;
+        Some(format!("\"{}\"", sample_string_of_length(length)))
     })
+}
+
+/// Fern's `getStringExampleOfLength`: one word per length up to twelve, then the
+/// twelve-letter word padded with dots.
+fn sample_string_of_length(length: u64) -> String {
+    const SAMPLES: [&str; 12] = [
+        "x",
+        "xy",
+        "foo",
+        "buzz",
+        "alpha",
+        "banana",
+        "apricot",
+        "mandarin",
+        "nectarine",
+        "strawberry",
+        "pomegranate",
+        "blackcurrant",
+    ];
+    let length = usize::try_from(length).unwrap_or(usize::MAX);
+    match length {
+        0 => String::new(),
+        1..=12 => SAMPLES[length - 1].to_string(),
+        _ => format!("{}{}", SAMPLES[11], ".".repeat(length - 12)),
+    }
 }
 
 fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
@@ -7774,6 +7793,13 @@ impl Builder<'_> {
             return None;
         }
         let variants = schema.one_of.as_ref().or(schema.any_of.as_ref())?;
+        // A lone inline member is the schema's own shape, not a union to infer a
+        // tag over: TrueForge's `WebSearchProviderManifest` is `oneOf` one object
+        // tagged `type: {enum: [parallel]}`, and Fern declares a plain model with a
+        // `WebSearchProviderManifestType` enum field.
+        if schema.discriminator.is_none() && variants.len() == 1 && is_inline_object(&variants[0]) {
+            return None;
+        }
         let property_name = schema
             .discriminator
             .as_ref()
@@ -9926,14 +9952,14 @@ mod tests {
         additional_api_key_global_headers, array_item_type_ref, auth_model, base_type_ref,
         build_endpoint, build_enum, described_all_of_ref, discriminant_strips,
         document_discriminant_strips, endpoint_module, environment_model, extensible_enum,
-        full_type_ref_resolved, global_headers, hoist_fields, int_prim, member_fields,
-        method_from_grouped_id, module_from_grouped_id, module_identifier, oauth_scope_enum,
-        optional_type_ref, parameter_example, path_group, property_description,
+        fern_imports_no_endpoint_example, full_type_ref_resolved, global_headers, hoist_fields,
+        int_prim, member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
+        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
         query_parameter_example, ref_to_class, request_and_response_refs_match,
         request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
-        scalar_body, success_response_entry, synthesized_method_name, title_from_tag,
-        variant_class_name, AliasType, Auth, Builder, Field, InlineHoister, ObjectType, Prim,
-        RequestBody, TypeDecl, TypeRef,
+        sample_string_of_length, scalar_body, success_response_entry, synthesized_method_name,
+        title_from_tag, variant_class_name, AliasType, Auth, Builder, Field, InlineHoister,
+        ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
@@ -10533,16 +10559,7 @@ mod tests {
         parameter.example = None;
         parameter.schema.as_mut().expect("schema").min_length = Some(1);
         assert_eq!(parameter_example(&doc, &parameter), None);
-        // `minLength` on its own is not a constraint Fern synthesizes for: the
-        // worked call falls back to the parameter's own name.
-        assert_eq!(query_parameter_example(&doc, &parameter), None);
-        parameter.schema.as_mut().expect("schema").max_length = Some(64);
-        assert_eq!(
-            query_parameter_example(&doc, &parameter).as_deref(),
-            Some("\"x\"")
-        );
-        parameter.schema.as_mut().expect("schema").max_length = None;
-        parameter.schema.as_mut().expect("schema").pattern = Some("[a-z]+".to_string());
+        // Fern's IR sample: exactly `minLength` long, whatever else is declared.
         assert_eq!(
             query_parameter_example(&doc, &parameter).as_deref(),
             Some("\"x\"")
@@ -10552,12 +10569,55 @@ mod tests {
             query_parameter_example(&doc, &parameter).as_deref(),
             Some("\"strawberry\"")
         );
-        // An *undocumented* parameter takes its own name however constrained its
-        // schema is: discord's required `query` declares `{minLength: 1,
-        // maxLength: 100}` with no description anywhere and Fern's worked call
-        // passes `query="query"`.
-        parameter.description = None;
+        // Without `minLength`, a `maxLength` under ten sizes the sample; a longer
+        // one leaves the call to pass the parameter's name.
+        parameter.schema.as_mut().expect("schema").min_length = None;
+        parameter.schema.as_mut().expect("schema").max_length = Some(64);
         assert_eq!(query_parameter_example(&doc, &parameter), None);
+        parameter.schema.as_mut().expect("schema").max_length = Some(3);
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"foo\"")
+        );
+        // A `default` wins over both.
+        parameter.schema.as_mut().expect("schema").default = Some(serde_json::json!("asc"));
+        assert_eq!(
+            query_parameter_example(&doc, &parameter).as_deref(),
+            Some("\"asc\"")
+        );
+        assert_eq!(sample_string_of_length(0), "");
+        assert_eq!(sample_string_of_length(14), "blackcurrant..");
+    }
+
+    #[test]
+    fn fern_builds_its_own_example_unless_the_request_or_response_is_unsupported() {
+        let op = |value: serde_json::Value| -> Operation {
+            serde_json::from_value(value).expect("operation deserializes")
+        };
+        let json = op(serde_json::json!({ "responses": { "200": {
+            "description": "ok",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+        } } }));
+        assert!(!fern_imports_no_endpoint_example(&json));
+        let empty = op(serde_json::json!({ "responses": { "200": { "description": "ok" } } }));
+        assert!(!fern_imports_no_endpoint_example(&empty));
+        let file = op(serde_json::json!({ "responses": { "200": {
+            "description": "ok",
+            "content": { "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+            } }
+        } } }));
+        assert!(fern_imports_no_endpoint_example(&file));
+        let text_body = op(serde_json::json!({
+            "requestBody": { "content": { "text/plain": { "schema": { "type": "string" } } } },
+            "responses": { "204": { "description": "none" } }
+        }));
+        assert!(fern_imports_no_endpoint_example(&text_body));
+        let form_body = op(serde_json::json!({
+            "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object" } } } },
+            "responses": { "204": { "description": "none" } }
+        }));
+        assert!(!fern_imports_no_endpoint_example(&form_body));
     }
 
     #[test]

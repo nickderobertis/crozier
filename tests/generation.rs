@@ -2308,7 +2308,7 @@ components:
 
 /// Ignore extension (issue #78): a kept op, a `x-fern-ignore` op, and a
 /// `x-crozier-ignore` op, each referencing an otherwise-unshared type. Both ignore
-/// spellings must drop the op *and* its exclusive type.
+/// spellings drop the op and keep its type, as Fern's TrueForge golden does.
 const IGNORE_SPEC: &str = r##"
 openapi: 3.0.1
 info:
@@ -2351,7 +2351,7 @@ components:
 "##;
 
 #[test]
-fn ignore_extension_drops_ops_and_their_exclusive_types_through_the_pipeline() {
+fn ignore_extension_drops_ops_and_keeps_their_types_through_the_pipeline() {
     let files = render(IGNORE_SPEC);
     // The kept op's client and type are generated.
     assert!(files.contains_key("src/acme/keep/client.py"), "kept op");
@@ -2365,14 +2365,14 @@ fn ignore_extension_drops_ops_and_their_exclusive_types_through_the_pipeline() {
         !files.contains_key("src/acme/crozier/client.py"),
         "x-crozier-ignore op dropped"
     );
-    // ...and the type each ignored op was the sole reference to.
+    // ...but keep the type each ignored op was the sole reference to.
     assert!(
-        !files.contains_key("src/acme/types/only_fern.py"),
-        "x-fern-ignore op's exclusive type pruned"
+        files.contains_key("src/acme/types/only_fern.py"),
+        "x-fern-ignore op's exclusive type kept"
     );
     assert!(
-        !files.contains_key("src/acme/types/only_crozier.py"),
-        "x-crozier-ignore op's exclusive type pruned"
+        files.contains_key("src/acme/types/only_crozier.py"),
+        "x-crozier-ignore op's exclusive type kept"
     );
 }
 
@@ -7198,6 +7198,10 @@ components:
               required: [name]
               properties:
                 name: { type: string }
+        - type: object
+          required: [type]
+          properties:
+            type: { type: string, const: image }
 "##,
     );
     let client = &files["src/acme/client.py"];
@@ -8766,5 +8770,98 @@ components:
     assert!(
         value.contains("class EventBatchBySessionValue_View(UniversalBaseModel):"),
         "{value}"
+    );
+}
+
+/// Three TrueForge shapes in one document: a package that owns endpoints *and*
+/// nests a sub-client, a one-member `oneOf` tagged by a single-valued `enum`,
+/// and an ignored operation whose body schema nothing else references.
+#[test]
+fn a_nesting_package_with_its_own_body_orders_and_spaces_like_trueforge() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Forge, version: 1.0.0 }
+paths:
+  /internal/permissions:
+    post:
+      x-fern-sdk-group-name: [internal]
+      x-fern-sdk-method-name: grant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Manifest" }
+      responses: { "204": { description: "" } }
+  /internal/metrics:
+    get:
+      x-fern-sdk-group-name: [internal, metrics]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /agents:
+    get:
+      x-fern-sdk-group-name: [agents]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /catalogs/skills:
+    get:
+      x-fern-sdk-group-name: [catalogs, skills]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /internal/import:
+    post:
+      x-fern-ignore: true
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportRequest" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    Manifest:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type]
+          properties:
+            type: { type: string, enum: [parallel], description: Parallel provider. }
+            note: { type: string }
+    ImportRequest:
+      type: object
+      properties: { tenant: { type: string } }
+"##,
+    );
+    // The one-member union is its member's own model, tagged by a plain enum.
+    let manifest = &files["src/acme/types/manifest.py"];
+    assert!(
+        manifest.contains("class Manifest(UniversalBaseModel):"),
+        "{manifest}"
+    );
+    assert!(files.contains_key("src/acme/types/manifest_type.py"));
+    // The ignored operation's schema stays in the type layer.
+    assert!(files.contains_key("src/acme/types/import_request.py"));
+    // `OMIT` follows the `TYPE_CHECKING` block after one blank line.
+    let internal = &files["src/acme/internal/client.py"];
+    assert!(
+        internal.contains("MetricsClient\n\nOMIT = typing.cast(typing.Any, ...)"),
+        "{internal}"
+    );
+    // Nested sub-clients follow every package that owns endpoints, by parent name.
+    let reference = &files["reference.md"];
+    let order: Vec<usize> = [
+        "## Internal\n",
+        "## Agents\n",
+        "## Catalogs Skills\n",
+        "## Internal Metrics\n",
+    ]
+    .iter()
+    .map(|heading| {
+        reference
+            .find(heading)
+            .unwrap_or_else(|| panic!("{heading}{reference}"))
+    })
+    .collect();
+    assert!(
+        order.windows(2).all(|pair| pair[0] < pair[1]),
+        "{reference}"
     );
 }

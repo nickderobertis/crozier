@@ -1518,12 +1518,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         path: PathBuf::from("README.md"),
         contents: String::new(),
     }));
-    files.push(reference_file(
-        &env,
-        ir,
-        &client_tree_modules(ir),
-        &tag_map,
-    )?);
+    files.push(reference_file(&env, ir, &reference_modules(ir), &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -2061,6 +2056,44 @@ fn client_tree_modules(ir: &Ir) -> Vec<&str> {
             }
         }
     }
+    out
+}
+
+/// The client modules in the order `reference.md` lists them. A package's own
+/// endpoints come at its place among its siblings, but its children are listed
+/// where a package that owns no endpoints would be — after every sibling that
+/// owns endpoints, among the pure parents sorted by name. TrueForge's `internal`
+/// owns endpoints and nests four sub-clients, and its golden lists `Internal`
+/// first, then `Agents` … `Skills`, then the `Catalogs`, `Internal` and
+/// `Settings` sub-clients in that order.
+fn reference_modules(ir: &Ir) -> Vec<&str> {
+    fn visit<'a>(
+        parent: &str,
+        children: &BTreeMap<String, Vec<String>>,
+        ir: &'a Ir,
+        out: &mut Vec<&'a str>,
+    ) {
+        let Some(names) = children.get(parent) else {
+            return;
+        };
+        out.extend(names.iter().filter_map(|name| {
+            ir.endpoint_modules
+                .iter()
+                .find(|known| *known == name)
+                .map(String::as_str)
+        }));
+        let mut folders: Vec<&String> = names
+            .iter()
+            .filter(|name| children.contains_key(*name))
+            .collect();
+        folders.sort();
+        for folder in folders {
+            visit(folder, children, ir, out);
+        }
+    }
+    let children = module_children(&ir.endpoint_modules);
+    let mut out = Vec::new();
+    visit("", &children, ir, &mut out);
     out
 }
 
@@ -5980,7 +6013,7 @@ fn client_file(
         "from __future__ import annotations\n\n"
     };
     let body = format!("{omit}{sync}\n\n\n{async_class}");
-    let contents = render(
+    let mut contents = render(
         env,
         "raw_client.py",
         cx.module,
@@ -5990,6 +6023,12 @@ fn client_file(
             body => body,
         },
     )?;
+    // The `TYPE_CHECKING` block is followed by one blank line when `OMIT` comes
+    // next, not the two a class gets: TrueForge's `internal` client both nests
+    // sub-clients and posts a body, and its golden writes the pair that way.
+    if !type_checking.is_empty() && !omit.is_empty() {
+        contents = contents.replacen("\n\n\nOMIT = ", "\n\nOMIT = ", 1);
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
         contents,

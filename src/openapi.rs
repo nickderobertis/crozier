@@ -2133,16 +2133,19 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 
 /// Drop operations and component schemas marked with the ignore extension
 /// (`x-crozier-ignore` / `x-fern-ignore`, issue #78), along with any schema that is
-/// no longer reachable once the ignored operations are gone.
+/// no longer reachable once an ignored schema is gone.
 ///
 /// An operation whose [`Operation::ignored`] is set is removed (and its path with
 /// it, if it becomes empty); a component whose [`Schema::ignored`] is set is never
-/// emitted. Beyond those explicit removals, a schema is pruned when it *was*
-/// reachable from a removed operation (or an ignored schema's own `$ref`s) yet is
-/// *not* reachable from any surviving operation — i.e. it fell out of the SDK's
-/// transitive closure as a result of the ignore. Standalone component schemas that
-/// no operation references are left untouched, so this is inert on a spec with no
-/// ignore markers and never changes a full, unfiltered generation.
+/// emitted. Removing an operation removes nothing from `components.schemas`: the
+/// TrueForge API ignores its three `/api/internal/import/*` operations, and Fern's
+/// golden still declares `ImportAgentsRequest`, `ImportSessionRequest` and every
+/// schema they reach, though nothing else references them. Beyond the explicit
+/// removals, a schema is pruned when it *was* reachable from an ignored schema's
+/// own `$ref`s yet is *not* reachable from any surviving operation — i.e. it fell
+/// out of the SDK's transitive closure as a result of that ignore. Standalone
+/// component schemas are left untouched, so this is inert on a spec with no ignore
+/// markers and never changes a full, unfiltered generation.
 ///
 /// Unlike [`filter_by_audience`], the ignore honours **both** operation- and
 /// schema-level markers, per the [dual-header policy](self#fern-compatible-extensions).
@@ -2163,13 +2166,8 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         return;
     }
 
-    // Schemas reachable from the operations (and schemas) that are being removed.
-    let mut removed_seed = operation_schema_seed(
-        doc.paths
-            .values()
-            .flat_map(|i| i.operations())
-            .filter(|(_, op)| op.ignored()),
-    );
+    // Schemas reachable from the schemas that are being removed.
+    let mut removed_seed = std::collections::BTreeSet::new();
     for key in &ignored_schemas {
         removed_seed.insert(key.clone());
         if let Some(s) = doc.components.schemas.get(key) {
@@ -2196,7 +2194,7 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         if ignored_schemas.contains(key) {
             return false;
         }
-        // Prune a schema that became unreferenced because an ignored op/schema was
+        // Prune a schema that became unreferenced because an ignored schema was
         // its only path in; keep everything a surviving op still reaches and every
         // standalone schema no operation referenced in the first place.
         let became_unreferenced =
@@ -2396,16 +2394,16 @@ components:
 "##;
 
     #[test]
-    fn ignore_extension_drops_ops_via_both_spellings_and_their_exclusive_schemas() {
+    fn ignore_extension_drops_ops_via_both_spellings_and_keeps_their_schemas() {
         let mut doc = parse(IGNORE_SPEC);
         filter_ignored(&mut doc);
         // Both `x-fern-ignore` and `x-crozier-ignore` operations are gone.
         assert_eq!(op_ids(&doc), ["keepOp"]);
         // The paths of the ignored ops are removed entirely.
         assert_eq!(doc.paths.keys().cloned().collect::<Vec<_>>(), ["/keep"]);
-        // Schemas only the ignored ops referenced fell out of the closure; the
-        // kept op's schema stays.
-        assert_eq!(schema_keys(&doc), ["Keep"]);
+        // The schemas only the ignored ops referenced stay, as they do in Fern's
+        // TrueForge golden.
+        assert_eq!(schema_keys(&doc), ["Keep", "OnlyFern", "OnlyCrozier"]);
     }
 
     #[test]

@@ -1251,20 +1251,23 @@ byte-match target like the rest of the corpus.
 - **Ignore extension** (issue #78). `x-crozier-ignore: true` (canonical) or
   `x-fern-ignore: true` on an operation excludes it from generation, and on a
   component schema keeps that schema from being emitted
-  ([`openapi::filter_ignored`]). Dropping an operation also prunes any schema that
-  falls out of the surviving operations' transitive `$ref` closure *as a result* —
-  a type only the ignored op referenced — while standalone schemas that no
-  operation referenced to begin with are left untouched (so the ignore is inert on
-  a spec that carries no markers, and never perturbs a full generation). An explicit
+  ([`openapi::filter_ignored`]). Dropping an operation removes no schema: the
+  `truefoundry-trueforge-5adde28` golden declares `ImportAgentsRequest`,
+  `ImportSessionRequest` and every type they reach although the three ignored
+  `/api/internal/import/*` operations are their only references. Ignoring a
+  schema prunes any schema that falls out of the surviving operations' transitive
+  `$ref` closure *as a result*, while standalone schemas are left untouched (so the
+  ignore is inert on a spec that carries no markers, and never perturbs a full
+  generation). An explicit
   `x-crozier-ignore: false` wins over a sibling `x-fern-ignore: true`, which is what
   makes Fern's Overlay-driven "ignore a broad set, then un-ignore a few" pattern
   work (Overlay 1.0 has `remove` but no un-remove, so a reversible flag is the only
-  way to express "drop all GETs except this one"). No Fern golden fixture: Fern's
-  `x-fern-ignore` output is just the un-ignored subset, which the audience-filter
-  goldens already prove crozier reproduces byte-for-byte; the ignore itself is
-  covered by the pipeline tests (`tests/generation.rs`) and a real-binary journey
+  way to express "drop all GETs except this one"). The `truefoundry-trueforge` and
+  `truefoundry-trueforge-5adde28` goldens pin `x-fern-ignore` on operations; the
+  `x-crozier-ignore` spelling and the schema-level marker are covered by the
+  pipeline tests (`tests/generation.rs`) and a real-binary journey
   (`tests/e2e.rs::ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid`),
-  which assert the marked ops and their exclusive types are gone and the pruned SDK
+  which assert the marked ops are gone, their exclusive types stay, and the SDK
   still compiles.
 
 These fixtures are the *packaged* SDK form (like exhaustive), reproduced with

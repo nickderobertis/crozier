@@ -1,0 +1,41 @@
+
+
+from __future__ import annotations
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class ApprovalDecision_Allow(UniversalBaseModel):
+    status: typing.Literal["allow"] = "allow"
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class ApprovalDecision_Deny(UniversalBaseModel):
+    status: typing.Literal["deny"] = "deny"
+    reason: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+ApprovalDecision = typing_extensions.Annotated[
+    typing.Union[ApprovalDecision_Allow, ApprovalDecision_Deny], pydantic.Field(discriminator="status")
+]
