@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this derivation lives with the just-driven witness-search scripts and is drift-checked by the acquisition tier.
-"""Derive the registry search's outstanding items from its committed ledgers.
+"""Derive the registry search's consolidated ledgers from its per-source records.
 
-Every row is one `(key, source, kind, blocker)` group of items that keep the
+`candidates.tsv` is every source's `records.tsv` row, pointing back at it.
+In `outstanding.tsv` every row is one `(key, source, kind, blocker)` group of items that keep the
 key's search open for that source: an inconclusive screen, a document that
 could not be read, a portal or query the source refused, a Postman hit whose
 body no unauthenticated route returned, or a key the census cannot evaluate.
@@ -22,6 +23,8 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SOURCES = ("apis.guru", "jentic", "postman", "vendor-portals")
 FIELDS = ("key", "source", "kind", "count", "blocker", "items", "evidence")
+RECORD_FIELDS = ("source", "key", "candidate", "revision", "digest", "census", "licence_screen",
+                 "revision_screen", "fern_screen", "disposition", "evidence")
 POSTMAN_KINDS = {"apinetwork.team": "team", "runtime.collection": "collection"}
 
 
@@ -118,9 +121,23 @@ def derive(root: Path) -> list[dict[str, str]]:
     ]
 
 
-def render(rows: list[dict[str, str]]) -> str:
+def candidates(root: Path) -> list[dict[str, str]]:
+    rows = []
+    for source in SOURCES:
+        path = root / f"witness-search-{source}/records.tsv"
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            if tuple(reader.fieldnames or ()) != RECORD_FIELDS:
+                raise ValueError(f"{path} does not have the candidate-record header")
+            for number, row in enumerate(reader, 2):
+                rows.append({**{field: row[field] for field in RECORD_FIELDS[:-1]},
+                             "record": f"witness-search-{source}/records.tsv:{number}"})
+    return sorted(rows, key=lambda row: (row["key"], row["candidate"], row["revision"], row["source"]))
+
+
+def render(rows: list[dict[str, str]], fields: tuple[str, ...] = FIELDS) -> str:
     buffer = io.StringIO()
-    writer = csv.DictWriter(buffer, fieldnames=FIELDS, dialect="excel-tab", lineterminator="\n")
+    writer = csv.DictWriter(buffer, fieldnames=fields, dialect="excel-tab", lineterminator="\n")
     writer.writeheader()
     writer.writerows(rows)
     return buffer.getvalue()
@@ -131,19 +148,22 @@ def main() -> int:
     parser.add_argument("--root", type=Path, default=REPO / "docs/openapi-surface")
     parser.add_argument("--check", action="store_true", help="fail when outstanding.tsv is stale")
     args = parser.parse_args()
-    output = args.root / "witness-search-registries/outstanding.tsv"
+    directory = args.root / "witness-search-registries"
     try:
-        expected = render(derive(args.root))
+        expected = {
+            directory / "candidates.tsv": render(candidates(args.root), (*RECORD_FIELDS[:-1], "record")),
+            directory / "outstanding.tsv": render(derive(args.root)),
+        }
     except (OSError, KeyError, ValueError) as error:
-        print(f"witness-search-registries-outstanding: {error}; repair the ledger it names", file=sys.stderr)
+        print(f"witness-search-registries-index: {error}; repair the ledger it names", file=sys.stderr)
         return 1
-    if args.check:
-        if not output.is_file() or output.read_text(encoding="utf-8") != expected:
-            print(f"witness-search-registries-outstanding: {output} is stale; rerun without --check",
+    for output, text in expected.items():
+        if not args.check:
+            output.write_text(text, encoding="utf-8")
+        elif not output.is_file() or output.read_text(encoding="utf-8") != text:
+            print(f"witness-search-registries-index: {output} is stale; rerun without --check",
                   file=sys.stderr)
             return 1
-        return 0
-    output.write_text(expected, encoding="utf-8")
     return 0
 
 

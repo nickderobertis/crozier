@@ -565,8 +565,13 @@ class LocalCensusTest(unittest.TestCase):
                 {"hit": "api", "id": "a1", "keys": ["shape-a"], "status": 401,
                  "classification": "source-refused", "url": "u4", "response": "{}"},
             )), encoding="utf-8")
+            header = ("source\tkey\tcandidate\trevision\tdigest\tcensus\tlicence_screen\t"
+                      "revision_screen\tfern_screen\tdisposition\tevidence\n")
+            for source in ("apis.guru", "jentic", "postman"):
+                (root / f"witness-search-{source}").mkdir(exist_ok=True)
+                (root / f"witness-search-{source}/records.tsv").write_text(header, encoding="utf-8")
             (root / "witness-search-registries").mkdir()
-            command = [sys.executable, str(REPO / "scripts/witness-search-registries-outstanding.py"),
+            command = [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"),
                        "--root", str(root)]
             stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
             self.assertEqual(stale.returncode, 1)
@@ -575,6 +580,11 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(subprocess.run([*command, "--check"], timeout=30).returncode, 0)
             with (root / "witness-search-registries/outstanding.tsv").open(newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
+            with (root / "witness-search-registries/candidates.tsv").open(newline="") as handle:
+                ledger = list(csv.DictReader(handle, dialect="excel-tab"))
+            self.assertEqual([(row["candidate"], row["record"]) for row in ledger], [
+                ("big.json", "witness-search-vendor-portals/records.tsv:2"),
+                ("ok.json", "witness-search-vendor-portals/records.tsv:3")])
             found = {(row["key"], row["source"], row["kind"]): row for row in rows}
             self.assertEqual(
                 {(source, kind) for key, source, kind in found if key == "scheme-ref"},
@@ -598,7 +608,7 @@ class LocalCensusTest(unittest.TestCase):
 
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
-            [sys.executable, str(REPO / "scripts/witness-search-registries-outstanding.py"), "--check"],
+            [sys.executable, str(REPO / "scripts/witness-search-registries-index.py"), "--check"],
             cwd=REPO, capture_output=True, text=True, timeout=120,
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
