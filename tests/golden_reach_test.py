@@ -97,7 +97,7 @@ class SiteResolutionTests(unittest.TestCase):
         self.assertFalse(site.holds((site.start, 1, site.start, 2)))
 
     def test_a_regex_may_hold_a_comma(self) -> None:
-        cell = r"src/ir.rs::resolve_request_body[\.find\(\|\(media_type, media\)\| \{],src/ir.rs::is_binary_response"
+        cell = r"src/ir.rs::resolve_request_body[\.find\(\x7c\(media_type, media\)\x7c \{],src/ir.rs::is_binary_response"
         parts = golden_reach._split_sites(cell)
         self.assertEqual(2, len(parts))
         self.assertTrue(parts[0].endswith(r"\{]"))
@@ -110,6 +110,7 @@ class SiteResolutionTests(unittest.TestCase):
             ("src/openapi.rs::no_such_function", "matches 0 functions"),
             ("src/nowhere.rs::load", "does not exist"),
             (r"src/openapi.rs::filter_ignored[no such text]", "matches 0 lines"),
+            ("src/openapi.rs::filter_by_audience[keep = |op]", "write `\\x7c`"),
         ):
             with self.subTest(spec=spec), self.assertRaises(SystemExit) as refused:
                 self.resolve(spec)
@@ -159,10 +160,10 @@ REGION_FILE = textwrap.dedent(
 
 SITES = textwrap.dedent(
     """\
-    key\tselectors\tsites
-    flag-set\tdemo.flag\tsrc/demo.rs::handles[if flag \\{],src/demo.rs::handles[\\} else \\{]
-    flag-orphan\tdemo.orphan\tsrc/demo.rs::unrelated
-    flag-unread\tdemo.unread\tnone
+    key\tselectors\tsites\tnote
+    flag-set\tdemo.flag\tsrc/demo.rs::handles[if flag \\{],src/demo.rs::handles[\\} else \\{]\t
+    flag-orphan\tdemo.orphan\tsrc/demo.rs::unrelated\t
+    flag-unread\tdemo.unread\tnone\tno arm of `src/demo.rs` reads it
     """
 )
 
@@ -269,6 +270,7 @@ class ReportTests(unittest.TestCase):
         self.assertIn(r"unreached `src/demo.rs::handles[\} else \{]` 0/1", cells["flag-set"][5])
         self.assertIn(f"rank {rank})", cells["flag-set"][5])
         self.assertIn("no handling site", cells["flag-unread"][5])
+        self.assertIn("not counted: no arm of `src/demo.rs` reads it", cells["flag-unread"][5])
         self.assertEqual("none", cells["flag-gap"][5], "a gap row's cells are not the reach cell's")
 
     def test_a_row_declared_only_by_a_source_without_a_golden_says_so(self) -> None:

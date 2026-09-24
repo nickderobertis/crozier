@@ -84,7 +84,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 140 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 142 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1056,8 +1056,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **172** registered sources, of which
-  **155** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **174** registered sources, of which
+  **157** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1304,8 +1304,8 @@ Operation-Object arm and neither of its two component-schema arms;
 `schema.anyOf>schema.allOf`'s — `anyof-allof-variant`'s — one witness never
 reaches the inline-object arm of `hoist_union_variant` at all, its four
 declarations going through the component path instead;
-`audience-dual-header-policy`'s two witnesses reach every handling site, but both
-are hand-authored feature targets and no real-world document is among them; and
+`audience-dual-header-policy`'s witnesses reach every handling site, and until
+corpus row 192 all of them were hand-authored feature targets; and
 `media-type-range` reaches all three of its range-handling sites across five
 witnesses, the request side and the range-beside-concrete-types side included,
 so the *"two of seven reads"* this paragraph once quoted describes a corpus that
@@ -1400,13 +1400,16 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **353** golden rows reach every handling site and tie below every row
+then key. **361** golden rows reach every handling site and tie below every row
 listed here; each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
 
 **The boundary.** The first pass of this measurement owned the rows ranked above
 `anyof-allof-variant` when it fixed the boundary, together with the four rows
-the section above names — the table below, with the rank each held then. Each
+the section above names — the table below, with the rank each held then. That
+ranking is this same measurement over the corpus before corpus rows 191 and 192
+were registered, with the site table already cleared of rejection, absence and
+unreachable arms and of arms that belong to a `gap` row. Each
 owned row is left either with a registered real-world witness reaching the arm no
 earlier witness reached, or with a search record over the six declared sources
 for one. Every other row listed here with an unreached site is **open**, pending
@@ -1414,96 +1417,80 @@ a continuation; no search is recorded for it and none is claimed.
 
 | rank | key | region | unreached sites | unreached regions | witnesses | disposition |
 |---:|---|---|---:|---:|---:|---|
-| 1 | `property-anyof-discriminated-union` | `schemas` | **2** | **86** | **1** | owned |
-| 2 | `anyof-sole-member` | `schemas` | **2** | **41** | **1** | owned |
-| 3 | `ref-pointer-composition-index` | `schemas` | **2** | **29** | **1** | owned |
-| 4 | `media-type-key-parameters` | `bodies-media` | **2** | **25** | **1** | owned |
-| 5 | `anyof-discriminated-union` | `schemas` | **2** | **14** | **5** | owned |
-| 6 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **2** | **11** | **1** | owned |
-| 7 | `format-uri-template` | `schemas` | **2** | **2** | **0** | owned |
-| 8 | `annotated-ref-shape` | `schemas` | **1** | **31** | **4** | owned |
-| 9 | `discriminator` | `schemas` | **1** | **23** | **17** | owned |
-| 10 | `items-oneof-element` | `schemas` | **1** | **23** | **11** | owned |
-| 11 | `discriminator-mapping` | `schemas` | **1** | **22** | **14** | owned |
-| 12 | `anyof-sole-non-null-member` | `schemas` | **1** | **21** | **7** | owned |
-| 13 | `missing-operation-id` | `document-paths` | **1** | **17** | **127** | owned |
-| 14 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **16** | **1** | owned |
-| 15 | `anyof-array-variant-composed-item` | `schemas` | **1** | **15** | **1** | owned |
-| 16 | `path-all-segments-templated` | `document-paths` | **1** | **15** | **12** | owned |
-| 17 | `path-leading-literal-segment` | `document-paths` | **1** | **15** | **151** | owned |
-| 18 | `path-template-before-literal-segment` | `document-paths` | **1** | **15** | **3** | owned |
-| 19 | `untagged-operation` | `document-paths` | **1** | **15** | **129** | owned |
-| 20 | `oneof-discriminated-union` | `schemas` | **1** | **13** | **16** | owned |
-| 21 | `all-of-nested-composition` | `schemas` | **1** | **12** | **3** | owned |
-| 22 | `anyof-allof-variant` | `schemas` | **1** | **12** | **1** | owned |
-| 23 | `array-item-composed` | `schemas` | **1** | **12** | **5** | open — pending the continuation node |
-| 24 | `array-item-empty-object` | `schemas` | **1** | **12** | **1** | open — pending the continuation node |
-| 25 | `anyof-inline-object-variant` | `schemas` | **1** | **11** | **5** | open — pending the continuation node |
-| 26 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **11** | **4** | open — pending the continuation node |
-| 27 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **11** | **6** | open — pending the continuation node |
-| 28 | `oneof-allof-variant` | `schemas` | **1** | **11** | **2** | open — pending the continuation node |
-| 29 | `property-empty-object` | `schemas` | **1** | **11** | **1** | open — pending the continuation node |
-| 30 | `items-closed-object-element` | `schemas` | **1** | **10** | **8** | open — pending the continuation node |
-| 31 | `items-inline-struct-element` | `schemas` | **1** | **10** | **46** | open — pending the continuation node |
-| 32 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — pending the continuation node |
-| 33 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **2** | open — pending the continuation node |
-| 34 | `items-nested-array-element` | `schemas` | **1** | **8** | **13** | open — pending the continuation node |
-| 35 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **127** | open — pending the continuation node |
-| 36 | `annotated-ref-target-struct` | `schemas` | **1** | **7** | **4** | open — pending the continuation node |
-| 37 | `http-dpop` | `security` | **1** | **4** | **3** | open — pending the continuation node |
-| 38 | `http-mutual` | `security` | **1** | **4** | **1** | open — pending the continuation node |
-| 39 | `http-negotiate` | `security` | **1** | **4** | **2** | open — pending the continuation node |
-| 40 | `mutualTLS` | `security` | **1** | **4** | **1** | open — pending the continuation node |
-| 41 | `recursive-graph` | `schemas` | **1** | **4** | **133** | open — pending the continuation node |
-| 42 | `securityscheme-type-openidconnect` | `security` | **1** | **4** | **4** | open — pending the continuation node |
-| 43 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **3** | open — pending the continuation node |
-| 44 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **133** | open — pending the continuation node |
-| 45 | `reference-description` | `oas31-extensions` | **1** | **2** | **1** | open — pending the continuation node |
-| 46 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **2** | open — pending the continuation node |
-| 47 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — pending the continuation node |
-| 48 | `format-duration` | `schemas` | **1** | **1** | **2** | open — pending the continuation node |
-| 49 | `format-email` | `schemas` | **1** | **1** | **22** | open — pending the continuation node |
-| 50 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — pending the continuation node |
-| 51 | `format-ipv4` | `schemas` | **1** | **1** | **3** | open — pending the continuation node |
-| 52 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — pending the continuation node |
-| 53 | `format-password` | `schemas` | **1** | **1** | **6** | open — pending the continuation node |
-| 54 | `format-regex` | `schemas` | **1** | **1** | **1** | open — pending the continuation node |
-| 55 | `format-time` | `schemas` | **1** | **1** | **1** | open — pending the continuation node |
-| 56 | `format-uri` | `schemas` | **1** | **1** | **36** | open — pending the continuation node |
-| 57 | `format-uri-reference` | `schemas` | **1** | **1** | **2** | open — pending the continuation node |
+| 1 | `property-anyof-discriminated-union` | `schemas` | **2** | **86** | **1** | owned — see the table below |
+| 2 | `ref-pointer-composition-index` | `schemas` | **2** | **29** | **1** | owned — see the table below |
+| 3 | `media-type-key-parameters` | `bodies-media` | **2** | **25** | **1** | owned — see the table below |
+| 4 | `anyof-discriminated-union` | `schemas` | **2** | **14** | **5** | owned — see the table below |
+| 5 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **2** | **11** | **1** | owned — see the table below |
+| 6 | `anyof-sole-member` | `schemas` | **1** | **33** | **1** | owned — see the table below |
+| 7 | `annotated-ref-shape` | `schemas` | **1** | **31** | **4** | owned — see the table below |
+| 8 | `items-oneof-element` | `schemas` | **1** | **23** | **11** | owned — see the table below |
+| 9 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **16** | **1** | owned — see the table below |
+| 10 | `anyof-array-variant-composed-item` | `schemas` | **1** | **15** | **1** | owned — see the table below |
+| 11 | `oneof-discriminated-union` | `schemas` | **1** | **13** | **16** | owned — see the table below |
+| 12 | `all-of-nested-composition` | `schemas` | **1** | **12** | **3** | owned — see the table below |
+| 13 | `anyof-allof-variant` | `schemas` | **1** | **12** | **1** | owned — see the table below |
+| 14 | `array-item-composed` | `schemas` | **1** | **12** | **5** | open — pending the continuation |
+| 15 | `array-item-empty-object` | `schemas` | **1** | **12** | **1** | open — pending the continuation |
+| 16 | `anyof-inline-object-variant` | `schemas` | **1** | **11** | **5** | open — pending the continuation |
+| 17 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **11** | **4** | open — pending the continuation |
+| 18 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **11** | **6** | open — pending the continuation |
+| 19 | `oneof-allof-variant` | `schemas` | **1** | **11** | **2** | open — pending the continuation |
+| 20 | `property-empty-object` | `schemas` | **1** | **11** | **1** | open — pending the continuation |
+| 21 | `items-closed-object-element` | `schemas` | **1** | **10** | **8** | open — pending the continuation |
+| 22 | `items-inline-struct-element` | `schemas` | **1** | **10** | **46** | open — pending the continuation |
+| 23 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — pending the continuation |
+| 24 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **2** | open — pending the continuation |
+| 25 | `items-nested-array-element` | `schemas` | **1** | **8** | **13** | open — pending the continuation |
+| 26 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **129** | open — pending the continuation |
+| 27 | `annotated-ref-target-struct` | `schemas` | **1** | **7** | **4** | open — pending the continuation |
+| 28 | `http-dpop` | `security` | **1** | **4** | **3** | open — pending the continuation |
+| 29 | `http-mutual` | `security` | **1** | **4** | **1** | open — pending the continuation |
+| 30 | `http-negotiate` | `security` | **1** | **4** | **2** | open — pending the continuation |
+| 31 | `mutualTLS` | `security` | **1** | **4** | **1** | open — pending the continuation |
+| 32 | `recursive-graph` | `schemas` | **1** | **4** | **135** | open — pending the continuation |
+| 33 | `securityscheme-type-openidconnect` | `security` | **1** | **4** | **4** | open — pending the continuation |
+| 34 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **3** | open — pending the continuation |
+| 35 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **135** | open — pending the continuation |
+| 36 | `reference-description` | `oas31-extensions` | **1** | **2** | **1** | open — pending the continuation |
+| 37 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
+| 38 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
+| 39 | `format-duration` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
+| 40 | `format-email` | `schemas` | **1** | **1** | **22** | open — pending the continuation |
+| 41 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
+| 42 | `format-ipv4` | `schemas` | **1** | **1** | **3** | open — pending the continuation |
+| 43 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
+| 44 | `format-password` | `schemas` | **1** | **1** | **6** | open — pending the continuation |
+| 45 | `format-regex` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
+| 46 | `format-time` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
+| 47 | `format-uri` | `schemas` | **1** | **1** | **38** | open — pending the continuation |
+| 48 | `format-uri-reference` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
+| 49 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — see the table below |
 
 #### The rows this measurement's first pass owned
 
 | key | boundary rank | outcome |
 |---|---:|---|
 | `property-anyof-discriminated-union` | 1 | in progress |
-| `anyof-sole-member` | 2 | in progress |
-| `ref-pointer-composition-index` | 3 | in progress |
-| `media-type-key-parameters` | 4 | in progress |
-| `anyof-discriminated-union` | 5 | in progress |
-| `x-fern-or-crozier-ignore` | 6 | in progress |
-| `format-uri-template` | 7 | in progress |
+| `ref-pointer-composition-index` | 2 | in progress |
+| `media-type-key-parameters` | 3 | in progress |
+| `anyof-discriminated-union` | 4 | in progress |
+| `x-fern-or-crozier-ignore` | 5 | in progress |
+| `format-uri-template` | 6 | witness registered — corpus row 191 (`openlinksw-osdb`), the row's first golden-only witness, reaches `base_type_ref`'s string fallback; the `scalar_body` fallback stays unreached |
+| `anyof-sole-member` | 7 | in progress |
 | `annotated-ref-shape` | 8 | in progress |
-| `discriminator` | 9 | in progress |
-| `items-oneof-element` | 10 | in progress |
-| `discriminator-mapping` | 11 | in progress |
-| `anyof-sole-non-null-member` | 12 | in progress |
-| `missing-operation-id` | 13 | in progress |
-| `anyof-array-variant-annotated-ref-item` | 14 | in progress |
-| `anyof-array-variant-composed-item` | 15 | in progress |
-| `path-all-segments-templated` | 16 | in progress |
-| `path-leading-literal-segment` | 17 | in progress |
-| `path-template-before-literal-segment` | 18 | in progress |
-| `untagged-operation` | 19 | in progress |
-| `oneof-discriminated-union` | 20 | in progress |
-| `all-of-nested-composition` | 21 | in progress |
-| `anyof-allof-variant` | 22 | in progress |
-| `audience-dual-header-policy` | 218 | in progress |
-| `media-type-range` | 315 | in progress |
+| `items-oneof-element` | 9 | in progress |
+| `anyof-array-variant-annotated-ref-item` | 10 | in progress |
+| `anyof-array-variant-composed-item` | 11 | in progress |
+| `oneof-discriminated-union` | 12 | in progress |
+| `all-of-nested-composition` | 13 | in progress |
+| `anyof-allof-variant` | 14 | in progress |
+| `audience-dual-header-policy` | 214 | witness registered — corpus row 192 (`ziptax-node`), the row's first real-world witness, generated for audience `v60` so the filter removes 7 of 34 operations |
+| `media-type-range` | 311 | no arm to buy — every range-handling site is reached by the five witnesses rows 124, 127, 130, 134 and 136 registered |
 
 #### Rows resting on one document
 
-**55** golden rows rest on one document: a single golden-only witness declares
+**56** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -1511,10 +1498,10 @@ ledger, so a registration that adds a second witness removes the row here.
 | key | region | its one witness |
 |---|---|---|
 | `property-anyof-discriminated-union` | `schemas` | `braintrust-dev` |
-| `anyof-sole-member` | `schemas` | `paypal-catalog-products` |
 | `ref-pointer-composition-index` | `schemas` | `dnd5eapi.co` |
 | `media-type-key-parameters` | `bodies-media` | `openbanking.org.uk-account-info-openapi` |
 | `x-fern-or-crozier-ignore` | `oas31-extensions` | `truefoundry-trueforge` |
+| `anyof-sole-member` | `schemas` | `paypal-catalog-products` |
 | `anyof-array-variant-annotated-ref-item` | `schemas` | `braintrust-dev` |
 | `anyof-array-variant-composed-item` | `schemas` | `braintrust-dev` |
 | `anyof-allof-variant` | `schemas` | `braintrust-dev` |
@@ -1528,13 +1515,14 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-json-pointer` | `schemas` | `k8s-container-service-provider` |
 | `format-regex` | `schemas` | `eozilla` |
 | `format-time` | `schemas` | `maif.local-otoroshi` |
+| `format-uri-template` | `schemas` | `openlinksw-osdb` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `oneof-sole-non-null-member` | `schemas` | `discord-com` |
 | `property-oneof-nullable-pair` | `schemas` | `discord-com` |
+| `range-2XX` | `bodies-media` | `sigstore-rekor` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
 | `apiKey-cookie` | `security` | `tlon-notes` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
-| `range-2XX` | `bodies-media` | `sigstore-rekor` |
 | `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |
 | `schema-example-null` | `schemas` | `webflow-v2` |
 | `array-item-pointer-walk-allof` | `schemas` | `dnd5eapi.co` |
@@ -1575,7 +1563,6 @@ category itself is not this measurement's to move.
 
 | key | region | declared only by |
 |---|---|---|
-| `format-uri-template` | `schemas` | `github.com` |
 | `operation-external-docs` | `document-paths` | `calorieninjas.com`, `github.com` |
 | `xml-attribute` | `schemas` | `atlassian.com-jira` |
 

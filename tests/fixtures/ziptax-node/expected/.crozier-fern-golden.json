@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "ziptax-node",
+  "corpus_spec_ref": "ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json"
+}

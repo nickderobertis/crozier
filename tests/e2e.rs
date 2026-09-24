@@ -3088,6 +3088,36 @@ const NETBOX_DEV: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `openlinksw-osdb`: corpus row 191, OpenLink's OSDB REST API. Its string
+/// schemas declare `format: uri-template`, which no other golden-bearing source
+/// does; its namespaced body property `osdb:output_type` and its example-only
+/// `2XX` beside a `default` error pin two generator repairs.
+const OPENLINKSW_OSDB: Corpus = Corpus {
+    api: "openlinksw-osdb",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ziptax-node`: corpus row 192, ZipTax's sales-tax API as its Node SDK
+/// repository publishes it. All 34 operations carry `x-fern-audiences` by API
+/// version (`v10`-`v60`), and generating for `v60` keeps 27 and filters out 7 —
+/// the first real-world document the audience filter runs over.
+const ZIPTAX_NODE: Corpus = Corpus {
+    api: "ziptax-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &["v60"],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -3215,6 +3245,8 @@ const CORPORA: &[&Corpus] = &[
     &PAYPAL_CATALOG_PRODUCTS,
     &FOLIO_MOD_AUTHTOKEN,
     &RAYBOT,
+    &OPENLINKSW_OSDB,
+    &ZIPTAX_NODE,
 ];
 
 #[test]
@@ -5979,6 +6011,16 @@ fn letta_matches_fern_output() {
 #[test]
 fn free5gc_namf_communication_matches_fern_output() {
     assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
+}
+
+#[test]
+fn openlinksw_osdb_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENLINKSW_OSDB);
+}
+
+#[test]
+fn ziptax_node_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZIPTAX_NODE);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each

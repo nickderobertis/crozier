@@ -7263,7 +7263,7 @@ class RankedBacklogTests(unittest.TestCase):
         """A `golden` row with no reach cell, or a stale one, is refused."""
         module = self.golden_reach()
         rendered = {
-            reach.key: module.reach_cell(reach, rank).replace("|", "\\|")
+            reach.key: module.reach_cell(reach, rank)
             for rank, reach in self.reach_ledger()
         }
         for key, (region, cells) in sorted(self.entries.items()):

@@ -163,6 +163,8 @@ re-measure with `just fixtures-gaps`.
 | 138 | `paypal-catalog-products` | github-raw | https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/catalogs_products_v1.json | `90e8041ffe02d80c452d2b476bedd59a8d219bdc` | Apache-2.0 (the publisher repository's pinned `LICENSE`) | link-ok | PayPal Catalog Products API; four sole-member `anyOf` wrappers on error detail items. |
 | 139 | `folio-mod-authtoken` | github-raw | https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml | `172586c71fe936ac0b4d104b95acd508e88e43d3` | Apache-2.0 (the publisher repository’s pinned `LICENSE`) | link-ok | FOLIO mod-authtoken’s six endpoint API; `components.schemas.refreshToken` names `schemas/refreshToken.json` under the same revision, while `tokenResponse` and four other component aliases name sibling JSON files. Fern’s generated `src/fern/types/refresh_token.py` and the token client methods derive from those references. |
 | 140 | `raybot` | github-raw | https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml | `4428dea2f79b833aead4c89df5bd8d9e32b7b0c8` | MIT (publisher repository’s pinned `LICENSE` and the document’s `info.license`) | link-ok | Raybot’s published robot-control API references 23 sibling Path Item files; `/version` names `paths/version.yml`, whose `get` operation generates `src/fern/version/client.py`, and `/health` names `paths/health.yml`, generating `src/fern/health/client.py`. Each Path Item then references pinned parameter and schema files under the same revision. |
+| 191 | `openlinksw-osdb` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC-BY-SA 3.0 (declared by the document's `info.license`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | OpenLink OSDB REST API v1; string schemas declaring `format: uri-template` |
+| 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -338,6 +340,10 @@ workflow-owned goldens are committed and all three are byte-matched.
 | `jaewook-epcis` | **REJECTED** — Fern check reports 35 endpoint-example errors because `headers` examples are strings rather than maps |
 | `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
 | `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |
+| `fern-docs-fai` (`fern-api/docs` `fern/apis/fai/openapi.json`) | **DROPPED** — every revision declaring `x-fern-audiences` or a component `x-fern-ignore` fails the Fern 5.20.0 generate: `Multiple request properties have the name domain` on `create_feedback` (do not retry any of its 70 revisions) |
+| `count-co` (jentic `count.co/main/1.0` at `eb9d12a2`) | **DROPPED** — the Fern 5.20.0 generate reports `Found 8 errors`, each `Path parameter is unreferenced in endpoint` (do not retry this ref) |
+| `instabase-aihub` (`instabase/aihub-openapi` at `a25f51e5`) | **DROPPED** — the Fern 5.20.0 generate reports `Found 1 errors`: `Expected example to be an object. Example is: [{"custom":{}}]` (do not retry this ref) |
+| `ziptax-reference` (`ZipTax/ziptax-reference` at `918973a8`) | **DROPPED** — the Fern 5.20.0 generate reports `Multiple request properties resolve to the same generated name merchantType after camelCase normalization`; row 192 registers the same API from `ZipTax/ziptax-node`, whose older document predates that field |
 
 ## Batch 7 — shape-targeted additions (issue #77)
 
@@ -715,3 +721,29 @@ When a diagnostic `TMPDIR` lives inside another Git checkout, set
 `GIT_CEILING_DIRECTORIES` to that temporary root during generation. Otherwise
 Fern records that unrelated parent checkout's commit in its metadata. This
 registration was regenerated with that boundary; no generated metadata was edited.
+
+## Batch 17 — golden-reach witnesses (rows 191–215)
+
+These rows buy arms the [golden reach ranking](../../docs/openapi-surface-coverage.md#golden-reach-row-by-row)
+found no earlier witness reaching. Each was chosen by running the instrumented
+crozier over candidate documents and keeping those that execute the arm, then
+screened for licence, immutable ref and Fern acceptance, and checked against every
+`gap` row's selector so that no registration here settles a `gap` row. Row 191
+gives `format-uri-template` its first golden-bearing witness — its only earlier
+declarer, `github.com`, is a DROPPED row — and row 192 gives
+`audience-dual-header-policy` its first real-world one, generated for an audience
+so the filter removes operations rather than keeping all of them.
+
+| # | name | row it buys an arm for | status |
+|---:|---|---|---|
+| 191 | `openlinksw-osdb` | `format-uri-template` | ✅ byte-matched after two repairs |
+| 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
+
+The repairs: a `:` separates words in a generated class name (`osdb:output_type`
+hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
+bodyless one beside a `default` body no longer makes the method optional; and a
+`204` is empty whatever content it declares, so an unknown body beside one is
+`typing.Optional[typing.Any]` while a lone `204` or a schemaless `200` stays
+`typing.Any`. Both goldens are generated at Python 5.20.0 / CLI 5.67.1 and match
+with `unmatched: &[]`.
+

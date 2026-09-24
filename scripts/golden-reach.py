@@ -150,22 +150,25 @@ class SiteRow(NamedTuple):
     key: str
     selectors: tuple[str, ...]
     sites: tuple[str, ...]
+    # Why an arm that looks like this feature's is not counted: a rejection or
+    # absence arm, or code no document can reach. Rendered into the reach cell.
+    note: str = ""
 
 
 def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
-    """`key -> (selectors, site specs)` from the tab-separated declaration table."""
+    """`key -> (selectors, site specs, note)` from the tab-separated declaration table."""
     if not path.is_file():
         fail(f"{path} is missing; it declares every golden row's selectors and sites")
     lines = path.read_text(encoding="utf-8").splitlines()
-    header = ["key", "selectors", "sites"]
+    header = ["key", "selectors", "sites", "note"]
     if not lines or lines[0].split("\t") != header:
         fail(f"{path} must start with the header {'<TAB>'.join(header)}")
     rows: dict[str, SiteRow] = {}
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
-        if len(fields) != 3:
-            fail(f"{path}:{number} has {len(fields)} fields, not 3")
-        key, selectors, sites = fields
+        if len(fields) != 4:
+            fail(f"{path}:{number} has {len(fields)} fields, not 4")
+        key, selectors, sites, note = fields
         if key in rows:
             fail(f"{path}:{number} declares {key} twice")
         selector_list = tuple(s.strip() for s in selectors.split(",") if s.strip())
@@ -176,7 +179,7 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
         )
         if not site_list and sites.strip() != "none":
             fail(f"{path}:{number} ({key}) names no site; write `none` for a feature crozier reads nowhere")
-        rows[key] = SiteRow(key, selector_list, site_list)
+        rows[key] = SiteRow(key, selector_list, site_list, note.strip())
     return rows
 
 
@@ -239,6 +242,10 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     match = _SITE.match(spec)
     if SITE_SEPARATOR in spec:
         fail(f"site {spec!r} contains {SITE_SEPARATOR!r}, which separates sites in the ledger")
+    if "|" in spec:
+        # The spec is quoted in a markdown table cell, where a pipe — escaped or
+        # not — splits the row for any reader that does not unescape it first.
+        fail(f"site {spec!r} contains `|`; write `\\x7c` for a literal pipe in its regex")
     if not match:
         fail(f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`")
     path = repo_root / match.group("file")
@@ -487,6 +494,7 @@ class Reach(NamedTuple):
     # never in the golden-only tier, so they witness nothing here.
     outside: tuple[str, ...]
     sites: tuple[tuple[str, int, int], ...]  # (spec, executed regions, regions)
+    note: str = ""
 
     @property
     def unreached(self) -> int:
@@ -552,7 +560,7 @@ def compute(
             for fixture in witnesses:
                 hit |= executed_by[spec, fixture_tests[fixture]]
             sites.append((spec, len(hit), len(found)))
-        out.append(Reach(key, region, witnesses, outside, tuple(sites)))
+        out.append(Reach(key, region, witnesses, outside, tuple(sites), declared.note))
     out.sort(key=ranking_key)
     return out
 
@@ -580,10 +588,11 @@ def reach_cell(reach: Reach, rank: int) -> str:
     Generated from the ledger row and held to it by `RankedBacklogTests`, so the
     cell is never edited by hand: re-run `just golden-reach report --write`.
     """
+    note = f"; not counted: {reach.note}" if reach.note else ""
     if not reach.sites:
         return (
             f"{CELL_PREFIX} no handling site — no crozier code runs because a "
-            f"document declares this feature; {_witness_phrase(reach)} "
+            f"document declares this feature; {_witness_phrase(reach)}{note} "
             f"([ledger](golden-reach.tsv) rank {rank})"
         )
     reached = [f"`{spec}` {hit}/{total}" for spec, hit, total in reach.sites if hit]
@@ -592,13 +601,13 @@ def reach_cell(reach: Reach, rank: int) -> str:
         f"{CELL_PREFIX} **{reach.reached_sites}** of **{len(reach.sites)}** handling "
         f"sites reached (**{reach.regions - reach.unreached}** of **{reach.regions}** "
         f"regions) by {_witness_phrase(reach)}; reached "
-        f"{', '.join(reached) or 'none'}; unreached {', '.join(unreached) or 'none'} "
+        f"{', '.join(reached) or 'none'}; unreached {', '.join(unreached) or 'none'}{note} "
         f"([ledger](golden-reach.tsv) rank {rank})"
     )
 
 
 LEDGER_HEADER = (
-    "rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites"
+    "rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites\tnote"
 )
 
 
@@ -619,6 +628,7 @@ def ledger_text(reaches: list[Reach], provenance: str) -> str:
                     SITE_SEPARATOR.join(
                         f"{spec}={hit}/{total}" for spec, hit, total in reach.sites
                     ) or "none",
+                    reach.note or "-",
                 ]
             )
         )
@@ -632,7 +642,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
         fail(f"{path} is not a golden-reach ledger; regenerate it with `just golden-reach report --write`")
     out = []
     for line in lines[2:]:
-        rank, key, region, _us, _ur, _regions, witnesses, outside, sites = line.split("\t")
+        rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = line.split("\t")
         parsed = []
         if sites != "none":
             for entry in sites.split(SITE_SEPARATOR):
@@ -648,6 +658,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
                     tuple(w for w in witnesses.split(",") if w != "-"),
                     tuple(o for o in outside.split(",") if o != "-"),
                     tuple(parsed),
+                    "" if note == "-" else note,
                 ),
             )
         )
@@ -666,7 +677,7 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
             if cells and cells[0][3].strip("`") == "golden":
                 row = cells[0]
                 key = row[0].strip("`")
-                cell = reach_cell(by_key[key][1], by_key[key][0]).replace("|", "\\|")
+                cell = reach_cell(by_key[key][1], by_key[key][0])
                 if row[5] != cell:
                     row = row[:5] + [cell] + row[6:]
                     newline = "\n" if line.endswith("\n") else ""
