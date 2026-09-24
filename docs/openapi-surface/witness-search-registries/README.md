@@ -1,5 +1,15 @@
 # Candidate ledger
 
+**Scope, as amended by the manager.** This node writes no region-file
+`### Witness search` line. Neither form the gate accepts can hold this node's
+segments on their own. The compact row must name every declared source and
+reconcile against the sibling search's consolidated ledger. The per-source
+seven-cell line reads `records.tsv` as `key kind subject result file`, which
+the candidate-record ledgers here do not use. Final reconciliation writes each
+key's row from this directory's `candidates.tsv` and `outstanding.tsv` and the
+per-source `records.tsv`. Postman carries no search obligation (see
+[`../witness-search-postman/`](../witness-search-postman/README.md)).
+
 `candidates.tsv` contains only documents confirmed to declare a key by that
 key's census selector. It has no `securityscheme-ref` row: the branch-point
 `securityScheme:$ref` selector is [unsupported by the census](../witness-search-keys.tsv),
