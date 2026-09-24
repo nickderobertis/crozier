@@ -3,7 +3,7 @@
 `candidates.tsv` contains only documents confirmed to declare a key by that
 key's census selector. It has no `securityscheme-ref` row: the branch-point
 `securityScheme:$ref` selector is [unsupported by the census](../witness-search-keys.tsv),
-so none of this node's three sources was evaluated for that key. Its search
+so none of this node's sources was evaluated for that key. Its search
 remains outstanding for final reconciliation.
 Adding a candidate here requires a selector output over the parsed document;
 an earlier keyword hit or another key's census output does not qualify.
@@ -22,7 +22,7 @@ with any row here does not read `exhausted`, and this node records none as
 `exhausted`. The kinds are:
 
 - `selector-unavailable`: `securityscheme-ref`, whose selector the census does
-  not support, in each of the three sources. That search is delegated to
+  not support, in each of this node's sources. That search is delegated to
   `search-github-continue`; nothing here records it as searched.
 - `inconclusive-screen`: a declarer whose Fern screen did not finish.
 - `unreadable-document`: a walked file with a recorded parser failure.
@@ -38,7 +38,7 @@ searched or outstanding. Its historical requests are in
 records the eight wide-scrape artifacts as provenance only: publisher, artifact,
 pinned ref, keys and the missing licence evidence. None is a witness, and none
 counts toward any key's search. The replacement search for their three keys
-over this node's three declared sources found:
+over this node's declared sources found:
 
 - `annotated-ref-target-closed-object` and `annotated-ref-target-oneof`: the
   pinned `zulip/zulip` description at `6a82f40579f8adb9149aa0b04ff795c397baae73`
@@ -49,5 +49,5 @@ over this node's three declared sources found:
 - `ref-pointer-unnamed-segment`: 104 declarers, none registrable. 102 have no
   evidenced publisher grant: 14 from APIs.guru, 48 from jentic and all 40 of
   Codat's own pinned `codatio/oas` files. The other two jentic declarers pass
-  the licence screen, but Fern exits 0 with an empty SDK. The search across all
-  six declared sources is final reconciliation's to conclude.
+  the licence screen, but Fern exits 0 with an empty SDK. The search across every
+  declared source is final reconciliation's to conclude.
