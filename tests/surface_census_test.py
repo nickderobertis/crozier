@@ -6618,6 +6618,9 @@ class RankedBacklogTests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     PROOF_OUTSTANDING = re.compile(r"\*\*proof outstanding:\*\* `([a-z-]+)`")
+    PROOF_COMMITTED = re.compile(
+        r"\*\*Committed Fern measurement:\*\* \[`([^`]+)`\]\(([^)]+)\)"
+    )
     DEMOTED = re.compile(r"\*\*demoted to gap:\*\* `([a-z]+)`")
     PROOF_FORMS = {
         "absent-tree": ("discards",),
@@ -6631,19 +6634,123 @@ class RankedBacklogTests(unittest.TestCase):
         row = re.search(rf"^\| `{re.escape(key)}` \| *\d+ \| *\d+ \| ([^|]+) \|", ledger, re.M)
         return row.group(1) if row else ""
 
+    def test_committed_security_media_and_extension_citations_track_manifest(self) -> None:
+        """The three proof regions and Fern ledger cite their declared measurements."""
+        expected = REPO / "docs/openapi-surface/probe-expected"
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        regions = {"security", "bodies-media", "oas31-extensions"}
+        for line in (expected / "MANIFEST.tsv").read_text(encoding="utf-8").splitlines()[1:]:
+            key, form, verdict, artifact, control, _digest = line.split("\t")
+            entry = self.entries.get(key)
+            if entry is None or entry[0] not in regions:
+                continue
+            cells = entry[1]
+            with self.subTest(key=key):
+                suffix = "" if form == "refusal" else "/"
+                local_artifact = artifact.removeprefix("docs/openapi-surface/") + suffix
+                self.assertIn(f"({local_artifact})", cells[4])
+                self.assertTrue((REPO / artifact).exists())
+                ledger_key = (
+                    "encoding-explode-or-allowReserved"
+                    if key in {"encoding-explode", "encoding-allow-reserved"}
+                    else key
+                )
+                ledger_rows = [
+                    row for row in ledger.splitlines()
+                    if row.startswith(f"| `{ledger_key}` |")
+                    and f"(openapi-surface/{local_artifact})" in row
+                ]
+                self.assertTrue(ledger_rows, f"{key}: ledger citation drifted")
+                for ledger_row in ledger_rows:
+                    self.assertIn(
+                        f"**Committed Fern measurement:** [`{key}`]"
+                        f"(openapi-surface/{local_artifact})",
+                        ledger_row,
+                    )
+                    self.assertRegex(ledger_row, rf"\b{re.escape(verdict)}\b")
+                if form == "differential":
+                    self.assertIn(f"(probe-expected/{control}/)", cells[4] + cells[7])
+                    self.assertTrue((expected / control).is_dir())
+                if cells[3] == "limitations":
+                    self.assertIn(
+                        f"**Committed Fern measurement:** [`{key}`]({local_artifact})",
+                        cells[4],
+                    )
+                elif cells[3] == "gap":
+                    self.assertEqual("UNREACHABLE", self.settlement_of(cells))
+                metadata = json.loads((REPO / artifact / ".fern/metadata.json").read_text())
+                for text in (cells[4], *ledger_rows):
+                    for label, version, field in (
+                        ("Fern CLI", metadata["cliVersion"], "cliVersion"),
+                        ("Python SDK", metadata["generatorVersion"], "generatorVersion"),
+                    ):
+                        for claimed in re.findall(rf"{label} (\d+\.\d+\.\d+)", text):
+                            self.assertEqual(version, claimed, f"{key}: {field} citation drifted")
+
     def test_every_limitations_row_records_the_one_proof_it_owes(self) -> None:
-        """A `limitations` row names its outstanding Contract A proof, once, and
-        that proof's form is one its own evidence cell's verdict can establish."""
+        """A `limitations` row names one outstanding or committed proof, whose
+        form agrees with its own evidence cell's verdict."""
+        manifest = {
+            fields[0]: fields
+            for line in (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv")
+            .read_text(encoding="utf-8")
+            .splitlines()[1:]
+            if len(fields := line.split("\t")) == 6
+        }
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
         for key, (_region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") != "limitations":
                 continue
             with self.subTest(key=key):
-                forms = self.PROOF_OUTSTANDING.findall(cells[4])
-                self.assertEqual(1, len(forms), f"{key}: names {forms} after `proof outstanding:`")
+                outstanding = self.PROOF_OUTSTANDING.findall(cells[4])
+                committed = self.PROOF_COMMITTED.findall(cells[4])
+                self.assertLessEqual(len(committed), 1, f"{key}: cites more than one measurement")
+                if committed:
+                    self.assertFalse(outstanding, f"{key}: proof is both committed and outstanding")
+                    named_key, link = committed[0]
+                    self.assertEqual(key, named_key)
+                    self.assertIn(key, manifest, f"{key}: cited proof has no manifest row")
+                    row = manifest[key]
+                    self.assertIn(row[1], self.PROOF_FORMS)
+                    self.assertIn(
+                        row[2],
+                        ("discards", "ignores", "refuses", "crashes", "coincidence"),
+                        f"{key}: the cited proof has no non-generation verdict",
+                    )
+                    self.assertTrue(
+                        (REPO / row[3]).exists(),
+                        f"{key}: the manifest artifact is missing",
+                    )
+                    artifact = row[3].removeprefix("docs/openapi-surface/")
+                    suffix = "" if row[1] == "refusal" else "/"
+                    self.assertEqual(f"{artifact}{suffix}", link)
+                    ledger_key = (
+                        "encoding-explode-or-allowReserved"
+                        if key in {"encoding-explode", "encoding-allow-reserved"}
+                        else key
+                    )
+                    ledger_rows = [
+                        line for line in ledger.splitlines() if line.startswith(f"| `{ledger_key}` |")
+                    ]
+                    self.assertTrue(ledger_rows, f"{key}: has no Fern limitation row")
+                    self.assertIn(f"(openapi-surface/{artifact}{suffix})", ledger_rows[-1])
+                    self.assertRegex(self.ledger_cell(ledger_key), rf"\b{row[2]}\b")
+                    if row[1] == "differential":
+                        self.assertIn(f"(probe-expected/{row[4]}/)", cells[4])
+                        self.assertTrue(
+                            (REPO / "docs/openapi-surface/probe-expected" / row[4]).is_dir(),
+                            f"{key}: the cited control tree is missing",
+                        )
+                    forms = [row[1]]
+                else:
+                    forms = outstanding
+                self.assertEqual(1, len(forms), f"{key}: names {forms} as its one proof")
                 self.assertIn(forms[0], self.PROOF_FORMS)
                 self.assertFalse(self.DEMOTED.search(cells[4]), f"{key}: is `limitations` and demoted")
                 verdicts = self.PROOF_FORMS[forms[0]]
-                ruled = cells[4].split("**proof outstanding:**", 1)[0]
+                ruled = cells[4].split("**proof outstanding:**", 1)[0].split(
+                    "**Committed Fern measurement:**", 1
+                )[0]
                 self.assertTrue(
                     any(re.search(rf"\b{v}\b", ruled) for v in verdicts),
                     f"{key}: owes a `{forms[0]}` proof, which establishes {verdicts}, "
@@ -6682,11 +6789,20 @@ class RankedBacklogTests(unittest.TestCase):
         """Four classes, each counted off the cells, adding up to the population
         that read `limitations` before the amendment."""
         counts = {"artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0}
+        manifest = {
+            fields[0]: fields[1]
+            for line in (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv")
+            .read_text(encoding="utf-8")
+            .splitlines()[1:]
+            if len(fields := line.split("\t")) == 6
+        }
         for _region, cells in self.entries.values():
             form = self.PROOF_OUTSTANDING.search(cells[4])
+            committed = self.PROOF_COMMITTED.search(cells[4])
             demoted = self.DEMOTED.search(cells[4])
-            if form:
-                counts["differential" if form.group(1) == "differential" else "artifact"] += 1
+            if form or committed:
+                proof_form = form.group(1) if form else manifest[committed.group(1)]
+                counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
         table = self.classification_table()
