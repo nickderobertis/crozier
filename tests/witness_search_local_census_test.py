@@ -314,6 +314,49 @@ class LocalCensusTest(unittest.TestCase):
             self.assertTrue(all(row["classification"] == "source-error" for row in rows))
             self.assertTrue(all("total" in row["error"] for row in rows))
 
+    def test_postman_transport_refusal_records_unknown_status(self) -> None:
+        received = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                received.append(self.path)
+                if len(received) == 1:
+                    self.connection.close()
+                    return
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(json.dumps({"data": {}, "meta": {"total": {
+                    "team": 0, "collection": 0, "api": 0,
+                }}}).encode())
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys),
+                 "--evidence-dir", str(evidence),
+                 "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                cwd=REPO, capture_output=True, text=True, timeout=40,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            rows = [json.loads(line) for line in
+                    (evidence / "queries.jsonl").read_text().splitlines()]
+            self.assertEqual(rows[0]["classification"], "source-refused")
+            self.assertIsNone(rows[0]["status"])
+            self.assertTrue(rows[0]["response"])
+            self.assertTrue(all(row["classification"] == "answered" for row in rows[1:]))
+
     def test_postman_missing_key_derivation_gives_repair_action(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
