@@ -19,7 +19,7 @@ publisher trees not yet walked. The exact candidate identities are in each
 source's `records.tsv`. A result from a key closed on a licensed, Fern-accepted
 witness is `not-owed` where further acquisition was stopped; its closure file
 names the witness and the condition for reopening. No key is declared
-`exhausted` here. The other four declared sources belong to the sibling search,
+`exhausted` here. The other three declared sources belong to the sibling search,
 and final reconciliation writes each region file's seven-source compact row
 after both branches merge.
 

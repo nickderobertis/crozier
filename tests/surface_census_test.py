@@ -617,7 +617,6 @@ DECLARED_SOURCES = (
     "github-code-search",
     "github-publisher-trees",
     "sourcegraph",
-    "postman",
     "vendor-portals",
 )
 EXHAUSTED = "exhausted"
@@ -7228,7 +7227,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(int(total.group(1)), int(population.group(1)))
 
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
-        """Seven declared sources, both capabilities each, each one cited."""
+        """Six declared sources, both capabilities each, each one cited."""
         capabilities = source_capabilities(self.doc)
         self.assertEqual(set(DECLARED_SOURCES), set(capabilities))
         for source, (_query, _enumerable, cited) in sorted(capabilities.items()):
@@ -8079,7 +8078,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         self.assertEqual([], self.failures())
 
     def test_missing_source_is_refused(self) -> None:
-        self.sources.remove("postman")
+        self.sources.remove("sourcegraph")
         self.assertIn("differ from declared", "\n".join(self.failures()))
 
     def test_extra_source_is_refused(self) -> None:
@@ -8093,7 +8092,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     No key in the tree carries an exhaustive-search record yet, so the pass over
     the real six region files observes nothing about the rule. These write one
     complete record to a real temporary tree — a region file carrying the
-    `### Witness search (exhaustive)` table, and the seven
+    `### Witness search (exhaustive)` table, and the six
     `witness-search-<source>/` directories its lines rest on — and run the gate's
     own `exhaustive_search_failures` over it. The obligations come from the real
     index's source-capability table, as the gate reads them. The record is
@@ -8141,14 +8140,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             "—",
             "—",
             "—",
-            [],
-        ),
-        "postman": (
-            "`x-sample` → 0; `sample extension` → 0",
-            "—",
-            "—",
-            "—",
-            [("wait", "search bucket", "waited 60s for the reset", "wait.log")],
+            [("wait", "sourcegraph lane", "waited 10s of refusal backoff", "wait.log")],
         ),
         "vendor-portals": (
             "—",
@@ -8244,8 +8236,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.assertEqual([], self.failures())
 
     def test_a_record_dropping_a_declared_source_is_refused(self) -> None:
-        del self.table["postman"]
-        self.refused("drops declared source(s) ['postman']")
+        del self.table["sourcegraph"]
+        self.refused("drops declared source(s) ['sourcegraph']")
 
     def test_a_record_reading_a_declared_source_unanswered_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (
@@ -8255,12 +8247,12 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.refused("reads `sourcegraph` `unanswered` under an `exhausted` outcome")
 
     def test_one_query_phrasing_for_a_text_query_source_is_refused(self) -> None:
-        self.table["postman"][0] = "`x-sample` → 0"
-        self.refused("records 1 query phrasing(s) for `postman`")
+        self.table["sourcegraph"][0] = "`file:openapi.yaml content:\"x-sample\"` → 0"
+        self.refused("records 1 query phrasing(s) for `sourcegraph`")
 
     def test_two_phrasings_that_are_the_same_string_are_refused(self) -> None:
-        self.table["postman"][0] = "`x-sample` → 0; `x-sample` → 0"
-        self.refused("records the same query phrasing twice for `postman`")
+        self.table["sourcegraph"][0] = "`x-sample` → 0; `x-sample` → 0"
+        self.refused("records the same query phrasing twice for `sourcegraph`")
 
     def test_queries_never_stand_in_for_an_unwalked_tree(self) -> None:
         """An enumerable source owes its walk, whatever its queries returned."""
@@ -8368,8 +8360,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         with self.evidence("sourcegraph").open("a", encoding="utf-8") as index:
             index.write(f"{self.KEY}\tquery\t`third phrasing`\t2\tacquisition.json\n")
         self.refused("carries query ``third phrasing`` that the table accounts for nowhere")
-        (self.root / "witness-search-postman" / "stray.json").write_text("{}\n", encoding="utf-8")
-        self.refused("witness-search-postman/stray.json is evidence the table accounts for nowhere")
+        (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8")
+        self.refused("witness-search-sourcegraph/stray.json is evidence the table accounts for nowhere")
 
     def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
         self.table["swaggerhub"] = ["`x-sample` → 0; `sample extension` → 0", "—", "—", "—"]

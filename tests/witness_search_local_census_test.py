@@ -545,29 +545,9 @@ class LocalCensusTest(unittest.TestCase):
                 "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
                 "kept/docs\tbad.json\tabc\t" + "0" * 64 + "\t\tunreadable: trailing comma\n"
                 "kept/docs\tok.json\tabc\t" + "1" * 64 + "\tshape-a\treadable\n", encoding="utf-8")
-            postman = root / "witness-search-postman"
-            postman.mkdir()
-            (postman / "queries.jsonl").write_text(
-                json.dumps({"key": "shape-a", "query": "shape a", "index": "apinetwork.team",
-                            "offset": 225, "status": 400, "classification": "source-refused",
-                            "taken_utc": "t", "response": "From value: 225"}) + "\n"
-                + json.dumps({"key": "shape-a", "query": "shape a", "index": "adp.api",
-                              "offset": 0, "status": 200, "classification": "answered",
-                              "taken_utc": "t"}) + "\n", encoding="utf-8")
-            (postman / "hit-access.jsonl").write_text("".join(json.dumps(row) + "\n" for row in (
-                {"hit": "collection", "id": "c1", "keys": ["shape-a"], "status": 404,
-                 "classification": "source-refused", "url": "u1",
-                 "response": '{"message":"Link does not exist."}'},
-                {"hit": "collection", "id": "c2", "keys": ["shape-a"], "status": 200,
-                 "classification": "not-openapi-3", "url": "u2"},
-                {"hit": "collection", "id": "c3", "keys": ["shape-a"], "status": 200,
-                 "classification": "openapi-3", "url": "u3", "selectors": {"shape-a": 2}},
-                {"hit": "api", "id": "a1", "keys": ["shape-a"], "status": 401,
-                 "classification": "source-refused", "url": "u4", "response": "{}"},
-            )), encoding="utf-8")
             header = ("source\tkey\tcandidate\trevision\tdigest\tcensus\tlicence_screen\t"
                       "revision_screen\tfern_screen\tdisposition\tevidence\n")
-            for source in ("apis.guru", "jentic", "postman"):
+            for source in ("apis.guru", "jentic"):
                 (root / f"witness-search-{source}").mkdir(exist_ok=True)
                 (root / f"witness-search-{source}/records.tsv").write_text(header, encoding="utf-8")
             (root / "witness-search-registries").mkdir()
@@ -589,22 +569,14 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(
                 {(source, kind) for key, source, kind in found if key == "scheme-ref"},
                 {(source, "selector-unavailable") for source in
-                 ("apis.guru", "jentic", "postman", "vendor-portals")})
+                 ("apis.guru", "jentic", "vendor-portals")})
             self.assertEqual(json.loads(found["shape-a", "vendor-portals", "inconclusive-screen"]["items"]),
                              ["big.json@abc"])
             self.assertIn("3600 seconds", found["shape-a", "vendor-portals", "inconclusive-screen"]["blocker"])
             self.assertEqual(json.loads(found["shape-a", "vendor-portals", "unreadable-document"]["items"]),
                              ["bad.json@abc"])
             self.assertEqual(found["shape-a", "vendor-portals", "portal-unanswered"]["items"], '["gone/docs"]')
-            self.assertIn("From value: 225", found["shape-a", "postman", "query-refused"]["blocker"])
-            self.assertIn("Link does not exist",
-                          found["shape-a", "postman", "collection-body-unacquired"]["blocker"])
-            self.assertEqual(found["shape-a", "postman", "collection-body-unacquired"]["items"], '["c1"]')
-            self.assertIn("API key", found["shape-a", "postman", "api-body-unacquired"]["blocker"])
-            self.assertEqual(found["shape-a", "postman", "unscreened-declarer"]["items"], '["u3"]')
-            # A body read and classified by the census, and an answered query, are not outstanding.
-            self.assertNotIn("c2", "".join(row["items"] for row in rows))
-            self.assertEqual(len(rows), 11)
+            self.assertEqual(len(rows), 6)
 
     def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
         completed = subprocess.run(
