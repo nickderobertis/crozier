@@ -106,17 +106,21 @@ def metadata_hits(queries: Path) -> dict[tuple[str, str], dict]:
     A request hit is read through the collection that holds it, so it adds its
     parent collection rather than a hit of its own."""
     hits: dict[tuple[str, str], dict] = {}
-    for line in queries.read_text(encoding="utf-8").splitlines():
+    for number, line in enumerate(queries.read_text(encoding="utf-8").splitlines(), 1):
         row = json.loads(line)
-        for kind, found in (row.get("data") or {}).items():
-            for hit in found:
-                document = hit.get("document", {})
-                if kind == "request":
-                    kind, document = "collection", document.get("collection", {})
-                if kind not in HIT_ROUTES or not document.get("id"):
+        data = row.get("data") or {}
+        if not isinstance(row.get("key"), str) or not isinstance(data, dict):
+            raise ValueError(f"{queries}:{number} has no key or a non-object data field")
+        for found_kind, found in data.items():
+            for hit in found if isinstance(found, list) else ():
+                document = hit.get("document") if isinstance(hit, dict) else None
+                kind = found_kind
+                if kind == "request" and isinstance(document, dict):
+                    kind, document = "collection", document.get("collection")
+                if kind not in HIT_ROUTES or not isinstance(document, dict) or not document.get("id"):
                     continue
                 entry = hits.setdefault((kind, str(document["id"])), {
-                    "handle": document.get("publicHandle", ""), "keys": set()})
+                    "handle": str(document.get("publicHandle") or ""), "keys": set()})
                 entry["keys"].add(row["key"])
     return hits
 
@@ -141,7 +145,8 @@ def classify_body(status: int | None, content_type: str, body: bytes,
         counts = census.census_document(document, conjunctions=conjunctions)
         return {"classification": "openapi-3",
                 "selectors": {row["key"]: counts.get(row["selector"], 0) for row in keys}}
-    schema = document.get("info", {}).get("schema", "") if isinstance(document, dict) else ""
+    info = document.get("info") if isinstance(document, dict) else None
+    schema = info.get("schema", "") if isinstance(info, dict) else ""
     return {"classification": "not-openapi-3",
             "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json"}
 

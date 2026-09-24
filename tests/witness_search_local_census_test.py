@@ -492,7 +492,9 @@ class LocalCensusTest(unittest.TestCase):
                 "data": {
                     "team": [{"document": {"id": 7, "publicHandle": "acme-team"}}],
                     "collection": [{"document": {"id": "1-openapi"}}],
-                    "request": [{"document": {"id": "r", "collection": {"id": "2-coll"}}}],
+                    "request": [{"document": {"id": "r", "collection": {"id": "2-coll"}}},
+                                {"document": {"id": "r2", "collection": {"id": "1-openapi"}}},
+                                "not-a-hit"],
                     "api": [{"document": {"id": "api-9"}}, {"document": {"id": "../x?y"}}],
                 }}) + "\n", encoding="utf-8")
             completed = subprocess.run(
@@ -505,6 +507,8 @@ class LocalCensusTest(unittest.TestCase):
                     (evidence / "hit-access.jsonl").read_text().splitlines())}
             self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "api-9", "../x?y"})
             self.assertIn("/apis/..%2Fx%3Fy", received)
+            # Each request hit is read through its own parent collection, never by its own id.
+            self.assertFalse({"/collections/r", "/collections/r2"} & set(received))
             self.assertEqual(rows["1-openapi"]["classification"], "openapi-3")
             self.assertEqual(rows["1-openapi"]["selectors"], {"query-says-nothing": 1})
             self.assertEqual(rows["1-openapi"]["sha256"], hashlib.sha256(openapi).hexdigest())

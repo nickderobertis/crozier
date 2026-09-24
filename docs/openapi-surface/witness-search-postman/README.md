@@ -21,10 +21,14 @@ of the 23 API hits, and every one returned HTTP 401.
 `scripts/witness-search-postman.py --acquire-hits` then began reading every
 hit through its unauthenticated route, recorded in `hit-access.jsonl`:
 a collection's JSON link, a team's profile page, or the Postman API for an API.
-It was stopped after 562 of 2,285 hits when Postman left the plan. Of those
-562, 185 collection links returned a Postman collection body, which the parse
-classifies as not an OpenAPI 3 document. 353 answered HTTP 404 `Link does not
-exist.`, the 23 APIs answered HTTP 401, and the last request met an HTTP 429.
-The run was stopped inside the backoff that 429 opened, so that wait has no
-record in `rate-limit-waits.jsonl`. `records.tsv` and `candidates.tsv` carry no
-candidate rows.
+It was stopped after 562 requests when Postman left the plan. Of those, 185
+read real collection hits through their JSON links. Every one returned a Postman
+collection body, which the parse classifies as not an OpenAPI 3 document. 353
+addressed request hits by the request's own id, because of a defect in the
+stage's hit walk that has since been fixed. Those answered HTTP 404 `Link does
+not exist.` and measure nothing about any collection. The 23 APIs answered HTTP
+401, and the last request met an HTTP 429. The run was stopped inside the
+backoff that 429 opened, so that wait has no record in `rate-limit-waits.jsonl`.
+With the fix, the queries name 1,846 distinct hits: 1,407 teams, 416
+collections and 23 APIs. `records.tsv` and `candidates.tsv` carry no candidate
+rows.

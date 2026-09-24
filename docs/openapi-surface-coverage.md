@@ -3262,9 +3262,8 @@ excluded from every witness search by the user's decision. Reading an OpenAPI
 body there requires a Postman API key. This host has none, and the user will not
 obtain one. Without a key the network yields only metadata. Its API resources
 answer HTTP 401. A collection's unauthenticated JSON link returns a Postman
-collection rather than an OpenAPI description, and only where the owner
-published that link. So no key's record cites Postman as searched or as
-outstanding.
+collection, which is not an OpenAPI description. So no key's record cites
+Postman as searched or as outstanding.
 [`witness-search-postman/`](openapi-surface/witness-search-postman/README.md)
 is kept only as historical evidence of the requests that were issued, and no
 gate counts it.
