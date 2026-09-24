@@ -132,3 +132,4 @@
 {"at": "2026-09-24T07:53:20.988+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 3404, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 404, "used": 1596}
 {"at": "2026-09-24T07:53:21.784+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 3402, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 404, "used": 1598}
 {"at": "2026-09-24T07:53:22.627+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 3400, "reserved": 1, "reset": 1790236838, "resource": "core", "status": 200, "used": 1600}
+{"at": "2026-09-24T08:03:43.729+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 200}

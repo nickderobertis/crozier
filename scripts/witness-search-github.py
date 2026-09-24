@@ -49,6 +49,7 @@ SOURCEGRAPH_URL = "https://sourcegraph.com"
 RAW_GITHUB_URL = "https://raw.githubusercontent.com"
 RAW_SPACING_S = 2.0
 RAW_BACKOFF_BASE_S = 10.0
+RAW_TRANSFER_ATTEMPT_BUDGET = 3
 CODE_SEARCH_SPACING_S = 30.0
 CODE_SEARCH_REFUSAL_COOLDOWN_S = 300.0
 SOURCEGRAPH_SPACING_S = 10.0
@@ -528,13 +529,14 @@ class Acquirer:
         for path, item in sorted(paths.items()):
             if (repository, path, commit) in done:
                 continue
-            api_path = (
-                "/repos/"
+            url = (
+                self.raw_github_url
+                + "/"
                 + urllib.parse.quote(repository, safe="/")
-                + "/contents/"
+                + "/"
+                + commit
+                + "/"
                 + urllib.parse.quote(path, safe="/")
-                + "?"
-                + urllib.parse.urlencode({"ref": commit})
             )
             identity = {
                 "source": "github-publisher-trees",
@@ -542,10 +544,14 @@ class Acquirer:
                 "path": path,
                 "commit": commit,
                 "blob": item["blob"],
+                "url": url,
+                "acquisition_route": "pinned-raw-github",
             }
             try:
-                status, data, diagnostic = self.github_contents(api_path)
-            except (OSError, http.client.IncompleteRead) as error:
+                status, data = self.raw_github_get(
+                    url, "publisher-trees", f"{repository}/{path}@{commit}"
+                )
+            except OSError as error:
                 self.write(
                     "documents.jsonl",
                     {
@@ -555,14 +561,14 @@ class Acquirer:
                     },
                 )
                 continue
-            if status != 200 or data is None:
+            if status != 200:
                 self.write(
                     "documents.jsonl",
                     {
                         **identity,
                         "status": "acquisition-failure",
                         "http_status": status,
-                        "diagnostic": diagnostic,
+                        "diagnostic": data.decode("utf-8", "replace")[:1000],
                     },
                 )
                 if status in (403, 429):
@@ -655,8 +661,7 @@ class Acquirer:
             return [item for row in answered for item in row["results"]]
         if answered and answered[-1].get("page_count") == 0:
             if not any(
-                row.get("outcome") == "outstanding-index-truncation"
-                for row in previous
+                row.get("outcome") == "outstanding-index-truncation" for row in previous
             ):
                 self.write(
                     "queries.jsonl",
@@ -1016,6 +1021,7 @@ class Acquirer:
     def raw_github_get(self, url: str, key: str, subject: str) -> tuple[int, bytes]:
         """The manager-authorized exact-commit raw route has its own paced lane."""
         refusals = 0
+        incomplete_reads = 0
         while True:
             if self.raw_last_request is not None:
                 duration = self.raw_last_request + RAW_SPACING_S - time.monotonic()
@@ -1028,9 +1034,36 @@ class Acquirer:
                 response = urllib.request.urlopen(request, timeout=90)
             except urllib.error.HTTPError as error:
                 response = error
-            self.raw_last_request = time.monotonic()
             status = response.status
-            data = response.read()
+            self.raw_last_request = time.monotonic()
+            try:
+                data = response.read()
+            except http.client.IncompleteRead as error:
+                incomplete_reads += 1
+                self.write(
+                    "raw-github-calls.jsonl",
+                    {
+                        "key": key,
+                        "subject": subject,
+                        "status": "IncompleteRead",
+                        "attempt": incomplete_reads,
+                        "url": url,
+                        "received_bytes": len(error.partial),
+                        "missing_bytes": error.expected,
+                    },
+                )
+                if incomplete_reads >= RAW_TRANSFER_ATTEMPT_BUDGET:
+                    raise OSError(
+                        f"IncompleteRead after {incomplete_reads} attempts: "
+                        f"received {len(error.partial)} bytes, missing {error.expected}"
+                    ) from error
+                self._raw_wait(
+                    RAW_BACKOFF_BASE_S * 2 ** (incomplete_reads - 1),
+                    "IncompleteRead backoff",
+                    key,
+                    subject,
+                )
+                continue
             self.write(
                 "raw-github-calls.jsonl",
                 {"key": key, "subject": subject, "status": status, "url": url},

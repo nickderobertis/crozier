@@ -143,7 +143,12 @@ class LocalServer(BaseHTTPRequestHandler):
             else:
                 document = state["raw_document"]
                 self.send_response(200)
-                self.send_header("Content-Length", str(len(document)))
+                incomplete = state["raw_incomplete_remaining"] > 0
+                if incomplete:
+                    state["raw_incomplete_remaining"] -= 1
+                self.send_header(
+                    "Content-Length", str(len(document) + (5 if incomplete else 0))
+                )
                 self.end_headers()
                 self.wfile.write(document)
         elif self.path.startswith("/.api/search/stream"):
@@ -197,6 +202,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "raw_hits": 0,
             "raw_refuse": False,
             "raw_document": DOCUMENT,
+            "raw_incomplete_remaining": 0,
             "trees": 0,
             "large": False,
         }
@@ -390,7 +396,8 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual("openapi.yaml", documents[0]["path"])
         self.assertEqual(0, documents[0]["selector_counts"]["closed-object"])
         self.assertEqual(1, self.server.state["trees"])
-        self.assertEqual(1, self.server.state["contents"])
+        self.assertEqual(1, self.server.state["raw_hits"])
+        self.assertEqual(0, self.server.state["contents"])
 
     def test_missing_named_publisher_scope_is_measured_without_losing_siblings(
         self,
@@ -467,6 +474,24 @@ class WitnessSearchGithubTests(unittest.TestCase):
         ]
         self.assertTrue(any("backoff" in row["cause"] for row in waits))
         self.assertTrue(any(row["cause"] == "spacing" for row in waits))
+
+    def test_exact_commit_raw_download_retries_incomplete_transfer(self) -> None:
+        self.server.state["raw_incomplete_remaining"] = 2
+        url = self.url + "/example/api/" + "c" * 40 + "/openapi.yaml"
+        with patch.object(SEARCH, "RAW_SPACING_S", 0.01), patch.object(
+            SEARCH, "RAW_BACKOFF_BASE_S", 0.01
+        ):
+            status, document = self.search.raw_github_get(
+                url, "publisher-trees", "example/api/openapi.yaml"
+            )
+        self.assertEqual(200, status)
+        self.assertEqual(DOCUMENT, document)
+        self.assertEqual(3, self.server.state["raw_hits"])
+        calls = [
+            json.loads(line)
+            for line in (self.root / "raw-github-calls.jsonl").read_text().splitlines()
+        ]
+        self.assertEqual(2, sum(row["status"] == "IncompleteRead" for row in calls))
 
     def test_newer_openapi_three_document_is_censused(self) -> None:
         self.server.state["raw_document"] = DOCUMENT.replace(
