@@ -27,6 +27,28 @@ PORTAL_TREES = REPO / "scripts/witness-search-portal-trees.py"
 
 
 class LocalCensusTest(unittest.TestCase):
+    def test_invalid_json_is_recorded_as_a_parse_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "broken.json").write_text(
+                '{"openapi":"3.0.0","paths":{},}', encoding="utf-8"
+            )
+            contract = root / "keys.md"
+            contract.write_text(
+                "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={root}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 1)
+            record = json.loads(completed.stdout)
+            self.assertEqual(record["classification"], "unreadable")
+            self.assertEqual(record["loader"], "stdlib-json")
+            self.assertIn("trailing comma at", record["error"])
+
     def test_portal_archive_inventory_uses_real_tree_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

@@ -11,6 +11,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -60,7 +61,7 @@ def contract_keys(path: Path) -> list[tuple[str, str]]:
 
 def census_one(
     job: tuple[Path, dict[str, Any], list[tuple[str, str]], Path | None],
-) -> tuple[Path, str, str, str | None, list[tuple[str, int]]]:
+) -> tuple[Path, str, str, str, str | None, list[tuple[str, int]]]:
     path, conjunctions, keys, progress = job
     if progress is not None:
         with progress.open("a", encoding="utf-8") as handle:
@@ -68,18 +69,33 @@ def census_one(
                                      "pid": os.getpid(), "taken_utc": datetime.datetime.now(
                                          datetime.timezone.utc).isoformat()}) + "\n")
     digest = ""
+    loader = ""
     try:
         raw = path.read_bytes()
         digest = hashlib.sha256(raw).hexdigest()
         if path.suffix.lower() in {".yaml", ".yml"} and b"openapi" not in raw:
-            return path, digest, "", None, [(key, 0) for key, _ in keys]
+            return path, digest, "", "no-openapi-marker", None, [(key, 0) for key, _ in keys]
         # Some publisher trees label JSON bytes as .yaml. Parsing those with
         # the YAML reader is much slower on large composed descriptions.
-        document = (
-            json.loads(raw)
-            if raw.lstrip().startswith((b"{", b"["))
-            else CENSUS.load_document(path)
-        )
+        if raw.lstrip().startswith((b"{", b"[")):
+            loader = "stdlib-json"
+            document = json.loads(raw)
+        else:
+            loader = "stdlib-census-yaml"
+            try:
+                document = CENSUS.load_document(path)
+            except CENSUS.DocumentError as original:
+                if path.suffix.lower() not in {".yaml", ".yml"}:
+                    raise
+                try:
+                    import yaml  # type: ignore[import-not-found]
+                except ImportError:
+                    raise original
+                loader = f"PyYAML {yaml.__version__} CSafeLoader"
+                try:
+                    document = yaml.load(raw, Loader=yaml.CSafeLoader)
+                except yaml.YAMLError as error:
+                    raise ValueError(f"PyYAML parse failure: {error}") from error
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
         # A repository may contain generated metadata with an OpenAPI document
         # nested inside it. Only a root OpenAPI 3 document is a source document.
@@ -89,11 +105,19 @@ def census_one(
             path,
             digest,
             version,
+            loader,
             None,
             [(key, counts.get(selector, 0)) for key, selector in keys],
         )
+    except json.JSONDecodeError as error:
+        nearby = raw[max(0, error.pos - 80):error.pos + 80]
+        if "trailing comma" in error.msg.lower() or re.search(rb",\s*[}\]]", nearby):
+            return path, digest, "", loader, (
+                f"parse-failure: invalid JSON (trailing comma at {error.pos})"
+            ), []
+        return path, digest, "", loader, str(error), []
     except (OSError, ValueError, CENSUS.DocumentError) as error:
-        return path, digest, "", str(error), []
+        return path, digest, "", loader, str(error), []
     finally:
         if progress is not None:
             with progress.open("a", encoding="utf-8") as handle:
@@ -159,9 +183,10 @@ def main() -> int:
             max_workers=args.workers
         ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
-            for path, digest, version, error, hits in results:
+            for path, digest, version, loader, error, hits in results:
                 identity = {"source": source, "document": str(path.relative_to(root)),
-                            "sha256": digest, "openapi_version": version}
+                            "sha256": digest, "openapi_version": version,
+                            "loader": loader}
                 if error:
                     failures.append(f"{source}/{path.relative_to(root)}: {error}")
                     if args.all_documents_jsonl:
