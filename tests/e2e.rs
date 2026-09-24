@@ -7929,6 +7929,25 @@ components:
 }
 
 #[test]
+fn non_json_multipart_array_part_keeps_encoded_list_through_the_cli() {
+    let (_dir, out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/encoding-explode.yml"
+    ));
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
+        .expect("multipart raw client is generated");
+    let part = "\"tags\": (None, jsonable_encoder(tags), \"text/plain\")";
+    assert_eq!(
+        raw.matches(part).count(),
+        2,
+        "sync and async list parts: {raw}"
+    );
+    assert!(
+        !raw.contains("json.dumps(jsonable_encoder(tags))"),
+        "non-JSON array parts keep the encoded list instead of serializing it: {raw}"
+    );
+}
+
+#[test]
 fn responses_extension_beside_status_code_is_ignored_through_the_cli() {
     let (_probe_dir, probe_out) = generate_ok(include_str!(
         "../docs/openapi-surface/probes/extension-responses.yml"
