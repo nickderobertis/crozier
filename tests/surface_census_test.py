@@ -678,6 +678,14 @@ def recorded_walks(cell: str) -> list[tuple[str, str, str]]:
     return re.findall(r"`([^`]+)` at `([^`]+)` → (\d+) documents?", cell)
 
 
+# The column contracts of an enumerable source's `enumeration.tsv` and its
+# `acquisition-manifest.tsv`. `docs/openapi-surface-coverage.md` spells both
+# headers for a reader; `test_the_documented_enumeration_headers_are_the_gated_ones`
+# holds that spelling to these tuples.
+ENUMERATION_COLUMNS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
+ACQUISITION_MANIFEST_COLUMNS = ("walk", "document", "revision", "sha256")
+
+
 def enumeration_census_failures(
     key: str, source: str, walks: list[tuple[str, str, str]],
     directory: Path, records: list[dict[str, str]],
@@ -688,8 +696,7 @@ def enumeration_census_failures(
         return [f"{key}: `{source}` has no enumeration.tsv census file"]
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, dialect="excel-tab")
-        expected = ("walk", "document", "revision", "sha256", "matched_keys", "status")
-        if tuple(reader.fieldnames or ()) != expected:
+        if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
             return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
         census = list(reader)
     failures = []
@@ -709,8 +716,7 @@ def enumeration_census_failures(
     else:
         with manifest_path.open(encoding="utf-8", newline="") as handle:
             manifest_reader = csv.DictReader(handle, dialect="excel-tab")
-            expected_manifest = ("walk", "document", "revision", "sha256")
-            if tuple(manifest_reader.fieldnames or ()) != expected_manifest:
+            if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
                 failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
                 manifest = []
             else:
@@ -1058,6 +1064,17 @@ class GrammarContractTests(unittest.TestCase):
         self.assertIn(start, text, f"the grammar section no longer says {start!r}")
         body = text.split(start, 1)[1].split(end, 1)[0]
         return set(re.findall(r"`([A-Za-z][A-Za-z.]*)`", body))
+
+    def test_the_documented_enumeration_headers_are_the_gated_ones(self) -> None:
+        # The doc names `enumeration.tsv`'s header first and the acquisition
+        # manifest's second; the gate rejects any other column spelling.
+        documented = re.findall(
+            r"`(walk(?:\\t\w+)+)`", self.DOC.read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            documented,
+            ["\\t".join(ENUMERATION_COLUMNS), "\\t".join(ACQUISITION_MANIFEST_COLUMNS)],
+        )
 
     def test_the_documented_anchor_kinds_are_the_ones_that_head_a_selector(self) -> None:
         documented = self.backticked("- **Anchor kinds head their own selector.**", "- **")
