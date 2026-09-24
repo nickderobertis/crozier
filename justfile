@@ -196,6 +196,10 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paypal_catalog_products_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e folio_mod_authtoken_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e raybot_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_alerts_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_reports_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_search_manager_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e thrivecart_matches_fern_output
 
 # Format the codebase in place.
 format:

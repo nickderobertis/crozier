@@ -787,9 +787,13 @@ fn inline_body_source_names(
                 continue;
             }
             let Some(rb) = &op.request_body else { continue };
-            let Some(schema) = rb
-                .content
-                .get("application/json")
+            // The JSON representation is found the way the body itself selects
+            // it, parameters and all: Prisma Cloud posts its single-use
+            // `FilterSuggestionModel` under `application/json; charset=UTF-8`
+            // alone, and Fern drops it from the type layer like any inlined body.
+            let Some(schema) = selected_json_request_media(rb)
+                .filter(|(media_type, _)| *media_type != "*/*")
+                .map(|(_, media)| media)
                 .or_else(|| rb.content.get("multipart/form-data"))
                 .or_else(|| rb.content.get("multipart/related"))
                 .or_else(|| rb.content.get("application/x-www-form-urlencoded"))
@@ -994,7 +998,11 @@ pub struct Endpoint {
     /// `add_mcp_server` body carries `title: Request` and does.
     pub body_collapses_to_type_reference: bool,
     /// A JSON-compatible request media type that must be emitted verbatim instead
-    /// of `application/json` (for example `application/ndjson`).
+    /// of `application/json` (for example `application/ndjson`). A parameterised
+    /// JSON media type is sent verbatim on every request, whatever the body's
+    /// shape: Prisma Cloud's inlined `FilterModel` bodies, posted under
+    /// `application/json; charset=UTF-8`, always carry that header, even where
+    /// an optional field would otherwise have Fern omit it.
     pub body_content_type_override: Option<String>,
     /// Whether the operation uses HTTP Basic authentication. Fern leaves the
     /// ordinary JSON content type to httpx for an undocumented Basic-auth body
@@ -1920,8 +1928,9 @@ fn move_inline_body_enums_to_tags(
             let Some(source) = op
                 .request_body
                 .as_ref()
-                .and_then(|body| body.content.get("application/json"))
-                .and_then(|media| media.schema.as_ref())
+                .and_then(selected_json_request_media)
+                .filter(|(media_type, _)| *media_type != "*/*")
+                .and_then(|(_, media)| media.schema.as_ref())
                 .and_then(|schema| schema.reference.as_deref())
                 .map(ref_to_class)
             else {
@@ -2959,9 +2968,11 @@ fn build_endpoint(
             .as_ref()
             .and_then(selected_json_request_media)
             .and_then(|(media_type, _)| {
-                media_type
-                    .ends_with("/ndjson")
-                    .then(|| media_type.to_string())
+                (media_type.ends_with("/ndjson")
+                    || media_type != "application/json"
+                        && media_type != "*/*"
+                        && media_type.contains(';'))
+                .then(|| media_type.to_string())
             }),
         basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_ref: op
@@ -7692,7 +7703,20 @@ impl Builder<'_> {
                         && (prop_schema.reference.is_none()
                             || prop_schema.read_only == Some(true))),
                 spec_required,
-                docstring: declared_doc(property_description(prop_schema, optional)),
+                // An annotation that adds no description of its own leaves the
+                // field documented by its target: Prisma Cloud's
+                // `AlertFilterSuggestion` annotates `FilterSuggestion` with
+                // `readOnly` alone, and Fern documents `alert.id` with
+                // `FilterSuggestion`'s own description.
+                docstring: declared_doc(property_description(prop_schema, optional).or_else(
+                    || {
+                        described_all_of_ref(prop_schema)
+                            .and_then(|(reference, _)| {
+                                resolve_ref_from_schemas(self.schemas, reference)
+                            })
+                            .and_then(|target| target.description.as_deref())
+                    },
+                )),
                 example: schema_example_literal(prop_schema)
                     .or_else(|| {
                         prop_schema
@@ -8023,9 +8047,16 @@ impl Builder<'_> {
         // braintrust's `FacetData.preprocessor` — `allOf: [$ref
         // NullableSavedFunctionId, {description}]` — declares
         // `FacetDataPreprocessorId` and `FacetDataPreprocessorFunctionType` of its
-        // own rather than pointing at the referenced schema's pair.
+        // own rather than pointing at the referenced schema's pair. The copy is
+        // documented by the annotation too: Prisma Cloud's `SearchModel.timeRange`
+        // annotates `TimeRangeConfigModel` with `Time Range`, and every variant of
+        // Fern's `SearchModelTimeRange` carries that docstring.
         if !is_map(target) && (target.one_of.is_some() || target.any_of.is_some()) {
-            self.add_named(ctx, target);
+            let mut annotated = target.clone();
+            if let Some(description) = description {
+                annotated.description = Some(description.to_string());
+            }
+            self.add_named(ctx, &annotated);
             return TypeRef::Named(ctx.to_string());
         }
         if !is_map(target)
@@ -12911,6 +12942,129 @@ mod tests {
         );
         assert!(!body.required);
         assert!(hoister.out.is_empty());
+    }
+
+    #[test]
+    fn parameterised_json_bodies_inline_and_annotations_document_their_copies() {
+        // The Prisma Cloud shape: a single-use body posted under a parameterised
+        // JSON media type, whose model annotates a union target with a
+        // description and an object target with `readOnly` alone.
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.0",
+            "info": { "title": "Alerts", "version": "1" },
+            "paths": { "/alert/remediation": { "post": {
+                "operationId": "remediate",
+                "tags": ["alerts"],
+                "requestBody": { "content": { "application/json; charset=UTF-8": {
+                    "schema": { "$ref": "#/components/schemas/Lookup" }
+                } } },
+                "responses": { "200": { "description": "ok" } }
+            } } },
+            "components": { "schemas": {
+                "Lookup": {
+                    "type": "object",
+                    "properties": {
+                        "range": { "allOf": [
+                            { "$ref": "#/components/schemas/Range" },
+                            { "description": "Time Range" }
+                        ] },
+                        "suggestion": { "allOf": [
+                            { "$ref": "#/components/schemas/Suggestion" },
+                            { "readOnly": true }
+                        ] },
+                        "note": { "type": "string" }
+                    }
+                },
+                "Range": {
+                    "description": "See the range model.",
+                    "oneOf": [
+                        { "$ref": "#/components/schemas/Absolute" },
+                        { "$ref": "#/components/schemas/Relative" }
+                    ],
+                    "discriminator": { "propertyName": "type", "mapping": {
+                        "absolute": "#/components/schemas/Absolute",
+                        "relative": "#/components/schemas/Relative"
+                    } }
+                },
+                "Absolute": { "type": "object", "required": ["type"], "properties": {
+                    "type": { "type": "string" }, "start": { "type": "integer" }
+                } },
+                "Relative": { "type": "object", "required": ["type"], "properties": {
+                    "type": { "type": "string" }, "amount": { "type": "integer" }
+                } },
+                "Suggestion": {
+                    "description": "Model for Suggestion",
+                    "type": "object",
+                    "properties": { "options": { "type": "string" } }
+                }
+            } }
+        }))
+        .expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Alerts",
+        )
+        .expect("the config is well formed");
+        let ir = super::build(&doc, &config);
+
+        let endpoint = &ir.endpoints[0];
+        assert!(matches!(
+            endpoint.request_body,
+            Some(RequestBody::Inline(_))
+        ));
+        assert_eq!(
+            endpoint.body_content_type_override.as_deref(),
+            Some("application/json; charset=UTF-8")
+        );
+        // The single-use body leaves the public type layer, and the copies its
+        // annotated properties hoisted move with it into the tag's package.
+        assert!(!ir.types.iter().any(|decl| decl.name() == "Lookup"));
+        let tagged = |name: &str| {
+            ir.tag_types
+                .iter()
+                .find(|tag| tag.decl.name() == name)
+                .map(|tag| (tag.module.as_str(), &tag.decl))
+        };
+        let Some(("alerts", TypeDecl::DiscriminatedUnion(range))) = tagged("LookupRange") else {
+            panic!("the annotated union copy moves into the tag package");
+        };
+        assert!(range
+            .members
+            .iter()
+            .all(|member| member.docstring.as_deref() == Some("Time Range")));
+        let Some(("alerts", TypeDecl::Object(_))) = tagged("LookupSuggestion") else {
+            panic!("the annotated object copy moves into the tag package");
+        };
+
+        // Where the model survives, the `readOnly`-only annotation leaves the
+        // field documented by its target.
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &doc.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+        };
+        builder.add_named("Lookup", &doc.components.schemas["Lookup"]);
+        let Some(TypeDecl::Object(lookup)) =
+            builder.types.iter().find(|decl| decl.name() == "Lookup")
+        else {
+            panic!("the model is built");
+        };
+        let doc_of = |wire: &str| {
+            lookup
+                .fields
+                .iter()
+                .find(|field| field.wire_name == wire)
+                .and_then(|field| field.docstring.as_deref())
+        };
+        assert_eq!(doc_of("suggestion"), Some("Model for Suggestion"));
+        assert_eq!(doc_of("range"), Some("Time Range"));
+        assert_eq!(doc_of("note"), None);
     }
 
     #[test]

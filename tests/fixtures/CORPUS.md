@@ -163,6 +163,10 @@ re-measure with `just fixtures-gaps`.
 | 138 | `paypal-catalog-products` | github-raw | https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/catalogs_products_v1.json | `90e8041ffe02d80c452d2b476bedd59a8d219bdc` | Apache-2.0 (the publisher repository's pinned `LICENSE`) | link-ok | PayPal Catalog Products API; four sole-member `anyOf` wrappers on error detail items. |
 | 139 | `folio-mod-authtoken` | github-raw | https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml | `172586c71fe936ac0b4d104b95acd508e88e43d3` | Apache-2.0 (the publisher repository’s pinned `LICENSE`) | link-ok | FOLIO mod-authtoken’s six endpoint API; `components.schemas.refreshToken` names `schemas/refreshToken.json` under the same revision, while `tokenResponse` and four other component aliases name sibling JSON files. Fern’s generated `src/fern/types/refresh_token.py` and the token client methods derive from those references. |
 | 140 | `raybot` | github-raw | https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml | `4428dea2f79b833aead4c89df5bd8d9e32b7b0c8` | MIT (publisher repository’s pinned `LICENSE` and the document’s `info.license`) | link-ok | Raybot’s published robot-control API references 23 sibling Path Item files; `/version` names `paths/version.yml`, whose `get` operation generates `src/fern/version/client.py`, and `/health` names `paths/health.yml`, generating `src/fern/health/client.py`. Each Path Item then references pinned parameter and schema files under the same revision. |
+| 144 | `paloalto-cspm-alerts` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Alerts.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Alerts API (Palo Alto Networks, publisher-owned `pan.dev`); annotated `$ref`s to composed and `oneOf` targets |
+| 145 | `paloalto-cspm-reports` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Reports.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Reports API; annotated `$ref`s to `oneOf` targets |
+| 146 | `paloalto-cspm-search-manager` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/SearchManager.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Search Manager API; annotated `$ref`s to `oneOf` targets |
+| 147 | `thrivecart` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/thrivecart.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | ThriveCart API; `$ref` pointers under an undeclared component head |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -715,3 +719,33 @@ When a diagnostic `TMPDIR` lives inside another Git checkout, set
 `GIT_CEILING_DIRECTORIES` to that temporary root during generation. Otherwise
 Fern records that unrelated parent checkout's commit in its metadata. This
 registration was regenerated with that boundary; no generated metadata was edited.
+
+## Batch 17 — the witness searches' candidates
+
+Rows 144 onward register the candidates the two witness-search ledgers,
+[`../../docs/openapi-surface/witness-search-github/candidates.tsv`](../../docs/openapi-surface/witness-search-github/candidates.tsv)
+and
+[`../../docs/openapi-surface/witness-search-registries/candidates.tsv`](../../docs/openapi-surface/witness-search-registries/candidates.tsv),
+mark usable: a licence that grants redistribution, an immutable ref, and Fern's
+acceptance of the raw document, each re-measured here rather than inherited. They
+are registered in the order the coverage document's ranking rubric gives their
+keys. Every golden is generated at Python 5.20.0 / CLI 5.67.1 from the fetched,
+unmodified document and byte-matches with `unmatched: &[]`.
+
+| # | name | settles | state |
+|---:|---|---|---|
+| 144 | `paloalto-cspm-alerts` | `annotated-ref-target-composed`, `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 145 | `paloalto-cspm-reports` | `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 146 | `paloalto-cspm-search-manager` | `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 147 | `thrivecart` | `ref-pointer-undeclared-component-head` | ✅ byte-matched with no repair of its own |
+
+The repairs send a parameterised JSON request media type
+(`application/json; charset=UTF-8`) verbatim as the `content-type` of every
+request that carries it, find a single-use body's JSON representation by the same
+selection the body itself uses, so the model is dropped from the type layer and
+its hoisted use-site copies move into the tag's package, document a union's
+use-site copy with the annotation that names it, fall back to the target's own
+description for a field whose annotation adds none, and spell a bare `=` enum
+value `EQUAL_TO`. The three Prisma Cloud documents are separate descriptions in
+Palo Alto Networks' own `pan.dev` repository; each is a row of its own because
+each is a document Fern generates on its own.

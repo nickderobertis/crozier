@@ -47,6 +47,22 @@ Additional issue #77 real-world OpenAPI source specs:
     corpus row 138 records the immutable reference. Only Fern-generated output
     is vendored, with Python comments stripped as described above.
 
+  * Prisma Cloud Alerts, Reports and Search Manager APIs: Palo Alto Networks'
+    publisher-owned descriptions at
+    https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Alerts.json,
+    https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Reports.json and
+    https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/SearchManager.json.
+    The repository's LICENSE at that same commit grants MIT redistribution;
+    corpus rows 144 to 146 record the immutable reference. Only Fern-generated
+    output is vendored, with Python comments stripped as described above.
+
+  * ThriveCart API: the jentic-public-apis aggregation's copy at
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/thrivecart.com/main/1.0.0/openapi.json.
+    The aggregating repository's LICENSE.md at that same commit grants CC0-1.0
+    redistribution; corpus row 147 records the immutable reference. Only
+    Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 140 of the 172 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 144 of the 176 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -2058,7 +2058,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(zip(
 NAMING_PORT_DIGESTS = {
     "sanitize_identifier": "9da64b4ddcfd04c9",
     "digit_word": "4d705bf2bae3d676",
-    "enum_words": "d2b7d6ba3787b00b",
+    "enum_words": "48f9f05a16515545",
     "numeric_enum_identifier": "34ad46d37aed1b81",
     "finalize_enum_ident": "2c40bdccda3bcf5f",
     "uuid_enum_identifier": "17b81a4e21fde4fe",
@@ -2108,6 +2108,8 @@ def enum_identifier(value: str) -> str:
         )
     if not folded:
         return "empty"
+    if folded == "=":
+        return "equal_to"
     spaced = "".join(
         " all " if char == "*" else "" if char in "'\u2019" else
         char if char.isascii() and char.isalnum() else " "

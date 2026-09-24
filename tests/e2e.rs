@@ -3215,6 +3215,10 @@ const CORPORA: &[&Corpus] = &[
     &PAYPAL_CATALOG_PRODUCTS,
     &FOLIO_MOD_AUTHTOKEN,
     &RAYBOT,
+    &PALOALTO_CSPM_ALERTS,
+    &PALOALTO_CSPM_REPORTS,
+    &PALOALTO_CSPM_SEARCH_MANAGER,
+    &THRIVECART,
 ];
 
 #[test]
@@ -5535,6 +5539,54 @@ const RAYBOT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Prisma Cloud Alerts annotates `$ref`s to composed and `oneOf` targets.
+const PALOALTO_CSPM_ALERTS: Corpus = Corpus {
+    api: "paloalto-cspm-alerts",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Prisma Cloud Reports annotates `$ref`s to `oneOf` targets.
+const PALOALTO_CSPM_REPORTS: Corpus = Corpus {
+    api: "paloalto-cspm-reports",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Prisma Cloud Search Manager annotates `$ref`s to `oneOf` targets.
+const PALOALTO_CSPM_SEARCH_MANAGER: Corpus = Corpus {
+    api: "paloalto-cspm-search-manager",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ThriveCart points `$ref`s under an undeclared component head.
+const THRIVECART: Corpus = Corpus {
+    api: "thrivecart",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 #[test]
 fn apideck_ats_matches_fern_output() {
     if corpus_spec(APIDECK_ATS.api).is_none() {
@@ -5929,6 +5981,26 @@ fn folio_mod_authtoken_matches_fern_output() {
 #[test]
 fn raybot_matches_fern_output() {
     assert_link_ok_corpus_matches(&RAYBOT);
+}
+
+#[test]
+fn paloalto_cspm_alerts_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_ALERTS);
+}
+
+#[test]
+fn paloalto_cspm_reports_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_REPORTS);
+}
+
+#[test]
+fn paloalto_cspm_search_manager_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
+}
+
+#[test]
+fn thrivecart_matches_fern_output() {
+    assert_link_ok_corpus_matches(&THRIVECART);
 }
 
 #[test]

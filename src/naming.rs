@@ -367,6 +367,11 @@ fn enum_words(value: &str) -> String {
     if value.is_empty() {
         return "empty".to_string();
     }
+    // A bare `=` operator is spelled out: Prisma Cloud's `UIFilterModel.operator`
+    // enum holds the single value `=`, and Fern names its member `EQUAL_TO`.
+    if value == "=" {
+        return "equal_to".to_string();
+    }
     let mut spaced = String::new();
     for c in value.chars() {
         if c == '*' {
@@ -1246,6 +1251,9 @@ mod tests {
         // A value with no identifier characters still yields a legal name.
         assert_eq!(enum_member_name("!!!"), "_");
         assert_eq!(enum_visit_param("!!!"), "_");
+        // A bare `=` is the one operator Fern spells out.
+        assert_eq!(enum_member_name("="), "EQUAL_TO");
+        assert_eq!(enum_visit_param("="), "equal_to");
     }
 
     #[test]
