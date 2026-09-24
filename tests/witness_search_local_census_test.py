@@ -440,6 +440,169 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(len([row for row in rows if row.get("error", "").startswith("postman")]), 6)
             self.assertTrue(all(row["classification"] == "source-refused" for row in rows))
 
+    def test_postman_metadata_hits_are_acquired_and_classified_by_census(self) -> None:
+        received = []
+        throttled = []
+        openapi = json.dumps({"openapi": "3.0.0", "info": {"title": "t", "version": "1"},
+                              "paths": {}, "components": {"schemas": {
+                                  "Shape": {"type": "array", "items": {"type": "string"}}}}}).encode()
+        collection = json.dumps({"info": {"_postman_id": "c", "name": "array item",
+                                          "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+                                 "item": []}).encode()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                received.append(self.path)
+                if self.path == "/collections/1-openapi" and not throttled:
+                    throttled.append(self.path)
+                    status, kind, body = 429, "text/plain", b"slow down"
+                elif self.path == "/collections/1-openapi":
+                    status, kind, body = 200, "application/json", openapi
+                elif self.path == "/collections/2-coll":
+                    status, kind, body = 200, "application/json; charset=utf-8", collection
+                elif self.path == "/acme-team":
+                    status, kind, body = 200, "text/html", b"<!doctype html><title>Postman</title>"
+                else:
+                    status, kind, body = 401, "application/problem+json", b'{"status":401}'
+                self.send_response(status)
+                self.send_header("Content-Type", kind)
+                if status == 429:
+                    self.send_header("Retry-After", "0")
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\nquery-says-nothing\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            evidence.mkdir()
+            # The query text shares no word with the shape; only the body can declare it.
+            (evidence / "queries.jsonl").write_text(json.dumps({
+                "key": "query-says-nothing", "query": "unrelated words", "status": 200,
+                "data": {
+                    "team": [{"document": {"id": 7, "publicHandle": "acme-team"}}],
+                    "collection": [{"document": {"id": "1-openapi"}}],
+                    "request": [{"document": {"id": "r", "collection": {"id": "2-coll"}}}],
+                    "api": [{"document": {"id": "api-9"}}],
+                }}) + "\n", encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
+                 "--acquire-hits", "--web-base", base, "--api-base", base],
+                cwd=REPO, capture_output=True, text=True, timeout=120,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            rows = {row["id"]: row for row in (json.loads(line) for line in
+                    (evidence / "hit-access.jsonl").read_text().splitlines())}
+            self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "api-9"})
+            self.assertEqual(rows["1-openapi"]["classification"], "openapi-3")
+            self.assertEqual(rows["1-openapi"]["selectors"], {"query-says-nothing": 1})
+            self.assertEqual(rows["1-openapi"]["sha256"], hashlib.sha256(openapi).hexdigest())
+            self.assertEqual(received.count("/collections/1-openapi"), 2)
+            self.assertEqual(rows["2-coll"]["classification"], "not-openapi-3")
+            self.assertEqual(rows["2-coll"]["document_kind"], "postman-collection")
+            self.assertNotIn("selectors", rows["2-coll"])
+            self.assertEqual(rows["7"]["classification"], "no-document-body")
+            self.assertEqual((rows["api-9"]["status"], rows["api-9"]["classification"]),
+                             (401, "source-refused"))
+            waits = [json.loads(line) for line in
+                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+            self.assertTrue(any(row["cause"] == "backoff" for row in waits))
+            calls = (evidence / "rate-limit-calls.jsonl").read_text().splitlines()
+            self.assertEqual(len(calls), len(received))
+
+    def test_outstanding_items_are_derived_by_key_and_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "witness-search-keys.tsv").write_text(
+                "key\tselector\tregion\tcensus_status\n"
+                "shape-a\tschema.items\tschemas.md\tsupported\n"
+                "scheme-ref\tsecurityScheme:$ref\tsecurity.md\tunsupported-by-census\n",
+                encoding="utf-8")
+            (root / "witness-search-portal-plan.tsv").write_text(
+                "repository\tpinned_ref\tprior_path\tderivation\tacquisition\n"
+                "gone/docs\tno-immutable-ref: HTTP 404\tapi.json\tprior\tsource-refused\n"
+                "kept/docs\tabc\tapi.json\tprior\tarchive\n", encoding="utf-8")
+            portals = root / "witness-search-vendor-portals"
+            portals.mkdir()
+            (portals / "records.tsv").write_text(
+                "source\tkey\tcandidate\trevision\tdigest\tcensus\tlicence_screen\trevision_screen\t"
+                "fern_screen\tdisposition\tevidence\n"
+                "vendor-portals\tshape-a\tbig.json\tabc\td\t3\tpass\tpass\t"
+                "not-run: Fern check timed out after 3600 seconds\toutstanding\tx\n"
+                "vendor-portals\tshape-a\tok.json\tabc\td\t1\tpass\tpass\tpass\twitness-found\tx\n",
+                encoding="utf-8")
+            (portals / "enumeration.tsv").write_text(
+                "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
+                "kept/docs\tbad.json\tabc\t" + "0" * 64 + "\t\tunreadable: trailing comma\n"
+                "kept/docs\tok.json\tabc\t" + "1" * 64 + "\tshape-a\treadable\n", encoding="utf-8")
+            postman = root / "witness-search-postman"
+            postman.mkdir()
+            (postman / "queries.jsonl").write_text(
+                json.dumps({"key": "shape-a", "query": "shape a", "index": "apinetwork.team",
+                            "offset": 225, "status": 400, "classification": "source-refused",
+                            "taken_utc": "t", "response": "From value: 225"}) + "\n"
+                + json.dumps({"key": "shape-a", "query": "shape a", "index": "adp.api",
+                              "offset": 0, "status": 200, "classification": "answered",
+                              "taken_utc": "t"}) + "\n", encoding="utf-8")
+            (postman / "hit-access.jsonl").write_text("".join(json.dumps(row) + "\n" for row in (
+                {"hit": "collection", "id": "c1", "keys": ["shape-a"], "status": 404,
+                 "classification": "source-refused", "url": "u1",
+                 "response": '{"message":"Link does not exist."}'},
+                {"hit": "collection", "id": "c2", "keys": ["shape-a"], "status": 200,
+                 "classification": "not-openapi-3", "url": "u2"},
+                {"hit": "collection", "id": "c3", "keys": ["shape-a"], "status": 200,
+                 "classification": "openapi-3", "url": "u3", "selectors": {"shape-a": 2}},
+                {"hit": "api", "id": "a1", "keys": ["shape-a"], "status": 401,
+                 "classification": "source-refused", "url": "u4", "response": "{}"},
+            )), encoding="utf-8")
+            (root / "witness-search-registries").mkdir()
+            command = [sys.executable, str(REPO / "scripts/witness-search-registries-outstanding.py"),
+                       "--root", str(root)]
+            stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30)
+            self.assertEqual(stale.returncode, 1)
+            self.assertIn("rerun without --check", stale.stderr)
+            self.assertEqual(subprocess.run(command, timeout=30).returncode, 0)
+            self.assertEqual(subprocess.run([*command, "--check"], timeout=30).returncode, 0)
+            with (root / "witness-search-registries/outstanding.tsv").open(newline="") as handle:
+                rows = list(csv.DictReader(handle, dialect="excel-tab"))
+            found = {(row["key"], row["source"], row["kind"]): row for row in rows}
+            self.assertEqual(
+                {(source, kind) for key, source, kind in found if key == "scheme-ref"},
+                {(source, "selector-unavailable") for source in
+                 ("apis.guru", "jentic", "postman", "vendor-portals")})
+            self.assertEqual(json.loads(found["shape-a", "vendor-portals", "inconclusive-screen"]["items"]),
+                             ["big.json@abc"])
+            self.assertIn("3600 seconds", found["shape-a", "vendor-portals", "inconclusive-screen"]["blocker"])
+            self.assertEqual(json.loads(found["shape-a", "vendor-portals", "unreadable-document"]["items"]),
+                             ["bad.json@abc"])
+            self.assertEqual(found["shape-a", "vendor-portals", "portal-unanswered"]["items"], '["gone/docs"]')
+            self.assertIn("From value: 225", found["shape-a", "postman", "query-refused"]["blocker"])
+            self.assertIn("Link does not exist",
+                          found["shape-a", "postman", "collection-body-unacquired"]["blocker"])
+            self.assertEqual(found["shape-a", "postman", "collection-body-unacquired"]["items"], '["c1"]')
+            self.assertIn("API key", found["shape-a", "postman", "api-body-unacquired"]["blocker"])
+            self.assertEqual(found["shape-a", "postman", "unscreened-declarer"]["items"], '["u3"]')
+            # A body read and classified by the census, and an answered query, are not outstanding.
+            self.assertNotIn("c2", "".join(row["items"] for row in rows))
+            self.assertEqual(len(rows), 11)
+
+    def test_committed_outstanding_inventory_matches_its_ledgers(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(REPO / "scripts/witness-search-registries-outstanding.py"), "--check"],
+            cwd=REPO, capture_output=True, text=True, timeout=120,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
     def test_key_derivation_reads_current_region_tables(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(KEYS)], cwd=REPO,
