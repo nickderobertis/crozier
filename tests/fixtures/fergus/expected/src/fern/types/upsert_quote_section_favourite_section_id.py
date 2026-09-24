@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .upsert_quote_section_favourite_section_id_combined import UpsertQuoteSectionFavouriteSectionIdCombined
+
+UpsertQuoteSectionFavouriteSectionId = typing.Union[float, UpsertQuoteSectionFavouriteSectionIdCombined]

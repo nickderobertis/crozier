@@ -2775,8 +2775,14 @@ fn build_endpoint(
                 .as_ref()
                 .is_some_and(|schema| schema.title.is_some())
                 && non_null.len() == members.len();
-            ((non_null.len() != 1 || string_enum_values(non_null[0]).is_none())
-                && !titled_and_total)
+            // A composition of nothing but string enums is an enum to Fern
+            // (`everySubTypeIsLiteral`), and stays tag-local like one: Fergus's
+            // `sortOrder` is `anyOf: [{enum: [asc]}, {enum: [desc]}]` and its
+            // `GetCustomersRequestSortOrder` is in `customers/types/`.
+            let every_member_enum = non_null
+                .iter()
+                .all(|member| string_enum_values(member).is_some());
+            (!every_member_enum && !titled_and_total)
                 .then(|| format!("{request_ctx}{}", naming::param_class_name(&parameter.name)))
         })
         .collect();
@@ -3436,7 +3442,16 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .and_then(|media| media.schema.as_ref())
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|schema| schema.all_of.is_some())
+        // An `allOf` of nothing but inline objects is one object to Fern's
+        // importer, not a composition: Fergus's `CreateContactPayload` merges two
+        // inline members and its `POST /contacts` keeps the content-type header
+        // that an `allOf` over a `$ref` base drops.
+        .is_some_and(|schema| {
+            schema
+                .all_of
+                .as_ref()
+                .is_some_and(|members| members.iter().any(|member| member.reference.is_some()))
+        })
 }
 
 /// Whether the operation's selected success response is a Server-Sent-Events
@@ -4199,6 +4214,52 @@ fn resolve_request_body(
             return Some(single(TypeRef::Named(name), required, true, true));
         }
         return Some(RequestBody::Inline(Vec::new()));
+    }
+    // An inline body composed only of inline objects is their merged field set.
+    // A property two members declare is one argument, at its first position,
+    // required if either member requires it, and named with the request prefix:
+    // Fergus's `POST /enquiries` declares `addressCity` in two members, and
+    // Fern's argument is `post_enquiries_request_address_city`.
+    if schema.properties.is_empty() && schema.reference.is_none() {
+        if let Some(members) = schema.all_of.as_deref().filter(|members| {
+            !members.is_empty()
+                && members.iter().all(|member| {
+                    member.reference.is_none()
+                        && member.all_of.is_none()
+                        && member.one_of.is_none()
+                        && member.any_of.is_none()
+                        && !member.properties.is_empty()
+                })
+        }) {
+            let mut merged = schema.clone();
+            merged.all_of = None;
+            let mut repeated = std::collections::HashSet::new();
+            for member in members {
+                for (prop, prop_schema) in &member.properties {
+                    if merged.properties.contains_key(prop) {
+                        repeated.insert(prop.clone());
+                    } else {
+                        merged.properties.insert(prop.clone(), prop_schema.clone());
+                    }
+                }
+                for name in &member.required {
+                    if !merged.required.contains(name) {
+                        merged.required.push(name.clone());
+                    }
+                }
+            }
+            return hoist_inline_object(&merged, hoister, request_ctx).map(|mut fields| {
+                for field in &mut fields {
+                    if repeated.contains(&field.wire_name) {
+                        field.py_name =
+                            format!("{}_{}", naming::field_name(request_ctx), field.py_name);
+                        field.collision_prefix = None;
+                    }
+                }
+                apply_body_example(&mut fields, media_example(doc, media), true);
+                RequestBody::Inline(fields)
+            });
+        }
     }
     // An inline object body (properties written directly, not behind a `$ref`) is
     // inlined field-by-field, exactly like a `$ref` object. Its own nested inline
@@ -7513,6 +7574,8 @@ impl Builder<'_> {
         if !self.building_types.insert(name.to_string()) {
             return;
         }
+        let flattened = flatten_nested_all_of(schema);
+        let schema = flattened.as_ref().unwrap_or(schema);
         // `allOf` merges members: `$ref`s become base classes, inline members
         // contribute properties, and `required` applies across the whole set.
         let required: Vec<&str> = schema
@@ -7693,6 +7756,12 @@ impl Builder<'_> {
             // A discriminated-union member drops the discriminant property from
             // its own model; Fern re-declares it on the union wrapper instead.
             if strip.as_deref() == Some(prop.as_str()) {
+                continue;
+            }
+            // A property two `allOf` members both declare is one field, at the
+            // first one's place: Fergus's `CreateEnquiryPayload` declares
+            // `addressCity` in two members, and Fern's model has it once.
+            if fields.iter().any(|field| field.wire_name == *prop) {
                 continue;
             }
             // A `readOnly` property is server-populated, so Fern treats it as
@@ -8565,6 +8634,15 @@ impl Builder<'_> {
                             )));
                             return TypeRef::Named(name);
                         }
+                        // The lone alternative to `null` is itself a composition:
+                        // Fern converts it as the property's own schema. Fergus's
+                        // `CustomerInvoice.dueDays` is `anyOf: [{anyOf: [number,
+                        // string]}, null]` and its alias is `Union[float, str]`.
+                        if non_null[0].reference.is_none()
+                            && (non_null[0].one_of.is_some() || non_null[0].any_of.is_some())
+                        {
+                            return self.field_type_ref(owner, prop, non_null[0]);
+                        }
                         if non_null[0].ty.as_ref().and_then(TypeField::primary) == Some("array") {
                             if let Some(items) = non_null[0].items.as_deref() {
                                 if let Some(reference) = items.reference.as_deref() {
@@ -8623,12 +8701,39 @@ impl Builder<'_> {
                                     }
                                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                                 }
+                                // An inline object element is a model of its own:
+                                // Fergus's `FavouritesFolder.sections` is
+                                // `anyOf: [array of object, null]`, and Fern
+                                // declares `FavouritesFolderSectionsItem`.
+                                if is_inline_struct(items) {
+                                    let item_name = format!("{name}Item");
+                                    self.add_object(
+                                        &item_name,
+                                        naming::module_name(&item_name),
+                                        items,
+                                        clean_doc(items.description.as_deref()),
+                                    );
+                                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                }
                             }
                         }
                     }
                     if let Some(member) = simple_nullable_member(prop_schema) {
                         if let Some(reference) = member.reference.as_deref() {
                             return TypeRef::Named(ref_to_class(reference));
+                        }
+                        // An inline object beside `null` is a model named for the
+                        // property: Fergus's `Company.contact` is `anyOf:
+                        // [object, null]`, and Fern declares `CompanyContact`.
+                        if is_inline_struct(member) {
+                            let name = format!("{owner}{}", naming::class_name(prop));
+                            self.add_object(
+                                &name,
+                                naming::module_name(&name),
+                                member,
+                                clean_doc(member.description.as_deref()),
+                            );
+                            return TypeRef::Named(name);
                         }
                         if is_unknown(member) {
                             return TypeRef::Primitive(Prim::Any);
@@ -8677,6 +8782,15 @@ impl Builder<'_> {
                                 return self.variant_ref(&name, index, m, members);
                             }
                             if string_enum_values(m).is_some() {
+                                return self.variant_ref(&name, index, m, members);
+                            }
+                            // An array of inline objects is a list of a model named
+                            // for the variant: Fergus's `favouriteSectionIds` offers
+                            // numbers or objects, and Fern declares
+                            // `…FavouriteSectionIdsOneItem`.
+                            if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                                && m.items.as_deref().is_some_and(is_inline_struct)
+                            {
                                 return self.variant_ref(&name, index, m, members);
                             }
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
@@ -8993,62 +9107,6 @@ fn dedupe_union_members(members: Vec<TypeRef>) -> Vec<TypeRef> {
 }
 
 fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[Schema]) -> String {
-    let required_recursive_inline_union = siblings
-        .iter()
-        .any(|sibling| schema_references_class(sibling, parent))
-        && siblings.iter().all(|sibling| {
-            sibling
-                .properties
-                .keys()
-                .all(|property| sibling.required.contains(property))
-        });
-    // The property every variant declares, alphabetically first. It names only the
-    // *last* variant: every other one would compute the same name, and Fern gives
-    // those the ordinal. braintrust's `ModelParams` ends in a member whose three
-    // properties are exactly the three all five share, named
-    // `ModelParamsReasoningBudget` while the member before it is `ModelParamsThree`;
-    // its `ResponseFormatNullish` ends in the second of two `type`-only members and
-    // is `ResponseFormatNullishType` beside `…Zero`. A `type: null` alternative is
-    // nullability rather than a variant, so it does not vote.
-    let shared_first = variant
-        .properties
-        .keys()
-        .filter(|candidate| {
-            siblings
-                .iter()
-                .filter(|sibling| !is_null_variant(sibling))
-                .all(|sibling| sibling.properties.contains_key(*candidate))
-        })
-        .min_by(|left, right| left.as_str().cmp(right.as_str()))
-        .filter(|_| siblings.iter().skip(index + 1).all(is_null_variant));
-    // A property that names this variant: one no sibling declares. Fern takes the
-    // alphabetically first of them — `mosip-esignet`'s RSA encryption key declares
-    // `n` before `e` and is named `…EncPublicKeyE`, while its EC sibling's `crv`,
-    // `x` and `y` yield `…EncPublicKeyCrv` — except on the recursive all-required
-    // shape, which takes the last in declaration order.
-    let names_this_variant = |candidate: &&String| {
-        candidate.as_str() != "resource_list"
-            && candidate.as_str() != "metadata"
-            && candidate.as_str() != "url"
-            && siblings
-                .iter()
-                .filter(|sibling| sibling.properties.contains_key(*candidate))
-                .count()
-                == 1
-    };
-    let distinguishing_name = variant
-        .properties
-        .keys()
-        .rfind(names_this_variant)
-        .filter(|_| required_recursive_inline_union)
-        .or_else(|| {
-            variant
-                .properties
-                .keys()
-                .filter(names_this_variant)
-                .min_by(|left, right| left.as_str().cmp(right.as_str()))
-        })
-        .cloned();
     // A variant no property distinguishes is named by its discriminant value,
     // where one property carries a single-member enum.
     let discriminant_value = variant.properties.values().find_map(|property| {
@@ -9056,110 +9114,47 @@ fn variant_class_name(parent: &str, index: usize, variant: &Schema, siblings: &[
             .filter(|values| values.len() == 1)
             .and_then(|values| values.into_iter().next())
     });
-    // A variant whose only *nameable* property is one plain scalar — a string,
-    // number or boolean that is neither an enum, a `$ref` nor a composition, with
-    // every other property a `$ref` — is named by it even when a sibling declares
-    // it too. braintrust's `FunctionId` and `RunEval.scores` each end in a member
-    // whose properties are `inline_prompt` and `function_type` (both `$ref`s)
-    // beside `name`, and Fern names it `…Name` rather than `…Six`. A variant with
-    // a *structural* property beside the scalar is not one of these — Portfolio
-    // Optimizer's Sharpe-ratio body pairs `riskFreeRate` with an inline
-    // `portfolios` array and is `…RequestOne`.
-    let sole_scalar = {
-        let plain = |schema: &Schema| {
-            schema.reference.is_none()
-                && schema.one_of.is_none()
-                && schema.any_of.is_none()
-                && schema.all_of.is_none()
-                && schema.enum_values.is_none()
-                && schema.const_value.is_none()
-                && matches!(
-                    schema.ty.as_ref().and_then(TypeField::primary),
-                    Some("string" | "integer" | "number" | "boolean")
-                )
-        };
-        let mut scalars = variant
-            .properties
-            .iter()
-            .filter(|(_, schema)| plain(schema))
-            .map(|(name, _)| name);
-        match (scalars.next(), scalars.next()) {
-            (Some(only), None) => Some(only.clone()).filter(|only| {
-                variant.properties.len() > 1
-                    && variant
-                        .properties
-                        .iter()
-                        .all(|(name, schema)| name == only || schema.reference.is_some())
-            }),
-            _ => None,
-        }
-    };
+    let distinguishing = distinguishing_property(siblings, index);
     // A property only distinguishes a variant when there is a sibling to
     // distinguish it from; a one-member union takes the discriminant value.
     let unique = if siblings.len() > 1 {
-        distinguishing_name
+        distinguishing
     } else {
-        discriminant_value.or(distinguishing_name)
+        discriminant_value.or(distinguishing)
     };
-    let unique = if siblings.len() > 2
-        && index + 1 == siblings.len()
-        && shared_first.map(String::as_str) == Some("assets")
-        && unique
-            .as_deref()
-            .is_some_and(|name| name.starts_with("assets"))
-    {
-        Some("assets".to_string())
-    } else {
-        unique
-    };
-    let fallback = shared_first.and_then(|shared| {
-        if matches!(shared.as_str(), "content" | "portfolios") {
-            return None;
-        }
-        if shared == "assets" {
-            let same_shape_precedes = siblings[..index]
-                .iter()
-                .any(|sibling| sibling.properties.keys().eq(variant.properties.keys()));
-            return same_shape_precedes.then(|| shared.clone());
-        }
-        Some(shared.clone())
-    });
-    let suffix = unique
-        .or(sole_scalar)
-        .or(fallback)
-        .or_else(|| {
-            variant
-                .properties
-                .keys()
-                .next()
-                .filter(|name| name.as_str() == "resource_list")
-                .cloned()
-        })
-        .map_or_else(
-            || ordinal_word(index).to_string(),
-            |name| naming::class_name(&name),
-        );
+    let suffix = unique.map_or_else(
+        || ordinal_word(index).to_string(),
+        |name| naming::class_name(&name),
+    );
     format!("{parent}{suffix}")
 }
 
-fn schema_references_class(schema: &Schema, class_name: &str) -> bool {
-    schema
-        .reference
-        .as_deref()
-        .is_some_and(|reference| ref_to_class(reference) == class_name)
-        || schema
-            .properties
-            .values()
-            .chain(schema.items.iter().map(Box::as_ref))
-            .chain(schema.one_of.iter().flatten())
-            .chain(schema.any_of.iter().flatten())
-            .chain(schema.all_of.iter().flatten())
-            .any(|child| schema_references_class(child, class_name))
-        || matches!(
-            schema.additional_properties.as_ref(),
-            Some(AdditionalProperties::Schema(child))
-                if schema_references_class(child, class_name)
-        )
+/// The property that names the object variant at `index`, by Fern's own rule
+/// (`getUniqueSubTypeNames`): walking the variants in order, each keeps the
+/// properties no *earlier* variant still claims as its own, and every earlier
+/// variant gives up the properties this one declares. A variant is named by the
+/// alphabetically first property it is left with, and by its ordinal when it is
+/// left with none. So the last variant can be named by a property its siblings
+/// share — Fergus's `JobFinancialSummary` names its first member
+/// `QuoteSummary` and its second, whose properties are all the first's, `One`.
+fn distinguishing_property(siblings: &[Schema], index: usize) -> Option<String> {
+    let mut claims: Vec<(usize, Vec<&String>)> = Vec::new();
+    for (position, sibling) in siblings.iter().enumerate() {
+        if sibling.reference.is_some() || sibling.properties.is_empty() {
+            continue;
+        }
+        let declared: Vec<&String> = sibling.properties.keys().collect();
+        let mut own = declared.clone();
+        for (_, claim) in &mut claims {
+            own.retain(|property| !claim.contains(property));
+            claim.retain(|property| !declared.contains(property));
+        }
+        claims.push((position, own));
+    }
+    claims
+        .into_iter()
+        .find(|(position, _)| *position == index)
+        .and_then(|(_, own)| own.into_iter().min().cloned())
 }
 
 fn resolve_schema_pointer<'a>(
@@ -9675,6 +9670,59 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         .description
         .as_deref()
         .or_else(|| described_all_of_ref(schema).and_then(|(_, description)| description))
+        // The lone alternative to `null` documents the property when the
+        // composition does not: Fergus's `PricebookSearchItem.name` is
+        // `anyOf: [{type: string, description}, null]`.
+        .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+}
+
+/// `schema` with every inline `allOf` member that composes an `allOf` of its own
+/// spliced into the outer list in place, or `None` when it has none. Fern merges
+/// the whole tree: Fergus's `UpdateContactPayload` is `allOf: [{allOf: [names,
+/// flags]}, items]`, and its body takes all seven properties.
+fn flatten_nested_all_of(schema: &Schema) -> Option<Schema> {
+    fn splice(members: &[Schema], out: &mut Vec<Schema>) {
+        for member in members {
+            match member.all_of.as_deref() {
+                Some(inner)
+                    if member.reference.is_none()
+                        && member.one_of.is_none()
+                        && member.any_of.is_none() =>
+                {
+                    splice(inner, out);
+                    let mut own = member.clone();
+                    own.all_of = None;
+                    if !own.properties.is_empty() || !own.required.is_empty() {
+                        out.push(own);
+                    }
+                }
+                _ => out.push(member.clone()),
+            }
+        }
+    }
+    let members = schema.all_of.as_deref()?;
+    if !members
+        .iter()
+        .any(|member| member.reference.is_none() && member.all_of.is_some())
+    {
+        return None;
+    }
+    let mut spliced = Vec::new();
+    splice(members, &mut spliced);
+    let mut flattened = schema.clone();
+    flattened.all_of = Some(spliced);
+    Some(flattened)
+}
+
+/// The one member of a `oneOf`/`anyOf` beside a `type: null` alternative,
+/// whatever that member is.
+fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
+    let members = schema.any_of.as_ref().or(schema.one_of.as_ref())?;
+    let mut non_null = members
+        .iter()
+        .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"));
+    let member = non_null.next()?;
+    (non_null.next().is_none() && members.len() > 1).then_some(member)
 }
 
 /// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
@@ -9847,7 +9895,18 @@ fn clean_doc(desc: Option<&str>) -> Option<String> {
 /// method docs, while still trimming non-empty prose like [`clean_doc`].
 fn operation_doc(desc: Option<&str>) -> Option<String> {
     let text = desc?;
-    let trimmed = trim_doc_end(text);
+    // A last line of nothing but indentation is a line of its own to Fern, and
+    // the text before it keeps its trailing spaces: Fergus's `/customers`
+    // description ends `</ul>\n    ` and its method docstring carries a blank line
+    // after the `</ul>`; its `/calendarEvents` one ends `unassigned. \n  ` and its
+    // `reference.md` entry keeps the space after `unassigned.`.
+    let indentation_line = text
+        .rsplit_once('\n')
+        .filter(|(before, last)| {
+            !last.is_empty() && last.trim().is_empty() && !before.trim().is_empty()
+        })
+        .map(|(before, _)| before.trim_end_matches(['\r', '\n']));
+    let trimmed = indentation_line.unwrap_or_else(|| trim_doc_end(text));
     if trimmed.trim_start().is_empty() {
         Some(String::new())
     } else {
@@ -9871,7 +9930,11 @@ fn operation_doc(desc: Option<&str>) -> Option<String> {
         // with three tabs and its golden's entry does too — and the Python
         // docstring's tab expansion happens where `ruff format` performs it, in
         // [`crate::emit`]'s `python_doc_line`.
-        Some(trimmed.to_string())
+        if indentation_line.is_some() {
+            Some(format!("{trimmed}\n"))
+        } else {
+            Some(trimmed.to_string())
+        }
     }
 }
 
@@ -11594,185 +11657,53 @@ mod tests {
     }
 
     #[test]
-    fn variant_names_cover_enum_unique_shared_first_and_ordinal_fallbacks() {
+    fn variant_names_follow_ferns_unique_subtype_names() {
+        // A one-member union takes its discriminant value.
         let enum_variant = schema(serde_json::json!({
             "properties": { "kind": { "type": "string", "enum": ["cat"] } }
         }));
         assert_eq!(variant_class_name("Pet", 0, &enum_variant, &[]), "PetCat");
 
-        let unique = schema(serde_json::json!({
-            "properties": { "resource_list": { "type": "string" }, "whiskers": { "type": "integer" } }
+        // Each variant keeps what no earlier variant still claims, named by the
+        // alphabetically first of it.
+        let cat = schema(serde_json::json!({
+            "properties": { "name": { "type": "string" }, "whiskers": { "type": "integer" } }
         }));
-        let sibling = schema(serde_json::json!({
-            "properties": { "resource_list": { "type": "string" }, "bark": { "type": "boolean" } }
+        let dog = schema(serde_json::json!({
+            "properties": { "name": { "type": "string" }, "bark": { "type": "boolean" } }
         }));
+        let pets = [cat.clone(), dog.clone()];
+        assert_eq!(variant_class_name("Pet", 0, &cat, &pets), "PetWhiskers");
+        assert_eq!(variant_class_name("Pet", 1, &dog, &pets), "PetBark");
+
+        // A later variant declaring everything an earlier one does strips it down
+        // to what only it declares, and is left with nothing itself — Fergus's
+        // `JobFinancialSummary` members are `…QuoteSummary` and `…One`.
+        let quote = schema(serde_json::json!({
+            "properties": { "jobId": { "type": "number" }, "quoteSummary": { "type": "object" } }
+        }));
+        let charge = schema(serde_json::json!({
+            "properties": { "jobId": { "type": "number" } }
+        }));
+        let summaries = [quote.clone(), charge.clone()];
         assert_eq!(
-            variant_class_name("Pet", 0, &unique, &[unique.clone(), sibling]),
-            "PetWhiskers"
+            variant_class_name("Summary", 0, &quote, &summaries),
+            "SummaryQuoteSummary"
+        );
+        assert_eq!(
+            variant_class_name("Summary", 1, &charge, &summaries),
+            "SummaryOne"
         );
 
-        // The property every variant declares names only the *last* of them; every
-        // earlier one would compute the same name and takes the ordinal instead
-        // (braintrust's `ResponseFormatNullish`, corpus row 126).
-        let shared = schema(serde_json::json!({
-            "properties": { "common": { "type": "string" } }
-        }));
+        // A `$ref` or property-less member claims nothing and is named by its
+        // ordinal, which counts every member.
+        let reference = schema(serde_json::json!({ "$ref": "#/components/schemas/Cat" }));
+        let members = [reference.clone(), dog.clone()];
         assert_eq!(
-            variant_class_name("Pet", 1, &shared, &[shared.clone(), shared.clone()]),
-            "PetCommon"
-        );
-        assert_eq!(
-            variant_class_name("Pet", 0, &shared, &[shared.clone(), shared.clone()]),
+            variant_class_name("Pet", 0, &reference, &members),
             "PetZero"
         );
-        // A variant whose properties are `$ref`s beside one plain scalar is named
-        // by that scalar even where a sibling declares it (braintrust's
-        // `FunctionId`); one that declares the scalar alone is not.
-        let refs_and_scalar = schema(serde_json::json!({
-            "properties": {
-                "inline_prompt": { "$ref": "#/components/schemas/PromptData" },
-                "name": { "type": "string" }
-            }
-        }));
-        let scalar_sibling = schema(serde_json::json!({
-            "properties": {
-                "inline_prompt": { "$ref": "#/components/schemas/PromptData" },
-                "name": { "type": "string" },
-                "other": { "type": "string" }
-            }
-        }));
-        assert_eq!(
-            variant_class_name(
-                "Pet",
-                0,
-                &refs_and_scalar,
-                &[refs_and_scalar.clone(), scalar_sibling]
-            ),
-            "PetName"
-        );
-        assert_eq!(
-            variant_class_name("Pet", 1, &Schema::default(), &[]),
-            "PetOne"
-        );
-        let resource_only = schema(serde_json::json!({
-            "properties": { "resource_list": { "type": "string" } }
-        }));
-        assert_eq!(
-            variant_class_name(
-                "Pet",
-                0,
-                &resource_only,
-                &[resource_only.clone(), Schema::default()]
-            ),
-            "PetResourceList"
-        );
-
-        let asset_base = schema(serde_json::json!({
-            "properties": {"assets": {"type": "array"}}
-        }));
-        let asset_detail = schema(serde_json::json!({
-            "properties": {
-                "assets": {"type": "array"},
-                "assets_detail": {"type": "string"}
-            }
-        }));
-        let asset_tail = schema(serde_json::json!({
-            "properties": {
-                "assets": {"type": "array"},
-                "assets_summary": {"type": "string"}
-            }
-        }));
-        let asset_siblings = [asset_base, asset_detail, asset_tail.clone()];
-        assert_eq!(
-            variant_class_name("Portfolio", 2, &asset_tail, &asset_siblings),
-            "PortfolioAssets"
-        );
-
-        let portfolio_a = schema(serde_json::json!({
-            "properties": {"portfolios": {"type": "array"}}
-        }));
-        let portfolio_b = portfolio_a.clone();
-        assert_eq!(
-            variant_class_name(
-                "Result",
-                1,
-                &portfolio_b,
-                &[portfolio_a, portfolio_b.clone()]
-            ),
-            "ResultOne"
-        );
-
-        let content_a = schema(serde_json::json!({
-            "properties": {
-                "content": {"type": "string"},
-                "public_key": {"type": "string"}
-            }
-        }));
-        let content_b = schema(serde_json::json!({
-            "properties": {"content": {"type": "string"}}
-        }));
-        assert_eq!(
-            variant_class_name(
-                "Attestation",
-                1,
-                &content_b,
-                &[content_a, content_b.clone()]
-            ),
-            "AttestationOne"
-        );
-
-        let recursive_folder = schema(serde_json::json!({
-            "required": ["name", "children"],
-            "properties": {
-                "name": { "type": "string" },
-                "children": {
-                    "type": "array",
-                    "items": { "$ref": "#/components/schemas/ImportNode" }
-                }
-            }
-        }));
-        let recursive_leaf = schema(serde_json::json!({
-            "required": ["title", "body"],
-            "properties": {
-                "title": { "type": "string" },
-                "body": { "type": "string" }
-            }
-        }));
-        let recursive_siblings = [recursive_folder.clone(), recursive_leaf.clone()];
-        assert_eq!(
-            variant_class_name("ImportNode", 0, &recursive_folder, &recursive_siblings),
-            "ImportNodeChildren"
-        );
-        assert_eq!(
-            variant_class_name("ImportNode", 1, &recursive_leaf, &recursive_siblings),
-            "ImportNodeBody"
-        );
-
-        let optional_recursive = schema(serde_json::json!({
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": { "$ref": "#/components/schemas/Option" }
-                },
-                "option_type": { "type": "string" }
-            }
-        }));
-        let optional_leaf = schema(serde_json::json!({
-            "properties": {
-                "alignments": { "type": "array" },
-                "desc": { "type": "string" },
-                "option_type": { "type": "string" }
-            }
-        }));
-        let optional_siblings = [optional_recursive.clone(), optional_leaf.clone()];
-        assert_eq!(
-            variant_class_name("Option", 0, &optional_recursive, &optional_siblings),
-            "OptionItems"
-        );
-        assert_eq!(
-            variant_class_name("Option", 1, &optional_leaf, &optional_siblings),
-            "OptionAlignments"
-        );
+        assert_eq!(variant_class_name("Pet", 1, &dog, &members), "PetBark");
     }
 
     #[test]

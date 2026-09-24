@@ -8865,3 +8865,160 @@ components:
         "{reference}"
     );
 }
+
+/// The Fergus shapes, each the way Fern 5.20.0 generates it.
+#[test]
+fn fergus_shaped_compositions_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Fergus, version: 1.0.0 }
+paths:
+  /customers:
+    get:
+      operationId: getCustomers
+      tags: [customers]
+      description: "Lists customers.\n    <ul>\n      <li>One. \n    "
+      parameters:
+        - in: query
+          name: sortOrder
+          schema:
+            anyOf:
+              - { type: string, enum: [asc] }
+              - { type: string, enum: [desc] }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+  /enquiries:
+    post:
+      operationId: postEnquiries
+      tags: [enquiries]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - type: object
+                  required: [name]
+                  properties:
+                    name: { type: string }
+                    city: { type: string }
+                - type: object
+                  required: [city]
+                  properties:
+                    city: { type: string }
+      responses: { "204": { description: "" } }
+  /contacts:
+    post:
+      operationId: postContacts
+      tags: [contacts]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContactPayload" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    ContactPayload:
+      type: object
+      allOf:
+        - allOf:
+            - type: object
+              required: [firstName]
+              properties: { firstName: { type: string } }
+            - type: object
+              properties: { isMain: { type: boolean } }
+        - type: object
+          required: [email]
+          properties: { email: { type: string } }
+    Customer:
+      type: object
+      properties:
+        dueDays:
+          anyOf:
+            - description: Days or a keyword.
+              anyOf: [{ type: number }, { type: string }]
+            - { type: "null" }
+        contact:
+          anyOf:
+            - type: object
+              properties: { firstName: { type: string } }
+            - { type: "null" }
+        sections:
+          anyOf:
+            - type: array
+              items:
+                type: object
+                properties: { id: { type: number } }
+            - { type: "null" }
+        sectionIds:
+          anyOf:
+            - { type: array, items: { type: number } }
+            - type: array
+              items:
+                type: object
+                required: [value]
+                properties: { value: { type: number } }
+        summary:
+          anyOf:
+            - type: object
+              properties:
+                jobId: { type: number }
+                quoteSummary: { type: object, properties: { total: { type: number } } }
+            - type: object
+              properties:
+                jobId: { type: number }
+"##,
+    );
+    // An enum-only composition on a query parameter is a tag-local enum.
+    assert!(files.contains_key("src/acme/customers/types/get_customers_request_sort_order.py"));
+    let customer = &files["src/acme/types/customer.py"];
+    // The lone composition beside `null` is the alias itself, documented by it.
+    assert!(files["src/acme/types/customer_due_days.py"].contains("typing.Union[float, str]"));
+    assert!(customer.contains("Days or a keyword."), "{customer}");
+    // An inline object beside `null` is a model named for the property, and so
+    // is an inline array element beside `null`.
+    assert!(
+        customer.contains("typing.Optional[CustomerContact]"),
+        "{customer}"
+    );
+    assert!(
+        customer.contains("typing.Optional[typing.List[CustomerSectionsItem]]"),
+        "{customer}"
+    );
+    // An array-of-objects variant is a list of a variant-named model.
+    assert!(files["src/acme/types/customer_section_ids.py"]
+        .contains("typing.List[CustomerSectionIdsOneItem]"));
+    // Variant names follow Fern's unique-subtype rule.
+    let summary = &files["src/acme/types/customer_summary.py"];
+    assert!(
+        summary.contains("CustomerSummaryQuoteSummary, CustomerSummaryOne"),
+        "{summary}"
+    );
+    // A nested `allOf` flattens into one body, and an inline `allOf` body merges
+    // its members, prefixing the property two of them declare.
+    let contacts = &files["src/acme/contacts/raw_client.py"];
+    assert!(
+        contacts.contains("first_name: str,") && contacts.contains("is_main:"),
+        "{contacts}"
+    );
+    assert!(
+        contacts.contains("\"content-type\": \"application/json\""),
+        "{contacts}"
+    );
+    let enquiries = &files["src/acme/enquiries/raw_client.py"];
+    assert!(
+        enquiries.contains("post_enquiries_request_city: str,"),
+        "{enquiries}"
+    );
+    assert_eq!(enquiries.matches("\"city\":").count(), 2, "{enquiries}");
+    // A trailing indentation-only line is a blank docstring line of its own.
+    let customers = &files["src/acme/customers/raw_client.py"];
+    assert!(
+        customers.contains("<li>One.\n\n\n        Parameters"),
+        "{customers}"
+    );
+}

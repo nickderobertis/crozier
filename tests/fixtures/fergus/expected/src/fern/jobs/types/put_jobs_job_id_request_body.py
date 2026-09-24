@@ -1,0 +1,17 @@
+
+
+import typing
+
+from .put_jobs_job_id_request_body_customer_id import PutJobsJobIdRequestBodyCustomerId
+from .put_jobs_job_id_request_body_customer_reference import PutJobsJobIdRequestBodyCustomerReference
+from .put_jobs_job_id_request_body_description import PutJobsJobIdRequestBodyDescription
+from .put_jobs_job_id_request_body_site_id import PutJobsJobIdRequestBodySiteId
+from .put_jobs_job_id_request_body_title import PutJobsJobIdRequestBodyTitle
+
+PutJobsJobIdRequestBody = typing.Union[
+    PutJobsJobIdRequestBodyTitle,
+    PutJobsJobIdRequestBodyDescription,
+    PutJobsJobIdRequestBodyCustomerId,
+    PutJobsJobIdRequestBodyCustomerReference,
+    PutJobsJobIdRequestBodySiteId,
+]

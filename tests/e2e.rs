@@ -3220,6 +3220,7 @@ const CORPORA: &[&Corpus] = &[
     &PALOALTO_CSPM_SEARCH_MANAGER,
     &THRIVECART,
     &TRUEFOUNDRY_TRUEFORGE_5ADDE28,
+    &FERGUS,
 ];
 
 #[test]
@@ -4859,13 +4860,10 @@ const SHORT_IO: Corpus = Corpus {
     unmatched: &[
         "reference.md",
         "src/fern/__init__.py",
-        "src/fern/client.py",
         "src/fern/domains/__init__.py",
         "src/fern/domains/types/__init__.py",
         "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py",
         "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url_one.py",
-        "src/fern/link_bundles/client.py",
-        "src/fern/link_bundles/raw_client.py",
         "src/fern/link_management/__init__.py",
         "src/fern/link_management/client.py",
         "src/fern/link_management/raw_client.py",
@@ -4890,10 +4888,8 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_link_id_request_created_at.py",
         "src/fern/link_management/types/post_links_link_id_request_expires_at.py",
         "src/fern/link_management/types/post_links_link_id_request_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response.py",
         "src/fern/link_management/types/post_links_link_id_response_expires_at.py",
         "src/fern/link_management/types/post_links_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response_user.py",
         "src/fern/link_management/types/post_links_public_request_created_at.py",
         "src/fern/link_management/types/post_links_public_request_expires_at.py",
         "src/fern/link_management/types/post_links_public_request_ttl.py",
@@ -4906,7 +4902,6 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_public_response_user.py",
         "src/fern/link_management/types/post_links_request_created_at.py",
         "src/fern/link_management/types/post_links_request_expires_at.py",
-        "src/fern/link_management/types/post_links_request_split_urlv2item.py",
         "src/fern/link_management/types/post_links_request_ttl.py",
         "src/fern/link_management/types/post_links_response.py",
         "src/fern/link_management/types/post_links_response_expires_at.py",
@@ -4915,18 +4910,12 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_response_split_urlv2item.py",
         "src/fern/link_management/types/post_links_response_ttl.py",
         "src/fern/link_management/types/post_links_response_user.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item.py",
         "src/fern/link_queries/types/get_api_links_response_links_item_expires_at.py",
         "src/fern/link_queries/types/get_api_links_response_links_item_ttl.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_user.py",
-        "src/fern/link_queries/types/get_links_expand_response.py",
         "src/fern/link_queries/types/get_links_expand_response_expires_at.py",
         "src/fern/link_queries/types/get_links_expand_response_ttl.py",
-        "src/fern/link_queries/types/get_links_expand_response_user.py",
-        "src/fern/link_queries/types/get_links_link_id_response.py",
         "src/fern/link_queries/types/get_links_link_id_response_expires_at.py",
         "src/fern/link_queries/types/get_links_link_id_response_ttl.py",
-        "src/fern/link_queries/types/get_links_link_id_response_user.py",
         "src/fern/types/bad_request_error_body.py",
         "src/fern/types/conflict_error_body.py",
         "src/fern/types/forbidden_error_body.py",
@@ -5590,6 +5579,18 @@ const THRIVECART: Corpus = Corpus {
 /// A later TrueForge revision annotates `$ref`s to closed-object targets.
 const TRUEFOUNDRY_TRUEFORGE_5ADDE28: Corpus = Corpus {
     api: "truefoundry-trueforge-5adde28",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Fergus declares `anyOf` array variants with struct items.
+const FERGUS: Corpus = Corpus {
+    api: "fergus",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11132,4 +11133,9 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
 #[test]
 fn truefoundry_trueforge_5adde28_matches_fern_output() {
     assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
+}
+
+#[test]
+fn fergus_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FERGUS);
 }

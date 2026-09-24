@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .job_financial_summary_quote_summary_job_type_one import JobFinancialSummaryQuoteSummaryJobTypeOne
+from .job_financial_summary_quote_summary_job_type_zero import JobFinancialSummaryQuoteSummaryJobTypeZero
+
+JobFinancialSummaryQuoteSummaryJobType = typing.Union[
+    JobFinancialSummaryQuoteSummaryJobTypeZero, JobFinancialSummaryQuoteSummaryJobTypeOne
+]

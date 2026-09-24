@@ -179,6 +179,72 @@ fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>>
     children
 }
 
+/// A declared datetime example moved to UTC, the way Fern reads it through a
+/// JavaScript `Date`: Fergus's `filter[dateFrom]` example is
+/// `2025-12-02T00:00:00+13:00`, and its worked call passes
+/// `2025-12-01 11:00:00+00:00`. `None` when the value carries no non-zero
+/// `±HH:MM` offset or is not a date-time crozier can read.
+fn datetime_in_utc(value: &str) -> Option<String> {
+    let (body, sign, offset) = value
+        .rfind(['+', '-'])
+        .filter(|at| *at > 10)
+        .map(|at| (&value[..at], &value[at..=at], &value[at + 1..]))?;
+    let (offset_hours, offset_minutes) = offset.split_once(':')?;
+    let offset_minutes: i64 =
+        offset_hours.parse::<i64>().ok()? * 60 + offset_minutes.parse::<i64>().ok()?;
+    if offset_minutes == 0 {
+        return None;
+    }
+    let separator = body.get(10..11)?;
+    let (date, time) = (body.get(..10)?, body.get(11..)?);
+    let mut date_parts = date.splitn(3, '-').map(str::parse::<i64>);
+    let (year, month, day) = (
+        date_parts.next()?.ok()?,
+        date_parts.next()?.ok()?,
+        date_parts.next()?.ok()?,
+    );
+    let (clock, fraction) = time.split_at(time.find('.').unwrap_or(time.len()));
+    let mut clock_parts = clock.splitn(3, ':').map(str::parse::<i64>);
+    let (hour, minute, second) = (
+        clock_parts.next()?.ok()?,
+        clock_parts.next()?.ok()?,
+        clock_parts.next()?.ok()?,
+    );
+    // Days since the civil epoch (Howard Hinnant's `days_from_civil`).
+    let shifted_year = if month <= 2 { year - 1 } else { year };
+    let era = shifted_year.div_euclid(400);
+    let year_of_era = shifted_year - era * 400;
+    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    let days = era * 146_097 + day_of_era;
+    let signed_offset = if sign == "+" {
+        offset_minutes
+    } else {
+        -offset_minutes
+    };
+    let minutes = days * 1440 + hour * 60 + minute - signed_offset;
+    let (days, minute_of_day) = (minutes.div_euclid(1440), minutes.rem_euclid(1440));
+    // And back (`civil_from_days`).
+    let era = days.div_euclid(146_097);
+    let day_of_era = days - era * 146_097;
+    let year_of_era =
+        (day_of_era - day_of_era / 1460 + day_of_era / 36524 - day_of_era / 146_096) / 365;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_index = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_index + 2) / 5 + 1;
+    let month = if month_index < 10 {
+        month_index + 3
+    } else {
+        month_index - 9
+    };
+    let year = year_of_era + era * 400 + i64::from(month <= 2);
+    Some(format!(
+        "{year:04}-{month:02}-{day:02}{separator}{:02}:{:02}:{second:02}{fraction}+00:00",
+        minute_of_day / 60,
+        minute_of_day % 60
+    ))
+}
+
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
 /// (`import`s then `from`s), group 2 is everything else (`import`s then `from`s),
 /// separated by a blank line. Names within a `from` and the statements within a
@@ -6902,6 +6968,9 @@ impl<'a> ExampleCtx<'a> {
                 if let Some(without_z) = value.strip_suffix('Z') {
                     value = format!("{without_z}+00:00");
                 }
+                if let Some(utc) = datetime_in_utc(&value) {
+                    value = utc;
+                }
                 value = value.replace(".000+00:00", "+00:00");
                 "datetime.datetime.fromisoformat"
             } else {
@@ -10675,6 +10744,20 @@ mod tests {
             )]
         );
         assert!(ctx.referenced.is_empty());
+    }
+
+    #[test]
+    fn datetime_examples_move_to_utc() {
+        assert_eq!(
+            super::datetime_in_utc("2025-12-02 00:00:00+13:00").as_deref(),
+            Some("2025-12-01 11:00:00+00:00")
+        );
+        assert_eq!(
+            super::datetime_in_utc("2024-02-28T23:30:00.5-01:00").as_deref(),
+            Some("2024-02-29T00:30:00.5+00:00")
+        );
+        assert_eq!(super::datetime_in_utc("2024-01-15T09:30:00+00:00"), None);
+        assert_eq!(super::datetime_in_utc("2024-01-15"), None);
     }
 
     #[test]

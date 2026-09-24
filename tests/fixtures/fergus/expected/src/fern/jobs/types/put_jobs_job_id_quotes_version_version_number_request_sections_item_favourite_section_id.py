@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .put_jobs_job_id_quotes_version_version_number_request_sections_item_favourite_section_id_combined import (
+    PutJobsJobIdQuotesVersionVersionNumberRequestSectionsItemFavouriteSectionIdCombined,
+)
+
+PutJobsJobIdQuotesVersionVersionNumberRequestSectionsItemFavouriteSectionId = typing.Union[
+    float, PutJobsJobIdQuotesVersionVersionNumberRequestSectionsItemFavouriteSectionIdCombined
+]

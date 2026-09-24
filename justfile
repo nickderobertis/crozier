@@ -201,6 +201,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_search_manager_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e thrivecart_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e truefoundry_trueforge_5adde28_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e fergus_matches_fern_output
 
 # Format the codebase in place.
 format:
