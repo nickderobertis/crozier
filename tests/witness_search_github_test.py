@@ -31,6 +31,10 @@ SEARCH = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SEARCH
 SPEC.loader.exec_module(SEARCH)
 
+# CI checks out without origin/main, so every CLI run but the fallback test names
+# the branch point explicitly rather than deriving it with git merge-base.
+SOURCE_COMMIT = ["--source-commit", "a" * 40]
+
 DOCUMENT = b"""openapi: 3.0.3
 info:
   title: Search result
@@ -522,18 +526,25 @@ class WitnessSearchGithubTests(unittest.TestCase):
         script = REPO / "scripts/witness-search-github.py"
         evidence = self.root / "cli"
         derived = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(evidence), "--derive-only"],
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence), "--derive-only"],
             capture_output=True,
             text=True,
         )
         self.assertEqual(0, derived.returncode, derived.stderr)
         self.assertIn("FIXTURE gap keys", derived.stdout)
-        self.assertIn(
-            "annotated-ref-target-closed-object",
-            json.loads((evidence / "keys.json").read_text())["keys"],
+        recorded = json.loads((evidence / "keys.json").read_text())
+        self.assertIn("annotated-ref-target-closed-object", recorded["keys"])
+        self.assertEqual("a" * 40, recorded["source_commit"])
+        short_commit = subprocess.run(
+            [sys.executable, str(script), "--source-commit", "abc123", "--evidence",
+             str(self.root / "cli-short-commit"), "--derive-only"],
+            capture_output=True,
+            text=True,
         )
+        self.assertEqual(2, short_commit.returncode)
+        self.assertIn("--source-commit must be a full 40-character", short_commit.stderr)
         invalid = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(evidence)],
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence)],
             capture_output=True,
             text=True,
         )
@@ -549,6 +560,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             [
                 sys.executable,
                 str(script),
+                *SOURCE_COMMIT,
                 "--evidence",
                 str(evidence),
                 "--source",
@@ -596,6 +608,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         command = [
             sys.executable,
             str(script),
+            *SOURCE_COMMIT,
             "--evidence",
             str(evaluation),
             "--source",
@@ -623,7 +636,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
              "scope": "", "derivation": "local API publisher"}
         ]}))
         walked = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(walk_evidence),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(walk_evidence),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file)],
             env={**env, "CROZIER_RAW_GITHUB_URL": self.url},
@@ -637,14 +650,14 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(64, len(document["sha256"]))
 
         invalid_key = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-key"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-key"),
              "--source", "github-code-search", "--stage", "search", "--key", "no-such-key"],
             env=env, capture_output=True, text=True,
         )
         self.assertEqual(2, invalid_key.returncode)
         self.assertIn("unknown key", invalid_key.stderr)
         invalid_regions = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-no-regions"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-no-regions"),
              "--regions", str(self.root / "missing-regions"), "--derive-only"],
             capture_output=True, text=True,
         )
@@ -653,7 +666,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         evidence_file = self.root / "evidence-is-a-file"
         evidence_file.write_text("occupied")
         unwritable_evidence = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(evidence_file), "--derive-only"],
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence_file), "--derive-only"],
             capture_output=True, text=True,
         )
         self.assertEqual(1, unwritable_evidence.returncode)
@@ -670,7 +683,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 env={**env, "PATH": str(git_failure)}, capture_output=True, text=True,
             )
             self.assertEqual(1, no_commit.returncode)
-            self.assertIn("fetch origin/main and rerun", no_commit.stderr)
+            self.assertIn("fetch origin/main or pass --source-commit", no_commit.stderr)
             git_only = self.root / "git-only"
             git_only.mkdir()
             git_binary = shutil.which("git")
@@ -678,7 +691,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             (git_only / "git").symlink_to(git_binary)
             no_credential_env = {**env, "PATH": str(git_only), "GITHUB_TOKEN": "", "GH_TOKEN": ""}
             no_credential = subprocess.run(
-                [sys.executable, str(script), "--evidence", str(self.root / "cli-no-credential"),
+                [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-no-credential"),
                  "--source", "github-code-search", "--stage", "search",
                  "--key", "annotated-ref-target-closed-object"],
                 env=no_credential_env, capture_output=True, text=True,
@@ -688,7 +701,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         bad_publishers = self.root / "bad-publishers.json"
         bad_publishers.write_text('{"publishers": [{}]}')
         invalid_file = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-bad-publishers"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-bad-publishers"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
             env=env, capture_output=True, text=True,
@@ -697,7 +710,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn("invalid publisher repository", invalid_file.stderr)
         bad_publishers.write_text('{"publishers": [{"repository": "publisher/api", "commit": "main", "scope": ""}]}')
         mutable_ref = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-mutable-publisher"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-mutable-publisher"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
             env=env, capture_output=True, text=True,
@@ -706,7 +719,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn("publisher commit must be a 40-hex SHA", mutable_ref.stderr)
         bad_publishers.write_text("{broken json}")
         invalid_json_file = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-bad-json-publishers"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-bad-json-publishers"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(bad_publishers)],
             env=env, capture_output=True, text=True,
@@ -714,7 +727,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(2, invalid_json_file.returncode)
         self.assertIn("--publisher-file cannot be read", invalid_json_file.stderr)
         missing_catalog = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-missing-catalog"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-missing-catalog"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-root", str(self.root / "missing-catalog")],
             env=env, capture_output=True, text=True,
@@ -724,7 +737,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         for override in ("CROZIER_GITHUB_API_URL", "CROZIER_SOURCEGRAPH_URL", "CROZIER_RAW_GITHUB_URL"):
             with self.subTest(override=override):
                 invalid_url = subprocess.run(
-                    [sys.executable, str(script), "--evidence", str(self.root / f"cli-{override}"),
+                    [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / f"cli-{override}"),
                      "--source", "sourcegraph", "--stage", "search",
                      "--key", "annotated-ref-target-closed-object"],
                     env={**env, override: "file:///etc/passwd"},
@@ -736,7 +749,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
         self.server.state["malformed_tree"] = True
         walk_stopped = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-walk-stop"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-walk-stop"),
              "--source", "github-publisher-trees", "--stage", "walk",
              "--publisher-file", str(publisher_file)],
             env={**env, "CROZIER_RAW_GITHUB_URL": self.url}, capture_output=True, text=True,
@@ -750,7 +763,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         evaluation_stop.mkdir()
         (evaluation_stop / "queries.jsonl").write_text((evaluation / "queries.jsonl").read_text())
         stopped_evaluation = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(evaluation_stop),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation_stop),
              "--source", "github-code-search", "--stage", "evaluate",
              "--key", "annotated-ref-target-closed-object"],
             env=env, capture_output=True, text=True,
@@ -760,7 +773,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
         self.server.state["sourcegraph_status"] = 404
         sourcegraph_stop = subprocess.run(
-            [sys.executable, str(script), "--evidence", str(self.root / "cli-sourcegraph-stop"),
+            [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-sourcegraph-stop"),
              "--source", "sourcegraph", "--stage", "search",
              "--key", "annotated-ref-target-closed-object"],
             env={**env, "CROZIER_SOURCEGRAPH_URL": self.url}, capture_output=True, text=True,
@@ -772,7 +785,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         script = REPO / "scripts/witness-search-github.py"
         evidence = self.root / "bad-ledger"
         evidence.mkdir()
-        command = [sys.executable, str(script), "--evidence", str(evidence),
+        command = [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
                    "--source", "github-code-search", "--stage", "evaluate",
                    "--key", "annotated-ref-target-closed-object"]
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}

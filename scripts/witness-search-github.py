@@ -1393,6 +1393,10 @@ def _main() -> int:
     )
     parser.add_argument("--key", action="append", default=[])
     parser.add_argument("--stage", choices=("search", "evaluate", "walk"))
+    parser.add_argument(
+        "--source-commit",
+        help="branch-point commit recorded in keys.json; defaults to git merge-base origin/main HEAD",
+    )
     args = parser.parse_args()
     try:
         keys = derive_keys(args.regions)
@@ -1402,16 +1406,22 @@ def _main() -> int:
             file=sys.stderr,
         )
         return 1
-    try:
-        source_commit = subprocess.check_output(
-            ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True
-        ).strip()
-    except (OSError, subprocess.CalledProcessError) as error:
-        print(
-            f"witness-search-github: cannot derive source commit: {error}; fetch origin/main and rerun",
-            file=sys.stderr,
-        )
-        return 1
+    if args.source_commit is not None:
+        if not re.fullmatch(r"[0-9a-f]{40}", args.source_commit):
+            parser.error("--source-commit must be a full 40-character lowercase commit hash")
+        source_commit = args.source_commit
+    else:
+        try:
+            source_commit = subprocess.check_output(
+                ["git", "merge-base", "origin/main", "HEAD"], cwd=REPO, text=True
+            ).strip()
+        except (OSError, subprocess.CalledProcessError) as error:
+            print(
+                f"witness-search-github: cannot derive source commit: {error}; "
+                "fetch origin/main or pass --source-commit and rerun",
+                file=sys.stderr,
+            )
+            return 1
     args.evidence.mkdir(parents=True, exist_ok=True)
     (args.evidence / "keys.json").write_text(
         json.dumps(
