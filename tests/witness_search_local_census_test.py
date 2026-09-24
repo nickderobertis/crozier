@@ -223,6 +223,7 @@ class LocalCensusTest(unittest.TestCase):
                 "paths": {}, "components": {"schemas": {"Shape": {"type": "string"}}},
             }).encode()
             (documents / "hit.json").write_bytes(hit)
+            (documents / "hit.yaml").write_bytes(hit)
             (documents / "miss.json").write_bytes(miss)
             (documents / "metadata.json").write_text(
                 json.dumps({"bundle": json.loads(hit)}), encoding="utf-8"
@@ -237,9 +238,10 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-            self.assertEqual(len(rows), 4)
+            self.assertEqual(len(rows), 5)
             by_name = {row["document"]: row for row in rows}
             self.assertEqual(by_name["hit.json"]["count"], "1")
+            self.assertEqual(by_name["hit.yaml"]["count"], "1")
             self.assertEqual(by_name["miss.json"]["count"], "0")
             self.assertEqual(by_name["metadata.json"]["count"], "0")
             self.assertEqual(by_name["metadata.json"]["openapi_version"], "")
@@ -254,17 +256,18 @@ class LocalCensusTest(unittest.TestCase):
             )
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
-            self.assertEqual(len(objects), 4)
+            self.assertEqual(len(objects), 5)
             self.assertEqual({row["document"]: row["selectors"]["array"] for row in objects},
-                             {"hit.json": 1, "miss.json": 0, "metadata.json": 0,
+                             {"hit.json": 1, "hit.yaml": 1, "miss.json": 0,
+                              "metadata.json": 0,
                               "notes.yaml": 0})
             progress = [json.loads(line) for line in
                         (root / "progress.jsonl").read_text().splitlines()]
-            self.assertEqual(len(progress), 8)
+            self.assertEqual(len(progress), 10)
             self.assertEqual(
                 {name: sum(row["event"] == name for row in progress)
                  for name in ("start", "end")},
-                {"start": 4, "end": 4},
+                {"start": 5, "end": 5},
             )
             resumed = subprocess.run(
                 [sys.executable, str(SCRIPT), "--contract", str(contract),
@@ -294,7 +297,8 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(from_regions.returncode, 0, from_regions.stderr)
             derived_rows = [json.loads(line) for line in from_regions.stdout.splitlines()]
             self.assertEqual({row["document"]: row["selectors"] for row in derived_rows},
-                             {"hit.json": {"array": 1}, "miss.json": {"array": 0},
+                             {"hit.json": {"array": 1}, "hit.yaml": {"array": 1},
+                              "miss.json": {"array": 0},
                               "metadata.json": {"array": 0},
                               "notes.yaml": {"array": 0}})
 

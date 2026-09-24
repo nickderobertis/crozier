@@ -73,7 +73,13 @@ def census_one(
         digest = hashlib.sha256(raw).hexdigest()
         if path.suffix.lower() in {".yaml", ".yml"} and b"openapi" not in raw:
             return path, digest, "", None, [(key, 0) for key, _ in keys]
-        document = CENSUS.load_document(path)
+        # Some publisher trees label JSON bytes as .yaml. Parsing those with
+        # the YAML reader is much slower on large composed descriptions.
+        document = (
+            json.loads(raw)
+            if raw.lstrip().startswith((b"{", b"["))
+            else CENSUS.load_document(path)
+        )
         version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
         # A repository may contain generated metadata with an OpenAPI document
         # nested inside it. Only a root OpenAPI 3 document is a source document.
