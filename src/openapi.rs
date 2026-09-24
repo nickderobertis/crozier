@@ -1380,12 +1380,83 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_multi_type_schemas(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
+    reject_unemittable_parameters(&doc, path)?;
+    reject_unemittable_operation_ids(&doc, path)?;
     normalize_responses(&mut doc);
     normalize_fetched_response_alias_refs(&mut doc, &remote_origin);
     normalize_response_schema_refs(&mut doc);
     normalize_request_bodies(&mut doc);
 
     Ok(doc)
+}
+
+/// Fern's pinned Python generator refuses headers with inline string array
+/// items and crashes while lowering inline object headers with properties.
+/// Arrays of referenced objects and bare `schema: object` headers generate in
+/// registered corpus specs (Komga and Short.io), so preserve those.
+fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
+    for (route, item) in &doc.paths {
+        for (method, operation) in item.operations() {
+            for parameter in item.parameters.iter().chain(&operation.parameters) {
+                if parameter.location != Some(ParameterLocation::Header) {
+                    continue;
+                }
+                let kind = parameter
+                    .schema
+                    .as_ref()
+                    .and_then(|schema| schema.ty.as_ref())
+                    .and_then(TypeField::primary);
+                let refused = match kind {
+                    Some("object") => parameter
+                        .schema
+                        .as_ref()
+                        .is_some_and(|schema| schema.properties.declared()),
+                    Some("array") => parameter.schema.as_ref().is_some_and(|schema| {
+                        schema.items.as_ref().is_some_and(|items| {
+                            items.ty.as_ref().and_then(TypeField::primary) == Some("string")
+                        })
+                    }),
+                    _ => false,
+                };
+                if refused {
+                    let kind = kind.expect("refused header has a schema kind");
+                    return Err(Error::InvalidSpec {
+                        path: path.to_path_buf(),
+                        message: format!(
+                            "{method} {route}: header parameter `{}` has an unsupported {kind} schema in Fern's Python generator",
+                            parameter.name
+                        ),
+                    });
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The pinned Fern generator emits unparsable Python for an operationId made
+/// entirely of non-ASCII letters. Reject that input before writing a partial
+/// SDK, with the operation's route in the diagnostic.
+fn reject_unemittable_operation_ids(doc: &OpenApi, path: &Path) -> Result<()> {
+    for (route, item) in &doc.paths {
+        for (method, operation) in item.operations() {
+            if let Some(id) = operation.operation_id.as_deref() {
+                if !id.is_ascii()
+                    && !id
+                        .chars()
+                        .any(|character| character.is_ascii_alphanumeric())
+                {
+                    return Err(Error::InvalidSpec {
+                        path: path.to_path_buf(),
+                        message: format!(
+                            "{method} {route}: operationId `{id}` has no ASCII identifier characters; Fern's Python generator emits invalid source"
+                        ),
+                    });
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 /// Resolve a Reference Object sitting in `components.securitySchemes`.
