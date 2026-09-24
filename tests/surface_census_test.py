@@ -727,7 +727,8 @@ def compact_record_failures(
                 failures.append(f"{key}: candidates.tsv has the wrong header")
             central = [row for row in reader if row.get("key") == key]
     central_by_identity = {
-        (row.get("source"), row.get("candidate")): row for row in central
+        (row.get("source"), row.get("candidate"), row.get("revision")): row
+        for row in central
     }
     if len(central_by_identity) != len(central):
         failures.append(f"{key}: candidates.tsv duplicates a source candidate")
@@ -771,10 +772,10 @@ def compact_record_failures(
                 failures.append(
                     f"{key}: `{source}` records.tsv mislabels candidate `{candidate}`"
                 )
-            identity = (source, candidate)
+            identity = (source, candidate, row.get("revision"))
             if identity in encountered:
                 failures.append(
-                    f"{key}: duplicate candidate `{candidate}` for `{source}`"
+                    f"{key}: duplicate candidate `{candidate}` at `{row.get('revision')}` for `{source}`"
                 )
             encountered.add(identity)
             if not candidate or any(
@@ -7511,6 +7512,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         )
         self.sources = list(DECLARED_SOURCES)
         self.count_override = {}
+        self.rejected_override = {}
         self.extra_source = None
         self.write_records()
 
@@ -7566,7 +7568,8 @@ class CompactWitnessRecordTests(unittest.TestCase):
     def failures(self) -> list[str]:
         segments = [
             f"{source}: {self.count_override.get(source, 1)} candidates "
-            f"(0 witness-found, 1 rejected, 0 outstanding, 0 not-owed) "
+            f"(0 witness-found, {self.rejected_override.get(source, 1)} rejected, "
+            "0 outstanding, 0 not-owed) "
             f"[records](witness-search-{source}/records.tsv)"
             for source in self.sources
         ]
@@ -7595,6 +7598,25 @@ class CompactWitnessRecordTests(unittest.TestCase):
     def test_count_drift_is_refused(self) -> None:
         self.count_override["sourcegraph"] = 2
         self.assertIn("count differs from records.tsv", "\n".join(self.failures()))
+
+    def test_same_candidate_at_two_revisions_is_retained(self) -> None:
+        source = "sourcegraph"
+        path = self.root / f"witness-search-{source}/records.tsv"
+        with path.open(encoding="utf-8", newline="") as stream:
+            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+        row["revision"] = "c" * 40
+        row["digest"] = "d" * 64
+        with path.open("a", encoding="utf-8", newline="") as stream:
+            csv.DictWriter(stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t").writerow(row)
+        central = self.root / "witness-search-github/candidates.tsv"
+        with central.open("a", encoding="utf-8", newline="") as stream:
+            csv.DictWriter(stream, fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"), delimiter="\t").writerow(
+                {**{field: row[field] for field in COMPACT_RECORD_FIELDS if field != "evidence"},
+                 "record": f"witness-search-{source}/records.tsv:3"}
+            )
+        self.count_override[source] = 2
+        self.rejected_override[source] = 2
+        self.assertEqual([], self.failures())
 
     def test_missing_source_is_refused(self) -> None:
         self.sources.remove("postman")
