@@ -235,6 +235,9 @@ pub enum HttpAuthScheme {
 /// generates are modeled.
 #[derive(Debug, Default, Deserialize)]
 pub struct PathItem {
+    /// A Path Item supplied by a sibling OpenAPI document.
+    #[serde(rename = "$ref", default)]
+    pub reference: Option<String>,
     /// `GET` operation.
     #[serde(default)]
     pub get: Option<Operation>,
@@ -1404,13 +1407,18 @@ pub(crate) fn for_each_root_schema<F: FnMut(&mut Schema)>(doc: &mut OpenApi, vis
         media_schemas(&mut body.content, visit);
     }
     for item in doc.paths.values_mut() {
-        for parameter in &mut item.parameters {
-            parameter_schemas(parameter, visit);
-        }
-        for slot in item.operation_slots() {
-            if let Some(operation) = slot.as_mut() {
-                operation_schemas(operation, visit);
-            }
+        for_each_path_item_schema(item, visit);
+    }
+}
+
+/// Visit schemas written in one Path Item and its operations.
+pub(crate) fn for_each_path_item_schema<F: FnMut(&mut Schema)>(item: &mut PathItem, visit: &mut F) {
+    for parameter in &mut item.parameters {
+        parameter_schemas(parameter, visit);
+    }
+    for slot in item.operation_slots() {
+        if let Some(operation) = slot.as_mut() {
+            operation_schemas(operation, visit);
         }
     }
 }

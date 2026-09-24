@@ -5024,8 +5024,13 @@ impl InlineHoister<'_> {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
                 let name = format!("{request_ctx}{}", naming::param_class_name(param));
+                // Fern 5.20 imports positional `x-enum-varnames` on model
+                // properties, but an inline query parameter derives its enum
+                // members from the wire values (Raybot's `status` parameter).
+                let mut parameter_schema = schema.clone();
+                parameter_schema.enum_varnames = None;
                 self.out.push(TypeDecl::Enum(build_enum(
-                    schema,
+                    &parameter_schema,
                     &name,
                     values,
                     clean_doc(schema.description.as_deref()),

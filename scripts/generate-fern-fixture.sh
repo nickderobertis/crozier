@@ -146,9 +146,9 @@ api_path="openapi/openapi.yml"
 if [ -n "$SPEC_OVERRIDE" ]; then
   tree_root="$(python3 "$repo_root/scripts/corpus_remote_ref_pins.py" tree-root "$FIXTURE")"
   if [ -n "$tree_root" ]; then
-    tree_dir="${spec%/$tree_root}"
+    tree_dir="${spec%/"$tree_root"}"
     [ "$tree_dir" != "$spec" ] && [ -d "$tree_dir" ] || {
-      echo "generate-fern-fixture: $spec is not the pinned tree root $tree_root" >&2
+      echo "generate-fern-fixture: $spec is not the pinned tree root $tree_root; fetch the complete tree with scripts/fetch-corpus.sh and pass its root" >&2
       exit 1
     }
     python3 "$repo_root/scripts/corpus_remote_ref_pins.py" verify-tree "$FIXTURE" "$tree_dir" >/dev/null

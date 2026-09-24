@@ -1,12 +1,10 @@
-//! Resolving `$ref`s that point at another document over HTTP(S).
+//! Resolving `$ref`s that point at another document over HTTP(S) or a local path.
 //!
-//! Most OpenAPI documents are self-contained: every `$ref` is a local JSON
-//! pointer into the same file. Some are not — a spec may name a schema in a
-//! second document by absolute URL, and Fern's importer *fetches* that document
-//! and resolves the pointer into it before generating. Matching Fern byte for
-//! byte therefore means opening the second document too, so this module runs as
-//! a load-time pass over the parsed document: every remote `$ref` node is
-//! replaced, in place, by the schema the referenced document declares.
+//! Most OpenAPI documents are self-contained. Others name a schema, parameter,
+//! or Path Item in a sibling file or by absolute URL. Fern resolves those
+//! references before generation; this module does the same at load time. The
+//! Raybot and FOLIO corpus trees pin the relative-file forms, while Helios pins
+//! the absolute-URL schema form.
 //!
 //! Four rules follow from what Fern was measured to do (see the
 //! `helios-verifiable-api` corpus row, whose 27 component schemas are all remote
@@ -34,14 +32,16 @@
 //! surfaces as an actionable [`Error::RemoteRef`] instead. The fetcher is a
 //! trait so the resolution rules above are unit-testable without a network.
 
-use std::collections::{BTreeSet, HashMap};
-use std::path::Path;
+use std::collections::{BTreeSet, HashMap, HashSet};
+use std::path::{Path, PathBuf};
 use std::process::Command;
+
+use indexmap::IndexMap;
 
 use crate::error::{Error, Result};
 use crate::openapi::{
-    for_each_root_schema, for_each_schema_in, referenced_component_schema, AdditionalProperties,
-    OpenApi, Parameter, Schema,
+    for_each_path_item_schema, for_each_root_schema, for_each_schema_in,
+    referenced_component_schema, AdditionalProperties, OpenApi, Parameter, PathItem, Schema,
 };
 
 /// How long `curl` may spend on one referenced document before crozier gives up
@@ -121,24 +121,20 @@ pub fn resolve(
         spec,
         documents: HashMap::new(),
         active: Vec::new(),
+        imported: IndexMap::new(),
+        importing: HashSet::new(),
     };
     let remote_origin = register_component_schemas(doc, &mut resolver)?;
-    let root_spec = spec.to_path_buf();
+    let root_spec = DocumentLocation::Local(spec.to_path_buf());
     for parameter in doc.components.parameters.values_mut() {
         resolver.resolve_parameter(parameter, &root_spec)?;
     }
     for item in doc.paths.values_mut() {
-        for parameter in &mut item.parameters {
-            resolver.resolve_parameter(parameter, &root_spec)?;
-        }
-        for slot in item.operation_slots() {
-            if let Some(operation) = slot.as_mut() {
-                for parameter in &mut operation.parameters {
-                    resolver.resolve_parameter(parameter, &root_spec)?;
-                }
-            }
-        }
+        resolver.resolve_path_item(item, &root_spec)?;
     }
+    doc.components
+        .schemas
+        .extend(std::mem::take(&mut resolver.imported));
     let mut failure = None;
     for_each_root_schema(doc, &mut |schema| {
         if failure.is_none() {
@@ -182,7 +178,7 @@ fn register_component_schemas(
             continue;
         };
         let target = fragment.rsplit('/').next().unwrap_or_default().to_string();
-        let source = resolver.spec.to_path_buf();
+        let source = DocumentLocation::Local(resolver.spec.to_path_buf());
         let resolved = resolver.resolve_reference(&reference, &source)?;
         if target.is_empty()
             || target == name
@@ -259,6 +255,52 @@ fn split_external(reference: &str) -> Option<(&str, &str)> {
     Some((path, fragment))
 }
 
+/// A resolved document retains whether its address is a URL or a local file.
+#[derive(Clone)]
+enum DocumentLocation {
+    Remote(String),
+    Local(PathBuf),
+}
+
+impl DocumentLocation {
+    fn from_reference(reference: &str, source: &Self) -> Self {
+        let (address, _) = split_external(reference).expect("external reference");
+        if split_remote(reference).is_some() {
+            return Self::Remote(address.to_string());
+        }
+        match source {
+            Self::Local(path) => Self::Local(
+                path.parent()
+                    .unwrap_or_else(|| Path::new("."))
+                    .join(address),
+            ),
+            Self::Remote(url) => {
+                let (scheme, rest) = url.split_once("://").expect("HTTP(S) URL");
+                let (authority, path) = rest.split_once('/').unwrap_or((rest, ""));
+                let mut segments: Vec<&str> = path.split('/').collect();
+                segments.pop();
+                for segment in address.split('/') {
+                    match segment {
+                        "." | "" => {}
+                        ".." => {
+                            segments.pop();
+                        }
+                        value => segments.push(value),
+                    }
+                }
+                Self::Remote(format!("{scheme}://{authority}/{}", segments.join("/")))
+            }
+        }
+    }
+
+    fn key(&self) -> String {
+        match self {
+            Self::Remote(url) => url.clone(),
+            Self::Local(path) => path.to_string_lossy().into_owned(),
+        }
+    }
+}
+
 /// One load's resolution state: the fetcher, the documents already retrieved,
 /// and the references currently being resolved (for cycle detection).
 struct Resolver<'a> {
@@ -266,26 +308,66 @@ struct Resolver<'a> {
     spec: &'a Path,
     documents: HashMap<String, serde_yaml_ng::Value>,
     active: Vec<String>,
+    imported: IndexMap<String, Schema>,
+    importing: HashSet<(String, String)>,
 }
 
 impl Resolver<'_> {
-    fn resolve_parameter(&mut self, parameter: &mut Parameter, source: &Path) -> Result<()> {
+    fn resolve_path_item(&mut self, item: &mut PathItem, source: &DocumentLocation) -> Result<()> {
+        let mut source_path = source.clone();
+        if let Some(reference) = item.reference.clone() {
+            if let Some((_, fragment)) = split_external(&reference) {
+                source_path = DocumentLocation::from_reference(&reference, source);
+                let node = pointer(self.document(&source_path, &reference)?, fragment)
+                    .cloned()
+                    .ok_or_else(|| {
+                        self.error(
+                            &reference,
+                            "the referenced document has no Path Item at that pointer",
+                        )
+                    })?;
+                *item = serde_yaml_ng::from_value(node).map_err(|error| {
+                    self.error(&reference, &format!("not a Path Item: {error}"))
+                })?;
+            }
+        }
+        for parameter in &mut item.parameters {
+            self.resolve_parameter(parameter, &source_path)?;
+        }
+        for slot in item.operation_slots() {
+            if let Some(operation) = slot.as_mut() {
+                for parameter in &mut operation.parameters {
+                    self.resolve_parameter(parameter, &source_path)?;
+                }
+            }
+        }
+        let mut failure = None;
+        for_each_path_item_schema(item, &mut |schema| {
+            if failure.is_none() {
+                if let Err(error) = self.resolve_schema(schema, &source_path) {
+                    failure = Some(error);
+                }
+            }
+        });
+        if let Some(error) = failure {
+            return Err(error);
+        }
+        Ok(())
+    }
+
+    fn resolve_parameter(
+        &mut self,
+        parameter: &mut Parameter,
+        source: &DocumentLocation,
+    ) -> Result<()> {
         let Some(reference) = parameter.reference.clone() else {
             return Ok(());
         };
-        let Some((address, fragment)) = split_external(&reference) else {
+        let Some((_, fragment)) = split_external(&reference) else {
             return Ok(());
         };
-        let remote = split_remote(&reference).is_some();
-        let path = if remote {
-            Path::new(address).to_path_buf()
-        } else {
-            source
-                .parent()
-                .unwrap_or_else(|| Path::new("."))
-                .join(address)
-        };
-        let node = pointer(self.document(&path, &reference, remote)?, fragment)
+        let path = DocumentLocation::from_reference(&reference, source);
+        let node = pointer(self.document(&path, &reference)?, fragment)
             .cloned()
             .ok_or_else(|| {
                 self.error(
@@ -299,9 +381,13 @@ impl Resolver<'_> {
     }
 
     /// Resolve `schema` in place, then every schema nested inside it.
-    fn resolve_schema(&mut self, schema: &mut Schema, source: &Path) -> Result<()> {
+    fn resolve_schema(&mut self, schema: &mut Schema, source: &DocumentLocation) -> Result<()> {
         if let Some(reference) = schema.reference.clone() {
             if split_external(&reference).is_some() {
+                if let Some(name) = self.import_named_schema(&reference, source)? {
+                    schema.reference = Some(format!("#/components/schemas/{name}"));
+                    return Ok(());
+                }
                 *schema = self.resolve_reference(&reference, source)?;
                 return Ok(());
             }
@@ -323,29 +409,74 @@ impl Resolver<'_> {
         Ok(())
     }
 
+    /// A sibling schema file often holds several named definitions at its top
+    /// level. Fern imports the named target and its local dependencies as types.
+    fn import_named_schema(
+        &mut self,
+        reference: &str,
+        source: &DocumentLocation,
+    ) -> Result<Option<String>> {
+        let Some((_, fragment)) = split_external(reference) else {
+            return Ok(None);
+        };
+        // Absolute-URL schema fragments have Helios's root-document pointer
+        // semantics. Only relative files promote their named local definitions.
+        if split_remote(reference).is_some() {
+            return Ok(None);
+        }
+        let Some(name) = fragment.strip_prefix('/') else {
+            return Ok(None);
+        };
+        if name.is_empty() || name.contains('/') {
+            return Ok(None);
+        }
+        let path = DocumentLocation::from_reference(reference, source);
+        let Some(node) = pointer(self.document(&path, reference)?, fragment).cloned() else {
+            return Ok(None);
+        };
+        let identity = (path.key(), name.to_string());
+        if self.imported.contains_key(name) || !self.importing.insert(identity.clone()) {
+            return Ok(Some(name.to_string()));
+        }
+        let mut schema: Schema = serde_yaml_ng::from_value(node)
+            .map_err(|error| self.error(reference, &format!("not a schema: {error}")))?;
+        let mut local_names = Vec::new();
+        for_each_schema_in(&mut schema, &mut |node| {
+            if let Some(local) = node
+                .reference
+                .as_deref()
+                .and_then(|value| value.strip_prefix("#/"))
+            {
+                if !local.is_empty() && !local.contains('/') {
+                    local_names.push(local.to_string());
+                    node.reference = Some(format!("#/components/schemas/{local}"));
+                }
+            }
+        });
+        for local in local_names {
+            let local_ref = format!("{}#/{local}", path.key());
+            // The target is addressed from the root file's directory; using
+            // the resolved path avoids rebasing a sibling's local pointer.
+            self.import_named_schema(&local_ref, &DocumentLocation::Local(PathBuf::from(".")))?;
+        }
+        self.resolve_schema(&mut schema, &path)?;
+        self.imported.insert(name.to_string(), schema);
+        self.importing.remove(&identity);
+        Ok(Some(name.to_string()))
+    }
+
     /// Fetch, locate and fully resolve the schema `reference` names.
-    fn resolve_reference(&mut self, reference: &str, source: &Path) -> Result<Schema> {
+    fn resolve_reference(&mut self, reference: &str, source: &DocumentLocation) -> Result<Schema> {
         // A reference cycle across documents has no name to emit, so it degrades
         // to the unknown type — the same shape an unresolvable local pointer
         // takes — rather than recursing forever.
         if self.active.iter().any(|active| active == reference) {
             return Ok(Schema::default());
         }
-        let (address, fragment) =
+        let (_, fragment) =
             split_external(reference).expect("caller checked the reference is external");
-        let path = if split_remote(reference).is_some() {
-            Path::new(address).to_path_buf()
-        } else {
-            source
-                .parent()
-                .unwrap_or_else(|| Path::new("."))
-                .join(address)
-        };
-        let node = pointer(
-            self.document(&path, reference, split_remote(reference).is_some())?,
-            fragment,
-        )
-        .cloned();
+        let path = DocumentLocation::from_reference(reference, source);
+        let node = pointer(self.document(&path, reference)?, fragment).cloned();
         let node = node.ok_or_else(|| {
             self.error(
                 reference,
@@ -365,23 +496,24 @@ impl Resolver<'_> {
     /// JSON, so one parser reads both `.yaml` and `.json` references.
     fn document(
         &mut self,
-        path: &Path,
+        path: &DocumentLocation,
         reference: &str,
-        remote: bool,
     ) -> Result<&serde_yaml_ng::Value> {
-        let key = path.to_string_lossy().to_string();
+        let key = path.key();
         if !self.documents.contains_key(&key) {
-            let text = if remote {
-                self.fetcher
-                    .fetch(&key)
-                    .map_err(|message| self.error(reference, &message))?
-            } else {
-                std::fs::read_to_string(path).map_err(|error| {
-                    self.error(
-                        reference,
-                        &format!("could not read {}: {error}", path.display()),
-                    )
-                })?
+            let text = match path {
+                DocumentLocation::Remote(url) => self
+                    .fetcher
+                    .fetch(url)
+                    .map_err(|message| self.error(reference, &message))?,
+                DocumentLocation::Local(file) => {
+                    std::fs::read_to_string(file).map_err(|error| {
+                        self.error(
+                            reference,
+                            &format!("could not read {}: {error}", file.display()),
+                        )
+                    })?
+                }
             };
             let value = serde_yaml_ng::from_str(&text)
                 .map_err(|error| self.error(reference, &format!("could not parse it: {error}")))?;
@@ -972,5 +1104,63 @@ components:
         assert_eq!(split_remote("#/components/schemas/A"), None);
         assert_eq!(split_remote("file:///etc/passwd"), None);
         assert_eq!(split_remote("./other.yaml#/A"), None);
+    }
+
+    #[test]
+    fn a_path_item_in_a_sibling_file_imports_its_named_schema_dependencies() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::create_dir(directory.path().join("paths")).expect("paths directory");
+        std::fs::create_dir(directory.path().join("schemas")).expect("schemas directory");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Real Tree, version: '1'}\npaths:\n  /health:\n    $ref: paths/health.yml\n",
+        )
+        .expect("root");
+        std::fs::write(
+            directory.path().join("paths/health.yml"),
+            "get:\n  operationId: getHealth\n  responses:\n    '200':\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../schemas/models.yml#/HealthResponse\n",
+        )
+        .expect("path item");
+        std::fs::write(
+            directory.path().join("schemas/models.yml"),
+            "HealthResponse:\n  type: object\n  properties:\n    status:\n      $ref: '#/Status'\nStatus:\n  type: string\n  enum: [ok, down]\n",
+        )
+        .expect("schema file");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root).expect("resolve the complete tree");
+        let item = &document.paths["/health"];
+        assert!(item.get.is_some(), "the sibling supplied an operation");
+        let response = item.get.as_ref().expect("get").responses["200"].content["application/json"]
+            .schema
+            .as_ref()
+            .expect("response schema");
+        assert_eq!(
+            response.reference.as_deref(),
+            Some("#/components/schemas/HealthResponse")
+        );
+        assert_eq!(
+            document.components.schemas["HealthResponse"].properties["status"]
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/Status")
+        );
+        assert!(document.components.schemas.contains_key("Status"));
+    }
+
+    #[test]
+    fn a_missing_relative_path_item_is_an_actionable_error() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Missing, version: '1'}\npaths:\n  /health:\n    $ref: paths/absent.yml\n",
+        )
+        .expect("root");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        let error = resolve(&mut document, &CurlFetcher, &root).expect_err("missing sibling");
+        let message = error.to_string();
+        assert!(message.contains("paths/absent.yml"), "{message}");
+        assert!(message.contains("could not read"), "{message}");
     }
 }

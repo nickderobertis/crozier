@@ -104,6 +104,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
 
             args = sys.argv[1:]
             served = json.loads(os.environ.get("SERVED_DOCUMENTS", "{}"))
+            if "--output" in args:
+                destination = pathlib.Path(args[args.index("--output") + 1])
+                headers = pathlib.Path(args[args.index("--dump-header") + 1])
+                url = next(arg for arg in args if arg.startswith("https://"))
+                body = next((body for fragment, body in served.items() if fragment in url), '{"openapi":"3.0.3"}\n')
+                destination.write_text(body, encoding="utf-8")
+                headers.write_text("HTTP/1.1 200 OK\n", encoding="utf-8")
+                sys.stdout.write("200")
+                raise SystemExit(0)
             if "-o" not in args:
                 url = next((arg for arg in args if arg.startswith("https://")), "")
                 for fragment, body in served.items():
@@ -1097,6 +1106,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             directory.mkdir(parents=True, exist_ok=True)
         shutil.copy2(REPO / "scripts" / "generate-fern-fixture.sh", scripts)
         shutil.copy2(REPO / "scripts" / "lib.sh", scripts)
+        for script in ("corpus_remote_ref_pins.py", "openapi-surface-census.py"):
+            shutil.copy2(REPO / "scripts" / script, scripts / script)
         spec_dir = root / "source specs"
         spec_dir.mkdir()
         spec = spec_dir / "open api.json"
@@ -1116,8 +1127,13 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             r"""
             #!/usr/bin/env python3
             import pathlib
+            import os
             import sys
 
+            if os.environ.get("EXPECT_TREE") == "1":
+                assert "path: openapi/spec/openapi.yaml" in pathlib.Path("generators.yml").read_text()
+                assert pathlib.Path("openapi/spec/openapi.yaml").is_file()
+                assert pathlib.Path("openapi/spec/schemas/item.yaml").read_text() == "type: string\n"
             arguments = sys.argv[1:]
             output = pathlib.Path(arguments[arguments.index("--output") + 1])
             generated = output / "fern-python-sdk" / "src" / "fern"
@@ -1168,15 +1184,50 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertFalse(list(fixture.glob(".fern-output.*")))
         self.assertFalse(list(fixture.glob(".expected.backup.*")))
 
-        succeeded = subprocess.run(
-            command,
+        # The real scaffold must put a referenced sibling at the same relative
+        # location Fern reads from its configured root document.
+        tree = root / ".local" / "corpus" / "alpha" / "spec"
+        (tree / "schemas").mkdir(parents=True)
+        root_bytes = (
+            b"openapi: 3.0.3\ninfo: {title: Tree, version: '1'}\npaths: {}\n"
+            b"components:\n  schemas:\n    Item:\n      $ref: './schemas/item.yaml'\n"
+        )
+        sibling_bytes = b"type: string\n"
+        (tree / "openapi.yaml").write_bytes(root_bytes)
+        (tree / "schemas" / "item.yaml").write_bytes(sibling_bytes)
+        revision = "a" * 40
+        base = f"https://raw.githubusercontent.com/example/api/{revision}/spec"
+        (root / "tests" / "fixtures" / "CORPUS.md").write_text(
+            f"| 1 | `alpha` | github-raw | {base}/openapi.yaml | `{revision}` | MIT | link-ok | sibling |\n"
+        )
+        (root / "tests" / "fixtures" / PIN_MANIFEST.name).write_text(
+            "kind\tcorpus_name\tpath\tpinned_url\tsha256\n"
+            + f"tree\talpha\tspec/openapi.yaml\t{base}/openapi.yaml\t{hashlib.sha256(root_bytes).hexdigest()}\n"
+            + f"tree\talpha\tspec/schemas/item.yaml\t{base}/schemas/item.yaml\t{hashlib.sha256(sibling_bytes).hexdigest()}\n"
+        )
+        tree_result = subprocess.run(
+            self.script_command(scripts / "generate-fern-fixture.sh", "alpha", "4.35.0", str(tree / "openapi.yaml")),
+            cwd=root,
+            env={**environment, "EXPECT_TREE": "1"},
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(tree_result.returncode, 0, tree_result.stderr)
+        wrong_root = subprocess.run(
+            self.script_command(
+                scripts / "generate-fern-fixture.sh", "alpha", "4.35.0",
+                str(tree / "schemas" / "item.yaml"),
+            ),
             cwd=root,
             env=environment,
             text=True,
             capture_output=True,
             check=False,
         )
-        self.assertEqual(succeeded.returncode, 0, succeeded.stderr)
+        self.assertNotEqual(wrong_root.returncode, 0)
+        self.assertIn("not the pinned tree root", wrong_root.stderr)
+
         self.assertEqual(
             (expected / "src" / "fern" / "version.py").read_text(encoding="utf-8"),
             "complete-fern-output\n",
@@ -1472,6 +1523,21 @@ class CommittedGoldenStateTests(unittest.TestCase):
         self.assertEqual(len(payload["corpus_remote_ref_pins"]), 7)
         for pin in payload["corpus_remote_ref_pins"]:
             self.assertEqual(sorted(pin), ["pinned_url", "sha256", "url"])
+
+    def test_multi_file_golden_state_names_every_pinned_member(self) -> None:
+        for name in ("folio-mod-authtoken", "raybot"):
+            row = next(r for r in self.rows if r.name == name)
+            payload = json.loads(self.committed(row).read_text(encoding="utf-8"))
+            pins = payload["corpus_tree_pins"]
+            self.assertGreater(len(pins), 1)
+            self.assertEqual(
+                {pin["path"] for pin in pins},
+                {record.path for record in self.tool.load_pins_module(REPO).tree_records_for(name, REPO)},
+            )
+            self.assertEqual(
+                self.committed(row).read_bytes(),
+                self.tool.expected_state(REPO, row, payload["fern_python_sdk_version"]),
+            )
 
     def test_every_row_without_pin_records_keeps_the_state_it_already_had(self) -> None:
         """The conditional-emission guarantee, stated over the committed corpus."""

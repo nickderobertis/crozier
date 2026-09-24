@@ -21,7 +21,7 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
-**What it says today.** The walk enumerates 511 features. 392 are `golden`: a
+**What it says today.** The walk enumerates 512 features. 393 are `golden`: a
 registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 68 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
@@ -34,15 +34,16 @@ one of those verdicts is non-generation, each row owing a committed proof of it.
 31 `FIXTURE`, each a shape a real document can declare and no committed golden
 reaches. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
-evidence covers 392 of the 511 features this walk can see, that 68 more carry a
+evidence covers 393 of the 512 features this walk can see, that 68 more carry a
 Fern verdict and no byte comparison at all, that 51 have neither, and that the
 walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
 left for a reader to infer from a backlog's size.
 
 **The denominator is the instrument's.** The grammar expansion grew it from
-482 to 511. The later PayPal registration leaves that denominator unchanged:
-it adds one source and moves one existing feature from `gap` to `golden`.
+482 to 511. The later PayPal registration left that denominator unchanged and
+moved one feature from `gap` to `golden`; the relative-file Path Item predicate
+adds the 512th feature.
 
 ## The region files
 
@@ -82,7 +83,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 138 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 140 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -148,6 +149,20 @@ are never selectors; that is the whole difference between this census and a naiv
 one, and it is why a schema property called `trace` cannot score a `pathItem.trace`
 and a property called `name` cannot score a `parameter.name`.
 
+For a registered source tree, the walk follows a relative `$ref` only when its
+resolved file is one of that tree's pinned members. It reads the referenced
+object at its writing position, once even when several documents point to it;
+each `$ref` declaration still counts at its own site. The object keeps its
+normal selector kind (for example, `schema.properties` in a sibling schema
+file). A reference outside the registered tree contributes only its `$ref`
+declaration, never fields from the unregistered target.
+
+`pathItem.$ref:relative-file` counts the referencing Path Item when its `$ref`
+names a relative file, whether or not that file is registered. The ordinary
+`pathItem.$ref` selector still counts every reference spelling; this predicate
+distinguishes the file path that `src/refs.rs` resolves from a local pointer or
+absolute URL.
+
 A shape the two kinds above cannot express emits a **predicate selector**,
 `<selector>:<predicate>` — the notation
 [`security.md`](openapi-surface/security.md)'s method notes already use for a
@@ -156,9 +171,12 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-33, declared in `scripts/openapi-surface-census.py` and restated here, with a
+34, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
+- `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
+  a relative file; its declaration counts even when the target is outside the
+  registered tree.
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
   holds more than one member.
 - `operation.operationId:duplicate` — one per Operation Object whose
@@ -337,7 +355,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is exactly
   `example_is_schema_definition` of `src/ir.rs`.
 
-**Twenty-five of the 33 are node-local**, which is what makes them one family:
+**Twenty-six of the 34 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -994,8 +1012,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **170** registered sources, of which
-  **153** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **172** registered sources, of which
+  **155** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1037,12 +1055,12 @@ for either; each bullet below says where its number comes from.
 | [`schemas`](openapi-surface/schemas.md) | 222 | 169 | 21 | 32 | 29 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 38 | 10 | 2 | 2 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 70 | 65 | 5 | 0 | 0 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 71 | 66 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 2 | 17 | 0 | 0 | 17 |
-| **total** | **511** | **392** | **68** | **51** | **31** | **0** | **20** |
+| **total** | **512** | **393** | **68** | **51** | **31** | **0** | **20** |
 
-The walk enumerated **511** features and landed each in exactly one category:
-**392** `golden`, **68** `limitations`, **51** `gap`. The `gap` column splits by
+The walk enumerated **512** features and landed each in exactly one category:
+**393** `golden`, **68** `limitations`, **51** `gap`. The `gap` column splits by
 settlement class into **31** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
 The denominator's previous increase came from the instrument's new selectors.
@@ -1058,13 +1076,13 @@ search-incomplete within the fixture backlog. The report separates finite
 inventory closure from unanswered searches and excludes Postman from new work
 and future obligations while preserving historical source evidence.
 
-**What the `golden` count means, and what it does not.** 392 of those 511
+**What the `golden` count means, and what it does not.** 393 of those 512
 features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
 real bytes there and `just check` fails if they diverge. The other 119 do not. 68
 carry a Fern verdict measured on a probe and no byte comparison at all, and 51
 have neither. Neither
-column is a defect count, and neither 392 nor 511 is a claim of exhaustion —
+column is a defect count, and neither 393 nor 512 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
@@ -1098,7 +1116,7 @@ which.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 511 rows carry 511 distinct
+**Each feature is classified exactly once.** The 512 rows carry 512 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Thirteen spec
@@ -1114,14 +1132,13 @@ emits `schema.format` and `schema.format=uuid` as two selectors.
 of `FIXTURE`, `PROBE`, `UNREACHABLE`.
 
 **Every ledger key is accounted for.** The canonical join reports 87 keys, of
-which 83 are a region row's key verbatim. The other four:
+which 84 are a region row's key verbatim. The other three:
 
 | ledger key | how it is accounted for |
 |---|---|
 | `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 86. |
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
-| `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
 
 **The one correction this change records, and the enumeration hole it closes.**
 The paragraph this replaces recorded `normalization-collision` — two
@@ -1287,11 +1304,12 @@ code — and the hole count moves when the grammar grows. The one that remains t
 on a JSON value's kind and content — `hoist_union_variant`'s bare-object arm reads
 what an `example` *is* — and its row says so. The same is true off that file —
 the enum-member spellings
-`src/naming.rs` lowers, the JSON value
-*kinds* the example branches of `src/emit.rs` switch on, and the cross-document
-`$ref` path of `src/refs.rs`, which the corpus is single-document by construction
-and so can never reach. None of that is in the 511, in the 51 `gap` rows, or in
-either backlog. It is not unclassified work; it is unnamed work, and this
+`src/naming.rs` lowers and the JSON value
+*kinds* the example branches of `src/emit.rs` switch on. Those remain outside
+the 512 classified features. The cross-document `$ref` path of `src/refs.rs`
+now has pinned FOLIO and Raybot trees and the
+`pathItem.$ref:relative-file` selector; its prior pipeline exclusion is closed.
+The remaining shapes are unnamed work, and this
 document's own instrument is what would have to grow first — which is exactly what
 the twenty-nine `src/ir.rs` `FIXTURE` rows are: the six times it did.
 
@@ -1703,14 +1721,9 @@ reference by fetching the named document
 branch is reachable by construction. The row is `golden` on the census, and
 [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
 is what re-measures the selector over the fetched `link-ok` corpus afterwards.
-**One existing cell reads against this and is left as it stands**: the
-`src/refs.rs` verdict in [the join table below](#the-ranked-list-against-golden-blind-spots)
-says *"the corpus is single-document by construction"*, and the census now reports
-two registered sources writing a cross-document schema `$ref`. That cell was taken
-by an earlier measurement and keeps what that measurement established; the
-discrepancy is recorded here rather than silently repaired, and re-measuring
-`src/refs.rs`'s golden reach is a `just fixtures-coverage` run this change did not
-take.
+The later FOLIO and Raybot tree registrations reach the resolver with committed
+byte-matching goldens. The join table below still prints its dated coverage
+counts; a fresh `just fixtures-coverage` run is needed to replace those numbers.
 
 **What did not move.** These predicates read a `$ref` at the node that writes it,
 which the census already visited, so no count rule changed, no existing row's
@@ -1812,7 +1825,7 @@ functions named in each verdict are counted from that union.
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | 30 (after PayPal settled `anyof-sole-member`: the eleven the node-local predicate family named, the two the pointer-form family did, the five the annotated-`$ref` pass did, the two the discriminated-union pass did, the two the pointer-walk pass did, the seven the negation pass did, case 11's example-value row, and `oauth2-password`, whose `oauth_scope_enum` fallback is here) | **Still wholly unreached, and joined to a ranked gap again — thirty of them.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: thirty ranked `FIXTURE` rows point here. Twenty-nine of them are a branch of this file's six blind functions that no golden-bearing registered source declares, and the thirtieth is `oauth2-password`, whose site here is `oauth_scope_enum` rather than one of the six — [the eleven the node-local predicates added](#the-eleven-rows-the-node-local-predicates-added), [the two the pointer-form ones did](#the-two-rows-the-pointer-form-predicates-added), [the five the annotated-`$ref` pass did](#the-five-rows-the-annotated-ref-pass-added), [the two the discriminated-union pass did](#the-two-rows-the-discriminated-union-pass-added), [the two the pointer-walk pass did](#the-two-rows-the-pointer-walk-pass-added), and [the seven the negation pass did](#the-seven-rows-the-negation-pass-added). `resolve_schema_pointer` 25 is the second-largest blind block in this file and the one the pointer-form and pointer-walk passes read between them: five of the seven branches the first named came back `golden`, three of the five the second named did, and the function's last enumeration hole is closed — so the corpus had been sending documents down most of them all along. The other half is unchanged and is the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run prints. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The forty selectors these passes declared did not: twenty-eight are `golden` and twelve are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-seven of the forty rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and every case of these six functions is now measured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
 | `src/openapi.rs` | 218 | all-e2e 84, non-e2e 134 | 2 (`securityscheme-ref` and `oauth2-password`, both demoted from `limitations` by the amended settlement rule) | **Accounts for what is left, and two ranked gaps point here again.** Four that did — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256`, one `#[serde(other)]` scheme fallback arm and four IANA scheme members collapsing through it — are `limitations` since [Round 6](fern-limitations.md#round-6--security) measured Fern on all four. The fifth ranked row this file ever carried, `securityscheme-ref`, was `limitations` on the same round and is ranked again: its verdict is `implements`, and [the amended settlement rule](#what-a-probe-may-settle-as-amended-again) lets no probe settle a shape Fern generates from. The `$ref` position it names is `normalize_security_scheme_refs`, reached by a probe rather than by a golden. `oauth2-password` points here too, at the `OAuthFlows.password` field, since its ledger cell measured nothing about what Fern emits. `normalize_parameters` was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way; neither is blind at all now. The largest block, `filter_by_audience` 47 + `audiences` 8, belongs to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `load` 26 + `expecting` 5 + `de_composition` 5 + the four `visit_*` arms 12 between them are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. `filter_ignored` 13 is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. **This file is where the corpus moved most.** `collect_schema_refs` 46, `expand_schema_closure` 32, `operation_schema_seed` 24, `visit_seq` 7 and `normalize_parameters` 3 were all blind two measurements ago and are reached by a committed golden now, and `filter_ignored` fell from 72; that is the whole of the file's 511 → 184. **The 184 has since risen to 218, and the rise is a probe's.** `normalize_security_scheme_refs` 18 is the `$ref` position `securityscheme-ref` named, written when [Round 6](fern-limitations.md#round-6--security) settled that row by probe — code a measurement drove into `src/` that no committed golden reaches, which is what `src/emit.rs` above now shows at four times the size. |
-| `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **Only a probe can settle it.** `resolve_reference` 16, `document` 10, `pointer` 9, `error` 7, `curl_fetch` 7 are the cross-document `$ref` path. The corpus is single-document by construction ([`matching.md`](matching.md#cross-document-ref-resolution-issue-77)), and the ledger's `relative-file-ref` row is already `discards + pipeline` — its own note being that crozier's fixture pipeline cannot register the tree that would make the reference resolve. No corpus row is in reach. |
+| `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **The printed coverage is a dated pre-tree measurement.** FOLIO row 139 resolves sibling schema and parameter files; Raybot row 140 resolves sibling Path Items and their schema dependencies, with all 185 expected files byte-matching. The corpus can now reach `resolve_reference`, `document` and `pointer` through real registered trees. Helios already names absolute URLs; whether the current instrumented corpus reaches `curl_fetch` is a measurement for a fresh `just fixtures-coverage` run. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
 | `src/config.rs` | 31 | all-e2e 13, non-e2e 18 | none | **Neither.** `default_package_name` 10 and `new` 8 are generator-config defaults. |

@@ -1,0 +1,188 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "raybot",
+  "corpus_spec_ref": "4428dea2f79b833aead4c89df5bd8d9e32b7b0c8",
+  "corpus_spec_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml",
+  "corpus_tree_pins": [
+    {
+      "path": "api/openapi/components/parameters/paging.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/parameters/paging.yml",
+      "sha256": "c05a040842413fcfba6c091c5fb83bea8a79adf647e497602c5a25c27879926e"
+    },
+    {
+      "path": "api/openapi/components/schemas/alarm.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/alarm.yml",
+      "sha256": "6e82d05ed714b73feec256622cd2092e1ceaf1b4295b287b13422ddb73e364a8"
+    },
+    {
+      "path": "api/openapi/components/schemas/app-connection.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/app-connection.yml",
+      "sha256": "f66253e10a7070377100a4d8fec7c0922c1ab6c09378ca1b6ae388fe3bb36132"
+    },
+    {
+      "path": "api/openapi/components/schemas/command.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/command.yml",
+      "sha256": "9070bf4123fd0af0f0d9c9988d1582774d1456ebbd36194623adb4b641156ecc"
+    },
+    {
+      "path": "api/openapi/components/schemas/config.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/config.yml",
+      "sha256": "d5247432cc73c3b73945c1df51a37ae933bb1472d4bfdac7e1083d672d6547a8"
+    },
+    {
+      "path": "api/openapi/components/schemas/error-code.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/error-code.yml",
+      "sha256": "a2448ff0ead116383282014868753e2766c7e4ba3bdf67c6bb45e7332197ebdd"
+    },
+    {
+      "path": "api/openapi/components/schemas/error.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/error.yml",
+      "sha256": "561fe78cb0c6345815569cc17c12270d04eafdfc358888b463bdfea2c15671f0"
+    },
+    {
+      "path": "api/openapi/components/schemas/health.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/health.yml",
+      "sha256": "c9c529dcc28bf8a50f682ca559e0e6122c654c0dc288b62a8488df28bac8a2e5"
+    },
+    {
+      "path": "api/openapi/components/schemas/peripheral.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/peripheral.yml",
+      "sha256": "f13e14b0165fd587b3c893b9840eda7e7793f8f6b999db56dcf297574eca9338"
+    },
+    {
+      "path": "api/openapi/components/schemas/state.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/state.yml",
+      "sha256": "3aaa1122e8e076ace057d860a17f95232d300651230cdb9130e1c0f3fa1719a6"
+    },
+    {
+      "path": "api/openapi/components/schemas/system.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/system.yml",
+      "sha256": "38cbb132a3fb269fbed4cd2420dc71434010bf80b104bb71dedeca6804b9230d"
+    },
+    {
+      "path": "api/openapi/components/schemas/version.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/version.yml",
+      "sha256": "280ed5951c62d94a44cc2f5a0909263691702f21969a45f4ef291f9273704fe1"
+    },
+    {
+      "path": "api/openapi/openapi.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml",
+      "sha256": "e2f76bafaae43ffe9e59b121b6aabda4d0936a88811ef721e49585230f461dee"
+    },
+    {
+      "path": "api/openapi/paths/alarms.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/alarms.yml",
+      "sha256": "740038a9fa12ed5bf7f6fb9b1dfcff6ffede9c96c0e65262ebf22a2cb8390a21"
+    },
+    {
+      "path": "api/openapi/paths/alarms@{alarmId}@deactivate.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/alarms@{alarmId}@deactivate.yml",
+      "sha256": "7763efae1902a80e6f2cd5c6ff5439a753338b3873d239b31e9b6a8bf6207e75"
+    },
+    {
+      "path": "api/openapi/paths/commands.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands.yml",
+      "sha256": "9f4bb6af9579d5a43fc6b362f1fdde9e1db51304fff9681be07e07e5d592157b"
+    },
+    {
+      "path": "api/openapi/paths/commands@processing.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@processing.yml",
+      "sha256": "40053081c1d54a2ed336e24b05f276ff082cc1d12000fa9d14c4d1edbd4520dc"
+    },
+    {
+      "path": "api/openapi/paths/commands@processing@cancel.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@processing@cancel.yml",
+      "sha256": "fc2a491a52c5350c9cb372576124f5f66be0a747c00776a1ae570eb7a4113684"
+    },
+    {
+      "path": "api/openapi/paths/commands@{commandId}.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@{commandId}.yml",
+      "sha256": "0b60d36a81b7d660edebf75ada64eba86b8b1c5662c913ef267979a8a62e1dcb"
+    },
+    {
+      "path": "api/openapi/paths/configs@cloud.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@cloud.yml",
+      "sha256": "4c228908e85209b4690d9489b52b8e99c006ddc0ba386b4429c45aa62811802b"
+    },
+    {
+      "path": "api/openapi/paths/configs@command.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@command.yml",
+      "sha256": "45036e6e36a730c633d1e64cd98ee524d0a8693086fd037dae6c74dd484b1610"
+    },
+    {
+      "path": "api/openapi/paths/configs@hardware.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@hardware.yml",
+      "sha256": "f074b69b43fea1411e6dc88687d456b2cb8649daeb8b6f0861196056c60e4efb"
+    },
+    {
+      "path": "api/openapi/paths/configs@http.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@http.yml",
+      "sha256": "7b2cd20565c4753bf2c89d0f2425aa4862c27633d4ccef67e306325afc60e64d"
+    },
+    {
+      "path": "api/openapi/paths/configs@log.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@log.yml",
+      "sha256": "fffbca359e2665c9e77d594887b5aa9f8e0c12d708fdce7caf17b0ea5b3349f9"
+    },
+    {
+      "path": "api/openapi/paths/configs@monitoring@battery.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@monitoring@battery.yml",
+      "sha256": "4de0d04dfd3a2722a275bab7a3ba0cc7b699537d904371aca02c930a39fa0bd0"
+    },
+    {
+      "path": "api/openapi/paths/configs@wifi.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@wifi.yml",
+      "sha256": "cf7074eb92c36ae35019dc3e5f0bcbab2ed175d7a9d07bf1b403840b8b1dc9cb"
+    },
+    {
+      "path": "api/openapi/paths/error-codes.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/error-codes.yml",
+      "sha256": "b430bbd38ed4b287c397777c18f60c725d0af01237bbebebd00d110df2c58413"
+    },
+    {
+      "path": "api/openapi/paths/health.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/health.yml",
+      "sha256": "394156aa44d2ce72563ec31d3a34c546bf2ff3a097dc29f9a2323589ec920995"
+    },
+    {
+      "path": "api/openapi/paths/peripherals@serials.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/peripherals@serials.yml",
+      "sha256": "f9ad0f6bd4f375d0ec60c5cb2ece7d4f94c8bcfcabdb84ff89ce57ba6be81d9b"
+    },
+    {
+      "path": "api/openapi/paths/robot-state.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/robot-state.yml",
+      "sha256": "801694b69cbfd48dfac518df2d49a56cefab18af61075a03a164e49ccee7e235"
+    },
+    {
+      "path": "api/openapi/paths/states@limit-switch.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/states@limit-switch.yml",
+      "sha256": "2ee1d6ff9dc4db9269b65a2dd05084e2de8d4b8afeb9f0c05f36754258b2ed98"
+    },
+    {
+      "path": "api/openapi/paths/system@info.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@info.yml",
+      "sha256": "4d074bb0a5cf3b32a35622a745ebe2965e020da411fd5a79beeb967984942693"
+    },
+    {
+      "path": "api/openapi/paths/system@reboot.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@reboot.yml",
+      "sha256": "4dafb12e088a87752478a06b5e4cb49a1ddd0bc5366b0816fbcb58b36b35c039"
+    },
+    {
+      "path": "api/openapi/paths/system@status.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@status.yml",
+      "sha256": "9294e24853414e58fee0c22d5455921efe4beffd4519ab938c0da8d1a2890985"
+    },
+    {
+      "path": "api/openapi/paths/system@stop-emergency.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@stop-emergency.yml",
+      "sha256": "b3527974c32359c9411bccaed96f419d89e462f67981e81e2a5f62f26d37501f"
+    },
+    {
+      "path": "api/openapi/paths/version.yml",
+      "pinned_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/version.yml",
+      "sha256": "a2d74210ad068256a92debe2bb295292db4b02118cee6cb360c2a996ffef52c3"
+    }
+  ]
+}

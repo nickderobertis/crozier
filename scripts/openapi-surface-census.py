@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 138 of the 170 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 140 of the 172 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -48,6 +48,12 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Iterator
+from urllib.parse import unquote
+
+# Also loaded by the offline test tier through importlib, where the script
+# directory is not automatically on sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import corpus_remote_ref_pins as corpus_pins
 
 # ---------------------------------------------------------------------------
 # Reading a source document
@@ -864,6 +870,11 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "pathItem.$ref:relative-file": (
+        "one per Path Item Object whose `$ref` has a non-empty relative file path "
+        "before an optional `#` fragment; the referring Path Item counts even "
+        "when the target lies outside the registered source tree"
+    ),
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
     ),
@@ -2800,6 +2811,7 @@ class Census:
         self,
         document: Any = None,
         conjunctions: dict[str, CompiledConjunction] | None = None,
+        *, root_path: Path | None = None, tree_paths: set[Path] | None = None,
     ) -> None:
         self.counts: dict[str, int] = defaultdict(int)
         # The conjunctions this walk evaluates: the closed list every command
@@ -2829,6 +2841,41 @@ class Census:
         # per conjunction group matched against them — and a document's objects
         # live for the whole walk, so `id()` keys a stable cache.
         self.declared_cache: dict[tuple[int, str, str], list[str]] = {}
+        self.root_path = root_path.resolve() if root_path else None
+        self.current_path = self.root_path
+        self.tree_paths = {path.resolve() for path in tree_paths} if tree_paths else set()
+        self.external_visited: set[tuple[Path, str]] = set()
+        self.loaded_tree: dict[Path, Any] = {}
+
+    def referenced_tree_node(self, reference: str) -> tuple[Path, str, Any] | None:
+        """Resolve a reference only when its target belongs to this pinned tree."""
+        if self.current_path is None or not self.tree_paths:
+            return None
+        address, _, fragment = reference.partition("#")
+        if "://" in address or address.startswith("/"):
+            return None
+        target_path = (self.current_path.parent / unquote(address)).resolve() if address else self.current_path
+        if target_path == self.root_path:
+            return None  # the root document's declarations are already walked
+        if target_path not in self.tree_paths:
+            return None
+        if target_path not in self.loaded_tree:
+            self.loaded_tree[target_path] = load_document(target_path)
+        node = self.loaded_tree[target_path]
+        if fragment:
+            if not fragment.startswith("/"):
+                return None
+            for segment in fragment[1:].split("/"):
+                key = unquote(segment).replace("~1", "/").replace("~0", "~")
+                if isinstance(node, dict):
+                    node = node.get(key)
+                elif isinstance(node, list) and key.isdigit() and int(key) < len(node):
+                    node = node[int(key)]
+                else:
+                    return None
+                if node is None:
+                    return None
+        return target_path, fragment, node
 
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
@@ -2876,6 +2923,10 @@ class Census:
                 continue
             selector = f"{prefix}.{name}"
             found.append(selector)
+            if selector == "pathItem.$ref" and isinstance(value, str):
+                address = value.partition("#")[0]
+                if address and not address.startswith(("/", "http://", "https://")) and ":" not in address:
+                    found.append("pathItem.$ref:relative-file")
             if kind_name == "operation" and name == "tags":
                 if isinstance(value, list) and len(value) > 1:
                     found.append("operation.tags:multiple")
@@ -2916,6 +2967,28 @@ class Census:
             # this node, and the ancestors `seen` already holds are not on it.
             if self.conjunction_holds(node, kind_name, prefix, groups, 0, frozenset()):
                 self.record(selector)
+        reference = node.get("$ref")
+        if isinstance(reference, str):
+            target = self.referenced_tree_node(reference)
+            if target is not None:
+                path, fragment, resolved = target
+                identity = (path, fragment)
+                if identity not in self.external_visited:
+                    self.external_visited.add(identity)
+                    former_path = self.current_path
+                    former_schemas = self.component_schemas
+                    former_names = self.component_names
+                    self.current_path = path
+                    self.component_schemas = components_schemas(self.loaded_tree[path])
+                    self.component_names = frozenset(
+                        key for key in self.component_schemas if isinstance(key, str)
+                    )
+                    try:
+                        self.walk(resolved, kind_name, prefix, frozenset())
+                    finally:
+                        self.current_path = former_path
+                        self.component_schemas = former_schemas
+                        self.component_names = former_names
         if is_reference_node(node, kind_name):
             return
         for key, value in node.items():
@@ -3263,9 +3336,10 @@ class Census:
 def census_document(
     document: Any,
     conjunctions: dict[str, CompiledConjunction] | None = None,
+    *, root_path: Path | None = None, tree_paths: set[Path] | None = None,
 ) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
-    census = Census(document, conjunctions)
+    census = Census(document, conjunctions, root_path=root_path, tree_paths=tree_paths)
     census.walk(document, "openapi", "openapi", frozenset())
     census.finish()
     return dict(census.counts)
@@ -3328,6 +3402,19 @@ def spec_in(directory: Path) -> Path | None:
     return None
 
 
+def pinned_tree_paths(fixtures_root: Path, corpus_root: Path, fixture: str) -> set[Path]:
+    """The registered member paths of one corpus tree, read from its pin manifest."""
+    return {corpus_root / fixture / record.path for record in corpus_pins.tree_records_for(fixture, fixtures_root)}
+
+
+def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Path | None:
+    record = corpus_pins.tree_root(fixtures_root, fixture)
+    if record is None:
+        return None
+    path = corpus_root / fixture / record.path
+    return path if path.is_file() else None
+
+
 def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
     """Every registered golden source: the vendored half and the link-ok half."""
     sources: list[Source] = []
@@ -3351,7 +3438,12 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
         if aliases.get(name, name) in vendored:
             continue  # a manifest row whose document is vendored beside its golden
         sources.append(
-            Source(fixture=name, origin="corpus", path=spec_in(corpus_root / name))
+            Source(
+                fixture=name,
+                origin="corpus",
+                path=spec_in(corpus_root / name)
+                or pinned_tree_root(fixtures_root, corpus_root, name),
+            )
         )
     return sources
 
@@ -3474,7 +3566,10 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 1
         censused.append(source)
-        for selector, count in census_document(document).items():
+        tree_paths = pinned_tree_paths(fixtures_root, corpus_root, source.fixture)
+        for selector, count in census_document(
+            document, root_path=source.path, tree_paths=tree_paths
+        ).items():
             if args.selector and selector not in args.selector:
                 continue
             rows[(selector, source.fixture)] = count
