@@ -1,0 +1,7 @@
+{
+  "historical_manifest": "docs/openapi-surface/witness-scrape-wide/catalogue-entries.tsv.gz",
+  "sha256": "dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66",
+  "unread": 98,
+  "url": "https://api.apis.guru/v2/list.json",
+  "versions": 3992
+}

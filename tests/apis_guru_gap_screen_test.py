@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import csv
 import json
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 
@@ -156,6 +158,64 @@ components:
         none = [r for r in rows if r["outcome"] == "none-found"]
         self.assertTrue(none)
         self.assertTrue(all(not r["api_id"] and not r["declaration_count"] for r in none))
+
+    def test_unread_versions_record_http_refusal_and_real_selector_result(self) -> None:
+        document = json.dumps({
+            "openapi": "3.0.0", "info": {"title": "A", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Hit": {"oneOf": [
+                {"type": "array", "items": {"anyOf": [{"type": "string"}]}}
+            ]}}},
+        }).encode()
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path == "/list.json":
+                    payload = json.dumps({"a.example": {"versions": {"1": {
+                        "swaggerUrl": f"http://127.0.0.1:{self.server.server_port}/ok.json",
+                    }}}, "b.example": {"versions": {"1": {
+                        "swaggerUrl": f"http://127.0.0.1:{self.server.server_port}/refused.json",
+                    }}}}).encode()
+                    self.send_response(200)
+                elif self.path == "/ok.json":
+                    payload = document
+                    self.send_response(200)
+                else:
+                    payload = b"Forbidden"
+                    self.send_response(403)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{base}/ok.json\t\tinaccessible\n"
+            f"b.example\t1\t{base}/refused.json\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        evidence = self.root / "evidence"
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", f"{base}/list.json",
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        records = [json.loads(line) for line in
+                   (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0]["classification"], "openapi-3")
+        self.assertEqual(records[0]["selectors"]["oneof-array-variant-anyof-item"], 1)
+        self.assertEqual(records[1]["classification"], "source-refused")
+        self.assertEqual(records[1]["status"], 403)
+        self.assertEqual((evidence / "index.json").exists(), True)
 
     def test_tracked_snapshot_obeys_the_consumer_contract(self) -> None:
         with REPORT.open(encoding="utf-8", newline="") as handle:
