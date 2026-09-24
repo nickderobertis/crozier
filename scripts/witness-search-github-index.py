@@ -34,7 +34,7 @@ FIELDS = (
     "evidence",
     "screen_evidence",
 )
-SCREEN_OUTCOMES = {"witness-found", "witness-blocked", "fern-rejected"}
+SCREEN_OUTCOMES = {"witness-found", "witness-blocked", "fern-rejected", "not-owed"}
 
 
 def records(path: Path) -> list[tuple[int, dict[str, Any]]]:

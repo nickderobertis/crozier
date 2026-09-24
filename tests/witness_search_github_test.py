@@ -581,6 +581,23 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn("github-code-search,github-publisher-trees,sourcegraph", index)
         self.assertIn("witness-found", index)
         subprocess.run([*command, "--check"], check=True, capture_output=True)
+        (sourcegraph / "screens.jsonl").write_text(
+            json.dumps(
+                {
+                    **identity,
+                    "license": "not-run: key closed by found witness",
+                    "ref": "not-run: key closed by found witness",
+                    "fern": "not-run: key closed by found witness",
+                    "disposition": "not-owed",
+                }
+            )
+            + "\n"
+        )
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        self.assertIn(
+            "not-owed", (root / "witness-search-github/candidates.tsv").read_text()
+        )
+        subprocess.run([*command, "--check"], check=True, capture_output=True)
         (code / "candidates.jsonl").write_text(
             (code / "candidates.jsonl").read_text()
             + json.dumps(
