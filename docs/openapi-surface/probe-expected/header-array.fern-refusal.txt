@@ -1,0 +1,5 @@
+fern_cli_version: 5.67.1
+fern_python_sdk_version: 5.20.0
+generate_exit: 1
+diagnostic: Expected example to be a list
+output_tree: none

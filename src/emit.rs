@@ -7925,7 +7925,9 @@ fn build_example_inner(
     };
     if !ep.markdown_response && !suppressed {
         for pp in &ep.path_params {
-            if reference && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+            if (reference || documentation)
+                && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+            {
                 continue;
             }
             let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {

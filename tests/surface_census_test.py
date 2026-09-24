@@ -1090,7 +1090,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38,
+            "Thirty-eight": 38, "Thirty-nine": 39,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -1601,6 +1601,19 @@ class GrammarContractTests(unittest.TestCase):
 
 class CensusReportTests(unittest.TestCase):
     """What the instrument answers: who declares a feature, and who does not."""
+
+    def test_non_ascii_info_title_distinguishes_the_probe_from_its_control(self) -> None:
+        probes = REPO / "docs" / "openapi-surface" / "probes"
+        for name, expected in (
+            ("nonascii-info-title", 1),
+            ("nonascii-info-title-control", 0),
+        ):
+            with self.subTest(name=name):
+                document = census.load_document(probes / f"{name}.yml")
+                self.assertEqual(
+                    expected,
+                    census.census_document(document).get("info.title:non-ascii", 0),
+                )
 
     def test_a_declared_feature_names_its_sources_and_its_declaration_count(self) -> None:
         completed = run("--vendored-only", "--selector", "operation.callbacks")
@@ -2869,24 +2882,25 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         },
     )
 
-    # The predicates declared before this family was named: the three that compare
-    # one document's values against each other, and the two key-shape readings the
-    # path-template pass added. Everything else in the two closed lists is a
-    # selector this node declared, and is what the table has to cover.
-    PRE_EXISTING_PREDICATES = (
+    # Predicates outside this discrimination table: the three that compare one
+    # document's values, two path-key readings, and the title probe. Everything
+    # else in the two closed lists is a selector this node declared, and is what
+    # the table has to cover.
+    PREDICATES_OUTSIDE_TABLE = (
         "operation.tags:multiple",
         "operation.operationId:duplicate",
         "openapi.paths:normalized-collision",
         "openapi.paths:templated-key",
         "openapi.paths:several-template-expressions",
         "components.schemas:normalized-collision",
+        "info.title:non-ascii",
     )
     DECLARED_HERE = frozenset(
         set(census.PREDICATES)
         | set(census.CONJUNCTIONS)
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
-        PRE_EXISTING_PREDICATES
+        PREDICATES_OUTSIDE_TABLE
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
         - {name for name in census.PREDICATES
