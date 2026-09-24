@@ -2316,12 +2316,17 @@ fn build_endpoint(
         .iter()
         .filter(|p| p.location == Some(ParameterLocation::Path))
         .map(|p| {
-            let type_ref = p
-                .schema
-                .as_ref()
-                .map_or(TypeRef::Primitive(Prim::Any), |schema| {
-                    hoister.hoist_param_enum(&request_ctx, &p.name, schema)
-                });
+            let type_ref = if p.schema.is_none() && !p.content.is_empty() {
+                // Fern ignores a path parameter's content schema and exposes
+                // its value as the string interpolated into the URL.
+                TypeRef::Primitive(Prim::Str)
+            } else {
+                p.schema
+                    .as_ref()
+                    .map_or(TypeRef::Primitive(Prim::Any), |schema| {
+                        hoister.hoist_param_enum(&request_ctx, &p.name, schema)
+                    })
+            };
             PathParam {
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(&p.name),

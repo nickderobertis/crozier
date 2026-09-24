@@ -1082,6 +1082,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
+            "Twenty-six": 26,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -1592,6 +1593,19 @@ class GrammarContractTests(unittest.TestCase):
 
 class CensusReportTests(unittest.TestCase):
     """What the instrument answers: who declares a feature, and who does not."""
+
+    def test_non_ascii_info_title_distinguishes_the_probe_from_its_control(self) -> None:
+        probes = REPO / "docs" / "openapi-surface" / "probes"
+        for name, expected in (
+            ("nonascii-info-title", 1),
+            ("nonascii-info-title-control", 0),
+        ):
+            with self.subTest(name=name):
+                document = census.load_document(probes / f"{name}.yml")
+                self.assertEqual(
+                    expected,
+                    census.census_document(document).get("info.title:non-ascii", 0),
+                )
 
     def test_a_declared_feature_names_its_sources_and_its_declaration_count(self) -> None:
         completed = run("--vendored-only", "--selector", "operation.callbacks")
@@ -2864,24 +2878,25 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         },
     )
 
-    # The predicates declared before this family was named: the three that compare
-    # one document's values against each other, and the two key-shape readings the
-    # path-template pass added. Everything else in the two closed lists is a
-    # selector this node declared, and is what the table has to cover.
-    PRE_EXISTING_PREDICATES = (
+    # Predicates outside this discrimination table: the three that compare one
+    # document's values, two path-key readings, and the title probe. Everything
+    # else in the two closed lists is a selector this node declared, and is what
+    # the table has to cover.
+    PREDICATES_OUTSIDE_TABLE = (
         "operation.tags:multiple",
         "operation.operationId:duplicate",
         "openapi.paths:normalized-collision",
         "openapi.paths:templated-key",
         "openapi.paths:several-template-expressions",
         "components.schemas:normalized-collision",
+        "info.title:non-ascii",
     )
     DECLARED_HERE = frozenset(
         set(census.PREDICATES)
         | set(census.CONJUNCTIONS)
         | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
-        PRE_EXISTING_PREDICATES
+        PREDICATES_OUTSIDE_TABLE
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS
 
@@ -6618,6 +6633,9 @@ class RankedBacklogTests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     PROOF_OUTSTANDING = re.compile(r"\*\*proof outstanding:\*\* `([a-z-]+)`")
+    PROOF_COMMITTED = re.compile(
+        r"\*\*Committed Fern measurement:\*\* \[`([^`]+)`\]\(([^)]+)\)"
+    )
     DEMOTED = re.compile(r"\*\*demoted to gap:\*\* `([a-z]+)`")
     PROOF_FORMS = {
         "absent-tree": ("discards",),
@@ -6632,18 +6650,50 @@ class RankedBacklogTests(unittest.TestCase):
         return row.group(1) if row else ""
 
     def test_every_limitations_row_records_the_one_proof_it_owes(self) -> None:
-        """A `limitations` row names its outstanding Contract A proof, once, and
-        that proof's form is one its own evidence cell's verdict can establish."""
+        """A `limitations` row names one outstanding or committed proof, whose
+        form agrees with its own evidence cell's verdict."""
+        manifest = {
+            fields[0]: fields
+            for line in (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv")
+            .read_text(encoding="utf-8")
+            .splitlines()[1:]
+            if len(fields := line.split("\t")) == 6
+        }
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
         for key, (_region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") != "limitations":
                 continue
             with self.subTest(key=key):
-                forms = self.PROOF_OUTSTANDING.findall(cells[4])
-                self.assertEqual(1, len(forms), f"{key}: names {forms} after `proof outstanding:`")
+                outstanding = self.PROOF_OUTSTANDING.findall(cells[4])
+                committed = self.PROOF_COMMITTED.findall(cells[4])
+                self.assertLessEqual(len(committed), 1, f"{key}: cites more than one measurement")
+                if committed:
+                    self.assertFalse(outstanding, f"{key}: proof is both committed and outstanding")
+                    named_key, link = committed[0]
+                    self.assertEqual(key, named_key)
+                    self.assertIn(key, manifest, f"{key}: cited proof has no manifest row")
+                    row = manifest[key]
+                    artifact = row[3].removeprefix("docs/openapi-surface/")
+                    suffix = "" if row[1] == "refusal" else "/"
+                    self.assertEqual(f"{artifact}{suffix}", link)
+                    ledger_rows = [
+                        line for line in ledger.splitlines() if line.startswith(f"| `{key}` |")
+                    ]
+                    self.assertTrue(ledger_rows, f"{key}: has no Fern limitation row")
+                    self.assertIn(f"(openapi-surface/{artifact}{suffix})", ledger_rows[-1])
+                    self.assertRegex(self.ledger_cell(key), rf"\b{row[2]}\b")
+                    if row[1] == "differential":
+                        self.assertIn(f"(probe-expected/{row[4]}/)", cells[4])
+                    forms = [row[1]]
+                else:
+                    forms = outstanding
+                self.assertEqual(1, len(forms), f"{key}: names {forms} as its one proof")
                 self.assertIn(forms[0], self.PROOF_FORMS)
                 self.assertFalse(self.DEMOTED.search(cells[4]), f"{key}: is `limitations` and demoted")
                 verdicts = self.PROOF_FORMS[forms[0]]
-                ruled = cells[4].split("**proof outstanding:**", 1)[0]
+                ruled = cells[4].split("**proof outstanding:**", 1)[0].split(
+                    "**Committed Fern measurement:**", 1
+                )[0]
                 self.assertTrue(
                     any(re.search(rf"\b{v}\b", ruled) for v in verdicts),
                     f"{key}: owes a `{forms[0]}` proof, which establishes {verdicts}, "
@@ -6682,11 +6732,20 @@ class RankedBacklogTests(unittest.TestCase):
         """Four classes, each counted off the cells, adding up to the population
         that read `limitations` before the amendment."""
         counts = {"artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0}
+        manifest = {
+            fields[0]: fields[1]
+            for line in (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv")
+            .read_text(encoding="utf-8")
+            .splitlines()[1:]
+            if len(fields := line.split("\t")) == 6
+        }
         for _region, cells in self.entries.values():
             form = self.PROOF_OUTSTANDING.search(cells[4])
+            committed = self.PROOF_COMMITTED.search(cells[4])
             demoted = self.DEMOTED.search(cells[4])
-            if form:
-                counts["differential" if form.group(1) == "differential" else "artifact"] += 1
+            if form or committed:
+                proof_form = form.group(1) if form else manifest[committed.group(1)]
+                counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
         table = self.classification_table()
