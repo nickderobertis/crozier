@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this subprocess and loopback-server suite is wired into just test-witness-search-acquisition and the deterministic check gate.
 """End-to-end coverage of complete local-tree selector evidence."""
 
 from __future__ import annotations
@@ -22,11 +23,43 @@ REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/witness-search-local-census.py"
 GITHUB_ACQUIRE = REPO / "scripts/witness-acquire-github.py"
 KEYS = REPO / "scripts/witness-search-region-keys.py"
+TRACKED_KEYS = REPO / "docs/openapi-surface/witness-search-keys.tsv"
 POSTMAN = REPO / "scripts/witness-search-postman.py"
 PORTAL_TREES = REPO / "scripts/witness-search-portal-trees.py"
 
 
 class LocalCensusTest(unittest.TestCase):
+    def test_explicit_yaml_mapping_key_uses_optional_parser(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            documents = root / "documents"
+            documents.mkdir()
+            (documents / "hit.yaml").write_text(
+                "? openapi\n: 3.0.0\npaths: {}\ncomponents:\n  schemas:\n"
+                "    Shape:\n      type: array\n      items: {type: string}\n",
+                encoding="utf-8",
+            )
+            (documents / "broken.yaml").write_text(
+                "? openapi\n: [unterminated\n", encoding="utf-8"
+            )
+            contract = root / "keys.md"
+            contract.write_text(
+                "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={documents}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 1)
+            rows = {row["document"]: row for row in
+                    map(json.loads, completed.stdout.splitlines())}
+            self.assertGreater(rows["hit.yaml"]["selectors"]["array"], 0)
+            self.assertIn("PyYAML", rows["hit.yaml"]["loader"])
+            self.assertEqual(rows["broken.yaml"]["classification"], "unreadable")
+            self.assertIn("PyYAML parse failure", rows["broken.yaml"]["error"])
+
     def test_invalid_json_is_recorded_as_a_parse_failure(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -49,6 +82,25 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(record["loader"], "stdlib-json")
             self.assertIn("trailing comma at", record["error"])
 
+    def test_other_json_decode_failure_is_unreadable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "broken.json").write_text('{"openapi":', encoding="utf-8")
+            contract = root / "keys.md"
+            contract.write_text(
+                "| key | selector |\n|---|---|\n| `array` | `schema.items` |\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={root}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 1)
+            record = json.loads(completed.stdout)
+            self.assertEqual(record["classification"], "unreadable")
+            self.assertIn("Expecting value", record["error"])
+
     def test_portal_archive_inventory_uses_real_tree_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -64,7 +116,8 @@ class LocalCensusTest(unittest.TestCase):
                     archive.add(path, arcname=f"api-{pin}/{path.name}")
             plan = root / "plan.tsv"
             plan.write_text(
-                "repository\tpinned_ref\nexample/api\t" + pin + "\n", encoding="utf-8",
+                "repository\tpinned_ref\nexample/api\t" + pin +
+                "\nmutable/api\tmain\n", encoding="utf-8",
             )
             tree = root / "tree"
             manifest = root / "manifest.tsv"
@@ -78,12 +131,47 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual((tree / "example--api/openapi.json").read_bytes(),
                              (source / "openapi.json").read_bytes())
             self.assertFalse((tree / "example--api/notes.txt").exists())
+            self.assertFalse((tree / "mutable--api").exists())
             with manifest.open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["path"], "openapi.json")
             self.assertEqual(rows[0]["sha256"], hashlib.sha256(
                 (source / "openapi.json").read_bytes()).hexdigest())
+
+    def test_portal_archive_refusals_name_a_repair(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archives = root / "archives"
+            archives.mkdir()
+            tree = root / "tree"
+            manifest = root / "manifest.tsv"
+            plan = root / "plan.tsv"
+            command = [sys.executable, str(PORTAL_TREES), "--plan", str(plan),
+                       "--archives", str(archives), "--tree", str(tree),
+                       "--manifest", str(manifest)]
+            plan.write_text("wrong\theader\n", encoding="utf-8")
+            malformed = subprocess.run(command, cwd=REPO, capture_output=True,
+                                       text=True, timeout=30)
+            self.assertEqual(malformed.returncode, 1)
+            self.assertIn("repository and pinned_ref columns", malformed.stderr)
+            plan.write_text("repository\tpinned_ref\nexample/api\t" + "a" * 40 + "\n",
+                            encoding="utf-8")
+            missing = subprocess.run(command, cwd=REPO, capture_output=True,
+                                     text=True, timeout=30)
+            self.assertEqual(missing.returncode, 1)
+            self.assertIn("missing pinned archive", missing.stderr)
+            archive = archives / "example--api.tar.gz"
+            with tarfile.open(archive, "w:gz") as handle:
+                body = b'{"openapi":"3.0.0"}'
+                info = tarfile.TarInfo("api-" + "a" * 40 + "/../escape.json")
+                info.size = len(body)
+                handle.addfile(info, io.BytesIO(body))
+            unsafe = subprocess.run(command, cwd=REPO, capture_output=True,
+                                    text=True, timeout=30)
+            self.assertEqual(unsafe.returncode, 1)
+            self.assertIn("unsafe archive path", unsafe.stderr)
+            self.assertFalse(manifest.exists())
 
     def test_postman_search_records_queries_and_refusal_without_zero(self) -> None:
         received = []
@@ -141,6 +229,144 @@ class LocalCensusTest(unittest.TestCase):
                      (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
             self.assertTrue(any(row["cause"] == "spacing" for row in waits))
 
+    def test_postman_refusal_waits_then_paginates_answer(self) -> None:
+        received = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                received.append(body)
+                if len(received) == 1:
+                    self.send_response(429)
+                    self.send_header("Retry-After", "0")
+                    payload = b"paced refusal"
+                else:
+                    index = body["body"]["queryIndices"][0]
+                    count = 26 if index == "apinetwork.team" else 0
+                    payload = json.dumps({"data": {}, "meta": {"total": {
+                        "team": count, "collection": 0, "api": 0,
+                    }}}).encode()
+                    self.send_response(200)
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys),
+                 "--evidence-dir", str(evidence),
+                 "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                cwd=REPO, capture_output=True, text=True, timeout=50,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            rows = [json.loads(line) for line in
+                    (evidence / "queries.jsonl").read_text().splitlines()]
+            self.assertEqual(rows[0]["classification"], "source-refused")
+            self.assertEqual(rows[0]["status"], 429)
+            self.assertEqual(rows[1]["classification"], "answered")
+            self.assertIn(25, [row["offset"] for row in rows])
+            waits = [json.loads(line) for line in
+                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+            self.assertTrue(any(row["cause"] == "backoff" for row in waits))
+
+    def test_postman_malformed_answer_is_source_error(self) -> None:
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"meta":{}}')
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys),
+                 "--evidence-dir", str(evidence),
+                 "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            rows = [json.loads(line) for line in
+                    (evidence / "queries.jsonl").read_text().splitlines()]
+            self.assertEqual(len(rows), 6)
+            self.assertTrue(all(row["classification"] == "source-error" for row in rows))
+            self.assertTrue(all("total" in row["error"] for row in rows))
+
+    def test_postman_missing_key_derivation_gives_repair_action(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(root / "missing.tsv"),
+                 "--evidence-dir", str(root / "evidence")],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("regenerate the region-key derivation", completed.stderr)
+
+    def test_postman_repeated_refusals_stop_at_guard_budget(self) -> None:
+        received = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                received.append(self.path)
+                self.send_response(429)
+                self.send_header("Retry-After", "0")
+                self.end_headers()
+                self.wfile.write(b"refused")
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys),
+                 "--evidence-dir", str(evidence),
+                 "--url", f"http://127.0.0.1:{server.server_port}/proxy"],
+                cwd=REPO, capture_output=True, text=True, timeout=180,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(len(received), 5)
+            rows = [json.loads(line) for line in
+                    (evidence / "queries.jsonl").read_text().splitlines()]
+            # The fifth response closes the guard reservation by raising
+            # SecondaryLimit, so the consumer records that refusal with its
+            # query identity and error instead of a normal HTTP result row.
+            self.assertEqual(len([row for row in rows if row.get("status") == 429]), 4)
+            self.assertEqual(len([row for row in rows if row.get("error", "").startswith("postman")]), 6)
+            self.assertTrue(all(row["classification"] == "source-refused" for row in rows))
+
     def test_key_derivation_reads_current_region_tables(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(KEYS)], cwd=REPO,
@@ -154,6 +380,44 @@ class LocalCensusTest(unittest.TestCase):
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],
             ["securityscheme-ref"],
         )
+        self.assertEqual(completed.stdout, TRACKED_KEYS.read_text(encoding="utf-8"))
+
+    def test_key_derivation_rejects_invalid_region_rows(self) -> None:
+        valid = "| `shape-a` | x | x | `gap` | census `schema.items` | x | x | FIXTURE |\n"
+        invalid = {
+            "no FIXTURE gap rows": "",
+            "has no selector": "| `shape-a` | x | x | `gap` | no selector | x | x | FIXTURE |\n",
+            "duplicate gap key": valid + valid,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for region in ("document-paths.md", "parameters.md", "bodies-media.md",
+                           "schemas.md", "security.md", "oas31-extensions.md"):
+                (root / region).write_text("", encoding="utf-8")
+            for expected, contents in invalid.items():
+                with self.subTest(expected=expected):
+                    (root / "schemas.md").write_text(contents, encoding="utf-8")
+                    completed = subprocess.run(
+                        [sys.executable, str(KEYS), "--regions-dir", str(root)],
+                        cwd=REPO, capture_output=True, text=True, timeout=30,
+                    )
+                    self.assertEqual(completed.returncode, 1)
+                    self.assertIn(expected, completed.stderr)
+                    self.assertIn("repair the FIXTURE gap rows", completed.stderr)
+
+    def test_local_census_rejects_incomplete_tsv_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            contract = root / "keys.tsv"
+            contract.write_text("key\tselector\nshape-a\tschema.items\n", encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={root}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("requires key, selector, and census_status", completed.stderr)
+            self.assertIn("pass a readable key/selector contract", completed.stderr)
 
     def test_guarded_acquisition_waits_for_cap_and_records_refusal(self) -> None:
         state = {"reads": 0, "downloads": 0, "authorized": False}
@@ -174,6 +438,9 @@ class LocalCensusTest(unittest.TestCase):
                     body = b"real local tree archive bytes"
                     self.send_response(200)
                     self.send_header("x-ratelimit-resource", "core")
+                elif self.path == "/transport":
+                    self.connection.close()
+                    return
                 else:
                     body = b"Forbidden"
                     self.send_response(403)
@@ -222,6 +489,17 @@ class LocalCensusTest(unittest.TestCase):
                        (evidence / "acquisitions.jsonl").read_text().splitlines()]
             self.assertEqual([row["status"] for row in records], [200, 403])
             self.assertFalse((root / "missing").exists())
+            transport = subprocess.run(
+                [sys.executable, str(GITHUB_ACQUIRE), f"{url}/transport",
+                 str(root / "missing"), "--evidence-dir", str(evidence)],
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(transport.returncode, 1)
+            self.assertIn("transport error", transport.stderr)
+            records = [json.loads(line) for line in
+                       (evidence / "acquisitions.jsonl").read_text().splitlines()]
+            self.assertNotIn("status", records[-1])
+            self.assertTrue(records[-1]["error"])
 
     def test_real_tree_reports_zeroes_and_declarations_per_document(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

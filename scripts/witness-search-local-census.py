@@ -88,7 +88,9 @@ def census_one(
                 if path.suffix.lower() not in {".yaml", ".yml"}:
                     raise
                 try:
-                    import yaml  # type: ignore[import-not-found]
+                    # PyYAML is optional and needed only for publisher YAML
+                    # outside the built-in census reader's supported subset.
+                    import yaml
                 except ImportError:
                     raise original
                 loader = f"PyYAML {yaml.__version__} CSafeLoader"
@@ -161,7 +163,7 @@ def main() -> int:
     try:
         keys = contract_keys(args.contract)
     except (OSError, ValueError) as error:
-        parser.error(f"invalid --contract {args.contract}: {error}")
+        parser.error(f"invalid --contract {args.contract}: {error}; pass a readable key/selector contract")
     conjunctions = {
         selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
     }
@@ -183,7 +185,7 @@ def main() -> int:
             max_workers=args.workers
         ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
-            for path, digest, version, loader, error, hits in results:
+            for path, digest, version, loader, error, selector_counts in results:
                 identity = {"source": source, "document": str(path.relative_to(root)),
                             "sha256": digest, "openapi_version": version,
                             "loader": loader}
@@ -194,9 +196,9 @@ def main() -> int:
                     continue
                 if args.all_documents_jsonl:
                     print(json.dumps({**identity, "classification": "openapi-3" if version.startswith("3.") else "other-version",
-                                      "selectors": {key: count for key, count in hits}}, sort_keys=True))
+                                      "selectors": {key: count for key, count in selector_counts}}, sort_keys=True))
                     continue
-                for key, count in hits:
+                for key, count in selector_counts:
                     if not args.all_documents and not count:
                         continue
                     selector = selector_by_key[key]
@@ -204,6 +206,7 @@ def main() -> int:
                     writer.writerow((*row, digest, version) if args.all_documents else row)
     if failures:
         print("\n".join(failures), file=sys.stderr)
+        print("Inspect these source documents and retain their unreadable classifications in the evidence record.", file=sys.stderr)
         return 1
     return 0
 

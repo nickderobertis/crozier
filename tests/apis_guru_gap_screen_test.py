@@ -217,6 +217,95 @@ components:
         self.assertEqual(records[1]["status"], 403)
         self.assertEqual((evidence / "index.json").exists(), True)
 
+    def test_redo_refuses_historical_manifest_changed_from_served_index(self) -> None:
+        served = self.spec("served.json", '{"openapi":"3.0.0","paths":{}}')
+        stale = self.spec("stale.json", '{"openapi":"3.0.0","paths":{}}')
+        index = self.index([("a.example", "1", served)])
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{stale}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        evidence = self.root / "evidence"
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(completed.returncode, 1)
+        self.assertIn("historical URL changed", completed.stderr)
+        self.assertFalse((evidence / "unread-responses.jsonl").exists())
+
+    def test_redo_classifies_non_openapi_and_unparseable_responses(self) -> None:
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'{"swagger":"2.0","paths":{}}' if self.path == "/old.json"
+                                 else b'{"openapi":')
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        old, broken = f"{base}/old.json", f"{base}/broken.json"
+        index = self.index([("a.example", "1", old), ("b.example", "1", broken)])
+        manifest = self.root / "historical.tsv"
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"a.example\t1\t{old}\t\tinaccessible\n"
+            f"b.example\t1\t{broken}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        missing_evidence = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(missing_evidence.returncode, 1)
+        self.assertIn("--redo-unread requires --evidence-dir", missing_evidence.stderr)
+        evidence = self.root / "evidence"
+        completed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--index-url", index,
+             "--redo-unread", str(manifest), "--evidence-dir", str(evidence)],
+            cwd=REPO, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        rows = [json.loads(line) for line in
+                (evidence / "unread-responses.jsonl").read_text().splitlines()]
+        self.assertEqual([row["classification"] for row in rows],
+                         ["not-openapi-3", "source-error"])
+        self.assertTrue(rows[1]["error"])
+
+    def test_redo_refuses_incomplete_and_different_historical_entries(self) -> None:
+        served = self.spec("served.json", '{"openapi":"3.0.0","paths":{}}')
+        index = self.index([("a.example", "1", served)])
+        manifest = self.root / "historical.tsv"
+        evidence = self.root / "evidence"
+        command = [sys.executable, str(SCRIPT), "--index-url", index,
+                   "--redo-unread", str(manifest), "--evidence-dir", str(evidence)]
+        manifest.write_text("api_id\tversion\na.example\t1\n", encoding="utf-8")
+        incomplete = subprocess.run(command, cwd=REPO, capture_output=True,
+                                    text=True, timeout=30)
+        self.assertEqual(incomplete.returncode, 1)
+        self.assertIn("missing catalogue entry columns", incomplete.stderr)
+        manifest.write_text(
+            "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
+            f"b.example\t1\t{served}\t\tinaccessible\n",
+            encoding="utf-8",
+        )
+        different = subprocess.run(command, cwd=REPO, capture_output=True,
+                                   text=True, timeout=30)
+        self.assertEqual(different.returncode, 1)
+        self.assertIn("historical entries differ from served index", different.stderr)
+        self.assertFalse((evidence / "unread-responses.jsonl").exists())
+
     def test_tracked_snapshot_obeys_the_consumer_contract(self) -> None:
         with REPORT.open(encoding="utf-8", newline="") as handle:
             reader = csv.DictReader(handle, dialect="excel-tab")

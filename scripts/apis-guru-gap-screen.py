@@ -277,6 +277,10 @@ def redo_unread(args: argparse.Namespace) -> int:
         raise ValueError(f"{args.redo_unread}: missing catalogue entry columns")
     if len(rows) != len(index) or {(r['api_id'], r['version']) for r in rows} != set(index):
         raise ValueError("historical entries differ from served index; do not reuse their census")
+    for row in rows:
+        key = (row["api_id"], row["version"])
+        if index[key] != usable_url(row["indexed_json_url"]):
+            raise ValueError(f"historical URL changed: {key[0]}/{key[1]}")
     args.evidence_dir.mkdir(parents=True, exist_ok=True)
     output = args.evidence_dir / "unread-responses.jsonl"
     with output.open("w", encoding="utf-8") as handle:
@@ -285,8 +289,6 @@ def redo_unread(args: argparse.Namespace) -> int:
                 continue
             key = (row["api_id"], row["version"])
             url = usable_url(row["indexed_json_url"])
-            if index[key] != url:
-                raise ValueError(f"historical URL changed: {key[0]}/{key[1]}")
             try:
                 status, body, taken = fetch_status(url, args.timeout)
                 record: dict[str, Any] = {"api_id": key[0], "version": key[1],
@@ -328,7 +330,10 @@ def main(argv: list[str] | None = None) -> int:
         try:
             return redo_unread(args)
         except (OSError, ValueError, RuntimeError, CENSUS.DocumentError) as error:
-            print(f"apis-guru-gap-screen: {error}", file=sys.stderr)
+            action = ("pass --evidence-dir to retain the measured responses" if
+                      str(error).startswith("--redo-unread requires") else
+                      "inspect the served index and regenerate the historical manifest before retrying")
+            print(f"apis-guru-gap-screen: {error}; {action}", file=sys.stderr)
             return 1
     try:
         selectors = selectors_from_regions(args.regions_dir)

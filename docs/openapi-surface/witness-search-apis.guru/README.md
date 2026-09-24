@@ -3,7 +3,7 @@
 `unread-responses.jsonl` is the output of:
 
 ```sh
-python3 scripts/apis-guru-gap-screen.py \
+just apis-guru-gap-screen \
   --redo-unread docs/openapi-surface/witness-scrape-wide/catalogue-entries.tsv.gz \
   --evidence-dir docs/openapi-surface/witness-search-apis.guru
 ```

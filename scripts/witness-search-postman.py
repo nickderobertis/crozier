@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; the paced Postman search command belongs beside the other just-driven witness-search scripts and is exercised by the acquisition tier.
 """Ask Postman's three public API-network indices for every current FIXTURE gap."""
 
 from __future__ import annotations
@@ -81,9 +82,12 @@ def main() -> int:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--url", default=DEFAULT_URL)
     args = parser.parse_args()
-    with args.keys.open(encoding="utf-8", newline="") as handle:
-        keys = [row for row in csv.DictReader(handle, dialect="excel-tab")
-                if row.get("census_status", "supported") == "supported"]
+    try:
+        with args.keys.open(encoding="utf-8", newline="") as handle:
+            keys = [row for row in csv.DictReader(handle, dialect="excel-tab")
+                    if row.get("census_status", "supported") == "supported"]
+    except OSError as error:
+        parser.error(f"cannot read --keys {args.keys}: {error}; regenerate the region-key derivation")
     if not keys or not {"key", "selector"} <= keys[0].keys():
         parser.error("--keys must be the region-key derivation TSV")
     args.evidence_dir.mkdir(parents=True, exist_ok=True)

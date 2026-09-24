@@ -35,6 +35,14 @@ files:
     - "docs/screenshots/**"
     - "shots/**"
     - "screenshots/fonts/**"
+    # Witness-search evidence data — machine-written candidate records, census
+    # rows and acquisition manifests, not authored source. Tens of thousands of
+    # rows overflow the judge; the scripts that write them and the gate that
+    # reconciles them stay linted.
+    - "docs/openapi-surface/witness-search-*/**/*.tsv"
+    - "docs/openapi-surface/witness-search-*/**/*.jsonl"
+    - "docs/openapi-surface/witness-search-*/**/*.json"
+    - "docs/openapi-surface/witness-search-*/**/*.gz"
     # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
     # scripts/llmlint-plugins.py): someone else's authored configs, judged in
     # their own repository, not crozier's code.

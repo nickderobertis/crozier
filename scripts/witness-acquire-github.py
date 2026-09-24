@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate uses just rather than Nx; this guarded archive acquisition command lives with the other repository scripts and is exercised by the witness-search acquisition tier.
 """Download a pinned public GitHub tree through the shared REST-bucket guard."""
 
 from __future__ import annotations
@@ -83,7 +84,9 @@ def main() -> int:
         with (args.evidence_dir / "acquisitions.jsonl").open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
     if record.get("status") != 200:
-        print(f"witness-acquire-github: {args.url}: {record}", file=sys.stderr)
+        print(f"witness-acquire-github: {args.url}: {record.get('status', 'transport error')}: "
+              f"{record.get('error', 'request failed')}; inspect {args.evidence_dir / 'acquisitions.jsonl'} "
+              "and retry the recorded source when available", file=sys.stderr)
         return 1
     print(f"witness-acquire-github: saved {record['bytes']} bytes")
     return 0

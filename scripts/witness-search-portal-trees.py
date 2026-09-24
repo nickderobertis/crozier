@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; pinned portal archive extraction is a just-driven repository script exercised by the witness-search acquisition tier.
 """Extract and inventory JSON/YAML files from pinned vendor portal archives."""
 
 from __future__ import annotations
@@ -6,13 +7,17 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import sys
 import tarfile
 from pathlib import Path
 
 
 def extract(plan: Path, archives: Path, tree: Path, manifest: Path) -> None:
     with plan.open(encoding="utf-8", newline="") as handle:
-        sources = list(csv.DictReader(handle, dialect="excel-tab"))
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        if not {"repository", "pinned_ref"} <= set(reader.fieldnames or ()):
+            raise ValueError(f"{plan}: expected repository and pinned_ref columns")
+        sources = list(reader)
     rows = []
     for source in sources:
         repository, revision = source["repository"], source["pinned_ref"]
@@ -52,7 +57,11 @@ def main() -> int:
     parser.add_argument("--tree", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
     args = parser.parse_args()
-    extract(args.plan, args.archives, args.tree, args.manifest)
+    try:
+        extract(args.plan, args.archives, args.tree, args.manifest)
+    except (OSError, ValueError, tarfile.TarError) as error:
+        print(f"witness-search-portal-trees: {error}; check the plan and pinned archives before retrying", file=sys.stderr)
+        return 1
     return 0
 
 

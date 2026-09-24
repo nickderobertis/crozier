@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this region-key derivation command lives with the just-driven census scripts and is drift-checked by the acquisition tier.
 """Derive the witness-search key set from six region tables at this checkout."""
 
 from __future__ import annotations
@@ -59,7 +60,11 @@ def main() -> int:
     args = parser.parse_args()
     writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
     writer.writerow(("key", "selector", "region", "census_status"))
-    writer.writerows(keys(args.regions_dir))
+    try:
+        writer.writerows(keys(args.regions_dir))
+    except (OSError, ValueError) as error:
+        print(f"witness-search-region-keys: {error}; repair the FIXTURE gap rows in {args.regions_dir}", file=sys.stderr)
+        return 1
     return 0
 
 
