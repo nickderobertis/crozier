@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -495,3 +495,14 @@ test-witness-search-redo:
 # Canonical reproduction entry point; archived evidence retains original commands.
 witness-search-local-census *args:
     @"$(./scripts/census-python.sh)" ./scripts/witness-search-local-census.py "$@"
+
+# Drives the real module against a local HTTP server serving authored responses.
+# Offline tier for the GitHub/Postman/Sourcegraph rate-limit guard.
+test-rate-limit-guard:
+    "$(./scripts/census-python.sh)" tests/rate_limit_guard_test.py
+
+# Needs network (and GITHUB_TOKEN for the token's own buckets); never waits, so
+# it stays out of `check`. Rule and interface: scripts/rate_limit_guard.py.
+# Live GitHub REST bucket figures from one free /rate_limit read, plus paced-host spacing.
+quota-status:
+    @"$(./scripts/census-python.sh)" scripts/rate_limit_guard.py status
