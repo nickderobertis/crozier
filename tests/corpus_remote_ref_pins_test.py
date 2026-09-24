@@ -22,6 +22,8 @@ from __future__ import annotations
 
 import hashlib
 import http.server
+import email.utils
+import datetime
 import os
 import shutil
 import subprocess
@@ -29,11 +31,14 @@ import sys
 import tempfile
 import textwrap
 import threading
+import time
 import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 MODULE = REPO / "scripts" / "corpus_remote_ref_pins.py"
+sys.path.insert(0, str(REPO / "scripts"))
+import corpus_remote_ref_pins as pin_owner
 MANIFEST_NAME = "corpus-remote-ref-pins.tsv"
 COPIED_SCRIPTS = (
     "corpus-lib.sh",
@@ -97,12 +102,21 @@ class RecordingHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
         self.server.requests.append(self.path)
+        if self.server.throttles.get(self.path, 0):
+            self.server.throttles[self.path] -= 1
+            self.send_response(429)
+            self.send_header("Retry-After", self.server.throttle_retry_after.get(self.path, "0"))
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         body = self.server.documents.get(self.path)
         if body is None:
             self.send_error(404, "no such document")
             return
         self.send_response(200)
         self.send_header("Content-Type", "application/yaml")
+        if self.path in self.server.success_retry_after:
+            self.send_header("Retry-After", self.server.success_retry_after[self.path])
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -130,6 +144,9 @@ class PinMechanismTests(unittest.TestCase):
         self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), RecordingHandler)
         self.server.documents = {}
         self.server.requests = []
+        self.server.throttles = {}
+        self.server.throttle_retry_after = {}
+        self.server.success_retry_after = {}
         self.origin = "http://{}:{}".format(*self.server.server_address[:2])
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -296,6 +313,14 @@ class PinMechanismTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stderr, "")
 
+    def test_a_throttled_pinned_document_is_retried_before_publication(self) -> None:
+        path = pinned_path("block")
+        self.server.throttles[path] = 1
+        result = self.fetch("pinned-row")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.server.requests.count(path), 2)
+        self.assertEqual(self.published("pinned-row").read_bytes(), self.expected_pinned_bytes())
+
     # -- 2. rewriting happens BEFORE publication ----------------------------
 
     def test_a_refused_document_is_never_published_over_an_empty_cache(self) -> None:
@@ -413,6 +438,135 @@ class PinMechanismTests(unittest.TestCase):
         self.assertEqual(self.published("pinned-row").read_bytes(), self.expected_pinned_bytes())
         self.assertEqual(self.server.requests, [], "a matching cache must cost no request")
 
+    def register_tree(self, *, sibling_digest: str | None = None, include_sibling: bool = True) -> None:
+        """Add an immutable, real two-file source to the boundary repository."""
+        base = f"{RAW}/example/api/{PINNED_SHA}/spec"
+        root = b"openapi: 3.0.3\ninfo: {title: Tree, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Item:\n      $ref: './schemas/item.yaml#/components/schemas/Item'\n"
+        sibling = b"components:\n  schemas:\n    Item:\n      type: object\n      properties:\n        id: {type: string}\n"
+        self.server.documents[f"/example/api/{PINNED_SHA}/spec/openapi.yaml"] = root
+        self.server.documents[f"/example/api/{PINNED_SHA}/spec/schemas/item.yaml"] = sibling
+        corpus = self.root / "tests" / "fixtures" / "CORPUS.md"
+        corpus.write_text(corpus.read_text() + f"| 99 | `tree-row` | github-raw | {base}/openapi.yaml | `{PINNED_SHA}` | MIT | link-ok | relative ref |\n")
+        records = [
+            ("tree", "tree-row", "spec/openapi.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/openapi.yaml", hashlib.sha256(root).hexdigest()),
+        ]
+        if include_sibling:
+            records.append(("tree", "tree-row", "spec/schemas/item.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/schemas/item.yaml", sibling_digest or hashlib.sha256(sibling).hexdigest()))
+        with self.manifest.open("a") as stream:
+            for record in records:
+                stream.write("\t".join(record) + "\n")
+
+    def test_a_tree_fetches_every_pinned_file_and_refreshes_a_drifted_cache(self) -> None:
+        self.register_tree()
+        fetched = self.fetch("tree-row")
+        self.assertEqual(fetched.returncode, 0, fetched.stderr)
+        root = self.destination("tree-row") / "spec/openapi.yaml"
+        sibling = self.destination("tree-row") / "spec/schemas/item.yaml"
+        self.assertEqual(fetched.stdout.strip(), str(root))
+        self.assertIn(b"Item:", sibling.read_bytes())
+        self.server.requests.clear()
+        self.assertEqual(self.fetch("tree-row", "--if-missing").returncode, 0)
+        self.assertEqual(self.server.requests, [])
+        sibling.write_text("drift")
+        self.assertEqual(self.fetch("tree-row", "--if-missing").returncode, 0)
+        self.assertIn("/example/api/" + PINNED_SHA + "/spec/schemas/item.yaml", self.server.requests)
+        self.assertIn(b"Item:", sibling.read_bytes())
+
+    def test_a_tree_ref_outside_the_pinned_set_is_refused(self) -> None:
+        self.register_tree(include_sibling=False)
+        self.assert_actionable(self.fetch("tree-row"), "leaves the pinned tree", "schemas/item.yaml")
+
+    def test_a_tree_member_digest_mismatch_is_refused(self) -> None:
+        self.register_tree(sibling_digest="0" * 64)
+        self.assert_actionable(self.fetch("tree-row"), "serves sha256", "0" * 64)
+
+    def test_tree_verification_refuses_extra_files_and_mutable_absolute_refs(self) -> None:
+        self.register_tree()
+        self.assertEqual(self.fetch("tree-row").returncode, 0)
+        tree = self.destination("tree-row")
+        extra = tree / "extra.yaml"
+        extra.write_text("type: string\n")
+        result = subprocess.run(
+            [sys.executable, str(self.root / "scripts/corpus_remote_ref_pins.py"),
+             "--root", str(self.root), "verify-tree", "tree-row", str(tree)],
+            text=True, capture_output=True, check=False,
+        )
+        self.assert_actionable(result, "tree file set drifted", "extra.yaml")
+        extra.unlink()
+        root = tree / "spec/openapi.yaml"
+        root.write_bytes(root.read_bytes().replace(
+            b"./schemas/item.yaml", mutable_url("block").encode()
+        ))
+        # Re-pin only this controlled boundary document to reach the reference guard.
+        manifest = self.manifest.read_text()
+        old_digest = hashlib.sha256(self.server.documents[
+            f"/example/api/{PINNED_SHA}/spec/openapi.yaml"]).hexdigest()
+        self.manifest.write_text(manifest.replace(old_digest, hashlib.sha256(root.read_bytes()).hexdigest()))
+        result = subprocess.run(
+            [sys.executable, str(self.root / "scripts/corpus_remote_ref_pins.py"),
+             "--root", str(self.root), "verify-tree", "tree-row", str(tree)],
+            text=True, capture_output=True, check=False,
+        )
+        self.assert_actionable(result, "absolute `$ref`", "bytes it serves can change")
+
+    def test_retry_after_dates_and_success_pacing_are_honoured(self) -> None:
+        self.register_tree()
+        path = f"/example/api/{PINNED_SHA}/spec/openapi.yaml"
+        self.server.throttles[path] = 1
+        self.server.throttle_retry_after[path] = email.utils.format_datetime(
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(seconds=1),
+            usegmt=True,
+        )
+        self.server.success_retry_after[path] = "1"
+        started = time.monotonic()
+        result = self.fetch("tree-row")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertGreaterEqual(time.monotonic() - started, 0.9)
+        self.assertGreaterEqual(self.server.requests.count(path), 2)
+
+    def test_a_publisher_that_keeps_throttling_gets_an_actionable_failure(self) -> None:
+        self.register_tree()
+        path = f"/example/api/{PINNED_SHA}/spec/openapi.yaml"
+        self.server.throttles[path] = 6
+        result = self.fetch("tree-row")
+        self.assert_actionable(result, "remains throttled after five waits", "retry the fetch")
+        self.assertEqual(self.server.requests.count(path), 6)
+        self.assertFalse(self.destination("tree-row").exists())
+
+    def test_tree_pin_lint_rejects_invalid_records_and_inconsistent_sources(self) -> None:
+        self.register_tree()
+        original = self.manifest.read_text()
+        tree_lines = [line for line in original.splitlines() if line.startswith("tree\t")]
+        root_line, sibling_line = tree_lines
+
+        def check_with(manifest: str, phrase: str, corpus: str | None = None) -> None:
+            with self.subTest(phrase=phrase):
+                self.manifest.write_text(manifest)
+                if corpus is not None:
+                    (self.root / "tests/fixtures/CORPUS.md").write_text(corpus)
+                result = subprocess.run(
+                    [sys.executable, str(self.root / "scripts/corpus_remote_ref_pins.py"),
+                     "--root", str(self.root), "check"],
+                    text=True, capture_output=True, check=False,
+                )
+                self.assert_actionable(result, phrase)
+                self.manifest.write_text(original)
+
+        check_with(original.replace(root_line, root_line.rsplit("\t", 1)[0]), "five tab-separated cells")
+        check_with(original.replace(root_line, root_line.replace("spec/openapi.yaml", "spec/../openapi.yaml")), "invalid tree name or relative document path")
+        check_with(original.replace(root_line, root_line.replace(PINNED_SHA, "refs/heads/main")), "40-character commit")
+        check_with(original.replace(root_line, root_line.rsplit("\t", 1)[0] + "\tbad"), "invalid SHA-256")
+        check_with(original + root_line + "\n", "duplicate tree member")
+        check_with(original.replace(root_line + "\n" + sibling_line, sibling_line + "\n" + root_line), "tree records must sort")
+        check_with(original.replace("tree\ttree-row\t", "tree\tunknown-row\t"), "unknown corpus")
+        check_with(original.replace(root_line, root_line.replace(PINNED_SHA, SUPERSEDED_SHA)), "must pin its CORPUS.md root URL exactly once")
+        check_with(original.replace(sibling_line, sibling_line.replace(PINNED_SHA, SUPERSEDED_SHA)), "does not share the root URL")
+        corpus_path = self.root / "tests/fixtures/CORPUS.md"
+        corpus = corpus_path.read_text()
+        check_with(original, "must use CORPUS.md pinned ref", corpus.replace(
+            f"`{PINNED_SHA}` | MIT | link-ok | relative ref", f"`{SUPERSEDED_SHA}` | MIT | link-ok | relative ref"
+        ))
+
     # -- the test-only fetch-origin override --------------------------------
 
     def test_the_fetch_origin_override_refuses_a_non_loopback_value(self) -> None:
@@ -442,6 +596,20 @@ class TheLintHoldsTheFinishedTree(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, "")
+
+    def test_search_evidence_member_inventory_matches_the_authoritative_pins(self) -> None:
+        evidence = REPO / "docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv"
+        expected = ["corpus\tpath\timmutable_url\tsha256"]
+        expected.extend(
+            "\t".join((record.corpus_name, record.path, record.pinned_url, record.sha256))
+            for record in pin_owner.load_tree_records(REPO)
+            if record.corpus_name in {"folio-mod-authtoken", "raybot"}
+        )
+        self.assertEqual(
+            evidence.read_text(encoding="utf-8").splitlines(),
+            expected,
+            "refresh the search inventory from the authoritative corpus tree pins",
+        )
 
 
 class TheLintStillDiscriminates(unittest.TestCase):

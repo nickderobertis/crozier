@@ -72,7 +72,10 @@ while IFS=$'\t' read -r name url ref decision; do
     continue
   fi
   cached=""
-  if corpus_is_direct_spec_url "$url"; then
+  tree_root="$(corpus_tree_root "$name")"
+  if [ -n "$tree_root" ]; then
+    cached="$dest_root/$name/$tree_root"
+  elif corpus_is_direct_spec_url "$url"; then
     cached="$dest_root/$name/$(corpus_spec_cache_filename "$url")"
   fi
   # A cached spec is only reusable when it already carries this row's recorded
@@ -80,7 +83,10 @@ while IFS=$'\t' read -r name url ref decision; do
   # a superseded pin may mask the current manifest, so either falls through to a
   # real fetch. (CI is unaffected: `just test-corpus-match` and `fern-goldens
   # generate` both fetch unconditionally.)
-  if [ "$if_missing" -eq 1 ] && [ -n "$cached" ] && [ -s "$cached" ] &&
+  if [ "$if_missing" -eq 1 ] && [ -n "$tree_root" ] && [ -s "$cached" ] &&
+    corpus_tree_verify "$name" "$dest_root/$name"; then
+    source_path="$cached"
+  elif [ "$if_missing" -eq 1 ] && [ -z "$tree_root" ] && [ -n "$cached" ] && [ -s "$cached" ] &&
     corpus_pin_verify "$name" "$cached"; then
     source_path="$cached"
   else

@@ -1,17 +1,21 @@
-# Immutable substitutions applied to a fetched corpus document's absolute-URL
-# `$ref`s, so a row's byte-match verdict depends only on content this repository
-# records rather than on whatever a mutable upstream branch serves today.
+# Immutable substitutions for absolute-URL `$ref`s and complete pinned source
+# trees for relative-file `$ref`s. Both make a row's byte-match verdict depend
+# only on recorded inputs rather than a mutable upstream branch.
 #
 # corpus_name<TAB>mutable_url<TAB>pinned_url<TAB>sha256
+# tree<TAB>corpus_name<TAB>path<TAB>pinned_url<TAB>sha256
 #
 #   corpus_name  a canonical CORPUS.md numbered row name (its third cell)
 #   mutable_url  the absolute `$ref` URL as the upstream root document writes it,
 #                with the `#fragment` removed
 #   pinned_url   the immutable URL substituted for it
 #   sha256       lowercase hex SHA-256 of the bytes served at `pinned_url`
+#   tree path    repository-relative path, shared by Fern and crozier; every
+#                member of one tree uses its CORPUS.md row's commit SHA
 #
-# `#` comments and blank lines are ignored; records sort by (corpus_name,
-# mutable_url). `scripts/corpus_remote_ref_pins.py` is the only reader.
+# `#` comments and blank lines are ignored; each record kind sorts by
+# (corpus_name, mutable_url/path). `scripts/corpus_remote_ref_pins.py` is the
+# validator and fetcher.
 #
 # `80d0a6ee6c129a29c507c35b0245a16c5a81b9d3` is the `ethereum/execution-apis`
 # revision the committed `helios-verifiable-api` golden was generated from: the
@@ -24,3 +28,52 @@ helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/
 helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/state.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/state.yaml	c74bcd0cd619353320500c7f638c0a15d6413f5b69a339ddddbc80cd21fc9c73
 helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/transaction.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/transaction.yaml	b74544f4621cd44e940b0726fdcc73a67c9e05301d87285ab60468364bc75518
 helios-verifiable-api	https://raw.githubusercontent.com/ethereum/execution-apis/refs/heads/main/src/schemas/withdrawal.yaml	https://raw.githubusercontent.com/ethereum/execution-apis/80d0a6ee6c129a29c507c35b0245a16c5a81b9d3/src/schemas/withdrawal.yaml	eaa368104ba7dc8e254968d80f7ef4962e930ce9977a711bfe721d01c6e83336
+
+# Complete relative-reference tree for corpus row 139; each member uses the row’s revision.
+tree	folio-mod-authtoken	src/main/resources/openapi/headers/okapi-tenant-required.yaml	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/headers/okapi-tenant-required.yaml	51fe7fc96dad5edbb0079bca2c83968760d55a5d1ab3d7da3962f6bfcba5d367
+tree	folio-mod-authtoken	src/main/resources/openapi/headers/okapi-url-required.yaml	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/headers/okapi-url-required.yaml	5ac7f9ff11b980ebb66f4b40fff99bd0fef1d6d7812b9c3d2d0b349d1d28ef13
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/refreshToken.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/refreshToken.json	8e37849112febc78948e8c2457327dceb067fbd6a56ca3340efb2cceebfc69c4
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/signRefreshToken.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/signRefreshToken.json	0aa31e1fcb3fd5895ae076f5613b474a1933c27c2c6b19260a112e4ea1aac224
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/signTokenPayload.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/signTokenPayload.json	67c0832790e61e10e990cc380071274c9b85321605cacd6211c94deac4d39874
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/token.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/token.json	f6818fd0c586bb62c239166e0f8792c0aa7585b7c3addf99ad56fb4700b34954
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/tokenResponse.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/tokenResponse.json	8df12d60400158a6475dd0ba8a77c33b3273eac1b43e59dd13a719271877dfec
+tree	folio-mod-authtoken	src/main/resources/openapi/schemas/tokenResponseLegacy.json	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/schemas/tokenResponseLegacy.json	f6818fd0c586bb62c239166e0f8792c0aa7585b7c3addf99ad56fb4700b34954
+tree	folio-mod-authtoken	src/main/resources/openapi/token-1.0.yaml	https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml	337d8f437811d2d12d3bc1e80c2406e88d6f1a66adf472eada134fe9832ee0a8
+
+# Complete relative-reference tree for corpus row 140; each member uses the row’s revision.
+tree	raybot	api/openapi/components/parameters/paging.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/parameters/paging.yml	c05a040842413fcfba6c091c5fb83bea8a79adf647e497602c5a25c27879926e
+tree	raybot	api/openapi/components/schemas/alarm.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/alarm.yml	6e82d05ed714b73feec256622cd2092e1ceaf1b4295b287b13422ddb73e364a8
+tree	raybot	api/openapi/components/schemas/app-connection.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/app-connection.yml	f66253e10a7070377100a4d8fec7c0922c1ab6c09378ca1b6ae388fe3bb36132
+tree	raybot	api/openapi/components/schemas/command.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/command.yml	9070bf4123fd0af0f0d9c9988d1582774d1456ebbd36194623adb4b641156ecc
+tree	raybot	api/openapi/components/schemas/config.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/config.yml	d5247432cc73c3b73945c1df51a37ae933bb1472d4bfdac7e1083d672d6547a8
+tree	raybot	api/openapi/components/schemas/error-code.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/error-code.yml	a2448ff0ead116383282014868753e2766c7e4ba3bdf67c6bb45e7332197ebdd
+tree	raybot	api/openapi/components/schemas/error.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/error.yml	561fe78cb0c6345815569cc17c12270d04eafdfc358888b463bdfea2c15671f0
+tree	raybot	api/openapi/components/schemas/health.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/health.yml	c9c529dcc28bf8a50f682ca559e0e6122c654c0dc288b62a8488df28bac8a2e5
+tree	raybot	api/openapi/components/schemas/peripheral.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/peripheral.yml	f13e14b0165fd587b3c893b9840eda7e7793f8f6b999db56dcf297574eca9338
+tree	raybot	api/openapi/components/schemas/state.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/state.yml	3aaa1122e8e076ace057d860a17f95232d300651230cdb9130e1c0f3fa1719a6
+tree	raybot	api/openapi/components/schemas/system.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/system.yml	38cbb132a3fb269fbed4cd2420dc71434010bf80b104bb71dedeca6804b9230d
+tree	raybot	api/openapi/components/schemas/version.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/components/schemas/version.yml	280ed5951c62d94a44cc2f5a0909263691702f21969a45f4ef291f9273704fe1
+tree	raybot	api/openapi/openapi.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml	e2f76bafaae43ffe9e59b121b6aabda4d0936a88811ef721e49585230f461dee
+tree	raybot	api/openapi/paths/alarms.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/alarms.yml	740038a9fa12ed5bf7f6fb9b1dfcff6ffede9c96c0e65262ebf22a2cb8390a21
+tree	raybot	api/openapi/paths/alarms@{alarmId}@deactivate.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/alarms@{alarmId}@deactivate.yml	7763efae1902a80e6f2cd5c6ff5439a753338b3873d239b31e9b6a8bf6207e75
+tree	raybot	api/openapi/paths/commands.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands.yml	9f4bb6af9579d5a43fc6b362f1fdde9e1db51304fff9681be07e07e5d592157b
+tree	raybot	api/openapi/paths/commands@processing.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@processing.yml	40053081c1d54a2ed336e24b05f276ff082cc1d12000fa9d14c4d1edbd4520dc
+tree	raybot	api/openapi/paths/commands@processing@cancel.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@processing@cancel.yml	fc2a491a52c5350c9cb372576124f5f66be0a747c00776a1ae570eb7a4113684
+tree	raybot	api/openapi/paths/commands@{commandId}.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/commands@{commandId}.yml	0b60d36a81b7d660edebf75ada64eba86b8b1c5662c913ef267979a8a62e1dcb
+tree	raybot	api/openapi/paths/configs@cloud.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@cloud.yml	4c228908e85209b4690d9489b52b8e99c006ddc0ba386b4429c45aa62811802b
+tree	raybot	api/openapi/paths/configs@command.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@command.yml	45036e6e36a730c633d1e64cd98ee524d0a8693086fd037dae6c74dd484b1610
+tree	raybot	api/openapi/paths/configs@hardware.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@hardware.yml	f074b69b43fea1411e6dc88687d456b2cb8649daeb8b6f0861196056c60e4efb
+tree	raybot	api/openapi/paths/configs@http.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@http.yml	7b2cd20565c4753bf2c89d0f2425aa4862c27633d4ccef67e306325afc60e64d
+tree	raybot	api/openapi/paths/configs@log.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@log.yml	fffbca359e2665c9e77d594887b5aa9f8e0c12d708fdce7caf17b0ea5b3349f9
+tree	raybot	api/openapi/paths/configs@monitoring@battery.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@monitoring@battery.yml	4de0d04dfd3a2722a275bab7a3ba0cc7b699537d904371aca02c930a39fa0bd0
+tree	raybot	api/openapi/paths/configs@wifi.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/configs@wifi.yml	cf7074eb92c36ae35019dc3e5f0bcbab2ed175d7a9d07bf1b403840b8b1dc9cb
+tree	raybot	api/openapi/paths/error-codes.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/error-codes.yml	b430bbd38ed4b287c397777c18f60c725d0af01237bbebebd00d110df2c58413
+tree	raybot	api/openapi/paths/health.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/health.yml	394156aa44d2ce72563ec31d3a34c546bf2ff3a097dc29f9a2323589ec920995
+tree	raybot	api/openapi/paths/peripherals@serials.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/peripherals@serials.yml	f9ad0f6bd4f375d0ec60c5cb2ece7d4f94c8bcfcabdb84ff89ce57ba6be81d9b
+tree	raybot	api/openapi/paths/robot-state.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/robot-state.yml	801694b69cbfd48dfac518df2d49a56cefab18af61075a03a164e49ccee7e235
+tree	raybot	api/openapi/paths/states@limit-switch.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/states@limit-switch.yml	2ee1d6ff9dc4db9269b65a2dd05084e2de8d4b8afeb9f0c05f36754258b2ed98
+tree	raybot	api/openapi/paths/system@info.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@info.yml	4d074bb0a5cf3b32a35622a745ebe2965e020da411fd5a79beeb967984942693
+tree	raybot	api/openapi/paths/system@reboot.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@reboot.yml	4dafb12e088a87752478a06b5e4cb49a1ddd0bc5366b0816fbcb58b36b35c039
+tree	raybot	api/openapi/paths/system@status.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@status.yml	9294e24853414e58fee0c22d5455921efe4beffd4519ab938c0da8d1a2890985
+tree	raybot	api/openapi/paths/system@stop-emergency.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/system@stop-emergency.yml	b3527974c32359c9411bccaed96f419d89e462f67981e81e2a5f62f26d37501f
+tree	raybot	api/openapi/paths/version.yml	https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/paths/version.yml	a2d74210ad068256a92debe2bb295292db4b02118cee6cb360c2a996ffef52c3

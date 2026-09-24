@@ -1,0 +1,1 @@
+{"admitted": false, "at": "2026-09-24T02:32:43.202+00:00", "bucket": "core", "cost": 1, "host": "github", "kind": "probe", "reading": {"limit": 60, "remaining": 18, "reset": 1790219440, "used": 42}}

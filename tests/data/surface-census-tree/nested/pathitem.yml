@@ -1,0 +1,5 @@
+get:
+  operationId: reachable_get
+  responses:
+    "204":
+      description: No content

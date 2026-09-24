@@ -1443,29 +1443,33 @@ four models carry `extra="forbid"` in the v2 `model_config` and
 
 ## Cross-document `$ref` resolution (issue #77)
 
-Every corpus spec but one is a single self-contained document: every `$ref` is a
-local JSON pointer into the same file. `helios-verifiable-api` is not — many of
-its component schemas are `$ref`s naming one of seven `ethereum/execution-apis`
-documents by absolute URL, and Fern's importer **fetches** each one and resolves it
-transitively. Its CORPUS.md row is keyed by that fixture name, and its shapes
-cell carries the counts; they are not restated here. That is the only
-reference form Fern was measured to follow rather than discard ([`fern-limitations.md`](fern-limitations.md)
-records the ones it drops), so it is the only golden that can pin whether crozier
-opens a second document at all.
+The corpus now includes two complete source trees at one immutable revision per
+tree. `folio-mod-authtoken` resolves sibling schema and parameter files; its
+token models and client methods derive from them. `raybot` resolves 23 sibling
+Path Item files, whose operations and nested schema references generate its
+clients and models. Named schemas in those sibling files promote local `#/Name`
+dependencies into generated component models. Their paths and individual
+digests are pinned in
+[`corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv),
+and Fern and crozier receive the same layout. `helios-verifiable-api` separately
+names seven `ethereum/execution-apis` documents by absolute URL, which Fern
+fetches transitively. A relative reference outside a registered tree remains
+outside the corpus's reproducible evidence: the source pin names no bytes for
+that target, and the tree verifier rejects the omission.
 
-[`src/refs.rs`](../src/refs.rs) runs that resolution as a load-time pass, before
+[`src/refs.rs`](../src/refs.rs) runs resolution as a load-time pass, before
 every other normalization, so the rest of the pipeline still sees one document.
 Fetching is a **conditional generation-time capability**: a document with no
 remote `$ref` never opens a socket. It shells out to `curl`, the same shape
 [`pyfmt`](../src/pyfmt.rs) uses for `ruff` — crozier ships one static binary, and
 an in-process TLS stack would be a large supply-chain addition (a new license tier
-in `deny.toml`, a C toolchain on every release target) for a path almost no spec
-takes. A missing or failing `curl` is an actionable `Error::RemoteRef`, never a
+in `deny.toml`, a C toolchain on every release target) for the absolute-URL
+path. A missing or failing `curl` is an actionable `Error::RemoteRef`, never a
 silently dropped schema: dropping one would emit a plausible SDK with the wrong
 types in it. Only `http`/`https` references reach the fetcher, and the URL is
 passed after `--` so it can never be read as an option.
 
-The golden pins four rules that follow from resolving at all:
+The Helios golden pins four rules for its absolute-URL schema references:
 
 - **A fetched schema takes its pointer's name, and the local key aliases it.**
   `TransactionReceipt: {$ref: …/receipt.yaml#/ReceiptInfo}` declares the model as

@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "fixture": "folio-mod-authtoken",
+      "origin": "corpus",
+      "path": ".local/corpus/folio-mod-authtoken/src/main/resources/openapi/token-1.0.yaml"
+    }
+  ],
+  "rows": [
+    {
+      "selector": "schema.$ref:cross-document",
+      "fixture": "folio-mod-authtoken",
+      "count": 6
+    }
+  ],
+  "absent_selectors": []
+}

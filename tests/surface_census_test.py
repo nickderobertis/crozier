@@ -1381,7 +1381,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38, "Thirty-nine": 39,
+            "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -3178,6 +3178,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     # else in the two closed lists is a selector this node declared, and is what
     # the table has to cover.
     PREDICATES_OUTSIDE_TABLE = (
+        "pathItem.$ref:relative-file",  # refs.rs route, outside the ir.rs arm table
         "operation.tags:multiple",
         "operation.operationId:duplicate",
         "openapi.paths:normalized-collision",
@@ -5071,6 +5072,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             patched = root / "patched-census.py"
             patched.write_text(patched_source, encoding="utf-8")
+            shutil.copy2(SCRIPT.parent / "corpus_remote_ref_pins.py", root)
             spec = importlib.util.spec_from_file_location("patched_census", patched)
             module = importlib.util.module_from_spec(spec)
             sys.modules["patched_census"] = module
@@ -5289,6 +5291,100 @@ class FreeMapKeyWalkTests(unittest.TestCase):
         ):
             with self.subTest(selector=selector):
                 self.assertEqual(count, counted.get((selector, UNQUOTED_STATUS), 0))
+
+
+class PinnedTreeWalkTests(unittest.TestCase):
+    """The real CLI reads only reachable declarations inside a registered tree."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        root = Path(self.temporary.name)
+        self.fixtures = root / "fixtures"
+        self.fixtures.mkdir()
+        self.corpus = root / "corpus"
+        self.tree = self.corpus / "tree-proof"
+        shutil.copytree(REPO / "tests/data/surface-census-tree", self.tree)
+        sha = "a" * 40
+        url = f"https://raw.githubusercontent.com/example/api/{sha}/openapi.yml"
+        (self.fixtures / "CORPUS.md").write_text(
+            "| # | name | method | source | pinned ref | license | decision | shapes |\n"
+            "|---:|---|---|---|---|---|---|---|\n"
+            f"| 1 | `tree-proof` | github-raw | {url} | `{sha}` | MIT | link-ok | refs |\n"
+        )
+        (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
+            f"tree\ttree-proof\tnested/defs.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/defs.yml\t{'0' * 64}\n"
+            f"tree\ttree-proof\tnested/pathitem.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/pathitem.yml\t{'0' * 64}\n"
+            f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n"
+        )
+
+    def measure(self) -> dict[tuple[str, str], int]:
+        completed = run(
+            "--fixtures-root", str(self.fixtures), "--corpus-root", str(self.corpus),
+            "--fixture", "tree-proof",
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return rows(completed)
+
+    def test_a_declaration_reachable_only_across_a_document_boundary_is_counted(self) -> None:
+        document = (self.tree / "openapi.yml")
+        text = document.read_text().replace(
+            "    Second:\n      $ref: nested/defs.yml#/components/schemas/Reachable\n", ""
+        )
+        document.write_text(text)
+        self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
+        pins = self.fixtures / "corpus-remote-ref-pins.tsv"
+        pins.write_text("".join(
+            line for line in pins.read_text().splitlines(keepends=True)
+            if "\tnested/defs.yml\t" not in line
+        ))
+        self.assertEqual(0, self.measure().get(("schema.properties:non-empty", "tree-proof"), 0))
+
+    def test_two_references_to_one_declaration_count_it_once(self) -> None:
+        self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
+        # A distinct second written declaration must make the same selector 2.
+        definitions = self.tree / "nested/defs.yml"
+        definitions.write_text(definitions.read_text() +
+            "    Another:\n      type: object\n      properties:\n        secondSite:\n          type: string\n")
+        root = self.tree / "openapi.yml"
+        root.write_text(root.read_text() +
+            "    Third:\n      $ref: nested/defs.yml#/components/schemas/Another\n")
+        self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
+
+    def test_a_reference_cannot_pull_in_an_unregistered_sibling(self) -> None:
+        # `outside.yml` is present on disk but absent from the registered file set.
+        # If followed, its object would make this count two.
+        self.assertTrue((self.tree / "outside.yml").is_file())
+        self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
+        pins = self.fixtures / "corpus-remote-ref-pins.tsv"
+        sha = "a" * 40
+        pins.write_text(pins.read_text() +
+            f"tree\ttree-proof\toutside.yml\thttps://raw.githubusercontent.com/example/api/{sha}/outside.yml\t{'0' * 64}\n")
+        self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
+
+    def test_relative_path_item_reference_counts_at_its_writing_site(self) -> None:
+        measured = self.measure()
+        self.assertEqual(1, measured["pathItem.$ref:relative-file", "tree-proof"])
+        self.assertEqual(1, measured["operation.operationId", "tree-proof"])
+
+        root = self.tree / "openapi.yml"
+        root.write_text(root.read_text().replace(
+            "nested/pathitem.yml", "/absolute/pathitem.yml"
+        ))
+        measured = self.measure()
+        self.assertEqual(0, measured.get(("pathItem.$ref:relative-file", "tree-proof"), 0))
+        self.assertEqual(1, measured["pathItem.$ref", "tree-proof"])
+
+    def test_a_sibling_reference_back_into_the_root_does_not_recount_it(self) -> None:
+        root = self.tree / "openapi.yml"
+        root.write_text(root.read_text() +
+            "    Local:\n      type: object\n      properties:\n        inRoot:\n          type: string\n")
+        item = self.tree / "nested/pathitem.yml"
+        item.write_text(item.read_text().replace(
+            '    "204":\n      description: No content\n',
+            '    "200":\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../openapi.yml#/components/schemas/Local\n'
+        ))
+        self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
 
 class SourceSelectionTests(unittest.TestCase):

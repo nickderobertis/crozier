@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pin the absolute-URL `$ref`s a fetched corpus document makes into other documents.
+"""Pin absolute-URL `$ref` substitutions and complete relative-file source trees.
 
 A corpus row whose root document names another document by absolute URL is only
 reproducible if that URL is immutable. `helios-verifiable-api` names seven
@@ -7,7 +7,9 @@ reproducible if that URL is immutable. `helios-verifiable-api` names seven
 verdict used to depend on whatever somebody edited upstream that morning. The
 repair is `tests/fixtures/corpus-remote-ref-pins.tsv`: a committed table of
 `mutable_url -> pinned_url` substitutions, each carrying the SHA-256 of the bytes
-the pinned URL serves, applied to the *fetched document* at fetch time.
+the pinned URL serves, applied to the *fetched document* at fetch time. The same
+manifest's `tree` records pin every file of a multi-document source to the
+CORPUS.md row's immutable revision, path, and digest.
 
 Nothing under `src/` learns about pinning. crozier keeps fetching whatever URL the
 document it is handed contains; this module decides which document it is handed.
@@ -30,6 +32,13 @@ Commands
 `verify <corpus_name> <file>`
     Assert offline, without rewriting, that `<file>` is already in the state
     `apply` would leave it in.
+`fetch-tree <corpus_name> <directory>`
+    Fetch every pinned tree member, verify its digest and relative-reference
+    closure, and publish the complete tree at its registered paths.
+`verify-tree <corpus_name> <directory>`
+    Assert that the cached tree has exactly the pinned files and bytes.
+`tree-root <corpus_name>`
+    Print the registered root path under the tree, if one exists.
 
 `verify` is `apply`'s post-state expressed as a predicate: `apply` requires every
 record's `mutable_url` to occur and replaces every occurrence of it with the
@@ -50,13 +59,18 @@ absolute URL naming a mapped reference's file at any *other* commit remains.
 from __future__ import annotations
 
 import argparse
+import datetime
+import email.utils
 import hashlib
 import importlib.util
 import os
+import posixpath
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator, Mapping
@@ -67,6 +81,7 @@ CORPUS_RELATIVE = ("tests", "fixtures", "CORPUS.md")
 CENSUS_RELATIVE = ("scripts", "openapi-surface-census.py")
 
 COLUMNS = ("corpus_name", "mutable_url", "pinned_url", "sha256")
+TREE_COLUMNS = ("kind", "corpus_name", "path", "pinned_url", "sha256")
 
 #: The one host this repository treats as immutably addressable. A second host
 #: must arrive as a deliberate extension of this decision, not as a silent pass.
@@ -88,6 +103,8 @@ LOOPBACK_ORIGIN_RE = re.compile(r"http://(?:127\.0\.0\.1|localhost):[0-9]{1,5}")
 #: Matches `scripts/corpus-lib.sh`'s `--max-time` posture for a referenced
 #: document: long enough for a large schema, short enough to fail rather than hang.
 FETCH_TIMEOUT_SECONDS = 30
+RAW_FETCH_SPACING_SECONDS = 0.25
+_last_raw_fetch = 0.0
 
 
 class PinError(RuntimeError):
@@ -112,6 +129,16 @@ class PinRecord:
         recognizable.
         """
         return reference_identity(self.pinned_url)
+
+
+@dataclass(frozen=True)
+class TreeRecord:
+    """One file of a corpus tree at the root row's immutable revision."""
+
+    corpus_name: str
+    path: str
+    pinned_url: str
+    sha256: str
 
 
 def default_root() -> Path:
@@ -206,6 +233,8 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         cells = line.split("\t")
+        if cells[0] == "tree":
+            continue
         site = f"{path} line {number}"
         if len(cells) != len(COLUMNS):
             raise PinError(
@@ -250,6 +279,64 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
     _reject_prefixes(path, records)
     _reject_disorder(path, records)
     return records
+
+
+def load_tree_records(root: Path | None = None) -> list[TreeRecord]:
+    """Read tree pins from the same manifest as absolute-reference pins."""
+    root = default_root() if root is None else root
+    manifest = root / "corpus-remote-ref-pins.tsv" if (root / "CORPUS.md").is_file() else manifest_path(root)
+    if not manifest.is_file():
+        return []
+    records: list[TreeRecord] = []
+    seen: set[tuple[str, str]] = set()
+    for number, line in enumerate(manifest.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("\t")
+        if cells[0] != "tree":
+            continue
+        site = f"{manifest} line {number}"
+        if len(cells) != len(TREE_COLUMNS):
+            raise PinError(
+                f"{site}: tree record needs five tab-separated cells "
+                f"({', '.join(TREE_COLUMNS)}); rewrite that row with those columns"
+            )
+        _, name, path, url, digest = cells
+        parts = Path(path)
+        if (
+            not name or not path or parts.is_absolute() or "\\" in path
+            or any(part in {"", ".", ".."} for part in path.split("/"))
+            or parts.suffix not in {".json", ".yaml", ".yml"}
+        ):
+            raise PinError(
+                f"{site}: invalid tree name or relative document path {path!r}; "
+                "use a relative .json/.yaml/.yml path without empty, . or .. segments"
+            )
+        failure = immutability_failure(url)
+        if failure or not url.endswith("/" + path):
+            raise PinError(
+                f"{site}: tree URL must name {path} at a 40-character commit: "
+                f"{failure or url}; rewrite it as a raw.githubusercontent.com URL "
+                "at the CORPUS.md row's pinned commit"
+            )
+        if not DIGEST_RE.fullmatch(digest):
+            raise PinError(
+                f"{site}: invalid SHA-256 for {path}; record the 64 lowercase "
+                "hexadecimal digits of the pinned file's bytes"
+            )
+        if (name, path) in seen:
+            raise PinError(
+                f"{site}: duplicate tree member {name} {path}; delete the repeated record"
+            )
+        seen.add((name, path))
+        records.append(TreeRecord(name, path, url, digest))
+    if records != sorted(records, key=lambda r: (r.corpus_name, r.path)):
+        raise PinError(f"{manifest}: tree records must sort by corpus name and path")
+    return records
+
+
+def tree_records_for(corpus_name: str, root: Path | None = None) -> list[TreeRecord]:
+    return [r for r in load_tree_records(root) if r.corpus_name == corpus_name]
 
 
 def _sort_key(record: PinRecord) -> tuple[str, str]:
@@ -319,6 +406,17 @@ def corpus_names(root: Path) -> set[str]:
     if not names:
         raise PinError(f"no numbered corpus rows found in {path}")
     return names
+
+
+def corpus_sources(root: Path) -> dict[str, tuple[str, str]]:
+    """The URL and immutable ref of each canonical numbered corpus row."""
+    sources: dict[str, tuple[str, str]] = {}
+    path = root / "CORPUS.md" if (root / "CORPUS.md").is_file() else root.joinpath(*CORPUS_RELATIVE)
+    for line in path.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]
+        if len(cells) == 8 and cells[0].isdigit():
+            sources[cells[1]] = (cells[3], cells[4])
+    return sources
 
 
 # ---------------------------------------------------------------------------
@@ -477,36 +575,74 @@ def origin_override(environ: Mapping[str, str] | None = None) -> str | None:
 
 
 def fetch_bytes(url: str, override: str | None) -> bytes:
+    global _last_raw_fetch
     target = override + url[len(CANONICAL_ORIGIN) :] if override else url
-    try:
-        result = subprocess.run(
-            [
-                "curl",
-                "--silent",
-                "--show-error",
-                "--fail",
-                "--location",
-                "--max-time",
-                str(FETCH_TIMEOUT_SECONDS),
-                # `--` so a URL beginning with `-` can never be read as an option.
-                "--",
-                target,
-            ],
-            capture_output=True,
-            check=False,
-        )
-    except OSError as error:
-        raise PinError(
-            f"could not run `curl` to fetch {target}: {error}; install curl — the pin "
-            "guard verifies each pinned document's digest with it"
-        ) from error
-    if result.returncode != 0:
-        detail = result.stderr.decode("utf-8", "replace").strip()
-        raise PinError(
-            f"could not fetch {target}: {detail or f'curl exited {result.returncode}'}; "
-            "check the URL is reachable, then re-run the fetch"
-        )
-    return result.stdout
+    refusal_count = 0
+    def retry_delay(value: str | None, fallback: float) -> float:
+        if value is None:
+            return fallback
+        if value.isdigit():
+            return min(float(value), 60)
+        try:
+            reset = email.utils.parsedate_to_datetime(value)
+            return min(60, max(0, (reset - datetime.datetime.now(datetime.timezone.utc)).total_seconds()))
+        except (TypeError, ValueError, OverflowError):
+            return fallback
+
+    while True:
+        if override is None:
+            pause = RAW_FETCH_SPACING_SECONDS - (time.monotonic() - _last_raw_fetch)
+            if pause > 0:
+                time.sleep(pause)
+        with tempfile.TemporaryDirectory(prefix="crozier-pin-fetch-") as directory:
+            body = Path(directory) / "body"
+            headers = Path(directory) / "headers"
+            try:
+                result = subprocess.run(
+                    [
+                        "curl", "--silent", "--show-error", "--fail", "--location",
+                        # Path templates in a publisher's filename may contain braces.
+                        "--globoff", "--max-time", str(FETCH_TIMEOUT_SECONDS),
+                        "--dump-header", str(headers), "--output", str(body),
+                        "--write-out", "%{http_code}",
+                        # `--` keeps the URL from becoming a curl option.
+                        "--", target,
+                    ],
+                    capture_output=True,
+                    check=False,
+                )
+            except OSError as error:
+                raise PinError(
+                    f"could not run `curl` to fetch {target}: {error}; install curl — "
+                    "the pin guard verifies each pinned document's digest with it"
+                ) from error
+            if override is None:
+                _last_raw_fetch = time.monotonic()
+            status = result.stdout.decode("ascii", "replace").strip()
+            header_text = headers.read_text(errors="replace") if headers.exists() else ""
+            retry_after = next(
+                (line.split(":", 1)[1].strip() for line in reversed(header_text.splitlines())
+                 if line.lower().startswith("retry-after:")),
+                None,
+            )
+            if status == "429" or (retry_after is not None and status.startswith(("4", "5"))):
+                refusal_count += 1
+                if refusal_count > 5:
+                    raise PinError(f"{target} remains throttled after five waits; retry the fetch when the publisher permits requests")
+                delay = retry_delay(retry_after, min(60, 2 ** refusal_count))
+                time.sleep(max(delay, RAW_FETCH_SPACING_SECONDS))
+                continue
+            if result.returncode != 0:
+                detail = result.stderr.decode("utf-8", "replace").strip()
+                raise PinError(
+                    f"could not fetch {target}: {detail or f'curl exited {result.returncode}'}; "
+                    "check the URL is reachable, then re-run the fetch"
+                )
+            if retry_after is not None:
+                # A successful response may still ask the client to pace its
+                # next request. Honour it before returning to the tree loop.
+                time.sleep(retry_delay(retry_after, 0))
+            return body.read_bytes()
 
 
 # ---------------------------------------------------------------------------
@@ -524,6 +660,39 @@ def check(root: Path) -> None:
             raise PinError(
                 f"{manifest}: corpus_name {record.corpus_name!r} is not a canonical "
                 f"CORPUS.md numbered row; correct the name or delete the record"
+            )
+    sources = corpus_sources(root)
+    by_name: dict[str, list[TreeRecord]] = {}
+    for record in load_tree_records(root):
+        if record.corpus_name not in sources:
+            raise PinError(f"{manifest}: tree member names unknown corpus {record.corpus_name}; correct the name or delete the record")
+        by_name.setdefault(record.corpus_name, []).append(record)
+    for name, members in by_name.items():
+        source_url, revision = sources[name]
+        failure = immutability_failure(source_url)
+        if failure:
+            raise PinError(
+                f"{manifest}: {name} root URL {failure}; pin the CORPUS.md source "
+                "to the same 40-character commit as its tree members"
+            )
+        root_matches = [record for record in members if record.pinned_url == source_url]
+        if len(root_matches) != 1:
+            raise PinError(
+                f"{manifest}: {name} must pin its CORPUS.md root URL exactly once; "
+                "add or remove the tree record naming that source URL"
+            )
+        prefix = source_url[: -len(root_matches[0].path)]
+        wrong = next((record for record in members if record.pinned_url != prefix + record.path), None)
+        if wrong is not None:
+            raise PinError(
+                f"{manifest}: {name} member {wrong.path} at {wrong.pinned_url} does not "
+                "share the root URL's repository and revision; pin it to the "
+                f"same source tree as {source_url}"
+            )
+        if _path_segments(source_url)[2] != revision:
+            raise PinError(
+                f"{manifest}: {name} tree root must use CORPUS.md pinned ref "
+                f"{revision}; update the row's ref or tree URLs so they agree"
             )
 
 
@@ -578,6 +747,78 @@ def verify(root: Path, corpus_name: str, path: Path) -> None:
         raise PinError(failure)
 
 
+def tree_root(root: Path, corpus_name: str) -> TreeRecord | None:
+    records = tree_records_for(corpus_name, root)
+    if not records:
+        return None
+    source = corpus_sources(root).get(corpus_name)
+    if source is None:
+        raise PinError(f"{corpus_name} has tree pins but no CORPUS.md row; add the row or delete the pins")
+    source_url, _ = source
+    match = next((record for record in records if record.pinned_url == source_url), None)
+    if match is None:
+        raise PinError(f"{corpus_name} tree pins have no root matching CORPUS.md; correct the root URL or its pin")
+    return match
+
+
+def verify_tree(root: Path, corpus_name: str, directory: Path) -> Path:
+    """Check the complete cached file set, each digest, and relative references."""
+    records = tree_records_for(corpus_name, root)
+    root_record = tree_root(root, corpus_name)
+    if root_record is None:
+        raise PinError(f"{corpus_name} has no tree pins; add its members to tests/fixtures/corpus-remote-ref-pins.tsv")
+    expected = {record.path for record in records}
+    found = {
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*") if path.is_file()
+    }
+    if found != expected:
+        raise PinError(f"{corpus_name} tree file set drifted: missing {sorted(expected - found)}, extra {sorted(found - expected)}; re-run scripts/fetch-corpus.sh without --if-missing")
+    for record in records:
+        path = directory / record.path
+        measured = hashlib.sha256(path.read_bytes()).hexdigest()
+        if measured != record.sha256:
+            raise PinError(f"{corpus_name} {record.path} serves sha256 {measured}, pinned {record.sha256}; verify upstream bytes and correct the pin")
+        for reference in document_references(root, path):
+            address = strip_fragment(reference)
+            if not address:
+                continue
+            if is_absolute_reference(address):
+                failure = immutability_failure(address)
+                if failure:
+                    raise PinError(
+                        f"{corpus_name} {record.path}: absolute `$ref` {failure}; "
+                        "pin that reference to immutable bytes or correct the document"
+                    )
+                continue
+            member = posixpath.normpath(posixpath.join(posixpath.dirname(record.path), address))
+            if member not in expected:
+                raise PinError(f"{corpus_name} {record.path}: `$ref` {reference!r} leaves the pinned tree; pin {member} or correct the reference")
+    return directory / root_record.path
+
+
+def fetch_tree(root: Path, corpus_name: str, directory: Path) -> Path:
+    """Fetch and publish a complete tree only after every digest passes."""
+    records = tree_records_for(corpus_name, root)
+    if not records:
+        raise PinError(f"{corpus_name} has no tree pins; add its members to tests/fixtures/corpus-remote-ref-pins.tsv")
+    directory.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=".corpus-tree.", dir=directory.parent))
+    try:
+        for record in records:
+            destination = stage / record.path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(fetch_bytes(record.pinned_url, origin_override()))
+        root_path = verify_tree(root, corpus_name, stage)
+        if directory.exists():
+            shutil.rmtree(directory)
+        os.replace(stage, directory)
+        return directory / root_path.relative_to(stage)
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -588,6 +829,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check", help="validate the pin manifest offline")
+    tree_info = commands.add_parser("tree-root", help="print a row's pinned tree root, if any")
+    tree_info.add_argument("corpus_name")
+    for name in ("fetch-tree", "verify-tree"):
+        command = commands.add_parser(name)
+        command.add_argument("corpus_name")
+        command.add_argument("directory", type=Path)
     for name, help_text in (
         ("apply", "substitute a row's pins into a fetched document"),
         ("verify", "assert a document already carries a row's pins"),
@@ -607,6 +854,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "check":
             check(root)
+        elif args.command == "tree-root":
+            record = tree_root(root, args.corpus_name)
+            if record is not None:
+                print(record.path)
+        elif args.command == "fetch-tree":
+            print(fetch_tree(root, args.corpus_name, args.directory))
+        elif args.command == "verify-tree":
+            print(verify_tree(root, args.corpus_name, args.directory))
         elif args.command == "apply":
             apply(root, args.corpus_name, args.file, args.document_name)
         else:

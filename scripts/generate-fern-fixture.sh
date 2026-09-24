@@ -142,7 +142,24 @@ trap cleanup EXIT
 # Scaffold a minimal Fern workspace around the vendored OpenAPI spec. We ignore
 # Fern's definition files by construction: only the OpenAPI document is wired in.
 mkdir -p "$workdir/fern/openapi"
-cp "$spec" "$workdir/fern/openapi/openapi.yml"
+api_path="openapi/openapi.yml"
+if [ -n "$SPEC_OVERRIDE" ]; then
+  tree_root="$(python3 "$repo_root/scripts/corpus_remote_ref_pins.py" tree-root "$FIXTURE")"
+  if [ -n "$tree_root" ]; then
+    tree_dir="${spec%/"$tree_root"}"
+    [ "$tree_dir" != "$spec" ] && [ -d "$tree_dir" ] || {
+      echo "generate-fern-fixture: $spec is not the pinned tree root $tree_root; fetch the complete tree with scripts/fetch-corpus.sh and pass its root" >&2
+      exit 1
+    }
+    python3 "$repo_root/scripts/corpus_remote_ref_pins.py" verify-tree "$FIXTURE" "$tree_dir" >/dev/null
+    cp -R "$tree_dir/." "$workdir/fern/openapi/"
+    api_path="openapi/$tree_root"
+  else
+    cp "$spec" "$workdir/fern/openapi/openapi.yml"
+  fi
+else
+  cp "$spec" "$workdir/fern/openapi/openapi.yml"
+fi
 cat > "$workdir/fern/fern.config.json" <<JSON
 { "organization": "fern", "version": "${FERN_CLI_VERSION}" }
 JSON
@@ -173,7 +190,7 @@ if [ -n "${EXTRA_FIELDS:-}" ]; then
 fi
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
-  path: openapi/openapi.yml
+  path: ${api_path}
 groups:
   python-sdk:
 ${audiences_block}    generators:
