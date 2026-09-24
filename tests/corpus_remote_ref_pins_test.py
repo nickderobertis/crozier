@@ -37,6 +37,8 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 MODULE = REPO / "scripts" / "corpus_remote_ref_pins.py"
+sys.path.insert(0, str(REPO / "scripts"))
+import corpus_remote_ref_pins as pin_owner
 MANIFEST_NAME = "corpus-remote-ref-pins.tsv"
 COPIED_SCRIPTS = (
     "corpus-lib.sh",
@@ -594,6 +596,20 @@ class TheLintHoldsTheFinishedTree(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, "")
+
+    def test_search_evidence_member_inventory_matches_the_authoritative_pins(self) -> None:
+        evidence = REPO / "docs/openapi-surface/witness-search-github-publisher-trees/pinned-members.tsv"
+        expected = ["corpus\tpath\timmutable_url\tsha256"]
+        expected.extend(
+            "\t".join((record.corpus_name, record.path, record.pinned_url, record.sha256))
+            for record in pin_owner.load_tree_records(REPO)
+            if record.corpus_name in {"folio-mod-authtoken", "raybot"}
+        )
+        self.assertEqual(
+            evidence.read_text(encoding="utf-8").splitlines(),
+            expected,
+            "refresh the search inventory from the authoritative corpus tree pins",
+        )
 
 
 class TheLintStillDiscriminates(unittest.TestCase):

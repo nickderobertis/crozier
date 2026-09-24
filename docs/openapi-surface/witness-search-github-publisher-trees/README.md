@@ -4,7 +4,8 @@
 `4428dea2f79b833aead4c89df5bd8d9e32b7b0c8`; it reports
 `truncated: false`. `pinned-members.tsv` records each OpenAPI member registered
 from that tree and from FOLIO's publisher tree, with its path, immutable URL and
-SHA-256. Both lists are enforced by the corpus pin lint and fetch path.
+SHA-256. The corpus pin lint and fetch path enforce the authoritative manifest;
+the offline pin test reconciles this search inventory with it.
 
 `raybot-census.json` measures 23 `pathItem.$ref:relative-file` sites and 69
 `schema.$ref:cross-document` sites in Raybot's pinned tree;
