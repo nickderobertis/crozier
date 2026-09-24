@@ -318,6 +318,16 @@ impl Resolver<'_> {
         if let Some(reference) = item.reference.clone() {
             if let Some((_, fragment)) = split_external(&reference) {
                 source_path = DocumentLocation::from_reference(&reference, source);
+                // Fern drops a Path Item whose relative sibling file is absent
+                // (the CyberArk corpus pins this). A present sibling still
+                // resolves, and other missing reference kinds remain errors.
+                if let DocumentLocation::Local(file) = &source_path {
+                    if matches!(std::fs::metadata(file), Err(error) if error.kind() == std::io::ErrorKind::NotFound)
+                    {
+                        *item = PathItem::default();
+                        return Ok(());
+                    }
+                }
                 let node = pointer(self.document(&source_path, &reference)?, fragment)
                     .cloned()
                     .ok_or_else(|| {
@@ -1193,7 +1203,7 @@ components:
     }
 
     #[test]
-    fn a_missing_relative_path_item_is_an_actionable_error() {
+    fn a_missing_relative_path_item_is_discarded_like_fern() {
         let directory = tempfile::tempdir().expect("temporary spec tree");
         let root = directory.path().join("openapi.yml");
         std::fs::write(
@@ -1202,9 +1212,23 @@ components:
         )
         .expect("root");
         let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
-        let error = resolve(&mut document, &CurlFetcher, &root).expect_err("missing sibling");
+        resolve(&mut document, &CurlFetcher, &root).expect("Fern discards a missing Path Item");
+        assert!(document.paths["/health"].get.is_none());
+    }
+
+    #[test]
+    fn a_missing_relative_schema_is_an_actionable_error() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Missing, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Missing:\n      $ref: schemas/absent.yml#/Missing\n",
+        )
+        .expect("root");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        let error = resolve(&mut document, &CurlFetcher, &root).expect_err("missing schema");
         let message = error.to_string();
-        assert!(message.contains("paths/absent.yml"), "{message}");
+        assert!(message.contains("schemas/absent.yml"), "{message}");
         assert!(message.contains("could not read"), "{message}");
     }
 }
