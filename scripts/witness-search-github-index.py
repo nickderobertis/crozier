@@ -27,6 +27,7 @@ FIELDS = (
     "sources",
     "classification",
     "declared_keys",
+    "key_screens",
     "licence",
     "ref_screen",
     "fern",
@@ -70,13 +71,15 @@ def latest_candidates(root: Path) -> list[tuple[str, int, dict[str, Any]]]:
 
 def latest_screens(
     root: Path,
-) -> dict[tuple[str, str, str], tuple[str, int, dict[str, Any]]]:
+) -> dict[tuple[str, str, str, str], tuple[str, int, dict[str, Any]]]:
     latest = {}
     for source in SOURCES:
         filename = f"witness-search-{source}/screens.jsonl"
         for number, row in records(root / filename):
-            identity = (row["repository"], row["path"], row["sha256"])
-            latest[identity] = (filename, number, row)
+            for key in row.get("keys") or [row.get("key")]:
+                if key:
+                    identity = (row["repository"], row["path"], row["sha256"], key)
+                    latest[identity] = (filename, number, row)
     return latest
 
 
@@ -119,21 +122,61 @@ def index_rows(root: Path) -> list[dict[str, str]]:
             if "excluded-non-openapi-3" in statuses
             else "unreported"
         )
-        screen = screens.get((repository, path, digest))
-        if screen:
-            screen_file, screen_line, verdict = screen
-            if verdict["disposition"] not in SCREEN_OUTCOMES:
-                raise ValueError(
-                    f"{screen_file}:{screen_line}: unfinished screen disposition"
+        key_screens = {}
+        for key in sorted(keys):
+            screen = screens.get((repository, path, digest, key))
+            if screen:
+                screen_file, screen_line, verdict = screen
+                if verdict["disposition"] not in SCREEN_OUTCOMES:
+                    raise ValueError(
+                        f"{screen_file}:{screen_line}: unfinished screen disposition"
+                    )
+                key_screens[key] = {
+                    "licence": verdict["license"],
+                    "ref": verdict["ref"],
+                    "fern": verdict["fern"],
+                    "disposition": verdict["disposition"],
+                    "evidence": f"{screen_file}:{screen_line}",
+                }
+            else:
+                key_screens[key] = {
+                    "licence": "outstanding-screen",
+                    "ref": "outstanding-screen",
+                    "fern": "outstanding-screen",
+                    "disposition": "outstanding-screen",
+                    "evidence": "outstanding-screen",
+                }
+        if keys:
+            for field, target in (
+                ("licence", "licence"),
+                ("ref", "ref_screen"),
+                ("fern", "fern"),
+            ):
+                values = {screen[field] for screen in key_screens.values()}
+                value = (
+                    next(iter(values)) if len(values) == 1 else "mixed: see key_screens"
                 )
-            licence = verdict["license"]
-            ref_screen = verdict["ref"]
-            fern = verdict["fern"]
-            disposition = verdict["disposition"]
-            screen_evidence = f"{screen_file}:{screen_line}"
-        elif keys:
-            licence = ref_screen = fern = disposition = screen_evidence = (
-                "outstanding-screen"
+                if target == "licence":
+                    licence = value
+                elif target == "ref_screen":
+                    ref_screen = value
+                else:
+                    fern = value
+            outcomes = {screen["disposition"] for screen in key_screens.values()}
+            disposition = (
+                next(iter(outcomes)) if len(outcomes) == 1 else "mixed: see key_screens"
+            )
+            screen_evidence = (
+                ";".join(
+                    sorted(
+                        {
+                            screen["evidence"]
+                            for screen in key_screens.values()
+                            if screen["evidence"] != "outstanding-screen"
+                        }
+                    )
+                )
+                or "outstanding-screen"
             )
         else:
             licence = ref_screen = fern = screen_evidence = (
@@ -149,6 +192,9 @@ def index_rows(root: Path) -> list[dict[str, str]]:
                 "sources": ",".join(sources),
                 "classification": classification,
                 "declared_keys": ",".join(sorted(keys)) or "none",
+                "key_screens": json.dumps(
+                    key_screens, sort_keys=True, separators=(",", ":")
+                ),
                 "licence": licence,
                 "ref_screen": ref_screen,
                 "fern": fern,

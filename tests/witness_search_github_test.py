@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import csv
 import importlib.util
 import json
 import subprocess
@@ -561,6 +562,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             json.dumps(
                 {
                     **identity,
+                    "keys": ["shape"],
                     "license": "passed: publisher grant",
                     "ref": "passed: immutable",
                     "fern": "passed: generated SDK",
@@ -581,10 +583,22 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn("github-code-search,github-publisher-trees,sourcegraph", index)
         self.assertIn("witness-found", index)
         subprocess.run([*command, "--check"], check=True, capture_output=True)
+        (code / "candidates.jsonl").write_text(
+            (code / "candidates.jsonl").read_text()
+            + json.dumps({**identity, "key": "other", "disposition": "declares"})
+            + "\n"
+        )
+        subprocess.run(command, check=True, capture_output=True, text=True)
+        with (root / "witness-search-github/candidates.tsv").open() as index_file:
+            candidate = next(csv.DictReader(index_file, delimiter="\t"))
+        screens = json.loads(candidate["key_screens"])
+        self.assertEqual("witness-found", screens["shape"]["disposition"])
+        self.assertEqual("outstanding-screen", screens["other"]["disposition"])
         (sourcegraph / "screens.jsonl").write_text(
             json.dumps(
                 {
                     **identity,
+                    "keys": ["shape"],
                     "license": "not-run: key closed by found witness",
                     "ref": "not-run: key closed by found witness",
                     "fern": "not-run: key closed by found witness",
