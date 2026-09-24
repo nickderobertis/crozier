@@ -53,7 +53,7 @@ CODE_SEARCH_SPACING_S = 30.0
 CODE_SEARCH_REFUSAL_COOLDOWN_S = 300.0
 SOURCEGRAPH_SPACING_S = 10.0
 SOURCEGRAPH_REFUSAL_COOLDOWN_S = 3600.0
-OPENAPI_VERSION = re.compile(r"3\.[01]\.\d+(?:[-+].*)?")
+OPENAPI_VERSION = re.compile(r"3\.\d+\.\d+(?:[-+].*)?")
 FIELD = re.compile(r"(?:schema|securityScheme|components)\.([A-Za-z$][A-Za-z0-9$]*)")
 DOCUMENT_NAMES = (
     "openapi.yaml",

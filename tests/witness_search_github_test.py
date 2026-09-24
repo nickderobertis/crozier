@@ -138,10 +138,11 @@ class LocalServer(BaseHTTPRequestHandler):
             if state["raw_refuse"] and state["raw_hits"] == 1:
                 self.reply(429, {"message": "wait"}, {"Retry-After": "0.1"})
             else:
+                document = state["raw_document"]
                 self.send_response(200)
-                self.send_header("Content-Length", str(len(DOCUMENT)))
+                self.send_header("Content-Length", str(len(document)))
                 self.end_headers()
-                self.wfile.write(DOCUMENT)
+                self.wfile.write(document)
         elif self.path.startswith("/.api/search/stream"):
             state["sourcegraph"] += 1
             if state["refuse_sourcegraph"] and state["sourcegraph"] == 1:
@@ -192,6 +193,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "refuse_sourcegraph": False,
             "raw_hits": 0,
             "raw_refuse": False,
+            "raw_document": DOCUMENT,
             "trees": 0,
             "large": False,
         }
@@ -416,6 +418,22 @@ class WitnessSearchGithubTests(unittest.TestCase):
         ]
         self.assertTrue(any("backoff" in row["cause"] for row in waits))
         self.assertTrue(any(row["cause"] == "spacing" for row in waits))
+
+    def test_newer_openapi_three_document_is_censused(self) -> None:
+        self.server.state["raw_document"] = DOCUMENT.replace(
+            b"openapi: 3.0.3", b"openapi: 3.2.0"
+        ).replace(b"type: string", b"type: object\n          additionalProperties: false")
+        result = self.search.sourcegraph_document(
+            "closed-object",
+            "schema.additionalProperties=false",
+            {
+                "repository": "github.com/example/api",
+                "path": "openapi.yaml",
+                "commit": "c" * 40,
+            },
+        )
+        self.assertEqual("declares", result["disposition"])
+        self.assertEqual(1, result["selector_count"])
 
 
 if __name__ == "__main__":
