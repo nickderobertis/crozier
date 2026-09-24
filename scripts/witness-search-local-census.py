@@ -99,6 +99,15 @@ def main() -> int:
     args = parser.parse_args()
     if args.workers < 1:
         parser.error("--workers must be positive")
+    documents = []
+    for value in args.documents:
+        source, separator, root_text = value.partition("=")
+        root = Path(root_text)
+        if not separator or not source or not root_text or not root.is_dir():
+            parser.error(
+                f"--documents must be SOURCE=DIR with an existing DIR: {value}"
+            )
+        documents.append((source, root))
     try:
         keys = contract_keys(args.contract)
     except (OSError, ValueError) as error:
@@ -112,13 +121,7 @@ def main() -> int:
     header = ("source", "key", "selector", "document", "count")
     if not args.all_documents_jsonl:
         writer.writerow((*header, "sha256", "openapi_version") if args.all_documents else header)
-    for value in args.documents:
-        source, separator, root_text = value.partition("=")
-        root = Path(root_text)
-        if not separator or not source or not root_text or not root.is_dir():
-            parser.error(
-                f"--documents must be SOURCE=DIR with an existing DIR: {value}"
-            )
+    for source, root in documents:
         paths = sorted(
             path
             for path in root.rglob("*")
