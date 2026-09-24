@@ -162,7 +162,12 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
                     identity = (key, candidate_name(item), tree["commit"])
                     if identity not in latest:
                         latest[identity] = classify(
-                            source, key, item, f"trees.jsonl:{number}", screened
+                            source,
+                            key,
+                            item,
+                            f"trees.jsonl:{number}",
+                            screened,
+                            closed=(directory / f"closure-{key}.json").is_file(),
                         )
     else:
         for number, query in jsonl(directory / "queries.jsonl"):
