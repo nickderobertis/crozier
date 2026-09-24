@@ -1,0 +1,63 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 12 errors
+    [error]
+        path: myUser.yml -> service -> endpoints -> getUserInfo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: register.yml -> service -> endpoints -> requestRegistration -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 1
+
+    [error]
+        path: register.yml -> service -> endpoints -> user -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 1
+
+    [error]
+        path: users.yml -> service -> endpoints -> addUser -> examples[0] -> request
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> getUser -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> getUsers -> examples[0] -> query-parameters
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: users.yml -> service -> endpoints -> getUsers -> examples[0] -> response
+        issue: Expected example to be an object. Example is: 2
+
+    [error]
+        path: video.yml -> service -> endpoints -> uploadResumableInit -> request -> body
+        issue: Object has multiple properties named "thumbnailfile":
+  - <Inlined Request> -> thumbnailfile
+  - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
+
+    [error]
+        path: video.yml -> service -> endpoints -> uploadResumableInit -> request -> body
+        issue: Object has multiple properties named "previewfile":
+  - <Inlined Request> -> previewfile
+  - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> previewfile
+
+    [error]
+        path: video.yml -> service -> endpoints -> uploadResumableInit
+        issue: Multiple request properties have the name thumbnailfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> thumbnailfile
+  - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
+
+    [error]
+        path: video.yml -> service -> endpoints -> uploadResumableInit
+        issue: Multiple request properties have the name previewfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> previewfile
+  - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> previewfile
+
+    [error]
+        path: videoChannels.yml -> service -> endpoints -> inviteVideoChannelCollaborator -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: {"id":1,"label":"label"}
+
+Found 12 errors and 59 warnings in 0.005 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 12 errors and 59 warnings in 0.005 seconds. Run fern check --warnings to print out the warnings not shown.
