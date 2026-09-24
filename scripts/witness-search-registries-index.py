@@ -57,10 +57,13 @@ def outstanding_rows(root: Path) -> list[dict[str, str]]:
                     row["key"], "witness-search-keys.tsv")
     for source in SOURCES:
         directory = root / f"witness-search-{source}"
-        for row in read_tsv(directory / "records.tsv", RECORD_FIELDS):
+        for number, row in enumerate(read_tsv(directory / "records.tsv", RECORD_FIELDS), 2):
             if row["disposition"] == "outstanding":
-                blocker = next(row[f] for f in ("licence_screen", "revision_screen", "fern_screen")
-                               if row[f] != "pass")
+                blocker = next((row[f] for f in ("licence_screen", "revision_screen", "fern_screen")
+                                if row[f] != "pass"), None)
+                if blocker is None:
+                    raise ValueError(f"{directory / 'records.tsv'}:{number} is outstanding but "
+                                     "every screen reads pass")
                 add(row["key"], source, "inconclusive-screen", blocker,
                     f"{row['candidate']}@{row['revision']}", f"witness-search-{source}/records.tsv")
         enumeration = read_tsv(directory / "enumeration.tsv",

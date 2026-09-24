@@ -590,6 +590,13 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(broken.returncode, 1)
             self.assertIn("does not have the candidate-record header", broken.stderr)
             self.assertIn("repair the ledger it names", broken.stderr)
+            (root / "witness-search-jentic/records.tsv").write_text(
+                header + "jentic\tshape-a\tall-pass.json\tabc\td\t1\tpass\tpass\tpass\toutstanding\tx\n",
+                encoding="utf-8")
+            passing = subprocess.run(command, capture_output=True, text=True, timeout=30)
+            self.assertEqual(passing.returncode, 1)
+            self.assertIn("records.tsv:2 is outstanding but every screen reads pass", passing.stderr)
+            self.assertIn("repair the ledger it names", passing.stderr)
             (root / "witness-search-jentic/records.tsv").write_text(header, encoding="utf-8")
             (root / "witness-search-keys.tsv").write_text("key\tselector\nshape-a\tx\n", encoding="utf-8")
             unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
