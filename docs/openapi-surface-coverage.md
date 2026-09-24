@@ -3549,7 +3549,8 @@ cells rule this way:
   refusal has no distinct region key or Contract A artifact and remains open.
 - `encoding-allow-reserved` reads only the `ignores` half; its pair is committed.
 - `boolean-schema-true` reads `coincidence` at `items` and `discards` at a
-  property. It owes a pair for the first and names the tree the second owes.
+  property. Its committed pair measures the first; the ledger records the
+  candidate measurement for the second.
 
 #### The rows, and how they are derived
 

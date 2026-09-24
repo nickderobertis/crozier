@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: dollar-dynamic-recursion
+  version: 1.0.0
+servers:
+  - url: https://probe.invalid
+paths:
+  /tree:
+    get:
+      operationId: getTree
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tree"
+  /strict-tree:
+    get:
+      operationId: getStrictTree
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StrictTree"
+components:
+  schemas:
+    Tree:
+      title: Tree
+      type: object
+      properties:
+        value:
+          type: string
+        children:
+          type: array
+          items:
+            $dynamicRef: "#node"
+      required:
+        - value
+      $defs:
+        node:
+          $dynamicAnchor: node
+          $ref: "#/components/schemas/Tree"
+    StrictTree:
+      title: StrictTree
+      $dynamicAnchor: node
+      $ref: "#/components/schemas/Tree"
+      unevaluatedProperties: false
