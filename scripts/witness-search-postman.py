@@ -175,21 +175,22 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
                 content_type = ""
                 try:
                     guard.acquire("postman", cost=1)
+                    try:
+                        with urllib.request.urlopen(request, timeout=60) as response:
+                            body = response.read()
+                            status, content_type = response.status, response.headers.get("Content-Type", "")
+                            guard.record(response)
+                    except urllib.error.HTTPError as response:
+                        body = response.read()
+                        status, content_type = response.code, response.headers.get("Content-Type", "")
+                        guard.record(response)
+                    except (OSError, urllib.error.URLError) as error:
+                        status, body = None, str(error).encode()
+                        guard.record(SimpleNamespace(status=503, headers={}, url=url))
                 except GUARD.SecondaryLimit as error:
+                    # The lane's refusal budget is spent: record the refusal and stop asking.
                     status, body = None, str(error).encode()
                     break
-                try:
-                    with urllib.request.urlopen(request, timeout=60) as response:
-                        body = response.read()
-                        guard.record(response)
-                        status, content_type = response.status, response.headers.get("Content-Type", "")
-                except urllib.error.HTTPError as response:
-                    body = response.read()
-                    guard.record(response)
-                    status, content_type = response.code, response.headers.get("Content-Type", "")
-                except (OSError, urllib.error.URLError) as error:
-                    guard.record(SimpleNamespace(status=503, headers={}, url=url))
-                    status, body = None, str(error).encode()
                 if status not in GUARD.REFUSAL_STATUSES and status is not None:
                     break
                 # A throttle is waited out by the next acquire's backoff, never recorded as an answer.

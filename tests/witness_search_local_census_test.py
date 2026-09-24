@@ -460,6 +460,8 @@ class LocalCensusTest(unittest.TestCase):
                     status, kind, body = 200, "application/json", openapi
                 elif self.path == "/collections/2-coll":
                     status, kind, body = 200, "application/json; charset=utf-8", collection
+                elif self.path == "/collections/3-bad":
+                    status, kind, body = 200, "application/json", b"{not json"
                 elif self.path == "/acme-team":
                     status, kind, body = 200, "text/html", b"<!doctype html><title>Postman</title>"
                 else:
@@ -491,7 +493,7 @@ class LocalCensusTest(unittest.TestCase):
                 "key": "query-says-nothing", "query": "unrelated words", "status": 200,
                 "data": {
                     "team": [{"document": {"id": 7, "publicHandle": "acme-team"}}],
-                    "collection": [{"document": {"id": "1-openapi"}}],
+                    "collection": [{"document": {"id": "1-openapi"}}, {"document": {"id": "3-bad"}}],
                     "request": [{"document": {"id": "r", "collection": {"id": "2-coll"}}},
                                 {"document": {"id": "r2", "collection": {"id": "1-openapi"}}},
                                 "not-a-hit"],
@@ -505,7 +507,8 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(completed.returncode, 0, completed.stderr)
             rows = {row["id"]: row for row in (json.loads(line) for line in
                     (evidence / "hit-access.jsonl").read_text().splitlines())}
-            self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "api-9", "../x?y"})
+            self.assertEqual(set(rows), {"7", "1-openapi", "2-coll", "3-bad", "api-9", "../x?y"})
+            self.assertEqual(rows["3-bad"]["classification"], "parse-failure")
             self.assertIn("/apis/..%2Fx%3Fy", received)
             # Each request hit is read through its own parent collection, never by its own id.
             self.assertFalse({"/collections/r", "/collections/r2"} & set(received))
@@ -592,6 +595,50 @@ class LocalCensusTest(unittest.TestCase):
             unnamed = subprocess.run(command, capture_output=True, text=True, timeout=30)
             self.assertEqual(unnamed.returncode, 1)
             self.assertIn("witness-search-keys.tsv lacks column(s) census_status", unnamed.stderr)
+
+    def test_postman_hit_refused_past_the_guard_budget_is_recorded_not_retried(self) -> None:
+        received = []
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                received.append(self.path)
+                self.send_response(429)
+                self.send_header("Retry-After", "0")
+                self.end_headers()
+                self.wfile.write(b"refused")
+
+            def log_message(self, *_args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        base = f"http://127.0.0.1:{server.server_port}"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "keys.tsv"
+            keys.write_text("key\tselector\narray-item\tschema.items\n", encoding="utf-8")
+            evidence = root / "postman"
+            evidence.mkdir()
+            (evidence / "queries.jsonl").write_text(json.dumps({
+                "key": "array-item", "data": {"collection": [{"document": {"id": "c"}}]},
+            }) + "\n", encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, str(POSTMAN), "--keys", str(keys), "--evidence-dir", str(evidence),
+                 "--acquire-hits", "--web-base", base, "--api-base", base],
+                cwd=REPO, capture_output=True, text=True, timeout=240,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(len(received), 5)
+            [row] = [json.loads(line) for line in
+                     (evidence / "hit-access.jsonl").read_text().splitlines()]
+            self.assertEqual((row["status"], row["classification"]), (None, "source-refused"))
+            self.assertIn("postman", row["response"])
+            waits = [json.loads(line) for line in
+                     (evidence / "rate-limit-waits.jsonl").read_text().splitlines()]
+            self.assertEqual(len([w for w in waits if w["cause"] == "backoff"]), 4)
 
     def test_postman_hit_acquisition_without_a_search_gives_repair_action(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
