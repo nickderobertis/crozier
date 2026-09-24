@@ -164,9 +164,11 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-46, declared in `scripts/openapi-surface-census.py` and restated here, with a
+47, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
+- `info.title:non-ascii` — one per Info Object whose title contains a
+  non-ASCII character; this distinguishes the title probe from its control.
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
   holds more than one member.
 - `operation.operationId:duplicate` — one per Operation Object whose
@@ -377,7 +379,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is exactly
   `example_is_schema_definition` of `src/ir.rs`.
 
-**Thirty-eight of the 46 are node-local**, which is what makes them one family:
+**Thirty-nine of the 47 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1152,12 +1154,12 @@ emits `schema.format` and `schema.format=uuid` as two selectors.
 `golden`, `limitations`, `gap`, and every `gap` row's `settlement` cell holds one
 of `FIXTURE`, `PROBE`, `UNREACHABLE`.
 
-**Every ledger key is accounted for.** The canonical join reports 87 keys, of
-which 83 are a region row's key verbatim. The other four:
+**Every ledger key is accounted for.** The canonical join reports 104 keys, of
+which 100 are a region row's key verbatim. The other four:
 
 | ledger key | how it is accounted for |
 |---|---|
-| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 86. |
+| `status_code` | **Not a feature key.** It is a row label inside the ledger's 407/421 probe table, which the join's `\| key \| N \|` shape matches by accident — the `bodies-media` region's method notes say the same. The join's real yield is 103. |
 | `encoding-explode-or-allowReserved` | One ledger row covering two fields; `bodies-media` splits it into `encoding-explode` and `encoding-allow-reserved`, both `limitations`, both citing that verdict. |
 | `servers-multiple-path-or-operation` | One ledger row covering two levels; `document-paths` splits it into `pathitem-servers` and `operation-servers`, both `golden`. |
 | `relative-file-ref` | A *target form* of `Path Item Object.$ref`, which `document-paths` classifies once as `pathitem-ref` (`golden` since corpus row 99 declares 36 of them, citing verdict `discards`). The walk enumerates the field; the ledger additionally rules on one form of what it points at. |
@@ -1288,11 +1290,11 @@ not. Every conjunction row says the same thing in its own evidence cell, because
 a conjunction row is about a *branch*: a golden pinning one pins the bytes for
 the shapes its document sends down the arm, not the arm's behaviour.
 
-**A `limitations` row carries no byte comparison at all.** 68 features are there,
-and what settles them is a Fern verdict measured on a locally authored probe. That
-is a real measurement of Fern and it is not parity evidence: nothing in it
-compares crozier's bytes against Fern's over a registered document, and no
-`just check` byte-diff touches the shape. The cost is not rhetorical, and the
+**A `limitations` row has no registered corpus byte comparison.** 70 features
+are there. A committed Contract A proof compares crozier's bytes against Fern's
+on a locally authored probe; rows still marked `proof outstanding` await that
+comparison. Neither form compares against a registered real-world document.
+The cost is not rhetorical, and the
 refreshed join below is where it shows up as a number — settling those rows put
 generator code into `src/` that no committed golden reaches: the object-typed
 path parameter block in `src/emit.rs` (125 regions of its union) and
@@ -3523,14 +3525,15 @@ The 70 rows that read `limitations` before this amendment were each read against
 their own [`fern-limitations.md`](fern-limitations.md) verdict. Each row's cell
 was read for the feature *that row* is about. Where a compound cell rules on two
 features, the row says so. Every row's own `evidence` cell now records which of
-four classes it falls in: a non-generation row names the proof it owes after
-**`proof outstanding:`**, and a demoted row names the verdict that demoted it after
+four classes it falls in: a non-generation row names its committed measurement
+after **`Committed Fern measurement:`**, or the proof it still owes after
+**`proof outstanding:`**. A demoted row names the verdict that demoted it after
 **`demoted to gap:`**.
 
-| class | rows | what the row now owes |
+| class | rows | settlement instrument |
 |---|---:|---|
-| non-generation, owing a Contract A artifact (`absent-tree` or `refusal`) | 63 | its tree or refusal record, declared in the manifest |
-| non-generation, owing a `differential` pair | 5 | a probe and control isolating the feature, and their two identical trees |
+| non-generation, using a Contract A artifact (`absent-tree` or `refusal`) | 61 | its tree or refusal record, declared in the manifest when committed |
+| non-generation, using a `differential` pair | 7 | a probe and control isolating the feature, and their two identical trees when committed |
 | demoted to `gap` for a generation verdict (`implements`) | 1 | a registered real-world specification |
 | demoted to `gap` as `unmeasured` | 1 | a real specification, or first a measurement of what Fern does |
 | **total** | **70** | |
@@ -3542,9 +3545,9 @@ whose ledger cell carries only the `supply` qualifier. Both are now in
 cells rule this way:
 
 - `encoding-explode`'s cell rules `refuses` on a multipart object's `explode` and
-  `ignores` on a list's. The row owes a differential pair for the list, and says
-  so beside the refusal record the object form also owes.
-- `encoding-allow-reserved` reads only the `ignores` half, so it owes a pair.
+  `ignores` on a list's. Its list differential pair is committed. The object
+  refusal has no distinct region key or Contract A artifact and remains open.
+- `encoding-allow-reserved` reads only the `ignores` half; its pair is committed.
 - `boolean-schema-true` reads `coincidence` at `items` and `discards` at a
   property. It owes a pair for the first and names the tree the second owes.
 

@@ -1238,6 +1238,56 @@ fn witness_supply_probes_match_fern_measurements() {
     );
 }
 
+#[test]
+fn refused_probe_inputs_report_the_unsupported_shape() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let probes = root.join(PROBE_DOCUMENTS_DIR);
+    let path_item = tempfile::tempdir().expect("path-item probe tempdir");
+    let path_item_probe = path_item.path().join("header-at-path-item.yml");
+    std::fs::write(
+        &path_item_probe,
+        "openapi: 3.0.3\ninfo:\n  title: header-at-path-item\n  version: 1.0.0\npaths:\n  /probe:\n    parameters:\n      - name: probeParam\n        in: header\n        schema:\n          type: array\n          items:\n            type: string\n    get:\n      operationId: probe\n      responses:\n        '200':\n          description: OK\n",
+    )
+    .expect("write path-item probe");
+
+    for (probe, diagnostic) in [
+        (
+            probes.join("header-array.yml"),
+            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+        ),
+        (
+            probes.join("header-object.yml"),
+            "GET /probe: header parameter `probeParam` has an unsupported object schema",
+        ),
+        (
+            path_item_probe,
+            "GET /probe: header parameter `probeParam` has an unsupported array schema",
+        ),
+        (
+            probes.join("nonascii-operationId.yml"),
+            "GET /probe: operationId `データを取得` has no ASCII identifier characters",
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("probe output tempdir");
+        let target = out.path().join("sdk");
+        let result = probe_command(&probe, &target)
+            .output()
+            .expect("run crozier over refused probe");
+        assert!(!result.status.success(), "{} was accepted", probe.display());
+        assert!(
+            String::from_utf8_lossy(&result.stderr).contains(diagnostic),
+            "{} did not report {diagnostic:?}: {}",
+            probe.display(),
+            String::from_utf8_lossy(&result.stderr)
+        );
+        assert!(
+            !target.exists() || walk_files(&target).is_empty(),
+            "{} wrote an SDK despite refusing the input",
+            probe.display()
+        );
+    }
+}
+
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
 const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
 const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";
@@ -7886,6 +7936,88 @@ fn multipart_request_enums_hoist_through_the_cli() {
     assert!(out
         .join("src/acme/widgets/types/create_widget_request_mode.py")
         .is_file());
+}
+
+#[test]
+fn non_json_multipart_part_serializes_value_through_the_cli() {
+    let (_dir, out) = generate_ok(
+        r#"openapi: 3.1.0
+info: { title: Widget API, version: 1.0.0 }
+paths:
+  /uploads:
+    post:
+      operationId: createUpload
+      tags: [uploads]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [metadata]
+              properties:
+                metadata: { $ref: '#/components/schemas/Metadata' }
+            encoding:
+              metadata: { contentType: text/plain }
+      responses:
+        '204': { description: Created }
+components:
+  schemas:
+    Metadata:
+      type: object
+      properties:
+        note: { type: string }
+"#,
+    );
+    let raw = std::fs::read_to_string(out.join("src/acme/uploads/raw_client.py"))
+        .expect("multipart raw client is generated");
+    assert!(
+        raw.contains(
+            "\"metadata\": (None, json.dumps(jsonable_encoder(metadata)), \"text/plain\")"
+        ),
+        "non-JSON part serializes the value and keeps its declared content type: {raw}"
+    );
+}
+
+#[test]
+fn non_json_multipart_array_part_keeps_encoded_list_through_the_cli() {
+    let (_dir, out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/encoding-explode.yml"
+    ));
+    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
+        .expect("multipart raw client is generated");
+    let part = "\"tags\": (None, jsonable_encoder(tags), \"text/plain\")";
+    assert_eq!(
+        raw.matches(part).count(),
+        2,
+        "sync and async list parts: {raw}"
+    );
+    assert!(
+        !raw.contains("json.dumps(jsonable_encoder(tags))"),
+        "non-JSON array parts keep the encoded list instead of serializing it: {raw}"
+    );
+}
+
+#[test]
+fn responses_extension_beside_status_code_is_ignored_through_the_cli() {
+    let (_probe_dir, probe_out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/extension-responses.yml"
+    ));
+    let (_control_dir, control_out) = generate_ok(include_str!(
+        "../docs/openapi-surface/probes/extension-responses-control.yml"
+    ));
+    let path = "src/acme/raw_client.py";
+    let probe =
+        std::fs::read_to_string(probe_out.join(path)).expect("response client is generated");
+    let control =
+        std::fs::read_to_string(control_out.join(path)).expect("control client is generated");
+    assert!(
+        probe.contains("def probe("),
+        "status response is retained: {probe}"
+    );
+    assert_eq!(
+        probe, control,
+        "the Responses Object extension has no SDK effect"
+    );
 }
 
 #[test]
