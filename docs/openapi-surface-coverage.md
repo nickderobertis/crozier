@@ -3420,9 +3420,9 @@ the manifest is a growing set and the gate checks only what it names.
 
 #### What makes a search exhaustive
 
-This is Contract B. **The declared sources are exactly six:** `apis.guru`,
-`jentic`, `github-code-search`, `github-publisher-trees`, `sourcegraph` and
-`vendor-portals`. Postman is not one, for
+This is Contract B. **The declared sources are the rows of the capability
+table below**, which the gate reconciles with the set it enforces. Postman is not
+one, for
 [the reason recorded beside SwaggerHub's](#the-settlement-rule-as-amended). A record naming any other source answers for no
 declared source and leaves no obligation outstanding, and no key's outcome cites
 it as searched or as still owed.
