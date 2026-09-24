@@ -1,0 +1,67 @@
+key	kind	subject	result	file
+annotated-ref-target-closed-object	query	annotated ref target closed object	unanswered HTTP 400 at 2026-09-24T06:23:41+00:00	queries.jsonl
+annotated-ref-target-closed-object	query	properties allOf additionalProperties	6	queries.jsonl
+annotated-ref-target-composed	query	annotated ref target composed	unanswered HTTP 400 at 2026-09-24T06:24:16+00:00	queries.jsonl
+annotated-ref-target-composed	query	properties allOf	0	queries.jsonl
+annotated-ref-target-oneof	query	annotated ref target oneof	unanswered HTTP 400 at 2026-09-24T06:24:51+00:00	queries.jsonl
+annotated-ref-target-oneof	query	properties allOf oneOf	0	queries.jsonl
+annotated-ref-target-string-const	query	annotated ref target string const	unanswered HTTP 400 at 2026-09-24T06:25:27+00:00	queries.jsonl
+annotated-ref-target-string-const	query	properties allOf const	0	queries.jsonl
+anyof-array-variant-anyof-nullable-item	query	anyOf type items	1	queries.jsonl
+anyof-array-variant-anyof-nullable-item	query	anyof array variant anyof nullable item	unanswered HTTP 400 at 2026-09-24T06:26:02+00:00	queries.jsonl
+anyof-array-variant-closed-object-item	query	anyOf type items additionalProperties	8	queries.jsonl
+anyof-array-variant-closed-object-item	query	anyof array variant closed object item	unanswered HTTP 400 at 2026-09-24T06:26:37+00:00	queries.jsonl
+anyof-array-variant-empty-object-item	query	anyOf type items additionalProperties properties	0	queries.jsonl
+anyof-array-variant-empty-object-item	query	anyof array variant empty object item	unanswered HTTP 400 at 2026-09-24T06:27:12+00:00	queries.jsonl
+anyof-array-variant-oneof-nullable-item	query	anyOf type items oneOf	2	queries.jsonl
+anyof-array-variant-oneof-nullable-item	query	anyof array variant oneof nullable item	unanswered HTTP 400 at 2026-09-24T06:27:47+00:00	queries.jsonl
+anyof-array-variant-struct-item	query	anyOf type items properties	4	queries.jsonl
+anyof-array-variant-struct-item	query	anyof array variant struct item	unanswered HTTP 400 at 2026-09-24T06:28:22+00:00	queries.jsonl
+array-item-inheritance-union	query	array item inheritance union	unanswered HTTP 400 at 2026-09-24T06:28:58+00:00	queries.jsonl
+array-item-inheritance-union	query	items discriminator	0	queries.jsonl
+array-item-pointer-walk-anyof	query	array item pointer walk anyof	unanswered HTTP 400 at 2026-09-24T06:29:33+00:00	queries.jsonl
+array-item-pointer-walk-anyof	query	properties type items	4	queries.jsonl
+array-item-pointer-walk-oneof	query	array item pointer walk oneof	unanswered HTTP 400 at 2026-09-24T06:30:09+00:00	queries.jsonl
+array-item-pointer-walk-oneof	query	properties type items	4	queries.jsonl
+oauth2-password	query	oauth2 password	7	queries.jsonl
+oauth2-password	query	oauth2 password flows	8	queries.jsonl
+oneof-array-variant-annotated-ref-item	query	oneOf type items allOf	1	queries.jsonl
+oneof-array-variant-annotated-ref-item	query	oneof array variant annotated ref item	unanswered HTTP 400 at 2026-09-24T06:30:58+00:00	queries.jsonl
+oneof-array-variant-anyof-discriminated-union-item	query	oneOf type items anyOf	2	queries.jsonl
+oneof-array-variant-anyof-discriminated-union-item	query	oneof array variant anyof discriminated union item	unanswered HTTP 400 at 2026-09-24T06:31:34+00:00	queries.jsonl
+oneof-array-variant-anyof-item	query	oneOf type items anyOf	2	queries.jsonl
+oneof-array-variant-anyof-item	query	oneof array variant anyof item	unanswered HTTP 400 at 2026-09-24T06:32:09+00:00	queries.jsonl
+oneof-array-variant-anyof-nullable-item	query	oneOf type items anyOf	2	queries.jsonl
+oneof-array-variant-anyof-nullable-item	query	oneof array variant anyof nullable item	unanswered HTTP 400 at 2026-09-24T06:32:44+00:00	queries.jsonl
+oneof-array-variant-closed-object-item	query	oneOf type items additionalProperties	unanswered HTTP 400 at 2026-09-24T06:33:48+00:00	queries.jsonl
+oneof-array-variant-closed-object-item	query	oneof array variant closed object item	unanswered HTTP 400 at 2026-09-24T06:33:20+00:00	queries.jsonl
+oneof-array-variant-composed-item	query	oneOf type items allOf	1	queries.jsonl
+oneof-array-variant-composed-item	query	oneof array variant composed item	unanswered HTTP 400 at 2026-09-24T06:34:17+00:00	queries.jsonl
+oneof-array-variant-empty-object-item	query	oneOf type items additionalProperties properties	unanswered HTTP 400 at 2026-09-24T06:35:19+00:00	queries.jsonl
+oneof-array-variant-empty-object-item	query	oneof array variant empty object item	unanswered HTTP 400 at 2026-09-24T06:34:52+00:00	queries.jsonl
+oneof-bare-object-example-variant	query	oneOf additionalProperties allOf example properties type	unanswered HTTP 400 at 2026-09-24T06:35:54+00:00	queries.jsonl
+oneof-bare-object-example-variant	query	oneof bare object example variant	0	queries.jsonl
+property-sole-anyof-closed-object-member	query	properties anyOf additionalProperties	0	queries.jsonl
+property-sole-anyof-closed-object-member	query	property sole anyof closed object member	0	queries.jsonl
+property-sole-anyof-composed-member	query	properties anyOf type allOf	3	queries.jsonl
+property-sole-anyof-composed-member	query	property sole anyof composed member	0	queries.jsonl
+property-sole-anyof-empty-object-member	query	properties anyOf additionalProperties type	6	queries.jsonl
+property-sole-anyof-empty-object-member	query	property sole anyof empty object member	0	queries.jsonl
+property-sole-anyof-struct-member	query	properties anyOf	0	queries.jsonl
+property-sole-anyof-struct-member	query	property sole anyof struct member	0	queries.jsonl
+property-sole-oneof-closed-object-member	query	properties oneOf additionalProperties	59	queries.jsonl
+property-sole-oneof-closed-object-member	query	property sole oneof closed object member	0	queries.jsonl
+property-sole-oneof-composed-member	query	properties oneOf type allOf	3	queries.jsonl
+property-sole-oneof-composed-member	query	property sole oneof composed member	0	queries.jsonl
+property-sole-oneof-empty-object-member	query	properties oneOf additionalProperties type	unanswered HTTP 400 at 2026-09-24T06:37:58+00:00	queries.jsonl
+property-sole-oneof-empty-object-member	query	property sole oneof empty object member	0	queries.jsonl
+ref-pointer-undeclared-component-head	query	ref pointer undeclared component head	0	queries.jsonl
+ref-pointer-undeclared-component-head	query	schema.ref undeclared-component-head	0	queries.jsonl
+ref-pointer-unnamed-segment	query	ref pointer unnamed segment	0	queries.jsonl
+ref-pointer-unnamed-segment	query	schema.ref unnamed-segment	2	queries.jsonl
+schema-name-nonidentifier-name	query	schema name nonidentifier name	unanswered HTTP 400 at 2026-09-24T06:38:54+00:00	queries.jsonl
+schema-name-nonidentifier-name	query	schema name nonidentifier name schemas	72	queries.jsonl
+*	wait	README.md	supporting acquisition record	README.md
+*	wait	rate-limit-waits.jsonl	supporting acquisition record	rate-limit-waits.jsonl
+*	wait	api-access.jsonl	supporting acquisition record	api-access.jsonl
+*	wait	rate-limit-calls.jsonl	supporting acquisition record	rate-limit-calls.jsonl

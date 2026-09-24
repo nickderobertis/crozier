@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import hashlib
 import importlib.util
 import io
@@ -123,6 +124,17 @@ def fetch(url: str, attempts: int, timeout: float) -> bytes:
             if attempt + 1 < attempts:
                 time.sleep(0.25 * (2**attempt))
     raise RuntimeError(f"unanswered after {attempts} bounded attempts: {url}: {last}")
+
+
+def fetch_status(url: str, timeout: float) -> tuple[int, bytes, str]:
+    """Preserve a source refusal as a measured response, never as a zero."""
+    request = urllib.request.Request(url, headers={"User-Agent": "crozier-gap-screen/1"})
+    taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status, response.read(), taken
+    except urllib.error.HTTPError as error:
+        return error.code, error.read(), taken
 
 
 def usable_url(url: str) -> str:
@@ -244,7 +256,69 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--timeout", type=float, default=30)
     parser.add_argument("--workers", type=int, default=12)
+    parser.add_argument("--redo-unread", type=Path,
+                        help="historical catalogue-entries.tsv.gz; re-ask its unread versions")
+    parser.add_argument("--evidence-dir", type=Path,
+                        help="write per-version responses and complete selector output")
     return parser.parse_args(argv)
+
+
+def redo_unread(args: argparse.Namespace) -> int:
+    if args.evidence_dir is None:
+        raise ValueError("--redo-unread requires --evidence-dir")
+    selectors = selectors_from_regions(args.regions_dir)
+    index_bytes = fetch(args.index_url, args.attempts, args.timeout)
+    index = {(api, version): url for api, version, url in versions(parse_bytes(index_bytes, args.index_url))}
+    opener = gzip.open if args.redo_unread.suffix == ".gz" else open
+    with opener(args.redo_unread, "rt", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, dialect="excel-tab"))
+    expected = {"api_id", "version", "indexed_json_url", "tree_path", "tree_outcome"}
+    if not rows or not expected <= rows[0].keys():
+        raise ValueError(f"{args.redo_unread}: missing catalogue entry columns")
+    if len(rows) != len(index) or {(r['api_id'], r['version']) for r in rows} != set(index):
+        raise ValueError("historical entries differ from served index; do not reuse their census")
+    for row in rows:
+        key = (row["api_id"], row["version"])
+        if index[key] != usable_url(row["indexed_json_url"]):
+            raise ValueError(f"historical URL changed: {key[0]}/{key[1]}")
+    args.evidence_dir.mkdir(parents=True, exist_ok=True)
+    output = args.evidence_dir / "unread-responses.jsonl"
+    with output.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            if row["tree_path"]:
+                continue
+            key = (row["api_id"], row["version"])
+            url = usable_url(row["indexed_json_url"])
+            try:
+                status, body, taken = fetch_status(url, args.timeout)
+                record: dict[str, Any] = {"api_id": key[0], "version": key[1],
+                    "url": url, "taken_utc": taken, "status": status,
+                    "sha256": hashlib.sha256(body).hexdigest()}
+                if status == 200:
+                    document = parse_bytes(body, url)
+                    if isinstance(document, dict) and str(document.get("openapi", "")).startswith("3."):
+                        conjunctions = {s: CENSUS.compile_conjunction(s) for s in selectors.values()
+                                        if CENSUS.selector_error(s) is None and CENSUS.is_conjunction(s)}
+                        counts = CENSUS.census_document(document, conjunctions=conjunctions)
+                        record["selectors"] = {k: counts.get(s, 0) for k, s in selectors.items()}
+                        record["classification"] = "openapi-3"
+                    else:
+                        record["classification"] = "not-openapi-3"
+                else:
+                    record["classification"] = "source-refused"
+                    record["response"] = body.decode("utf-8", errors="replace")[:500]
+            except (OSError, ValueError, CENSUS.DocumentError) as error:
+                record = {"api_id": key[0], "version": key[1], "url": url,
+                    "taken_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                    "classification": "source-error", "error": str(error)}
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+    (args.evidence_dir / "index.json").write_text(json.dumps({
+        "url": args.index_url, "sha256": hashlib.sha256(index_bytes).hexdigest(),
+        "versions": len(index), "historical_manifest": str(args.redo_unread),
+        "unread": sum(not row["tree_path"] for row in rows),
+    }, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    print(f"apis-guru-gap-screen: recorded {sum(not row['tree_path'] for row in rows)} unread versions")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -252,6 +326,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.attempts < 1 or args.workers < 1 or args.timeout <= 0:
         print("apis-guru-gap-screen: attempts, workers, and timeout must be positive", file=sys.stderr)
         return 2
+    if args.redo_unread and args.evidence_dir is None:
+        print("apis-guru-gap-screen: --redo-unread requires --evidence-dir; pass --evidence-dir "
+              "to retain the measured responses", file=sys.stderr)
+        return 2
+    if args.redo_unread:
+        try:
+            return redo_unread(args)
+        except (OSError, ValueError, RuntimeError, CENSUS.DocumentError) as error:
+            action = "inspect the served index and regenerate the historical manifest before retrying"
+            print(f"apis-guru-gap-screen: {error}; {action}", file=sys.stderr)
+            return 1
     try:
         selectors = selectors_from_regions(args.regions_dir)
         provenance = publisher_provenance(args.provenance_map)

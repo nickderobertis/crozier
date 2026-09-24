@@ -1,0 +1,18 @@
+{
+  "check": {
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "Warnings for generators.yml:\n\tUsing \"api.path\" is deprecated. Please use \"api.specs[].openapi\" or \"api.specs[].asyncapi\" instead.\nFound 0 errors and 15 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.\n"
+  },
+  "generate": {
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": "Warnings for generators.yml:\n\tUsing \"api.path\" is deprecated. Please use \"api.specs[].openapi\" or \"api.specs[].asyncapi\" instead.\n[api]: Writing preview to /home/whoop/ai-orchestrator/runs/crozier-fern-parity-2026-09-23/scratch/2025179-1/zulip-fern/preview\n[api]: python-sdk Started.\n[api]: python-sdk fernapi/fern-python-sdk Started.\n[api]: python-sdk Found 0 errors and 15 warnings in 2.832 seconds. Run fern check --warnings to print out the warnings not shown.\n[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0\n[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-3655517-5G3Hf4LK0wMT\n[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/crozier-fern-parity-2026-09-23/scratch/2025179-1/zulip-fern/preview/fern-python-sdk\n[api]: python-sdk fernapi/fern-python-sdk Finished.\n[api]: python-sdk Finished.\n"
+  },
+  "generated_files": 1014,
+  "has_types": true,
+  "reference_bytes": 380229,
+  "sha256": "486c52ec40e74e3f1bfc78534b726db9bcb3f1cf8f6fc3df4981733708fddd10",
+  "source": "zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73/zerver/openapi/zulip.yaml",
+  "taken_utc": "2026-09-24T07:35:05+00:00"
+}

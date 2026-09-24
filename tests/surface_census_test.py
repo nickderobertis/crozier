@@ -617,7 +617,6 @@ DECLARED_SOURCES = (
     "github-code-search",
     "github-publisher-trees",
     "sourcegraph",
-    "postman",
     "vendor-portals",
 )
 EXHAUSTED = "exhausted"
@@ -840,8 +839,113 @@ def recorded_queries(cell: str) -> list[tuple[str, str]]:
 
 def recorded_walk(cell: str) -> tuple[str, str, str] | None:
     """(tree or index, ref or page range, document count) of a `walk` cell."""
-    walk = re.search(r"`([^`]+)` at `([^`]+)` → (\d+) documents?", cell)
-    return walk.groups() if walk else None
+    walks = recorded_walks(cell)
+    return walks[0] if walks else None
+
+
+def recorded_walks(cell: str) -> list[tuple[str, str, str]]:
+    """Every separately enumerated tree or index named in one source cell."""
+    return re.findall(r"`([^`]+)` at `([^`]+)` → (\d+) documents?", cell)
+
+
+# The column contracts of an enumerable source's `enumeration.tsv` and its
+# `acquisition-manifest.tsv`. `docs/openapi-surface-coverage.md` spells both
+# headers for a reader; `test_the_documented_enumeration_headers_are_the_gated_ones`
+# holds that spelling to these tuples.
+ENUMERATION_COLUMNS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
+ACQUISITION_MANIFEST_COLUMNS = ("walk", "document", "revision", "sha256")
+
+
+def enumeration_census_failures(
+    key: str, source: str, walks: list[tuple[str, str, str]],
+    directory: Path, records: list[dict[str, str]],
+) -> list[str]:
+    """Reconcile one compact census row per walked document with positive records."""
+    path = directory / "enumeration.tsv"
+    if not path.is_file():
+        return [f"{key}: `{source}` has no enumeration.tsv census file"]
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
+            return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
+        census = list(reader)
+    failures = []
+    census_by_walk: dict[str, list[dict[str, str]]] = {}
+    for row in census:
+        census_by_walk.setdefault(row["walk"], []).append(row)
+    document_records: dict[str, list[dict[str, str]]] = {}
+    for record in records:
+        if record.get("kind") == "document":
+            document_records.setdefault(record["subject"], []).append(record)
+    identities = [(row["walk"], row["document"]) for row in census]
+    if len(identities) != len(set(identities)):
+        failures.append(f"{key}: `{source}` enumeration repeats a document")
+    manifest_path = directory / "acquisition-manifest.tsv"
+    if not manifest_path.is_file():
+        failures.append(f"{key}: `{source}` has no pinned acquisition-manifest.tsv")
+    else:
+        with manifest_path.open(encoding="utf-8", newline="") as handle:
+            manifest_reader = csv.DictReader(handle, dialect="excel-tab")
+            if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
+                failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
+                manifest = []
+            else:
+                manifest = list(manifest_reader)
+        manifest_ids = [(row["walk"], row["document"]) for row in manifest]
+        if len(manifest_ids) != len(set(manifest_ids)):
+            failures.append(f"{key}: `{source}` acquisition manifest repeats a document")
+        if set(identities) != set(manifest_ids):
+            failures.append(f"{key}: `{source}` enumeration path set differs from pinned acquisition manifest")
+        by_identity = {(row["walk"], row["document"]): row for row in manifest}
+        for row in census:
+            acquired = by_identity.get((row["walk"], row["document"]))
+            if acquired and (row["revision"] != acquired["revision"] or
+                             row["sha256"] != acquired["sha256"]):
+                failures.append(f"{key}: `{source}` {row['document']} differs from pinned acquisition digest or revision")
+    for tree, ref, count in walks:
+        selected = census_by_walk.get(tree, [])
+        if len(selected) != int(count):
+            failures.append(
+                f"{key}: `{source}` walk of `{tree}` lists {count} documents but "
+                f"enumeration.tsv carries {len(selected)}; a document is absent"
+            )
+        for row in selected:
+            if row["revision"] != ref:
+                failures.append(f"{key}: `{source}` {row['document']} has wrong revision")
+    if {row["walk"] for row in census} - {tree for tree, _ref, _count in walks}:
+        failures.append(f"{key}: `{source}` enumeration has a document outside the named walks")
+    for row in census:
+        document = row["document"]
+        if not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            failures.append(f"{key}: `{source}` {document} has no SHA-256 digest")
+        matched = set(filter(None, row["matched_keys"].split(",")))
+        status = row["status"]
+        if status != "readable" and not status.startswith("unreadable: "):
+            failures.append(
+                f"{key}: `{source}` {document} has neither a census-selector output "
+                "nor a recorded reason it could not be read"
+            )
+        if status != "readable" and matched:
+            failures.append(f"{key}: `{source}` unreadable {document} claims matched keys")
+        positive = document_records.get(document, [])
+        if key in matched:
+            if len(positive) != 1 or not re.fullmatch(r"census [1-9]\d*", positive[0].get("result", "")):
+                failures.append(
+                    f"{key}: `{source}` {document} matched in enumeration.tsv "
+                    "but has no one positive records.tsv row"
+                )
+        elif positive:
+            failures.append(
+                f"{key}: `{source}` records.tsv claims {document} without an "
+                "enumeration.tsv match"
+            )
+    census_documents = {row["document"] for row in census}
+    for document in document_records:
+        if document not in census_documents:
+            failures.append(
+                f"{key}: `{source}` records.tsv names {document} absent from enumeration.tsv"
+            )
+    return failures
 
 
 def recorded_screens(cell: str) -> dict[str, dict[str, str]]:
@@ -885,7 +989,7 @@ def evidence_directory_failures(key: str, directory: Path) -> list[str]:
             )
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
-        if path.is_file() and rel != "records.tsv" and rel not in named:
+        if path.is_file() and rel not in ("records.tsv", "enumeration.tsv") and rel not in named:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -945,7 +1049,7 @@ def exhaustive_search_failures(
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
         failures += evidence_directory_failures(key, directory) if directory.is_dir() else []
         failures += exhaustive_line_failures(
-            key, source, line, records, capabilities.get(source), exhausted
+            key, source, line, records, capabilities.get(source), exhausted, directory
         )
     return failures
 
@@ -957,6 +1061,7 @@ def exhaustive_line_failures(
     records: list[dict[str, str]],
     capability: tuple[bool, bool, str] | None,
     exhausted: bool,
+    directory: Path,
 ) -> list[str]:
     """One `(key, source)` line against its evidence and, when exhausted, its obligations."""
     failures: list[str] = []
@@ -971,7 +1076,8 @@ def exhaustive_line_failures(
         )
 
     queries = recorded_queries(line[3])
-    walk = recorded_walk(line[4])
+    walks = recorded_walks(line[4])
+    walk = walks[0] if walks else None
     candidates = [] if line[5].strip() == "—" else re.findall(r"`([^`]+)`", line[5])
     screens = recorded_screens(line[6])
 
@@ -982,11 +1088,12 @@ def exhaustive_line_failures(
                 f"{key}: asserts `{query}` → {result} for `{source}`, which {where} "
                 "does not carry"
             )
-    if walk and not recorded("walk", f"{walk[0]}@{walk[1]}", walk[2]):
-        failures.append(
-            f"{key}: asserts a walk of `{walk[0]}` at `{walk[1]}` for `{source}`, "
-            f"which {where} does not carry"
-        )
+    for tree, ref, count in walks:
+        if not recorded("walk", f"{tree}@{ref}", count):
+            failures.append(
+                f"{key}: asserts a walk of `{tree}` at `{ref}` for `{source}`, "
+                f"which {where} does not carry"
+            )
     for candidate, outcomes in screens.items():
         for screen, outcome in outcomes.items():
             if not recorded("screen", f"{candidate} {screen}", outcome):
@@ -995,8 +1102,8 @@ def exhaustive_line_failures(
                     f"`{source}`, which {where} does not carry"
                 )
     table = {("query", q, r) for q, r in queries}
-    if walk:
-        table.add(("walk", f"{walk[0]}@{walk[1]}", walk[2]))
+    for tree, ref, count in walks:
+        table.add(("walk", f"{tree}@{ref}", count))
     for candidate in candidates:
         table.add(("candidate", candidate, None))
     for candidate, outcomes in screens.items():
@@ -1012,19 +1119,8 @@ def exhaustive_line_failures(
                 f"{key}: {where} carries {kind} `{r.get('subject')}` that the table "
                 "accounts for nowhere"
             )
-    documents = [r for r in records if r.get("kind") == "document"]
-    if walk and len(documents) != int(walk[2]):
-        failures.append(
-            f"{key}: the walk of `{source}` counts {walk[2]} documents and {where} "
-            f"lists {len(documents)}"
-        )
-    for document in documents:
-        result = document.get("result", "")
-        if not (re.fullmatch(r"census \d+", result) or re.fullmatch(r"unreadable: .+", result)):
-            failures.append(
-                f"{key}: leaves `{document.get('subject')}` in `{source}`'s walk with "
-                "neither a census-selector output nor a recorded reason it could not be read"
-            )
+    if capability and capability[1] and walks:
+        failures += enumeration_census_failures(key, source, walks, directory, records)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
@@ -1149,6 +1245,17 @@ class GrammarContractTests(unittest.TestCase):
         self.assertIn(start, text, f"the grammar section no longer says {start!r}")
         body = text.split(start, 1)[1].split(end, 1)[0]
         return set(re.findall(r"`([A-Za-z][A-Za-z.]*)`", body))
+
+    def test_the_documented_enumeration_headers_are_the_gated_ones(self) -> None:
+        # The doc names `enumeration.tsv`'s header first and the acquisition
+        # manifest's second; the gate rejects any other column spelling.
+        documented = re.findall(
+            r"`(walk(?:\\t\w+)+)`", self.DOC.read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            documented,
+            ["\\t".join(ENUMERATION_COLUMNS), "\\t".join(ACQUISITION_MANIFEST_COLUMNS)],
+        )
 
     def test_the_documented_anchor_kinds_are_the_ones_that_head_a_selector(self) -> None:
         documented = self.backticked("- **Anchor kinds head their own selector.**", "- **")
@@ -7120,7 +7227,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(int(total.group(1)), int(population.group(1)))
 
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
-        """Seven declared sources, both capabilities each, each one cited."""
+        """Six declared sources, both capabilities each, each one cited."""
         capabilities = source_capabilities(self.doc)
         self.assertEqual(set(DECLARED_SOURCES), set(capabilities))
         for source, (_query, _enumerable, cited) in sorted(capabilities.items()):
@@ -7971,7 +8078,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         self.assertEqual([], self.failures())
 
     def test_missing_source_is_refused(self) -> None:
-        self.sources.remove("postman")
+        self.sources.remove("sourcegraph")
         self.assertIn("differ from declared", "\n".join(self.failures()))
 
     def test_extra_source_is_refused(self) -> None:
@@ -7985,7 +8092,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     No key in the tree carries an exhaustive-search record yet, so the pass over
     the real six region files observes nothing about the rule. These write one
     complete record to a real temporary tree — a region file carrying the
-    `### Witness search (exhaustive)` table, and the seven
+    `### Witness search (exhaustive)` table, and the six
     `witness-search-<source>/` directories its lines rest on — and run the gate's
     own `exhaustive_search_failures` over it. The obligations come from the real
     index's source-capability table, as the gate reads them. The record is
@@ -8033,14 +8140,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             "—",
             "—",
             "—",
-            [],
-        ),
-        "postman": (
-            "`x-sample` → 0; `sample extension` → 0",
-            "—",
-            "—",
-            "—",
-            [("wait", "search bucket", "waited 60s for the reset", "wait.log")],
+            [("wait", "sourcegraph lane", "waited 10s of refusal backoff", "wait.log")],
         ),
         "vendor-portals": (
             "—",
@@ -8072,7 +8172,27 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             for candidate, outcomes in recorded_screens(screens).items():
                 for screen, outcome in outcomes.items():
                     rows.append(("screen", f"{candidate} {screen}", outcome, "screens.md"))
-            self.write_evidence(source, rows + extra)
+            documents = [record for record in extra if record[0] == "document"]
+            extra = [record for record in extra if record[0] != "document"]
+            self.write_evidence(source, rows + extra + [record for record in documents
+                                                        if record[2].startswith("census ") and record[2] != "census 0"])
+            if parsed:
+                listing = ["walk\tdocument\trevision\tsha256\tmatched_keys\tstatus"]
+                for _kind, document, result, _file in documents:
+                    matched = self.KEY if result.startswith("census ") and result != "census 0" else ""
+                    status = "readable" if result.startswith("census ") else result
+                    listing.append("\t".join((parsed[0], document, parsed[1], "0" * 64, matched, status)))
+                (self.root / f"witness-search-{source}" / "enumeration.tsv").write_text(
+                    "\n".join(listing) + "\n", encoding="utf-8"
+                )
+                manifest = ["walk\tdocument\trevision\tsha256"]
+                manifest.extend("\t".join(line.split("\t")[:4]) for line in listing[1:])
+                (self.root / f"witness-search-{source}" / "acquisition-manifest.tsv").write_text(
+                    "\n".join(manifest) + "\n", encoding="utf-8"
+                )
+                with self.evidence(source).open("a", encoding="utf-8") as index:
+                    index.write("\t".join((self.KEY, "walk", f"{parsed[0]}@{parsed[1]}",
+                                           parsed[2], "acquisition-manifest.tsv")) + "\n")
 
     def write_evidence(self, source: str, rows: list[tuple[str, str, str, str]]) -> None:
         directory = self.root / f"witness-search-{source}"
@@ -8116,8 +8236,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.assertEqual([], self.failures())
 
     def test_a_record_dropping_a_declared_source_is_refused(self) -> None:
-        del self.table["postman"]
-        self.refused("drops declared source(s) ['postman']")
+        del self.table["sourcegraph"]
+        self.refused("drops declared source(s) ['sourcegraph']")
 
     def test_a_record_reading_a_declared_source_unanswered_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (
@@ -8127,12 +8247,12 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.refused("reads `sourcegraph` `unanswered` under an `exhausted` outcome")
 
     def test_one_query_phrasing_for_a_text_query_source_is_refused(self) -> None:
-        self.table["postman"][0] = "`x-sample` → 0"
-        self.refused("records 1 query phrasing(s) for `postman`")
+        self.table["sourcegraph"][0] = "`file:openapi.yaml content:\"x-sample\"` → 0"
+        self.refused("records 1 query phrasing(s) for `sourcegraph`")
 
     def test_two_phrasings_that_are_the_same_string_are_refused(self) -> None:
-        self.table["postman"][0] = "`x-sample` → 0; `x-sample` → 0"
-        self.refused("records the same query phrasing twice for `postman`")
+        self.table["sourcegraph"][0] = "`x-sample` → 0; `x-sample` → 0"
+        self.refused("records the same query phrasing twice for `sourcegraph`")
 
     def test_queries_never_stand_in_for_an_unwalked_tree(self) -> None:
         """An enumerable source owes its walk, whatever its queries returned."""
@@ -8152,11 +8272,50 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.refused("records no tree or index at an immutable ref or page range for `github-publisher-trees`")
 
     def test_a_walked_document_with_no_census_output_or_reason_is_refused(self) -> None:
-        text = self.evidence("apis.guru").read_text(encoding="utf-8")
-        self.evidence("apis.guru").write_text(
+        census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
+        text = census.read_text(encoding="utf-8")
+        census.write_text(
             text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8"
         )
         self.refused("neither a census-selector output nor a recorded reason")
+
+    def test_a_walked_document_absent_from_compact_census_is_refused(self) -> None:
+        census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
+        lines = census.read_text(encoding="utf-8").splitlines()
+        census.write_text("\n".join(lines[:-1]) + "\n", encoding="utf-8")
+        self.refused("a document is absent")
+
+    def test_a_duplicate_compact_census_document_is_refused(self) -> None:
+        census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
+        lines = census.read_text(encoding="utf-8").splitlines()
+        census.write_text("\n".join([*lines, lines[-1]]) + "\n", encoding="utf-8")
+        self.refused("enumeration repeats a document")
+
+    def test_a_fabricated_path_swapped_for_a_real_one_is_refused(self) -> None:
+        census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
+        text = census.read_text(encoding="utf-8")
+        census.write_text(text.replace("APIs/b.example/1.0/openapi.yaml",
+                                       "APIs/invented.example/1.0/openapi.yaml"), encoding="utf-8")
+        self.refused("enumeration path set differs from pinned acquisition manifest")
+
+    def test_a_census_digest_disagreeing_with_acquisition_is_refused(self) -> None:
+        census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
+        text = census.read_text(encoding="utf-8")
+        census.write_text(text.replace("0" * 64, "1" * 64, 1), encoding="utf-8")
+        self.refused("differs from pinned acquisition digest or revision")
+
+    def test_a_matched_census_row_without_its_positive_record_is_refused(self) -> None:
+        index = self.evidence("jentic")
+        lines = index.read_text(encoding="utf-8").splitlines()
+        index.write_text("\n".join(line for line in lines if "\tdocument\t" not in line) + "\n",
+                         encoding="utf-8")
+        self.refused("matched in enumeration.tsv but has no one positive records.tsv row")
+
+    def test_a_positive_record_without_its_census_match_is_refused(self) -> None:
+        census = self.root / "witness-search-jentic" / "enumeration.tsv"
+        census.write_text(census.read_text(encoding="utf-8").replace(f"\t{self.KEY}\treadable", "\t\treadable"),
+                          encoding="utf-8")
+        self.refused("records.tsv claims apis/openapi/c.example/openapi.json without an enumeration.tsv match")
 
     def test_a_candidate_with_no_census_confirmation_is_refused(self) -> None:
         text = self.evidence("github-code-search").read_text(encoding="utf-8")
@@ -8201,8 +8360,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         with self.evidence("sourcegraph").open("a", encoding="utf-8") as index:
             index.write(f"{self.KEY}\tquery\t`third phrasing`\t2\tacquisition.json\n")
         self.refused("carries query ``third phrasing`` that the table accounts for nowhere")
-        (self.root / "witness-search-postman" / "stray.json").write_text("{}\n", encoding="utf-8")
-        self.refused("witness-search-postman/stray.json is evidence the table accounts for nowhere")
+        (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8")
+        self.refused("witness-search-sourcegraph/stray.json is evidence the table accounts for nowhere")
 
     def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
         self.table["swaggerhub"] = ["`x-sample` → 0; `sample extension` → 0", "—", "—", "—"]

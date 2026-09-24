@@ -3257,6 +3257,17 @@ already gives. So the read can change the prose of *why* a row is settled, and
 neither the row's category nor the instrument that settles it. The source is left
 unread on that judgement, rather than forgotten.
 
+**Why Postman is not a declared source.** Postman's public API network is
+excluded from every witness search by the user's decision. Reading an OpenAPI
+body there requires a Postman API key. This host has none, and the user will not
+obtain one. Without a key the network yields only metadata. Its API resources
+answer HTTP 401. A collection's unauthenticated JSON link returns a Postman
+collection, which is not an OpenAPI description. So no key's record cites
+Postman as searched or as outstanding.
+[`witness-search-postman/`](openapi-surface/witness-search-postman/README.md)
+is kept only as historical evidence of the requests that were issued, and no
+gate counts it.
+
 **How a row says it took route 3.** Its `evidence` cell carries what every
 `limitations` row carries — the [`fern-limitations.md`](fern-limitations.md) key
 and its verdict, spelled from that file's own
@@ -3409,9 +3420,10 @@ the manifest is a growing set and the gate checks only what it names.
 
 #### What makes a search exhaustive
 
-This is Contract B. **The declared sources are exactly seven:** `apis.guru`,
-`jentic`, `github-code-search`, `github-publisher-trees`, `sourcegraph`,
-`postman` and `vendor-portals`. A record naming any other source answers for no
+This is Contract B. **The declared sources are the rows of the capability
+table below**, which the gate reconciles with the set it enforces. Postman is not
+one, for
+[the reason recorded beside SwaggerHub's](#the-settlement-rule-as-amended). A record naming any other source answers for no
 declared source and leaves no obligation outstanding, and no key's outcome cites
 it as searched or as still owed.
 
@@ -3426,7 +3438,6 @@ for each source, and nothing a search record says about a source overrides it.
 | github-code-search | yes | no | GitHub's documented REST `GET /search/code` takes a text query and returns at most 1,000 results per query, so its index cannot be walked. Recorded acquisition: the `gh api -X GET search/code` sweep and its controls ([`code-platforms.md`](openapi-surface/witness-search-redo/code-platforms.md)). |
 | github-publisher-trees | no | yes | A publisher's repository is read by its documented git trees interface at a pinned commit, and has no text query of its own; a query against GitHub is `github-code-search`. Recorded acquisition: the five pinned publisher trees the wide acquisition walked ([`witness-scrape-wide/README.md`](openapi-surface/witness-scrape-wide/README.md)). |
 | sourcegraph | yes | no | Sourcegraph's documented stream search API (`/.api/search/stream`) takes a text query with a result cap and offers no listing of its index. Recorded acquisition: the stream queries and their controls ([`code-platforms.md`](openapi-surface/witness-search-redo/code-platforms.md)). |
-| postman | yes | no | Postman's public network is reached through its `search-all` query endpoint, which answers a text query with pages of at most 25 hits and offers no listing. Recorded acquisition: the four-index `search-all` sweep ([`code-platforms.md`](openapi-surface/witness-search-redo/code-platforms.md)). |
 | vendor-portals | no | yes | A vendor portal publishes its specifications as a set of files at pinned publisher commits, read by listing them, with no query interface over their bodies. Recorded acquisition: the local census over the pinned publisher files ([`catalogue-portals.md`](openapi-surface/witness-search-redo/catalogue-portals.md)). |
 
 Later search nodes measure these same sources, and that measurement is how this
@@ -3499,8 +3510,18 @@ in both directions.
     `result`.
   - A `walk` row has `<tree>@<ref>` as its `subject` and the document count as
     its `result`.
-  - A `document` row has the document's path as its `subject`, and a `result` of
-    `census <n>` or `unreadable: <reason>`.
+  - For an enumerable source, `enumeration.tsv` carries one row for every
+    document in each named pinned walk, under
+    `walk\tdocument\trevision\tsha256\tmatched_keys\tstatus`. `matched_keys`
+    is the comma-separated set of gap keys whose selector matched, empty when
+    none did; `status` is `readable` or `unreadable: <reason>`.
+  - A `document` row in `records.tsv` exists only when that key matched, with `census <n>`
+    for positive `n`. This compact form avoids repeating a zero for every
+    `(key, document)` pair in a large tree. The independent pinned listing is
+    `acquisition-manifest.tsv`, under
+    `walk\tdocument\trevision\tsha256`; its path set and digests must equal
+    `enumeration.tsv` exactly. A query source keeps its ordinary candidate
+    census records in `records.tsv`.
   - A `candidate` row has the candidate as its `subject` and `census <n>` as its
     `result`.
   - A `screen` row has `<candidate> licence|ref|fern` as its `subject` and the
@@ -3511,9 +3532,13 @@ in both directions.
 
 Every query, count, walk, candidate and screen outcome in the table must be a
 row of the evidence directory, and every row there must be accounted for in the
-table. Every file in the directory must be named by some row, and every named
-file must exist. So an unsupported table cell fails, and so does an unaccounted
-evidence file.
+table. The gate checks that `enumeration.tsv` has exactly the named walk's
+document count with no duplicate identity, that its paths and digests equal
+the independent pinned acquisition manifest, and that every matched key has
+exactly one positive `document` record
+and no positive record exists without a census match. Every other evidence file
+must be named by a record, and every named file must exist. So an unsupported
+table cell, an absent document, and an unaccounted evidence file all fail.
 
 **The gate reads all of it.** `RankedBacklogTests` refuses an `exhausted` record
 that does any of the following:

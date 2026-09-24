@@ -1024,8 +1024,10 @@ components:
 
     def test_sourcegraph_refusal_then_spacing_are_waited_out(self) -> None:
         self.server.state["refuse_sourcegraph"] = True
+        # Windows wide enough that a slow runner still reaches the next
+        # acquire inside them; at 0.05s a macOS runner outlasted both.
         lane = guard_module.PacedLane(
-            spacing_s=0.05, backoff_base_s=0.05, attempt_budget=5
+            spacing_s=1.0, backoff_base_s=1.0, attempt_budget=5
         )
         with patch.dict(guard_module.PACED_LANES, {"sourcegraph": lane}):
             self.assertEqual(

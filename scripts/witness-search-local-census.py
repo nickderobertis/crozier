@@ -6,7 +6,12 @@ from __future__ import annotations
 import argparse
 import csv
 import concurrent.futures
+import datetime
+import hashlib
 import importlib.util
+import json
+import os
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -29,45 +34,116 @@ CENSUS = load_census()
 
 def contract_keys(path: Path) -> list[tuple[str, str]]:
     keys = []
-    for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("| `") and line.count("|") == 3:
-            cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
-            if not cells[0] or any(key == cells[0] for key, _ in keys):
-                raise ValueError(f"empty or duplicate contract key: {cells[0]!r}")
-            error = CENSUS.selector_error(cells[1])
-            if error:
-                raise ValueError(error)
-            keys.append((cells[0], cells[1]))
+    if path.suffix == ".tsv":
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            if not {"key", "selector", "census_status"} <= set(reader.fieldnames or ()):
+                raise ValueError("TSV contract requires key, selector, and census_status")
+            rows = [(row["key"], row["selector"]) for row in reader
+                    if row["census_status"] == "supported"]
+    else:
+        rows = []
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("| `") and line.count("|") == 3:
+                cells = [cell.strip().strip("`") for cell in line.split("|")[1:3]]
+                rows.append((cells[0], cells[1]))
+    for key, selector in rows:
+        if not key or any(existing == key for existing, _ in keys):
+            raise ValueError(f"empty or duplicate contract key: {key!r}")
+        error = CENSUS.selector_error(selector)
+        if error:
+            raise ValueError(error)
+        keys.append((key, selector))
     if not keys:
         raise ValueError("no key/selector rows found")
     return keys
 
 
 def census_one(
-    job: tuple[Path, dict[str, Any], list[tuple[str, str]]],
-) -> tuple[Path, str | None, list[tuple[str, int]]]:
-    path, conjunctions, keys = job
+    job: tuple[Path, dict[str, Any], list[tuple[str, str]], Path | None],
+) -> tuple[Path, str, str, str, str | None, list[tuple[str, int]]]:
+    path, conjunctions, keys, progress = job
+    if progress is not None:
+        with progress.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"event": "start", "document": str(path),
+                                     "pid": os.getpid(), "taken_utc": datetime.datetime.now(
+                                         datetime.timezone.utc).isoformat()}) + "\n")
+    digest = ""
+    loader = ""
     try:
-        counts = CENSUS.census_document(
-            CENSUS.load_document(path), conjunctions=conjunctions
-        )
+        raw = path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        if path.suffix.lower() in {".yaml", ".yml"} and b"openapi" not in raw:
+            return path, digest, "", "", None, [(key, 0) for key, _ in keys]
+        # Some publisher trees label JSON bytes as .yaml. Parsing those with
+        # the YAML reader is much slower on large composed descriptions.
+        if raw.lstrip().startswith((b"{", b"[")):
+            loader = "stdlib-json"
+            document = json.loads(raw)
+        else:
+            loader = "stdlib-census-yaml"
+            try:
+                document = CENSUS.load_document(path)
+            except CENSUS.DocumentError as original:
+                if path.suffix.lower() not in {".yaml", ".yml"}:
+                    raise
+                try:
+                    # PyYAML is optional and needed only for publisher YAML
+                    # outside the built-in census reader's supported subset.
+                    import yaml
+                except ImportError:
+                    raise original
+                # CSafeLoader needs libyaml; a pure-Python PyYAML has only
+                # SafeLoader, which reads the same documents more slowly.
+                yaml_loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+                loader = f"PyYAML {yaml.__version__} {yaml_loader.__name__}"
+                try:
+                    document = yaml.load(raw, Loader=yaml_loader)
+                except yaml.YAMLError as error:
+                    raise ValueError(f"PyYAML parse failure: {error}") from error
+        version = str(document.get("openapi") or document.get("swagger") or "") if isinstance(document, dict) else ""
+        # A repository may contain generated metadata with an OpenAPI document
+        # nested inside it. Only a root OpenAPI 3 document is a source document.
+        counts = (CENSUS.census_document(document, conjunctions=conjunctions)
+                  if version.startswith("3.") else {})
         return (
             path,
+            digest,
+            version,
+            loader,
             None,
-            [
-                (key, counts.get(selector, 0))
-                for key, selector in keys
-                if counts.get(selector, 0)
-            ],
+            [(key, counts.get(selector, 0)) for key, selector in keys],
         )
+    except json.JSONDecodeError as error:
+        nearby = raw[max(0, error.pos - 80):error.pos + 80]
+        if "trailing comma" in error.msg.lower() or re.search(rb",\s*[}\]]", nearby):
+            return path, digest, "", loader, (
+                f"parse-failure: invalid JSON (trailing comma at {error.pos})"
+            ), []
+        return path, digest, "", loader, str(error), []
     except (OSError, ValueError, CENSUS.DocumentError) as error:
-        return path, str(error), []
+        return path, digest, "", loader, str(error), []
+    finally:
+        if progress is not None:
+            with progress.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps({"event": "end", "document": str(path),
+                                         "pid": os.getpid(), "taken_utc": datetime.datetime.now(
+                                             datetime.timezone.utc).isoformat()}) + "\n")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--contract", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=1)
+    parser.add_argument("--start-after", default="",
+                        help="resume a sorted tree after this relative document path")
+    parser.add_argument("--progress-log", type=Path,
+                        help="append per-worker document start/end events for long enumerations")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--all-documents", action="store_true",
+                        help="emit one TSV selector result per document, including zeroes and SHA-256")
+    output.add_argument("--all-documents-jsonl", action="store_true",
+                        help="emit one JSON object per document with all selector counts")
     parser.add_argument(
         "--documents",
         action="append",
@@ -78,20 +154,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.workers < 1:
         parser.error("--workers must be positive")
-    try:
-        keys = contract_keys(args.contract)
-    except (OSError, ValueError) as error:
-        parser.error(
-            f"invalid --contract {args.contract}: {error}; "
-            "pass a readable contract such as "
-            "docs/openapi-surface/witness-search-redo/contract.md"
-        )
-    conjunctions = {
-        selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
-    }
-    selector_by_key = dict(keys)
-    rows: list[tuple[str, str, str, str, int]] = []
-    failures: list[str] = []
+    documents = []
     for value in args.documents:
         source, separator, root_text = value.partition("=")
         root = Path(root_text)
@@ -99,30 +162,58 @@ def main() -> int:
             parser.error(
                 f"--documents must be SOURCE=DIR with an existing DIR: {value}"
             )
+        documents.append((source, root))
+    try:
+        keys = contract_keys(args.contract)
+    except (OSError, ValueError) as error:
+        parser.error(f"invalid --contract {args.contract}: {error}; pass a readable key/selector contract")
+    conjunctions = {
+        selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
+    }
+    selector_by_key = dict(keys)
+    failures: list[str] = []
+    writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
+    header = ("source", "key", "selector", "document", "count")
+    if not args.all_documents_jsonl:
+        writer.writerow((*header, "sha256", "openapi_version") if args.all_documents else header)
+    for source, root in documents:
         paths = sorted(
             path
             for path in root.rglob("*")
             if path.suffix.lower() in {".json", ".yaml", ".yml"}
+            and path.relative_to(root).as_posix() > args.start_after
         )
-        jobs = ((path, conjunctions, keys) for path in paths)
+        jobs = ((path, conjunctions, keys, args.progress_log) for path in paths)
         with concurrent.futures.ProcessPoolExecutor(
             max_workers=args.workers
         ) as executor:
             results = executor.map(census_one, jobs, chunksize=16)
-            for path, error, hits in results:
+            for path, digest, version, loader, error, selector_counts in results:
+                identity = {"source": source, "document": str(path.relative_to(root)),
+                            "sha256": digest, "openapi_version": version,
+                            "loader": loader}
                 if error:
                     failures.append(f"{source}/{path.relative_to(root)}: {error}")
+                    if args.all_documents_jsonl:
+                        print(json.dumps({**identity, "classification": "unreadable", "error": error}, sort_keys=True))
+                    elif args.all_documents:
+                        for key, selector in keys:
+                            writer.writerow((source, key, selector, str(path.relative_to(root)),
+                                             f"parse-failure: {error}", digest, version))
                     continue
-                for key, count in hits:
+                if args.all_documents_jsonl:
+                    print(json.dumps({**identity, "classification": "openapi-3" if version.startswith("3.") else "other-version",
+                                      "selectors": {key: count for key, count in selector_counts}}, sort_keys=True))
+                    continue
+                for key, count in selector_counts:
+                    if not args.all_documents and not count:
+                        continue
                     selector = selector_by_key[key]
-                    rows.append(
-                        (source, key, selector, str(path.relative_to(root)), count)
-                    )
-    writer = csv.writer(sys.stdout, dialect="excel-tab", lineterminator="\n")
-    writer.writerow(("source", "key", "selector", "document", "count"))
-    writer.writerows(rows)
+                    row = (source, key, selector, str(path.relative_to(root)), str(count))
+                    writer.writerow((*row, digest, version) if args.all_documents else row)
     if failures:
         print("\n".join(failures), file=sys.stderr)
+        print("Inspect these source documents and retain their unreadable classifications in the evidence record.", file=sys.stderr)
         return 1
     return 0
 

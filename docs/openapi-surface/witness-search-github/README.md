@@ -19,9 +19,9 @@ publisher trees not yet walked. The exact candidate identities are in each
 source's `records.tsv`. A result from a key closed on a licensed, Fern-accepted
 witness is `not-owed` where further acquisition was stopped; its closure file
 names the witness and the condition for reopening. No key is declared
-`exhausted` here. The other four declared sources belong to the sibling search,
-and final reconciliation writes each region file's seven-source compact row
-after both branches merge.
+`exhausted` here. The other declared sources belong to the sibling search, and
+final reconciliation writes each region file's compact row over every declared
+source after both branches merge.
 
 The publisher set is `witness-search-github-publisher-trees/publisher-set.json`:
 the five earlier publisher trees, pinned root-level descriptions in the registered
