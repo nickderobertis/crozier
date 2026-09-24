@@ -1181,6 +1181,69 @@ components:
     }
 
     #[test]
+    fn a_sibling_path_item_resolves_its_parameter_from_a_third_file() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::create_dir(directory.path().join("paths")).expect("paths directory");
+        std::fs::create_dir(directory.path().join("parameters")).expect("parameters directory");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Real Tree, version: '1'}\npaths:\n  /health:\n    $ref: paths/health.yml#/Health\n",
+        )
+        .expect("root");
+        std::fs::write(
+            directory.path().join("paths/health.yml"),
+            "Health:\n  parameters:\n    - $ref: ../parameters/query.yml#/Query\n  get:\n    operationId: getHealth\n    responses:\n      '200': {description: OK}\n",
+        )
+        .expect("path item");
+        let parameter_file = directory.path().join("parameters/query.yml");
+        std::fs::write(
+            &parameter_file,
+            "Query:\n  name: verbose\n  in: query\n  schema: {type: boolean}\n",
+        )
+        .expect("parameter");
+
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        resolve(&mut document, &CurlFetcher, &root).expect("resolve the complete tree");
+        assert_eq!(document.paths["/health"].parameters[0].name, "verbose");
+
+        std::fs::write(&parameter_file, "Other: {name: other, in: query}\n")
+            .expect("replace parameter");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        let error = resolve(&mut document, &CurlFetcher, &root)
+            .expect_err("missing pointer in a present sibling document");
+        assert!(
+            error.to_string().contains("no parameter at that pointer"),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn a_present_sibling_without_the_named_path_item_reports_the_pointer() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Real Tree, version: '1'}\npaths:\n  /health:\n    $ref: paths.yml#/Health\n",
+        )
+        .expect("root");
+        std::fs::write(
+            directory.path().join("paths.yml"),
+            "Other: {get: {responses: {}}}\n",
+        )
+        .expect("present sibling");
+        let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+        let error = resolve(&mut document, &CurlFetcher, &root)
+            .expect_err("missing Path Item pointer must be diagnosed");
+        let message = error.to_string();
+        assert!(message.contains("paths.yml#/Health"), "{message}");
+        assert!(
+            message.contains("no Path Item at that pointer"),
+            "{message}"
+        );
+    }
+
+    #[test]
     fn a_windows_path_keeps_local_schema_dependencies_in_the_same_document() {
         let fetcher = FakeFetcher::new(&[]);
         let spec = Path::new("openapi.yml");
