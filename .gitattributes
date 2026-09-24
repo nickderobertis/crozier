@@ -5,5 +5,6 @@
 
 # Fixtures and templates are byte-significant: never let a filter rewrite them.
 tests/fixtures/** -text
+docs/openapi-surface/probe-expected/** -text -whitespace
 templates/** text eol=lf
 *.py text eol=lf

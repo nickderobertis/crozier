@@ -6927,6 +6927,44 @@ class RankedBacklogTests(unittest.TestCase):
         ):
             self.assertIn(" ".join(demanded.split()), flat.replace("\t", " "))
 
+    def test_committed_schema_proofs_are_cited_by_the_fern_ledger(self) -> None:
+        """Schema proof citations and verdicts track their manifest rows."""
+        manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
+        ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
+        rows = [
+            line.split("\t")
+            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
+        ]
+        for key, _form, verdict, artifact, _control, _digest in rows:
+            entry = self.entries.get(key)
+            if entry is None or entry[0] != "schemas":
+                continue
+            cells = entry[1]
+            if cells[3] != "limitations" and "UNREACHABLE" not in cells[7]:
+                continue
+            with self.subTest(key=key):
+                matching = [
+                    line
+                    for line in ledger.splitlines()
+                    if line.startswith(f"| `{key}` |")
+                ]
+                self.assertTrue(
+                    any(
+                        artifact.removeprefix("docs/openapi-surface/") + "/" in line
+                        and re.search(rf"\b{verdict}\b", line)
+                        for line in matching
+                    ),
+                    f"{key}: fern-limitations.md does not cite the manifest artifact and verdict",
+                )
+
+    def test_dynamic_schema_probe_names_share_the_measured_document(self) -> None:
+        """The two manifest keys keep using the already measured joint probe."""
+        probes = REPO / "docs/openapi-surface/probes"
+        joint = (probes / "dollar-dynamic-recursion.yml").read_bytes()
+        for key in ("dollar-dynamic-anchor", "dollar-dynamic-ref"):
+            with self.subTest(key=key):
+                self.assertEqual(joint, (probes / f"{key}.yml").read_bytes())
+
 
 class RegionFixture:
     """A real region file and a real ledger on disk, read back as the gate reads them.
