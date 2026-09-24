@@ -43,6 +43,37 @@ components:
 """
 
 
+class PublisherSelectionTests(unittest.TestCase):
+    def test_widened_publishers_are_confirmed_declarer_repositories(self) -> None:
+        selected = {row["repository"]: row for row in SEARCH.publisher_set()}
+        manifest = (
+            REPO
+            / "docs/openapi-surface/witness-search-github-publisher-trees/publisher-declarers.tsv"
+        )
+        with manifest.open(encoding="utf-8", newline="") as stream:
+            declarers = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertGreater(len(declarers), 5)
+        for row in declarers:
+            with self.subTest(repository=row["repository"]):
+                self.assertEqual(row["commit"], selected[row["repository"]]["commit"])
+                evidence = (
+                    REPO
+                    / f"docs/openapi-surface/witness-search-{row['source']}/candidates.jsonl"
+                )
+                self.assertTrue(
+                    any(
+                        candidate.get("disposition") == "declares"
+                        and candidate.get("repository", "").removeprefix("github.com/")
+                        == row["repository"]
+                        and candidate.get("commit") == row["commit"]
+                        for candidate in map(
+                            json.loads, evidence.read_text().splitlines()
+                        )
+                    ),
+                    row,
+                )
+
+
 class LocalServer(BaseHTTPRequestHandler):
     def log_message(self, *args: object) -> None:
         pass

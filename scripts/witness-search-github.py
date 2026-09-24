@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import csv
 import datetime
 import email.utils
 import functools
@@ -205,7 +206,7 @@ def query_plan(selector: str) -> dict[str, list[str]]:
 
 
 def publisher_set() -> list[dict[str, Any]]:
-    """Five prior publisher trees, widened by registered root-level API publishers."""
+    """Prior trees, registered publishers, and publisher-owned declarer repositories."""
     wide = REPO / "docs/openapi-surface/witness-scrape-wide/trees.json.gz"
     trees = json.load(gzip.open(wide, "rt", encoding="utf-8"))["trees"]
     selected = [
@@ -244,6 +245,23 @@ def publisher_set() -> list[dict[str, Any]]:
                 "derivation": f"CORPUS.md row {cells[0]} root-level {parts[-1]}",
             }
         )
+    declarers = (
+        REPO
+        / "docs/openapi-surface/witness-search-github-publisher-trees/publisher-declarers.tsv"
+    )
+    with declarers.open(encoding="utf-8", newline="") as stream:
+        for item in csv.DictReader(stream, delimiter="\t"):
+            repository = item["repository"]
+            if repository in {row["repository"] for row in selected}:
+                continue
+            selected.append(
+                {
+                    "repository": repository,
+                    "commit": item["commit"],
+                    "scope": "",
+                    "derivation": f"{item['source']} declarer: {item['ownership_evidence']}",
+                }
+            )
     return selected
 
 
@@ -1272,7 +1290,8 @@ def main() -> int:
         (args.evidence / "publisher-set.json").write_text(
             json.dumps(
                 {
-                    "derivation": "five wide-scrape publisher trees plus every link-ok corpus github-raw row whose root-level file is openapi.* or swagger.*, excluding example repositories",
+                    "derivation": "five wide-scrape publisher trees; link-ok corpus github-raw publisher repositories with root-level openapi.* or swagger.*; publisher-owned declarer repositories recorded in publisher-declarers.tsv",
+                    "declarer_exclusions": "Third-party transcriptions and test fixtures are not publisher trees: api-evangelist, JithendraNara/nvidia-nim-unified-skill, APIs-guru/openapi-directory, CommunityToolkit/Datasync, openapi-ts/openapi-typescript. Publishers surfaced only by the sibling registry search await final reconciliation.",
                     "publishers": publishers,
                 },
                 indent=2,

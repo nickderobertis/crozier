@@ -1,0 +1,19 @@
+repository	commit	source	ownership_evidence
+BreydenSummers/Waypoint	6eaa6f3ada167561c8d620d3f5148d4b22b65497	github-code-search	Waypoint contracts/v1/openapi.json in its project repository
+Lifetron710/atlas	4613aac6d5da72cce831c79157af9d495dfd25b8	github-code-search	atlas contracts/http/openapi.yaml in its project repository
+PaulKov/dpone	7da0e0e6b873eedacb097ddbf1ddb2a961fa1ebb	github-code-search	dpone docs/api/studio-openapi.json in its project repository
+VinhDat267/ATI_Project	cd26cea1a236e7f5a2514ce54cab73ed409f3c69	github-code-search	ATI_Project docs/openapi.yaml in its project repository
+agenticdriver/agenticdriver	fb851f577341699decf232d1f556a73b545758bf	github-code-search	agenticdriver protocol/openapi.json in its protocol repository
+apostrophecms/apostrophe	14eab51cfa6114f9d98b6c6acb600564fc734587	github-code-search	ApostropheCMS API description in its publisher repository
+apostrophecms/docs	125bb97075a87d8a1dffe5e765ebeb05af0c4c13	github-code-search	ApostropheCMS API description in its publisher documentation repository
+Chocobozzz/PeerTube	faa76bad2c1969a088ef1df38dc666dfe7259b5c	sourcegraph	PeerTube support/doc/api/openapi.yaml in its publisher repository
+ChurchSuite/churchsuite-api	8464fbfc6290b6d84a71e728e802d693a7d8ffc2	sourcegraph	ChurchSuite src/openapi.yaml in its API publisher repository
+Cosmian/kms	d3e5d8693ab7fee328a2185e53fda76efd09e8d9	sourcegraph	Cosmian KMS crate/server/documentation/openapi.yaml in its publisher repository
+Helicone/helicone	067d9290acb4f1fc9320e902fc67b4b399b50363	sourcegraph	Helicone docs/swagger.json in its publisher repository
+PaloAltoNetworks/pan.dev	4e989cdd4bbda669dc73c0d3f5db90bb4989bee3	sourcegraph	Palo Alto API descriptions in its publisher documentation repository
+auto-agent-protocol/auto-agent-protocol	5d31c27b11c36a018754f34830954d836a55afe5	sourcegraph	Auto Agent Protocol release API descriptions in its publisher repository
+truefoundry/trueforge	5adde289683b642203b06b39ca687e9d977ca7a5	sourcegraph	TrueForge .github/fern/openapi/openapi.json in its publisher repository
+kushin77/agent-orchestrator	9ae4441d1aca473286be9de0e69f87ab9b8daa25	github-code-search	agent-orchestrator integrations/erp/api/openapi.json in its project repository
+magrathean-uk/teslatlas-protocol	e33a296d26fcef3936ccaf61ccc73b0f7469b7a2	github-code-search	TeslaAtlas API in its protocol repository
+magrathean-uk/teslatlas-sdk-typescript	beb79c922d130722c88ffd009300a00f20ea0a1b	github-code-search	TeslaAtlas API source in its SDK publisher repository
+roryqueue/cowards-game	1e368dd81d96dcb458ff78975a107c2d9b260ef9	github-code-search	cowards-game packages/spec API in its project repository

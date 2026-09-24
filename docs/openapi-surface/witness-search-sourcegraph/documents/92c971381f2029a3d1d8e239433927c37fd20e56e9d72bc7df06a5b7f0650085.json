@@ -1,0 +1,1237 @@
+{
+  "components": {
+    "schemas": {
+      "Asset": {
+        "description": "A supported asset, either a cryptocurrency or a fiat currency.",
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Crypto"
+              },
+              {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "Crypto"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Fiat"
+              },
+              {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "Fiat"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        ]
+      },
+      "Crypto": {
+        "description": "A cryptocurrency identified by its provider id and display symbol.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "symbol"
+        ],
+        "type": "object"
+      },
+      "FeeStructure": {
+        "description": "Transaction-fee policy exchanged by the REST API.\n\nDecimal values are serialized as strings so clients do not lose precision\nwhile crossing the JSON boundary.",
+        "oneOf": [
+          {
+            "properties": {
+              "type": {
+                "enum": [
+                  "zeroFee"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "feeAmount": {
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "fixed"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "feeAmount",
+              "type"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "feeRate": {
+                "type": "string"
+              },
+              "maxFee": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "minFee": {
+                "type": "string"
+              },
+              "type": {
+                "enum": [
+                  "variable"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "feeRate",
+              "minFee",
+              "type"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Fiat": {
+        "description": "A fiat currency identified by its provider id and display symbol.",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/String"
+          },
+          "symbol": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "symbol"
+        ],
+        "type": "object"
+      },
+      "ImportPortfolioResponse": {
+        "description": "Metadata returned after a portfolio is stored for sharing.",
+        "properties": {
+          "expires_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "expires_at"
+        ],
+        "type": "object"
+      },
+      "PortfolioAssetRequest": {
+        "description": "An asset and its allocation values submitted for synchronization.",
+        "properties": {
+          "aclass": {
+            "description": "Asset Class matching is case-insensitive; Currency and Cash map to CURRENCY, and unknown values map to OTHER.",
+            "enum": [
+              "EQUITY",
+              "BOND",
+              "CURRENCY",
+              "CASH",
+              "CRYPTO",
+              "COMMODITY",
+              "OTHER",
+              "Equity",
+              "Bond",
+              "Currency",
+              "Cash",
+              "Crypto",
+              "Commodity",
+              "Other"
+            ],
+            "type": "string"
+          },
+          "averageBuyPrice": {
+            "type": "string"
+          },
+          "baseCcy": {
+            "type": "string"
+          },
+          "fees": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TransactionFeesRequest"
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "provider": {
+            "description": "Provider matching is case-insensitive; DCAPal and Kraken map to Kraken, while YF and Yahoo map to YF.",
+            "enum": [
+              "DCAPal",
+              "Kraken",
+              "YF",
+              "Yahoo"
+            ],
+            "type": "string"
+          },
+          "qty": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "targetWeight": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "name",
+          "aclass",
+          "baseCcy",
+          "provider",
+          "qty",
+          "targetWeight",
+          "price",
+          "averageBuyPrice"
+        ],
+        "type": "object"
+      },
+      "PortfolioAssetResponse": {
+        "description": "An asset held by a portfolio.\n\nDecimal values are serialized as JSON strings to preserve precision.",
+        "properties": {
+          "aclass": {
+            "description": "Canonical v1 Asset Class name. Cash and Currency are returned as CURRENCY.",
+            "enum": [
+              "EQUITY",
+              "BOND",
+              "CURRENCY",
+              "CRYPTO",
+              "COMMODITY",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "averageBuyPrice": {
+            "description": "The average price paid for the holding.",
+            "type": "string"
+          },
+          "baseCcy": {
+            "description": "The asset currency.",
+            "type": "string"
+          },
+          "fees": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TransactionFeesResponse",
+                "description": "The asset-level transaction fee settings."
+              }
+            ]
+          },
+          "name": {
+            "description": "The asset display name.",
+            "type": "string"
+          },
+          "price": {
+            "description": "The latest known price.",
+            "type": "string"
+          },
+          "provider": {
+            "description": "Canonical v1 provider name. Kraken-backed assets are returned as DCAPal and Yahoo Finance assets as YF.",
+            "enum": [
+              "DCAPal",
+              "YF"
+            ],
+            "type": "string"
+          },
+          "qty": {
+            "description": "The quantity held.",
+            "type": "string"
+          },
+          "symbol": {
+            "description": "The provider symbol for the asset.",
+            "type": "string"
+          },
+          "targetWeight": {
+            "description": "The target portfolio weight.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "name",
+          "aclass",
+          "baseCcy",
+          "provider",
+          "qty",
+          "targetWeight",
+          "price",
+          "averageBuyPrice"
+        ],
+        "type": "object"
+      },
+      "PortfolioRequest": {
+        "description": "A portfolio submitted as part of an authenticated synchronization.",
+        "properties": {
+          "assets": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioAssetRequest"
+            },
+            "type": "array"
+          },
+          "fees": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TransactionFeesRequest"
+              }
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quoteCcy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "quoteCcy",
+          "assets",
+          "lastUpdatedAt"
+        ],
+        "type": "object"
+      },
+      "PortfolioResponse": {
+        "description": "A portfolio returned by the synchronization endpoint.",
+        "properties": {
+          "assets": {
+            "description": "The assets held by the portfolio.",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioAssetResponse"
+            },
+            "type": "array"
+          },
+          "fees": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TransactionFeesResponse",
+                "description": "The portfolio-level transaction fee settings."
+              }
+            ]
+          },
+          "id": {
+            "description": "The portfolio identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "description": "The timestamp used to compare this state with a client copy.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "description": "The portfolio display name.",
+            "type": "string"
+          },
+          "quoteCcy": {
+            "description": "The portfolio quote currency.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "quoteCcy",
+          "assets",
+          "lastUpdatedAt"
+        ],
+        "type": "object"
+      },
+      "Price": {
+        "description": "A price and the timestamp at which it was observed.",
+        "properties": {
+          "price": {
+            "format": "double",
+            "type": "number"
+          },
+          "ts": {
+            "description": "Serialized as Unix seconds in the REST/OpenAPI representation.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "price",
+          "ts"
+        ],
+        "type": "object"
+      },
+      "String": {
+        "type": "string"
+      },
+      "SyncPortfoliosRequest": {
+        "description": "Authenticated request containing local portfolio changes and deletions.",
+        "properties": {
+          "deletedPortfolios": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "portfolios": {
+            "items": {
+              "$ref": "#/components/schemas/PortfolioRequest"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "portfolios",
+          "deletedPortfolios"
+        ],
+        "type": "object"
+      },
+      "SyncPortfoliosResponse": {
+        "description": "The result of synchronizing the client's portfolio set.",
+        "properties": {
+          "deletedPortfolios": {
+            "description": "Portfolio identifiers that the client should remove.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updatedPortfolios": {
+            "description": "Portfolios whose server state should be applied by the client.",
+            "items": {
+              "$ref": "#/components/schemas/PortfolioResponse"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "updatedPortfolios",
+          "deletedPortfolios"
+        ],
+        "type": "object"
+      },
+      "TransactionFeesRequest": {
+        "description": "Portfolio- or asset-level transaction-fee settings.",
+        "properties": {
+          "feeStructure": {
+            "$ref": "#/components/schemas/FeeStructure"
+          },
+          "maxFeeImpact": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "feeStructure"
+        ],
+        "type": "object"
+      },
+      "TransactionFeesResponse": {
+        "description": "Transaction fee settings returned by the API.",
+        "properties": {
+          "feeStructure": {
+            "$ref": "#/components/schemas/FeeStructure",
+            "description": "The fee calculation model."
+          },
+          "maxFeeImpact": {
+            "description": "The maximum allowed fee impact, when configured.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "feeStructure"
+        ],
+        "type": "object"
+      },
+      "YahooChartIndicators": {
+        "properties": {
+          "quote": {
+            "items": {
+              "$ref": "#/components/schemas/YahooChartQuote"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooChartMeta": {
+        "properties": {
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooChartPayload": {
+        "properties": {
+          "error": {},
+          "result": {
+            "items": {
+              "$ref": "#/components/schemas/YahooChartResult"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooChartQuote": {
+        "properties": {
+          "close": {
+            "items": {
+              "format": "double",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooChartResponse": {
+        "properties": {
+          "chart": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/YahooChartPayload"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooChartResult": {
+        "properties": {
+          "indicators": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/YahooChartIndicators"
+              }
+            ]
+          },
+          "meta": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/YahooChartMeta"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooSearchQuote": {
+        "properties": {
+          "exchange": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "longname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quoteType": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "shortname": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "symbol": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "YahooSearchResponse": {
+        "properties": {
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/YahooSearchQuote"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "DCA-Pal APIs",
+    "version": "0.9.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "root",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Service greeting"
+          }
+        },
+        "summary": "Returns the service greeting used by the root health-style endpoint."
+      }
+    },
+    "/assets/chart/{symbol}": {
+      "get": {
+        "operationId": "get_assets_chart",
+        "parameters": [
+          {
+            "description": "Asset symbol.",
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Chart start timestamp (unix seconds).",
+            "in": "query",
+            "name": "startPeriod",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Chart end timestamp (unix seconds).",
+            "in": "query",
+            "name": "endPeriod",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "chart": {
+                    "error": null,
+                    "result": [
+                      {
+                        "indicators": {
+                          "quote": [
+                            {
+                              "close": [
+                                65231.12,
+                                65310.44,
+                                65195.87
+                              ]
+                            }
+                          ]
+                        },
+                        "meta": {
+                          "currency": "USD"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/YahooChartResponse"
+                }
+              }
+            },
+            "description": "Provider payload passthrough"
+          }
+        },
+        "summary": "Proxies a historical chart request to the configured market-data provider."
+      }
+    },
+    "/assets/crypto": {
+      "get": {
+        "operationId": "get_assets_crypto",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Crypto assets"
+          }
+        },
+        "summary": "Returns the cached cryptocurrency asset catalog."
+      }
+    },
+    "/assets/fiat": {
+      "get": {
+        "operationId": "get_assets_fiat",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Fiat assets"
+          }
+        },
+        "summary": "Returns the cached fiat asset catalog."
+      }
+    },
+    "/assets/search": {
+      "get": {
+        "operationId": "get_assets_data",
+        "parameters": [
+          {
+            "description": "Asset name query.",
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YahooSearchResponse"
+                }
+              }
+            },
+            "description": "Provider payload passthrough"
+          }
+        },
+        "summary": "Proxies an asset-name search to the configured market-data provider."
+      }
+    },
+    "/import/portfolio": {
+      "post": {
+        "operationId": "import_portfolio",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$id": "https://github.com/dcapal/dcapal/blob/master/dcapal-backend/docs/schema/portfolio/v1/schema.json",
+                "$schema": "https://json-schema.org/draft-07/schema",
+                "additionalProperties": false,
+                "description": "DcaPal Portfolio",
+                "properties": {
+                  "assets": {
+                    "description": "Portfolio assets",
+                    "items": {
+                      "description": "Portfolio asset",
+                      "properties": {
+                        "aclass": {
+                          "description": "Asset class. Matching is case-insensitive. Supported aliases are Equity, Bond, Cash, Currency, Crypto, Commodity, and Other; unknown values are stored as Other.",
+                          "enum": [
+                            "EQUITY",
+                            "BOND",
+                            "CURRENCY",
+                            "CASH",
+                            "CRYPTO",
+                            "COMMODITY",
+                            "OTHER",
+                            "Equity",
+                            "Bond",
+                            "Cash",
+                            "Currency",
+                            "Crypto",
+                            "Commodity",
+                            "Other"
+                          ],
+                          "type": "string"
+                        },
+                        "baseCcy": {
+                          "description": "Asset base currency",
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "fees": {
+                          "additionalProperties": false,
+                          "description": "Transaction fees",
+                          "properties": {
+                            "feeStructure": {
+                              "description": "Fee structure",
+                              "oneOf": [
+                                {
+                                  "properties": {
+                                    "type": {
+                                      "const": "zeroFee"
+                                    }
+                                  },
+                                  "required": [
+                                    "type"
+                                  ]
+                                },
+                                {
+                                  "properties": {
+                                    "feeAmount": {
+                                      "description": "Transaction fee amount",
+                                      "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "const": "fixed"
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "feeAmount"
+                                  ]
+                                },
+                                {
+                                  "properties": {
+                                    "feeRate": {
+                                      "description": "Decimal percentage represented as a string",
+                                      "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                      "type": "string"
+                                    },
+                                    "maxFee": {
+                                      "description": "Transaction fee maximum amount",
+                                      "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                      "type": "string"
+                                    },
+                                    "minFee": {
+                                      "description": "Transaction fee minimum amount",
+                                      "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "const": "variable"
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "feeRate",
+                                    "minFee"
+                                  ]
+                                }
+                              ],
+                              "type": "object"
+                            },
+                            "maxFeeImpact": {
+                              "description": "Decimal percentage represented as a string",
+                              "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "feeStructure"
+                          ],
+                          "type": "object"
+                        },
+                        "name": {
+                          "description": "Asset name",
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "price": {
+                          "description": "Asset price",
+                          "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                          "type": "string"
+                        },
+                        "provider": {
+                          "description": "Price provider. Matching is case-insensitive. Accepted aliases are DCAPal and Kraken for Kraken-backed assets, and YF and Yahoo for Yahoo Finance-backed assets. Choose DCAPal for Crypto and YF for anything else.",
+                          "enum": [
+                            "DCAPal",
+                            "Kraken",
+                            "YF",
+                            "Yahoo"
+                          ],
+                          "type": "string"
+                        },
+                        "qty": {
+                          "description": "Number of units of the asset in portfolio",
+                          "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                          "type": "string"
+                        },
+                        "symbol": {
+                          "description": "Asset ticker",
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "targetWeight": {
+                          "description": "Asset target weight",
+                          "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "symbol",
+                        "name",
+                        "aclass",
+                        "baseCcy",
+                        "price",
+                        "qty",
+                        "targetWeight",
+                        "provider"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "fees": {
+                    "additionalProperties": false,
+                    "description": "Transaction fees",
+                    "properties": {
+                      "feeStructure": {
+                        "description": "Fee structure",
+                        "oneOf": [
+                          {
+                            "properties": {
+                              "type": {
+                                "const": "zeroFee"
+                              }
+                            },
+                            "required": [
+                              "type"
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "feeAmount": {
+                                "description": "Transaction fee amount",
+                                "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                "type": "string"
+                              },
+                              "type": {
+                                "const": "fixed"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "feeAmount"
+                            ]
+                          },
+                          {
+                            "properties": {
+                              "feeRate": {
+                                "description": "Decimal percentage represented as a string",
+                                "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                "type": "string"
+                              },
+                              "maxFee": {
+                                "description": "Transaction fee maximum amount",
+                                "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                "type": "string"
+                              },
+                              "minFee": {
+                                "description": "Transaction fee minimum amount",
+                                "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                                "type": "string"
+                              },
+                              "type": {
+                                "const": "variable"
+                              }
+                            },
+                            "required": [
+                              "type",
+                              "feeRate",
+                              "minFee"
+                            ]
+                          }
+                        ],
+                        "type": "object"
+                      },
+                      "maxFeeImpact": {
+                        "description": "Decimal percentage represented as a string",
+                        "pattern": "^[0-9]+(?:\\.[0-9]+)?$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "feeStructure"
+                    ],
+                    "type": "object"
+                  },
+                  "name": {
+                    "description": "Portfolio name",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "quoteCcy": {
+                    "enum": [
+                      "usd",
+                      "eur",
+                      "gbp",
+                      "chf",
+                      "jpy",
+                      "cad",
+                      "aed",
+                      "aud"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "quoteCcy",
+                  "assets"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "description": "Portfolio JSON object validated against dcapal-backend/docs/schema/portfolio/v1/schema.json",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPortfolioResponse"
+                }
+              }
+            },
+            "description": "Imported portfolio metadata"
+          },
+          "400": {
+            "description": "Input portfolio does not match schema requirements"
+          }
+        },
+        "summary": "Validates and stores a shared portfolio payload."
+      }
+    },
+    "/import/portfolio/{id}": {
+      "get": {
+        "operationId": "get_imported_portfolio",
+        "parameters": [
+          {
+            "description": "Imported portfolio id.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Imported portfolio payload"
+          },
+          "404": {
+            "description": "Portfolio not found or expired"
+          }
+        },
+        "summary": "Returns a stored shared portfolio or a not-found response when it expired."
+      }
+    },
+    "/price/{asset}": {
+      "get": {
+        "operationId": "get_price",
+        "parameters": [
+          {
+            "description": "Base asset symbol.",
+            "in": "path",
+            "name": "asset",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Quote currency.",
+            "in": "query",
+            "name": "quote",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Price"
+                }
+              }
+            },
+            "description": "Asset conversion price"
+          },
+          "404": {
+            "description": "Price not available"
+          }
+        },
+        "summary": "Returns the current conversion price for a base asset and quote currency."
+      }
+    },
+    "/v1/sync/portfolios": {
+      "post": {
+        "operationId": "sync_portfolios",
+        "parameters": [
+          {
+            "description": "Bearer JWT token",
+            "in": "header",
+            "name": "Authorization",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncPortfoliosRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncPortfoliosResponse"
+                }
+              }
+            },
+            "description": "Portfolios synchronized"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        },
+        "summary": "Applies authenticated local portfolio changes and returns the server state."
+      }
+    }
+  }
+}
