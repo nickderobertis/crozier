@@ -1,0 +1,166 @@
+{
+  "derivation": "RankedBacklogTests.region_rows over six region files: category gap and settlement FIXTURE",
+  "keys": {
+    "annotated-ref-target-closed-object": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+      "selector_status": "available"
+    },
+    "annotated-ref-target-composed": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+      "selector_status": "available"
+    },
+    "annotated-ref-target-oneof": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+      "selector_status": "available"
+    },
+    "annotated-ref-target-string-const": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+      "selector_status": "available"
+    },
+    "anyof-array-variant-anyof-nullable-item": {
+      "region": "schemas",
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+      "selector_status": "available"
+    },
+    "anyof-array-variant-closed-object-item": {
+      "region": "schemas",
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+      "selector_status": "available"
+    },
+    "anyof-array-variant-empty-object-item": {
+      "region": "schemas",
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "anyof-array-variant-oneof-nullable-item": {
+      "region": "schemas",
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+      "selector_status": "available"
+    },
+    "anyof-array-variant-struct-item": {
+      "region": "schemas",
+      "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+      "selector_status": "available"
+    },
+    "array-item-inheritance-union": {
+      "region": "schemas",
+      "selector": "schema.items>schema.discriminator:inheritance-union",
+      "selector_status": "available"
+    },
+    "array-item-pointer-walk-anyof": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf",
+      "selector_status": "available"
+    },
+    "array-item-pointer-walk-oneof": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf",
+      "selector_status": "available"
+    },
+    "oauth2-password": {
+      "region": "security",
+      "selector": "securityScheme.flows.password",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-annotated-ref-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-anyof-discriminated-union-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-anyof-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-anyof-nullable-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-closed-object-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-composed-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+      "selector_status": "available"
+    },
+    "oneof-array-variant-empty-object-item": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "oneof-bare-object-example-variant": {
+      "region": "schemas",
+      "selector": "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "property-sole-anyof-closed-object-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+      "selector_status": "available"
+    },
+    "property-sole-anyof-composed-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+      "selector_status": "available"
+    },
+    "property-sole-anyof-empty-object-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "property-sole-anyof-struct-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+      "selector_status": "available"
+    },
+    "property-sole-oneof-closed-object-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+      "selector_status": "available"
+    },
+    "property-sole-oneof-composed-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+      "selector_status": "available"
+    },
+    "property-sole-oneof-empty-object-member": {
+      "region": "schemas",
+      "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "ref-pointer-undeclared-component-head": {
+      "region": "schemas",
+      "selector": "schema.$ref:undeclared-component-head",
+      "selector_status": "available"
+    },
+    "ref-pointer-unnamed-segment": {
+      "region": "schemas",
+      "selector": "schema.$ref:unnamed-segment",
+      "selector_status": "available"
+    },
+    "schema-name-nonidentifier-name": {
+      "region": "schemas",
+      "selector": "components.schemas:nonidentifier-name",
+      "selector_status": "available"
+    },
+    "securityscheme-ref": {
+      "region": "security",
+      "selector": "securityScheme:$ref",
+      "selector_status": "parsed Reference Object; census selector unavailable"
+    }
+  },
+  "source_commit": "ee9b0ccb15f824bea6eea7c015dee55dad2469b3"
+}

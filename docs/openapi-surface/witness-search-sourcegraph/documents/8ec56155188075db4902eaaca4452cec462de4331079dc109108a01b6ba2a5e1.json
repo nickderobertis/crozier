@@ -1,0 +1,4999 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Floxhub Catalog Server",
+    "summary": "Catalog Server API for Floxhub",
+    "description": "\n# Floxhub Catalog Service API\n\n![packages](https://api.preview.flox.dev/api/v1/catalog/status/badges/packages.svg)\n",
+    "version": "unknown",
+    "x-logo": {
+      "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
+    }
+  },
+  "paths": {
+    "/api/v1/catalog/search": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Search for packages",
+        "description": "Search the catalog(s) under the given criteria for matching packages.\n\nRequired Query Parameters:\n- **system**: The system architecture to search for (e.g., x86_64-linux)\n\nOptional Query Parameters:\n- **search_term**: The search term to filter packages by\n- **catalogs**: Comma separated list of catalog names to search; defaults to\n  all catalogs. Note: when searching base catalog, search_term is required.\n- **page**: Page number for pagination (default: 0)\n- **pageSize**: Page size for pagination (default: 10)\nReturns:\n- **PackageSearchResult**: A list of PackageInfoSearch items and total count",
+        "operationId": "search_api_v1_catalog_search_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PackageSystem"
+            }
+          },
+          {
+            "name": "search_term",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Search Term",
+              "nullable": true,
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "catalogs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Catalogs",
+              "nullable": true,
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 10,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of matching packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageSearchResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The search terms given could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/by-command": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Find packages that provide a command",
+        "description": "Reverse lookup: which package(s) provide the given command name.\n\nRequired Query Parameters:\n- **system**: The system architecture to search for (e.g., x86_64-linux)\n- **name**: The command name to look up (e.g., readelf, rg, gcc-13)\n\nOptional Query Parameters:\n- **page**: Page number for pagination (default: 0)\n- **pageSize**: Page size for pagination (default: 10)\n\nReturns:\n- **ByCommandResult**: Providers of the command and total count",
+        "operationId": "by_command_api_v1_catalog_by_command_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "system",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PackageSystem"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 200,
+              "title": "Name"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Packages that provide the given command",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ByCommandResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The command name or system could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/packages/{attr_path}": {
+      "get": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Shows available packages of a specific package",
+        "description": "Returns a list of versions for a given attr_path\n\nRequired Query Parameters:\n- **attr_path**: The attr_path, must be valid.\n\nOptional Query Parameters:\n- **page**: Optional page number for pagination (def = 0)\n- **pageSize**: Optional page size for pagination (def = 10)\n\nReturns:\n- **PackagesResult**: A list of PackageResolutionInfo and the total result count",
+        "operationId": "packages_api_v1_catalog_packages__attr_path__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "attr_path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Attr Path"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 10,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of packages attr_path",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackagesResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "attr_path was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/resolve": {
+      "post": {
+        "tags": [
+          "catalog"
+        ],
+        "summary": "Resolve a list of Package Groups",
+        "description": "Resolves a list of package groups, each being a list of package descriptors.\n\nRequired Body:\n- **groups**: An object with an `items` array of PackageGroups to resolve.\n\nOptional Query Parameters:\n- **candidate_pages**: Number of additional candidate pages to return\n  (default: 0)\n\nReturns:\n- **ResolvedPackageGroups**: An object with an `items` array of\n  `ResolvedPackageGroup` items.\n\nResolution Rules:\n- Each `PackageGroup` is resolved independently.\n- Each page that has packages meeting all descriptors in the group is\n  returned.\n- The latest complete page includes full package details.\n- Additional candidate pages are returned without full details.\n\nPackageDescriptor Fields:\n- **install_id**: [required] Reference identifier for the package in the\n  manifest. Used for error messages and result correlation.\n- **attr_path**: [required] The nix attribute path to match exactly.\n- **systems**: [required] List of systems to resolve for (e.g.,\n  x86_64-linux).\n- **version**: [optional] Version constraint. Can be a literal version or\n  semver constraint. Packages whose version cannot be parsed as semver are\n  excluded when using semver constraints.\n- **derivation**: [optional] Specific derivation path to match.\n- **allow_pre_releases**: [optional] Include pre-release versions when using\n  semver constraints (default: False).\n- **allow_broken**: [optional] Include packages marked as broken\n  (default: False).\n- **allow_unfree**: [optional] Include packages with unfree licenses\n  (default: True).\n- **allow_insecure**: [optional] Include packages marked as insecure\n  (default: False).\n- **allowed_licenses**: [optional] List of acceptable license identifiers.\n- **allow_missing_builds**: [optional] Include packages without confirmed\n  build artifacts (default: False). If resolution fails with this\n  constraint, it may be relaxed with a warning message.",
+        "operationId": "resolve_api_v1_catalog_resolve_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "candidate_pages",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Candidate Pages"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageGroups"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A list of resolved package groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedPackageGroups"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/build-inputs/lookup": {
+      "post": {
+        "tags": [
+          "build-inputs"
+        ],
+        "summary": "Lookup",
+        "description": "Resolve build inputs for one or more reference groups.\n\nDirect references resolve to latest; the transitive closure is taken\nverbatim; a cross-reference conflict yields a per-group conflict result.\n\nFor each group, walks the transitive package_inputs closure (accessor),\nthen applies auth redaction and assembles the flat LockedInputs map.\n\nEach group runs in its own transaction so a single group's timeout,\noverflow, or conflict produces a per-group error without affecting others.",
+        "operationId": "lookup_api_v1_catalog_build_inputs_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuildInputsLookupRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuildInputsLookupResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/settings/{key}": {
+      "post": {
+        "tags": [
+          "settings"
+        ],
+        "summary": "Adjust various settings",
+        "description": "Adjusts various settings on the catalog service.\n\nQuery Parameters:\n- **key**: The the key to adjust.\n    - \"plan\" - Enables the logging of the DB query plan for queries for\n    **value** seconds.  It will be scheduled to turn off automatically after\n    that.",
+        "operationId": "settings_api_v1_catalog_settings__key__post",
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Key"
+            }
+          },
+          {
+            "name": "value",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Value"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful.",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Request validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/status/healthcheck": {
+      "get": {
+        "tags": [
+          "status"
+        ],
+        "summary": "Perform basic catalog health check",
+        "description": "Run some basic health checks on the catalog service.\n\nReturns:\n- **HealthCheck**: A dictionary of various health check values.",
+        "operationId": "get_catalog_health_check_api_v1_catalog_status_healthcheck_get",
+        "responses": {
+          "200": {
+            "description": "Health check results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheck"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/status/catalog": {
+      "get": {
+        "tags": [
+          "status"
+        ],
+        "summary": "Get basic catalog database status",
+        "description": "Gather some basic status values from the database.\n\nReturns:\n- **CatalogStatus**: A dictionary of various status values.",
+        "operationId": "get_catalog_status_api_v1_catalog_status_catalog_get",
+        "responses": {
+          "200": {
+            "description": "Catalog Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogStatus"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/status/service": {
+      "get": {
+        "tags": [
+          "status"
+        ],
+        "summary": "Get basic service status",
+        "description": "Returns basic service status\n\nReturns:\n- **ServiceStatus**: A dictionary of various status values.",
+        "operationId": "get_service_status_api_v1_catalog_status_service_get",
+        "responses": {
+          "200": {
+            "description": "Service Status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceStatus"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/status/sentry-debug": {
+      "get": {
+        "tags": [
+          "status"
+        ],
+        "summary": "Trigger Error",
+        "operationId": "trigger_error_api_v1_catalog_status_sentry_debug_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/": {
+      "post": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Create a new user catalog",
+        "description": "Create a new user catalog\n\nRequired Query Parameters:\n- **name**: The name of the new catalog\n\n\nReturns:\n- **UserCatalog**: The new user catalog",
+        "operationId": "create_catalog_api_v1_catalog_catalogs__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The new user catalog was created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCatalog"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The catalog name already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The catalog name is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}": {
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Get user catalog metadata",
+        "description": "Get user catalog metadata.\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n\nReturns:\n- **UserCatalog**: The user catalog metadata including id, name, and created_at.",
+        "operationId": "get_catalog_api_v1_catalog_catalogs__catalog_name__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The user catalog metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCatalog"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog with the given name was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The search terms given could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Delete a user catalog",
+        "description": "Delete a user catalog.\n\nPath Parameters:\n- **catalog_name**: The name of catalog to delete\n\nReturns:\n- **None**\n\nNote: This endpoint is not yet implemented and returns 501.",
+        "operationId": "delete_catalog_api_v1_catalog_catalogs__catalog_name__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "501": {
+            "description": "Deletion of user catalogs is not yet implemented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The catalog name is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/packages": {
+      "post": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Create a new package in a user catalog",
+        "description": "Creates a catalog package\n\nPath Parameters:\n- **catalog_name**: The name of catalog to place the package into\n\nRequired Query Parameters:\n- **name**: The name of package (attr_path) to create\n\nReturns:\n- **UserPackage**",
+        "operationId": "create_catalog_package_api_v1_catalog_catalogs__catalog_name__packages_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPackageCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new package was created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPackage"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The package already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPackage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The package already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "List packages available in a catalog",
+        "description": "Lists available packages in a catalog\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n\nReturns:\n- **UserPackageList**",
+        "operationId": "get_catalog_packages_api_v1_catalog_catalogs__catalog_name__packages_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPackageList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/packages/{package_name}": {
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Get package info",
+        "description": "Get package info\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\n\nReturns:\n- **UserPackage**\n\nNote: Authentication is optional. Unauthenticated users can access\npackages in public catalogs (flox, base). Private catalogs require\nauthentication.",
+        "operationId": "get_catalog_package_api_v1_catalog_catalogs__catalog_name__packages__package_name__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of packages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserPackage"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog or package could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/packages/{package_name}/publish/info": {
+      "post": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Request access and info to publish a package",
+        "description": "Request access and informatin to publish a package to this catalog.\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\nBody Content:\n- **PublishInfoRequest**: The information needed to publish to the catalog\nReturns:\n- **PublishRequestResponse**",
+        "operationId": "publish_request_api_v1_catalog_catalogs__catalog_name__packages__package_name__publish_info_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishInfoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The requested information to publish the package",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishInfoResponseCatalog"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The build cannot be published as requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog or package could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/packages/{package_name}/builds": {
+      "post": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Submit a build of a particular package",
+        "description": "Create or update a build of a package\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\nBody Content:\n- **PackageBuild**: The build info to submit\n\nReturns:\n- **PackageBuildResponse**",
+        "operationId": "create_package_build_api_v1_catalog_catalogs__catalog_name__packages__package_name__builds_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageBuildWithNarInfo"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The build was submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageBuildResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The build already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageBuildResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The build cannot be published as requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog or package could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Update a build of a particular package",
+        "description": "Create or update a build of a package\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\nBody Content:\n- **PackageBuild**: The build info to submit\n\nReturns:\n- **PackageBuildResponse**",
+        "operationId": "create_package_build_api_v1_catalog_catalogs__catalog_name__packages__package_name__builds_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageBuildWithNarInfo"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageBuildResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The build already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageBuildResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The build cannot be published as requested",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog or package could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Get a list of builds for a given package",
+        "description": "Get the list of builds for a given package\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\n\nReturns:\n- **PackageBuildList**",
+        "operationId": "get_package_builds_api_v1_catalog_catalogs__catalog_name__packages__package_name__builds_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of builds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageBuildList"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog or package could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/packages/{package_name}/check-build": {
+      "post": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Check if a build already exists",
+        "description": "Check whether a build already exists for the given source tuple.\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n- **package_name**: The name of the package\n\nRequest Body:\n- **source_url**: Source repository URL\n- **source_rev**: Source revision\n- **nixpkgs_rev**: Nixpkgs revision used for the build\n- **system**: Target system (e.g. x86_64-linux)\n- **locked_inputs**: Optional flat map of DIRECT catalog dependencies,\n  same shape as the locked_inputs field on the publish endpoint.  The\n  check is always closure-aware \u2014 there is no hash-blind path:\n  absent/null/{} \u2192 empty closure (H(\u2205)); {\u2026} \u2192 resolved + Merkle-hashed.\n  Old clients that omit the field are accepted (no 422); they are treated\n  as publishing with an empty closure.\n\nReturns:\n- **CheckBuildResponse** with already_published=true and provenance\n  if a matching build exists, or already_published=false otherwise.",
+        "operationId": "check_build_api_v1_catalog_catalogs__catalog_name__packages__package_name__check_build_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "package_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9.\\-_]{1,128}$",
+              "title": "Package Name",
+              "name": "package_name",
+              "example": "curl"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckBuildRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Build existence check result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckBuildResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Catalog or package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/locked-sources": {
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "List all packages with their locked source metadata",
+        "description": "Return a flat paginated list of all packages in the catalog with their\nlocked source metadata (url, ref, rev, dir, buildType).\n\nPackages published before source tracking was introduced have\nsource=null and buildType=null.\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n\nQuery Parameters:\n- **page**: Zero-indexed page number (default: 0)\n- **pageSize**: Items per page (default: 10)\n\nReturns:\n- **LockedSourcesResponse**: Paginated list with total_count",
+        "operationId": "get_catalog_locked_sources_api_v1_catalog_catalogs__catalog_name__locked_sources_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 10,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flat paginated list of packages with source metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LockedSourcesResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/catalogs/{catalog_name}/store/config": {
+      "get": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Get store config",
+        "description": "Get store configuration for a catalog.\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n\nReturns:\n- **CatalogStoreConfig**: The store configuration (null, meta-only,\n  nix-copy, or publisher type) with associated URIs if applicable.",
+        "operationId": "get_catalog_store_config_api_v1_catalog_catalogs__catalog_name__store_config_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The store configuration was found and returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogStoreConfig"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog with the given name was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The catalog name is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "catalogs"
+        ],
+        "summary": "Set store config",
+        "description": "Update store configuration for a catalog.\n\nPath Parameters:\n- **catalog_name**: The name of the catalog\n\nBody Parameters:\n- **CatalogStoreConfig**: The new store configuration to set\n\nReturns:\n- **CatalogStoreConfig**: The updated store configuration.",
+        "operationId": "set_catalog_store_config_api_v1_catalog_catalogs__catalog_name__store_config_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "catalog_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9\\-_]{3,63}$",
+              "title": "Catalog Name",
+              "name": "catalog_name",
+              "example": "mycatalog"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogStoreConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The store configuration was updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogStoreConfig"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The catalog with the given name was not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The catalog name is invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/info/pkg-paths": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "List of valid pkg paths",
+        "description": "Get the list of valid pkg paths for base catalog packages.",
+        "operationId": "getPkgPaths_api_v1_catalog_info_pkg_paths_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Page",
+              "nullable": true,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "title": "Pagesize",
+              "nullable": true,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of valid pkg paths",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PkgPathsResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/info/base-catalog": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Get base catalog information",
+        "operationId": "getBaseCatalog_api_v1_catalog_info_base_catalog_get",
+        "responses": {
+          "200": {
+            "description": "The properties of the base catalog, its scraped pages and available stabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseCatalogInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/info/published-catalogs": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Get Published Catalogs",
+        "operationId": "get_published_catalogs_api_v1_catalog_info_published_catalogs_get",
+        "responses": {
+          "200": {
+            "description": "Get statistics about published catalogs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedCatalogInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/info/nar/{nar_file}": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Look up derivation info by NAR file name",
+        "description": "Look up derivation information by NAR file name.\n\nPath Parameters:\n- **nar_file**: The NAR file name to look up\n\nReturns:\n- **NarFileLookup**: Derivation info including attr_path, system, and\n  outputs for the package associated with this NAR file.\n\nNote: Requires authentication and superuser (flox staff) access.",
+        "operationId": "nar_file_lookup_api_v1_catalog_info_nar__nar_file__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "nar_file",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Nar File"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Derivation information for the NAR file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NarFileLookup"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "NAR file not found in catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/info/dependencies/{storepath}/raw": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Get a raw dependency report for a storepath (excluding /nix/store/ prefix)",
+        "description": "Get a raw dependency report for a store path.\n\nPath Parameters:\n- **storepath**: The store path to analyze (excluding /nix/store/ prefix)\n\nReturns:\n- **RawDependencyReport**: Dependency graph with all transitive dependencies,\n  including store paths, derivation info, and dependency relationships.\n  Dependency lists and the dependencies mapping are sorted by full\n  store path (hash first, since a store path leads with its content\n  hash), so repeated calls over the same dependency graph return the\n  entries in the same order. Ordering only; the report's contents\n  still reflect whatever the catalog currently knows about the\n  closure.\n\nNote: Requires authentication and superuser (flox staff) access.",
+        "operationId": "raw_dependency_report_api_v1_catalog_info_dependencies__storepath__raw_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "storepath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Storepath"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A raw dependency report for the given storepath",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RawDependencyReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/info/dependencies/{storepath}/spdx": {
+      "get": {
+        "tags": [
+          "info"
+        ],
+        "summary": "Get an SPDX report for a storepath (excluding /nix/store/ prefix)",
+        "description": "Get an SPDX 2.3 format dependency report for a store path.\n\nPath Parameters:\n- **storepath**: The store path to analyze (excluding /nix/store/ prefix)\n\nReturns:\n- **dict**: SPDX 2.3 JSON document containing package information and\n  dependency relationships in standard SBOM format.\n\nNote: Requires authentication and superuser (flox staff) access.",
+        "operationId": "spdx_report_api_v1_catalog_info_dependencies__storepath__spdx_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "storepath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Storepath"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A SPDX report for the given storepath",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response 200 Spdx Report Api V1 Catalog Info Dependencies  Storepath  Spdx Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/sbom/package/{derivation}": {
+      "post": {
+        "tags": [
+          "sbom"
+        ],
+        "summary": "Get SBOM for a package derivation",
+        "description": "Get SBOM (Software Bill of Materials) for a package derivation.\n\nArgs:\n    derivation: The derivation filename without /nix/store/ prefix\n                (e.g., \"abc123def-foo-1.0.drv\")\n    outputs: Optional comma-separated list of outputs (e.g., \"out,bin,dev\").\n             If omitted, includes the package's default outputs from derivation metadata.\n             Must be alphanumeric with underscores only, max 100 chars total.\n    format: SBOM format (defaults to SbomFormat.SPDX_2_3_JSON)\n    body: Request body (reserved for future extension)\n    user: Authenticated user context\n    cache: Request-scoped dependency cache (injected)\n\nReturns:\n    SBOM document in the requested format",
+        "operationId": "package_sbom_api_v1_catalog_sbom_package__derivation__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "derivation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Derivation"
+            }
+          },
+          {
+            "name": "outputs",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Comma-separated list of output names (e.g., 'out,bin,dev')",
+              "title": "Outputs",
+              "nullable": true,
+              "type": "string",
+              "maxLength": 100,
+              "pattern": "^[a-zA-Z0-9_]+(?:,[a-zA-Z0-9_]+)*$",
+              "example": "out"
+            },
+            "description": "Comma-separated list of output names (e.g., 'out,bin,dev')"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SbomFormat",
+              "default": "spdx-2.3-json"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageSbomRequest",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SBOM for the given package derivation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response 200 Package Sbom Api V1 Catalog Sbom Package  Derivation  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/sbom/environment": {
+      "post": {
+        "tags": [
+          "sbom"
+        ],
+        "summary": "Get SBOM for an environment",
+        "description": "Get SBOM (Software Bill of Materials) for an environment.\n\nArgs:\n    body: Request body containing lockfile and environment metadata\n    format: SBOM format (defaults to SbomFormat.SPDX_2_3_JSON)\n    user: Authenticated user context\n    cache: Request-scoped dependency cache (injected)\n\nReturns:\n    SBOM document in the requested format\n\nRaises:\n    HTTPException: If lockfile is malformed, system is invalid, or SBOM generation fails",
+        "operationId": "environment_sbom_api_v1_catalog_sbom_environment_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SbomFormat",
+              "default": "spdx-2.3-json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnvironmentSbomRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SBOM for the given environment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response 200 Environment Sbom Api V1 Catalog Sbom Environment Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request could not be processed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/catalog/store": {
+      "post": {
+        "tags": [
+          "store"
+        ],
+        "summary": "Get store info for a list of derivations",
+        "description": "Get store info for a list of output paths.\n\nBody Parameters:\n- **StoreInfoRequest**: Object containing an `outpaths` list of output paths\n\nReturns:\n- **StoreInfoResponse**: A map of output path to a list of StoreInfo objects,\n  each containing catalog, package, URL, and optional authentication info\n  for downloading the binary artifacts.",
+        "operationId": "get_store_info_api_v1_catalog_store_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreInfoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The list of store info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreInfoResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    },
+    "/api/v1/catalog/store/status": {
+      "post": {
+        "tags": [
+          "store"
+        ],
+        "summary": "Get status for a list of storepaths",
+        "description": "Get status for a list of store paths.\n\nBody Parameters:\n- **StorepathRequest**: Object containing an `outpaths` list of store paths\n\nReturns:\n- **StorepathStatusResponse**: A map of store path to a list of\n  StorepathStatus objects indicating catalog, package, and narinfo status.",
+        "operationId": "get_storepath_status_api_v1_catalog_store_status_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreInfoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "The list of storepath statuses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorepathStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request parameters are invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          },
+          {
+            "HTTPBasic": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseCatalogInfo": {
+        "properties": {
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "scraped_pages": {
+            "items": {
+              "$ref": "#/components/schemas/PageInfo"
+            },
+            "type": "array",
+            "title": "Scraped Pages"
+          },
+          "stabilities": {
+            "items": {
+              "$ref": "#/components/schemas/StabilityInfo"
+            },
+            "type": "array",
+            "title": "Stabilities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "base_url",
+          "scraped_pages",
+          "stabilities"
+        ],
+        "title": "BaseCatalogInfo"
+      },
+      "BuildInputsLookupRequest": {
+        "properties": {
+          "stability": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Stability"
+          },
+          "reference_point": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReferencePoint"
+              }
+            ]
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/LookupGroup"
+            },
+            "type": "array",
+            "maxItems": 256,
+            "title": "Groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stability",
+          "groups"
+        ],
+        "title": "BuildInputsLookupRequest",
+        "description": "Request body for the /build-inputs/lookup endpoint.\n\nA lookup names a `stability` (required) and one or more `groups` of\nreferences to resolve, optionally anchored at a `reference_point`.  It is\nsystem-independent \u2014 the response is source revs + DAG edges, which carry\nno system \u2014 so the request body has no system field."
+      },
+      "BuildInputsLookupResponse": {
+        "properties": {
+          "version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Version",
+            "default": 1
+          },
+          "groups": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/GroupResult"
+            },
+            "type": "object",
+            "title": "Groups"
+          }
+        },
+        "type": "object",
+        "required": [
+          "groups"
+        ],
+        "title": "BuildInputsLookupResponse",
+        "description": "Response body for the /build-inputs/lookup endpoint."
+      },
+      "BuildRef": {
+        "properties": {
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog",
+          "attr_path",
+          "rev"
+        ],
+        "title": "BuildRef",
+        "description": "Reference to a specific build by catalog, attr_path, and revision."
+      },
+      "BuildSource": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "git",
+            "title": "Type",
+            "default": "git"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "ref": {
+            "title": "Ref",
+            "nullable": true,
+            "type": "string"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "dir": {
+            "type": "string",
+            "title": "Dir",
+            "default": ".flox"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "rev"
+        ],
+        "title": "BuildSource",
+        "description": "Source provenance for a published package."
+      },
+      "BuildType": {
+        "type": "string",
+        "enum": [
+          "manifest",
+          "nef"
+        ],
+        "title": "BuildType",
+        "description": "Records the build methodology used to produce a package.\n\nNEF packages carry full source metadata and can be reproduced from source;\nmanifest packages were built via the traditional flox manifest workflow."
+      },
+      "ByCommandResult": {
+        "properties": {
+          "command_name": {
+            "type": "string",
+            "title": "Command Name"
+          },
+          "providers": {
+            "items": {
+              "$ref": "#/components/schemas/CommandProvider"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "listing_known": {
+            "type": "boolean",
+            "title": "Listing Known"
+          }
+        },
+        "type": "object",
+        "required": [
+          "command_name",
+          "providers",
+          "total_count",
+          "listing_known"
+        ],
+        "title": "ByCommandResult",
+        "description": "Packages that provide a command name (reverse command\u2192package lookup).",
+        "example": {
+          "command_name": "readelf",
+          "listing_known": true,
+          "providers": [
+            {
+              "attr_path": "binutils",
+              "exact_name_match": false,
+              "pname": "binutils",
+              "system": "x86_64-linux"
+            }
+          ],
+          "total_count": 1
+        }
+      },
+      "CatalogPage": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "packages": {
+            "title": "Packages",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ResolvedPackageDescriptor"
+            },
+            "type": "array"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ResolutionMessageGeneral"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "complete": {
+            "type": "boolean",
+            "title": "Complete"
+          }
+        },
+        "type": "object",
+        "required": [
+          "page",
+          "url",
+          "messages",
+          "complete"
+        ],
+        "title": "CatalogPage",
+        "example": {
+          "complete": true,
+          "messages": [],
+          "packages": [
+            {
+              "attr_path": "curl",
+              "broken": false,
+              "catalog": "nixpkgs",
+              "derivation": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-curl-8.5.0.drv",
+              "description": "A command line tool for transferring files with URL syntax",
+              "insecure": false,
+              "install_id": "curl",
+              "license": "curl",
+              "locked_url": "https://github.com/flox/nixpkgs?rev=abc123def456",
+              "missing_builds": false,
+              "name": "curl-8.5.0",
+              "outputs": [
+                {
+                  "name": "out",
+                  "store_path": "/nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-curl-8.5.0"
+                },
+                {
+                  "name": "man",
+                  "store_path": "/nix/store/cccccccccccccccccccccccccccccccc-curl-8.5.0-man"
+                }
+              ],
+              "outputs_to_install": [
+                "out",
+                "man"
+              ],
+              "pkg_path": "curl",
+              "pname": "curl",
+              "rev": "abc123def456",
+              "rev_count": 12345,
+              "rev_date": "2024-01-15T00:00:00Z",
+              "scrape_date": "2024-01-15T00:00:00Z",
+              "stabilities": [
+                "stable"
+              ],
+              "system": "x86_64-linux",
+              "unfree": false,
+              "version": "8.5.0"
+            }
+          ],
+          "page": 1,
+          "url": "https://github.com/flox/nixpkgs?rev=abc123def456"
+        }
+      },
+      "CatalogStatus": {
+        "properties": {
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Systems"
+          },
+          "pages_ct": {
+            "type": "integer",
+            "title": "Pages Ct"
+          },
+          "latest_rev": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Latest Rev"
+          },
+          "latest_scrape": {
+            "title": "Latest Scrape",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "attribute_path_ct": {
+            "type": "integer",
+            "title": "Attribute Path Ct"
+          },
+          "search_index_ct": {
+            "type": "integer",
+            "title": "Search Index Ct"
+          },
+          "derivations_ct": {
+            "type": "integer",
+            "title": "Derivations Ct"
+          },
+          "storepaths_ct": {
+            "title": "Storepaths Ct",
+            "nullable": true,
+            "type": "integer"
+          },
+          "narinfos_ct": {
+            "title": "Narinfos Ct",
+            "nullable": true,
+            "type": "integer"
+          },
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version"
+          },
+          "tags": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Tags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "systems",
+          "pages_ct",
+          "latest_rev",
+          "attribute_path_ct",
+          "search_index_ct",
+          "derivations_ct",
+          "schema_version",
+          "tags"
+        ],
+        "title": "CatalogStatus"
+      },
+      "CatalogStoreConfig": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CatalogStoreConfigNull"
+          },
+          {
+            "$ref": "#/components/schemas/CatalogStoreConfigMetaOnly"
+          },
+          {
+            "$ref": "#/components/schemas/CatalogStoreConfigNixCopy"
+          },
+          {
+            "$ref": "#/components/schemas/CatalogStoreConfigPublisher"
+          }
+        ],
+        "title": "CatalogStoreConfig",
+        "discriminator": {
+          "propertyName": "store_type",
+          "mapping": {
+            "meta-only": "#/components/schemas/CatalogStoreConfigMetaOnly",
+            "nix-copy": "#/components/schemas/CatalogStoreConfigNixCopy",
+            "null": "#/components/schemas/CatalogStoreConfigNull",
+            "publisher": "#/components/schemas/CatalogStoreConfigPublisher"
+          }
+        }
+      },
+      "CatalogStoreConfigMetaOnly": {
+        "properties": {
+          "store_type": {
+            "type": "string",
+            "const": "meta-only",
+            "title": "Store Type",
+            "default": "meta-only"
+          }
+        },
+        "type": "object",
+        "title": "CatalogStoreConfigMetaOnly"
+      },
+      "CatalogStoreConfigNixCopy": {
+        "properties": {
+          "store_type": {
+            "type": "string",
+            "const": "nix-copy",
+            "title": "Store Type",
+            "default": "nix-copy"
+          },
+          "ingress_uri": {
+            "type": "string",
+            "title": "Ingress Uri"
+          },
+          "egress_uri": {
+            "type": "string",
+            "title": "Egress Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ingress_uri",
+          "egress_uri"
+        ],
+        "title": "CatalogStoreConfigNixCopy"
+      },
+      "CatalogStoreConfigNull": {
+        "properties": {
+          "store_type": {
+            "type": "string",
+            "const": "null",
+            "title": "Store Type",
+            "default": "null"
+          }
+        },
+        "type": "object",
+        "title": "CatalogStoreConfigNull"
+      },
+      "CatalogStoreConfigPublisher": {
+        "properties": {
+          "store_type": {
+            "type": "string",
+            "const": "publisher",
+            "title": "Store Type",
+            "default": "publisher"
+          },
+          "publisher_url": {
+            "title": "Publisher Url",
+            "deprecated": true,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "title": "CatalogStoreConfigPublisher"
+      },
+      "CheckBuildRequest": {
+        "properties": {
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "source_rev": {
+            "type": "string",
+            "title": "Source Rev"
+          },
+          "nixpkgs_rev": {
+            "type": "string",
+            "title": "Nixpkgs Rev"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "locked_inputs": {
+            "title": "Locked Inputs",
+            "nullable": true,
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LockedInputEntry"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_url",
+          "source_rev",
+          "nixpkgs_rev",
+          "system"
+        ],
+        "title": "CheckBuildRequest",
+        "description": "Request body for the check-build endpoint."
+      },
+      "CheckBuildResponse": {
+        "properties": {
+          "already_published": {
+            "type": "boolean",
+            "title": "Already Published"
+          },
+          "source_rev": {
+            "title": "Source Rev",
+            "nullable": true,
+            "type": "string"
+          },
+          "source_rev_date": {
+            "title": "Source Rev Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "published_at": {
+            "title": "Published At",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "already_published"
+        ],
+        "title": "CheckBuildResponse",
+        "description": "Response from the check-build endpoint."
+      },
+      "CommandProvider": {
+        "properties": {
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "pname": {
+            "type": "string",
+            "title": "Pname"
+          },
+          "exact_name_match": {
+            "type": "boolean",
+            "title": "Exact Name Match"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attr_path",
+          "pname",
+          "exact_name_match",
+          "system"
+        ],
+        "title": "CommandProvider",
+        "description": "A package that provides a given command name.",
+        "example": {
+          "attr_path": "binutils",
+          "exact_name_match": false,
+          "pname": "binutils",
+          "system": "x86_64-linux"
+        }
+      },
+      "DeprecationInfo": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/DeprecationKind"
+          },
+          "replacement": {
+            "title": "Replacement",
+            "nullable": true,
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "DeprecationInfo",
+        "description": "Deprecation metadata for a package from nixpkgs aliases.nix"
+      },
+      "DeprecationKind": {
+        "type": "string",
+        "enum": [
+          "renamed",
+          "removed",
+          "deprecated"
+        ],
+        "title": "DeprecationKind",
+        "description": "Package deprecation category from nixpkgs aliases.nix"
+      },
+      "EnvironmentSbomRequest": {
+        "properties": {
+          "lockfile": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Lockfile"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "environment_name": {
+            "type": "string",
+            "title": "Environment Name"
+          },
+          "environment_owner": {
+            "type": "string",
+            "title": "Environment Owner"
+          },
+          "generation": {
+            "title": "Generation",
+            "nullable": true,
+            "type": "integer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lockfile",
+          "system",
+          "environment_name",
+          "environment_owner"
+        ],
+        "title": "EnvironmentSbomRequest",
+        "description": "Request body for environment SBOM endpoint.\n\nThe environment SBOM endpoint generates a Software Bill of Materials\nfor a Flox environment by analyzing its lockfile and dependencies.\n\nAttributes:\n    lockfile: The environment's lockfile dictionary (v0 or v1 format)\n    system: Target system architecture (e.g., \"x86_64-linux\", \"aarch64-darwin\")\n    environment_name: Name of the environment (for informational purposes in SBOM)\n    environment_owner: Owner of the environment (for informational purposes in SBOM)\n    generation: Optional generation number (for informational purposes in SBOM)"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "GroupResult": {
+        "properties": {
+          "lock": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LockedInputEntry"
+            },
+            "type": "object",
+            "title": "Lock"
+          },
+          "unresolvable": {
+            "items": {
+              "$ref": "#/components/schemas/UnresolvableEntry"
+            },
+            "type": "array",
+            "title": "Unresolvable"
+          },
+          "matched": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Matched"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lock"
+        ],
+        "title": "GroupResult",
+        "description": "Result for a single LookupGroup.\n\nlock carries the resolved LockedInputs map (full transitive closure).\nunresolvable is scoped INSIDE the group (never at the top-level response).\nKeeping unresolvable entries group-scoped is the contract the lookup\nhandler must respect when building this response.\n\nmatched maps locked-input keys (same namespace as lock \u2014 every matched\nkey must also exist in lock) to the list of raw user-query strings that\ndirectly pulled this entry in.  A direct dep matched by several queries\nhas several entries in its value list; a wildcard query pulling several\ndeps means that query string appears under several keys.  Roots are\nimplicit \u2014 they are the keys of matched.\n\nmatched is response-only; it must NOT appear on the publish request path.\nUse pydantic.Field(default_factory=dict) so an empty match set serializes\ncleanly (mirrors how unresolvable defaults)."
+      },
+      "HealthCheck": {
+        "properties": {
+          "check_parameters": {
+            "$ref": "#/components/schemas/params",
+            "default": {
+              "show_term": "hello",
+              "search_term": "in Go",
+              "search_system": "x86_64-linux",
+              "resolve_package": "cowsay",
+              "resolve_systems": [
+                "x86_64-linux"
+              ]
+            }
+          },
+          "search_ok": {
+            "type": "boolean",
+            "title": "Search Ok"
+          },
+          "search_elapsed_ms": {
+            "type": "integer",
+            "title": "Search Elapsed Ms"
+          },
+          "resolve_ok": {
+            "type": "boolean",
+            "title": "Resolve Ok"
+          },
+          "resolve_elapsed_ms": {
+            "type": "integer",
+            "title": "Resolve Elapsed Ms"
+          },
+          "show_ok": {
+            "type": "boolean",
+            "title": "Show Ok"
+          },
+          "show_elapsed_ms": {
+            "type": "integer",
+            "title": "Show Elapsed Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "search_ok",
+          "search_elapsed_ms",
+          "resolve_ok",
+          "resolve_elapsed_ms",
+          "show_ok",
+          "show_elapsed_ms"
+        ],
+        "title": "HealthCheck"
+      },
+      "LifecyclePolicy": {
+        "properties": {
+          "visible_in_discovery": {
+            "type": "boolean",
+            "title": "Visible In Discovery",
+            "description": "Whether the package appears where users browse: search results, listings, and package summaries."
+          },
+          "allows_name_resolution": {
+            "type": "boolean",
+            "title": "Allows Name Resolution",
+            "description": "Whether name-based resolution may select this package. False does not mean the package is gone; a manifest naming it resolves to some other package or fails outright."
+          },
+          "allows_exact_pin": {
+            "type": "boolean",
+            "title": "Allows Exact Pin",
+            "description": "Whether a lockfile pinning this exact package still resolves. Environments locked before the state changed keep resolving."
+          },
+          "allows_publish": {
+            "type": "boolean",
+            "title": "Allows Publish",
+            "description": "Whether a new build may be published to this package."
+          },
+          "warning_required": {
+            "type": "boolean",
+            "title": "Warning Required",
+            "description": "Whether a consumer that honors the package anyway, in practice the exact-pin path, must surface a warning."
+          }
+        },
+        "type": "object",
+        "required": [
+          "visible_in_discovery",
+          "allows_name_resolution",
+          "allows_exact_pin",
+          "allows_publish",
+          "warning_required"
+        ],
+        "title": "LifecyclePolicy",
+        "description": "What a lifecycle state permits, one boolean per capability.\n\nClients should branch on these capabilities rather than on the\nstate name, so a state added later renders correct affordances\nwithout a client release."
+      },
+      "LifecycleSource": {
+        "type": "string",
+        "title": "LifecycleSource",
+        "description": "The authority that placed the package in its lifecycle state, for example 'publisher'. New sources may be added over time."
+      },
+      "LifecycleState": {
+        "type": "string",
+        "title": "LifecycleState",
+        "description": "The lifecycle state a package is in, for example 'archived'. New states may be added over time; clients should branch on policy rather than on this value."
+      },
+      "LockedGitSource": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "git",
+            "title": "Type"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          },
+          "dir": {
+            "type": "string",
+            "title": "Dir"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "type",
+          "url",
+          "rev",
+          "ref",
+          "dir"
+        ],
+        "title": "LockedGitSource",
+        "description": "A locked git flakeref, in its attribute form.\n\nLocked inputs are only ever tracked as git flakerefs, so this models a git\nsource honestly rather than a generic flakeref: type must equal \"git\", and\nthe four git fields are required \u2014 url (source), rev (commit), ref (the\nexisting CLI lockfile contract), and dir (the subdir holding build\ninstructions).  The CLI needs all of them to rebuild a locked input.  A git\nflakeref is still an open attribute set, so any git-native attribute beyond\nthese (e.g. narHash) flows through unchanged via extra=\"allow\"; the contract\nboundary validates field presence and that type == \"git\", not the\nflakeref's deeper semantics (the downstream publish path parses url + rev\nfor storage identity).\n\nThe round-trip is value/dict-equal: with every named field required there\nare no unset fields to emit as null, and extras serialize verbatim, so the\ndefault model_dump reproduces the input attribute set (no injected nulls).\nKey ORDER is not preserved or relied upon \u2014 the identity hash reads url/rev\nvalues, not the serialized form."
+      },
+      "LockedInputEntry": {
+        "properties": {
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "attr_path": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attr Path"
+          },
+          "build_type": {
+            "$ref": "#/components/schemas/BuildType"
+          },
+          "source": {
+            "$ref": "#/components/schemas/LockedGitSource"
+          },
+          "inputs": {
+            "title": "Inputs",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "locked_inputs_hash": {
+            "type": "string",
+            "title": "Locked Inputs Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog",
+          "attr_path",
+          "build_type",
+          "source",
+          "locked_inputs_hash"
+        ],
+        "title": "LockedInputEntry",
+        "description": "A single entry in the flat locked-inputs map.\n\nOne type, two directions (intentionally NOT split into two models \u2014 the\npublish entry is the same entity with its edges not yet stated):\n\n- Publish request: the CLI sends {catalog, attr_path, build_type, source,\n  locked_inputs_hash} and leaves inputs null.  Null here means \"not stated\n  \u2014 the server is authoritative for the DAG\": the CLI knows its direct\n  inputs but is not the source of truth, and the server reconstructs the\n  DAG from package_inputs (keyed by locked_inputs_hash).\n- Lookup response: all fields are present and inputs is populated with the\n  full transitive-closure DAG.\n\ninputs uses the tri-state SBOM convention in both directions:\n  inputs: [k, ...]  \u2014 known direct inputs (by key)\n  inputs: []        \u2014 explicitly no dependencies\n  inputs null       \u2014 not stated (server is authoritative for the DAG)\n\nattr_path is a list of components, e.g. [\"python3Packages\", \"boolex\"].\nA flat catalog entry collapses what the CLI lockfile represents as a\nhierarchy of single-component package-set / package nodes.  Giving the\nCLI the components lets it re-expand that hierarchy.  A list is also\nunambiguous: if nested-dot component support is ever added (AI-267),\nthe list form remains the unambiguous carrier.\n\nlocked_inputs_hash is REQUIRED on every entry: the closure identity hash is\nthe round-trip disambiguator that pins which recorded build a locked input\nrefers to (lookup response \u2192 CLI \u2192 publish request).  A publish request\nmissing it fails validation (422) at this contract boundary \u2014 there is no\nhash-free / old-client fallback.  It always serializes as a string.\n\nWire behavior: a null `inputs` (the tri-state \"not stated\") is emitted as\nan explicit null \u2014 deliberately, NOT dropped; do not add exclude_none here.\nThe source sub-model never emits nulls at all: its named attributes are\nall required, and unknown ones pass through verbatim (see LockedGitSource).\n\nUse key() to build the canonical flat-map key for this entry."
+      },
+      "LockedSourceItem": {
+        "properties": {
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "attr_path_components": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Attr Path Components"
+          },
+          "source": {
+            "$ref": "#/components/schemas/BuildSource"
+          },
+          "build_type": {
+            "$ref": "#/components/schemas/BuildType"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attr_path",
+          "attr_path_components",
+          "source",
+          "build_type"
+        ],
+        "title": "LockedSourceItem",
+        "description": "A single entry in the /locked-sources response."
+      },
+      "LockedSourcesResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LockedSourceItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total_count"
+        ],
+        "title": "LockedSourcesResponse"
+      },
+      "LookupGroup": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "references": {
+            "items": {
+              "type": "string",
+              "maxLength": 1024
+            },
+            "type": "array",
+            "maxItems": 1024,
+            "title": "References"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "references"
+        ],
+        "title": "LookupGroup",
+        "description": "A named group of reference strings for a build-inputs lookup.\n\nreferences is flat and mixed-kind; the server disambiguates.\nWildcard sentinels are owner-first, like '<owner>.*' (whole\ncatalog) or '<owner>.<pkgset>.*' (package set) \u2014 e.g. 'brantley.*'\n\u2014 and are accepted without validation; the server expands them."
+      },
+      "MessageLevel": {
+        "type": "string",
+        "enum": [
+          "trace",
+          "info",
+          "warning",
+          "error"
+        ],
+        "title": "MessageLevel"
+      },
+      "MessageType": {
+        "type": "string",
+        "enum": [
+          "general",
+          "resolution_logic",
+          "attr_path_not_found",
+          "constraints_too_tight",
+          "attr_path_not_found.not_in_catalog",
+          "attr_path_not_found.systems_not_on_same_page",
+          "attr_path_not_found.not_found_for_all_systems",
+          "missing_builds",
+          "unacceptable_licenses",
+          "change_in_version_format",
+          "unfree",
+          "insecure",
+          "broken",
+          "version_not_found",
+          "archived"
+        ],
+        "title": "MessageType"
+      },
+      "NarFileLookup": {
+        "properties": {
+          "storepath": {
+            "type": "string",
+            "title": "Storepath"
+          },
+          "derivations": {
+            "items": {
+              "$ref": "#/components/schemas/PackageDerivation"
+            },
+            "type": "array",
+            "title": "Derivations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storepath",
+          "derivations"
+        ],
+        "title": "NarFileLookup"
+      },
+      "NarInfo": {
+        "properties": {
+          "ca": {
+            "title": "Ca",
+            "nullable": true,
+            "type": "string"
+          },
+          "deriver": {
+            "title": "Deriver",
+            "nullable": true,
+            "type": "string"
+          },
+          "downloadHash": {
+            "title": "Downloadhash",
+            "nullable": true,
+            "type": "string"
+          },
+          "downloadSize": {
+            "title": "Downloadsize",
+            "nullable": true,
+            "type": "integer"
+          },
+          "narHash": {
+            "title": "Narhash",
+            "nullable": true,
+            "type": "string"
+          },
+          "narSize": {
+            "title": "Narsize",
+            "nullable": true,
+            "type": "integer"
+          },
+          "references": {
+            "title": "References",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "registrationTime": {
+            "title": "Registrationtime",
+            "nullable": true,
+            "type": "integer"
+          },
+          "signatures": {
+            "title": "Signatures",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "url": {
+            "title": "Url",
+            "nullable": true,
+            "type": "string"
+          },
+          "ultimate": {
+            "title": "Ultimate",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "compression": {
+            "title": "Compression",
+            "nullable": true,
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "nullable": true,
+            "type": "string"
+          },
+          "closureDownloadSize": {
+            "title": "Closuredownloadsize",
+            "nullable": true,
+            "type": "integer"
+          },
+          "closureSize": {
+            "title": "Closuresize",
+            "nullable": true,
+            "type": "integer"
+          },
+          "compresssize": {
+            "title": "Compresssize",
+            "deprecated": true,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "title": "NarInfo"
+      },
+      "NarInfos": {
+        "additionalProperties": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/NarInfo"
+            }
+          ]
+        },
+        "type": "object",
+        "title": "NarInfos"
+      },
+      "PackageBuild": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "rev_count": {
+            "type": "integer",
+            "title": "Rev Count"
+          },
+          "rev_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rev Date"
+          },
+          "locked_base_catalog_url": {
+            "title": "Locked Base Catalog Url",
+            "nullable": true,
+            "type": "string"
+          },
+          "base_catalog_rev_date": {
+            "title": "Base Catalog Rev Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "base_catalog_rev_count": {
+            "title": "Base Catalog Rev Count",
+            "nullable": true,
+            "type": "integer"
+          },
+          "derivation": {
+            "$ref": "#/components/schemas/PackageDerivation"
+          },
+          "cache_uri": {
+            "title": "Cache Uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "ref": {
+            "title": "Ref",
+            "nullable": true,
+            "type": "string"
+          },
+          "dot_flox_dir": {
+            "type": "string",
+            "title": "Dot Flox Dir",
+            "default": ".flox"
+          },
+          "build_type": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BuildType"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "rev",
+          "rev_count",
+          "rev_date",
+          "derivation"
+        ],
+        "title": "PackageBuild",
+        "example": {
+          "base_catalog_rev_count": 11000,
+          "base_catalog_rev_date": "2021-08-15T00:00:00Z",
+          "derivation": {
+            "broken": false,
+            "description": "A command line tool for transferring files with URL syntax",
+            "drv_path": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-curl-8.5.0.drv",
+            "license": "curl",
+            "name": "curl-8.5.0",
+            "outputs": [
+              {
+                "name": "out",
+                "store_path": "/nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-curl-8.5.0"
+              },
+              {
+                "name": "man",
+                "store_path": "/nix/store/cccccccccccccccccccccccccccccccc-curl-8.5.0-man"
+              }
+            ],
+            "outputs_to_install": [
+              "out",
+              "man"
+            ],
+            "pname": "curl",
+            "system": "x86_64-linux",
+            "unfree": false,
+            "version": "8.5.0"
+          },
+          "locked_base_catalog_url": "https://github.com/flox/nixpkgs?rev=99dc8785f6a0adac95f5e2ab05cc2e1bf666d172",
+          "rev": "99dc8785f6a0adac95f5e2ab05cc2e1bf666d172",
+          "rev_count": 12345,
+          "rev_date": "2021-09-01T00:00:00Z",
+          "url": "https://github.com/org/example"
+        }
+      },
+      "PackageBuildList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackageBuild"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PackageBuildList"
+      },
+      "PackageBuildResponse": {
+        "properties": {},
+        "type": "object",
+        "title": "PackageBuildResponse"
+      },
+      "PackageBuildWithNarInfo": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "rev_count": {
+            "type": "integer",
+            "title": "Rev Count"
+          },
+          "rev_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rev Date"
+          },
+          "locked_base_catalog_url": {
+            "title": "Locked Base Catalog Url",
+            "nullable": true,
+            "type": "string"
+          },
+          "base_catalog_rev_date": {
+            "title": "Base Catalog Rev Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "base_catalog_rev_count": {
+            "title": "Base Catalog Rev Count",
+            "nullable": true,
+            "type": "integer"
+          },
+          "derivation": {
+            "$ref": "#/components/schemas/PackageDerivation"
+          },
+          "cache_uri": {
+            "title": "Cache Uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "ref": {
+            "title": "Ref",
+            "nullable": true,
+            "type": "string"
+          },
+          "dot_flox_dir": {
+            "type": "string",
+            "title": "Dot Flox Dir",
+            "default": ".flox"
+          },
+          "build_type": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BuildType"
+              }
+            ]
+          },
+          "narinfos": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NarInfos"
+              }
+            ]
+          },
+          "narinfos_source_url": {
+            "title": "Narinfos Source Url",
+            "nullable": true,
+            "type": "string"
+          },
+          "narinfos_source_version": {
+            "title": "Narinfos Source Version",
+            "nullable": true,
+            "type": "integer"
+          },
+          "locked_inputs": {
+            "title": "Locked Inputs",
+            "nullable": true,
+            "additionalProperties": {
+              "$ref": "#/components/schemas/LockedInputEntry"
+            },
+            "type": "object"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "rev",
+          "rev_count",
+          "rev_date",
+          "derivation"
+        ],
+        "title": "PackageBuildWithNarInfo",
+        "example": {
+          "base_catalog_rev_count": 11000,
+          "base_catalog_rev_date": "2021-08-15T00:00:00Z",
+          "derivation": {
+            "broken": false,
+            "description": "A command line tool for transferring files with URL syntax",
+            "drv_path": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-curl-8.5.0.drv",
+            "license": "curl",
+            "name": "curl-8.5.0",
+            "outputs": [
+              {
+                "name": "out",
+                "store_path": "/nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-curl-8.5.0"
+              },
+              {
+                "name": "man",
+                "store_path": "/nix/store/cccccccccccccccccccccccccccccccc-curl-8.5.0-man"
+              }
+            ],
+            "outputs_to_install": [
+              "out",
+              "man"
+            ],
+            "pname": "curl",
+            "system": "x86_64-linux",
+            "unfree": false,
+            "version": "8.5.0"
+          },
+          "locked_base_catalog_url": "https://github.com/flox/nixpkgs?rev=99dc8785f6a0adac95f5e2ab05cc2e1bf666d172",
+          "rev": "99dc8785f6a0adac95f5e2ab05cc2e1bf666d172",
+          "rev_count": 12345,
+          "rev_date": "2021-09-01T00:00:00Z",
+          "url": "https://github.com/org/example"
+        }
+      },
+      "PackageDerivation": {
+        "properties": {
+          "drv_path": {
+            "type": "string",
+            "title": "Drv Path"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/PackageOutputs"
+          },
+          "outputs_to_install": {
+            "title": "Outputs To Install",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "nullable": true,
+            "type": "string"
+          },
+          "pname": {
+            "title": "Pname",
+            "nullable": true,
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "nullable": true,
+            "type": "string"
+          },
+          "license": {
+            "title": "License",
+            "nullable": true,
+            "type": "string"
+          },
+          "licenses": {
+            "title": "Licenses",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "broken": {
+            "title": "Broken",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "unfree": {
+            "title": "Unfree",
+            "nullable": true,
+            "type": "boolean"
+          }
+        },
+        "type": "object",
+        "required": [
+          "drv_path",
+          "system",
+          "name",
+          "outputs"
+        ],
+        "title": "PackageDerivation",
+        "example": {
+          "broken": false,
+          "description": "A command line tool for transferring files with URL syntax",
+          "drv_path": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-curl-8.5.0.drv",
+          "license": "curl",
+          "name": "curl-8.5.0",
+          "outputs": [
+            {
+              "name": "out",
+              "store_path": "/nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-curl-8.5.0"
+            },
+            {
+              "name": "man",
+              "store_path": "/nix/store/cccccccccccccccccccccccccccccccc-curl-8.5.0-man"
+            }
+          ],
+          "outputs_to_install": [
+            "out",
+            "man"
+          ],
+          "pname": "curl",
+          "system": "x86_64-linux",
+          "unfree": false,
+          "version": "8.5.0"
+        }
+      },
+      "PackageDescriptor": {
+        "properties": {
+          "install_id": {
+            "type": "string",
+            "title": "Install Id"
+          },
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "systems": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSystem"
+            },
+            "type": "array",
+            "title": "Systems"
+          },
+          "version": {
+            "title": "Version",
+            "nullable": true,
+            "type": "string"
+          },
+          "allow_pre_releases": {
+            "title": "Allow Pre Releases",
+            "default": false,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "allow_unfree": {
+            "title": "Allow Unfree",
+            "default": true,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "allow_broken": {
+            "title": "Allow Broken",
+            "default": false,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "allow_insecure": {
+            "title": "Allow Insecure",
+            "default": false,
+            "nullable": true,
+            "type": "boolean"
+          },
+          "allowed_licenses": {
+            "title": "Allowed Licenses",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "allow_missing_builds": {
+            "title": "Allow Missing Builds",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "derivation": {
+            "title": "Derivation",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "install_id",
+          "attr_path",
+          "systems"
+        ],
+        "title": "PackageDescriptor",
+        "example": {
+          "attr_path": "curl",
+          "install_id": "curl",
+          "systems": [
+            "x86_64-linux"
+          ]
+        }
+      },
+      "PackageGroup": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "stability": {
+            "title": "Stability",
+            "nullable": true,
+            "type": "string"
+          },
+          "descriptors": {
+            "items": {
+              "$ref": "#/components/schemas/PackageDescriptor"
+            },
+            "type": "array",
+            "title": "Descriptors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "descriptors"
+        ],
+        "title": "PackageGroup",
+        "example": {
+          "descriptors": [
+            {
+              "attr_path": "curl",
+              "install_id": "curl",
+              "systems": [
+                "x86_64-linux"
+              ]
+            },
+            {
+              "attr_path": "slack",
+              "install_id": "slack",
+              "systems": [
+                "x86_64-linux"
+              ]
+            },
+            {
+              "attr_path": "xorg.xeyes",
+              "install_id": "xeyes",
+              "systems": [
+                "x86_64-linux"
+              ]
+            }
+          ],
+          "name": "test"
+        }
+      },
+      "PackageGroups": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackageGroup"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "PackageGroups",
+        "example": {
+          "items": [
+            {
+              "descriptors": [
+                {
+                  "attr_path": "curl",
+                  "install_id": "curl",
+                  "systems": [
+                    "x86_64-linux"
+                  ]
+                },
+                {
+                  "attr_path": "slack",
+                  "install_id": "slack",
+                  "systems": [
+                    "x86_64-linux"
+                  ]
+                },
+                {
+                  "attr_path": "xorg.xeyes",
+                  "install_id": "xeyes",
+                  "systems": [
+                    "x86_64-linux"
+                  ]
+                }
+              ],
+              "name": "test"
+            }
+          ]
+        }
+      },
+      "PackageInfoSearch": {
+        "properties": {
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "catalog": {
+            "title": "Catalog",
+            "nullable": true,
+            "type": "string"
+          },
+          "pkg_path": {
+            "type": "string",
+            "title": "Pkg Path"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "pname": {
+            "type": "string",
+            "title": "Pname"
+          },
+          "version": {
+            "title": "Version",
+            "description": "While version should always be present, (and is required in the PackageResolutionInfo model), there are cases where it has been historically optional and thus is carried forward here.  Published derivations have an Optional version and this same model is used for both published derivations and base catalog derivations.  For this reason we cannot make it required here until/if we unify those models and ensure every derivation does in fact have a version.",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "nullable": true,
+            "type": "string"
+          },
+          "stabilities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stabilities"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "deprecation": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeprecationInfo"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "attr_path",
+          "catalog",
+          "pkg_path",
+          "name",
+          "pname",
+          "version",
+          "description",
+          "stabilities",
+          "system"
+        ],
+        "title": "PackageInfoSearch",
+        "example": {
+          "attr_path": "foo.bar.curl",
+          "catalog": "nixpkgs",
+          "description": "A very nice Item",
+          "name": "curl",
+          "pkg_path": "foo.bar.curl",
+          "pname": "curl",
+          "stabilities": [
+            "stable",
+            "unstable"
+          ],
+          "system": "x86_64-linux",
+          "version": "1.0"
+        }
+      },
+      "PackageLifecycleInfo": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/LifecycleState"
+          },
+          "source": {
+            "$ref": "#/components/schemas/LifecycleSource"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Effective At",
+            "description": "When the state took effect."
+          },
+          "reason": {
+            "title": "Reason",
+            "description": "Why the package entered this state, as recorded by the source.",
+            "nullable": true,
+            "type": "string"
+          },
+          "replacement": {
+            "title": "Replacement",
+            "description": "Installable reference to a suggested substitute: catalog_name/attr_path for a catalog package, a bare attr_path for a base-catalog package.",
+            "nullable": true,
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "description": "Publisher-authored note to show alongside the state.",
+            "nullable": true,
+            "type": "string"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/LifecyclePolicy",
+            "description": "What this state permits. Clients should branch on these capabilities rather than on the state name."
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "source",
+          "effective_at",
+          "policy"
+        ],
+        "title": "PackageLifecycleInfo",
+        "description": "Lifecycle state a package has been placed in, with the policy that\nstate implies. Absent (null) means ordinary circulation."
+      },
+      "PackageOutput": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "store_path": {
+            "type": "string",
+            "title": "Store Path"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "store_path"
+        ],
+        "title": "PackageOutput"
+      },
+      "PackageOutputs": {
+        "items": {
+          "$ref": "#/components/schemas/PackageOutput"
+        },
+        "type": "array",
+        "title": "PackageOutputs"
+      },
+      "PackageResolutionInfo": {
+        "properties": {
+          "catalog": {
+            "title": "Catalog",
+            "nullable": true,
+            "type": "string"
+          },
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "pkg_path": {
+            "type": "string",
+            "title": "Pkg Path"
+          },
+          "derivation": {
+            "type": "string",
+            "title": "Derivation"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "pname": {
+            "type": "string",
+            "title": "Pname"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/PackageOutputs"
+          },
+          "outputs_to_install": {
+            "title": "Outputs To Install",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "nullable": true,
+            "type": "string"
+          },
+          "license": {
+            "title": "License",
+            "nullable": true,
+            "type": "string"
+          },
+          "locked_url": {
+            "type": "string",
+            "title": "Locked Url"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "rev_count": {
+            "type": "integer",
+            "title": "Rev Count"
+          },
+          "rev_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rev Date"
+          },
+          "broken": {
+            "title": "Broken",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "insecure": {
+            "title": "Insecure",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "unfree": {
+            "title": "Unfree",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "missing_builds": {
+            "title": "Missing Builds",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "stabilities": {
+            "title": "Stabilities",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scrape_date": {
+            "title": "Scrape Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "cache_uri": {
+            "title": "Cache Uri",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attr_path",
+          "pkg_path",
+          "derivation",
+          "name",
+          "pname",
+          "version",
+          "system",
+          "outputs",
+          "outputs_to_install",
+          "description",
+          "license",
+          "locked_url",
+          "rev",
+          "rev_count",
+          "rev_date",
+          "broken",
+          "insecure",
+          "unfree",
+          "missing_builds",
+          "stabilities",
+          "scrape_date"
+        ],
+        "title": "PackageResolutionInfo"
+      },
+      "PackageSbomRequest": {
+        "properties": {},
+        "type": "object",
+        "title": "PackageSbomRequest",
+        "description": "Request body for package SBOM endpoint (reserved for future extension)."
+      },
+      "PackageSearchResult": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackageInfoSearch"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total_count"
+        ],
+        "title": "PackageSearchResult",
+        "example": {
+          "items": [
+            {
+              "attr_path": "foo.bar.curl",
+              "catalog": "nixpkgs",
+              "description": "A very nice Item",
+              "name": "curl",
+              "pkg_path": "foo.bar.curl",
+              "pname": "curl",
+              "stabilities": [
+                "stable",
+                "unstable"
+              ],
+              "system": "x86_64-linux",
+              "version": "1.0"
+            }
+          ],
+          "total_count": 1
+        }
+      },
+      "PackageSystem": {
+        "type": "string",
+        "enum": [
+          "aarch64-darwin",
+          "aarch64-linux",
+          "x86_64-darwin",
+          "x86_64-linux",
+          "invalid"
+        ],
+        "title": "PackageSystem"
+      },
+      "PackagesResult": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackageResolutionInfo"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "deprecation": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeprecationInfo"
+              }
+            ]
+          },
+          "lifecycle": {
+            "description": "Lifecycle state of the requested package; null means no lifecycle state is recorded.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PackageLifecycleInfo"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total_count"
+        ],
+        "title": "PackagesResult"
+      },
+      "PageInfo": {
+        "properties": {
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "rev_count": {
+            "type": "integer",
+            "title": "Rev Count"
+          },
+          "stability_tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Stability Tags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rev",
+          "rev_count",
+          "stability_tags"
+        ],
+        "title": "PageInfo"
+      },
+      "PkgPathsResult": {
+        "properties": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total_count"
+        ],
+        "title": "PkgPathsResult"
+      },
+      "PublishInfoRequest": {
+        "properties": {},
+        "type": "object",
+        "title": "PublishInfoRequest"
+      },
+      "PublishInfoResponseCatalog": {
+        "properties": {
+          "ingress_uri": {
+            "title": "Ingress Uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "ingress_auth": {
+            "title": "Ingress Auth",
+            "nullable": true,
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "catalog_store_config": {
+            "$ref": "#/components/schemas/CatalogStoreConfig"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog_store_config"
+        ],
+        "title": "PublishInfoResponseCatalog"
+      },
+      "PublishedCatalog": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "store_type": {
+            "type": "string",
+            "title": "Store Type"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created"
+          },
+          "package_ct": {
+            "type": "integer",
+            "title": "Package Ct"
+          },
+          "package_builds_ct": {
+            "type": "integer",
+            "title": "Package Builds Ct"
+          },
+          "per_package_builds_ct": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Per Package Builds Ct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "store_type",
+          "created",
+          "package_ct",
+          "package_builds_ct",
+          "per_package_builds_ct"
+        ],
+        "title": "PublishedCatalog"
+      },
+      "PublishedCatalogInfo": {
+        "properties": {
+          "catalogs": {
+            "items": {
+              "$ref": "#/components/schemas/PublishedCatalog"
+            },
+            "type": "array",
+            "title": "Catalogs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalogs"
+        ],
+        "title": "PublishedCatalogInfo"
+      },
+      "RawDependencyReport": {
+        "properties": {
+          "storepath": {
+            "type": "string",
+            "title": "Storepath"
+          },
+          "dependencies": {
+            "additionalProperties": {
+              "nullable": true,
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Dependencies"
+          }
+        },
+        "type": "object",
+        "required": [
+          "storepath",
+          "dependencies"
+        ],
+        "title": "RawDependencyReport"
+      },
+      "ReferencePoint": {
+        "properties": {
+          "as_of_date": {
+            "title": "As Of Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "as_of_build": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BuildRef"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ReferencePoint",
+        "description": "Temporal anchor for a build-inputs lookup.\n\nAt most one of as_of_date / as_of_build may be set.  When both are\nabsent the server interprets this as \"now\".  Uses a plain optional-\nfields model with a model_validator \u2014 NOT a discriminated union \u2014\nbecause the two anchors carry different value types."
+      },
+      "ResolutionMessageGeneral": {
+        "properties": {
+          "level": {
+            "$ref": "#/components/schemas/MessageLevel"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MessageType"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "context": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "type",
+          "message",
+          "context"
+        ],
+        "title": "ResolutionMessageGeneral"
+      },
+      "ResolvedPackageDescriptor": {
+        "properties": {
+          "catalog": {
+            "title": "Catalog",
+            "nullable": true,
+            "type": "string"
+          },
+          "attr_path": {
+            "type": "string",
+            "title": "Attr Path"
+          },
+          "pkg_path": {
+            "type": "string",
+            "title": "Pkg Path"
+          },
+          "derivation": {
+            "type": "string",
+            "title": "Derivation"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "pname": {
+            "type": "string",
+            "title": "Pname"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "system": {
+            "$ref": "#/components/schemas/PackageSystem"
+          },
+          "outputs": {
+            "$ref": "#/components/schemas/PackageOutputs"
+          },
+          "outputs_to_install": {
+            "title": "Outputs To Install",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "title": "Description",
+            "nullable": true,
+            "type": "string"
+          },
+          "license": {
+            "title": "License",
+            "nullable": true,
+            "type": "string"
+          },
+          "locked_url": {
+            "type": "string",
+            "title": "Locked Url"
+          },
+          "rev": {
+            "type": "string",
+            "title": "Rev"
+          },
+          "rev_count": {
+            "type": "integer",
+            "title": "Rev Count"
+          },
+          "rev_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Rev Date"
+          },
+          "broken": {
+            "title": "Broken",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "insecure": {
+            "title": "Insecure",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "unfree": {
+            "title": "Unfree",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "missing_builds": {
+            "title": "Missing Builds",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "stabilities": {
+            "title": "Stabilities",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "scrape_date": {
+            "title": "Scrape Date",
+            "nullable": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          "cache_uri": {
+            "title": "Cache Uri",
+            "nullable": true,
+            "type": "string"
+          },
+          "install_id": {
+            "type": "string",
+            "title": "Install Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attr_path",
+          "pkg_path",
+          "derivation",
+          "name",
+          "pname",
+          "version",
+          "system",
+          "outputs",
+          "outputs_to_install",
+          "description",
+          "license",
+          "locked_url",
+          "rev",
+          "rev_count",
+          "rev_date",
+          "broken",
+          "insecure",
+          "unfree",
+          "missing_builds",
+          "stabilities",
+          "scrape_date",
+          "install_id"
+        ],
+        "title": "ResolvedPackageDescriptor"
+      },
+      "ResolvedPackageGroup": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "page": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CatalogPage"
+              }
+            ]
+          },
+          "candidate_pages": {
+            "title": "Candidate Pages",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/CatalogPage"
+            },
+            "type": "array"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ResolutionMessageGeneral"
+            },
+            "type": "array",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "messages"
+        ],
+        "title": "ResolvedPackageGroup",
+        "example": {
+          "candidate_pages": [],
+          "messages": [],
+          "name": "test",
+          "page": {
+            "complete": true,
+            "messages": [],
+            "packages": [
+              {
+                "attr_path": "curl",
+                "broken": false,
+                "catalog": "nixpkgs",
+                "derivation": "/nix/store/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-curl-8.5.0.drv",
+                "description": "A command line tool for transferring files with URL syntax",
+                "insecure": false,
+                "install_id": "curl",
+                "license": "curl",
+                "locked_url": "https://github.com/flox/nixpkgs?rev=abc123def456",
+                "missing_builds": false,
+                "name": "curl-8.5.0",
+                "outputs": [
+                  {
+                    "name": "out",
+                    "store_path": "/nix/store/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-curl-8.5.0"
+                  },
+                  {
+                    "name": "man",
+                    "store_path": "/nix/store/cccccccccccccccccccccccccccccccc-curl-8.5.0-man"
+                  }
+                ],
+                "outputs_to_install": [
+                  "out",
+                  "man"
+                ],
+                "pkg_path": "curl",
+                "pname": "curl",
+                "rev": "abc123def456",
+                "rev_count": 12345,
+                "rev_date": "2024-01-15T00:00:00Z",
+                "scrape_date": "2024-01-15T00:00:00Z",
+                "stabilities": [
+                  "stable"
+                ],
+                "system": "x86_64-linux",
+                "unfree": false,
+                "version": "8.5.0"
+              }
+            ],
+            "page": 1,
+            "url": "https://github.com/flox/nixpkgs?rev=abc123def456"
+          }
+        }
+      },
+      "ResolvedPackageGroups": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ResolvedPackageGroup"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "ResolvedPackageGroups"
+      },
+      "SbomFormat": {
+        "type": "string",
+        "enum": [
+          "spdx-2.3-json"
+        ],
+        "title": "SbomFormat",
+        "description": "Supported SBOM format types."
+      },
+      "ServiceStatus": {
+        "properties": {
+          "service_version": {
+            "type": "string",
+            "title": "Service Version"
+          },
+          "start_tm": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Tm"
+          },
+          "uptime_seconds": {
+            "type": "number",
+            "title": "Uptime Seconds",
+            "readOnly": true
+          },
+          "uptime_pretty": {
+            "type": "string",
+            "title": "Uptime Pretty",
+            "readOnly": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "service_version",
+          "start_tm",
+          "uptime_seconds",
+          "uptime_pretty"
+        ],
+        "title": "ServiceStatus"
+      },
+      "StabilityInfo": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ref": {
+            "type": "string",
+            "title": "Ref"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "ref"
+        ],
+        "title": "StabilityInfo"
+      },
+      "StoreInfo": {
+        "properties": {
+          "url": {
+            "title": "Url",
+            "nullable": true,
+            "type": "string"
+          },
+          "auth": {
+            "title": "Auth",
+            "nullable": true,
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "catalog": {
+            "title": "Catalog",
+            "nullable": true,
+            "type": "string"
+          },
+          "package": {
+            "title": "Package",
+            "nullable": true,
+            "type": "string"
+          },
+          "public_keys": {
+            "title": "Public Keys",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "title": "StoreInfo"
+      },
+      "StoreInfoRequest": {
+        "properties": {
+          "outpaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Outpaths"
+          }
+        },
+        "type": "object",
+        "required": [
+          "outpaths"
+        ],
+        "title": "StoreInfoRequest"
+      },
+      "StoreInfoResponse": {
+        "properties": {
+          "items": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/StoreInfo"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "StoreInfoResponse"
+      },
+      "StorepathStatus": {
+        "properties": {
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "package": {
+            "type": "string",
+            "title": "Package"
+          },
+          "narinfo_known": {
+            "type": "boolean",
+            "title": "Narinfo Known"
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog",
+          "package",
+          "narinfo_known"
+        ],
+        "title": "StorepathStatus"
+      },
+      "StorepathStatusResponse": {
+        "properties": {
+          "items": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/StorepathStatus"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "StorepathStatusResponse"
+      },
+      "UnresolvableEntry": {
+        "properties": {
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "chain": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Chain"
+          },
+          "leaf": {
+            "$ref": "#/components/schemas/UnresolvableLeaf"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference",
+          "chain",
+          "leaf"
+        ],
+        "title": "UnresolvableEntry",
+        "description": "A single unresolvable reference within a lookup group."
+      },
+      "UnresolvableLeaf": {
+        "properties": {
+          "unresolvable": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Unresolvable"
+          }
+        },
+        "type": "object",
+        "title": "UnresolvableLeaf",
+        "description": "Uniform shape for an unresolvable dependency.\n\nSerializes as {\"unresolvable\": {}} \u2014 exactly one shape, no cause/reason\nfields at the leaf level. If a future change needs structured error\ndetail, introduce a typed `reason` field here."
+      },
+      "UserCatalog": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "UserCatalog"
+      },
+      "UserPackage": {
+        "properties": {
+          "catalog": {
+            "type": "string",
+            "title": "Catalog"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "original_url": {
+            "title": "Original Url",
+            "deprecated": true,
+            "nullable": true,
+            "type": "string"
+          },
+          "lifecycle": {
+            "description": "Lifecycle state of the package; null means no lifecycle state is recorded. Populated on the single-package read; the package listing never fills it.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PackageLifecycleInfo"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "catalog",
+          "name"
+        ],
+        "title": "UserPackage"
+      },
+      "UserPackageCreate": {
+        "properties": {
+          "original_url": {
+            "title": "Original Url",
+            "deprecated": true,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "title": "UserPackageCreate"
+      },
+      "UserPackageList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UserPackage"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "UserPackageList"
+      },
+      "params": {
+        "properties": {
+          "show_term": {
+            "type": "string",
+            "title": "Show Term",
+            "default": "hello"
+          },
+          "search_term": {
+            "type": "string",
+            "title": "Search Term",
+            "default": "in Go"
+          },
+          "search_system": {
+            "$ref": "#/components/schemas/PackageSystem",
+            "default": "x86_64-linux"
+          },
+          "resolve_package": {
+            "type": "string",
+            "title": "Resolve Package",
+            "default": "cowsay"
+          },
+          "resolve_systems": {
+            "items": {
+              "$ref": "#/components/schemas/PackageSystem"
+            },
+            "type": "array",
+            "title": "Resolve Systems",
+            "default": [
+              "x86_64-linux"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "params"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "HTTPBasic": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  }
+}

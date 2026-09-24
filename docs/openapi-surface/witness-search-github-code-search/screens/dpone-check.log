@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document dpone Studio API
+::error title=[api]%3A::Failed to parse openapi document dpone Studio API
+[api]: Unexpected error: Failed to resolve schema reference: CapabilityDiscoveryResponse/$defs/digest 
+       CliError: Unexpected error: Failed to resolve schema reference: CapabilityDiscoveryResponse/$defs/digest
+           at e.getResolvedSchema (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19561)
+           at e.getAllRequiredProperties (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19198)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:14172)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:10588)
+           at e.buildExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:8892)
+           at d1r.buildEndpointExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:3033)
+           at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148756
+           at Array.map (<anonymous>)
+           at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148660)
+           at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+::error title=[api]%3A::Unexpected error: Failed to resolve schema reference: CapabilityDiscoveryResponse/$defs/digest %0ACliError: Unexpected error: Failed to resolve schema reference: CapabilityDiscoveryResponse/$defs/digest%0A    at e.getResolvedSchema (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19561)%0A    at e.getAllRequiredProperties (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19198)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:14172)%0A    at e.buildExampleHelper (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:10588)%0A    at e.buildExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:8892)%0A    at d1r.buildEndpointExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:3033)%0A    at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148756%0A    at Array.map (<anonymous>)%0A    at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148660)%0A    at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+All checks passed

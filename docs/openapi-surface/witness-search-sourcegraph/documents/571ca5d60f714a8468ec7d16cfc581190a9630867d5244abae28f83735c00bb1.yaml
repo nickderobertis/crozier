@@ -1,0 +1,1894 @@
+openapi: 3.1.0
+info:
+  title: Lix Server Protocol
+  version: "1"
+  description: Canonical HTTP surface implemented by lix::server_protocol.
+servers:
+  - url: https://host.example
+security:
+  - bearerAuth: []
+  - cookieAuth: []
+  - {}
+paths:
+  /lix/v1:
+    post:
+      operationId: createLix
+      description: Atomically create an empty hosted repository or import a complete snapshot, preserving tracked and untracked rows and history. Creation is explicit; opening an unknown ID never creates it. The host authenticates and authorizes creation before protocol dispatch.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+          description: A stable operation key scoped to the verified principal. Retries with the same body return the same repository; a different body conflicts.
+      requestBody:
+        required: false
+        content:
+          application/vnd.lix.snapshot:
+            schema: { type: string, format: binary }
+      responses:
+        "201":
+          description: Repository is durably initialized and available. An idempotent replay returns the same descriptor.
+          headers:
+            Location: { schema: { type: string, format: uri } }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, url]
+                properties:
+                  id: { type: string, format: uuid }
+                  url: { type: string, format: uri }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}:
+    delete:
+      operationId: deleteLix
+      description: Permanently delete the hosted repository and fence its sessions. Missing repositories succeed. Old creation retries and syncing clients cannot recreate deleted resources.
+      responses:
+        "204": { description: Repository is deleted or already absent. }
+        default: { $ref: "#/components/responses/Error" }
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: handshake
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - name: activeBranchId
+          in: query
+          schema: { type: string, minLength: 1 }
+          description: Allowed only while creating a session.
+      responses:
+        "200":
+          description: Session created or resumed in an existing repository. Unknown repository IDs return 404.
+          headers:
+            Cache-Control: { schema: { type: string, const: no-store } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Handshake" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/session:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    delete:
+      operationId: deleteSession
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      responses:
+        "204": { description: Session deleted. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/execute:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: execute
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ExecuteRequest" } }
+      responses:
+        "200": { $ref: "#/components/responses/Execute" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/execute-batch:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: executeBatch
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [statements]
+              properties:
+                statements:
+                  type: array
+                  items: { $ref: "#/components/schemas/ExecuteBatchStatement" }
+                options: { $ref: "#/components/schemas/ExecuteOptions" }
+                cacheBlobs: { type: boolean }
+      responses:
+        "200":
+          description: Ordered statement results and one transaction commit receipt.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ExecuteBatchResponse" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/replica/replace:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: replaceReplica
+      description: Durably retire a replica identity for the authenticated account. Repeating a retirement returns the original replacement. Replica-tagged publications are fenced before this acknowledges; old local data must be retained for explicit recovery.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [replicaId, replacementId]
+              properties:
+                replicaId: { type: string, minLength: 1, maxLength: 512, pattern: '^[!-~]+$' }
+                replacementId: { type: string, minLength: 1, maxLength: 512, pattern: '^[!-~]+$' }
+      responses:
+        "200":
+          description: The old identity is permanently retired.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [replicaId]
+                properties:
+                  replicaId: { type: string }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/push:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: syncPush
+      description: Atomically stores at most 512 total immutable commits plus compare-and-swap branch-ref updates. Commit identity makes retries idempotent; oversized batches must be split on dependency-complete boundaries.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/SyncPushRequest" } }
+      responses:
+        "200":
+          description: The commit and branch advancement are durable.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncPushResponse" } } }
+        "409":
+          description: The branch no longer has the expected head, or an immutable identity names different content.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/pull:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: syncPull
+      description: Returns a hot-state snapshot when after is omitted. Otherwise long-polls complete repository commit/ref events after a repository cursor.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - name: after
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 512, default: 128 }
+        - name: snapshotBranchId
+          in: query
+          schema: { type: string, minLength: 1 }
+          description: With snapshotHeadCommitId, requests a stateless hot-row page pinned to this branch.
+        - name: snapshotHeadCommitId
+          in: query
+          schema: { type: string, minLength: 1 }
+          description: Immutable branch head used to serve a stable snapshot row page.
+        - name: snapshotAfter
+          in: query
+          schema: { type: string, minLength: 1, maxLength: 4096 }
+          description: Opaque continuation returned by the preceding row page.
+      responses:
+        "200":
+          description: Pinned hot metadata, one immutable row page, or the next ordered repository event page.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/SyncPullResponse" }
+                  - { $ref: "#/components/schemas/SyncSnapshotRowPage" }
+        "413":
+          description: The encoded response exceeds the 64 MiB protocol limit.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/retained-bodies:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncRetainedBodies
+      description: Authenticated background upload of at most 32 contiguous ordinary key/value commits. Complete native bodies and an account-bound attempt retention frontier are committed atomically. No branch ref advances. Repeating the same wave is idempotent. JSON uses the server request limit and the encoded sync event must fit 64 MiB.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/RetainedBodyWaveRequest" } } }
+      responses:
+        "200":
+          description: Durable body acceptance with a five-minute server retention lease; bounded to 2048 bytes.
+          content: { application/json: { schema: { $ref: "#/components/schemas/RetainedBodyWaveResponse" } } }
+        "410": { description: Attempt retention expired; preserve local commits and restart reconciliation. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/merge/restart:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncPartialMergeRestart
+      description: Atomically fences one expired native merge attempt or returns its exact committed result. Immutable restart receipts prevent delayed old requests from resurrecting expired uploads. The client preserves captured local bodies and reuploads from the original base under the acknowledged successor ID. Request limit 16 KiB, response limit 4096 bytes.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/PartialAttemptRestartRequest" } } }
+      responses:
+        "200":
+          description: Exact authenticated terminal restart outcome.
+          content: { application/json: { schema: { $ref: "#/components/schemas/PartialAttemptRestartOutcome" } } }
+        "409": { description: Restart raced another authority operation or reused an attempt identity. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/merge:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncPartialMerge
+      description: Derives a native three-way key/value merge at the captured authority head. Native merge commit, expected-head CAS, retention transition and exact immutable attempt receipt publish atomically. Clients never supply selected rows. Conflicts leave both heads intact. Exact retries return the committed receipt even after later authority writes. Metadata request limit is 16 KiB.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/PartialMergeRequest" } } }
+      responses:
+        "200":
+          description: Exact native merge receipt; bounded to 4096 bytes.
+          content: { application/json: { schema: { $ref: "#/components/schemas/PartialMergeReceipt" } } }
+        "409": { description: Concurrent authority movement, divergent row conflict, or attempt ID reused with different coordinates. }
+        "410": { description: Accepted body retention expired. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/global/restart:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeGlobalMigrationRestart
+      description: Terminally abandons an exact uncommitted migration attempt and releases its pins under native GC CAS. A committed native outcome always wins; delayed body or merge requests cannot resurrect the aborted attempt.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalRestartRequest" } } }
+      responses:
+        "200":
+          description: Exact authenticated operation acknowledgement.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalRestartReceipt" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/global/cleanup:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeGlobalMigrationCleanup
+      description: Deletes exact migration pins only after every published native root survives under current authority refs. Returns true if cleanup was newly completed; false for an already removed pin.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalMigrationRequest" } } }
+      responses:
+        "200":
+          description: Exact authenticated operation acknowledgement.
+          content: { application/json: { schema: { type: boolean } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/global/merge:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeGlobalMigrationMerge
+      description: Atomically merges fresh global branch descriptors and creates the exact absent branch refs while preserving native heads and checkpoints. Explicit closed-storage migration only.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalMigrationRequest" } } }
+      responses:
+        "200":
+          description: Exact authenticated operation acknowledgement.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalMigrationReceipt" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/global/bodies:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeGlobalMigrationBodies
+      description: Imports original complete native bodies and durable migration GC pins atomically. No branch refs are published by this operation.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeGlobalBodyWaveRequest" } } }
+      responses:
+        "200":
+          description: Exact authenticated operation acknowledgement.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncPushResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/merge:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeMigrationMerge
+      description: "Explicit migration only: validates ordinary file/custom-schema native selections and plugin resolutions at captured heads. An isolated source branch pins uploaded native bodies. Selected/global coordinates and source pin are guarded with the native merge and immutable outcome atomically. Unchanged global/checkpoint scope; unsupported mutations preserve the original source. Metadata request limit is 16 KiB."
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeMigrationMergeRequest" } } }
+      responses:
+        "200":
+          description: Exact native merge receipt; bounded to 4096 bytes.
+          content: { application/json: { schema: { $ref: "#/components/schemas/PartialMergeReceipt" } } }
+        "409": { description: Concurrent authority movement, divergent row conflict, or attempt ID reused with different coordinates. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/migration/cleanup:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeMigrationCleanup
+      description: Retires only the exact temporary migration source ref after an immutable native outcome. The surviving selected head must contain that outcome and participates in atomic CAS even though it is unchanged. Missing source ref is idempotent; changed source or surviving heads preserve the pin.
+
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeMigrationCleanupRequest" } } }
+      responses:
+        "200":
+          description: Exact native merge receipt; bounded to 4096 bytes.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncPushResponse" } } }
+        "409": { description: Concurrent authority movement, divergent row conflict, or attempt ID reused with different coordinates. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/native-metadata:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeMetadata
+      description: Reads at most 32 explicitly identified native commit headers or commit graph records, without traversing parents or inventories. JSON requests are limited to 16 KiB; decoded response payload is limited to 256 KiB. The echoed caller epoch correlates a local receipt and does not establish a server retention lease. Installation requires native decoding and existing-value conflict checks.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/NativeBaselineLease"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeMetadataRequest" } } }
+      responses:
+        "200":
+          description: Explicit native records bound to the repository and echoed caller epoch.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeMetadataResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/read-fulfillment:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncReadFulfillment
+      description: Executes the submitted typed read interests once against the admitted descriptor roots and returns verified immutable native inputs. The request is limited to 528 KiB (512 KiB recipes plus a bounded descriptor). Responses page at 4 MiB, except that one native input may be up to 64 MiB; a closure is limited to 256 MiB, 16384 inputs, 65536 storage calls, and 1 GiB of authority reads. The closure digest binds every page. Returned inputs warm local state and do not certify absence or result membership.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/NativeBaselineLease"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ReadFulfillmentRequest" } } }
+      responses:
+        "200":
+          description: Immutable typed inputs observed while evaluating all submitted interests at the admitted roots.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ReadFulfillmentResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/native-metadata-walk:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeMetadataWalk
+      description: Reads a bounded first-parent prefix of at most 16 commits and their optional state headers, capped at 32 records and 256 KiB decoded payload. A short prefix is not a history-completeness claim. The client validates parent continuity and record identity before epoch-fenced installation. Requires a native baseline lease.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/NativeBaselineLease"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeMetadataWalkRequest" } } }
+      responses:
+        "200":
+          description: Explicit native records bound to the repository and echoed caller epoch.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeMetadataResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/native-object-range:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeObjectRange
+      description: Reads at most 1 MiB of an immutable native object at an explicit offset. Request JSON is limited to 16 KiB. Range bytes must be assembled and verified against the complete object's native digest before installation. Authority storage currently reads and hashes the whole object for each range.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/NativeBaselineLease"
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/NativeObjectRangeRequest" } } }
+      responses:
+        "200":
+          description: Requested contiguous bytes, with immutable total length; zero bytes are permitted only at the object end.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeObjectRangeResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/native-objects:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncNativeObjects
+      description: Reads an explicitly addressed batch of immutable native tree/directory nodes, mutation catalogs or commit delta parts. The encoded request is limited to 16 KiB before JSON decoding. Does not accept arbitrary storage namespaces, publish refs, or establish logical coverage.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/NativeBaselineLease"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [objects]
+              properties:
+                objects: { type: array, minItems: 1, maxItems: 32, uniqueItems: true, items: { $ref: "#/components/schemas/NativeObjectRef" } }
+      responses:
+        "200":
+          description: Ordered objects, each verified against its requested native digest; total decoded payload at most 1 MiB. Encoded response and client collection are independently bounded.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeObjectResponse" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/baseline-lease/renew:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    post:
+      operationId: syncRenewBaselineLease
+      description: Renews an unexpired account-bound baseline lease with the protocol-10 fixed TTL of 300000 ms; expired leases cannot be resurrected. Does not change the admitted local receipt.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [leaseId]
+              properties:
+                leaseId: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The same account and roots with a renewed deadline.
+          content: { application/json: { schema: { $ref: "#/components/schemas/NativeBaselineLease" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/descriptor:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    get:
+      operationId: syncDescriptor
+      description: Returns at most 6144 encoded bytes of selected/default and global native root coordinates for a partial replica with on-demand sync. This metadata does not install a replica or certify local coverage; full sync bootstrap is unchanged.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - name: branchId
+          in: query
+          description: Selected branch, defaulting to the repository default branch only when after is omitted. Required for continuation.
+          schema: { type: string, format: uuid }
+        - name: after
+          in: query
+          description: Last reconciled cursor. Waits up to 30 seconds for a newer descriptor, then returns current coordinates. Unrelated changes can advance the cursor without changing selected roots. A future cursor requires explicit baseline reconciliation.
+          schema: { type: integer, minimum: 0 }
+      responses:
+        "200":
+          description: Versioned opening coordinates from one coherent storage snapshot.
+          content: { application/json: { schema: { $ref: "#/components/schemas/LeasedPartialReplicaDescriptor" } } }
+        "409":
+          description: Requested cursor is ahead of the authority; preserve pending edits and reconcile the admitted baseline.
+          content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/checkpoints:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    get:
+      operationId: syncCheckpointInventory
+      description: Pages immutable checkpoint headers at a pinned repository cursor, including off-branch checkpoints. State and blobs remain deferred.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - name: cursor
+          in: query
+          required: true
+          schema: { type: integer, minimum: 0 }
+        - name: after
+          in: query
+          schema: { type: string, format: uuid }
+        - name: limit
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 512 }
+      responses:
+        "200":
+          description: Canonical checkpoint headers and an exclusive next-page cursor.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncCheckpointInventoryPage" } } }
+        "409":
+          description: Repository cursor changed; restart the snapshot.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/history:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: syncHistory
+      description: Fetches one bounded first-parent history page without changing live sync state.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - name: head
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 255 }
+        - name: limit
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 100 }
+      responses:
+        "200":
+          description: Oldest-to-newest commits plus a complete-state fence when the first parent lies outside the page.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncHistoryResponse" } } }
+        "413":
+          description: The encoded response exceeds the 64 MiB protocol limit.
+          content: { application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/blob:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: syncGetBlobs
+      description: Loads up to 16 canonical FastCDC manifests by their BLAKE3-derived blob identities.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/OptionalNativeBaselineLease"
+        - $ref: "#/components/parameters/BlobIds"
+      responses:
+        "200":
+          description: Canonical flat manifests in the requested order.
+          content:
+            application/json:
+              schema:
+                type: array
+                minItems: 1
+                maxItems: 16
+                items: { $ref: "#/components/schemas/SyncBlobManifest" }
+        "404": { $ref: "#/components/responses/Error" }
+        default: { $ref: "#/components/responses/Error" }
+    post:
+      operationId: syncRegisterBlob
+      description: Reports missing chunks, or atomically registers a complete verified manifest.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/SyncBlobManifest" } }
+      responses:
+        "200":
+          description: Missing chunks to upload, or confirmation that the blob is complete.
+          content: { application/json: { schema: { $ref: "#/components/schemas/SyncBlobRegistration" } } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/sync/chunk:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: syncGetChunk
+      description: Loads one authenticated raw BLAKE3-addressed chunk.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/OptionalNativeBaselineLease"
+        - $ref: "#/components/parameters/ChunkId"
+      responses:
+        "200":
+          description: Exact raw chunk bytes.
+          headers:
+            Cache-Control: { schema: { type: string } }
+          content:
+            application/octet-stream:
+              schema: { type: string, contentEncoding: binary, minLength: 1, maxLength: 4194304 }
+        "404": { $ref: "#/components/responses/Error" }
+        default: { $ref: "#/components/responses/Error" }
+    put:
+      operationId: syncPutChunk
+      description: Stores raw bytes only when their BLAKE3 digest equals chunkId.
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/SyncProtocolVersion"
+        - $ref: "#/components/parameters/ChunkId"
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { type: string, contentEncoding: binary, minLength: 1, maxLength: 4194304 }
+      responses:
+        "204": { description: Chunk is durably present. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/transaction/begin:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: beginTransaction
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      responses:
+        "200":
+          description: Transaction capability.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactionId]
+                properties: { transactionId: { type: string } }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/transaction/execute:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: transactionExecute
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ExecuteRequest" } }
+      responses:
+        "200":
+          description: Provisional statement result without a commit receipt.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StatementResponse" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/transaction/commit:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: commitTransaction
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          description: Transaction committed, including its exact commit receipt.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CommitReceipt" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/transaction/rollback:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: rollbackTransaction
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "204": { description: Transaction rolled back. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/file:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    get:
+      operationId: readFile
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/FilePath"
+        - name: Range
+          in: header
+          schema: { type: string, pattern: "^bytes=[0-9]+-[0-9]*$" }
+      responses:
+        "200": { $ref: "#/components/responses/File" }
+        "206": { $ref: "#/components/responses/File" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/file/upsert:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: upsertFile
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/FilePath"
+        - $ref: "#/components/parameters/IdempotencyKey"
+        - name: Lix-Upload-Id
+          in: header
+          schema: { type: string }
+        - name: Content-Range
+          in: header
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/octet-stream: { schema: { type: string, contentEncoding: binary } }
+      responses:
+        "200": { $ref: "#/components/responses/Execute" }
+        "308": { description: Resumable upload part accepted. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/file/upsert-batch:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: upsertFileBatch
+      parameters:
+        - $ref: "#/components/parameters/RequiredSessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { type: string, contentEncoding: binary }
+      responses:
+        "200": { $ref: "#/components/responses/Execute" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/branch/create:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: createBranch
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                id: { type: string }
+                name: { type: string, minLength: 1 }
+                fromCommitId: { type: string }
+      responses:
+        "200": { description: Branch created. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/branch/switch:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: switchBranch
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [branchId]
+              properties: { branchId: { type: string, minLength: 1 } }
+      responses:
+        "200": { description: Session switched. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/branch/merge:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: mergeBranch
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceBranchId]
+              properties: { sourceBranchId: { type: string } }
+      responses:
+        "200": { description: Merge result for the active branch. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/branch/merge-preview:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: mergeBranchPreview
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceBranchId]
+              properties: { sourceBranchId: { type: string } }
+      responses:
+        "200": { description: Merge preview for the active branch. }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/observe:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: observe
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json: { schema: { $ref: "#/components/schemas/ExecuteRequest" } }
+      responses:
+        "200": { $ref: "#/components/responses/EventStream" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/observe/multiplex:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+      - $ref: "#/components/parameters/ServerProtocolVersion"
+    post:
+      operationId: observeMultiplex
+      parameters: [{ $ref: "#/components/parameters/RequiredSessionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscriptions]
+              properties:
+                subscriptions:
+                  type: array
+                  minItems: 1
+                  maxItems: 32
+                  items:
+                    allOf:
+                      - $ref: "#/components/schemas/ExecuteRequest"
+                      - type: object
+                        required: [id]
+                        properties: { id: { type: string } }
+      responses:
+        "200": { $ref: "#/components/responses/EventStream" }
+        default: { $ref: "#/components/responses/Error" }
+  /lix/v1/{lix_id}/snapshot:
+    parameters:
+      - $ref: "#/components/parameters/LixId"
+      - $ref: "#/components/parameters/ReplicaId"
+    get:
+      operationId: exportSnapshot
+      description: Streams a deterministic complete point-in-time copy of the Lix.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Canonical Lix snapshot stream.
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "no-store, no-transform" }
+          content:
+            application/vnd.lix.snapshot:
+              schema: { type: string, format: binary }
+        default: { $ref: "#/components/responses/Error" }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+    cookieAuth: { type: apiKey, in: cookie, name: session }
+  parameters:
+    LixId:
+      name: lix_id
+      in: path
+      required: true
+      description: Immutable canonical Lix UUID.
+      schema:
+        type: string
+        format: uuid
+        pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    ReplicaId:
+      name: lix-replica-id
+      in: header
+      required: false
+      description: Stable identity of the local replica. Durable operations carrying a retired identity fail with LIX_REPLICA_RETIRED. Must remain unchanged across reconnects of the same local storage.
+      schema: { type: string, minLength: 1, maxLength: 512, pattern: '^[!-~]+$' }
+    ServerProtocolVersion:
+      name: lix-server-protocol-version
+      in: header
+      required: true
+      description: Exact SQL protocol version. Missing or incompatible versions are rejected before session creation or writes; upgrade the client.
+      schema: { type: integer, const: 9 }
+    SessionId:
+      name: Lix-Session-Id
+      in: header
+      required: false
+      schema: { type: string }
+    RequiredSessionId:
+      name: Lix-Session-Id
+      in: header
+      required: true
+      schema: { type: string }
+    OptionalNativeBaselineLease:
+      name: lix-native-baseline-lease
+      in: header
+      required: false
+      description: Partial replica requests supply their admitted lease. When present it is checked in the same storage snapshot as the CAS read; expired leases return LIX_PARTIAL_BASELINE_EXPIRED.
+      schema: { type: string, format: uuid }
+    NativeBaselineLease:
+      name: lix-native-baseline-lease
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+    SyncProtocolVersion:
+      name: lix-sync-protocol-version
+      in: header
+      required: true
+      description: Exact sync wire-protocol version advertised by the handshake.
+      schema: { type: integer, const: 21 }
+    TransactionId:
+      name: Lix-Transaction-Id
+      in: header
+      required: true
+      schema: { type: string }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string, minLength: 1, maxLength: 255 }
+    RequiredIdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 255 }
+    FilePath:
+      name: path
+      in: query
+      required: true
+      schema: { type: string, minLength: 1 }
+    BlobIds:
+      name: blobIds
+      in: query
+      required: true
+      description: One through 16 distinct lowercase BLAKE3 identities separated by commas.
+      schema: { type: string, pattern: "^[0-9a-f]{64}(,[0-9a-f]{64}){0,15}$" }
+    ChunkId:
+      name: chunkId
+      in: query
+      required: true
+      schema: { type: string, pattern: "^[0-9a-f]{64}$" }
+  responses:
+    Execute:
+      description: SQL result.
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ExecuteResponse" } }
+    File:
+      description: Raw file contents. Lix-File-Found distinguishes missing and empty files.
+      headers:
+        Lix-File-Found: { schema: { type: string, enum: ["true", "false"] } }
+        Accept-Ranges: { schema: { type: string, const: bytes } }
+      content:
+        application/octet-stream: { schema: { type: string, contentEncoding: binary } }
+    EventStream:
+      description: Server-sent `next` and `error` events.
+      content:
+        text/event-stream: { schema: { type: string } }
+    Error:
+      description: Canonical protocol error.
+      content:
+        application/json: { schema: { $ref: "#/components/schemas/ErrorEnvelope" } }
+  schemas:
+    Handshake:
+      type: object
+      required: [protocolVersion, syncProtocolVersion, activeBranchId, activeAccountId, sessionId, capabilities]
+      properties:
+        protocolVersion: { type: integer, const: 12 }
+        syncProtocolVersion: { type: integer, const: 21 }
+        activeBranchId: { type: string }
+        activeAccountId: { type: string }
+        sessionId: { type: string }
+        capabilities:
+          type: object
+          required: [binaryFileUpsert, binaryFileUpsertBatch, binaryFileRead, syncPush, syncPull, syncHistory, syncCheckpointInventory, syncBlob, syncChunk]
+          properties:
+            binaryFileUpsert: { type: boolean }
+            binaryFileUpsertBatch: { type: boolean }
+            binaryFileRead: { type: boolean }
+            syncPush: { type: boolean }
+            syncPull: { type: boolean }
+            syncHistory: { type: boolean }
+            syncCheckpointInventory: { type: boolean }
+            syncBlob: { type: boolean }
+            syncChunk: { type: boolean }
+    ExecuteOptions:
+      type: object
+      properties:
+        originKey: { type: string }
+        maxAutoCommitRetries:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: >-
+            Maximum whole automatic-transaction replays after conflict or snapshot
+            expiry, excluding the initial attempt. Zero disables replay. Omit to
+            retain default recovery budgets. Does not control explicit transactions,
+            pure-read recovery, receipt lookups, or transport retries.
+    ExecuteRequest:
+      type: object
+      required: [sql]
+      properties:
+        sql: { type: string, minLength: 1 }
+        params: { type: array, items: {} }
+        options: { $ref: "#/components/schemas/ExecuteOptions" }
+        cacheBlobs: { type: boolean }
+    ExecuteBatchStatement:
+      type: object
+      required: [sql]
+      properties:
+        sql: { type: string, minLength: 1 }
+        params: { type: array, items: {} }
+        label: { type: string }
+    CommitSpan:
+      type: object
+      required: [before, after]
+      properties:
+        before: { type: string }
+        after: { type: string }
+    CommitReceipt:
+      type: object
+      required: [commit]
+      properties:
+        commit:
+          oneOf:
+            - { $ref: "#/components/schemas/CommitSpan" }
+            - { type: "null" }
+    ExecuteBatchResponse:
+      type: object
+      required: [results, commit]
+      properties:
+        results:
+          type: array
+          items:
+            allOf:
+              - { $ref: "#/components/schemas/StatementResponse" }
+              - required: [statementIndex]
+        commit:
+          oneOf:
+            - { $ref: "#/components/schemas/CommitSpan" }
+            - { type: "null" }
+    StatementResponse:
+      type: object
+      description: One statement's rows, count, notices, and optional batch metadata. Used without a commit receipt in batches and explicit transactions.
+      required: [columns, rows, rowsAffected, notices]
+      properties:
+        statementIndex: { type: integer, minimum: 0 }
+        label: { type: string }
+        columns:
+          type: array
+          items:
+            type: object
+            required: [name, type]
+            properties:
+              name: { type: string }
+              type:
+                type: string
+                enum: ["null", boolean, integer, real, text, jsonb, row_ref, timestamptz, blob]
+        rows: { type: array, items: { type: array, items: {} } }
+        rowsAffected: { type: integer, minimum: 0 }
+        notices:
+          type: array
+          items:
+            type: object
+            required: [code, message]
+            properties:
+              code: { type: string }
+              message: { type: string }
+              hint: { type: string }
+    ExecuteResponse:
+      allOf:
+        - { $ref: "#/components/schemas/StatementResponse" }
+        - type: object
+          properties:
+            commit:
+              description: Present for auto-committed writes with a prior branch head; omitted for reads. The JavaScript SDK normalizes omission to null.
+              $ref: "#/components/schemas/CommitSpan"
+    SyncRowPkPart:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type, value]
+          properties:
+            type: { const: uuid }
+            value: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [type, value]
+          properties:
+            type: { const: integer }
+            value: { type: integer }
+        - type: object
+          additionalProperties: false
+          required: [type, value]
+          properties:
+            type: { const: string }
+            value: { type: string }
+        - type: object
+          additionalProperties: false
+          required: [type, value]
+          properties:
+            type: { const: bytes }
+            value: { type: string, contentEncoding: base64 }
+    SyncRowPk:
+      type: array
+      minItems: 1
+      items: { $ref: "#/components/schemas/SyncRowPkPart" }
+      description: Sync-only physical row identity components in declared primary-key order; this is not the public SQL/SDK lix_row_ref.
+    SyncCommitMember:
+      type: object
+      required: [changeId, authored, schemaKey, rowPk, deleted, snapshot, snapshotPayload, rowCreatedAt, rowUpdatedAt, changeAccountId, changeCreatedAt]
+      properties:
+        changeId: { type: string, minLength: 1 }
+        authored: { type: boolean }
+        schemaKey: { type: string, minLength: 1, maxLength: 255 }
+        fileId: { type: [string, "null"], maxLength: 255 }
+        rowPk: { $ref: "#/components/schemas/SyncRowPk" }
+        deleted: { type: boolean }
+        snapshot: {}
+        snapshotPayload: { type: [string, "null"], contentEncoding: base64, description: Canonical Schema v1 typed row payload; required for live rows and null for tombstones. }
+        metadata: {}
+        rowCreatedAt: { type: string, minLength: 1 }
+        rowUpdatedAt: { type: string, minLength: 1 }
+        changeAccountId: { type: string, minLength: 1 }
+        changeCreatedAt: { type: string, minLength: 1 }
+        originKey: { type: [string, "null"] }
+    SyncCommit:
+      type: object
+      required: [commitId, parentCommitIds, baseCommitId, isCheckpoint, accountId, createdAt, selectedSourceCommitId, members]
+      properties:
+        isCheckpoint: { type: boolean, description: Immutable checkpoint membership; required by this protocol. }
+        baseCommitId: { type: [string, "null"] }
+        commitId: { type: string, minLength: 1 }
+        parentCommitIds: { type: array, items: { type: string, minLength: 1 } }
+        accountId: { type: string, minLength: 1 }
+        createdAt: { type: string, minLength: 1 }
+        selectedSourceCommitId:
+          type: [string, "null"]
+          description: Exactly parentCommitIds[1] for a merge with selected members; null otherwise.
+        completeIncorporationSourceCommitId:
+          type: [string, "null"]
+          description: Native-certified complete checkpoint source, independent of selected members. Must differ from commitId and cannot coexist with incorporationUnknown true.
+        incorporationUnknown:
+          type: boolean
+          default: false
+          description: Legacy provenance is unavailable; absence of an incorporation witness must not be interpreted as non-inclusion.
+        stateAlias:
+          oneOf:
+            - { $ref: "#/components/schemas/SyncCommitStateAlias" }
+            - { type: "null" }
+          description: Authenticated complete-state source for a metadata-only checkpoint commit; omitted or null for ordinary and merge commits.
+        members: { type: array, items: { $ref: "#/components/schemas/SyncCommitMember" } }
+    SyncCommitStateAlias:
+      type: object
+      additionalProperties: false
+      required: [sourceCommitId, stateRootId]
+      properties:
+        sourceCommitId: { type: string, minLength: 1 }
+        stateRootId: { type: string, pattern: "^[0-9a-f]{64}$" }
+    SyncRefUpdate:
+      type: object
+      required: [branchId, expectedHeadCommitId, expectedCheckpointCommitId, headCommitId, checkpointCommitId]
+      properties:
+        branchId: { type: string, minLength: 1 }
+        expectedHeadCommitId: { type: [string, "null"] }
+        expectedCheckpointCommitId: { type: [string, "null"] }
+        headCommitId: { type: [string, "null"] }
+        checkpointCommitId:
+          type: [string, "null"]
+          description: Branch working-diff checkpoint at headCommitId. Required and non-null for a headed update; null only when deleting the branch.
+    PartialAttemptRestartRequest:
+      type: object
+      additionalProperties: false
+      required: [old, nextAttemptId]
+      properties:
+        old: { $ref: "#/components/schemas/PartialMergeRequest" }
+        nextAttemptId: { type: string, format: uuid }
+        abandon:
+          type: boolean
+          default: false
+          description: When true, terminally fences an active attempt for automatic authoritative recovery. An already committed receipt wins. Otherwise the attempt must have expired. Requires sync protocol 20.
+    PartialAttemptRestartReceipt:
+      type: object
+      additionalProperties: false
+      required: [version, repositoryId, accountId, request]
+      properties:
+        version: { type: integer, const: 1 }
+        repositoryId: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        request: { $ref: "#/components/schemas/PartialAttemptRestartRequest" }
+    PartialAttemptRestartOutcome:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [outcome, repositoryId, accountId, receipt]
+          properties:
+            outcome: { type: string, const: committed }
+            repositoryId: { type: string, format: uuid }
+            accountId: { type: string, format: uuid }
+            receipt: { $ref: "#/components/schemas/PartialMergeReceipt" }
+        - type: object
+          additionalProperties: false
+          required: [outcome, receipt]
+          properties:
+            outcome: { type: string, const: restarted }
+            receipt: { $ref: "#/components/schemas/PartialAttemptRestartReceipt" }
+    PartialMergeRequest:
+      type: object
+      additionalProperties: false
+      required: [attemptId, branchId, baseCommitId, expectedAuthorityHeadCommitId, capturedLocalHeadCommitId, checkpointCommitId, globalHeadCommitId, globalCheckpointCommitId]
+      properties:
+        attemptId: { type: string, format: uuid }
+        branchId: { type: string, format: uuid }
+        baseCommitId: { type: string, format: uuid }
+        expectedAuthorityHeadCommitId: { type: string, format: uuid }
+        capturedLocalHeadCommitId: { type: string, format: uuid }
+        checkpointCommitId:
+          type: string
+          format: uuid
+          description: Original confirmed checkpoint. Omitted checkpoint overrides equal this coordinate.
+        expectedAuthorityCheckpointCommitId:
+          type: string
+          format: uuid
+          description: Current authority checkpoint; omitted when equal to checkpointCommitId.
+        capturedLocalCheckpointCommitId:
+          type: string
+          format: uuid
+          description: Captured local checkpoint; omitted when equal to checkpointCommitId.
+        globalHeadCommitId: { type: string, format: uuid }
+        globalCheckpointCommitId: { type: string, format: uuid }
+    NativeMigrationCleanupRequest:
+      type: object
+      additionalProperties: false
+      required: [migration]
+      properties:
+        migration: { $ref: "#/components/schemas/NativeMigrationMergeRequest" }
+    NativeGlobalRestartRequest:
+      type: object
+      additionalProperties: false
+      required: [request, nextAttemptId]
+      properties:
+        request: { $ref: "#/components/schemas/NativeGlobalMigrationRequest" }
+        nextAttemptId: { type: string, format: uuid }
+    NativeGlobalRestartReceipt:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [outcome, receipt]
+          properties:
+            outcome: { const: committed }
+            receipt: { $ref: "#/components/schemas/NativeGlobalMigrationReceipt" }
+        - type: object
+          additionalProperties: false
+          required: [outcome, intent]
+          properties:
+            outcome: { const: restarted }
+            intent: { $ref: "#/components/schemas/NativeGlobalRestartRequest" }
+    NativeNewBranchCoordinate:
+      type: object
+      additionalProperties: false
+      required: [branchId, headCommitId, checkpointCommitId]
+      properties:
+        branchId: { type: string, format: uuid }
+        headCommitId: { type: string, format: uuid }
+        checkpointCommitId: { type: string, format: uuid }
+    NativeGlobalMigrationRequest:
+      type: object
+      additionalProperties: false
+      required: [attemptId, baseCommitId, expectedAuthorityHeadCommitId, capturedLocalHeadCommitId, checkpointCommitId, newBranches]
+      properties:
+        attemptId: { type: string, format: uuid }
+        baseCommitId: { type: string, format: uuid }
+        expectedAuthorityHeadCommitId: { type: string, format: uuid }
+        capturedLocalHeadCommitId: { type: string, format: uuid }
+        checkpointCommitId: { type: string, format: uuid }
+        newBranches:
+          type: array
+          minItems: 1
+          maxItems: 1024
+          description: Strict ascending branch UUID order, without duplicates.
+          items: { $ref: "#/components/schemas/NativeNewBranchCoordinate" }
+    NativeGlobalMigrationReceipt:
+      type: object
+      additionalProperties: false
+      required: [request, mergeCommitId]
+      properties:
+        request: { $ref: "#/components/schemas/NativeGlobalMigrationRequest" }
+        mergeCommitId: { type: string, format: uuid }
+    NativeGlobalBodyWaveRequest:
+      type: object
+      additionalProperties: false
+      required: [request, branchId, previousCommitId, bodies]
+      properties:
+        request: { $ref: "#/components/schemas/NativeGlobalMigrationRequest" }
+        branchId: { type: string, format: uuid }
+        previousCommitId: { type: string, format: uuid }
+        bodies: { $ref: "#/components/schemas/SyncPushRequest" }
+    NativeMigrationMergeRequest:
+      type: object
+      additionalProperties: false
+      required: [request, sourceBranchId]
+      properties:
+        request: { $ref: "#/components/schemas/PartialMergeRequest" }
+        sourceBranchId: { type: string, format: uuid }
+    PartialMergeReceipt:
+      type: object
+      additionalProperties: false
+      required: [request, mergeCommitId]
+      properties:
+        request: { $ref: "#/components/schemas/PartialMergeRequest" }
+        mergeCommitId: { type: string, format: uuid }
+    RetainedBodyWaveRequest:
+      type: object
+      additionalProperties: false
+      required: [request, expectedPreviousCommitId, bodies]
+      properties:
+        request: { $ref: "#/components/schemas/PartialMergeRequest" }
+        expectedPreviousCommitId: { type: string, format: uuid }
+        bodies:
+          allOf:
+            - { $ref: "#/components/schemas/SyncPushRequest" }
+            - type: object
+              properties:
+                commits: { type: array, minItems: 1, maxItems: 32, items: { $ref: "#/components/schemas/SyncCommit" } }
+                refUpdates: { type: array, maxItems: 0 }
+                inlineBlobs: { type: array, maxItems: 0 }
+    RetainedBodyWaveResponse:
+      type: object
+      additionalProperties: false
+      required: [push, acceptedTip, expiresAtMs]
+      properties:
+        push: { $ref: "#/components/schemas/SyncPushResponse" }
+        acceptedTip: { type: string, format: uuid }
+        expiresAtMs: { type: integer, minimum: 1 }
+    SyncPushRequest:
+      type: object
+      required: [commits, refUpdates, inlineBlobs]
+      properties:
+        commits: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncCommit" } }
+        refUpdates: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncRefUpdate" } }
+        inlineBlobs:
+          type: array
+          description: Self-contained small blobs referenced by commits. Larger blobs use the manifest and chunk endpoints.
+          items: { $ref: "#/components/schemas/SyncBlobManifest" }
+    SyncPushResponse:
+      type: object
+      required: [cursor]
+      properties:
+        cursor: { type: integer, minimum: 0 }
+    SyncCommitHeader:
+      type: object
+      required: [commitId, parentCommitIds, baseCommitId, isCheckpoint, accountId, createdAt, generation, firstParentJumpCommitId, firstParentJumpSpan]
+      properties:
+        isCheckpoint: { type: boolean, description: Immutable checkpoint membership; required by this protocol. }
+        baseCommitId: { type: [string, "null"] }
+        commitId: { type: string }
+        parentCommitIds: { type: array, items: { type: string } }
+        accountId: { type: string }
+        createdAt: { type: string }
+        generation: { type: integer, minimum: 0 }
+        firstParentJumpCommitId: { type: [string, "null"] }
+        firstParentJumpSpan: { type: [integer, "null"], minimum: 1 }
+        completeIncorporationSourceCommitId:
+          type: [string, "null"]
+          description: Native-certified complete checkpoint source, preserved independently of mutation members. Cannot coexist with incorporationUnknown true.
+        incorporationUnknown:
+          type: boolean
+          default: false
+          description: Legacy complete-incorporation provenance is unavailable.
+    SyncSnapshotRow:
+      type: object
+      required: [branchId, schemaKey, rowPk, snapshot, snapshotPayload, changeId, commitId, createdAt, updatedAt, changeAccountId, changeCreatedAt]
+      properties:
+        branchId: { type: string }
+        schemaKey: { type: string }
+        fileId: { type: [string, "null"] }
+        rowPk: { $ref: "#/components/schemas/SyncRowPk" }
+        snapshot: {}
+        snapshotPayload: { type: [string, "null"], contentEncoding: base64, description: Canonical Schema v1 typed row payload; required for live rows and null for tombstones. }
+        metadata: {}
+        changeId: { type: string }
+        commitId: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+        changeAccountId: { type: string, minLength: 1 }
+        changeCreatedAt: { type: string, minLength: 1 }
+        originKey: { type: [string, "null"] }
+    SyncBranchHead:
+      type: object
+      required: [branchId, headCommitId, checkpointCommitId, checkpointStateRootId, hotStateRootId]
+      properties:
+        branchId: { type: string }
+        headCommitId: { type: [string, "null"] }
+        checkpointCommitId:
+          type: [string, "null"]
+          description: Branch working-diff checkpoint whose baseline is installed with this snapshot. Non-null exactly when headCommitId is non-null.
+        checkpointStateRootId:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: BLAKE3 root of the live tombstone-filtered snapshot rows at checkpointCommitId.
+        hotStateRootId:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: BLAKE3 root of the live tombstone-filtered snapshot rows at this immutable head.
+    SyncSnapshotRowPage:
+      type: object
+      required: [branchId, headCommitId, rows, continuation]
+      properties:
+        branchId: { type: string, minLength: 1 }
+        headCommitId: { type: string, minLength: 1 }
+        rows: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncSnapshotRow" } }
+        continuation: { type: [string, "null"], maxLength: 4096 }
+    SyncEvent:
+      type: object
+      required: [cursor, commits, refUpdates, inlineBlobs]
+      properties:
+        cursor: { type: integer, minimum: 1 }
+        commits: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncCommit" } }
+        refUpdates: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncRefUpdate" } }
+        inlineBlobs:
+          type: array
+          items: { $ref: "#/components/schemas/SyncBlobManifest" }
+    SyncPullResponse:
+      oneOf:
+        - type: object
+          required: [kind, cursor, lixId, defaultBranchId, branches]
+          properties:
+            kind: { type: string, const: snapshot }
+            cursor: { type: integer, minimum: 0 }
+            lixId: { type: string, minLength: 1 }
+            defaultBranchId: { type: string, minLength: 1 }
+            branches: { type: array, items: { $ref: "#/components/schemas/SyncBranchHead" } }
+        - type: object
+          required: [kind, cursor, events]
+          properties:
+            kind: { type: string, const: delta }
+            cursor: { type: integer, minimum: 0 }
+            events: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncEvent" } }
+    NativeMetadataRef:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, commitId]
+          properties:
+            kind: { type: string, enum: [commit_state_header, commit_graph_record] }
+            commitId: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [kind, changeId]
+          properties:
+            kind: { type: string, const: change_locator }
+            changeId: { type: string, format: uuid }
+    NativeMetadataRequest:
+      type: object
+      additionalProperties: false
+      required: [epochId, objects]
+      properties:
+        epochId: { type: string, format: uuid }
+        objects:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/NativeMetadataRef" }
+    NativeMetadataWalkRequest:
+      type: object
+      additionalProperties: false
+      required: [epochId, anchor, maxCommits, includeStateHeaders]
+      properties:
+        epochId: { type: string, format: uuid }
+        anchor: { type: string, format: uuid }
+        maxCommits: { type: integer, minimum: 1, maximum: 16 }
+        includeStateHeaders: { type: boolean }
+    NativeMetadataResponse:
+      type: object
+      required: [lixId, epochId, objects]
+      properties:
+        lixId: { type: string, format: uuid }
+        epochId: { type: string, format: uuid }
+        objects:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            type: object
+            required: [address, bytes]
+            properties:
+              address: { $ref: "#/components/schemas/NativeMetadataRef" }
+              bytes: { type: string, format: byte }
+        dependencies:
+          type: object
+          additionalProperties: false
+          required: [metadata, objects]
+          description: Optional dependencies derived from returned change locators. The entire response is bounded to 32 records and 256 KiB decoded bytes. Dependencies prove no coverage or absence.
+          properties:
+            metadata:
+              type: array
+              maxItems: 32
+              items:
+                type: object
+                required: [address, bytes]
+                properties:
+                  address: { $ref: "#/components/schemas/NativeMetadataRef" }
+                  bytes: { type: string, format: byte }
+            objects:
+              type: array
+              maxItems: 32
+              items:
+                type: object
+                required: [address, bytes]
+                properties:
+                  address: { $ref: "#/components/schemas/NativeObjectRef" }
+                  bytes: { type: string, format: byte }
+    ReadFulfillmentRequest:
+      type: object
+      additionalProperties: false
+      required: [epochId, descriptor, interests, required]
+      properties:
+        epochId: { type: string, format: uuid }
+        descriptor: { $ref: "#/components/schemas/PartialReplicaDescriptor" }
+        interests:
+          type: array
+          minItems: 1
+          maxItems: 4096
+          items: { $ref: "#/components/schemas/LogicalReadInterest" }
+        required:
+          type: array
+          minItems: 1
+          maxItems: 32
+          uniqueItems: true
+          description: Typed immutable inputs required by the first missing native frontier. The authority verifies and returns every item before evaluating recipes.
+          items: { $ref: "#/components/schemas/ReadInputAddress" }
+        continuation:
+          oneOf:
+            - { $ref: "#/components/schemas/ReadContinuation" }
+            - { type: "null" }
+    ReadContinuation:
+      type: object
+      additionalProperties: false
+      required: [nextInput, closureDigest]
+      properties:
+        nextInput: { type: integer, minimum: 1, maximum: 16383 }
+        closureDigest: { type: string, minLength: 64, maxLength: 64 }
+    LogicalReadInterest:
+      type: object
+      additionalProperties: true
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [filesystem_metadata, file_content, collection_generation, packed_identity_membership, filesystem_paths, scan, exact]
+      description: Tagged native read recipe. Variant fields are the canonical serialized LogicalReadInterest fields; unknown fields are rejected by the implementation.
+    ReadInputAddress:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [kind, address]
+          properties:
+            kind: { type: string, const: metadata }
+            address: { $ref: "#/components/schemas/NativeMetadataRef" }
+        - type: object
+          additionalProperties: false
+          required: [kind, address]
+          properties:
+            kind: { type: string, const: object }
+            address: { $ref: "#/components/schemas/NativeObjectRef" }
+        - type: object
+          additionalProperties: false
+          required: [kind, address]
+          properties:
+            kind: { type: string, const: blob_manifest }
+            address: { $ref: "#/components/schemas/NativeDigest" }
+        - type: object
+          additionalProperties: false
+          required: [kind, address]
+          properties:
+            kind: { type: string, const: blob_chunk }
+            address: { $ref: "#/components/schemas/NativeDigest" }
+    ReadInput:
+      type: object
+      additionalProperties: false
+      required: [address, bytes]
+      properties:
+        address: { $ref: "#/components/schemas/ReadInputAddress" }
+        bytes: { type: string, format: byte, maxLength: 89478488, description: One immutable native input, at most 64 MiB decoded. }
+    DiscoveryProfile:
+      type: object
+      additionalProperties: false
+      required: [storageCalls, storageBytes, payloadBytes]
+      properties:
+        storageCalls: { type: integer, minimum: 0 }
+        storageBytes: { type: integer, minimum: 0 }
+        payloadBytes: { type: integer, minimum: 0 }
+    ReadFulfillmentResponse:
+      type: object
+      additionalProperties: false
+      required: [lixId, epochId, requestDigest, inputs, profile, closureDigest, continuation]
+      properties:
+        lixId: { type: string, format: uuid }
+        epochId: { type: string, format: uuid }
+        requestDigest: { type: string, minLength: 64, maxLength: 64 }
+        inputs:
+          type: array
+          maxItems: 16384
+          description: One page of the immutable closure. The encoded page is bounded by the protocol response limit; decoded page payload is at most 4 MiB unless it contains one 64 MiB input.
+          items: { $ref: "#/components/schemas/ReadInput" }
+        profile: { $ref: "#/components/schemas/DiscoveryProfile" }
+        closureDigest: { type: string, minLength: 64, maxLength: 64 }
+        continuation:
+          oneOf:
+            - { $ref: "#/components/schemas/ReadContinuation" }
+            - { type: "null" }
+    NativeObjectRangeRequest:
+      type: object
+      additionalProperties: false
+      required: [address, offset, maxBytes]
+      properties:
+        address: { $ref: "#/components/schemas/NativeObjectRef" }
+        offset: { type: integer, minimum: 0, maximum: 18446744073709551615 }
+        maxBytes: { type: integer, minimum: 1, maximum: 1048576 }
+    NativeObjectRangeResponse:
+      type: object
+      required: [lixId, address, offset, totalBytes, bytes]
+      properties:
+        lixId: { type: string, format: uuid }
+        address: { $ref: "#/components/schemas/NativeObjectRef" }
+        offset: { type: integer, minimum: 0 }
+        totalBytes: { type: integer, minimum: 0 }
+        bytes: { type: string, format: byte }
+    NativeObjectRef:
+      oneOf:
+        - type: object
+          required: [kind, key]
+          properties:
+            kind: { type: string, enum: [tracked_state_tree_chunk, scoped_range_node, mutation_directory_node] }
+            key: { $ref: "#/components/schemas/NativeDigest" }
+        - type: object
+          required: [kind, key]
+          properties:
+            kind: { type: string, const: mutation_catalog }
+            key:
+              type: object
+              required: [commit_id, expected_digest]
+              properties:
+                commit_id: { $ref: "#/components/schemas/NativeCommitId" }
+                expected_digest: { $ref: "#/components/schemas/NativeDigest" }
+        - type: object
+          required: [kind, key]
+          properties:
+            kind: { type: string, const: commit_delta_part }
+            key:
+              type: object
+              required: [commit_id, part_index, expected_digest, replacement]
+              properties:
+                commit_id: { $ref: "#/components/schemas/NativeCommitId" }
+                part_index: { type: integer, minimum: 0, maximum: 4294967295 }
+                expected_digest: { $ref: "#/components/schemas/NativeDigest" }
+                replacement: { type: boolean }
+    NativeDigest:
+      type: array
+      minItems: 32
+      maxItems: 32
+      items: { type: integer, minimum: 0, maximum: 255 }
+    NativeCommitId:
+      type: array
+      minItems: 16
+      maxItems: 16
+      items: { type: integer, minimum: 0, maximum: 255 }
+    NativeObjectResponse:
+      type: object
+      required: [lixId, objects]
+      properties:
+        lixId: { type: string, format: uuid }
+        objects:
+          type: array
+          minItems: 1
+          maxItems: 32
+          items:
+            type: object
+            required: [address, bytes]
+            properties:
+              address: { $ref: "#/components/schemas/NativeObjectRef" }
+              bytes: { type: string, format: byte, description: Base64-encoded native immutable bytes. }
+    NativeBaselineLease:
+      type: object
+      additionalProperties: false
+      required: [version, leaseId, accountId, roots, expiresAtMs]
+      properties:
+        version: { type: integer, const: 1 }
+        leaseId: { type: string, format: uuid }
+        accountId: { type: string, format: uuid }
+        roots:
+          type: array
+          minItems: 1
+          maxItems: 4
+          uniqueItems: true
+          items: { type: string, format: uuid }
+        expiresAtMs: { type: integer, minimum: 1 }
+    LeasedPartialReplicaDescriptor:
+      type: object
+      additionalProperties: false
+      required: [descriptor, lease]
+      properties:
+        descriptor: { $ref: "#/components/schemas/PartialReplicaDescriptor" }
+        lease: { $ref: "#/components/schemas/NativeBaselineLease" }
+    PartialReplicaDescriptor:
+      type: object
+      required: [descriptorVersion, lixId, defaultBranchId, cursor, selectedBranch, globalBranch]
+      properties:
+        descriptorVersion: { type: integer, const: 1 }
+        lixId: { type: string, minLength: 1 }
+        defaultBranchId: { type: string, format: uuid }
+        cursor: { type: integer, minimum: 0 }
+        selectedBranch: { $ref: "#/components/schemas/PartialReplicaBranch" }
+        globalBranch: { $ref: "#/components/schemas/PartialReplicaBranch" }
+    PartialReplicaBranch:
+      type: object
+      required: [branchId, createdAt, updatedAt, refChangeId, head, checkpoint]
+      properties:
+        branchId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time, description: Canonical public branch-ref creation timestamp. }
+        updatedAt: { type: string, format: date-time, description: Canonical public branch-ref last-publication timestamp. }
+        refChangeId: { type: string, format: uuid, description: Canonical public branch-ref change identity. }
+        head: { $ref: "#/components/schemas/PartialReplicaCommitRoots" }
+        checkpoint: { $ref: "#/components/schemas/PartialReplicaCommitRoots" }
+    PartialReplicaCommitRoots:
+      type: object
+      description: Native immutable roots. Null roots mean unavailable metadata, never proof of an empty scope. Root bytes use their native order.
+      required: [commitId, scopedRangeRootId, scopedRangeRootDigest, rowPkIndexRootId]
+      properties:
+        commitId: { type: string, format: uuid }
+        scopedRangeRootId: { $ref: "#/components/schemas/NullableNativeRootId" }
+        scopedRangeRootDigest: { $ref: "#/components/schemas/NullableNativeRootId" }
+        rowPkIndexRootId: { $ref: "#/components/schemas/NullableNativeRootId" }
+    NullableNativeRootId:
+      type: [array, "null"]
+      minItems: 32
+      maxItems: 32
+      items: { type: integer, minimum: 0, maximum: 255 }
+    SyncCheckpointInventoryPage:
+      type: object
+      required: [cursor, commitHeaders, continuation]
+      properties:
+        cursor: { type: integer, minimum: 0 }
+        commitHeaders: { type: array, maxItems: 512, items: { $ref: "#/components/schemas/SyncCommitHeader" } }
+        continuation: { type: [string, "null"], format: uuid }
+    SyncHistoryResponse:
+      type: object
+      required: [commits, commitHeaders, boundaries]
+      properties:
+        commits: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/SyncCommit" } }
+        commitHeaders: { type: array, items: { $ref: "#/components/schemas/SyncCommitHeader" } }
+        boundaries: { type: array, maxItems: 100, items: { $ref: "#/components/schemas/SyncHistoryBoundary" } }
+    SyncHistoryBoundary:
+      type: object
+      required: [commitId, liveStateRootId]
+      properties:
+        commitId: { type: string, minLength: 1 }
+        liveStateRootId: { type: string, pattern: "^[0-9a-f]{64}$" }
+    SyncBlobChunk:
+      type: object
+      required: [chunkId, sizeBytes]
+      properties:
+        chunkId: { type: string, pattern: "^[0-9a-f]{64}$" }
+        sizeBytes: { type: integer, minimum: 1, maximum: 4194304 }
+    SyncBlobManifest:
+      type: object
+      required: [blobId, sizeBytes, chunks]
+      properties:
+        blobId: { type: string, pattern: "^[0-9a-f]{64}$" }
+        sizeBytes: { type: integer, minimum: 0 }
+        chunks:
+          type: array
+          maxItems: 16384
+          items: { $ref: "#/components/schemas/SyncBlobChunk" }
+        inlineBytesBase64:
+          type: string
+          maxLength: 87384
+    SyncBlobRegistration:
+      type: object
+      required: [missingChunkIds, complete]
+      properties:
+        missingChunkIds:
+          type: array
+          maxItems: 16384
+          items: { type: string, pattern: "^[0-9a-f]{64}$" }
+        complete: { type: boolean }
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            hint: { type: string }
+            details: {}

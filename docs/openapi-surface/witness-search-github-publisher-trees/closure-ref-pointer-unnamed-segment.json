@@ -1,0 +1,11 @@
+{
+  "confirmed_witness": {
+    "candidate": "auto-agent-protocol/auto-agent-protocol:releases/v1.0/artifacts/openapi-rest.yaml",
+    "revision": "5d31c27b11c36a018754f34830954d836a55afe5",
+    "screen_record": "witness-search-sourcegraph/records.tsv:25897",
+    "sha256": "52963c1be05dd4ba470319127c7c5728c7b455a6a8d91544c0c6404fd9a9ec46"
+  },
+  "key": "ref-pointer-unnamed-segment",
+  "outcome": "witness-found pending register-witnesses",
+  "unacquired_disposition": "not owed while this key is closed on a licensed Fern-accepted witness; reopen if registration or byte matching fails"
+}
