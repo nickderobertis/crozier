@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: server-description-multiword
+  version: 1.0.0
+servers:
+- url: https://probe.invalid
+  description: A multi word server description
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeResult'
+components:
+  schemas:
+    ProbeResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+      required:
+      - ok

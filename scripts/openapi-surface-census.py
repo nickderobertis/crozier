@@ -877,6 +877,9 @@ PREDICATES = {
         "before an optional `#` fragment; the referring Path Item counts even "
         "when the target lies outside the registered source tree"
     ),
+    "info.title:non-ascii": (
+        "one per Info Object whose title contains a non-ASCII character"
+    ),
     "schema.enum:empty-member": "one per Schema Object with an empty string enum member, which enum_words renders as empty",
     "schema.enum:empty-identifier-member": "one per Schema Object with a non-empty string enum member that normalizes to no identifier characters, which finalize_enum_ident changes to _",
     "schema.enum:wildcard-member": "one per Schema Object with a string enum member containing *, which enum_words spells all",
@@ -3118,6 +3121,9 @@ class Census:
         if kind_name == "paths":
             found += self.normalized_collisions(node)
             found += self.path_key_templates(node)
+        if kind_name == "info" and isinstance(node.get("title"), str):
+            if any(ord(char) > 127 for char in node["title"]):
+                found.append("info.title:non-ascii")
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))

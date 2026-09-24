@@ -179,12 +179,14 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-47, declared in `scripts/openapi-surface-census.py` and restated here, with a
+48, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
   a relative file; its declaration counts even when the target is outside the
   registered tree.
+- `info.title:non-ascii` — one per Info Object whose title contains a
+  non-ASCII character; this distinguishes the title probe from its control.
 - `operation.tags:multiple` — one per Operation Object whose `tags` array
   holds more than one member.
 - `operation.operationId:duplicate` — one per Operation Object whose
@@ -395,7 +397,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is exactly
   `example_is_schema_definition` of `src/ir.rs`.
 
-**Thirty-nine of the 47 are node-local**, which is what makes them one family:
+**Forty of the 48 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1305,11 +1307,11 @@ not. Every conjunction row says the same thing in its own evidence cell, because
 a conjunction row is about a *branch*: a golden pinning one pins the bytes for
 the shapes its document sends down the arm, not the arm's behaviour.
 
-**A `limitations` row carries no byte comparison at all.** 68 features are there,
-and what settles them is a Fern verdict measured on a locally authored probe. That
-is a real measurement of Fern and it is not parity evidence: nothing in it
-compares crozier's bytes against Fern's over a registered document, and no
-`just check` byte-diff touches the shape. The cost is not rhetorical, and the
+**A `limitations` row has no registered corpus byte comparison.** 70 features
+are there. A committed Contract A proof compares crozier's bytes against Fern's
+on a locally authored probe; rows still marked `proof outstanding` await that
+comparison. Neither form compares against a registered real-world document.
+The cost is not rhetorical, and the
 refreshed join below is where it shows up as a number — settling those rows put
 generator code into `src/` that no committed golden reaches: the object-typed
 path parameter block in `src/emit.rs` (125 regions of its union) and
@@ -3543,8 +3545,8 @@ after **`Committed Fern measurement:`**, or the proof it still owes after
 
 | class | rows | settlement instrument |
 |---|---:|---|
-| non-generation, using a Contract A artifact (`absent-tree` or `refusal`) | 62 | its tree or refusal record, declared in the manifest when committed |
-| non-generation, using a `differential` pair | 6 | a probe and control isolating the feature, and their two identical trees when committed |
+| non-generation, using a Contract A artifact (`absent-tree` or `refusal`) | 61 | its tree or refusal record, declared in the manifest when committed |
+| non-generation, using a `differential` pair | 7 | a probe and control isolating the feature, and their two identical trees when committed |
 | demoted to `gap` for a generation verdict (`implements`) | 1 | a registered real-world specification |
 | demoted to `gap` as `unmeasured` | 1 | a real specification, or first a measurement of what Fern does |
 | **total** | **70** | |
