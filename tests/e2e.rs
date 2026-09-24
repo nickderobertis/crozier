@@ -10840,15 +10840,36 @@ fn a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message() {
 }
 
 #[test]
-fn relative_path_item_refs_report_missing_files_pointers_and_wrong_shapes() {
+fn a_missing_relative_path_item_is_discarded_without_losing_other_endpoints() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    let sdk = dir.path().join("sdk");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Ref API, version: '1'}\npaths:\n  /ping:\n    $ref: './parts.yaml#/item'\n  /live:\n    get:\n      operationId: getLive\n      responses:\n        '204': {description: No content}\n",
+    )
+    .unwrap();
+    crozier()
+        .args(["generate", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .assert()
+        .success();
+    let reference = std::fs::read_to_string(sdk.join("reference.md")).expect("reference guide");
+    assert!(reference.contains("get_live"), "{reference}");
+    assert!(!reference.contains("get_ping"), "{reference}");
+}
+
+#[test]
+fn relative_path_item_refs_report_missing_pointers_and_wrong_shapes() {
     for (document, reference, message) in [
-        (None, "./parts.yaml#/item", "could not read"),
         (
-            Some("other: {}\n"),
+            "other: {}\n",
             "./parts.yaml#/item",
             "no Path Item at that pointer",
         ),
-        (Some("item: []\n"), "./parts.yaml#/item", "not a Path Item"),
+        ("item: []\n", "./parts.yaml#/item", "not a Path Item"),
     ] {
         let dir = tempfile::tempdir().expect("tempdir");
         let spec = dir.path().join("openapi.yml");
@@ -10859,9 +10880,7 @@ fn relative_path_item_refs_report_missing_files_pointers_and_wrong_shapes() {
             ),
         )
         .unwrap();
-        if let Some(document) = document {
-            std::fs::write(dir.path().join("parts.yaml"), document).unwrap();
-        }
+        std::fs::write(dir.path().join("parts.yaml"), document).unwrap();
         crozier()
             .args(["generate", "--spec"])
             .arg(&spec)
