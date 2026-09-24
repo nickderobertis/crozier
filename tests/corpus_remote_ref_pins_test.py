@@ -413,6 +413,48 @@ class PinMechanismTests(unittest.TestCase):
         self.assertEqual(self.published("pinned-row").read_bytes(), self.expected_pinned_bytes())
         self.assertEqual(self.server.requests, [], "a matching cache must cost no request")
 
+    def register_tree(self, *, sibling_digest: str | None = None, include_sibling: bool = True) -> None:
+        """Add an immutable, real two-file source to the boundary repository."""
+        base = f"{RAW}/example/api/{PINNED_SHA}/spec"
+        root = b"openapi: 3.0.3\ninfo: {title: Tree, version: '1'}\npaths: {}\ncomponents:\n  schemas:\n    Item:\n      $ref: './schemas/item.yaml#/components/schemas/Item'\n"
+        sibling = b"components:\n  schemas:\n    Item:\n      type: object\n      properties:\n        id: {type: string}\n"
+        self.server.documents[f"/example/api/{PINNED_SHA}/spec/openapi.yaml"] = root
+        self.server.documents[f"/example/api/{PINNED_SHA}/spec/schemas/item.yaml"] = sibling
+        corpus = self.root / "tests" / "fixtures" / "CORPUS.md"
+        corpus.write_text(corpus.read_text() + f"| 99 | `tree-row` | github-raw | {base}/openapi.yaml | `{PINNED_SHA}` | MIT | link-ok | relative ref |\n")
+        records = [
+            ("tree", "tree-row", "spec/openapi.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/openapi.yaml", hashlib.sha256(root).hexdigest()),
+        ]
+        if include_sibling:
+            records.append(("tree", "tree-row", "spec/schemas/item.yaml", f"{RAW}/example/api/{PINNED_SHA}/spec/schemas/item.yaml", sibling_digest or hashlib.sha256(sibling).hexdigest()))
+        with self.manifest.open("a") as stream:
+            for record in records:
+                stream.write("\t".join(record) + "\n")
+
+    def test_a_tree_fetches_every_pinned_file_and_refreshes_a_drifted_cache(self) -> None:
+        self.register_tree()
+        fetched = self.fetch("tree-row")
+        self.assertEqual(fetched.returncode, 0, fetched.stderr)
+        root = self.destination("tree-row") / "spec/openapi.yaml"
+        sibling = self.destination("tree-row") / "spec/schemas/item.yaml"
+        self.assertEqual(fetched.stdout.strip(), str(root))
+        self.assertIn(b"Item:", sibling.read_bytes())
+        self.server.requests.clear()
+        self.assertEqual(self.fetch("tree-row", "--if-missing").returncode, 0)
+        self.assertEqual(self.server.requests, [])
+        sibling.write_text("drift")
+        self.assertEqual(self.fetch("tree-row", "--if-missing").returncode, 0)
+        self.assertIn("/example/api/" + PINNED_SHA + "/spec/schemas/item.yaml", self.server.requests)
+        self.assertIn(b"Item:", sibling.read_bytes())
+
+    def test_a_tree_ref_outside_the_pinned_set_is_refused(self) -> None:
+        self.register_tree(include_sibling=False)
+        self.assert_actionable(self.fetch("tree-row"), "leaves the pinned tree", "schemas/item.yaml")
+
+    def test_a_tree_member_digest_mismatch_is_refused(self) -> None:
+        self.register_tree(sibling_digest="0" * 64)
+        self.assert_actionable(self.fetch("tree-row"), "serves sha256", "0" * 64)
+
     # -- the test-only fetch-origin override --------------------------------
 
     def test_the_fetch_origin_override_refuses_a_non_loopback_value(self) -> None:

@@ -53,7 +53,9 @@ import argparse
 import hashlib
 import importlib.util
 import os
+import posixpath
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -67,6 +69,7 @@ CORPUS_RELATIVE = ("tests", "fixtures", "CORPUS.md")
 CENSUS_RELATIVE = ("scripts", "openapi-surface-census.py")
 
 COLUMNS = ("corpus_name", "mutable_url", "pinned_url", "sha256")
+TREE_COLUMNS = ("kind", "corpus_name", "path", "pinned_url", "sha256")
 
 #: The one host this repository treats as immutably addressable. A second host
 #: must arrive as a deliberate extension of this decision, not as a silent pass.
@@ -112,6 +115,16 @@ class PinRecord:
         recognizable.
         """
         return reference_identity(self.pinned_url)
+
+
+@dataclass(frozen=True)
+class TreeRecord:
+    """One file of a corpus tree at the root row's immutable revision."""
+
+    corpus_name: str
+    path: str
+    pinned_url: str
+    sha256: str
 
 
 def default_root() -> Path:
@@ -206,6 +219,8 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         cells = line.split("\t")
+        if cells[0] == "tree" and len(cells) == len(TREE_COLUMNS):
+            continue
         site = f"{path} line {number}"
         if len(cells) != len(COLUMNS):
             raise PinError(
@@ -250,6 +265,47 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
     _reject_prefixes(path, records)
     _reject_disorder(path, records)
     return records
+
+
+def load_tree_records(root: Path | None = None) -> list[TreeRecord]:
+    """Read tree pins from the same manifest as absolute-reference pins."""
+    root = default_root() if root is None else root
+    manifest = manifest_path(root)
+    records: list[TreeRecord] = []
+    seen: set[tuple[str, str]] = set()
+    for number, line in enumerate(manifest.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        cells = line.split("\t")
+        if cells[0] != "tree":
+            continue
+        site = f"{manifest} line {number}"
+        if len(cells) != len(TREE_COLUMNS):
+            raise PinError(f"{site}: tree record needs five tab-separated cells")
+        _, name, path, url, digest = cells
+        parts = Path(path)
+        if (
+            not name or not path or parts.is_absolute() or "\\" in path
+            or any(part in {"", ".", ".."} for part in path.split("/"))
+            or parts.suffix not in {".json", ".yaml", ".yml"}
+        ):
+            raise PinError(f"{site}: invalid tree name or relative document path {path!r}")
+        failure = immutability_failure(url)
+        if failure or not url.endswith("/" + path):
+            raise PinError(f"{site}: tree URL must name {path} at a 40-character commit: {failure or url}")
+        if not DIGEST_RE.fullmatch(digest):
+            raise PinError(f"{site}: invalid SHA-256 for {path}")
+        if (name, path) in seen:
+            raise PinError(f"{site}: duplicate tree member {name} {path}")
+        seen.add((name, path))
+        records.append(TreeRecord(name, path, url, digest))
+    if records != sorted(records, key=lambda r: (r.corpus_name, r.path)):
+        raise PinError(f"{manifest}: tree records must sort by corpus name and path")
+    return records
+
+
+def tree_records_for(corpus_name: str, root: Path | None = None) -> list[TreeRecord]:
+    return [r for r in load_tree_records(root) if r.corpus_name == corpus_name]
 
 
 def _sort_key(record: PinRecord) -> tuple[str, str]:
@@ -319,6 +375,17 @@ def corpus_names(root: Path) -> set[str]:
     if not names:
         raise PinError(f"no numbered corpus rows found in {path}")
     return names
+
+
+def corpus_sources(root: Path) -> dict[str, tuple[str, str]]:
+    """The URL and immutable ref of each canonical numbered corpus row."""
+    sources: dict[str, tuple[str, str]] = {}
+    path = root.joinpath(*CORPUS_RELATIVE)
+    for line in path.read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip().strip("`") for cell in line.strip().strip("|").split("|")]
+        if len(cells) == 8 and cells[0].isdigit():
+            sources[cells[1]] = (cells[3], cells[4])
+    return sources
 
 
 # ---------------------------------------------------------------------------
@@ -525,6 +592,25 @@ def check(root: Path) -> None:
                 f"{manifest}: corpus_name {record.corpus_name!r} is not a canonical "
                 f"CORPUS.md numbered row; correct the name or delete the record"
             )
+    sources = corpus_sources(root)
+    by_name: dict[str, list[TreeRecord]] = {}
+    for record in load_tree_records(root):
+        if record.corpus_name not in sources:
+            raise PinError(f"{manifest}: tree member names unknown corpus {record.corpus_name}")
+        by_name.setdefault(record.corpus_name, []).append(record)
+    for name, members in by_name.items():
+        source_url, revision = sources[name]
+        failure = immutability_failure(source_url)
+        if failure:
+            raise PinError(f"{manifest}: {name} root URL {failure}")
+        root_matches = [record for record in members if record.pinned_url == source_url]
+        if len(root_matches) != 1:
+            raise PinError(f"{manifest}: {name} must pin its CORPUS.md root URL exactly once")
+        prefix = source_url[: -len(root_matches[0].path)]
+        if any(record.pinned_url != prefix + record.path for record in members):
+            raise PinError(f"{manifest}: {name} tree members must share the root URL's repository and revision")
+        if _path_segments(source_url)[2] != revision:
+            raise PinError(f"{manifest}: {name} tree root must use CORPUS.md pinned ref {revision}")
 
 
 def apply(root: Path, corpus_name: str, path: Path, document_name: str | None = None) -> None:
@@ -578,6 +664,69 @@ def verify(root: Path, corpus_name: str, path: Path) -> None:
         raise PinError(failure)
 
 
+def tree_root(root: Path, corpus_name: str) -> TreeRecord | None:
+    records = tree_records_for(corpus_name, root)
+    if not records:
+        return None
+    source_url, _ = corpus_sources(root)[corpus_name]
+    return next(record for record in records if record.pinned_url == source_url)
+
+
+def verify_tree(root: Path, corpus_name: str, directory: Path) -> Path:
+    """Check the complete cached file set, each digest, and relative references."""
+    records = tree_records_for(corpus_name, root)
+    root_record = tree_root(root, corpus_name)
+    if root_record is None:
+        raise PinError(f"{corpus_name} has no tree pins")
+    expected = {record.path for record in records}
+    found = {
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*") if path.is_file()
+    }
+    if found != expected:
+        raise PinError(f"{corpus_name} tree file set drifted: missing {sorted(expected - found)}, extra {sorted(found - expected)}")
+    for record in records:
+        path = directory / record.path
+        measured = hashlib.sha256(path.read_bytes()).hexdigest()
+        if measured != record.sha256:
+            raise PinError(f"{corpus_name} {record.path} serves sha256 {measured}, pinned {record.sha256}")
+        for reference in document_references(root, path):
+            address = strip_fragment(reference)
+            if not address:
+                continue
+            if is_absolute_reference(address):
+                failure = immutability_failure(address)
+                if failure:
+                    raise PinError(f"{corpus_name} {record.path}: absolute `$ref` {failure}")
+                continue
+            member = posixpath.normpath(posixpath.join(posixpath.dirname(record.path), address))
+            if member not in expected:
+                raise PinError(f"{corpus_name} {record.path}: `$ref` {reference!r} leaves the pinned tree; pin {member} or correct the reference")
+    return directory / root_record.path
+
+
+def fetch_tree(root: Path, corpus_name: str, directory: Path) -> Path:
+    """Fetch and publish a complete tree only after every digest passes."""
+    records = tree_records_for(corpus_name, root)
+    if not records:
+        raise PinError(f"{corpus_name} has no tree pins")
+    directory.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=".corpus-tree.", dir=directory.parent))
+    try:
+        for record in records:
+            destination = stage / record.path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(fetch_bytes(record.pinned_url, origin_override()))
+        root_path = verify_tree(root, corpus_name, stage)
+        if directory.exists():
+            shutil.rmtree(directory)
+        os.replace(stage, directory)
+        return directory / root_path.relative_to(stage)
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -588,6 +737,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("check", help="validate the pin manifest offline")
+    tree_info = commands.add_parser("tree-root", help="print a row's pinned tree root, if any")
+    tree_info.add_argument("corpus_name")
+    for name in ("fetch-tree", "verify-tree"):
+        command = commands.add_parser(name)
+        command.add_argument("corpus_name")
+        command.add_argument("directory", type=Path)
     for name, help_text in (
         ("apply", "substitute a row's pins into a fetched document"),
         ("verify", "assert a document already carries a row's pins"),
@@ -607,6 +762,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "check":
             check(root)
+        elif args.command == "tree-root":
+            record = tree_root(root, args.corpus_name)
+            if record is not None:
+                print(record.path)
+        elif args.command == "fetch-tree":
+            print(fetch_tree(root, args.corpus_name, args.directory))
+        elif args.command == "verify-tree":
+            print(verify_tree(root, args.corpus_name, args.directory))
         elif args.command == "apply":
             apply(root, args.corpus_name, args.file, args.document_name)
         else:
