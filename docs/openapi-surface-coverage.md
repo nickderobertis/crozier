@@ -169,7 +169,9 @@ declaration, never fields from the unregistered target.
 names a relative file, whether or not that file is registered. The ordinary
 `pathItem.$ref` selector still counts every reference spelling; this predicate
 distinguishes the file path that `src/refs.rs` resolves from a local pointer or
-absolute URL.
+absolute URL. The resolver also accepts absolute local filesystem paths; those
+remain ordinary `pathItem.$ref` declarations because this predicate describes
+relative files only.
 
 A shape the two kinds above cannot express emits a **predicate selector**,
 `<selector>:<predicate>` — the notation

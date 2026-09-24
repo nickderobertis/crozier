@@ -5076,6 +5076,14 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.assertEqual(1, measured["pathItem.$ref:relative-file", "tree-proof"])
         self.assertEqual(1, measured["operation.operationId", "tree-proof"])
 
+        root = self.tree / "openapi.yml"
+        root.write_text(root.read_text().replace(
+            "nested/pathitem.yml", "/absolute/pathitem.yml"
+        ))
+        measured = self.measure()
+        self.assertEqual(0, measured.get(("pathItem.$ref:relative-file", "tree-proof"), 0))
+        self.assertEqual(1, measured["pathItem.$ref", "tree-proof"])
+
     def test_a_sibling_reference_back_into_the_root_does_not_recount_it(self) -> None:
         root = self.tree / "openapi.yml"
         root.write_text(root.read_text() +

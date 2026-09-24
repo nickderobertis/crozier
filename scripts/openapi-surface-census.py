@@ -3153,6 +3153,9 @@ class Census:
             found.append(selector)
             if selector == "pathItem.$ref" and isinstance(value, str):
                 address = value.partition("#")[0]
+                # The resolver also accepts absolute local paths. This selector
+                # names the narrower relative-file shape, so a leading slash
+                # must not count here.
                 if address and not address.startswith(("/", "http://", "https://")) and ":" not in address:
                     found.append("pathItem.$ref:relative-file")
             if kind_name == "operation" and name == "tags":
