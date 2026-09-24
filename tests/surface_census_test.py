@@ -20,6 +20,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import importlib.util
 import itertools
@@ -33,6 +34,7 @@ import tempfile
 import textwrap
 import unittest
 import unicodedata
+from collections import Counter
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -620,6 +622,27 @@ DECLARED_SOURCES = (
 )
 EXHAUSTED = "exhausted"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+COMPACT_RECORD_FIELDS = (
+    "source",
+    "key",
+    "candidate",
+    "revision",
+    "digest",
+    "census",
+    "licence_screen",
+    "revision_screen",
+    "fern_screen",
+    "disposition",
+    "evidence",
+)
+COMPACT_DISPOSITIONS = ("witness-found", "rejected", "outstanding", "not-owed")
+COMPACT_SEGMENT = re.compile(
+    r"(?P<source>[\w.-]+): (?P<total>\d+) candidates "
+    r"\((?P<found>\d+) witness-found, (?P<rejected>\d+) rejected, "
+    r"(?P<outstanding>\d+) outstanding, (?P<not_owed>\d+) not-owed\) "
+    r"\[records\]\(witness-search-(?P<directory>[\w.-]+)/records\.tsv\)"
+    r"(?: witness `(?P<witness>[^`]+)` at `(?P<revision>[^`]+)`)?"
+)
 CAPABILITY_SECTION = "#### What makes a search exhaustive"
 SCREENS = ("licence", "ref", "fern")
 EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
@@ -656,6 +679,158 @@ def exhaustive_search_lines(text: str) -> dict[str, list[list[str]]]:
         if cells and cells[0].startswith("`"):
             found.setdefault(cells[0].strip("`"), []).append(cells)
     return found
+
+
+def compact_search_lines(text: str) -> dict[str, list[str]]:
+    """Keyed four-column rows under the amended compact record grammar."""
+    if EXHAUSTIVE_SEARCH_HEADING not in text:
+        return {}
+    body = text.split(EXHAUSTIVE_SEARCH_HEADING, 1)[1].split("\n#", 1)[0]
+    found = {}
+    for line in body.splitlines():
+        cells = table_cells(line, 4)
+        if cells and cells[0].startswith("`"):
+            found[cells[0].strip("`")] = cells
+    return found
+
+
+def compact_record_failures(
+    key: str,
+    line: list[str],
+    evidence_root: Path,
+    capabilities: dict[str, tuple[bool, bool, str]],
+) -> list[str]:
+    """Reconcile the compact region counts with both candidate ledgers."""
+    failures = []
+    pieces = [piece.strip() for piece in line[2].split("; ")]
+    parsed = [COMPACT_SEGMENT.fullmatch(piece) for piece in pieces]
+    if any(match is None for match in parsed):
+        return [f"{key}: malformed compact search segment"]
+    segments = [match.groupdict() for match in parsed if match]
+    sources = [segment["source"] for segment in segments]
+    declared = [source for source in DECLARED_SOURCES if source in capabilities]
+    if sources != declared:
+        failures.append(
+            f"{key}: compact search sources {sources} differ from declared {declared}"
+        )
+    central_path = evidence_root / "witness-search-github/candidates.tsv"
+    if not central_path.is_file():
+        failures.append(f"{key}: missing consolidated candidates.tsv")
+        central = []
+    else:
+        with central_path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            if tuple(reader.fieldnames or ()) != (
+                *COMPACT_RECORD_FIELDS[:-1],
+                "record",
+            ):
+                failures.append(f"{key}: candidates.tsv has the wrong header")
+            central = [row for row in reader if row.get("key") == key]
+    central_by_identity = {
+        (row.get("source"), row.get("candidate")): row for row in central
+    }
+    if len(central_by_identity) != len(central):
+        failures.append(f"{key}: candidates.tsv duplicates a source candidate")
+    encountered = set()
+    for segment in segments:
+        source = segment["source"]
+        if source != segment["directory"]:
+            failures.append(f"{key}: `{source}` links another source's records.tsv")
+            continue
+        path = evidence_root / f"witness-search-{source}/records.tsv"
+        if not path.is_file():
+            failures.append(f"{key}: `{source}` records.tsv is missing")
+            continue
+        with path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            if tuple(reader.fieldnames or ()) != COMPACT_RECORD_FIELDS:
+                failures.append(f"{key}: `{source}` records.tsv has the wrong header")
+            rows = [
+                (number, row)
+                for number, row in enumerate(reader, 2)
+                if row.get("key") == key
+            ]
+        counts = Counter(row["disposition"] for _, row in rows)
+        expected = {
+            "witness-found": int(segment["found"]),
+            "rejected": int(segment["rejected"]),
+            "outstanding": int(segment["outstanding"]),
+            "not-owed": int(segment["not_owed"]),
+        }
+        if len(rows) != int(segment["total"]) or any(
+            counts[name] != value for name, value in expected.items()
+        ):
+            failures.append(
+                f"{key}: `{source}` compact candidate count differs from records.tsv"
+            )
+        if counts.keys() - set(COMPACT_DISPOSITIONS):
+            failures.append(f"{key}: `{source}` records.tsv has unknown disposition")
+        for number, row in rows:
+            candidate = row.get("candidate", "")
+            if row.get("source") != source:
+                failures.append(
+                    f"{key}: `{source}` records.tsv mislabels candidate `{candidate}`"
+                )
+            identity = (source, candidate)
+            if identity in encountered:
+                failures.append(
+                    f"{key}: duplicate candidate `{candidate}` for `{source}`"
+                )
+            encountered.add(identity)
+            if not candidate or any(
+                not row.get(field) for field in COMPACT_RECORD_FIELDS
+            ):
+                failures.append(
+                    f"{key}: `{source}` candidate `{candidate}` has an empty field"
+                )
+            for field in ("licence_screen", "revision_screen", "fern_screen"):
+                if not re.fullmatch(r"pass|failed: .+|not-run: .+", row.get(field, "")):
+                    failures.append(
+                        f"{key}: `{source}` candidate `{candidate}` has invalid {field}"
+                    )
+            if row.get("disposition") == "witness-found" and any(
+                row.get(field) != "pass"
+                for field in ("licence_screen", "revision_screen", "fern_screen")
+            ):
+                failures.append(
+                    f"{key}: `{source}` candidate `{candidate}` is not a screened witness"
+                )
+            indexed = central_by_identity.get(identity)
+            if (
+                indexed is None
+                or any(
+                    indexed.get(field) != row.get(field)
+                    for field in COMPACT_RECORD_FIELDS
+                    if field != "evidence"
+                )
+                or (
+                    indexed
+                    and indexed.get("record")
+                    != f"witness-search-{source}/records.tsv:{number}"
+                )
+            ):
+                failures.append(
+                    f"{key}: `{source}` candidate `{candidate}` differs from candidates.tsv"
+                )
+        if expected["witness-found"]:
+            if (
+                not segment["witness"]
+                or not segment["revision"]
+                or not any(
+                    row["candidate"] == segment["witness"]
+                    and row["revision"] == segment["revision"]
+                    and row["disposition"] == "witness-found"
+                    for _, row in rows
+                )
+            ):
+                failures.append(
+                    f"{key}: `{source}` omits its witness candidate and revision"
+                )
+    if set(central_by_identity) != encountered:
+        failures.append(
+            f"{key}: candidates.tsv and per-source records.tsv disagree on candidates"
+        )
+    return failures
 
 
 def recorded_queries(cell: str) -> list[tuple[str, str]]:
@@ -6735,10 +6910,20 @@ class RankedBacklogTests(unittest.TestCase):
         """Every `(key, source)` line any region file records, against its evidence."""
         capabilities = source_capabilities(self.doc)
         for path in sorted(self.REGIONS.glob("*.md")):
-            for key, lines in sorted(exhaustive_search_lines(path.read_text(encoding="utf-8")).items()):
+            region = path.read_text(encoding="utf-8")
+            for key, lines in sorted(exhaustive_search_lines(region).items()):
                 with self.subTest(region=path.stem, key=key):
                     self.assertEqual(
-                        [], exhaustive_search_failures(key, lines, self.REGIONS, capabilities)
+                        [],
+                        exhaustive_search_failures(
+                            key, lines, self.REGIONS, capabilities
+                        ),
+                    )
+            for key, line in sorted(compact_search_lines(region).items()):
+                with self.subTest(region=path.stem, key=key):
+                    self.assertEqual(
+                        [],
+                        compact_record_failures(key, line, self.REGIONS, capabilities),
                     )
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
@@ -7310,6 +7495,114 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
             self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
         )
 
+
+
+class CompactWitnessRecordTests(unittest.TestCase):
+    """Drive the amended region grammar through real TSV evidence files."""
+
+    KEY = "sample-shape"
+
+    def setUp(self) -> None:
+        directory = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, directory)
+        self.root = Path(directory)
+        self.capabilities = source_capabilities(
+            RankedBacklogTests.DOC.read_text(encoding="utf-8")
+        )
+        self.sources = list(DECLARED_SOURCES)
+        self.count_override = {}
+        self.extra_source = None
+        self.write_records()
+
+    def write_records(self) -> None:
+        central = []
+        for source in DECLARED_SOURCES:
+            directory = self.root / f"witness-search-{source}"
+            directory.mkdir(parents=True, exist_ok=True)
+            row = {
+                "source": source,
+                "key": self.KEY,
+                "candidate": f"publisher/{source}:openapi.yaml",
+                "revision": "a" * 40,
+                "digest": "b" * 64,
+                "census": "census 0",
+                "licence_screen": "not-run: census 0",
+                "revision_screen": "not-run: census 0",
+                "fern_screen": "not-run: census 0",
+                "disposition": "rejected",
+                "evidence": "census.jsonl:1",
+            }
+            with (directory / "records.tsv").open(
+                "w", encoding="utf-8", newline=""
+            ) as stream:
+                writer = csv.DictWriter(
+                    stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t"
+                )
+                writer.writeheader()
+                writer.writerow(row)
+            central.append(
+                {
+                    **{
+                        name: row[name]
+                        for name in COMPACT_RECORD_FIELDS
+                        if name != "evidence"
+                    },
+                    "record": f"witness-search-{source}/records.tsv:2",
+                }
+            )
+        directory = self.root / "witness-search-github"
+        directory.mkdir(exist_ok=True)
+        with (directory / "candidates.tsv").open(
+            "w", encoding="utf-8", newline=""
+        ) as stream:
+            writer = csv.DictWriter(
+                stream,
+                fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"),
+                delimiter="\t",
+            )
+            writer.writeheader()
+            writer.writerows(central)
+
+    def failures(self) -> list[str]:
+        segments = [
+            f"{source}: {self.count_override.get(source, 1)} candidates "
+            f"(0 witness-found, 1 rejected, 0 outstanding, 0 not-owed) "
+            f"[records](witness-search-{source}/records.tsv)"
+            for source in self.sources
+        ]
+        if self.extra_source:
+            segments.append(
+                f"{self.extra_source}: 0 candidates "
+                f"(0 witness-found, 0 rejected, 0 outstanding, 0 not-owed) "
+                f"[records](witness-search-{self.extra_source}/records.tsv)"
+            )
+        region = self.root / "sample.md"
+        region.write_text(
+            f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
+            "| key | outcome | search | note |\n|---|---|---|---|\n"
+            f"| `{self.KEY}` | `search-incomplete` | {'; '.join(segments)} | pending |\n",
+            encoding="utf-8",
+        )
+        read = compact_search_lines(region.read_text(encoding="utf-8"))
+        self.assertEqual([self.KEY], list(read))
+        return compact_record_failures(
+            self.KEY, read[self.KEY], self.root, self.capabilities
+        )
+
+    def test_compact_record_reconciles(self) -> None:
+        self.assertEqual([], self.failures())
+
+    def test_count_drift_is_refused(self) -> None:
+        self.count_override["sourcegraph"] = 2
+        self.assertIn("count differs from records.tsv", "\n".join(self.failures()))
+
+    def test_missing_source_is_refused(self) -> None:
+        self.sources.remove("postman")
+        self.assertIn("differ from declared", "\n".join(self.failures()))
+
+    def test_extra_source_is_refused(self) -> None:
+        self.extra_source = "unlisted-source"
+        self.assertIn("differ from declared", "\n".join(self.failures()))
 
 
 class ExhaustiveSearchRecordTests(unittest.TestCase):
