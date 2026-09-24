@@ -754,6 +754,35 @@ components:
     }
 
     #[test]
+    fn a_relative_ref_inside_a_remote_document_uses_that_documents_url() {
+        let root_url = "https://example.test/api/schemas/root.yml";
+        let leaf_url = "https://example.test/api/common/leaf.yml";
+        let (doc, fetched) = resolved(
+            &format!(
+                "openapi: 3.0.3\ncomponents:\n  schemas:\n    Wrapper:\n      $ref: {root_url}#/Wrapper\n"
+            ),
+            &[
+                (
+                    root_url,
+                    "Wrapper:\n  properties:\n    leaf:\n      $ref: ../common/leaf.yml#/components/schemas/Leaf\n",
+                ),
+                (
+                    leaf_url,
+                    "components:\n  schemas:\n    Leaf:\n      type: integer\n",
+                ),
+            ],
+        );
+        assert_eq!(
+            doc.components.schemas["Wrapper"].properties["leaf"]
+                .ty
+                .as_ref()
+                .and_then(|ty| ty.primary()),
+            Some("integer")
+        );
+        assert_eq!(fetched, vec![root_url.to_string(), leaf_url.to_string()]);
+    }
+
+    #[test]
     fn each_referenced_document_is_fetched_once_however_many_refs_name_it() {
         let (doc, fetched) = resolved(
             &format!(
@@ -1241,6 +1270,31 @@ components:
             message.contains("no Path Item at that pointer"),
             "{message}"
         );
+    }
+
+    #[test]
+    fn a_sibling_path_item_reports_wrong_shapes_and_broken_nested_references() {
+        let directory = tempfile::tempdir().expect("temporary spec tree");
+        let root = directory.path().join("openapi.yml");
+        let sibling = directory.path().join("paths.yml");
+        std::fs::write(
+            &root,
+            "openapi: 3.0.3\ninfo: {title: Real Tree, version: '1'}\npaths:\n  /health:\n    $ref: paths.yml#/Health\n",
+        )
+        .expect("root");
+        for (body, expected) in [
+            ("Health: []\n", "not a Path Item"),
+            (
+                "Health:\n  get:\n    responses:\n      '200':\n        description: OK\n        content:\n          application/json:\n            schema:\n              $ref: missing.yml#/Model\n",
+                "could not read",
+            ),
+        ] {
+            std::fs::write(&sibling, body).expect("sibling");
+            let mut document = parse(&std::fs::read_to_string(&root).expect("root bytes"));
+            let error = resolve(&mut document, &CurlFetcher, &root)
+                .expect_err("a malformed sibling must be diagnosed");
+            assert!(error.to_string().contains(expected), "{error}");
+        }
     }
 
     #[test]
