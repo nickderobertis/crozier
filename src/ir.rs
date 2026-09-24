@@ -4344,7 +4344,7 @@ fn reference_body_example<'a>(
         .find_map(|example| component_example_value(doc, example))
 }
 
-fn is_json_like_media_type(media_type: &str) -> bool {
+pub(crate) fn is_json_like_media_type(media_type: &str) -> bool {
     // A media type's parameters do not change what it is: VTEX declares its
     // `/pricing/config` body under `application/json; charset=utf-8` alone, and
     // Fern types the response from it. Where a document spells both — the
