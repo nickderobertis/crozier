@@ -1391,8 +1391,9 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 }
 
 /// Fern's pinned Python generator refuses headers with inline string array
-/// items and crashes while lowering object headers. Arrays of referenced
-/// objects do generate (Komga's `Accept` header), so preserve those.
+/// items and crashes while lowering inline object headers with properties.
+/// Arrays of referenced objects and bare `schema: object` headers generate in
+/// registered corpus specs (Komga and Short.io), so preserve those.
 fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
     for (route, item) in &doc.paths {
         for (method, operation) in item.operations() {
@@ -1406,7 +1407,10 @@ fn reject_unemittable_parameters(doc: &OpenApi, path: &Path) -> Result<()> {
                     .and_then(|schema| schema.ty.as_ref())
                     .and_then(TypeField::primary);
                 let refused = match kind {
-                    Some("object") => true,
+                    Some("object") => parameter
+                        .schema
+                        .as_ref()
+                        .is_some_and(|schema| schema.properties.declared()),
                     Some("array") => parameter.schema.as_ref().is_some_and(|schema| {
                         schema.items.as_ref().is_some_and(|items| {
                             items.ty.as_ref().and_then(TypeField::primary) == Some("string")
