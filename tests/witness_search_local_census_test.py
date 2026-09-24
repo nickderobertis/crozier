@@ -573,6 +573,50 @@ class LocalCensusTest(unittest.TestCase):
                        (evidence / "acquisitions.jsonl").read_text().splitlines()]
             self.assertNotIn("status", records[-1])
             self.assertTrue(records[-1]["error"])
+            invalid_bucket = subprocess.run(
+                [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
+                 str(root / "invalid"), "--evidence-dir", str(evidence),
+                 "--bucket", "graphql"],
+                cwd=REPO, env=env, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(invalid_bucket.returncode, 2)
+            self.assertIn("invalid choice", invalid_bucket.stderr)
+            self.assertFalse((root / "invalid").exists())
+
+            probe_failure = subprocess.run(
+                [sys.executable, str(GITHUB_ACQUIRE), f"{url}/tree.tar.gz",
+                 str(root / "unprobed"), "--evidence-dir", str(evidence)],
+                cwd=REPO, env={**env, "CROZIER_GITHUB_API_URL": f"{url}/missing"},
+                capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(probe_failure.returncode, 1)
+            self.assertIn("rate-limit guard refused acquisition", probe_failure.stderr)
+            self.assertFalse((root / "unprobed").exists())
+            self.assertEqual(state["downloads"], 1)
+
+    def test_all_documents_tsv_names_unreadable_document(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            documents = root / "documents"
+            documents.mkdir()
+            (documents / "broken.json").write_text('{"openapi":', encoding="utf-8")
+            contract = root / "keys.md"
+            contract.write_text(
+                "| key | selector |\n|---|---|\n"
+                "| `array` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf` |\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={documents}", "--all-documents"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 1)
+            rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["document"], "broken.json")
+            self.assertTrue(rows[0]["count"].startswith("parse-failure: "))
+            self.assertIn("broken.json", completed.stderr)
 
     def test_real_tree_reports_zeroes_and_declarations_per_document(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -630,6 +674,7 @@ class LocalCensusTest(unittest.TestCase):
             self.assertEqual(compact.returncode, 0, compact.stderr)
             objects = [json.loads(line) for line in compact.stdout.splitlines()]
             self.assertEqual(len(objects), 5)
+            self.assertEqual({row["document"]: row["loader"] for row in objects}["notes.yaml"], "")
             self.assertEqual({row["document"]: row["selectors"]["array"] for row in objects},
                              {"hit.json": 1, "hit.yaml": 1, "miss.json": 0,
                               "metadata.json": 0,

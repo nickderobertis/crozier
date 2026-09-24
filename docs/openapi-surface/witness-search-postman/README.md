@@ -3,7 +3,8 @@
 `queries.jsonl` records the requests issued to the `search-all` proxy for the
 three indices named in the search plan. Each request body, response status,
 response hash, returned `meta.total`, and timestamp is retained. The two query
-strings per key are repeated in the region table and indexed in `records.tsv`.
+strings per key are indexed in `query-index.tsv`. `records.tsv` has no candidate
+rows because no OpenAPI bytes could be acquired from the metadata hits.
 The recorded count for an answered query is the sum of `team`, `collection`,
 and `api`/`apiDefinition`/`specification` totals from their respective indices.
 The `apinetwork.team` index rejected later offsets with HTTP 400;

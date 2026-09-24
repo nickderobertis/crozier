@@ -74,7 +74,7 @@ def census_one(
         raw = path.read_bytes()
         digest = hashlib.sha256(raw).hexdigest()
         if path.suffix.lower() in {".yaml", ".yml"} and b"openapi" not in raw:
-            return path, digest, "", "no-openapi-marker", None, [(key, 0) for key, _ in keys]
+            return path, digest, "", "", None, [(key, 0) for key, _ in keys]
         # Some publisher trees label JSON bytes as .yaml. Parsing those with
         # the YAML reader is much slower on large composed descriptions.
         if raw.lstrip().startswith((b"{", b"[")):
@@ -196,6 +196,10 @@ def main() -> int:
                     failures.append(f"{source}/{path.relative_to(root)}: {error}")
                     if args.all_documents_jsonl:
                         print(json.dumps({**identity, "classification": "unreadable", "error": error}, sort_keys=True))
+                    elif args.all_documents:
+                        for key, selector in keys:
+                            writer.writerow((source, key, selector, str(path.relative_to(root)),
+                                             f"parse-failure: {error}", digest, version))
                     continue
                 if args.all_documents_jsonl:
                     print(json.dumps({**identity, "classification": "openapi-3" if version.startswith("3.") else "other-version",

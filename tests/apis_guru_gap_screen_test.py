@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import gzip
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import subprocess
@@ -194,13 +195,12 @@ components:
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         base = f"http://127.0.0.1:{server.server_port}"
-        manifest = self.root / "historical.tsv"
-        manifest.write_text(
+        manifest = self.root / "historical.tsv.gz"
+        manifest.write_bytes(gzip.compress((
             "api_id\tversion\tindexed_json_url\ttree_path\ttree_outcome\n"
             f"a.example\t1\t{base}/ok.json\t\tinaccessible\n"
-            f"b.example\t1\t{base}/refused.json\t\tinaccessible\n",
-            encoding="utf-8",
-        )
+            f"b.example\t1\t{base}/refused.json\t\tinaccessible\n"
+        ).encode()))
         evidence = self.root / "evidence"
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "--index-url", f"{base}/list.json",
@@ -268,7 +268,7 @@ components:
              "--redo-unread", str(manifest)],
             cwd=REPO, capture_output=True, text=True, timeout=30,
         )
-        self.assertEqual(missing_evidence.returncode, 1)
+        self.assertEqual(missing_evidence.returncode, 2)
         self.assertIn("--redo-unread requires --evidence-dir", missing_evidence.stderr)
         evidence = self.root / "evidence"
         completed = subprocess.run(

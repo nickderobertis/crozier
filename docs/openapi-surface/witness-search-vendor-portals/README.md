@@ -8,7 +8,8 @@ SHA-256. `archive-files.tsv` lists the JSON/YAML paths and byte hashes
 from the first 23 archive trees; the two later publisher trees are included in
 `acquisition-manifest.tsv`, which along with
 `enumeration.tsv` are the corresponding per-document identities and selector
-results for the Contract B record. `census.jsonl.gz` contains one parsed
+results for the Contract B record. `records.tsv` indexes confirmed declarers;
+`screen-details.tsv` preserves their full screening notes. `census.jsonl.gz` contains one parsed
 selector result per readable document. The exact source bytes can be recovered
 from the pinned archive URLs and checked against those manifests.
 

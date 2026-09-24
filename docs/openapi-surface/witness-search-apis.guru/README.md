@@ -41,3 +41,7 @@ with the 3,992 served-index versions. The manifest and census both use the
 same pinned tree bytes; the served-index half reuses only the historical
 3,894 YAML associations whose index digest matched, and measures the other 98
 from the responses retained here.
+
+`records.tsv` indexes the confirmed declarers in the common candidate schema.
+`screen-details.tsv` retains the original rights and Fern screening notes, and
+`search-index.tsv` retains the per-key walk summaries from the acquisition.

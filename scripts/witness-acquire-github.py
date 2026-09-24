@@ -35,7 +35,7 @@ def main() -> int:
     parser.add_argument("url")
     parser.add_argument("output", type=Path)
     parser.add_argument("--evidence-dir", type=Path, required=True)
-    parser.add_argument("--bucket", default="core")
+    parser.add_argument("--bucket", choices=("core", "search", "code_search"), default="core")
     args = parser.parse_args()
     guard = GUARD.RateLimitGuard("github", evidence_dir=args.evidence_dir)
     headers = {"User-Agent": "crozier-witness-acquisition/1"}
@@ -79,6 +79,10 @@ def main() -> int:
             record["bytes"] = args.output.stat().st_size
         else:
             temporary.unlink(missing_ok=True)
+    except (GUARD.SecondaryLimit, GUARD.UnsupportedBucket, OSError, RuntimeError,
+            ValueError) as error:
+        record["error"] = f"rate-limit guard refused acquisition: {error}"
+        temporary.unlink(missing_ok=True)
     finally:
         args.evidence_dir.mkdir(parents=True, exist_ok=True)
         with (args.evidence_dir / "acquisitions.jsonl").open("a", encoding="utf-8") as handle:

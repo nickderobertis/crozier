@@ -326,13 +326,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.attempts < 1 or args.workers < 1 or args.timeout <= 0:
         print("apis-guru-gap-screen: attempts, workers, and timeout must be positive", file=sys.stderr)
         return 2
+    if args.redo_unread and args.evidence_dir is None:
+        print("apis-guru-gap-screen: --redo-unread requires --evidence-dir; pass --evidence-dir "
+              "to retain the measured responses", file=sys.stderr)
+        return 2
     if args.redo_unread:
         try:
             return redo_unread(args)
         except (OSError, ValueError, RuntimeError, CENSUS.DocumentError) as error:
-            action = ("pass --evidence-dir to retain the measured responses" if
-                      str(error).startswith("--redo-unread requires") else
-                      "inspect the served index and regenerate the historical manifest before retrying")
+            action = "inspect the served index and regenerate the historical manifest before retrying"
             print(f"apis-guru-gap-screen: {error}; {action}", file=sys.stderr)
             return 1
     try:

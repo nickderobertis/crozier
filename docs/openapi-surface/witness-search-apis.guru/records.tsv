@@ -1,289 +1,45 @@
-key	kind	subject	result	file
-annotated-ref-target-closed-object	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-annotated-ref-target-closed-object	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-annotated-ref-target-closed-object	document	APIs/pandascore.co/2.23.1/openapi.yaml	census 7	tree-census.jsonl.gz
-annotated-ref-target-closed-object	candidate	APIs/pandascore.co/2.23.1/openapi.yaml	census 7	tree-census.jsonl.gz
-annotated-ref-target-closed-object	screen	APIs/pandascore.co/2.23.1/openapi.yaml licence	blocked	candidates.tsv
-annotated-ref-target-closed-object	screen	APIs/pandascore.co/2.23.1/openapi.yaml ref	blocked	candidates.tsv
-annotated-ref-target-closed-object	screen	APIs/pandascore.co/2.23.1/openapi.yaml fern	not-run	candidates.tsv
-annotated-ref-target-closed-object	document	pandascore.co/2.23.1	census 7	tree-census.jsonl.gz
-annotated-ref-target-closed-object	candidate	pandascore.co/2.23.1	census 7	tree-census.jsonl.gz
-annotated-ref-target-closed-object	screen	pandascore.co/2.23.1 licence	blocked	candidates.tsv
-annotated-ref-target-closed-object	screen	pandascore.co/2.23.1 ref	blocked	candidates.tsv
-annotated-ref-target-closed-object	screen	pandascore.co/2.23.1 fern	not-run	candidates.tsv
-annotated-ref-target-composed	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-annotated-ref-target-composed	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-annotated-ref-target-composed	document	APIs/asana.com/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-annotated-ref-target-composed	candidate	APIs/asana.com/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-annotated-ref-target-composed	screen	APIs/asana.com/1.0/openapi.yaml licence	admitted	candidates.tsv
-annotated-ref-target-composed	screen	APIs/asana.com/1.0/openapi.yaml ref	blocked	candidates.tsv
-annotated-ref-target-composed	screen	APIs/asana.com/1.0/openapi.yaml fern	rejected	candidates.tsv
-annotated-ref-target-composed	document	APIs/box.com/2.0.0/openapi.yaml	census 34	tree-census.jsonl.gz
-annotated-ref-target-composed	candidate	APIs/box.com/2.0.0/openapi.yaml	census 34	tree-census.jsonl.gz
-annotated-ref-target-composed	screen	APIs/box.com/2.0.0/openapi.yaml licence	admitted	candidates.tsv
-annotated-ref-target-composed	screen	APIs/box.com/2.0.0/openapi.yaml ref	blocked	candidates.tsv
-annotated-ref-target-composed	screen	APIs/box.com/2.0.0/openapi.yaml fern	rejected	candidates.tsv
-annotated-ref-target-composed	document	asana.com/1.0	census 2	tree-census.jsonl.gz
-annotated-ref-target-composed	candidate	asana.com/1.0	census 2	tree-census.jsonl.gz
-annotated-ref-target-composed	screen	asana.com/1.0 licence	admitted	candidates.tsv
-annotated-ref-target-composed	screen	asana.com/1.0 ref	blocked	candidates.tsv
-annotated-ref-target-composed	screen	asana.com/1.0 fern	rejected	candidates.tsv
-annotated-ref-target-composed	document	box.com/2.0.0	census 34	tree-census.jsonl.gz
-annotated-ref-target-composed	candidate	box.com/2.0.0	census 34	tree-census.jsonl.gz
-annotated-ref-target-composed	screen	box.com/2.0.0 licence	admitted	candidates.tsv
-annotated-ref-target-composed	screen	box.com/2.0.0 ref	blocked	candidates.tsv
-annotated-ref-target-composed	screen	box.com/2.0.0 fern	rejected	candidates.tsv
-annotated-ref-target-oneof	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-annotated-ref-target-oneof	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-annotated-ref-target-oneof	document	APIs/pandascore.co/2.23.1/openapi.yaml	census 4	tree-census.jsonl.gz
-annotated-ref-target-oneof	candidate	APIs/pandascore.co/2.23.1/openapi.yaml	census 4	tree-census.jsonl.gz
-annotated-ref-target-oneof	screen	APIs/pandascore.co/2.23.1/openapi.yaml licence	blocked	candidates.tsv
-annotated-ref-target-oneof	screen	APIs/pandascore.co/2.23.1/openapi.yaml ref	blocked	candidates.tsv
-annotated-ref-target-oneof	screen	APIs/pandascore.co/2.23.1/openapi.yaml fern	not-run	candidates.tsv
-annotated-ref-target-oneof	document	pandascore.co/2.23.1	census 4	tree-census.jsonl.gz
-annotated-ref-target-oneof	candidate	pandascore.co/2.23.1	census 4	tree-census.jsonl.gz
-annotated-ref-target-oneof	screen	pandascore.co/2.23.1 licence	blocked	candidates.tsv
-annotated-ref-target-oneof	screen	pandascore.co/2.23.1 ref	blocked	candidates.tsv
-annotated-ref-target-oneof	screen	pandascore.co/2.23.1 fern	not-run	candidates.tsv
-annotated-ref-target-string-const	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-annotated-ref-target-string-const	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-anyof-nullable-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-anyof-array-variant-anyof-nullable-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-closed-object-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-anyof-array-variant-closed-object-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-closed-object-item	document	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	census 1	tree-census.jsonl.gz
-anyof-array-variant-closed-object-item	candidate	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	census 1	tree-census.jsonl.gz
-anyof-array-variant-closed-object-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml licence	blocked	candidates.tsv
-anyof-array-variant-closed-object-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml ref	blocked	candidates.tsv
-anyof-array-variant-closed-object-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml fern	not-run	candidates.tsv
-anyof-array-variant-closed-object-item	document	webflow.com/2023-03-01T164537Z	census 1	tree-census.jsonl.gz
-anyof-array-variant-closed-object-item	candidate	webflow.com/2023-03-01T164537Z	census 1	tree-census.jsonl.gz
-anyof-array-variant-closed-object-item	screen	webflow.com/2023-03-01T164537Z licence	blocked	candidates.tsv
-anyof-array-variant-closed-object-item	screen	webflow.com/2023-03-01T164537Z ref	blocked	candidates.tsv
-anyof-array-variant-closed-object-item	screen	webflow.com/2023-03-01T164537Z fern	not-run	candidates.tsv
-anyof-array-variant-empty-object-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-anyof-array-variant-empty-object-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-oneof-nullable-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-anyof-array-variant-oneof-nullable-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-struct-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-anyof-array-variant-struct-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-anyof-array-variant-struct-item	document	APIs/stripe.com/2022-11-15/openapi.yaml	census 20	tree-census.jsonl.gz
-anyof-array-variant-struct-item	candidate	APIs/stripe.com/2022-11-15/openapi.yaml	census 20	tree-census.jsonl.gz
-anyof-array-variant-struct-item	screen	APIs/stripe.com/2022-11-15/openapi.yaml licence	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	APIs/stripe.com/2022-11-15/openapi.yaml ref	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	APIs/stripe.com/2022-11-15/openapi.yaml fern	not-run	candidates.tsv
-anyof-array-variant-struct-item	document	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	census 1	tree-census.jsonl.gz
-anyof-array-variant-struct-item	candidate	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	census 1	tree-census.jsonl.gz
-anyof-array-variant-struct-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml licence	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml ref	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	APIs/webflow.com/2023-03-23T154040Z/openapi.yaml fern	not-run	candidates.tsv
-anyof-array-variant-struct-item	document	webflow.com/2023-03-01T164537Z	census 1	tree-census.jsonl.gz
-anyof-array-variant-struct-item	candidate	webflow.com/2023-03-01T164537Z	census 1	tree-census.jsonl.gz
-anyof-array-variant-struct-item	screen	webflow.com/2023-03-01T164537Z licence	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	webflow.com/2023-03-01T164537Z ref	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	webflow.com/2023-03-01T164537Z fern	not-run	candidates.tsv
-anyof-array-variant-struct-item	document	stripe.com/2022-11-15	census 20	tree-census.jsonl.gz
-anyof-array-variant-struct-item	candidate	stripe.com/2022-11-15	census 20	tree-census.jsonl.gz
-anyof-array-variant-struct-item	screen	stripe.com/2022-11-15 licence	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	stripe.com/2022-11-15 ref	blocked	candidates.tsv
-anyof-array-variant-struct-item	screen	stripe.com/2022-11-15 fern	not-run	candidates.tsv
-array-item-inheritance-union	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-array-item-inheritance-union	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-array-item-pointer-walk-anyof	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-array-item-pointer-walk-anyof	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-array-item-pointer-walk-oneof	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-array-item-pointer-walk-oneof	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oauth2-password	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oauth2-password	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oauth2-password	document	APIs/authentiq.io/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/authentiq.io/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/authentiq.io/1.0/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/authentiq.io/1.0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/authentiq.io/1.0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml	census 4	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml	census 4	tree-census.jsonl.gz
-oauth2-password	screen	APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/contribly.com/1.0.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/contribly.com/1.0.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/contribly.com/1.0.0/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/contribly.com/1.0.0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/contribly.com/1.0.0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/cpy.re/peertube/5.1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/cpy.re/peertube/5.1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/cpy.re/peertube/5.1.0/openapi.yaml licence	admitted	candidates.tsv
-oauth2-password	screen	APIs/cpy.re/peertube/5.1.0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/cpy.re/peertube/5.1.0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/fulfillment.com/2.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/fulfillment.com/2.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/fulfillment.com/2.0/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/fulfillment.com/2.0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/fulfillment.com/2.0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/gettyimages.com/3/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/gettyimages.com/3/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/gettyimages.com/3/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/gettyimages.com/3/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/gettyimages.com/3/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/motaword.com/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/motaword.com/1.0/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/motaword.com/1.0/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/motaword.com/1.0/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/motaword.com/1.0/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	APIs/netatmo.net/1.1.5/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	APIs/netatmo.net/1.1.5/openapi.yaml	census 2	tree-census.jsonl.gz
-oauth2-password	screen	APIs/netatmo.net/1.1.5/openapi.yaml licence	blocked	candidates.tsv
-oauth2-password	screen	APIs/netatmo.net/1.1.5/openapi.yaml ref	blocked	candidates.tsv
-oauth2-password	screen	APIs/netatmo.net/1.1.5/openapi.yaml fern	not-run	candidates.tsv
-oauth2-password	document	authentiq.io/1.0	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	authentiq.io/1.0	census 2	tree-census.jsonl.gz
-oauth2-password	screen	authentiq.io/1.0 licence	blocked	candidates.tsv
-oauth2-password	screen	authentiq.io/1.0 ref	blocked	candidates.tsv
-oauth2-password	screen	authentiq.io/1.0 fern	not-run	candidates.tsv
-oauth2-password	document	britbox.co.uk/3.730.300-ref-1-39-0	census 4	tree-census.jsonl.gz
-oauth2-password	candidate	britbox.co.uk/3.730.300-ref-1-39-0	census 4	tree-census.jsonl.gz
-oauth2-password	screen	britbox.co.uk/3.730.300-ref-1-39-0 licence	blocked	candidates.tsv
-oauth2-password	screen	britbox.co.uk/3.730.300-ref-1-39-0 ref	blocked	candidates.tsv
-oauth2-password	screen	britbox.co.uk/3.730.300-ref-1-39-0 fern	not-run	candidates.tsv
-oauth2-password	document	contribly.com/1.0.0	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	contribly.com/1.0.0	census 2	tree-census.jsonl.gz
-oauth2-password	screen	contribly.com/1.0.0 licence	blocked	candidates.tsv
-oauth2-password	screen	contribly.com/1.0.0 ref	blocked	candidates.tsv
-oauth2-password	screen	contribly.com/1.0.0 fern	not-run	candidates.tsv
-oauth2-password	document	cpy.re:peertube/5.1.0	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	cpy.re:peertube/5.1.0	census 2	tree-census.jsonl.gz
-oauth2-password	screen	cpy.re:peertube/5.1.0 licence	admitted	candidates.tsv
-oauth2-password	screen	cpy.re:peertube/5.1.0 ref	blocked	candidates.tsv
-oauth2-password	screen	cpy.re:peertube/5.1.0 fern	not-run	candidates.tsv
-oauth2-password	document	fulfillment.com/2.0	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	fulfillment.com/2.0	census 2	tree-census.jsonl.gz
-oauth2-password	screen	fulfillment.com/2.0 licence	blocked	candidates.tsv
-oauth2-password	screen	fulfillment.com/2.0 ref	blocked	candidates.tsv
-oauth2-password	screen	fulfillment.com/2.0 fern	not-run	candidates.tsv
-oauth2-password	document	gettyimages.com/3	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	gettyimages.com/3	census 2	tree-census.jsonl.gz
-oauth2-password	screen	gettyimages.com/3 licence	blocked	candidates.tsv
-oauth2-password	screen	gettyimages.com/3 ref	blocked	candidates.tsv
-oauth2-password	screen	gettyimages.com/3 fern	not-run	candidates.tsv
-oauth2-password	document	motaword.com/1.0	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	motaword.com/1.0	census 2	tree-census.jsonl.gz
-oauth2-password	screen	motaword.com/1.0 licence	blocked	candidates.tsv
-oauth2-password	screen	motaword.com/1.0 ref	blocked	candidates.tsv
-oauth2-password	screen	motaword.com/1.0 fern	not-run	candidates.tsv
-oauth2-password	document	netatmo.net/1.1.5	census 2	tree-census.jsonl.gz
-oauth2-password	candidate	netatmo.net/1.1.5	census 2	tree-census.jsonl.gz
-oauth2-password	screen	netatmo.net/1.1.5 licence	blocked	candidates.tsv
-oauth2-password	screen	netatmo.net/1.1.5 ref	blocked	candidates.tsv
-oauth2-password	screen	netatmo.net/1.1.5 fern	not-run	candidates.tsv
-oneof-array-variant-annotated-ref-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-annotated-ref-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-anyof-discriminated-union-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-anyof-discriminated-union-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-anyof-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-anyof-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-anyof-nullable-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-anyof-nullable-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-closed-object-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-closed-object-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-composed-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-composed-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-array-variant-empty-object-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-array-variant-empty-object-item	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-oneof-bare-object-example-variant	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-oneof-bare-object-example-variant	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-anyof-closed-object-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-anyof-closed-object-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-anyof-composed-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-anyof-composed-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-anyof-empty-object-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-anyof-empty-object-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-anyof-struct-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-anyof-struct-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-oneof-closed-object-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-oneof-closed-object-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-oneof-composed-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-oneof-composed-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-property-sole-oneof-empty-object-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-property-sole-oneof-empty-object-member	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-ref-pointer-undeclared-component-head	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-ref-pointer-undeclared-component-head	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-ref-pointer-unnamed-segment	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-ref-pointer-unnamed-segment	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 356	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 356	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/accounting/2.1.0/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/accounting/2.1.0/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/accounting/2.1.0/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/assess/1.0/openapi.yaml	census 90	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/assess/1.0/openapi.yaml	census 90	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/assess/1.0/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/assess/1.0/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/assess/1.0/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/bank-feeds/2.1.0/openapi.yaml	census 40	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/bank-feeds/2.1.0/openapi.yaml	census 40	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/bank-feeds/2.1.0/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/bank-feeds/2.1.0/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/bank-feeds/2.1.0/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/banking/2.1.0/openapi.yaml	census 16	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/banking/2.1.0/openapi.yaml	census 16	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/banking/2.1.0/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/banking/2.1.0/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/banking/2.1.0/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 62	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 62	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/sync-for-commerce/1.1/openapi.yaml	census 12	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/sync-for-commerce/1.1/openapi.yaml	census 12	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-commerce/1.1/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-commerce/1.1/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-commerce/1.1/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml	census 4	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml	census 4	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:accounting/2.1.0	census 356	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:accounting/2.1.0	census 356	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:accounting/2.1.0 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:accounting/2.1.0 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:accounting/2.1.0 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:assess/1.0	census 90	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:assess/1.0	census 90	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:assess/1.0 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:assess/1.0 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:assess/1.0 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:bank-feeds/2.1.0	census 40	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:bank-feeds/2.1.0	census 40	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:bank-feeds/2.1.0 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:bank-feeds/2.1.0 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:bank-feeds/2.1.0 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:banking/2.1.0	census 16	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:banking/2.1.0	census 16	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:banking/2.1.0 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:banking/2.1.0 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:banking/2.1.0 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:commerce/2.1.0	census 62	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:commerce/2.1.0	census 62	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:commerce/2.1.0 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:commerce/2.1.0 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:commerce/2.1.0 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:sync-for-commerce/1.1	census 12	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:sync-for-commerce/1.1	census 12	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-commerce/1.1 licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-commerce/1.1 ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-commerce/1.1 fern	not-run	candidates.tsv
-ref-pointer-unnamed-segment	document	codat.io:sync-for-expenses/prealpha	census 4	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	candidate	codat.io:sync-for-expenses/prealpha	census 4	tree-census.jsonl.gz
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-expenses/prealpha licence	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-expenses/prealpha ref	blocked	candidates.tsv
-ref-pointer-unnamed-segment	screen	codat.io:sync-for-expenses/prealpha fern	not-run	candidates.tsv
-schema-name-nonidentifier-name	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
-schema-name-nonidentifier-name	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
-*	wait	README.md	supporting acquisition record	README.md
-*	wait	acquisitions.jsonl	supporting acquisition record	acquisitions.jsonl
-*	wait	index.json	supporting acquisition record	index.json
-*	wait	unread-responses.jsonl	supporting acquisition record	unread-responses.jsonl
-*	wait	list.json.gz	supporting acquisition record	list.json.gz
-*	wait	rate-limit-calls.jsonl	supporting acquisition record	rate-limit-calls.jsonl
+source	key	candidate	revision	digest	census	licence_screen	revision_screen	fern_screen	disposition	evidence
+apis.guru	annotated-ref-target-closed-object	https://api.apis.guru/v2/specs/pandascore.co/2.23.1/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50	7	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-closed-object	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/pandascore.co/2.23.1/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50	7	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-composed	https://api.apis.guru/v2/specs/asana.com/1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	4ce2c6eafa40cc6e3d40c1b2534cb95fd0d8511902a7cdb00a8c4847b239510d	2	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-composed	https://api.apis.guru/v2/specs/box.com/2.0.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e	34	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-composed	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/asana.com/1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4ce2c6eafa40cc6e3d40c1b2534cb95fd0d8511902a7cdb00a8c4847b239510d	2	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-composed	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/box.com/2.0.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	8fdc22ddf19d734dd3372a5545324ac43eae55e169651e22bb31b85f0623bc9e	34	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-oneof	https://api.apis.guru/v2/specs/pandascore.co/2.23.1/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	annotated-ref-target-oneof	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/pandascore.co/2.23.1/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	c897eef05f5948bf9329516408143580ab063b288c646b86fc5338a29b050d50	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-closed-object-item	https://api.apis.guru/v2/specs/webflow.com/2023-03-01T164537Z/openapi.json	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	550233e93e78ded22dcce92c91b37be05f459bcea03031efaeaa33b1e861d6aa	1	failed: no publisher redistribution grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-closed-object-item	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	390d03664d0779d86f87683253b91842c67777869cf4da35e5ddd4dd0ad3959c	1	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-struct-item	https://api.apis.guru/v2/specs/stripe.com/2022-11-15/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	fba83fd7ff9ce87eafa0fbbc15c382b176dac204ca21b72df1a8c361441d9ecf	20	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-struct-item	https://api.apis.guru/v2/specs/webflow.com/2023-03-01T164537Z/openapi.json	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	550233e93e78ded22dcce92c91b37be05f459bcea03031efaeaa33b1e861d6aa	1	failed: no publisher redistribution grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-struct-item	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/stripe.com/2022-11-15/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	fba83fd7ff9ce87eafa0fbbc15c382b176dac204ca21b72df1a8c361441d9ecf	20	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	anyof-array-variant-struct-item	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/webflow.com/2023-03-23T154040Z/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	390d03664d0779d86f87683253b91842c67777869cf4da35e5ddd4dd0ad3959c	1	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/authentiq.io/1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	27df916f86d5777beb5917b745028f12a5b569aa673a17c8d1752252b510a6f3	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	3b28a9e14de5c7ddafdc0292955fdafdce1e4711e0a89b9f5e11a751b63c1b62	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/contribly.com/1.0.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	50b46856542f0618c8e136a299ad12aa29cdc0c9e0e4b6d90e6f9d614513a640	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/cpy.re/peertube/5.1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	12690cdfaefb2f27539ddd12b4ff7e4928dd52520d3d30d571191bd562ed20a9	2	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/fulfillment.com/2.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	e93184bc2e0f3b10859d1540b3915db5947e1e59954b0d8ba7df1ef03de51780	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/gettyimages.com/3/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	1a4b82c92fcd14ad4c178c209923feeb0c06d0a378ec136272e1e1b246b9e600	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/motaword.com/1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	a24150d9ddaed9b9070861deee24e1fb82f5d1c113cdb8bc7f4e387f0b444016	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://api.apis.guru/v2/specs/netatmo.net/1.1.5/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	2d2a6102ff74d98c3e9970df4cf0c8270b30959b9062e0280ec84fd0eda65795	2	failed: unknown info.license and no publisher grant evidenced (document licence: Netatmo : Terms of Service)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/authentiq.io/1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	27df916f86d5777beb5917b745028f12a5b569aa673a17c8d1752252b510a6f3	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/britbox.co.uk/3.730.300-ref-1-39-0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	3b28a9e14de5c7ddafdc0292955fdafdce1e4711e0a89b9f5e11a751b63c1b62	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/contribly.com/1.0.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	50b46856542f0618c8e136a299ad12aa29cdc0c9e0e4b6d90e6f9d614513a640	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/cpy.re/peertube/5.1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	12690cdfaefb2f27539ddd12b4ff7e4928dd52520d3d30d571191bd562ed20a9	2	pass	failed: aggregation pin does not establish publisher-byte provenance	not-run: revision screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/fulfillment.com/2.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	e93184bc2e0f3b10859d1540b3915db5947e1e59954b0d8ba7df1ef03de51780	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/gettyimages.com/3/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	1a4b82c92fcd14ad4c178c209923feeb0c06d0a378ec136272e1e1b246b9e600	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/motaword.com/1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	a24150d9ddaed9b9070861deee24e1fb82f5d1c113cdb8bc7f4e387f0b444016	2	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	oauth2-password	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/netatmo.net/1.1.5/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	2d2a6102ff74d98c3e9970df4cf0c8270b30959b9062e0280ec84fd0eda65795	2	failed: unknown info.license and no publisher grant evidenced (document licence: Netatmo : Terms of Service)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/accounting/2.1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	15751f97e6e3fbaf48e880fe0425686daa7adb299adf8f0897641a38b2008b80	356	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/assess/1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	86e433fe19b8cd4dc27f547c53cfa06377d8c7bee1b0ed38418fb8d983ba92e4	90	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/bank-feeds/2.1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	276911e771aaba2a137ebe3b323afca84cdd855175929236cfd3de910f579e42	40	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/banking/2.1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	ca9eeffc3d9e0d83a956be4e557837296de6695f00b3a09bf2eaa46bdbd4fbfd	16	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/commerce/2.1.0/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	ffe0c71205dec68c801399259a33cf809efa396defe320f8d472aebb0e384fac	62	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/sync-for-commerce/1.1/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	d6c4e8db7b3985d09a3a0fe8ccad730e0829442fb52d14143fd326c763394ff6	12	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://api.apis.guru/v2/specs/codat.io/sync-for-expenses/prealpha/openapi.yaml	no-immutable-ref: served catalogue version URL is mutable; pinned YAML fallback recorded separately	d15ff1a38310c304a542b99bac2860fdfd5a3e857be6662d15e1f281f52a1be8	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/accounting/2.1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	15751f97e6e3fbaf48e880fe0425686daa7adb299adf8f0897641a38b2008b80	356	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/assess/1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	86e433fe19b8cd4dc27f547c53cfa06377d8c7bee1b0ed38418fb8d983ba92e4	90	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/bank-feeds/2.1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	276911e771aaba2a137ebe3b323afca84cdd855175929236cfd3de910f579e42	40	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/banking/2.1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	ca9eeffc3d9e0d83a956be4e557837296de6695f00b3a09bf2eaa46bdbd4fbfd	16	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/commerce/2.1.0/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	ffe0c71205dec68c801399259a33cf809efa396defe320f8d472aebb0e384fac	62	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/sync-for-commerce/1.1/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	d6c4e8db7b3985d09a3a0fe8ccad730e0829442fb52d14143fd326c763394ff6	12	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
+apis.guru	ref-pointer-unnamed-segment	https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/sync-for-expenses/prealpha/openapi.yaml	f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	d15ff1a38310c304a542b99bac2860fdfd5a3e857be6662d15e1f281f52a1be8	4	failed: no document grant and no publisher grant evidenced (document licence: none)	not-run: licence screen failed	not-run: licence screen failed	rejected	screen-details.tsv
