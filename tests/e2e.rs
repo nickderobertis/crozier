@@ -5981,13 +5981,82 @@ fn free5gc_namf_communication_matches_fern_output() {
     assert_link_ok_corpus_matches(&FREE5GC_NAMF_COMMUNICATION);
 }
 
+/// One golden test per feature target, named like every other corpus's, so each
+/// target's Fern golden is compared on its own and the `golden-only` tier of
+/// `just fixtures-coverage` (every `*matches_fern_output*` test) counts it: a
+/// feature target's `expected/` tree is Fern's output exactly as a fetched
+/// corpus's is. Every target walks its complete expected tree; only measured
+/// residual paths in `unmatched` are exempted and reverse-checked.
+macro_rules! feature_target_goldens {
+    ($($test:ident => $api:literal),* $(,)?) => {
+        $(
+            #[test]
+            fn $test() {
+                assert_feature_target_matches($api);
+            }
+        )*
+
+        /// The `api` of every feature target a golden test above drives.
+        const FEATURE_TARGET_GOLDEN_TESTS: &[&str] = &[$($api),*];
+    };
+}
+
+feature_target_goldens! {
+    crozier_sdk_extensions_matches_fern_output => "crozier-sdk-extensions",
+    auth_schemes_matches_fern_output => "auth-schemes",
+    inline_request_response_matches_fern_output => "inline-request-response",
+    cookie_parameters_matches_fern_output => "cookie-parameters",
+    form_bodies_matches_fern_output => "form-bodies",
+    discriminated_unions_matches_fern_output => "discriminated-unions",
+    schema_constraints_matches_fern_output => "schema-constraints",
+    integer_enums_matches_fern_output => "integer-enums",
+    servers_webhooks_matches_fern_output => "servers-webhooks",
+    basic_auth_matches_fern_output => "basic-auth",
+    oauth_client_credentials_matches_fern_output => "oauth-client-credentials",
+    inline_array_request_matches_fern_output => "inline-array-request",
+    writeonly_fields_matches_fern_output => "writeonly-fields",
+    digit_leading_property_matches_fern_output => "digit-leading-property",
+    operation_id_non_identifier_matches_fern_output => "operation-id-non-identifier",
+    bracketed_property_names_matches_fern_output => "bracketed-property-names",
+    missing_operation_id_matches_fern_output => "missing-operation-id",
+    error_responses_matches_fern_output => "error-responses",
+    tag_based_grouping_matches_fern_output => "tag-based-grouping",
+    enum_query_param_matches_fern_output => "enum-query-param",
+    audience_filter_matches_fern_output => "audience-filter",
+    audience_filter_strict_matches_fern_output => "audience-filter-strict",
+    sse_streaming_matches_fern_output => "sse-streaming",
+    enum_name_sanitization_matches_fern_output => "enum-name-sanitization",
+    enum_receiver_collision_matches_fern_output => "enum-receiver-collision",
+    client_class_name_matches_fern_output => "client-class-name",
+    pydantic_extra_fields_matches_fern_output => "pydantic-extra-fields",
+    recursive_types_matches_fern_output => "recursive-types",
+    nested_core_imports_matches_fern_output => "nested-core-imports",
+    malformed_property_schema_matches_fern_output => "malformed-property-schema",
+}
+
+fn assert_feature_target_matches(api: &str) {
+    let target = FEATURE_TARGETS
+        .iter()
+        .find(|target| target.api == api)
+        .unwrap_or_else(|| panic!("{api} is not a FEATURE_TARGETS entry"));
+    assert_corpus_matches(target);
+}
+
 #[test]
-fn feature_target_specs_generate_without_panicking() {
-    // Every feature target walks its complete expected tree; only measured
-    // residual paths in `unmatched` are exempted and reverse-checked.
-    for target in FEATURE_TARGETS {
-        assert_corpus_matches(target);
-    }
+fn every_feature_target_has_its_own_golden_test() {
+    let declared: std::collections::BTreeSet<&str> =
+        FEATURE_TARGETS.iter().map(|target| target.api).collect();
+    let driven: std::collections::BTreeSet<&str> =
+        FEATURE_TARGET_GOLDEN_TESTS.iter().copied().collect();
+    assert_eq!(
+        declared, driven,
+        "every FEATURE_TARGETS entry needs exactly one `feature_target_goldens!` test"
+    );
+    assert_eq!(
+        FEATURE_TARGET_GOLDEN_TESTS.len(),
+        driven.len(),
+        "a feature target is driven by two golden tests"
+    );
 }
 
 /// Measurement aid — generate every available corpus and print the exact residual
@@ -6557,9 +6626,9 @@ fn every_registered_corpus_is_wired_into_the_gate() {
 
     let mut enforced = std::collections::BTreeSet::new();
     for corpus in registered_diff_corpora() {
-        // Feature targets are driven as a set by
-        // `feature_target_specs_generate_without_panicking`, and their specs are
-        // vendored, so they need no per-corpus wiring.
+        // Feature targets are driven one test each by `feature_target_goldens!`
+        // (held to the set by `every_feature_target_has_its_own_golden_test`),
+        // and their specs are vendored, so they need no per-corpus wiring.
         if FEATURE_TARGETS.iter().any(|t| t.api == corpus.api) {
             continue;
         }
