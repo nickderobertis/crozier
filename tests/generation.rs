@@ -9354,3 +9354,54 @@ components:
         "{readme}"
     );
 }
+
+/// Skool's `GET …/comments/` answers `$ref: SuccessResponse`, a component the
+/// document never declares. Fern types the body `typing.Any` and guards an empty
+/// response, where a written `{}` success schema in a 3.0 document is typed the
+/// same but left unguarded.
+#[test]
+fn an_undeclared_success_component_guards_the_empty_body_like_skool() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Skool, version: 1.0.0 }
+paths:
+  /comments:
+    get:
+      operationId: listComments
+      tags: [posts]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessResponse" }
+  /likes:
+    get:
+      operationId: listLikes
+      tags: [posts]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/posts/raw_client.py"];
+    let comments = &raw[raw.find("def list_comments").expect(raw)..];
+    let comments = &comments[..comments.find("def list_likes").expect(raw)];
+    assert!(
+        comments.contains("if _response is None or not _response.text.strip():"),
+        "{raw}"
+    );
+    assert!(comments.contains("typing.Any"), "{raw}");
+    let likes = &raw[raw.find("def list_likes").expect(raw)..];
+    let likes = &likes[..likes.find("class AsyncRawPostsClient").expect(raw)];
+    assert!(!likes.contains("_response.text.strip()"), "{raw}");
+}

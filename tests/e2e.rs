@@ -3225,6 +3225,7 @@ const CORPORA: &[&Corpus] = &[
     &TIMELYAPP,
     &NEXTGEN,
     &AUTO_AGENT_PROTOCOL,
+    &SKOOL,
 ];
 
 #[test]
@@ -5643,6 +5644,18 @@ const NEXTGEN: Corpus = Corpus {
 /// Auto Agent Protocol walks a `$ref` pointer through an unnamed segment.
 const AUTO_AGENT_PROTOCOL: Corpus = Corpus {
     api: "auto-agent-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Skool points `$ref`s under an undeclared component head.
+const SKOOL: Corpus = Corpus {
+    api: "skool",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11210,4 +11223,9 @@ fn nextgen_matches_fern_output() {
 #[test]
 fn auto_agent_protocol_matches_fern_output() {
     assert_link_ok_corpus_matches(&AUTO_AGENT_PROTOCOL);
+}
+
+#[test]
+fn skool_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SKOOL);
 }

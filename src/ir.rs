@@ -3194,7 +3194,12 @@ fn build_endpoint(
         response_may_be_empty: has_bodyless_success(op)
             || success_response_entry(op).is_some_and(|response| response.reference.is_some())
             || doc.openapi.starts_with("3.1")
-                && success_response_schema(op).is_some_and(is_unknown),
+                && success_response_schema(op).is_some_and(is_unknown)
+            // A success schema pointing at a component the document never
+            // declares is unknown too, and may be empty: Skool's `GET
+            // …/comments/` answers `$ref: SuccessResponse`, which no component
+            // names, and its golden guards the empty body.
+            || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference),
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),

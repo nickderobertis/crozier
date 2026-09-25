@@ -404,11 +404,24 @@ components:
                 cells = [cell.strip() for cell in line.split("|")[1:-1]]
                 if len(cells) == 8:
                     entries[cells[0].strip("`")] = cells
+        # A snapshot key leaves `gap` only through a registered corpus witness,
+        # whose fixture name its evidence cell has to carry.
+        settled = {
+            "anyof-sole-member": ("paypal-catalog-products",),
+            "annotated-ref-target-composed": ("paloalto-cspm-alerts", "groupe-psa"),
+            "annotated-ref-target-oneof": ("paloalto-cspm-alerts",),
+            "annotated-ref-target-closed-object": ("truefoundry-trueforge-5adde28",),
+            "anyof-array-variant-struct-item": ("fergus", "timelyapp"),
+            "ref-pointer-undeclared-component-head": ("thrivecart", "nextgen", "skool"),
+            "ref-pointer-unnamed-segment": ("auto-agent-protocol",),
+        }
+        self.assertLessEqual(set(settled), owned)
+        self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
         for key in owned:
-            if key == "anyof-sole-member":
+            if key in settled:
                 self.assertEqual("golden", entries[key][3].strip("`"), key)
-                self.assertIn("paypal-catalog-products", entries[key][4])
-                self.assertIn("**4** declaration sites", entries[key][4])
+                for fixture in settled[key]:
+                    self.assertIn(f"`{fixture}`", entries[key][4], key)
                 self.assertEqual("", entries[key][7])
             else:
                 self.assertEqual("gap", entries[key][3].strip("`"), key)

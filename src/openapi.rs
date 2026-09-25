@@ -955,6 +955,13 @@ pub struct Schema {
     /// bogus `$ref` (issue #86).
     #[serde(skip)]
     pub malformed: bool,
+    /// Set when this node's `$ref` named a component schema the document never
+    /// declares, which `normalize_unresolvable_schema_refs` degraded to the
+    /// unknown type. Not a wire field. Fern guards such a success body against an
+    /// empty response where a written `{}` in a 3.0 document is not guarded, so
+    /// the origin has to outlive the rewrite.
+    #[serde(skip)]
+    pub unresolved_reference: bool,
 }
 
 impl Schema {
@@ -1815,6 +1822,7 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
                 .is_some_and(|name| !declared.contains(name));
             if unresolvable {
                 node.reference = None;
+                node.unresolved_reference = true;
             }
         });
     });
