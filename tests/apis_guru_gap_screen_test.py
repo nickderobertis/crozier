@@ -413,6 +413,7 @@ components:
             "annotated-ref-target-closed-object": ("truefoundry-trueforge-5adde28",),
             "anyof-array-variant-struct-item": ("fergus", "timelyapp"),
             "anyof-array-variant-closed-object-item": ("cradl",),
+            "oneof-array-variant-closed-object-item": ("zulip",),
             "ref-pointer-undeclared-component-head": ("thrivecart", "nextgen", "skool"),
             "ref-pointer-unnamed-segment": ("auto-agent-protocol",),
         }

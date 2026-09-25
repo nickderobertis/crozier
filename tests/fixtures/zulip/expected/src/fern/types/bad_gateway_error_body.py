@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .failed_to_connect_bouncer_error import FailedToConnectBouncerError
+from .internal_bouncer_server_error import InternalBouncerServerError
+
+BadGatewayErrorBody = typing.Union[FailedToConnectBouncerError, InternalBouncerServerError]

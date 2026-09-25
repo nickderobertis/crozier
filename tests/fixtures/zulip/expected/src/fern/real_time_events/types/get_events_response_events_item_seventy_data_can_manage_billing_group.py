@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_manage_billing_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanManageBillingGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanManageBillingGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanManageBillingGroupDirectMembers
+]

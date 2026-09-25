@@ -1689,7 +1689,7 @@ class GrammarContractTests(unittest.TestCase):
         """
         words = {
             0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
-            9: "nine", 94: "ninety-four", 95: "ninety-five",
+            9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
@@ -2039,6 +2039,12 @@ class ConjunctionCensusTests(unittest.TestCase):
             "discriminated-unions": 1, "query-parameters-openapi": 2, "recursive-types": 1
         },
         "schema.oneOf>schema.allOf": {"exhaustive": 1},
+        # hoist_union_variant's string-enum arm, cases 2a to 2d: no vendored
+        # source declares a string enum or const as a union member.
+        "schema.oneOf>schema.enum:string-valued": {},
+        "schema.anyOf>schema.enum:string-valued": {},
+        "schema.oneOf>schema.const:string-valued": {},
+        "schema.anyOf>schema.const:string-valued": {},
         "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": {},
         "schema.properties>schema.anyOf": {},
         "schema.properties>schema.oneOf": {},
@@ -2142,8 +2148,8 @@ class ConjunctionCensusTests(unittest.TestCase):
         # residual arm should look like: `prop_type_ref`'s own residual is the
         # widest number in this table.
         "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
-        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
-        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {},
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
+        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
@@ -2735,8 +2741,8 @@ NEGATION_SELECTORS = frozenset({
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
-    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
-    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
+    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
     "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
@@ -3017,6 +3023,42 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "near": ("schema", {"anyOf": [array_of(EMPTY_PROPERTIES)]}),
             "overlap": ("schema", {"anyOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.oneOf>schema.enum:string-valued",
+            "slug": "huv-2a",
+            "branch": "hoist_union_variant case 2a",
+            "select": ("schema", {"oneOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
+            "near": ("schema", {"oneOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
+            "overlap": ("schema", {"oneOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
+            "overlap_selector": "schema.oneOf>schema.$ref",
+        },
+        {
+            "selector": "schema.anyOf>schema.enum:string-valued",
+            "slug": "huv-2b",
+            "branch": "hoist_union_variant case 2b",
+            "select": ("schema", {"anyOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
+            "near": ("schema", {"anyOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
+            "overlap": ("schema", {"anyOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
+            "overlap_selector": "schema.anyOf>schema.$ref",
+        },
+        {
+            "selector": "schema.oneOf>schema.const:string-valued",
+            "slug": "huv-2c",
+            "branch": "hoist_union_variant case 2c",
+            "select": ("schema", {"oneOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
+            "near": ("schema", {"oneOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
+            "overlap": ("schema", {"oneOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
+            "overlap_selector": "schema.oneOf>schema.$ref",
+        },
+        {
+            "selector": "schema.anyOf>schema.const:string-valued",
+            "slug": "huv-2d",
+            "branch": "hoist_union_variant case 2d",
+            "select": ("schema", {"anyOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
+            "near": ("schema", {"anyOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
+            "overlap": ("schema", {"anyOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
+            "overlap_selector": "schema.anyOf>schema.$ref",
         },
         {
             "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
@@ -4730,7 +4772,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
             "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
             "overlap": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
-            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
         },
         # --- `is_inline_struct` read where the three tables read it -----------
         {
@@ -4866,7 +4908,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
         },
         {
-            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
             "slug": "huv-12a",
             "branch": "hoist_union_variant case 12a, its closing `base_type_ref`",
             "select": {"Root": {"oneOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -4878,7 +4920,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
         },
         {
-            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
             "slug": "huv-12b",
             "branch": "hoist_union_variant case 12b, the same arm through the other head",
             "select": {"Root": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -5141,7 +5183,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
 
     def test_a_negation_selector_no_source_declares_is_reported_as_absent(self) -> None:
         """Absent, not silent: the phrase a `gap` row cites as its evidence."""
-        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty"
+        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty"
         completed = run("--vendored-only", "--selector", absent)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))

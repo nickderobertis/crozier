@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .can_move_messages_out_of_channel_group_direct_members import CanMoveMessagesOutOfChannelGroupDirectMembers
+
+CanMoveMessagesOutOfChannelGroup = typing.Union[int, CanMoveMessagesOutOfChannelGroupDirectMembers]

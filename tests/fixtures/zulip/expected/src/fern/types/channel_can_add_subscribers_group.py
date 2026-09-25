@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .channel_can_add_subscribers_group_direct_members import ChannelCanAddSubscribersGroupDirectMembers
+
+ChannelCanAddSubscribersGroup = typing.Union[int, ChannelCanAddSubscribersGroupDirectMembers]

@@ -183,6 +183,7 @@ re-measure with `just fixtures-gaps`.
 | 161 | `skool-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API, jentic's import entry: row 154's document with its object keys in another order |
 | 162 | `timelyapp-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Timely API, jentic's import entry: row 151's document with its object keys in another order |
 | 163 | `cradl` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Cradl API; `anyOf` array variants with struct and closed-object items |
+| 164 | `zulip` | github-raw | https://raw.githubusercontent.com/zulip/zulip/6a82f40579f8adb9149aa0b04ff795c397baae73/zerver/openapi/zulip.yaml | `6a82f40579f8adb9149aa0b04ff795c397baae73` | Apache-2.0 (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Zulip REST API; annotated `$ref`s to closed-object and `oneOf` targets, `oneOf` array variants with closed-object items |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -770,6 +771,7 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 161 | `skool-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 162 | `timelyapp-entry` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 163 | `cradl` | `anyof-array-variant-closed-object-item`; `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 164 | `zulip` | `oneof-array-variant-closed-object-item`; `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -859,7 +861,37 @@ Row 163's repairs, read off Fern's IR for Cradl:
 - a property union's `nullable` array member keeps its `Optional`;
 - a `nullable` closed object with no properties is `Optional[Dict[str, Any]]`.
 
-Zulip's own description is the one usable document not yet registered.
+Row 164, Zulip's own description, byte-matches its 1014-file golden after the
+repairs below, each read off the golden or a `fern ir` run:
+- Unions and enums:
+  - a string `$ref` narrowed by an inline `enum` is an enum documented by
+    the reference;
+  - union variants past the nineteenth are named in words (`…FiftyEight`);
+  - union members that are string enums or untitled inline objects hoist
+    models of their own.
+- Restatements:
+  - a restatement conflicts with its parent's property only if the child
+    does not require it or makes it nullable, whatever the parent requires;
+  - an empty restatement takes a property the parent declares inline;
+  - an unknown field takes no docstring from its parent;
+  - an annotated `$ref` to a composed target, or to a map value, is a flat
+    copy;
+  - a component that is a bare object is a map whatever its example.
+- Error bodies: the last declaration of a status names `{Class}Body`, and
+  earlier `oneOf` declarations leave their variant models behind.
+- Urlencoded bodies:
+  - a part's `encoding.contentType` is ignored;
+  - a union body is one `request` sent through `data=`, and Fern builds no
+    example for it, so its path parameter passes its name;
+  - fields take their annotation's docstring and example.
+- YAML examples: a timestamp-shaped example stops being a string only when
+  the YAML writes it unquoted.
+
+These also shrank `short-io`'s residual from 65 files to 61.
+
+Every usable candidate in the two ledgers is now one of the rows above, or a
+byte-identical copy of one whose ledger disposition names that row and the
+shared sha256.
 
 Every other usable candidate is one of the rows above, or a byte-identical copy
 of one whose ledger disposition names that row and the shared sha256.

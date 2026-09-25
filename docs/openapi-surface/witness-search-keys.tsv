@@ -11,7 +11,6 @@ oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&sc
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf	schemas.md	supported
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
-oneof-array-variant-closed-object-item	schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	schemas.md	supported
 oneof-array-variant-composed-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 oneof-array-variant-empty-object-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported

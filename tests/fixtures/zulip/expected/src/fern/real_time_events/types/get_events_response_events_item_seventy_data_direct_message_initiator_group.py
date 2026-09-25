@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_direct_message_initiator_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataDirectMessageInitiatorGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataDirectMessageInitiatorGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataDirectMessageInitiatorGroupDirectMembers
+]

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_create_public_channel_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanCreatePublicChannelGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanCreatePublicChannelGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanCreatePublicChannelGroupDirectMembers
+]

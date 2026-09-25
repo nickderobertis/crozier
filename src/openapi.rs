@@ -41,8 +41,12 @@ pub struct OpenApi {
     /// resolves an *unquoted* YAML timestamp scalar to a date rather than to a
     /// string, so an example written that way is not a string example; a JSON
     /// document cannot spell one. Set by [`load`], never deserialized.
+    ///
+    /// For a YAML document, the timestamp-like scalars its text writes unquoted
+    /// somewhere; `None` for JSON. Only an unquoted one is a date to Fern's parser:
+    /// Zulip quotes `"1909-04-05"` inside a flow mapping and its golden keeps it.
     #[serde(skip)]
-    pub yaml_source: bool,
+    pub yaml_source: Option<std::collections::BTreeSet<String>>,
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
@@ -1361,7 +1365,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     };
 
-    doc.yaml_source = yaml_source;
+    doc.yaml_source = yaml_source.then(|| unquoted_yaml_timestamps(&text));
     if doc.openapi.is_empty() {
         return Err(Error::InvalidSpec {
             path: path.to_path_buf(),
@@ -1799,6 +1803,39 @@ fn normalize_fetched_response_alias_refs(
             }
         }
     }
+}
+
+/// The `yyyy-mm-dd`-led scalars a YAML text writes without quotes, each up to the
+/// next flow or block delimiter. A quoted occurrence is a string to every YAML
+/// parser; an unquoted one may be a timestamp.
+fn unquoted_yaml_timestamps(text: &str) -> std::collections::BTreeSet<String> {
+    let bytes = text.as_bytes();
+    let mut found = std::collections::BTreeSet::new();
+    let mut index = 0;
+    while index + 10 <= bytes.len() {
+        let date = bytes[index..index + 10]
+            .iter()
+            .enumerate()
+            .all(|(offset, byte)| {
+                if offset == 4 || offset == 7 {
+                    *byte == b'-'
+                } else {
+                    byte.is_ascii_digit()
+                }
+            });
+        let boundary = index == 0 || !bytes[index - 1].is_ascii_alphanumeric();
+        let quoted = index > 0 && matches!(bytes[index - 1], b'"' | b'\'');
+        if date && boundary && !quoted {
+            let end = text[index..]
+                .find([',', '}', ']', '\n', '\r', '#', '"', '\''])
+                .map_or(text.len(), |offset| index + offset);
+            found.insert(text[index..end].trim_end().to_string());
+            index = end;
+        } else {
+            index += 1;
+        }
+    }
+    found
 }
 
 /// Degrade a `$ref` to a component schema the document never declares.
@@ -2700,6 +2737,16 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    #[test]
+    fn only_unquoted_yaml_dates_are_recorded_as_timestamps() {
+        let text = "a: 2022-01-23T19:00:00.000Z\nb: \"1909-04-05\"\nc: {x: 2001-02-03, y: 'x'}\nid: v2022-01-01\n";
+        let found = unquoted_yaml_timestamps(text);
+        assert!(found.contains("2022-01-23T19:00:00.000Z"));
+        assert!(found.contains("2001-02-03"));
+        assert!(!found.contains("1909-04-05"));
+        assert_eq!(found.len(), 2);
     }
 
     /// A reference to a schema the document never declares is Fern's unknown

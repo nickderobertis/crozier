@@ -173,6 +173,13 @@ Additional issue #77 real-world OpenAPI source specs:
     Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Zulip REST API: the publisher's own description at
+    https://raw.githubusercontent.com/zulip/zulip/6a82f40579f8adb9149aa0b04ff795c397baae73/zerver/openapi/zulip.yaml.
+    The document's info.license and the repository's own LICENSE grant
+    Apache-2.0 redistribution; corpus row 164 records the immutable reference.
+    Only Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

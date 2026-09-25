@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_set_topics_policy_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanSetTopicsPolicyGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanSetTopicsPolicyGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanSetTopicsPolicyGroupDirectMembers
+]

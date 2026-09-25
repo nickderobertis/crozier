@@ -179,6 +179,48 @@ fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>>
     children
 }
 
+/// Parse an example literal as JSON, reading the Python spellings `True`, `False`
+/// and `None` outside strings as JSON's: a field's example literal is rendered
+/// for Python, and Zulip's `subscription_data` example carries `True` inside a
+/// list of objects.
+fn parse_example_value(example: &str) -> Option<serde_json::Value> {
+    if let Ok(value) = serde_json::from_str(example) {
+        return Some(value);
+    }
+    let mut json = String::with_capacity(example.len());
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut rest = example;
+    while let Some(c) = rest.chars().next() {
+        if in_string {
+            json.push(c);
+            if escaped {
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c == '"' {
+                in_string = false;
+            }
+            rest = &rest[c.len_utf8()..];
+            continue;
+        }
+        let word = [("True", "true"), ("False", "false"), ("None", "null")]
+            .into_iter()
+            .find(|(python, _)| rest.starts_with(python));
+        if let Some((python, spelled)) = word {
+            json.push_str(spelled);
+            rest = &rest[python.len()..];
+            continue;
+        }
+        if c == '"' {
+            in_string = true;
+        }
+        json.push(c);
+        rest = &rest[c.len_utf8()..];
+    }
+    serde_json::from_str(&json).ok()
+}
+
 /// A declared datetime example moved to UTC, the way Fern reads it through a
 /// JavaScript `Date`: Fergus's `filter[dateFrom]` example is
 /// `2025-12-02T00:00:00+13:00`, and its worked call passes
@@ -1424,7 +1466,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 false,
             )?);
             let cx = ClientCtx {
-                yaml_source: ir.yaml_source,
+                yaml_source: ir.yaml_source.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 module,
@@ -1456,7 +1498,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             false,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source,
+            yaml_source: ir.yaml_source.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module,
@@ -1493,7 +1535,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         files.push(root_client_file(
             &env,
             RootClientFileCtx {
-                yaml_source: ir.yaml_source,
+                yaml_source: ir.yaml_source.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 modules: &root_modules,
@@ -1552,7 +1594,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             true,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source,
+            yaml_source: ir.yaml_source.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module: "",
@@ -2068,7 +2110,7 @@ fn select_readme_endpoint<'a>(
 fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source,
+        yaml_source: ir.yaml_source.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -2263,7 +2305,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source,
+            yaml_source: ir.yaml_source.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2293,7 +2335,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source,
+            yaml_source: ir.yaml_source.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2517,7 +2559,7 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source,
+        yaml_source: ir.yaml_source.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -4704,8 +4746,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 TypeRef::Optional(Box::new(s.type_ref.clone()))
             };
             let annotation = raw_type_str_ctx(&annotation_type, imports, true);
+            // A urlencoded single body is sent as form data.
+            let key = if s.content_type_override.as_deref()
+                == Some("application/x-www-form-urlencoded")
+            {
+                "data"
+            } else {
+                "json"
+            };
             let call = Doc::group(
-                "            json=convert_and_respect_annotation_metadata(",
+                format!("            {key}=convert_and_respect_annotation_metadata("),
                 vec![
                     Doc::atom("object_=request"),
                     Doc::atom(format!("annotation={annotation}")),
@@ -5459,7 +5509,7 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
 /// generalize when more auth schemes are modeled.
 struct RootClientFileCtx<'a> {
     /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: bool,
+    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     modules: &'a [&'a String],
@@ -5635,7 +5685,7 @@ struct RootClientCfg<'a> {
 )]
 fn root_client_methods(
     _env: &Environment<'static>,
-    yaml_source: bool,
+    yaml_source: Option<&std::collections::BTreeSet<String>>,
     pkg: &str,
     client_name: &str,
     endpoints: &[&Endpoint],
@@ -6012,7 +6062,7 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
 /// consults. Bundled so the client helpers stay within clippy's argument limit.
 struct ClientCtx<'a> {
     /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: bool,
+    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     module: &'a str,
@@ -6863,7 +6913,7 @@ struct ExampleCtx<'a> {
     /// Whether the document was YAML. An unquoted YAML timestamp scalar is a date
     /// to Fern's parser, not a string, so such an example is not one a plain `str`
     /// field can take; a JSON document cannot spell one.
-    yaml_source: bool,
+    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
     /// Hoisted tag-scoped types, consulted so an example can construct one and
     /// import it from its tag package (`from <pkg>.<tag> import ...`).
     tag_decls: &'a [TagTypeDecl],
@@ -7032,7 +7082,8 @@ impl<'a> ExampleCtx<'a> {
             });
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
-            let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
+            let values: Vec<serde_json::Value> =
+                serde_json::from_value(parse_example_value(example)?).ok()?;
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
                 if !self.example_is_temporal(inner) || !unique.contains(&value) {
@@ -7057,7 +7108,7 @@ impl<'a> ExampleCtx<'a> {
             });
         }
         if let TypeRef::Union(variants) = t {
-            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            let value: serde_json::Value = parse_example_value(example)?;
             if value
                 .as_object()
                 .is_some_and(|object| object.len() == 1 && object.contains_key("$ref"))
@@ -7077,7 +7128,7 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Object(object)) = self.find(name) {
                 let fields = self.object_fields(object);
-                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
+                let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
                 let args = fields
@@ -7103,7 +7154,9 @@ impl<'a> ExampleCtx<'a> {
                             // is no example for a field that is not temporal; see
                             // [`yaml_resolves_as_timestamp`].
                             Some(serde_json::Value::String(value))
-                                if self.yaml_source
+                                if self
+                                    .yaml_source
+                                    .is_some_and(|unquoted| unquoted.contains(value))
                                     && !self.example_is_temporal(&type_ref)
                                     && yaml_resolves_as_timestamp(value) =>
                             {
@@ -8562,8 +8615,19 @@ fn build_example_inner(
                         Example::Atom(format!("\"example_{}\"", f.wire_name))
                     }
                 } else {
+                    // A declared example is shown where a JSON field's would be:
+                    // Zulip's `to` is a union whose example `[9, 10]` Fern passes
+                    // over for the sample `"to"`.
                     f.example
                         .as_deref()
+                        .filter(|_| {
+                            ctx.example_is_scalar(&f.type_ref)
+                                || ctx.example_is_composite(&f.type_ref)
+                                || ctx.example_is_temporal(&f.type_ref)
+                                // A model takes its object example: Zulip's
+                                // `draft` is exampled from its annotation.
+                                || ctx.example_is_object(&f.type_ref)
+                        })
                         .and_then(|example| ctx.value_from_example(&f.type_ref, example))
                         .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)))
                 };
@@ -9387,6 +9451,24 @@ mod tests {
     }
 
     #[test]
+    fn example_literals_parse_as_json_whether_python_or_json_spelled() {
+        assert_eq!(
+            super::parse_example_value(r#"[{"on": True, "off": False, "none": None}]"#),
+            Some(serde_json::json!([{"on": true, "off": false, "none": null}]))
+        );
+        // Inside a string the Python words are text.
+        assert_eq!(
+            super::parse_example_value(r#"{"text": "True \"None\"", "on": True}"#),
+            Some(serde_json::json!({"text": "True \"None\"", "on": true}))
+        );
+        assert_eq!(
+            super::parse_example_value("[1, 2]"),
+            Some(serde_json::json!([1, 2]))
+        );
+        assert_eq!(super::parse_example_value("not json"), None);
+    }
+
+    #[test]
     fn class_body_separates_documented_fields_with_a_blank_line() {
         let body = class_body(
             None,
@@ -9945,7 +10027,7 @@ mod tests {
             .into_iter()
             .collect();
         Ir {
-            yaml_source: false,
+            yaml_source: None,
             openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
@@ -10737,7 +10819,7 @@ mod tests {
     ) -> ExampleCtx<'a> {
         ExampleCtx {
             types,
-            yaml_source: false,
+            yaml_source: None,
             tag_decls,
             referenced: Default::default(),
             referenced_doc_order: Default::default(),
@@ -12164,7 +12246,7 @@ mod tests {
         let auth = Auth::None;
         let tags = std::collections::BTreeMap::new();
         let cx = ClientCtx {
-            yaml_source: false,
+            yaml_source: None,
             pkg: "acme",
             client_name: "AcmeApi",
             module: "events",

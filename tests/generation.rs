@@ -4537,16 +4537,17 @@ paths:
 
 #[test]
 fn a_yaml_timestamp_example_is_no_example_for_a_plain_string_field() {
-    let quoted = render(
-        r##"openapi: 3.0.3
-info: { title: Ranges, version: 1.0.0 }
+    let spec = |from: &str| {
+        format!(
+            r##"openapi: 3.0.3
+info: {{ title: Ranges, version: 1.0.0 }}
 paths:
-  /ranges/{id}:
+  /ranges/{{id}}:
     put:
       operationId: ranges_replace
       tags: [Ranges]
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - {{ name: id, in: path, required: true, schema: {{ type: string }} }}
       requestBody:
         content:
           application/json:
@@ -4554,22 +4555,33 @@ paths:
               type: object
               required: [range]
               example:
-                range: { from: "2022-01-23T19:00:00.000Z", label: "winter" }
+                range: {{ from: {from}, label: "winter" }}
               properties:
                 range:
                   type: object
                   required: [from, label]
                   properties:
-                    from: { type: string }
-                    label: { type: string }
-      responses: { '204': { description: OK } }
-"##,
-    );
-    let client = &quoted["src/acme/ranges/client.py"];
-    // The timestamp is a date to a YAML reader, so it is no string example …
+                    from: {{ type: string }}
+                    label: {{ type: string }}
+      responses: {{ '204': {{ description: OK }} }}
+"##
+        )
+    };
+    // Unquoted, the timestamp is a date to a YAML reader (VTEX's `dateRange`), so
+    // it is no string example …
+    let unquoted = render(&spec("2022-01-23T19:00:00.000Z"));
+    let client = &unquoted["src/acme/ranges/client.py"];
     assert!(client.contains(r#"from_="from","#), "{client}");
     // … while the plain string beside it still is.
     assert!(client.contains(r#"label="winter","#), "{client}");
+    // Quoted, it is a string to every YAML reader: Zulip quotes
+    // `"1909-04-05"` inside a flow mapping, and its golden keeps it.
+    let quoted = render(&spec("\"2022-01-23T19:00:00.000Z\""));
+    let client = &quoted["src/acme/ranges/client.py"];
+    assert!(
+        client.contains(r#"from_="2022-01-23T19:00:00.000Z","#),
+        "{client}"
+    );
 }
 
 #[test]
@@ -9682,4 +9694,363 @@ components:
         "{truth}"
     );
     assert!(files.contains_key("src/acme/types/ground_truth_list_one_item_item.py"));
+}
+
+/// Zulip's shapes, each checked against its Fern 5.20.0 golden (corpus row 164).
+#[test]
+fn zulip_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Chat, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: getEvents
+      tags: [events]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/JsonSuccessBase" }
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      events:
+                        type: array
+                        items:
+                          oneOf:
+                            - type: object
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  allOf:
+                                    - { $ref: "#/components/schemas/EventTypeSchema" }
+                                    - { enum: [alert_words] }
+                                alert_words: { type: array, items: { type: string } }
+                            - type: object
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  allOf:
+                                    - { $ref: "#/components/schemas/EventTypeSchema" }
+                                    - { enum: [heartbeat] }
+                      user_status:
+                        type: object
+                        additionalProperties:
+                          allOf:
+                            - { description: A user's status. }
+                            - { $ref: "#/components/schemas/UserStatus" }
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - { $ref: "#/components/schemas/CodedError" }
+                      - { description: The queue is gone. }
+                  - allOf:
+                      - { $ref: "#/components/schemas/CodedError" }
+                      - { description: The queue is stale. }
+        "429":
+          description: slow down
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/RateLimitedError" }
+  /register:
+    post:
+      operationId: registerQueue
+      tags: [events]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [anchor]
+              properties:
+                narrow:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        additionalProperties: false
+                        required: [operator]
+                        properties:
+                          operator: { type: string }
+                          negated: { type: boolean }
+                      - { type: array, items: { type: string } }
+                idle_queue_timeout:
+                  oneOf:
+                    - { type: integer }
+                    - { type: string, enum: [mobile] }
+                anchor:
+                  allOf:
+                    - { $ref: "#/components/schemas/Anchor" }
+                    - { description: Where to start., example: "43" }
+            encoding:
+              narrow: { contentType: application/json }
+      responses:
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/InvalidApiKeyError" }
+                  - { $ref: "#/components/schemas/RateLimitedError" }
+  /views/{fragment}:
+    patch:
+      operationId: editView
+      tags: [views]
+      parameters:
+        - { name: fragment, in: path, required: true, schema: { type: string }, example: narrow/is/alerted }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_pinned: { type: boolean }
+                name: { type: string }
+              anyOf:
+                - { required: [is_pinned] }
+                - { required: [name] }
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    JsonSuccessBase:
+      type: object
+      properties:
+        result: { type: string }
+    EventTypeSchema: { type: string, description: The event's type. }
+    Anchor: { type: string }
+    UserStatus:
+      type: object
+      properties:
+        away: { type: boolean }
+    ProfileData: { type: object, description: Free-form data., example: { python: { text: Python } } }
+    CodedErrorBase:
+      allOf:
+        - { $ref: "#/components/schemas/JsonResponseBase" }
+        - required: [code]
+          properties:
+            code: { type: string, description: A string that identifies the error. }
+    JsonResponseBase:
+      type: object
+      properties:
+        result: { type: string }
+    CodedError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedErrorBase" }
+        - additionalProperties: false
+          properties:
+            result: {}
+            code: {}
+    InvalidApiKeyError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedError" }
+        - { description: The API key is invalid. }
+    RateLimitedError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedError" }
+        - { description: Too many requests. }
+"##,
+    );
+    // An `allOf` narrowing a string `$ref` to one value is an enum documented by
+    // the reference, and the field keeps that description.
+    let alert_type =
+        &files["src/acme/events/types/get_events_response_events_item_alert_words_type.py"];
+    assert!(
+        alert_type.contains("class GetEventsResponseEventsItemAlertWordsType(enum.StrEnum):"),
+        "{alert_type}"
+    );
+    assert!(alert_type.contains("The event's type."), "{alert_type}");
+    // A map value annotating an object `$ref` is a flat copy.
+    let status = &files["src/acme/events/types/get_events_response_user_status_value.py"];
+    assert!(
+        status.contains("class GetEventsResponseUserStatusValue(UniversalBaseModel):"),
+        "{status}"
+    );
+    assert!(status.contains("A user's status."), "{status}");
+    // An annotated `$ref` to a composed target is a flat copy, and an empty
+    // restatement over a property the parent declares inside its own `allOf`
+    // stays an undocumented unknown.
+    let invalid = &files["src/acme/types/invalid_api_key_error.py"];
+    assert!(
+        invalid.contains("class InvalidApiKeyError(UniversalBaseModel):"),
+        "{invalid}"
+    );
+    assert!(
+        invalid.contains("    code: typing.Optional[typing.Any] = None\n"),
+        "{invalid}"
+    );
+    // Error bodies: the last declaration of a status wins, an earlier `oneOf`
+    // leaves its variant models behind, and a one-member `oneOf` is its member.
+    assert!(files["src/acme/types/bad_request_error_body.py"]
+        .contains("BadRequestErrorBody = typing.Union[InvalidApiKeyError, RateLimitedError]"));
+    assert!(files["src/acme/types/bad_request_error_body_zero.py"].contains("The queue is gone."));
+    assert!(files["src/acme/errors/too_many_requests_error.py"].contains("body: RateLimitedError,"));
+    // A bare object component is a map whatever its example.
+    assert!(files["src/acme/types/profile_data.py"]
+        .contains("ProfileData = typing.Dict[str, typing.Any]"));
+    // Array-item and form unions hoist an untitled object and a string enum.
+    assert!(
+        files["src/acme/events/types/register_queue_request_narrow_item.py"]
+            .contains("typing.Union[RegisterQueueRequestNarrowItemNegated, typing.List[str]]")
+    );
+    assert!(
+        files["src/acme/events/types/register_queue_request_idle_queue_timeout.py"]
+            .contains("typing.Union[int, RegisterQueueRequestIdleQueueTimeoutOne]")
+    );
+    // A urlencoded body ignores a part's `contentType`, documents and examples
+    // an annotated field from its annotation.
+    let events_raw = &files["src/acme/events/raw_client.py"];
+    assert!(!events_raw.contains("with_content_type"), "{events_raw}");
+    assert!(
+        events_raw.contains("            Where to start."),
+        "{events_raw}"
+    );
+    assert!(files["src/acme/events/client.py"].contains(r#"anchor="43","#));
+    // A urlencoded union body is one `request` sent through `data=`, and without an
+    // importer example the path parameter passes its name.
+    let views_raw = &files["src/acme/views/raw_client.py"];
+    assert!(
+        views_raw.contains("data=convert_and_respect_annotation_metadata("),
+        "{views_raw}"
+    );
+    assert!(files["src/acme/views/types/edit_view_request_body.py"]
+        .contains("EditViewRequestBody = typing.Union[typing.Any]"));
+    assert!(files["src/acme/views/client.py"].contains(r#"fragment="fragment","#));
+}
+
+/// Zulip's model shapes (corpus row 164): restatements measured against the
+/// parent without its `required`, an empty restatement taking the parent's
+/// inline property, an `allOf` property's docstring, and a list-of-models form
+/// example.
+#[test]
+fn zulip_model_restatements_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Chat, version: 1.0.0 }
+paths:
+  /channels:
+    get:
+      operationId: getChannels
+      tags: [channels]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BasicChannel" }
+  /message:
+    get:
+      operationId: getMessage
+      tags: [messages]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    description: The message.
+                    allOf:
+                      - { $ref: "#/components/schemas/MessagesBase" }
+                      - additionalProperties: false
+                        properties:
+                          id: {}
+                          reaction_type: {}
+                          display_recipient: {}
+  /subscriptions:
+    post:
+      operationId: updateSubscriptions
+      tags: [channels]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [subscription_data]
+              properties:
+                subscription_data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [stream_id, value]
+                    properties:
+                      stream_id: { type: integer }
+                      value: { type: boolean }
+                  example: [{ stream_id: 1, value: true }, { stream_id: 3, value: false }]
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    BasicChannelBase:
+      type: object
+      properties:
+        stream_id: { type: integer, description: The channel ID. }
+        creator_id: { type: integer, nullable: true, description: Who made it. }
+    BasicChannel:
+      allOf:
+        - { $ref: "#/components/schemas/BasicChannelBase" }
+        - additionalProperties: false
+          required: [stream_id, creator_id]
+          properties:
+            stream_id: {}
+            creator_id: { nullable: true }
+            weekly_traffic: { type: integer, nullable: true }
+    MessagesBase:
+      type: object
+      properties:
+        id: { type: integer }
+        reaction_type: { type: string, enum: [unicode_emoji, realm_emoji] }
+        display_recipient:
+          oneOf:
+            - { type: string }
+            - type: array
+              items:
+                type: object
+                additionalProperties: false
+                properties:
+                  id: { type: integer }
+"##,
+    );
+    // `stream_id` restates the base's unchanged and required, so it is the base's
+    // field, last and optional; the nullable `creator_id` conflicts and stays first.
+    let channel = &files["src/acme/types/basic_channel.py"];
+    let creator = channel.find("    creator_id:").expect(channel);
+    let traffic = channel.find("    weekly_traffic:").expect(channel);
+    let stream = channel
+        .find("    stream_id: typing.Optional[int]")
+        .expect(channel);
+    assert!(creator < traffic && traffic < stream, "{channel}");
+    assert!(channel.contains("The channel ID."), "{channel}");
+    // The message keeps its own description and the parent's union.
+    let message = &files["src/acme/messages/types/get_message_response_message.py"];
+    assert!(message.contains("    The message.\n"), "{message}");
+    assert!(
+        message.contains(
+            "display_recipient: typing.Optional[GetMessageResponseMessageDisplayRecipient] = None"
+        ),
+        "{message}"
+    );
+    // A list-of-models example keeps each item, `true` included.
+    let client = &files["src/acme/channels/client.py"];
+    assert!(
+        client.contains("                    stream_id=3,\n                    value=False,"),
+        "{client}"
+    );
 }

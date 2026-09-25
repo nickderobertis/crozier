@@ -3235,6 +3235,7 @@ const CORPORA: &[&Corpus] = &[
     &SKOOL_ENTRY,
     &TIMELYAPP_ENTRY,
     &CRADL,
+    &ZULIP,
 ];
 
 #[test]
@@ -4874,10 +4875,6 @@ const SHORT_IO: Corpus = Corpus {
     unmatched: &[
         "reference.md",
         "src/fern/__init__.py",
-        "src/fern/domains/__init__.py",
-        "src/fern/domains/types/__init__.py",
-        "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py",
-        "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url_one.py",
         "src/fern/link_management/__init__.py",
         "src/fern/link_management/client.py",
         "src/fern/link_management/raw_client.py",
@@ -5773,6 +5770,18 @@ const TIMELYAPP_ENTRY: Corpus = Corpus {
 /// Cradl API — the jentic-public-apis aggregation's copy; an `anyOf` array variant whose item is a struct.
 const CRADL: Corpus = Corpus {
     api: "cradl",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — the publisher's own description at a pinned commit.
+const ZULIP: Corpus = Corpus {
+    api: "zulip",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11390,4 +11399,9 @@ fn timelyapp_entry_matches_fern_output() {
 #[test]
 fn cradl_matches_fern_output() {
     assert_link_ok_corpus_matches(&CRADL);
+}
+
+#[test]
+fn zulip_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP);
 }
