@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .group_setting_value_update_old_direct_members import GroupSettingValueUpdateOldDirectMembers
+
+GroupSettingValueUpdateOld = typing.Union[int, GroupSettingValueUpdateOldDirectMembers]

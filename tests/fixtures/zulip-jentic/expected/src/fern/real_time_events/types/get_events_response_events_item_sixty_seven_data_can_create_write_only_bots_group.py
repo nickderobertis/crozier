@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_sixty_seven_data_can_create_write_only_bots_group_direct_members import (
+    GetEventsResponseEventsItemSixtySevenDataCanCreateWriteOnlyBotsGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSixtySevenDataCanCreateWriteOnlyBotsGroup = typing.Union[
+    int, GetEventsResponseEventsItemSixtySevenDataCanCreateWriteOnlyBotsGroupDirectMembers
+]

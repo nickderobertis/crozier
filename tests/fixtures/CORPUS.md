@@ -184,6 +184,8 @@ re-measure with `just fixtures-gaps`.
 | 162 | `timelyapp-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Timely API, jentic's import entry: row 151's document with its object keys in another order |
 | 163 | `cradl` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Cradl API; `anyOf` array variants with struct and closed-object items |
 | 164 | `zulip` | github-raw | https://raw.githubusercontent.com/zulip/zulip/6a82f40579f8adb9149aa0b04ff795c397baae73/zerver/openapi/zulip.yaml | `6a82f40579f8adb9149aa0b04ff795c397baae73` | Apache-2.0 (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Zulip REST API; annotated `$ref`s to closed-object and `oneOf` targets, `oneOf` array variants with closed-object items |
+| 165 | `zulip-jentic` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, the jentic-public-apis aggregation's JSON import of `https://zulip.com/api/rest`: a different revision of row 164's document, re-serialized |
+| 166 | `zulip-jentic-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, jentic's import entry: row 165's document with its object keys in another order |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -772,6 +774,8 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 162 | `timelyapp-entry` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 163 | `cradl` | `anyof-array-variant-closed-object-item`; `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 164 | `zulip` | `oneof-array-variant-closed-object-item`; `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 165 | `zulip-jentic` | `oneof-array-variant-closed-object-item`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched |
+| 166 | `zulip-jentic-entry` | `oneof-array-variant-closed-object-item`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every

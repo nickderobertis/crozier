@@ -180,6 +180,20 @@ Additional issue #77 real-world OpenAPI source specs:
     Only Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Zulip REST API (jentic import): the jentic-public-apis aggregation's copy at
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/openapi.json.
+    The aggregating repository's LICENSE.md at that same commit grants CC0-1.0
+    redistribution; corpus row 165 records the immutable reference. Only
+    Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
+  * Zulip REST API (jentic import entry): the jentic-public-apis aggregation's copy at
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json.
+    The aggregating repository's LICENSE.md at that same commit grants CC0-1.0
+    redistribution; corpus row 166 records the immutable reference. Only
+    Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

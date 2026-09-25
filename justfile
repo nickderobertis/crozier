@@ -217,6 +217,8 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e timelyapp_entry_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cradl_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_entry_matches_fern_output
 
 # Format the codebase in place.
 format:

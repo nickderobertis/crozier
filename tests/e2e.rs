@@ -3236,6 +3236,8 @@ const CORPORA: &[&Corpus] = &[
     &TIMELYAPP_ENTRY,
     &CRADL,
     &ZULIP,
+    &ZULIP_JENTIC,
+    &ZULIP_JENTIC_ENTRY,
 ];
 
 #[test]
@@ -5782,6 +5784,30 @@ const CRADL: Corpus = Corpus {
 /// Zulip API — the publisher's own description at a pinned commit.
 const ZULIP: Corpus = Corpus {
     api: "zulip",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — the jentic-public-apis aggregation's JSON import, a different revision of row 164's document.
+const ZULIP_JENTIC: Corpus = Corpus {
+    api: "zulip-jentic",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — jentic's import entry, row 165's document with its keys reordered.
+const ZULIP_JENTIC_ENTRY: Corpus = Corpus {
+    api: "zulip-jentic-entry",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11404,4 +11430,14 @@ fn cradl_matches_fern_output() {
 #[test]
 fn zulip_matches_fern_output() {
     assert_link_ok_corpus_matches(&ZULIP);
+}
+
+#[test]
+fn zulip_jentic_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP_JENTIC);
+}
+
+#[test]
+fn zulip_jentic_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
 }

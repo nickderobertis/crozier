@@ -84,7 +84,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 161 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 163 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1065,8 +1065,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **193** registered sources, of which
-  **176** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **195** registered sources, of which
+  **178** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1129,21 +1129,23 @@ search-incomplete within the fixture backlog. The report separates finite
 inventory closure from unanswered searches and excludes Postman from new work
 and future obligations while preserving historical source evidence.
 
-The witness searches' registrations add twenty-one sources — corpus rows 144 to
-164, `paloalto-cspm-alerts`, `paloalto-cspm-reports`,
+The witness searches' registrations add twenty-three sources — corpus rows 144
+to 166, `paloalto-cspm-alerts`, `paloalto-cspm-reports`,
 `paloalto-cspm-search-manager`, `thrivecart`, `truefoundry-trueforge-5adde28`,
 `fergus`, `groupe-psa`, `timelyapp`, `nextgen`, `auto-agent-protocol`, `skool`,
 `spendesk`, `billie`, `alma-france`, `outreach`, `tally`, `billie-entry`,
-`skool-entry`, `timelyapp-entry`, `cradl` and `zulip` (32 vendored plus 161
-`link-ok`) — and promote nine `schemas` features to `golden`:
+`skool-entry`, `timelyapp-entry`, `cradl`, `zulip`, `zulip-jentic` and
+`zulip-jentic-entry` (32 vendored plus 163 `link-ok`) — and promote nine `schemas` features to `golden`:
 `annotated-ref-target-composed`, `annotated-ref-target-oneof`,
 `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`,
 `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`,
 `ref-pointer-undeclared-component-head`, `ref-pointer-unnamed-segment` and
 `schema-name-nonidentifier-name`. Row 164's repairs add one generator arm, the
 string-enum member of `hoist_union_variant` (cases 2a to 2d), and with it four
-`schemas` features, `golden` at once, so the denominator moves from 530 to 534. Only the `fergus`
-and `auto-agent-protocol` goldens reach the `src/ir.rs` sites their rows name; each row's evidence cell says
+`schemas` features, `golden` at once, so the denominator moves from 530 to 534. Rows 165 and 166, jentic's
+two serializations of another Zulip revision, promote nothing: every row they
+declare is already `golden`. Only the `fergus`, `auto-agent-protocol` and three
+Zulip goldens reach the `src/ir.rs` sites their rows name; each row's evidence cell says
 which of crozier's handling sites its golden reaches and which it does not.
 
 **What the `golden` count means, and what it does not.** 423 of those 534
