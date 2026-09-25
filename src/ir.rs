@@ -1038,6 +1038,10 @@ pub struct Endpoint {
     /// Whether the referenced request schema declares a `title`. Fern's
     /// surviving-schema content-type drop turns on it; see `emit.rs`.
     pub body_schema_titled: bool,
+    /// Whether the request body is an inline union (`oneOf`/`anyOf`, no `$ref`)
+    /// that declares neither a `title` nor a `discriminator`. Fern leaves such a
+    /// body's content type to httpx; see `emit.rs`.
+    pub body_inline_plain_union: bool,
     /// Whether the referenced request schema also contains server-populated fields.
     pub body_schema_is_response_heavy: bool,
     /// Whether the referenced request object leaves `additionalProperties` open.
@@ -3116,6 +3120,23 @@ fn build_endpoint(
                     .as_deref()
                     .is_some_and(|title| !title.trim().is_empty())
             }),
+        body_inline_plain_union: op
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .values()
+                    .find_map(|media| media.schema.as_ref())
+            })
+            .is_some_and(|schema| {
+                schema.reference.is_none()
+                    && (schema.one_of.is_some() || schema.any_of.is_some())
+                    && schema.discriminator.is_none()
+                    && schema
+                        .title
+                        .as_deref()
+                        .is_none_or(|title| title.trim().is_empty())
+            }),
         body_schema_is_response_heavy: op
             .request_body
             .as_ref()
@@ -3681,6 +3702,13 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         Some(schema) if resp.reference.is_none() && is_inline_struct(schema) => {
             TypeRef::Named(format!("{class}Body"))
         }
+        // An inline union body is hoisted the same way (see
+        // `hoist_error_body_types`): the Vonage Messages API's `401` is a `oneOf`
+        // of two `$ref`s sharing a `type` discriminant, and Fern's exception
+        // carries the discriminated union `UnauthorizedErrorBody`.
+        Some(schema) if resp.reference.is_none() && is_inline_union(schema) => {
+            TypeRef::Named(format!("{class}Body"))
+        }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
         // object reached through a `$ref` to `components.responses` (bunq's
         // `GenericError`) or an otherwise-untyped body resolves to bare `Any`, the
@@ -3743,6 +3771,10 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     } else {
                         bodies.insert(name, schema.clone());
                     }
+                } else if is_inline_union(schema) {
+                    bodies
+                        .entry(format!("{class}Body"))
+                        .or_insert_with(|| schema.clone());
                 } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                     if let Some(item) = schema.items.as_deref() {
                         if item.reference.is_none() && is_inline_struct(item) {
@@ -4633,12 +4665,46 @@ impl InlineHoister<'_> {
             )
             .map(String::as_str)
             .collect();
-        let bases = schema
+        // A `$ref` member whose own properties this object redeclares is
+        // flattened rather than extended, one base at a time: the Vonage Messages
+        // API's SMS channel composes `allOf: [$ref Text, {text}, $ref
+        // channelOptionsSms]`, and Fern generates `class …(ChannelOptionsSms,
+        // BaseMessageType)` — `Text` (itself `allOf: [$ref baseMessageType,
+        // {message_type, text}]`) is copied in, its own base extended in its
+        // place and its fields written after this object's own, while the base
+        // nothing redeclares stays a parent.
+        let own: std::collections::HashSet<&str> = schema
+            .properties
+            .keys()
+            .chain(
+                schema
+                    .all_of
+                    .iter()
+                    .flatten()
+                    .filter(|member| member.reference.is_none())
+                    .flat_map(|member| member.properties.keys()),
+            )
+            .map(String::as_str)
+            .collect();
+        let mut bases = Vec::new();
+        let mut flattened: Vec<(String, &Schema)> = Vec::new();
+        for reference in schema
             .all_of
             .iter()
             .flatten()
-            .filter_map(|member| member.reference.as_deref().map(ref_to_class))
-            .collect();
+            .filter_map(|member| member.reference.as_deref())
+        {
+            let target = self
+                .schemas
+                .and_then(|schemas| resolve_ref_from_schemas(schemas, reference));
+            let redeclared = target.is_some_and(|target| {
+                declared_properties(target).any(|property| own.contains(property))
+            });
+            match target {
+                Some(target) if redeclared => flattened.push((ref_to_class(reference), target)),
+                _ => bases.push(ref_to_class(reference)),
+            }
+        }
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if member.reference.is_none() {
@@ -4646,6 +4712,42 @@ impl InlineHoister<'_> {
             }
         }
         self.hoist_object_fields(name, schema, &required, &mut fields);
+        for (base_name, base) in flattened {
+            bases.extend(
+                base.all_of
+                    .iter()
+                    .flatten()
+                    .filter_map(|member| member.reference.as_deref().map(ref_to_class)),
+            );
+            let base_required: Vec<&str> = base
+                .required
+                .iter()
+                .chain(
+                    base.all_of
+                        .iter()
+                        .flatten()
+                        .flat_map(|member| &member.required),
+                )
+                .map(String::as_str)
+                .collect();
+            // The base is a component, so every type its fields name — lowered
+            // under its own name, `TextMessageType` — is already the component
+            // builder's; what lowering them here hoists again is dropped.
+            let hoisted = self.out.len();
+            let mut inherited = Vec::new();
+            for member in base.all_of.iter().flatten() {
+                if member.reference.is_none() {
+                    self.hoist_object_fields(&base_name, member, &base_required, &mut inherited);
+                }
+            }
+            self.hoist_object_fields(&base_name, base, &base_required, &mut inherited);
+            self.out.truncate(hoisted);
+            fields.extend(
+                inherited
+                    .into_iter()
+                    .filter(|field| !own.contains(field.wire_name.as_str())),
+            );
+        }
         self.out.push(TypeDecl::Object(ObjectType {
             name: name.to_string(),
             module: naming::module_name(name),
@@ -4747,6 +4849,41 @@ impl InlineHoister<'_> {
                     self.hoist_object(&item_name, item);
                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                 }
+            }
+        }
+        // A member that is itself an inline composition is a named union, as it
+        // is in a component union (`Builder::variant_ref`): the Vonage Messages
+        // API's `sendMessage` body is a `oneOf` of five channel `oneOf`s, and Fern
+        // names them `SendMessageRequestZero` … `SendMessageRequestFour` with
+        // their own members `…OneZero`, `…OneOne` beneath. A composition of one
+        // member is that member: the SMS channel's single `allOf` is the model
+        // `SendMessageRequestZero` itself, not an alias of it.
+        if variant.reference.is_none() && variant.all_of.is_none() {
+            if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
+                if let [member] = members.as_slice() {
+                    return self.hoist_union_variant(parent, index, member, siblings);
+                }
+                let name = variant_class_name(parent, index, variant, siblings);
+                let docstring = clean_doc(variant.description.as_deref());
+                let discriminated =
+                    self.hoist_discriminated_union(&name, variant, docstring.clone());
+                if let Some(union) = discriminated {
+                    return union;
+                }
+                let nested = members
+                    .iter()
+                    .enumerate()
+                    .map(|(nested_index, member)| {
+                        self.hoist_union_variant(&name, nested_index, member, members)
+                    })
+                    .collect();
+                self.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target: TypeRef::Union(nested),
+                    docstring,
+                }));
+                return TypeRef::Named(name);
             }
         }
         if is_inline_object(variant)
@@ -7587,7 +7724,18 @@ impl Builder<'_> {
                         continue;
                     }
                 }
-                self.collect_fields(name, member, &required, &mut fields);
+                // A property a base declares with a description, redeclared here
+                // without one, keeps the base's: the Vonage Messages API's
+                // `messageStatusViber` narrows `messageStatusBase.status` to a new
+                // enum and Fern documents `MessageStatusViberStatus` with the
+                // base's "The status of the message."
+                let described = described_from_bases(member, &base_refs);
+                self.collect_fields(
+                    name,
+                    described.as_ref().unwrap_or(member),
+                    &required,
+                    &mut fields,
+                );
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
@@ -9206,6 +9354,59 @@ fn is_map(schema: &Schema) -> bool {
 
 /// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
 /// named type when it appears as a union variant.
+/// `member` with each undescribed `enum` property a base describes given that
+/// base's description, or `None` when no property needs one. Only a redeclared
+/// enum is measured to take it — the description documents the enum type it
+/// hoists — so a plain restatement keeps deciding override-versus-restatement on
+/// what it declares itself.
+fn described_from_bases(member: &Schema, bases: &[(String, &Schema)]) -> Option<Schema> {
+    let mut described = member.clone();
+    let mut changed = false;
+    for (property, schema) in described.properties.iter_mut() {
+        if schema.description.is_some() || string_enum_values(schema).is_none() {
+            continue;
+        }
+        let inherited = bases.iter().find_map(|(_, base)| {
+            base.properties
+                .get(property)
+                .and_then(|declared| declared.description.clone())
+        });
+        if inherited.is_some() {
+            schema.description = inherited;
+            changed = true;
+        }
+    }
+    changed.then_some(described)
+}
+
+/// The property names a schema declares, at its top level and in its inline
+/// `allOf` members.
+fn declared_properties(schema: &Schema) -> impl Iterator<Item = &str> {
+    schema
+        .properties
+        .keys()
+        .chain(
+            schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|member| member.reference.is_none())
+                .flat_map(|member| member.properties.keys()),
+        )
+        .map(String::as_str)
+}
+
+/// An inline `oneOf`/`anyOf` of more than one member — a union written in place
+/// rather than referenced.
+fn is_inline_union(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|members| members.len() > 1)
+}
+
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
 }

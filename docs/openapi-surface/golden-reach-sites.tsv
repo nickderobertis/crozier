@@ -28,7 +28,7 @@ response-description	response.description	src/ir.rs::success_response_doc
 response-headers	response.headers	none	
 response-content	response.content	src/ir.rs::response_schema,src/ir.rs::success_response_schema,src/ir.rs::error_body_type,src/openapi.rs::response_schemas	
 response-links	response.links	none	
-components-responses	components.responses	src/openapi.rs::resolve_response,src/openapi.rs::normalize_responses,src/ir.rs::error_body_type[Some\(schema\) if resp\.reference\.is_none\(\)]	
+components-responses	components.responses	src/openapi.rs::resolve_response,src/openapi.rs::normalize_responses,src/ir.rs::error_body_type[Some\(schema\) if resp\.reference\.is_none\(\) && is_inline_struct]	
 link-operation-ref	link.operationRef	none	
 link-operation-id	link.operationId	none	
 link-parameters	link.parameters	none	

@@ -5203,6 +5203,131 @@ paths:
     assert!(raw.contains("def fallback("), "{raw}");
 }
 
+/// An operation-level union whose members are themselves compositions, in the
+/// shape of the Vonage Messages API's `sendMessage` (corpus row 193). A member
+/// that is a `oneOf` of several is a named union of its own; a member that is a
+/// `oneOf` of one is that one member; an `allOf` member that redeclares a
+/// property of a composed `$ref` base flattens that base — its own base becomes a
+/// parent, its fields follow the member's own — while a base nothing redeclares
+/// stays a parent. The untitled, undiscriminated body leaves its content type to
+/// httpx; an inline union error body is the `{Class}Body` type; and a subtype
+/// that redeclares a described base property without a description keeps the
+/// base's on the enum it hoists.
+#[test]
+fn nested_inline_union_members_hoist_as_fern_names_them() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Messages, version: 1.0.0 }
+paths:
+  /:
+    post:
+      operationId: sendMessage
+      requestBody:
+        description: Send a message.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: SMS
+                  oneOf:
+                    - allOf:
+                        - $ref: '#/components/schemas/Text'
+                        - properties: { text: { description: Up to 1000 characters. } }
+                        - $ref: '#/components/schemas/ChannelOptionsSms'
+                - title: MMS
+                  oneOf:
+                    - allOf:
+                        - $ref: '#/components/schemas/Text'
+                        - properties: { text: { description: A caption. } }
+                    - allOf:
+                        - $ref: '#/components/schemas/ChannelOptionsSms'
+                        - properties: { url: { type: string } }
+      responses:
+        '202': { description: Accepted }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MissingCredentials'
+                  - $ref: '#/components/schemas/InvalidApplication'
+  /status:
+    get:
+      operationId: getStatus
+      responses:
+        '200':
+          description: Status
+          content: { application/json: { schema: { $ref: '#/components/schemas/StatusViber' } } }
+components:
+  schemas:
+    BaseMessageType:
+      type: object
+      properties: { to: { type: string } }
+    Text:
+      allOf:
+        - $ref: '#/components/schemas/BaseMessageType'
+        - properties:
+            message_type: { type: string, enum: [text], description: Always text. }
+            text: { type: string }
+          required: [text]
+    ChannelOptionsSms:
+      type: object
+      properties: { channel: { type: string, enum: [sms] } }
+    MissingCredentials:
+      type: object
+      properties: { type: { type: string, enum: [missing] }, title: { type: string } }
+    InvalidApplication:
+      type: object
+      properties: { type: { type: string, enum: [invalid] }, title: { type: string } }
+    StatusBase:
+      type: object
+      properties:
+        status: { type: string, enum: [submitted, delivered], description: The status of the message. }
+    StatusViber:
+      allOf:
+        - $ref: '#/components/schemas/StatusBase'
+        - properties: { status: { type: string, enum: [submitted, read] } }
+"##,
+    );
+    let types = |name: &str| {
+        files
+            .get(&format!("src/acme/types/{name}.py"))
+            .unwrap_or_else(|| panic!("no {name}.py among {:?}", files.keys()))
+    };
+    let body = types("send_message_request");
+    assert!(
+        body.contains("typing.Union[SendMessageRequestZero, SendMessageRequestOne]"),
+        "{body}"
+    );
+    let sms = types("send_message_request_zero");
+    assert!(
+        sms.contains("class SendMessageRequestZero(ChannelOptionsSms, BaseMessageType):"),
+        "{sms}"
+    );
+    let text = sms.find("    text: ").expect("the member's own field");
+    let message_type = sms
+        .find("    message_type: ")
+        .expect("the flattened base's field");
+    assert!(text < message_type, "{sms}");
+    assert!(sms.contains("typing.Optional[TextMessageType]"), "{sms}");
+    let mms = types("send_message_request_one");
+    assert!(mms.contains("SendMessageRequestOneZero"), "{mms}");
+    assert!(mms.contains("SendMessageRequestOneOne"), "{mms}");
+    let raw = &files["src/acme/raw_client.py"];
+    let send = &raw[raw.find("def send_message(").unwrap()..];
+    let send = &send[..send.find("\n    def ").unwrap_or(send.len())];
+    assert!(!send.contains("\"content-type\""), "{send}");
+    assert!(types("unauthorized_error_body").contains("UnauthorizedErrorBody"));
+    assert!(
+        files["src/acme/errors/unauthorized_error.py"].contains("body: UnauthorizedErrorBody"),
+        "{}",
+        files["src/acme/errors/unauthorized_error.py"]
+    );
+    assert!(types("status_viber_status").contains("The status of the message."));
+}
+
 /// An unknown body is optional only beside a *separate* empty status. ZipTax's
 /// `merchantCertDelete` (`200` and `204`, both `schema: {}`) returns
 /// `typing.Optional[typing.Any]`; a lone `204` declaring `schema: {}` (Letta) and

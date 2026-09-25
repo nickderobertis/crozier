@@ -4881,6 +4881,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             || !ep.body_description_missing
                             || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
+                        // An inline union body that neither names itself nor
+                        // declares a discriminator drops the header, however it is
+                        // documented and whatever its auth: the Vonage Messages
+                        // API's described, required `sendMessage` `oneOf`,
+                        // Flowdapt's `create_config` and Otoroshi's
+                        // `create_global_auth_module` all leave the content type to
+                        // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
+                        // and its discriminated `createTemplateNoProject` keep it.
+                        && !ep.body_inline_plain_union
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
@@ -9749,6 +9758,7 @@ mod tests {
             reference_body_example: None,
             body_schema_documented: false,
             body_schema_titled: false,
+            body_inline_plain_union: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,
