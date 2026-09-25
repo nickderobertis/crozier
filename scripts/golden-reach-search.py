@@ -63,6 +63,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 REPO = Path(__file__).resolve().parent.parent
@@ -88,7 +89,8 @@ FIRST_PAGE = 100
 PROBE_CHUNK = 8
 
 
-def _load(name: str, path: Path) -> Any:
+def _load(name: str, path: Path) -> ModuleType:
+    """A sibling script imported by path: its hyphenated file name is no module name."""
     spec = importlib.util.spec_from_file_location(name, path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
