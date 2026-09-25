@@ -316,6 +316,20 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("just golden-reach", run.stderr)
 
+    def test_a_profile_llvm_cannot_read_fails_with_its_stderr_and_the_rebuild(self) -> None:
+        profdata = golden_reach._llvm_tool("llvm-profdata")
+        with tempfile.TemporaryDirectory() as scratch:
+            raw = Path(scratch) / "stale.profraw"
+            raw.write_bytes(b"not a profile")
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.run_llvm(
+                    [profdata, "merge", "-sparse", str(raw), "-o", str(Path(scratch) / "m.profdata")]
+                )
+        message = str(refused.exception)
+        self.assertIn("`llvm-profdata merge` exited", message)
+        self.assertIn("stale.profraw", message)
+        self.assertIn("just golden-reach", message)
+
 
 _search_spec = importlib.util.spec_from_file_location(
     "golden_reach_search", REPO / "scripts" / "golden-reach-search.py"

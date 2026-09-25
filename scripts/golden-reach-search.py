@@ -730,11 +730,11 @@ def probe(args: argparse.Namespace) -> int:
                 if not profiles:
                     return {"key": key, "candidate": candidate, "status": f"no profile (exit {run.returncode})", "reached": []}
                 merged = scratch_path / "merged.profdata"
-                subprocess.run([profdata, "merge", "-sparse", *profiles, "-o", str(merged)], check=True)
+                REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
                 export = scratch_path / "export.json"
                 with export.open("w", encoding="utf-8") as sink:
-                    subprocess.run([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
-                                    *sources], check=True, stdout=sink)
+                    REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
+                                    *sources], stdout=sink)
                 tier = {"t": REACH.REPORT.load_tier(export, REPO)}
                 hit = {f: {tuple(r) for r, n in c.items() if n > 0} for f, c in tier["t"].items()}
             reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))

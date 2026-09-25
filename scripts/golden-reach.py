@@ -53,7 +53,7 @@ import tempfile
 import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import NamedTuple
+from typing import IO, NamedTuple
 
 REPO = Path(__file__).resolve().parent.parent
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -338,17 +338,28 @@ def _llvm_tool(name: str) -> str:
     return str(tool)
 
 
+def run_llvm(argv: list[str], stdout: IO[str] | None = None) -> None:
+    """Run an llvm-profdata/llvm-cov step, failing with its stderr and the fix."""
+    run = subprocess.run(argv, stdout=stdout, stderr=subprocess.PIPE, text=True)
+    if run.returncode != 0:
+        fail(
+            f"`{Path(argv[0]).name} {argv[1]}` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
+            f"the profiles and the instrumented binaries disagree; rebuild them with "
+            f"`just golden-reach` and retry"
+        )
+
+
 def _instrumented_binaries(repo_root: Path) -> tuple[Path, Path]:
     deps = repo_root / "target" / "llvm-cov-target" / "debug" / "deps"
     candidates = [
         p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == ""
     ]
     if not candidates:
-        fail(f"no instrumented e2e binary under {deps}")
+        fail(f"no instrumented e2e binary under {deps} — run `just golden-reach`, which builds it")
     e2e = max(candidates, key=lambda p: p.stat().st_mtime)
     crozier = repo_root / "target" / "llvm-cov-target" / "debug" / "crozier"
     if not crozier.is_file():
-        fail(f"no instrumented crozier binary at {crozier}")
+        fail(f"no instrumented crozier binary at {crozier} — run `just golden-reach`, which builds it")
     return e2e, crozier
 
 
@@ -376,10 +387,13 @@ def measure(args: argparse.Namespace) -> int:
         sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
         fail("the instrumented build failed; run `cargo llvm-cov nextest` to see why")
     e2e, crozier = _instrumented_binaries(repo_root)
-    listing = subprocess.run(
+    listed = subprocess.run(
         [str(e2e), "--list", "--format", "terse"], cwd=repo_root,
-        capture_output=True, text=True, check=True,
-    ).stdout
+        capture_output=True, text=True,
+    )
+    if listed.returncode != 0:
+        fail(f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `just golden-reach`")
+    listing = listed.stdout
     tests = sorted(
         line.rsplit(": test", 1)[0]
         for line in listing.splitlines()
@@ -389,7 +403,11 @@ def measure(args: argparse.Namespace) -> int:
         selected = re.compile(args.tests)
         tests = [t for t in tests if selected.search(t)]
     if not tests:
-        fail("no golden test is selected")
+        fail(
+            "no golden test is selected — check the --tests regex against "
+            "`cargo nextest list -E 'binary(e2e)'`, or register the corpus's "
+            "`*_matches_fern_output` test in tests/e2e.rs"
+        )
     profdata = _llvm_tool("llvm-profdata")
     llvm_cov = _llvm_tool("llvm-cov")
     (out / "tests").mkdir(parents=True, exist_ok=True)
@@ -415,13 +433,13 @@ def measure(args: argparse.Namespace) -> int:
                 return test, (run.stdout + run.stderr)[-3000:]
             profiles = sorted(str(p) for p in raw.glob("*.profraw"))
             merged = raw / "merged.profdata"
-            subprocess.run([profdata, "merge", "-sparse", *profiles, "-o", str(merged)], check=True)
+            run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
             export = raw / "export.json"
             with export.open("w", encoding="utf-8") as sink:
-                subprocess.run(
+                run_llvm(
                     [llvm_cov, "export", "-format=text", f"-instr-profile={merged}",
                      str(crozier), "-object", str(e2e)],
-                    check=True, stdout=sink,
+                    stdout=sink,
                 )
             universe, hit = _covered(export, repo_root)
             (out / "tests" / f"{test}.json").write_text(json.dumps(hit), encoding="utf-8")
