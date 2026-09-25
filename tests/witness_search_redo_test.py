@@ -576,7 +576,21 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 if len(cells) == 8 and cells[0] in keys:
                     entries[cells[0]] = cells
         self.assertEqual(set(keys), set(entries))
+        # Corpus rows registered after PayPal settled further contract keys on
+        # witnesses of their own; each such row's evidence names its fixture.
+        settled_elsewhere = {
+            "annotated-ref-target-closed-object": "truefoundry-trueforge-5adde28",
+            "annotated-ref-target-composed": "paloalto-cspm-alerts",
+            "annotated-ref-target-oneof": "paloalto-cspm-alerts",
+            "anyof-array-variant-struct-item": "fergus",
+            "ref-pointer-undeclared-component-head": "thrivecart",
+            "ref-pointer-unnamed-segment": "auto-agent-protocol",
+        }
         for key, selector in keys.items():
+            if key in settled_elsewhere:
+                self.assertEqual("golden", entries[key][3], key)
+                self.assertIn(settled_elsewhere[key], entries[key][4], key)
+                continue
             self.assertEqual("golden" if selector in counts else "gap", entries[key][3], key)
         self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])
         self.assertIn("paypal-catalog-products", entries["anyof-sole-member"][4])
@@ -804,9 +818,14 @@ class WideWitnessTests(unittest.TestCase):
                            'disposition': 'witness-found', 'discarded': True},
                           {'artifact': 'publisher/blocked.json', 'screens': blocked,
                            'disposition': 'witness-blocked', 'discarded': False}], items[discarded]['candidates'])
-        # Changing the frozen selector must refuse derivation before writing a report.
+        # Changing a derived key's frozen selector must refuse derivation before
+        # writing a report. The key has to be one derivation still reads: a row
+        # a registration has since made `golden` is no longer derived at all.
         contract = root / 'contract.md'
-        contract.write_text(contract.read_text(encoding='utf-8').replace('schema.', 'unknown.', 1), encoding='utf-8')
+        row = f'| `{retained}` | `schema.'
+        text = contract.read_text(encoding='utf-8')
+        self.assertIn(row, text)
+        contract.write_text(text.replace(row, f'| `{retained}` | `unknown.', 1), encoding='utf-8')
         refused = self.cli('derive', '--report', self.work / 'refused', '--contract', contract)
         self.assertNotEqual(0, refused.returncode)
         self.assertIn('selector', refused.stderr)

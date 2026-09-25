@@ -12,6 +12,7 @@ import argparse
 import csv
 import io
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,19 @@ FIELDS = (
 )
 CENTRAL_FIELDS = (*FIELDS[:-1], "record")
 DISPOSITIONS = ("witness-found", "rejected", "outstanding", "not-owed")
+# A screened candidate can also be settled against the corpus itself: a copy
+# whose bytes equal a registered row's source document, named with the digest
+# that proves it, or one left for a later registration node to register.
+PENDING_REGISTRATION = "pending-registration"
+BYTE_IDENTICAL = re.compile(r"byte-identical to CORPUS row \d+, sha256 [0-9a-f]{64}")
+
+
+def known_disposition(disposition: str) -> bool:
+    return (
+        disposition in DISPOSITIONS
+        or disposition == PENDING_REGISTRATION
+        or BYTE_IDENTICAL.fullmatch(disposition) is not None
+    )
 LEDGER_REQUIRED_FIELDS = {
     "queries.jsonl": ("source", "key", "query", "outcome"),
     "candidates.jsonl": ("source", "key", "repository", "path", "disposition"),
@@ -154,10 +168,13 @@ def classify(
             licence = screen_value(screen["license"])
             ref = screen_value(screen["ref"])
             fern = screen_value(screen["fern"])
-            disposition = {
-                "witness-found": "witness-found",
-                "not-owed": "not-owed",
-            }.get(screen["disposition"], "rejected")
+            settled = screen["disposition"]
+            disposition = (
+                settled
+                if settled in ("witness-found", "not-owed", PENDING_REGISTRATION)
+                or BYTE_IDENTICAL.fullmatch(settled)
+                else "rejected"
+            )
         else:
             licence = ref = fern = (
                 "not-run: key closed by found witness"
@@ -279,7 +296,7 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
 
 def render(rows: list[dict[str, str]], fields: tuple[str, ...]) -> str:
     for row in rows:
-        if row["disposition"] not in DISPOSITIONS:
+        if not known_disposition(row["disposition"]):
             raise ValueError(f"unknown candidate disposition: {row['disposition']}")
     output = io.StringIO()
     writer = csv.DictWriter(

@@ -838,3 +838,17 @@ under a name of its own because the shape it witnesses is absent at row 108's
 commit. The three Prisma Cloud documents are separate descriptions in
 Palo Alto Networks' own `pan.dev` repository; each is a row of its own because
 each is a document Fern generates on its own.
+
+Five usable documents are not registered and read `pending-registration` in
+the ledgers, for a later registration to take up:
+
+- Cradl's golden (241 files) still differs in two union aliases. Fern writes
+  `Optional` on the nullable array member of `Prediction.predictions` only
+  with the exact published member pair.
+- Zulip's own description differs in 598 of its golden's 1014 files.
+- jentic's `meta/import/*-entry.json` copies of Billie, Skool and Timely
+  differ in bytes from rows 156, 154 and 151, and have no golden of their
+  own.
+
+Every other usable candidate is one of the rows above, or a byte-identical copy
+of one whose ledger disposition names that row and the shared sha256.
