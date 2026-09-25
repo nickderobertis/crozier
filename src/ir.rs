@@ -14325,6 +14325,8 @@ mod tests {
             ),
             "groupv2"
         );
+        // An untagged dotted id names no sub-client: the method hangs off the root
+        // client (OpenCodeUI's `global.config.get` is the root `global_config_get`).
         assert_eq!(
             endpoint_module(
                 &operation(serde_json::json!({
@@ -14333,7 +14335,7 @@ mod tests {
                 })),
                 "/users"
             ),
-            "admin_users"
+            ""
         );
         assert_eq!(
             endpoint_module(
