@@ -985,8 +985,15 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
     return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
 
 
-def evidence_directory_failures(key: str, directory: Path) -> list[str]:
-    """Every file under the directory is named by a row, and every named file exists."""
+def evidence_directory_failures(
+    key: str, directory: Path, layout_files: tuple[str, ...] = ()
+) -> list[str]:
+    """Every file under the directory is named by a row, and every named file exists.
+
+    `layout_files` are files the evidence layout itself defines rather than a
+    row: a golden-reach arm search's `probe.jsonl` holds every declarer's
+    measured reach, and its publisher-tree `pins.tsv` the resolved pin.
+    """
     name = directory.name
     records = evidence_records(directory)
     failures = []
@@ -1004,7 +1011,8 @@ def evidence_directory_failures(key: str, directory: Path) -> list[str]:
             )
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
-        if path.is_file() and rel not in ("records.tsv", "enumeration.tsv", "enumeration.tsv.gz") and rel not in named:
+        exempt = ("records.tsv", "enumeration.tsv", "enumeration.tsv.gz", *layout_files)
+        if path.is_file() and rel not in exempt and rel not in named:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -1019,6 +1027,7 @@ def exhaustive_search_failures(
     capabilities: dict[str, tuple[bool, bool, str]],
     directory_for: Any = None,
     pinned_for: Any = None,
+    layout_files: tuple[str, ...] = (),
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -1066,10 +1075,10 @@ def exhaustive_search_failures(
         records = [r for r in evidence_records(directory) if r.get("key") == key]
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
-        failures += evidence_directory_failures(key, directory) if directory.is_dir() else []
+        failures += evidence_directory_failures(key, directory, layout_files) if directory.is_dir() else []
         failures += exhaustive_line_failures(
             key, source, line, records, capabilities.get(source), exhausted, directory,
-            pinned_for(source, line) if pinned_for else None,
+            pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
         )
     return failures
 
@@ -7492,6 +7501,7 @@ class RankedBacklogTests(unittest.TestCase):
                         key, lines, self.ARM_SEARCHES, capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
+                        layout_files=("probe.jsonl", "pins.tsv"),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"

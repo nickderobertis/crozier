@@ -81,6 +81,8 @@ QUERY_SOURCES = ("github-code-search", "sourcegraph")
 RECORD_FIELDS = ("key", "kind", "subject", "result", "file")
 WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
 FIRST_PAGE = 100
+# Probe results are filed this many declarers at a time, so a stopped run keeps them.
+PROBE_CHUNK = 100
 
 
 def _load(name: str, path: Path) -> Any:
@@ -654,9 +656,13 @@ def probe(args: argparse.Namespace) -> int:
         regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
                    for spec in arms for site in [REACH.resolve_site(spec)]}
         pending = declarers(args.source, key, args.root)
+        earlier: list[dict[str, Any]] = []
         if args.resume:
-            done = {row["candidate"] for row in read_probes(args.source) if row["key"] == key}
-            if {candidate for candidate, _path in pending} <= done:
+            # A stopped probe resumes document by document: what it filed stands.
+            earlier = [row for row in read_probes(args.source) if row["key"] == key]
+            done = {row["candidate"] for row in earlier}
+            pending = [(candidate, path) for candidate, path in pending if candidate not in done]
+            if not pending:
                 continue
         # The export is read for the files the unreached sites sit in, and nothing else.
         sources = sorted({str(REPO / file) for file, _found in regions.values()})
@@ -703,9 +709,11 @@ def probe(args: argparse.Namespace) -> int:
             status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
             return {"key": key, "candidate": candidate, "status": status, "reached": reached}
 
+        probed: list[dict[str, Any]] = []
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-            probed = list(pool.map(one, pending))
-        file_probes(args.source, key, probed)
+            for start in range(0, len(pending), PROBE_CHUNK):
+                probed.extend(pool.map(one, pending[start:start + PROBE_CHUNK]))
+                file_probes(args.source, key, earlier + probed)
         results.extend(probed)
     reaching = sum(1 for r in results if r["reached"])
     print(f"golden-reach-search: {args.source}: probed {len(results)} declarer(s), {reaching} reach an unreached arm")
@@ -798,6 +806,21 @@ def _dispositions(key: str) -> list[str]:
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
+def prune(args: argparse.Namespace) -> int:
+    """Drop `candidate` rows no screen answers for: a declarer is a candidate once screened.
+
+    Records written before that rule named every arm-reaching declarer a
+    candidate; the reach itself stays in `probe.jsonl`.
+    """
+    for source in args.source:
+        rows = read_records(source)
+        screened = {(r["key"], r["subject"].rsplit(" ", 1)[0]) for r in rows if r["kind"] == "screen"}
+        kept = [r for r in rows if r["kind"] != "candidate" or (r["key"], r["subject"]) in screened]
+        replace_records(source, kept)
+        print(f"golden-reach-search: {source}: {len(rows) - len(kept)} unscreened candidate row(s) dropped")
+    return 0
+
+
 def render(args: argparse.Namespace) -> int:
     """One arm search record per key, one Contract B line per declared source."""
     for key in args.key:
@@ -878,11 +901,13 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--gap-keys", default="")
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
+    pr = sub.add_parser("prune")
+    pr.add_argument("--source", action="append", required=True)
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", required=True, choices=("exhausted", "search-incomplete", "witness-found"))
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render}[args.command](args)
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "prune": prune, "render": render}[args.command](args)
 
 
 if __name__ == "__main__":
