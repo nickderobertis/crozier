@@ -3231,6 +3231,9 @@ const CORPORA: &[&Corpus] = &[
     &ALMA_FRANCE,
     &OUTREACH,
     &TALLY,
+    &BILLIE_ENTRY,
+    &SKOOL_ENTRY,
+    &TIMELYAPP_ENTRY,
 ];
 
 #[test]
@@ -5721,6 +5724,42 @@ const OUTREACH: Corpus = Corpus {
 /// Tally API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
 const TALLY: Corpus = Corpus {
     api: "tally",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Billie Direct API — jentic's import entry, row 156's document with its keys reordered.
+const BILLIE_ENTRY: Corpus = Corpus {
+    api: "billie-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Skool API — jentic's import entry, row 154's document with its keys reordered.
+const SKOOL_ENTRY: Corpus = Corpus {
+    api: "skool-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Timely API — jentic's import entry, row 151's document with its keys reordered.
+const TIMELYAPP_ENTRY: Corpus = Corpus {
+    api: "timelyapp-entry",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11318,4 +11357,19 @@ fn outreach_matches_fern_output() {
 #[test]
 fn tally_matches_fern_output() {
     assert_link_ok_corpus_matches(&TALLY);
+}
+
+#[test]
+fn billie_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BILLIE_ENTRY);
+}
+
+#[test]
+fn skool_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SKOOL_ENTRY);
+}
+
+#[test]
+fn timelyapp_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TIMELYAPP_ENTRY);
 }

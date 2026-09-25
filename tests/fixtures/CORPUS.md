@@ -179,6 +179,9 @@ re-measure with `just fixtures-gaps`.
 | 157 | `alma-france` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/alma_france_api/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Alma Payments API; `$ref` pointers under an undeclared component head |
 | 158 | `outreach` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/outreach.io/main/2.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Outreach API; `$ref` pointers under an undeclared component head |
 | 159 | `tally` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/tally.so/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `MIT`) | link-ok | Tally API; `$ref` pointers under an undeclared component head |
+| 160 | `billie-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Billie Direct API, jentic's import entry: row 156's document with its object keys in another order |
+| 161 | `skool-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API, jentic's import entry: row 154's document with its object keys in another order |
+| 162 | `timelyapp-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Timely API, jentic's import entry: row 151's document with its object keys in another order |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -762,6 +765,9 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 157 | `alma-france` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 158 | `outreach` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 159 | `tally` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 160 | `billie-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 161 | `skool-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 162 | `timelyapp-entry` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -839,16 +845,18 @@ commit. The three Prisma Cloud documents are separate descriptions in
 Palo Alto Networks' own `pan.dev` repository; each is a row of its own because
 each is a document Fern generates on its own.
 
-Five usable documents are not registered and read `pending-registration` in
+Rows 160 to 162 are jentic's `meta/import/input-entry.json` copies of Billie,
+Skool and Timely. Each holds the same document as rows 156, 154 and 151 with
+its object keys in another order, which is a different input to Fern. Each
+golden byte-matches with no repair of its own.
+
+Two usable documents are not registered and read `pending-registration` in
 the ledgers, for a later registration to take up:
 
 - Cradl's golden (241 files) still differs in two union aliases. Fern writes
   `Optional` on the nullable array member of `Prediction.predictions` only
   with the exact published member pair.
 - Zulip's own description differs in 598 of its golden's 1014 files.
-- jentic's `meta/import/*-entry.json` copies of Billie, Skool and Timely
-  differ in bytes from rows 156, 154 and 151, and have no golden of their
-  own.
 
 Every other usable candidate is one of the rows above, or a byte-identical copy
 of one whose ledger disposition names that row and the shared sha256.
