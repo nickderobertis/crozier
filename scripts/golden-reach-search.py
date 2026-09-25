@@ -647,7 +647,30 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
     return out
 
 
+def _current_build() -> str:
+    """The measured build's short commit, as a probe row records it."""
+    return json.loads((REACH.DEFAULT_OUT / "provenance.json").read_text(encoding="utf-8"))["commit"][:12]
+
+
+def measured_build() -> str:
+    """The commit the instrumented build and its region universe were measured at.
+
+    A site is resolved against today's `src/` and matched against the build's
+    regions, so the two must be one source: an edit to `src/` after the build
+    shifts every span below it and a probe would read another arm's regions.
+    Refused unless `src/` is exactly the measured commit's.
+    """
+    provenance = json.loads((REACH.DEFAULT_OUT / "provenance.json").read_text(encoding="utf-8"))
+    commit = provenance["commit"]
+    clean = subprocess.run(["git", "diff", "--quiet", commit, "--", "src/"], cwd=REPO)
+    if clean.returncode != 0:
+        fail(f"src/ differs from {commit[:12]}, the commit the instrumented build was measured at; "
+             "re-run `just golden-reach` (or `golden-reach.py measure`) before probing")
+    return commit[:12]
+
+
 def probe(args: argparse.Namespace) -> int:
+    build = measured_build()
     e2e, crozier = REACH._instrumented_binaries(REPO)
     del e2e
     profdata, llvm_cov = REACH._llvm_tool("llvm-profdata"), REACH._llvm_tool("llvm-cov")
@@ -663,7 +686,8 @@ def probe(args: argparse.Namespace) -> int:
             # A stopped probe resumes document by document: what it filed stands.
             earlier = [
                 row for row in read_probes(args.source)
-                if row["key"] == key and not (args.retry_timeouts and row["status"].startswith("timeout"))
+                if row["key"] == key and row.get("build") == build
+                and not (args.retry_timeouts and row["status"].startswith("timeout"))
             ]
             done = {row["candidate"] for row in earlier}
             pending = [(candidate, path) for candidate, path in pending if candidate not in done]
@@ -682,10 +706,10 @@ def probe(args: argparse.Namespace) -> int:
                 return {"key": key, "candidate": candidate, "status": f"unreadable: {error.strerror}", "reached": []}
             if digest in seen:
                 status, reached = seen[digest]
-                return {"key": key, "candidate": candidate, "status": status, "reached": reached}
+                return {"key": key, "candidate": candidate, "status": status, "reached": reached, "build": build}
             result = run_one(candidate, path)
             seen[digest] = (result["status"], result["reached"])
-            return result
+            return {**result, "build": build}
 
         def run_one(candidate: str, path: Path) -> dict[str, Any]:
             with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
@@ -844,7 +868,11 @@ def _tally(key: str, source: str) -> dict[str, int]:
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
             unread = sum(1 for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
                          if row["status"] != "readable")
-    probes = {row["candidate"]: row for row in read_probes(source) if row["key"] == key}
+    # Only a probe of the measured build counts; one run while `src/` differed from
+    # it read another arm's regions (see [`measured_build`]) and says nothing.
+    build = _current_build()
+    probes = {row["candidate"]: row for row in read_probes(source)
+              if row["key"] == key and row.get("build") == build}
     screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
     reaching = {c for c, row in probes.items() if row["reached"]}
     passing = {
@@ -897,7 +925,12 @@ def render(args: argparse.Namespace) -> int:
             "A walked or fetched document declaring the row is a `document` row of the",
             "source's `records.tsv`; one whose instrumented `crozier generate` executes",
             "an unreached site above is a `candidate`, and only a candidate owes the",
-            "licence, ref and fern screens. The outcome is this search's own reading;",
+            "licence, ref and fern screens. A probe counts only if it ran the instrumented",
+            f"build of commit `{_current_build()}`, the one the reach ledger is measured on,",
+            "with `src/` at that commit; a declarer with no such probe is unprobed and",
+            "outstanding, and a re-probe needs `src/` at that commit (or a fresh",
+            "`just golden-reach`). Probes run before that rule was enforced read shifted",
+            "spans and are not counted. The outcome is this search's own reading;",
             "final reconciliation decides whether the arm's search reads `exhausted`.",
             "",
             "### Witness search (exhaustive)",
@@ -930,15 +963,16 @@ def render(args: argparse.Namespace) -> int:
             "",
             "#### Declarers, and how the instrumented run fared on each",
             "",
-            "Counted off each source's `records.tsv` and `probe.jsonl`. A declarer the run",
-            "did not finish (a timeout) or that crozier failed on without a profile is",
-            "outstanding: the arm may be in it, and nothing here says otherwise.",
+            "Counted off each source's `records.tsv` and `probe.jsonl`, probes of the",
+            f"build `{_current_build()}` only. A declarer not probed on it, one whose run",
+            "did not finish (a timeout), and one crozier failed on without a profile are",
+            "outstanding: the arm may be in them, and nothing here says otherwise.",
             "",
-            "| source | declarers | unreadable | probed | timed out | crozier failed | reach an arm | screened |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|",
+            "| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
         ] + [
-            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['timeouts']} | {t['failed']} "
-            f"| {t['reaching']} | {t['screened']} |"
+            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['declarers'] - t['probed']} "
+            f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} |"
             for source, t in tallies.items()
         ]
         lines += _dispositions(key)

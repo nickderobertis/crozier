@@ -50,6 +50,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 from collections import defaultdict
 from pathlib import Path
 from typing import NamedTuple
@@ -392,6 +393,14 @@ def measure(args: argparse.Namespace) -> int:
     profdata = _llvm_tool("llvm-profdata")
     llvm_cov = _llvm_tool("llvm-cov")
     (out / "tests").mkdir(parents=True, exist_ok=True)
+    # Every region set is this build's: the universe is rewritten from this run's
+    # first export, and a full run starts from no per-test file at all, so a
+    # measurement never pairs one build's hits with another build's regions.
+    if not args.tests:
+        for stale in (out / "tests").glob("*.json"):
+            stale.unlink()
+    (out / "universe.json").unlink(missing_ok=True)
+    universe_lock = threading.Lock()
     env = dict(os.environ, CROZIER_REQUIRE_CORPUS="1")
 
     def one(test: str) -> tuple[str, str | None]:
@@ -417,8 +426,9 @@ def measure(args: argparse.Namespace) -> int:
             universe, hit = _covered(export, repo_root)
             (out / "tests" / f"{test}.json").write_text(json.dumps(hit), encoding="utf-8")
             universe_path = out / "universe.json"
-            if not universe_path.exists():
-                universe_path.write_text(json.dumps(universe), encoding="utf-8")
+            with universe_lock:
+                if not universe_path.exists():
+                    universe_path.write_text(json.dumps(universe), encoding="utf-8")
         return test, None
 
     failures = []

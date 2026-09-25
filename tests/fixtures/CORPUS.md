@@ -743,7 +743,7 @@ so the filter removes operations rather than keeping all of them.
 | 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
 | 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
 | 194 | `deepsearch-ds-v2` | `property-anyof-discriminated-union` | ✅ byte-matched after three repairs |
-| 195 | `mindee-ocr` | `items-oneof-element` | ✅ byte-matched with no repair |
+| 195 | `mindee-ocr` | none — see below | ✅ byte-matched with no repair |
 
 The repairs: a `:` separates words in a generated class name (`osdb:output_type`
 hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
@@ -772,8 +772,11 @@ value to `{Owner}{Prop}Value`; a query parameter whose schema declares no type i
 a `str`; and an endpoint with an untyped path parameter is exampled by Fern's
 other writer, the parameter by its own name and a free-form map body as one
 `"string"` entry. Row 195, the Mindee OCR API as its publisher serves it and
-jentic pins it, is a jentic-walk result whose items-level `oneOf` takes
-`nested_array_element`'s union-alias arm, and byte-matches as generated. All five
+jentic pins it, was registered for `items-oneof-element` on a probe that ran while
+`src/` no longer matched the instrumented build, so it read another arm's regions;
+re-probed on a consistent build it executes no site of that row, and the
+golden-only ledger agrees. It stays as a real specification that byte-matches as
+generated, and buys no arm. All five
 goldens are generated at Python 5.20.0 / CLI 5.67.1 and match with
 `unmatched: &[]`.
 
