@@ -201,9 +201,11 @@ pub struct Ir {
 pub struct Environment {
     /// The enum class name (`{ClientName}Environment`, e.g. `FernApiEnvironment`).
     pub enum_name: String,
-    /// The emitted members in document order, each (member name, URL value). The
-    /// first is the default environment.
-    pub members: Vec<(String, String)>,
+    /// The default environment's member, (member name, URL value): the first
+    /// named server, or the first server as `DEFAULT` when none is named.
+    pub default: (String, String),
+    /// The other named servers' members, in document order after the default.
+    pub others: Vec<(String, String)>,
     /// The default server's URL template, retained for constructor-time variable
     /// overrides.
     pub url_template: String,
@@ -226,7 +228,12 @@ impl Environment {
     /// The default member reference used in the root client (`FernApiEnvironment.DEFAULT`).
     #[must_use]
     pub fn default_ref(&self) -> String {
-        format!("{}.{}", self.enum_name, self.members[0].0)
+        format!("{}.{}", self.enum_name, self.default.0)
+    }
+
+    /// Every emitted member, the default first.
+    pub fn members(&self) -> impl Iterator<Item = &(String, String)> {
+        std::iter::once(&self.default).chain(&self.others)
     }
 }
 
@@ -259,20 +266,15 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
             named.insert(name, server);
         }
     }
-    let members: Vec<(String, &crate::openapi::Server)> = if named.is_empty() {
-        vec![("DEFAULT".to_string(), first)]
-    } else {
-        named
-            .into_iter()
-            .map(|(name, server)| (name.to_ascii_uppercase(), server))
-            .collect()
-    };
-    let default = members[0].1;
+    let mut named = named
+        .into_iter()
+        .map(|(name, server)| (name.to_ascii_uppercase(), server));
+    let (default_name, default) = named.next().unwrap_or(("DEFAULT".to_string(), first));
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
-        members: members
-            .iter()
-            .map(|(name, server)| (name.clone(), resolve_server_url(server)))
+        default: (default_name, resolve_server_url(default)),
+        others: named
+            .map(|(name, server)| (name, resolve_server_url(server)))
             .collect(),
         url_template: default.url.clone(),
         variables: default
@@ -10421,7 +10423,6 @@ fn union_variants(schema: &Schema) -> Option<(Vec<TypeRef>, bool)> {
     Some((types, dropped_null))
 }
 
-/// Resolve a `$ref` to the class name it points at.
 /// Whether a component pointer walks through a segment no generated type is
 /// named by — the residual arm of [`ref_to_class`]'s walk, such as a `$defs`
 /// member. Fern types such a pointer as unknown: the Auto Agent Protocol points
@@ -10444,6 +10445,7 @@ fn pointer_has_unnamed_segment(reference: &str) -> bool {
     false
 }
 
+/// Resolve a `$ref` to the class name it points at.
 fn ref_to_class(reference: &str) -> String {
     let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
         return naming::class_name(reference.rsplit('/').next().unwrap_or(reference));
@@ -11067,7 +11069,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.members[0].0, "DEFAULT");
+        assert_eq!(env.default.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
     }
 
@@ -11082,7 +11084,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.members[0].0, "DEFAULT");
+        assert_eq!(env.default.0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
 
         let cloud: OpenApi = serde_json::from_value(serde_json::json!({
@@ -11094,7 +11096,7 @@ mod tests {
         }))
         .expect("cloud document deserializes");
         let env = environment_model(&cloud, "FernApi").expect("server yields environment");
-        assert_eq!(env.members[0].0, "DEFAULT");
+        assert_eq!(env.default.0, "DEFAULT");
     }
 
     #[test]
@@ -11107,7 +11109,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.members[0].0, "DEFAULT");
+        assert_eq!(env.default.0, "DEFAULT");
     }
 
     #[test]
@@ -11129,7 +11131,7 @@ mod tests {
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("servers yield environment");
         assert_eq!(
-            env.members,
+            env.members().cloned().collect::<Vec<_>>(),
             [
                 (
                     "PRODUCTION".to_string(),
@@ -11160,9 +11162,8 @@ mod tests {
             .expect("document deserializes");
             environment_model(&doc, "FernApi")
                 .expect("server yields environment")
-                .members[0]
+                .default
                 .0
-                .clone()
         };
         assert_eq!(named("Production", "https://api.example.com"), "PRODUCTION");
         assert_eq!(named("production", "https://api.example.com"), "PRODUCTION");
@@ -11374,7 +11375,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.members[0].1, "https://api.example.com/%2Fapi%2Fv1");
+        assert_eq!(env.default.1, "https://api.example.com/%2Fapi%2Fv1");
     }
 
     #[test]

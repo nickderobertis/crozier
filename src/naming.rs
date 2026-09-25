@@ -370,11 +370,8 @@ fn digit_word(word: &str) -> Option<&'static str> {
     })
 }
 
-/// Smart-case an enum wire value into Fern's identifier: every non-alphanumeric
-/// run separates, `camelCase`/`PascalCase` boundaries split, a leading canonical
-/// number is spelled out (`1200 bps` → `one_thousand_two_hundred_bps`), and word
-/// boundaries touching a numeric token collapse (`DB-25` → `db25`). UUID-shaped
-/// values use Fern's separate quirk in [`uuid_enum_identifier`].
+/// The words Fern's enum-name derivation (`WJe`) gives a value that is one of
+/// its mapped symbols *whole*, or `None` for any other value.
 fn whole_value_enum_words(value: &str) -> Option<&'static str> {
     Some(match value {
         "<" => "less_than",
@@ -394,6 +391,11 @@ fn whole_value_enum_words(value: &str) -> Option<&'static str> {
     })
 }
 
+/// Smart-case an enum wire value into Fern's identifier: every non-alphanumeric
+/// run separates, `camelCase`/`PascalCase` boundaries split, a leading canonical
+/// number is spelled out (`1200 bps` → `one_thousand_two_hundred_bps`), and word
+/// boundaries touching a numeric token collapse (`DB-25` → `db25`). UUID-shaped
+/// values use Fern's separate quirk in [`uuid_enum_identifier`].
 fn enum_words(value: &str) -> String {
     if value.is_empty() {
         return "empty".to_string();

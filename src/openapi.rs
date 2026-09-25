@@ -1142,9 +1142,6 @@ where
     })
 }
 
-/// Deserialize a Schema Object's `examples` from either spelling: JSON Schema's
-/// sequence of values, or a map of named Example Objects whose `value` each entry
-/// carries. Both flatten to the values in declaration order.
 /// Deserialize `required`, keeping only its string entries. A non-string entry
 /// names no property, and Fern reads the list as-is, so it requires nothing:
 /// Groupe PSA's `RemoteLights` declares `required: [true]` beside a property named
@@ -1165,6 +1162,9 @@ where
     })
 }
 
+/// Deserialize a Schema Object's `examples` from either spelling: JSON Schema's
+/// sequence of values, or a map of named Example Objects whose `value` each entry
+/// carries. Both flatten to the values in declaration order.
 fn de_schema_examples<'de, D>(
     deserializer: D,
 ) -> std::result::Result<Vec<serde_json::Value>, D::Error>

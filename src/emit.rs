@@ -1610,7 +1610,7 @@ fn environment_file(
         "import enum\n\n\nclass {}(enum.Enum):\n",
         environment.enum_name
     );
-    for (member, url) in &environment.members {
+    for (member, url) in environment.members() {
         body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
     }
     let contents = render(
