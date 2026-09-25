@@ -1466,7 +1466,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 false,
             )?);
             let cx = ClientCtx {
-                yaml_source: ir.yaml_source.as_ref(),
+                yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 module,
@@ -1498,7 +1498,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             false,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source.as_ref(),
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module,
@@ -1535,7 +1535,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         files.push(root_client_file(
             &env,
             RootClientFileCtx {
-                yaml_source: ir.yaml_source.as_ref(),
+                yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 modules: &root_modules,
@@ -1594,7 +1594,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             true,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source.as_ref(),
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module: "",
@@ -2110,7 +2110,7 @@ fn select_readme_endpoint<'a>(
 fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source.as_ref(),
+        yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -2305,7 +2305,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source.as_ref(),
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2335,7 +2335,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source.as_ref(),
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2559,7 +2559,7 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source.as_ref(),
+        yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -5508,8 +5508,8 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
 /// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
 /// generalize when more auth schemes are modeled.
 struct RootClientFileCtx<'a> {
-    /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
+    /// The document's unquoted YAML timestamps; see [`ExampleCtx::yaml_unquoted_timestamps`].
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     modules: &'a [&'a String],
@@ -5527,7 +5527,7 @@ fn root_client_file(
     cx: RootClientFileCtx<'_>,
 ) -> Result<GeneratedFile> {
     let RootClientFileCtx {
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         modules,
@@ -5584,7 +5584,7 @@ fn root_client_file(
     };
     let root_methods = root_client_methods(
         env,
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         root_endpoints,
@@ -5599,7 +5599,7 @@ fn root_client_file(
     )?;
     let async_root_methods = root_client_methods(
         env,
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         root_endpoints,
@@ -5685,7 +5685,7 @@ struct RootClientCfg<'a> {
 )]
 fn root_client_methods(
     _env: &Environment<'static>,
-    yaml_source: Option<&std::collections::BTreeSet<String>>,
+    yaml_unquoted_timestamps: Option<&std::collections::BTreeSet<String>>,
     pkg: &str,
     client_name: &str,
     endpoints: &[&Endpoint],
@@ -5702,7 +5702,7 @@ fn root_client_methods(
         return Ok(Vec::new());
     }
     let cx = ClientCtx {
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         module: "",
@@ -6061,8 +6061,8 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
 /// the root client name, the module, and the type table the example generator
 /// consults. Bundled so the client helpers stay within clippy's argument limit.
 struct ClientCtx<'a> {
-    /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
+    /// The document's unquoted YAML timestamps; see [`ExampleCtx::yaml_unquoted_timestamps`].
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     module: &'a str,
@@ -6348,7 +6348,7 @@ fn client_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6475,7 +6475,7 @@ fn client_binary_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6570,7 +6570,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6910,10 +6910,10 @@ impl Example {
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
     types: &'a [TypeDecl],
-    /// Whether the document was YAML. An unquoted YAML timestamp scalar is a date
-    /// to Fern's parser, not a string, so such an example is not one a plain `str`
-    /// field can take; a JSON document cannot spell one.
-    yaml_source: Option<&'a std::collections::BTreeSet<String>>,
+    /// The timestamp-like scalars a YAML document writes unquoted, `None` for
+    /// JSON. Such a scalar is a date to Fern's parser, not a string, so an example
+    /// spelled by one is not one a plain `str` field can take.
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     /// Hoisted tag-scoped types, consulted so an example can construct one and
     /// import it from its tag package (`from <pkg>.<tag> import ...`).
     tag_decls: &'a [TagTypeDecl],
@@ -7155,7 +7155,7 @@ impl<'a> ExampleCtx<'a> {
                             // [`yaml_resolves_as_timestamp`].
                             Some(serde_json::Value::String(value))
                                 if self
-                                    .yaml_source
+                                    .yaml_unquoted_timestamps
                                     .is_some_and(|unquoted| unquoted.contains(value))
                                     && !self.example_is_temporal(&type_ref)
                                     && yaml_resolves_as_timestamp(value) =>
@@ -10027,7 +10027,7 @@ mod tests {
             .into_iter()
             .collect();
         Ir {
-            yaml_source: None,
+            yaml_unquoted_timestamps: None,
             openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
@@ -10819,7 +10819,7 @@ mod tests {
     ) -> ExampleCtx<'a> {
         ExampleCtx {
             types,
-            yaml_source: None,
+            yaml_unquoted_timestamps: None,
             tag_decls,
             referenced: Default::default(),
             referenced_doc_order: Default::default(),
@@ -12246,7 +12246,7 @@ mod tests {
         let auth = Auth::None;
         let tags = std::collections::BTreeMap::new();
         let cx = ClientCtx {
-            yaml_source: None,
+            yaml_unquoted_timestamps: None,
             pkg: "acme",
             client_name: "AcmeApi",
             module: "events",

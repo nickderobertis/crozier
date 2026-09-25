@@ -138,9 +138,9 @@ macro_rules! observed_arm {
 /// A fully-resolved SDK model ready to emit.
 #[derive(Debug)]
 pub struct Ir {
-    /// Whether the source document was YAML; see
-    /// [`crate::openapi::OpenApi::yaml_source`].
-    pub yaml_source: Option<std::collections::BTreeSet<String>>,
+    /// The source's unquoted YAML timestamp scalars, `None` for JSON; see
+    /// [`crate::openapi::OpenApi::yaml_unquoted_timestamps`].
+    pub yaml_unquoted_timestamps: Option<std::collections::BTreeSet<String>>,
     /// Whether the source uses the OpenAPI 3.1 importer behavior.
     pub openapi_31: bool,
     /// Python import package name (directory under `src/`).
@@ -1886,7 +1886,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     let environment = environment_model(doc, &client_name);
 
     Ir {
-        yaml_source: doc.yaml_source.clone(),
+        yaml_unquoted_timestamps: doc.yaml_unquoted_timestamps.clone(),
         openapi_31: doc.openapi.starts_with("3.1"),
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),

@@ -37,16 +37,14 @@ use crate::error::{Error, Result};
 /// A parsed OpenAPI document.
 #[derive(Debug, Deserialize)]
 pub struct OpenApi {
-    /// Whether the document was parsed from YAML rather than JSON. Fern's parser
-    /// resolves an *unquoted* YAML timestamp scalar to a date rather than to a
-    /// string, so an example written that way is not a string example; a JSON
-    /// document cannot spell one. Set by [`load`], never deserialized.
-    ///
     /// For a YAML document, the timestamp-like scalars its text writes unquoted
-    /// somewhere; `None` for JSON. Only an unquoted one is a date to Fern's parser:
-    /// Zulip quotes `"1909-04-05"` inside a flow mapping and its golden keeps it.
+    /// somewhere; `None` for JSON, which cannot spell one. Fern's parser resolves
+    /// an unquoted YAML timestamp to a date rather than to a string, so an example
+    /// written that way is no string example (VTEX's `dateRange`), while a quoted
+    /// one stays a string: Zulip quotes `"1909-04-05"` inside a flow mapping and
+    /// its golden keeps it. Set by [`load`], never deserialized.
     #[serde(skip)]
-    pub yaml_source: Option<std::collections::BTreeSet<String>>,
+    pub yaml_unquoted_timestamps: Option<std::collections::BTreeSet<String>>,
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
@@ -1348,7 +1346,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase);
 
-    let yaml_source = matches!(ext.as_deref(), Some("yml" | "yaml"));
+    let yaml_unquoted_timestamps = matches!(ext.as_deref(), Some("yml" | "yaml"));
     let mut doc: OpenApi = match ext.as_deref() {
         Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
@@ -1365,7 +1363,8 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     };
 
-    doc.yaml_source = yaml_source.then(|| unquoted_yaml_timestamps(&text));
+    doc.yaml_unquoted_timestamps =
+        yaml_unquoted_timestamps.then(|| unquoted_yaml_timestamps(&text));
     if doc.openapi.is_empty() {
         return Err(Error::InvalidSpec {
             path: path.to_path_buf(),
