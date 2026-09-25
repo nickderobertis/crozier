@@ -7542,6 +7542,42 @@ class RankedBacklogTests(unittest.TestCase):
         none_found = cell.replace("`search-incomplete`", "`none-found`")
         self.assertIn("that search is `search-incomplete`", " ".join(entry_search_failures("k", none_found)))
 
+    def test_the_owned_table_states_each_arm_searchs_outstanding_items_as_its_record_does(self) -> None:
+        """An owned row's outcome cell leads with its record's own outstanding tally.
+
+        The cell reads `search incomplete, N items outstanding (source n, …)`,
+        and every number is the linked record's `outstanding` column — so a
+        re-rendered record whose tally moves fails here until the cell follows,
+        and no cell reads searched or settled while its record owes anything.
+        """
+        table = self.doc.split("| boundary rank | key | outcome |", 1)[1].split("\n\n", 1)[0]
+        checked = 0
+        for line in table.splitlines()[2:]:
+            linked = re.search(r"golden-reach-witnesses/searches/([\w-]+)\.md\)", line)
+            if not linked:
+                continue
+            key = linked.group(1)
+            checked += 1
+            with self.subTest(key=key):
+                text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                owed = {
+                    source: int(cells.split("|")[-2])
+                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M)
+                }
+                self.assertEqual(set(DECLARED_SOURCES), set(owed), "a record tallies each declared source")
+                owing = {source: n for source, n in owed.items() if n}
+                stated = re.search(r"\| search incomplete, ([\d,]+) items outstanding \(([^)]*)\);", line)
+                if not owing:
+                    self.assertIsNone(stated, "a cell states outstanding items its record does not owe")
+                    continue
+                self.assertIsNotNone(stated, "a record owing items reads incomplete in its cell, with its tally")
+                self.assertEqual(sum(owing.values()), int(stated.group(1).replace(",", "")))
+                self.assertEqual(
+                    owing,
+                    {source: int(n) for source, n in re.findall(r"([\w.-]+) (\d+)", stated.group(2))},
+                )
+        self.assertTrue(checked, "no owned row links an arm search; the check reads nothing")
+
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
         """An owned row's arm search: one line per declared source, each resting on evidence.
 

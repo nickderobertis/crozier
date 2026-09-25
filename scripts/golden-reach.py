@@ -784,8 +784,19 @@ def load_coverage(out: Path) -> tuple[dict[str, dict[str, set]], dict[str, set],
             f: {tuple(r) for r in regions}
             for f, regions in json.loads(path.read_text(encoding="utf-8")).items()
         }
-    provenance = json.loads((out / "provenance.json").read_text(encoding="utf-8"))
-    return coverage, universe, provenance["commit"]
+    return coverage, universe, measured_commit(out)
+
+
+def measured_commit(out: Path) -> str:
+    """The commit the measurement under `out` was taken at, as `measure` recorded it."""
+    path = out / "provenance.json"
+    try:
+        commit = json.loads(path.read_text(encoding="utf-8"))["commit"]
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        fail(f"{path} names no measured commit ({error!r}); run `just golden-reach` first")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{7,40}", commit):
+        fail(f"{path} records {commit!r}, not a commit; run `just golden-reach` again")
+    return commit
 
 
 def report(args: argparse.Namespace) -> int:

@@ -460,6 +460,34 @@ class UnreadableReasonTests(unittest.TestCase):
         self.assertNotIn(scratch, status)
 
 
+class MeasurementInputTests(unittest.TestCase):
+    """A missing or malformed measurement or record names the step that makes it."""
+
+    def test_a_measurement_with_no_provenance_names_the_recipe(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.measured_commit(Path(scratch))
+            self.assertIn("just golden-reach", str(refused.exception))
+            (Path(scratch) / "provenance.json").write_text('{"commit": "main"}', encoding="utf-8")
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.measured_commit(Path(scratch))
+            self.assertIn("not a commit", str(refused.exception))
+            commit = "a" * 40
+            (Path(scratch) / "provenance.json").write_text(json.dumps({"commit": commit}), encoding="utf-8")
+            self.assertEqual(commit, golden_reach.measured_commit(Path(scratch)))
+
+    def test_a_records_file_with_another_header_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            evidence = golden_reach_search.EVIDENCE
+            golden_reach_search.EVIDENCE = Path(scratch)
+            self.addCleanup(setattr, golden_reach_search, "EVIDENCE", evidence)
+            (Path(scratch) / "jentic").mkdir()
+            (Path(scratch) / "jentic" / "records.tsv").write_text("key\tsubject\nk\tx\n", encoding="utf-8")
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach_search.read_records("jentic")
+            self.assertIn("not ['key', 'kind', 'subject', 'result', 'file']", str(refused.exception))
+
+
 class ArmSearchOutcomeTests(unittest.TestCase):
     """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
 

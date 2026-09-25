@@ -222,7 +222,11 @@ def read_records(source: str) -> list[dict[str, str]]:
     if not path.is_file():
         return []
     with path.open(encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != RECORD_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(RECORD_FIELDS)}; restore it from git "
+                 f"(`git checkout -- {path}`) or re-file the source's stages")
+        return list(reader)
 
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
@@ -674,7 +678,7 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
 
 def _current_build() -> str:
     """The measured build's short commit, as a probe row records it."""
-    return json.loads((REACH.DEFAULT_OUT / "provenance.json").read_text(encoding="utf-8"))["commit"][:12]
+    return REACH.measured_commit(REACH.DEFAULT_OUT)[:12]
 
 
 def measured_build() -> str:
@@ -685,8 +689,7 @@ def measured_build() -> str:
     shifts every span below it and a probe would read another arm's regions.
     Refused unless `src/` is exactly the measured commit's.
     """
-    provenance = json.loads((REACH.DEFAULT_OUT / "provenance.json").read_text(encoding="utf-8"))
-    commit = provenance["commit"]
+    commit = REACH.measured_commit(REACH.DEFAULT_OUT)
     clean = subprocess.run(["git", "diff", "--quiet", commit, "--", "src/"], cwd=REPO)
     if clean.returncode != 0:
         fail(f"src/ differs from {commit[:12]}, the commit the instrumented build was measured at; "
