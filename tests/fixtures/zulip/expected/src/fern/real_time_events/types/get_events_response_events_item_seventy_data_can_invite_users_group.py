@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_invite_users_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanInviteUsersGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanInviteUsersGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanInviteUsersGroupDirectMembers
+]

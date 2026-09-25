@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_stock_on_hand_item_item_cost import CreateStockOnHandItemItemCost
+from .create_stock_on_hand_item_price_book_line_item_id import CreateStockOnHandItemPriceBookLineItemId
+
+CreateStockOnHandItem = typing.Union[CreateStockOnHandItemPriceBookLineItemId, CreateStockOnHandItemItemCost]

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_mention_many_users_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanMentionManyUsersGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanMentionManyUsersGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanMentionManyUsersGroupDirectMembers
+]

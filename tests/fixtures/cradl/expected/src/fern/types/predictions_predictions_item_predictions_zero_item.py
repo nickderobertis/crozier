@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .predictions_predictions_item_predictions_zero_item_attention_map import (
+    PredictionsPredictionsItemPredictionsZeroItemAttentionMap,
+)
+from .predictions_predictions_item_predictions_zero_item_one import PredictionsPredictionsItemPredictionsZeroItemOne
+
+PredictionsPredictionsItemPredictionsZeroItem = typing.Union[
+    PredictionsPredictionsItemPredictionsZeroItemAttentionMap, PredictionsPredictionsItemPredictionsZeroItemOne
+]

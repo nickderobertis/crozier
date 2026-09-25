@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .basic_bot_services_item_base_url import BasicBotServicesItemBaseUrl
+from .basic_bot_services_item_config_data import BasicBotServicesItemConfigData
+
+BasicBotServicesItem = typing.Union[BasicBotServicesItemBaseUrl, BasicBotServicesItemConfigData]

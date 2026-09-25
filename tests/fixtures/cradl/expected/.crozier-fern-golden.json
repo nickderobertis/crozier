@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "cradl",
+  "corpus_spec_ref": "eb9d12a2684b0fbcb5aecf51e8ae54dba0929743",
+  "corpus_spec_url": "https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json"
+}

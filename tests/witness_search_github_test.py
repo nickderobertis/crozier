@@ -313,10 +313,10 @@ class WitnessSearchGithubTests(unittest.TestCase):
 
     def test_key_derivation_and_both_serialization_query_plan(self) -> None:
         keys = SEARCH.derive_keys(REPO / "docs/openapi-surface")
-        self.assertIn("annotated-ref-target-closed-object", keys)
+        self.assertIn("annotated-ref-target-string-const", keys)
         self.assertIn("securityscheme-ref", keys)
         queries = SEARCH.query_plan(
-            keys["annotated-ref-target-closed-object"]["selector"]
+            keys["annotated-ref-target-string-const"]["selector"]
         )
         self.assertEqual(7, len(queries["github-code-search"]))
         self.assertEqual(2, len(queries["sourcegraph"]))
@@ -330,9 +330,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
             any("language:YAML" in q for q in queries["github-code-search"])
         )
         self.assertTrue(any(".json" in q for q in queries["sourcegraph"]))
-        pointer_queries = SEARCH.query_plan(
-            keys["ref-pointer-unnamed-segment"]["selector"]
-        )
+        # `ref-pointer-unnamed-segment` is `golden` now, so no longer a derived
+        # key; its selector still exercises the pointer phrasing.
+        pointer_queries = SEARCH.query_plan("schema.$ref:unnamed-segment")
         self.assertTrue(
             all(
                 "/$defs/" in q or "/definitions/" in q
@@ -533,7 +533,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(0, derived.returncode, derived.stderr)
         self.assertIn("FIXTURE gap keys", derived.stdout)
         recorded = json.loads((evidence / "keys.json").read_text())
-        self.assertIn("annotated-ref-target-closed-object", recorded["keys"])
+        self.assertIn("annotated-ref-target-string-const", recorded["keys"])
         self.assertEqual("a" * 40, recorded["source_commit"])
         short_commit = subprocess.run(
             [sys.executable, str(script), "--source-commit", "abc123", "--evidence",
@@ -568,7 +568,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 "--stage",
                 "search",
                 "--key",
-                "annotated-ref-target-closed-object",
+                "annotated-ref-target-string-const",
             ],
             env=env,
             capture_output=True,
@@ -596,7 +596,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             json.dumps(
                 {
                     "source": "github-code-search",
-                    "key": "annotated-ref-target-closed-object",
+                    "key": "annotated-ref-target-string-const",
                     "query": "local API witness",
                     "outcome": "answered",
                     "results": [item],
@@ -616,7 +616,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "--stage",
             "evaluate",
             "--key",
-            "annotated-ref-target-closed-object",
+            "annotated-ref-target-string-const",
         ]
         evaluated = subprocess.run(command, env=env, capture_output=True, text=True)
         self.assertEqual(0, evaluated.returncode, evaluated.stderr)
@@ -693,7 +693,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             no_credential = subprocess.run(
                 [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-no-credential"),
                  "--source", "github-code-search", "--stage", "search",
-                 "--key", "annotated-ref-target-closed-object"],
+                 "--key", "annotated-ref-target-string-const"],
                 env=no_credential_env, capture_output=True, text=True,
             )
             self.assertEqual(1, no_credential.returncode)
@@ -739,7 +739,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 invalid_url = subprocess.run(
                     [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / f"cli-{override}"),
                      "--source", "sourcegraph", "--stage", "search",
-                     "--key", "annotated-ref-target-closed-object"],
+                     "--key", "annotated-ref-target-string-const"],
                     env={**env, override: "file:///etc/passwd"},
                     capture_output=True, text=True,
                 )
@@ -765,7 +765,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         stopped_evaluation = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation_stop),
              "--source", "github-code-search", "--stage", "evaluate",
-             "--key", "annotated-ref-target-closed-object"],
+             "--key", "annotated-ref-target-string-const"],
             env=env, capture_output=True, text=True,
         )
         self.assertEqual(1, stopped_evaluation.returncode)
@@ -775,7 +775,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         sourcegraph_stop = subprocess.run(
             [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(self.root / "cli-sourcegraph-stop"),
              "--source", "sourcegraph", "--stage", "search",
-             "--key", "annotated-ref-target-closed-object"],
+             "--key", "annotated-ref-target-string-const"],
             env={**env, "CROZIER_SOURCEGRAPH_URL": self.url}, capture_output=True, text=True,
         )
         self.assertEqual(1, sourcegraph_stop.returncode)
@@ -787,7 +787,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
         evidence.mkdir()
         command = [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evidence),
                    "--source", "github-code-search", "--stage", "evaluate",
-                   "--key", "annotated-ref-target-closed-object"]
+                   "--key", "annotated-ref-target-string-const"]
         env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
         (evidence / "queries.jsonl").write_text("{bad json}\n")
         malformed = subprocess.run(command, env=env, capture_output=True, text=True)
@@ -795,18 +795,18 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertIn("queries.jsonl:1", malformed.stderr)
         self.assertIn("repair the named evidence file", malformed.stderr)
         (evidence / "queries.jsonl").write_text(json.dumps({
-            "source": "github-code-search", "key": "annotated-ref-target-closed-object",
+            "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "query": "test", "outcome": "answered",
         }) + "\n")
         missing_results = subprocess.run(command, env=env, capture_output=True, text=True)
         self.assertEqual(1, missing_results.returncode)
         self.assertIn("answered query lacks result identities", missing_results.stderr)
         (evidence / "queries.jsonl").write_text(json.dumps({
-            "source": "github-code-search", "key": "annotated-ref-target-closed-object",
+            "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "query": "test", "outcome": "answered", "results": [],
         }) + "\n")
         (evidence / "candidates.jsonl").write_text(json.dumps({
-            "source": "github-code-search", "key": "annotated-ref-target-closed-object",
+            "source": "github-code-search", "key": "annotated-ref-target-string-const",
             "repository": "example/api", "disposition": "does-not-declare",
         }) + "\n")
         missing_identity = subprocess.run(command, env=env, capture_output=True, text=True)

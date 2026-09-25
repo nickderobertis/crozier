@@ -1,0 +1,46 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .turn_input_item import TurnInputItem
+from .turn_state import TurnState
+
+
+class Turn(UniversalBaseModel):
+    created_at: str = pydantic.Field()
+    """
+    ISO 8601 creation timestamp.
+    """
+
+    id: str = pydantic.Field()
+    """
+    Unique turn id.
+    """
+
+    input: typing.Optional[typing.List[TurnInputItem]] = pydantic.Field(default=None)
+    """
+    Input items supplied when the turn was created.
+    """
+
+    previous_turn_id: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Prior turn this turn chains from; null for a root turn.
+    """
+
+    session_id: str = pydantic.Field()
+    """
+    Session that owns this turn.
+    """
+
+    state: TurnState
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

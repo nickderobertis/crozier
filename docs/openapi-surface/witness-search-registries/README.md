@@ -22,6 +22,19 @@ from each of this node's sources' `records.tsv`, and `outstanding.tsv` from thei
 Its `--check` option, run by `just test-witness-search-acquisition`, fails when
 either committed file is stale.
 
+
+## Candidates settled against the corpus
+
+A screened candidate whose three screens pass can be settled by corpus
+registration rather than by the search:
+
+- `byte-identical to CORPUS row N, sha256 <hex>`: a copy whose bytes equal
+  corpus row N's registered source. Registering it again would add no golden.
+  `tests/corpus_surface_census_test.py` re-measures each digest against row N's
+  fetched document.
+- `pending-registration`: a usable candidate the registration node neither
+  registered nor disposed. The continuation node owns it.
+
 ## Outstanding items
 
 `outstanding.tsv` lists, by key and source, every item that keeps this node's

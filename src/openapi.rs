@@ -37,12 +37,14 @@ use crate::error::{Error, Result};
 /// A parsed OpenAPI document.
 #[derive(Debug, Deserialize)]
 pub struct OpenApi {
-    /// Whether the document was parsed from YAML rather than JSON. Fern's parser
-    /// resolves an *unquoted* YAML timestamp scalar to a date rather than to a
-    /// string, so an example written that way is not a string example; a JSON
-    /// document cannot spell one. Set by [`load`], never deserialized.
+    /// For a YAML document, the timestamp-like scalars its text writes unquoted
+    /// somewhere; `None` for JSON, which cannot spell one. Fern's parser resolves
+    /// an unquoted YAML timestamp to a date rather than to a string, so an example
+    /// written that way is no string example (VTEX's `dateRange`), while a quoted
+    /// one stays a string: Zulip quotes `"1909-04-05"` inside a flow mapping and
+    /// its golden keeps it. Set by [`load`], never deserialized.
     #[serde(skip)]
-    pub yaml_source: bool,
+    pub yaml_unquoted_timestamps: Option<std::collections::BTreeSet<String>>,
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
@@ -834,7 +836,7 @@ pub struct Schema {
     #[serde(default, deserialize_with = "de_properties")]
     pub properties: SchemaProperties,
     /// Required property names.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_required")]
     pub required: Vec<String>,
     /// Array item schema.
     #[serde(default, deserialize_with = "de_items")]
@@ -955,6 +957,13 @@ pub struct Schema {
     /// bogus `$ref` (issue #86).
     #[serde(skip)]
     pub malformed: bool,
+    /// Set when this node's `$ref` named a component schema the document never
+    /// declares, which `normalize_unresolvable_schema_refs` degraded to the
+    /// unknown type. Not a wire field. Fern guards such a success body against an
+    /// empty response where a written `{}` in a 3.0 document is not guarded, so
+    /// the origin has to outlive the rewrite.
+    #[serde(skip)]
+    pub unresolved_reference: bool,
 }
 
 impl Schema {
@@ -1132,6 +1141,26 @@ where
     Ok(SchemaProperties {
         values: raw.into_iter().map(|(k, v)| (k, v.0)).collect(),
         declared: true,
+    })
+}
+
+/// Deserialize `required`, keeping only its string entries. A non-string entry
+/// names no property, and Fern reads the list as-is, so it requires nothing:
+/// Groupe PSA's `RemoteLights` declares `required: [true]` beside a property named
+/// `"true"`, and the golden's `true` field is optional.
+fn de_required<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(match serde_json::Value::deserialize(deserializer)? {
+        serde_json::Value::Array(values) => values
+            .into_iter()
+            .filter_map(|value| match value {
+                serde_json::Value::String(name) => Some(name),
+                _ => None,
+            })
+            .collect(),
+        _ => Vec::new(),
     })
 }
 
@@ -1317,7 +1346,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         .and_then(|e| e.to_str())
         .map(str::to_ascii_lowercase);
 
-    let yaml_source = matches!(ext.as_deref(), Some("yml" | "yaml"));
+    let is_yaml = matches!(ext.as_deref(), Some("yml" | "yaml"));
     let mut doc: OpenApi = match ext.as_deref() {
         Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
@@ -1334,7 +1363,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         }
     };
 
-    doc.yaml_source = yaml_source;
+    doc.yaml_unquoted_timestamps = is_yaml.then(|| unquoted_yaml_timestamps(&text));
     if doc.openapi.is_empty() {
         return Err(Error::InvalidSpec {
             path: path.to_path_buf(),
@@ -1774,6 +1803,39 @@ fn normalize_fetched_response_alias_refs(
     }
 }
 
+/// The `yyyy-mm-dd`-led scalars a YAML text writes without quotes, each up to the
+/// next flow or block delimiter. A quoted occurrence is a string to every YAML
+/// parser; an unquoted one may be a timestamp.
+fn unquoted_yaml_timestamps(text: &str) -> std::collections::BTreeSet<String> {
+    let bytes = text.as_bytes();
+    let mut found = std::collections::BTreeSet::new();
+    let mut index = 0;
+    while index + 10 <= bytes.len() {
+        let date = bytes[index..index + 10]
+            .iter()
+            .enumerate()
+            .all(|(offset, byte)| {
+                if offset == 4 || offset == 7 {
+                    *byte == b'-'
+                } else {
+                    byte.is_ascii_digit()
+                }
+            });
+        let boundary = index == 0 || !bytes[index - 1].is_ascii_alphanumeric();
+        let quoted = index > 0 && matches!(bytes[index - 1], b'"' | b'\'');
+        if date && boundary && !quoted {
+            let end = text[index..]
+                .find([',', '}', ']', '\n', '\r', '#', '"', '\''])
+                .map_or(text.len(), |offset| index + offset);
+            found.insert(text[index..end].trim_end().to_string());
+            index = end;
+        } else {
+            index += 1;
+        }
+    }
+    found
+}
+
 /// Degrade a `$ref` to a component schema the document never declares.
 ///
 /// Fern resolves what it can and treats the rest as an unknown value: an
@@ -1795,6 +1857,7 @@ fn normalize_unresolvable_schema_refs(doc: &mut OpenApi) {
                 .is_some_and(|name| !declared.contains(name));
             if unresolvable {
                 node.reference = None;
+                node.unresolved_reference = true;
             }
         });
     });
@@ -2133,16 +2196,19 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 
 /// Drop operations and component schemas marked with the ignore extension
 /// (`x-crozier-ignore` / `x-fern-ignore`, issue #78), along with any schema that is
-/// no longer reachable once the ignored operations are gone.
+/// no longer reachable once an ignored schema is gone.
 ///
 /// An operation whose [`Operation::ignored`] is set is removed (and its path with
 /// it, if it becomes empty); a component whose [`Schema::ignored`] is set is never
-/// emitted. Beyond those explicit removals, a schema is pruned when it *was*
-/// reachable from a removed operation (or an ignored schema's own `$ref`s) yet is
-/// *not* reachable from any surviving operation — i.e. it fell out of the SDK's
-/// transitive closure as a result of the ignore. Standalone component schemas that
-/// no operation references are left untouched, so this is inert on a spec with no
-/// ignore markers and never changes a full, unfiltered generation.
+/// emitted. Removing an operation removes nothing from `components.schemas`: the
+/// TrueForge API ignores its three `/api/internal/import/*` operations, and Fern's
+/// golden still declares `ImportAgentsRequest`, `ImportSessionRequest` and every
+/// schema they reach, though nothing else references them. Beyond the explicit
+/// removals, a schema is pruned when it *was* reachable from an ignored schema's
+/// own `$ref`s yet is *not* reachable from any surviving operation — i.e. it fell
+/// out of the SDK's transitive closure as a result of that ignore. Standalone
+/// component schemas are left untouched, so this is inert on a spec with no ignore
+/// markers and never changes a full, unfiltered generation.
 ///
 /// Unlike [`filter_by_audience`], the ignore honours **both** operation- and
 /// schema-level markers, per the [dual-header policy](self#fern-compatible-extensions).
@@ -2163,13 +2229,8 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         return;
     }
 
-    // Schemas reachable from the operations (and schemas) that are being removed.
-    let mut removed_seed = operation_schema_seed(
-        doc.paths
-            .values()
-            .flat_map(|i| i.operations())
-            .filter(|(_, op)| op.ignored()),
-    );
+    // Schemas reachable from the schemas that are being removed.
+    let mut removed_seed = std::collections::BTreeSet::new();
     for key in &ignored_schemas {
         removed_seed.insert(key.clone());
         if let Some(s) = doc.components.schemas.get(key) {
@@ -2196,7 +2257,7 @@ pub fn filter_ignored(doc: &mut OpenApi) {
         if ignored_schemas.contains(key) {
             return false;
         }
-        // Prune a schema that became unreferenced because an ignored op/schema was
+        // Prune a schema that became unreferenced because an ignored schema was
         // its only path in; keep everything a surviving op still reaches and every
         // standalone schema no operation referenced in the first place.
         let became_unreferenced =
@@ -2396,16 +2457,16 @@ components:
 "##;
 
     #[test]
-    fn ignore_extension_drops_ops_via_both_spellings_and_their_exclusive_schemas() {
+    fn ignore_extension_drops_ops_via_both_spellings_and_keeps_their_schemas() {
         let mut doc = parse(IGNORE_SPEC);
         filter_ignored(&mut doc);
         // Both `x-fern-ignore` and `x-crozier-ignore` operations are gone.
         assert_eq!(op_ids(&doc), ["keepOp"]);
         // The paths of the ignored ops are removed entirely.
         assert_eq!(doc.paths.keys().cloned().collect::<Vec<_>>(), ["/keep"]);
-        // Schemas only the ignored ops referenced fell out of the closure; the
-        // kept op's schema stays.
-        assert_eq!(schema_keys(&doc), ["Keep"]);
+        // The schemas only the ignored ops referenced stay, as they do in Fern's
+        // TrueForge golden.
+        assert_eq!(schema_keys(&doc), ["Keep", "OnlyFern", "OnlyCrozier"]);
     }
 
     #[test]
@@ -2674,6 +2735,16 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    #[test]
+    fn only_unquoted_yaml_dates_are_recorded_as_timestamps() {
+        let text = "a: 2022-01-23T19:00:00.000Z\nb: \"1909-04-05\"\nc: {x: 2001-02-03, y: 'x'}\nid: v2022-01-01\n";
+        let found = unquoted_yaml_timestamps(text);
+        assert!(found.contains("2022-01-23T19:00:00.000Z"));
+        assert!(found.contains("2001-02-03"));
+        assert!(!found.contains("1909-04-05"));
+        assert_eq!(found.len(), 2);
     }
 
     /// A reference to a schema the document never declares is Fern's unknown

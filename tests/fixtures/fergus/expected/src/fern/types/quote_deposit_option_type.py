@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .quote_deposit_option_type_one import QuoteDepositOptionTypeOne
+from .quote_deposit_option_type_zero import QuoteDepositOptionTypeZero
+
+QuoteDepositOptionType = typing.Union[QuoteDepositOptionTypeZero, QuoteDepositOptionTypeOne]

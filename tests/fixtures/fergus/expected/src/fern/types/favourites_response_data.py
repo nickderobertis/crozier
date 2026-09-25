@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .favourites_response_data_children import FavouritesResponseDataChildren
+from .favourites_response_data_description import FavouritesResponseDataDescription
+
+FavouritesResponseData = typing.Union[FavouritesResponseDataChildren, FavouritesResponseDataDescription]

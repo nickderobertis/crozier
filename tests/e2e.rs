@@ -3215,6 +3215,29 @@ const CORPORA: &[&Corpus] = &[
     &PAYPAL_CATALOG_PRODUCTS,
     &FOLIO_MOD_AUTHTOKEN,
     &RAYBOT,
+    &PALOALTO_CSPM_ALERTS,
+    &PALOALTO_CSPM_REPORTS,
+    &PALOALTO_CSPM_SEARCH_MANAGER,
+    &THRIVECART,
+    &TRUEFOUNDRY_TRUEFORGE_5ADDE28,
+    &FERGUS,
+    &GROUPE_PSA,
+    &TIMELYAPP,
+    &NEXTGEN,
+    &AUTO_AGENT_PROTOCOL,
+    &SKOOL,
+    &SPENDESK,
+    &BILLIE,
+    &ALMA_FRANCE,
+    &OUTREACH,
+    &TALLY,
+    &BILLIE_ENTRY,
+    &SKOOL_ENTRY,
+    &TIMELYAPP_ENTRY,
+    &CRADL,
+    &ZULIP,
+    &ZULIP_JENTIC,
+    &ZULIP_JENTIC_ENTRY,
 ];
 
 #[test]
@@ -4854,13 +4877,6 @@ const SHORT_IO: Corpus = Corpus {
     unmatched: &[
         "reference.md",
         "src/fern/__init__.py",
-        "src/fern/client.py",
-        "src/fern/domains/__init__.py",
-        "src/fern/domains/types/__init__.py",
-        "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py",
-        "src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url_one.py",
-        "src/fern/link_bundles/client.py",
-        "src/fern/link_bundles/raw_client.py",
         "src/fern/link_management/__init__.py",
         "src/fern/link_management/client.py",
         "src/fern/link_management/raw_client.py",
@@ -4885,10 +4901,8 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_link_id_request_created_at.py",
         "src/fern/link_management/types/post_links_link_id_request_expires_at.py",
         "src/fern/link_management/types/post_links_link_id_request_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response.py",
         "src/fern/link_management/types/post_links_link_id_response_expires_at.py",
         "src/fern/link_management/types/post_links_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response_user.py",
         "src/fern/link_management/types/post_links_public_request_created_at.py",
         "src/fern/link_management/types/post_links_public_request_expires_at.py",
         "src/fern/link_management/types/post_links_public_request_ttl.py",
@@ -4901,7 +4915,6 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_public_response_user.py",
         "src/fern/link_management/types/post_links_request_created_at.py",
         "src/fern/link_management/types/post_links_request_expires_at.py",
-        "src/fern/link_management/types/post_links_request_split_urlv2item.py",
         "src/fern/link_management/types/post_links_request_ttl.py",
         "src/fern/link_management/types/post_links_response.py",
         "src/fern/link_management/types/post_links_response_expires_at.py",
@@ -4910,18 +4923,12 @@ const SHORT_IO: Corpus = Corpus {
         "src/fern/link_management/types/post_links_response_split_urlv2item.py",
         "src/fern/link_management/types/post_links_response_ttl.py",
         "src/fern/link_management/types/post_links_response_user.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item.py",
         "src/fern/link_queries/types/get_api_links_response_links_item_expires_at.py",
         "src/fern/link_queries/types/get_api_links_response_links_item_ttl.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_user.py",
-        "src/fern/link_queries/types/get_links_expand_response.py",
         "src/fern/link_queries/types/get_links_expand_response_expires_at.py",
         "src/fern/link_queries/types/get_links_expand_response_ttl.py",
-        "src/fern/link_queries/types/get_links_expand_response_user.py",
-        "src/fern/link_queries/types/get_links_link_id_response.py",
         "src/fern/link_queries/types/get_links_link_id_response_expires_at.py",
         "src/fern/link_queries/types/get_links_link_id_response_ttl.py",
-        "src/fern/link_queries/types/get_links_link_id_response_user.py",
         "src/fern/types/bad_request_error_body.py",
         "src/fern/types/conflict_error_body.py",
         "src/fern/types/forbidden_error_body.py",
@@ -5233,7 +5240,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_event.py",
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_resource_operation.py",
         "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_source.py",
-        "src/fern/sites/client.py",
         "src/fern/sites/comments/raw_client.py",
         "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_by.py",
         "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_order.py",
@@ -5526,6 +5532,282 @@ const FOLIO_MOD_AUTHTOKEN: Corpus = Corpus {
 /// Raybot keeps Path Items, parameters, and schemas in sibling documents.
 const RAYBOT: Corpus = Corpus {
     api: "raybot",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Prisma Cloud Alerts annotates `$ref`s to composed and `oneOf` targets.
+const PALOALTO_CSPM_ALERTS: Corpus = Corpus {
+    api: "paloalto-cspm-alerts",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Prisma Cloud Reports annotates `$ref`s to `oneOf` targets.
+const PALOALTO_CSPM_REPORTS: Corpus = Corpus {
+    api: "paloalto-cspm-reports",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Prisma Cloud Search Manager annotates `$ref`s to `oneOf` targets.
+const PALOALTO_CSPM_SEARCH_MANAGER: Corpus = Corpus {
+    api: "paloalto-cspm-search-manager",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// ThriveCart points `$ref`s under an undeclared component head.
+const THRIVECART: Corpus = Corpus {
+    api: "thrivecart",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// A later TrueForge revision annotates `$ref`s to closed-object targets.
+const TRUEFOUNDRY_TRUEFORGE_5ADDE28: Corpus = Corpus {
+    api: "truefoundry-trueforge-5adde28",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Fergus declares `anyOf` array variants with struct items.
+const FERGUS: Corpus = Corpus {
+    api: "fergus",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Groupe PSA Connected Car annotates `$ref`s to composed targets.
+const GROUPE_PSA: Corpus = Corpus {
+    api: "groupe-psa",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Timely declares `anyOf` array variants with struct items.
+const TIMELYAPP: Corpus = Corpus {
+    api: "timelyapp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// NextGen points `$ref`s under an undeclared component head and names schemas with non-identifiers.
+const NEXTGEN: Corpus = Corpus {
+    api: "nextgen",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Auto Agent Protocol walks a `$ref` pointer through an unnamed segment.
+const AUTO_AGENT_PROTOCOL: Corpus = Corpus {
+    api: "auto-agent-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Skool points `$ref`s under an undeclared component head.
+const SKOOL: Corpus = Corpus {
+    api: "skool",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Spendesk API — the jentic-public-apis aggregation's copy; a `$ref` under an undeclared component head.
+const SPENDESK: Corpus = Corpus {
+    api: "spendesk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Billie Direct API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const BILLIE: Corpus = Corpus {
+    api: "billie",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Alma Payments API (France) — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const ALMA_FRANCE: Corpus = Corpus {
+    api: "alma-france",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Outreach API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const OUTREACH: Corpus = Corpus {
+    api: "outreach",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Tally API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const TALLY: Corpus = Corpus {
+    api: "tally",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Billie Direct API — jentic's import entry, row 156's document with its keys reordered.
+const BILLIE_ENTRY: Corpus = Corpus {
+    api: "billie-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Skool API — jentic's import entry, row 154's document with its keys reordered.
+const SKOOL_ENTRY: Corpus = Corpus {
+    api: "skool-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Timely API — jentic's import entry, row 151's document with its keys reordered.
+const TIMELYAPP_ENTRY: Corpus = Corpus {
+    api: "timelyapp-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Cradl API — the jentic-public-apis aggregation's copy; an `anyOf` array variant whose item is a struct.
+const CRADL: Corpus = Corpus {
+    api: "cradl",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — the publisher's own description at a pinned commit.
+const ZULIP: Corpus = Corpus {
+    api: "zulip",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — the jentic-public-apis aggregation's JSON import, a different revision of row 164's document.
+const ZULIP_JENTIC: Corpus = Corpus {
+    api: "zulip-jentic",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Zulip API — jentic's import entry, row 165's document with its keys reordered.
+const ZULIP_JENTIC_ENTRY: Corpus = Corpus {
+    api: "zulip-jentic-entry",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -5929,6 +6211,26 @@ fn folio_mod_authtoken_matches_fern_output() {
 #[test]
 fn raybot_matches_fern_output() {
     assert_link_ok_corpus_matches(&RAYBOT);
+}
+
+#[test]
+fn paloalto_cspm_alerts_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_ALERTS);
+}
+
+#[test]
+fn paloalto_cspm_reports_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_REPORTS);
+}
+
+#[test]
+fn paloalto_cspm_search_manager_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CSPM_SEARCH_MANAGER);
+}
+
+#[test]
+fn thrivecart_matches_fern_output() {
+    assert_link_ok_corpus_matches(&THRIVECART);
 }
 
 #[test]
@@ -9411,10 +9713,10 @@ fn strict_audience_excludes_unannotated_ops_through_the_binary() {
 #[test]
 fn ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid() {
     // Drive the real binary over a spec carrying both ignore spellings (issue #78).
-    // `x-fern-ignore` and `x-crozier-ignore` each drop their operation and the type
-    // it exclusively referenced, while an explicit `x-crozier-ignore: false`
-    // overrides a sibling `x-fern-ignore: true` (the Overlay un-ignore pattern). The
-    // pruned SDK must still compile — no dangling import to a removed type.
+    // `x-fern-ignore` and `x-crozier-ignore` each drop their operation and keep the
+    // type it exclusively referenced, as Fern's TrueForge golden does, while an
+    // explicit `x-crozier-ignore: false` overrides a sibling `x-fern-ignore: true`
+    // (the Overlay un-ignore pattern). The pruned SDK must still compile.
     let ignore_spec = r##"
 openapi: 3.0.3
 info: { title: Widget API, version: 1.0.0 }
@@ -9488,7 +9790,7 @@ components:
     );
     assert!(out.join("src/widgetapi/types/kept.py").is_file());
 
-    // Both ignore spellings drop their client and their exclusive type.
+    // Both ignore spellings drop their client and keep their exclusive type.
     assert!(
         !out.join("src/widgetapi/fern").exists(),
         "x-fern-ignore op should be pruned"
@@ -9497,8 +9799,8 @@ components:
         !out.join("src/widgetapi/crozier").exists(),
         "x-crozier-ignore op should be pruned"
     );
-    assert!(!out.join("src/widgetapi/types/only_fern.py").exists());
-    assert!(!out.join("src/widgetapi/types/only_crozier.py").exists());
+    assert!(out.join("src/widgetapi/types/only_fern.py").is_file());
+    assert!(out.join("src/widgetapi/types/only_crozier.py").is_file());
     assert_valid_python(&out);
 }
 
@@ -11043,4 +11345,99 @@ fn paypal_catalog_products_recovers_from_missing_and_malformed_source() {
             "{relative}"
         );
     }
+}
+
+#[test]
+fn truefoundry_trueforge_5adde28_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TRUEFOUNDRY_TRUEFORGE_5ADDE28);
+}
+
+#[test]
+fn fergus_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FERGUS);
+}
+
+#[test]
+fn groupe_psa_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GROUPE_PSA);
+}
+
+#[test]
+fn timelyapp_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TIMELYAPP);
+}
+
+#[test]
+fn nextgen_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXTGEN);
+}
+
+#[test]
+fn auto_agent_protocol_matches_fern_output() {
+    assert_link_ok_corpus_matches(&AUTO_AGENT_PROTOCOL);
+}
+
+#[test]
+fn skool_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SKOOL);
+}
+
+#[test]
+fn spendesk_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SPENDESK);
+}
+
+#[test]
+fn billie_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BILLIE);
+}
+
+#[test]
+fn alma_france_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ALMA_FRANCE);
+}
+
+#[test]
+fn outreach_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OUTREACH);
+}
+
+#[test]
+fn tally_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TALLY);
+}
+
+#[test]
+fn billie_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BILLIE_ENTRY);
+}
+
+#[test]
+fn skool_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SKOOL_ENTRY);
+}
+
+#[test]
+fn timelyapp_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TIMELYAPP_ENTRY);
+}
+
+#[test]
+fn cradl_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CRADL);
+}
+
+#[test]
+fn zulip_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP);
+}
+
+#[test]
+fn zulip_jentic_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP_JENTIC);
+}
+
+#[test]
+fn zulip_jentic_entry_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
 }

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .update_quote_response_data_deposit_option_type_one import UpdateQuoteResponseDataDepositOptionTypeOne
+from .update_quote_response_data_deposit_option_type_zero import UpdateQuoteResponseDataDepositOptionTypeZero
+
+UpdateQuoteResponseDataDepositOptionType = typing.Union[
+    UpdateQuoteResponseDataDepositOptionTypeZero, UpdateQuoteResponseDataDepositOptionTypeOne
+]

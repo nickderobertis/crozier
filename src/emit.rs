@@ -179,6 +179,114 @@ fn module_children(endpoint_modules: &[String]) -> BTreeMap<String, Vec<String>>
     children
 }
 
+/// Parse an example literal as JSON, reading the Python spellings `True`, `False`
+/// and `None` outside strings as JSON's: a field's example literal is rendered
+/// for Python, and Zulip's `subscription_data` example carries `True` inside a
+/// list of objects.
+fn parse_example_value(example: &str) -> Option<serde_json::Value> {
+    if let Ok(value) = serde_json::from_str(example) {
+        return Some(value);
+    }
+    let mut json = String::with_capacity(example.len());
+    let mut in_string = false;
+    let mut escaped = false;
+    let mut rest = example;
+    while let Some(c) = rest.chars().next() {
+        if in_string {
+            json.push(c);
+            if escaped {
+                escaped = false;
+            } else if c == '\\' {
+                escaped = true;
+            } else if c == '"' {
+                in_string = false;
+            }
+            rest = &rest[c.len_utf8()..];
+            continue;
+        }
+        let word = [("True", "true"), ("False", "false"), ("None", "null")]
+            .into_iter()
+            .find(|(python, _)| rest.starts_with(python));
+        if let Some((python, spelled)) = word {
+            json.push_str(spelled);
+            rest = &rest[python.len()..];
+            continue;
+        }
+        if c == '"' {
+            in_string = true;
+        }
+        json.push(c);
+        rest = &rest[c.len_utf8()..];
+    }
+    serde_json::from_str(&json).ok()
+}
+
+/// A declared datetime example moved to UTC, the way Fern reads it through a
+/// JavaScript `Date`: Fergus's `filter[dateFrom]` example is
+/// `2025-12-02T00:00:00+13:00`, and its worked call passes
+/// `2025-12-01 11:00:00+00:00`. `None` when the value carries no non-zero
+/// `±HH:MM` offset or is not a date-time crozier can read.
+fn datetime_in_utc(value: &str) -> Option<String> {
+    let (body, sign, offset) = value
+        .rfind(['+', '-'])
+        .filter(|at| *at > 10)
+        .map(|at| (&value[..at], &value[at..=at], &value[at + 1..]))?;
+    let (offset_hours, offset_minutes) = offset.split_once(':')?;
+    let offset_minutes: i64 =
+        offset_hours.parse::<i64>().ok()? * 60 + offset_minutes.parse::<i64>().ok()?;
+    if offset_minutes == 0 {
+        return None;
+    }
+    let separator = body.get(10..11)?;
+    let (date, time) = (body.get(..10)?, body.get(11..)?);
+    let mut date_parts = date.splitn(3, '-').map(str::parse::<i64>);
+    let (year, month, day) = (
+        date_parts.next()?.ok()?,
+        date_parts.next()?.ok()?,
+        date_parts.next()?.ok()?,
+    );
+    let (clock, fraction) = time.split_at(time.find('.').unwrap_or(time.len()));
+    let mut clock_parts = clock.splitn(3, ':').map(str::parse::<i64>);
+    let (hour, minute, second) = (
+        clock_parts.next()?.ok()?,
+        clock_parts.next()?.ok()?,
+        clock_parts.next()?.ok()?,
+    );
+    // Days since the civil epoch (Howard Hinnant's `days_from_civil`).
+    let shifted_year = if month <= 2 { year - 1 } else { year };
+    let era = shifted_year.div_euclid(400);
+    let year_of_era = shifted_year - era * 400;
+    let day_of_year = (153 * (month + if month > 2 { -3 } else { 9 }) + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    let days = era * 146_097 + day_of_era;
+    let signed_offset = if sign == "+" {
+        offset_minutes
+    } else {
+        -offset_minutes
+    };
+    let minutes = days * 1440 + hour * 60 + minute - signed_offset;
+    let (days, minute_of_day) = (minutes.div_euclid(1440), minutes.rem_euclid(1440));
+    // And back (`civil_from_days`).
+    let era = days.div_euclid(146_097);
+    let day_of_era = days - era * 146_097;
+    let year_of_era =
+        (day_of_era - day_of_era / 1460 + day_of_era / 36524 - day_of_era / 146_096) / 365;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_index = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_index + 2) / 5 + 1;
+    let month = if month_index < 10 {
+        month_index + 3
+    } else {
+        month_index - 9
+    };
+    let year = year_of_era + era * 400 + i64::from(month <= 2);
+    Some(format!(
+        "{year:04}-{month:02}-{day:02}{separator}{:02}:{:02}:{second:02}{fraction}+00:00",
+        minute_of_day / 60,
+        minute_of_day % 60
+    ))
+}
+
 /// Collects imports and renders them in Fern's order: group 1 is stdlib
 /// (`import`s then `from`s), group 2 is everything else (`import`s then `from`s),
 /// separated by a blank line. Names within a `from` and the statements within a
@@ -1358,7 +1466,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 false,
             )?);
             let cx = ClientCtx {
-                yaml_source: ir.yaml_source,
+                yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 module,
@@ -1390,7 +1498,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             false,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source,
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module,
@@ -1427,7 +1535,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         files.push(root_client_file(
             &env,
             RootClientFileCtx {
-                yaml_source: ir.yaml_source,
+                yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
                 pkg,
                 client_name: &ir.client_name,
                 modules: &root_modules,
@@ -1486,7 +1594,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             true,
         )?);
         let cx = ClientCtx {
-            yaml_source: ir.yaml_source,
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             pkg,
             client_name: &ir.client_name,
             module: "",
@@ -1518,12 +1626,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         path: PathBuf::from("README.md"),
         contents: String::new(),
     }));
-    files.push(reference_file(
-        &env,
-        ir,
-        &client_tree_modules(ir),
-        &tag_map,
-    )?);
+    files.push(reference_file(&env, ir, &reference_modules(ir), &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
     files.extend(scaffolding_files(pkg, &ir.project_name));
@@ -1538,18 +1641,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 }
 
 /// Generate `environment.py`: an `enum.Enum` of the SDK's server environments.
-/// Fern's OpenAPI importer emits a single member (see [`ir::Environment`]).
+/// Fern's OpenAPI importer emits a member per named server (see
+/// [`ir::Environment`]).
 fn environment_file(
     env: &Environment<'static>,
     pkg: &str,
     environment: &crate::ir::Environment,
 ) -> Result<GeneratedFile> {
-    let (member, url) = &environment.member;
-    let body = format!(
-        "import enum\n\n\nclass {}(enum.Enum):\n    {member} = \"{}\"\n",
-        environment.enum_name,
-        escape_py_str(url),
+    let mut body = format!(
+        "import enum\n\n\nclass {}(enum.Enum):\n",
+        environment.enum_name
     );
+    for (member, url) in environment.members() {
+        body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+    }
     let contents = render(
         env,
         "file.py",
@@ -2005,7 +2110,7 @@ fn select_readme_endpoint<'a>(
 fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source,
+        yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -2061,6 +2166,44 @@ fn client_tree_modules(ir: &Ir) -> Vec<&str> {
             }
         }
     }
+    out
+}
+
+/// The client modules in the order `reference.md` lists them. A package's own
+/// endpoints come at its place among its siblings, but its children are listed
+/// where a package that owns no endpoints would be — after every sibling that
+/// owns endpoints, among the pure parents sorted by name. TrueForge's `internal`
+/// owns endpoints and nests four sub-clients, and its golden lists `Internal`
+/// first, then `Agents` … `Skills`, then the `Catalogs`, `Internal` and
+/// `Settings` sub-clients in that order.
+fn reference_modules(ir: &Ir) -> Vec<&str> {
+    fn visit<'a>(
+        parent: &str,
+        children: &BTreeMap<String, Vec<String>>,
+        ir: &'a Ir,
+        out: &mut Vec<&'a str>,
+    ) {
+        let Some(names) = children.get(parent) else {
+            return;
+        };
+        out.extend(names.iter().filter_map(|name| {
+            ir.endpoint_modules
+                .iter()
+                .find(|known| *known == name)
+                .map(String::as_str)
+        }));
+        let mut folders: Vec<&String> = names
+            .iter()
+            .filter(|name| children.contains_key(*name))
+            .collect();
+        folders.sort();
+        for folder in folders {
+            visit(folder, children, ir, out);
+        }
+    }
+    let children = module_children(&ir.endpoint_modules);
+    let mut out = Vec::new();
+    visit("", &children, ir, &mut out);
     out
 }
 
@@ -2162,7 +2305,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let sync_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source,
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2192,7 +2335,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let async_example = {
         let mut ctx = ExampleCtx {
             types: &ir.types,
-            yaml_source: ir.yaml_source,
+            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
             tag_decls: &ir.tag_types,
             referenced: BTreeSet::new(),
             referenced_doc_order: Vec::new(),
@@ -2416,7 +2559,7 @@ fn reference_entry(
     // The example (sync form). Bytes bodies are filtered out before this point.
     let mut ctx = ExampleCtx {
         types: &ir.types,
-        yaml_source: ir.yaml_source,
+        yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
         tag_decls: &ir.tag_types,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -4603,8 +4746,16 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 TypeRef::Optional(Box::new(s.type_ref.clone()))
             };
             let annotation = raw_type_str_ctx(&annotation_type, imports, true);
+            // A urlencoded single body is sent as form data.
+            let key = if s.content_type_override.as_deref()
+                == Some("application/x-www-form-urlencoded")
+            {
+                "data"
+            } else {
+                "json"
+            };
             let call = Doc::group(
-                "            json=convert_and_respect_annotation_metadata(",
+                format!("            {key}=convert_and_respect_annotation_metadata("),
                 vec![
                     Doc::atom("object_=request"),
                     Doc::atom(format!("annotation={annotation}")),
@@ -4967,7 +5118,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && fields.iter().any(|field| field.convert)))
                             || body.all_fields_required()))) =>
         {
-            Some("application/json".to_string())
+            Some(
+                ep.body_json_media_type
+                    .clone()
+                    .unwrap_or_else(|| "application/json".to_string()),
+            )
         }
         _ => None,
     };
@@ -5353,8 +5508,8 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
 /// aggregate every tag client. Bearer-auth-coupled today (a `token` argument);
 /// generalize when more auth schemes are modeled.
 struct RootClientFileCtx<'a> {
-    /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: bool,
+    /// The document's unquoted YAML timestamps; see [`ExampleCtx::yaml_unquoted_timestamps`].
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     modules: &'a [&'a String],
@@ -5372,7 +5527,7 @@ fn root_client_file(
     cx: RootClientFileCtx<'_>,
 ) -> Result<GeneratedFile> {
     let RootClientFileCtx {
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         modules,
@@ -5429,7 +5584,7 @@ fn root_client_file(
     };
     let root_methods = root_client_methods(
         env,
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         root_endpoints,
@@ -5444,7 +5599,7 @@ fn root_client_file(
     )?;
     let async_root_methods = root_client_methods(
         env,
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         root_endpoints,
@@ -5530,7 +5685,7 @@ struct RootClientCfg<'a> {
 )]
 fn root_client_methods(
     _env: &Environment<'static>,
-    yaml_source: bool,
+    yaml_unquoted_timestamps: Option<&std::collections::BTreeSet<String>>,
     pkg: &str,
     client_name: &str,
     endpoints: &[&Endpoint],
@@ -5547,7 +5702,7 @@ fn root_client_methods(
         return Ok(Vec::new());
     }
     let cx = ClientCtx {
-        yaml_source,
+        yaml_unquoted_timestamps,
         pkg,
         client_name,
         module: "",
@@ -5906,8 +6061,8 @@ fn tag_client_name(module: &str, is_async: bool) -> String {
 /// the root client name, the module, and the type table the example generator
 /// consults. Bundled so the client helpers stay within clippy's argument limit.
 struct ClientCtx<'a> {
-    /// Whether the document was YAML; see [`ExampleCtx::yaml_source`].
-    yaml_source: bool,
+    /// The document's unquoted YAML timestamps; see [`ExampleCtx::yaml_unquoted_timestamps`].
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     pkg: &'a str,
     client_name: &'a str,
     module: &'a str,
@@ -5980,7 +6135,7 @@ fn client_file(
         "from __future__ import annotations\n\n"
     };
     let body = format!("{omit}{sync}\n\n\n{async_class}");
-    let contents = render(
+    let mut contents = render(
         env,
         "raw_client.py",
         cx.module,
@@ -5990,6 +6145,12 @@ fn client_file(
             body => body,
         },
     )?;
+    // The `TYPE_CHECKING` block is followed by one blank line when `OMIT` comes
+    // next, not the two a class gets: TrueForge's `internal` client both nests
+    // sub-clients and posts a body, and its golden writes the pair that way.
+    if !type_checking.is_empty() && !omit.is_empty() {
+        contents = contents.replacen("\n\n\nOMIT = ", "\n\nOMIT = ", 1);
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{}/{}/client.py", cx.pkg, cx.module)),
         contents,
@@ -6187,7 +6348,7 @@ fn client_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6314,7 +6475,7 @@ fn client_binary_stream_docstring(
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6409,7 +6570,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
 
     let mut ctx = ExampleCtx {
         types: cx.types,
-        yaml_source: cx.yaml_source,
+        yaml_unquoted_timestamps: cx.yaml_unquoted_timestamps,
         tag_decls: cx.tag_decls,
         referenced: BTreeSet::new(),
         referenced_doc_order: Vec::new(),
@@ -6626,9 +6787,17 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
+                // Several wrapped items keep Python's magic trailing comma, as
+                // Groupe PSA's two-item `remote_types` example does; one does not.
+                let trailing_comma = if items.len() == 1 { "" } else { "," };
                 let body = items
                     .iter()
-                    .map(|it| format!("{inner_pad}{}", it.render_at(indent + 4, indent + 4)))
+                    .map(|it| {
+                        format!(
+                            "{inner_pad}{}{trailing_comma}",
+                            it.render_at(indent + 4, indent + 4)
+                        )
+                    })
                     .collect::<Vec<_>>()
                     .join("\n");
                 format!("[\n{body}\n{pad}]")
@@ -6741,10 +6910,10 @@ impl Example {
 /// Threads the type table and the imports/datetime a worked example accumulates.
 struct ExampleCtx<'a> {
     types: &'a [TypeDecl],
-    /// Whether the document was YAML. An unquoted YAML timestamp scalar is a date
-    /// to Fern's parser, not a string, so such an example is not one a plain `str`
-    /// field can take; a JSON document cannot spell one.
-    yaml_source: bool,
+    /// The timestamp-like scalars a YAML document writes unquoted, `None` for
+    /// JSON. Such a scalar is a date to Fern's parser, not a string, so an example
+    /// spelled by one is not one a plain `str` field can take.
+    yaml_unquoted_timestamps: Option<&'a std::collections::BTreeSet<String>>,
     /// Hoisted tag-scoped types, consulted so an example can construct one and
     /// import it from its tag package (`from <pkg>.<tag> import ...`).
     tag_decls: &'a [TagTypeDecl],
@@ -6863,6 +7032,9 @@ impl<'a> ExampleCtx<'a> {
                 if let Some(without_z) = value.strip_suffix('Z') {
                     value = format!("{without_z}+00:00");
                 }
+                if let Some(utc) = datetime_in_utc(&value) {
+                    value = utc;
+                }
                 value = value.replace(".000+00:00", "+00:00");
                 "datetime.datetime.fromisoformat"
             } else {
@@ -6910,7 +7082,8 @@ impl<'a> ExampleCtx<'a> {
             });
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
-            let values: Vec<serde_json::Value> = serde_json::from_str(example).ok()?;
+            let values: Vec<serde_json::Value> =
+                serde_json::from_value(parse_example_value(example)?).ok()?;
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
                 if !self.example_is_temporal(inner) || !unique.contains(&value) {
@@ -6935,7 +7108,7 @@ impl<'a> ExampleCtx<'a> {
             });
         }
         if let TypeRef::Union(variants) = t {
-            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            let value: serde_json::Value = parse_example_value(example)?;
             if value
                 .as_object()
                 .is_some_and(|object| object.len() == 1 && object.contains_key("$ref"))
@@ -6955,7 +7128,7 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Object(object)) = self.find(name) {
                 let fields = self.object_fields(object);
-                let values = serde_json::from_str::<serde_json::Value>(example).ok()?;
+                let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
                 let args = fields
@@ -6981,7 +7154,9 @@ impl<'a> ExampleCtx<'a> {
                             // is no example for a field that is not temporal; see
                             // [`yaml_resolves_as_timestamp`].
                             Some(serde_json::Value::String(value))
-                                if self.yaml_source
+                                if self
+                                    .yaml_unquoted_timestamps
+                                    .is_some_and(|unquoted| unquoted.contains(value))
                                     && !self.example_is_temporal(&type_ref)
                                     && yaml_resolves_as_timestamp(value) =>
                             {
@@ -8205,6 +8380,21 @@ fn build_example_inner(
                     _ => v,
                 };
             }
+            // Without an importer example, Fern's IR fallback keys a map to
+            // unknown by its key type's sample: Spendesk's `request_access_token`
+            // posts a bare `type: object` and answers an undeclared `$ref`, and
+            // its golden documents `request={"string": {"key": "value"}}`.
+            if ep.importer_example_missing
+                && body_example.is_none()
+                && s.example.is_none()
+                && matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+            {
+                v = if ctx.reference {
+                    Example::ReferenceDict(vec![("string".to_string(), Example::Atom(v.flat()))])
+                } else {
+                    Example::Dict(vec![("string".to_string(), v)])
+                };
+            }
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes
@@ -8326,9 +8516,14 @@ fn build_example_inner(
                     })
                     .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)));
                 let synthesized_items =
-                    ((ep.text_response || ep.binary_response) && f.spec_required).then_some(2);
+                    ((ep.text_response || ep.binary_response || ep.importer_example_missing)
+                        && f.spec_required)
+                        .then_some(2);
                 if let Some(min_items) = synthesized_items {
-                    if let Example::List(items) | Example::ReferenceList(items) = &mut v {
+                    if let Example::List(items)
+                    | Example::ExplicitList(items)
+                    | Example::ReferenceList(items) = &mut v
+                    {
                         if let Some(first) = items.first().cloned() {
                             items.resize(min_items, first);
                         }
@@ -8420,8 +8615,19 @@ fn build_example_inner(
                         Example::Atom(format!("\"example_{}\"", f.wire_name))
                     }
                 } else {
+                    // A declared example is shown where a JSON field's would be:
+                    // Zulip's `to` is a union whose example `[9, 10]` Fern passes
+                    // over for the sample `"to"`.
                     f.example
                         .as_deref()
+                        .filter(|_| {
+                            ctx.example_is_scalar(&f.type_ref)
+                                || ctx.example_is_composite(&f.type_ref)
+                                || ctx.example_is_temporal(&f.type_ref)
+                                // A model takes its object example: Zulip's
+                                // `draft` is exampled from its annotation.
+                                || ctx.example_is_object(&f.type_ref)
+                        })
                         .and_then(|example| ctx.value_from_example(&f.type_ref, example))
                         .unwrap_or_else(|| ctx.value(&f.type_ref, Slot::Named(&f.wire_name)))
                 };
@@ -8665,6 +8871,11 @@ fn build_example_inner(
         out.extend(call.split('\n').map(String::from));
     }
     if documentation {
+        // An untyped request body's placeholder stays on its line: Fern writes
+        // NextGen's `request={"key": "value"},` flat, where a map-typed one
+        // (bunq's `AttachmentPublic`) is wrapped by `compact_documentation_values`.
+        let untyped_request = matches!(&ep.request_body, Some(RequestBody::Single(single))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)));
         Some(format_documentation_example(
             out,
             is_async,
@@ -8672,6 +8883,7 @@ fn build_example_inner(
             environment,
             reference,
             ctx.datetime_precedes_tag_import,
+            untyped_request,
         ))
     } else {
         Some(out)
@@ -8711,6 +8923,7 @@ fn format_documentation_example(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
     datetime_first: bool,
+    untyped_request: bool,
 ) -> Vec<String> {
     let client_index = lines
         .iter()
@@ -8786,10 +8999,14 @@ fn format_documentation_example(
         }
     }
     out.extend(body);
-    compact_documentation_values(out, reference)
+    compact_documentation_values(out, reference, untyped_request)
 }
 
-fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<String> {
+fn compact_documentation_values(
+    lines: Vec<String>,
+    reference: bool,
+    untyped_request: bool,
+) -> Vec<String> {
     let mut compact = Vec::with_capacity(lines.len());
     let mut index = 0;
     while index < lines.len() {
@@ -8831,11 +9048,20 @@ fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<Stri
             index += 1;
             continue;
         }
+        // The Markdown writers wrap a one-pair dict argument onto its own lines:
+        // bunq's `{"key": "value"}` placeholder and the Auto Agent Protocol's
+        // `data={"type": "dealer.information.request"}` alike.
         if !reference {
             if let Some((head, item)) = trimmed
                 .strip_suffix("},")
                 .and_then(|value| value.split_once("={"))
-                .filter(|(_, item)| *item == "\"key\": \"value\"")
+                .filter(|(_, item)| {
+                    item.starts_with('"')
+                        && item.contains("\": ")
+                        && !item.contains(['{', '[', '}', ']'])
+                        && item.matches("\", \"").count() == 0
+                })
+                .filter(|(head, _)| !(untyped_request && *head == "request"))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));
@@ -9222,6 +9448,24 @@ mod tests {
             decl: decl.to_string(),
             docstring: docstring.map(str::to_string),
         }
+    }
+
+    #[test]
+    fn example_literals_parse_as_json_whether_python_or_json_spelled() {
+        assert_eq!(
+            super::parse_example_value(r#"[{"on": True, "off": False, "none": None}]"#),
+            Some(serde_json::json!([{"on": true, "off": false, "none": null}]))
+        );
+        // Inside a string the Python words are text.
+        assert_eq!(
+            super::parse_example_value(r#"{"text": "True \"None\"", "on": True}"#),
+            Some(serde_json::json!({"text": "True \"None\"", "on": true}))
+        );
+        assert_eq!(
+            super::parse_example_value("[1, 2]"),
+            Some(serde_json::json!([1, 2]))
+        );
+        assert_eq!(super::parse_example_value("not json"), None);
     }
 
     #[test]
@@ -9736,6 +9980,7 @@ mod tests {
             body_media_alternatives: false,
             body_collapses_to_type_reference: false,
             body_content_type_override: None,
+            body_json_media_type: None,
             basic_auth: false,
             body_schema_ref: false,
             body_schema_dropped: false,
@@ -9766,6 +10011,7 @@ mod tests {
             text_response: false,
             markdown_response: false,
             binary_response: false,
+            importer_example_missing: false,
             binary_schema_response: false,
             wildcard_binary_response: false,
             emittable: true,
@@ -9781,7 +10027,7 @@ mod tests {
             .into_iter()
             .collect();
         Ir {
-            yaml_source: false,
+            yaml_unquoted_timestamps: None,
             openapi_31: false,
             package_name: "fern".to_string(),
             project_name: "default_package_name".to_string(),
@@ -10573,7 +10819,7 @@ mod tests {
     ) -> ExampleCtx<'a> {
         ExampleCtx {
             types,
-            yaml_source: false,
+            yaml_unquoted_timestamps: None,
             tag_decls,
             referenced: Default::default(),
             referenced_doc_order: Default::default(),
@@ -10636,6 +10882,20 @@ mod tests {
             )]
         );
         assert!(ctx.referenced.is_empty());
+    }
+
+    #[test]
+    fn datetime_examples_move_to_utc() {
+        assert_eq!(
+            super::datetime_in_utc("2025-12-02 00:00:00+13:00").as_deref(),
+            Some("2025-12-01 11:00:00+00:00")
+        );
+        assert_eq!(
+            super::datetime_in_utc("2024-02-28T23:30:00.5-01:00").as_deref(),
+            Some("2024-02-29T00:30:00.5+00:00")
+        );
+        assert_eq!(super::datetime_in_utc("2024-01-15T09:30:00+00:00"), None);
+        assert_eq!(super::datetime_in_utc("2024-01-15"), None);
     }
 
     #[test]
@@ -11986,7 +12246,7 @@ mod tests {
         let auth = Auth::None;
         let tags = std::collections::BTreeMap::new();
         let cx = ClientCtx {
-            yaml_source: false,
+            yaml_unquoted_timestamps: None,
             pkg: "acme",
             client_name: "AcmeApi",
             module: "events",

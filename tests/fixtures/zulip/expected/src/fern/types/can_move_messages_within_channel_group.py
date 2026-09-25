@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .can_move_messages_within_channel_group_direct_members import CanMoveMessagesWithinChannelGroupDirectMembers
+
+CanMoveMessagesWithinChannelGroup = typing.Union[int, CanMoveMessagesWithinChannelGroupDirectMembers]

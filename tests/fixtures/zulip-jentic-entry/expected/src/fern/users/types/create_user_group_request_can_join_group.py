@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .create_user_group_request_can_join_group_direct_members import CreateUserGroupRequestCanJoinGroupDirectMembers
+
+CreateUserGroupRequestCanJoinGroup = typing.Union[int, CreateUserGroupRequestCanJoinGroupDirectMembers]

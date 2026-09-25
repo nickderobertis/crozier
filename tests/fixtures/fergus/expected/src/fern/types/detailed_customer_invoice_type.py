@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .detailed_customer_invoice_type_one import DetailedCustomerInvoiceTypeOne
+from .detailed_customer_invoice_type_two import DetailedCustomerInvoiceTypeTwo
+from .detailed_customer_invoice_type_zero import DetailedCustomerInvoiceTypeZero
+
+DetailedCustomerInvoiceType = typing.Union[
+    DetailedCustomerInvoiceTypeZero, DetailedCustomerInvoiceTypeOne, DetailedCustomerInvoiceTypeTwo
+]
