@@ -3228,6 +3228,7 @@ const CORPORA: &[&Corpus] = &[
     &SKOOL,
     &SPENDESK,
     &BILLIE,
+    &ALMA_FRANCE,
 ];
 
 #[test]
@@ -5682,6 +5683,18 @@ const SPENDESK: Corpus = Corpus {
 /// Billie Direct API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
 const BILLIE: Corpus = Corpus {
     api: "billie",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Alma Payments API (France) — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const ALMA_FRANCE: Corpus = Corpus {
+    api: "alma-france",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11264,4 +11277,9 @@ fn spendesk_matches_fern_output() {
 #[test]
 fn billie_matches_fern_output() {
     assert_link_ok_corpus_matches(&BILLIE);
+}
+
+#[test]
+fn alma_france_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ALMA_FRANCE);
 }
