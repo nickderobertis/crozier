@@ -227,7 +227,7 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
             continue
         end = REPORT._item_end_line(lines, index - 1)
         if end is None:
-            fail(f"cannot bound the body of `fn {name}` at line {index + 1}")
+            fail(f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name}")
         spans.append((index + 1, end))
     return spans
 
@@ -292,7 +292,7 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
         open_col = lines[opening - 1].index("{") + 1
         arm_end = REPORT._item_end_line(lines, opening - 2)
     if arm_end is None or arm_end > end:
-        fail(f"site {spec!r}: cannot bound the block opened on line {opening}")
+        fail(f"site {spec!r}: cannot bound the block opened on line {opening}; anchor the arm regex on a line that opens a balanced block, or use `[=regex]` for a one-line arm")
     arrow = code.find("=>")
     if arrow != -1 and arrow < open_col:
         # A match arm: its body starts after `=>`, whether that body is a block
@@ -377,7 +377,7 @@ def measure(args: argparse.Namespace) -> int:
     out: Path = args.out
     for tool in ("cargo",):
         if shutil.which(tool) is None:
-            fail(f"{tool} is not on PATH")
+            fail(f"{tool} is not on PATH; install the pinned toolchain with `just bootstrap`")
     build = subprocess.run(
         ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "-E",
          "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],
@@ -496,7 +496,7 @@ def census_witnesses(census: dict, selectors: tuple[str, ...]) -> dict[str, int]
         if pattern.startswith("fixture="):
             fixture = pattern.removeprefix("fixture=")
             if fixture not in sources:
-                fail(f"`{pattern}` names no registered source")
+                fail(f"`{pattern}` names no registered source; correct the `fixture=` selector in {SITES_TABLE.name} to a CORPUS.md name")
             named[fixture] = 0
             continue
         hits = {name for name in names if fnmatch.fnmatchcase(name, pattern)}
@@ -556,7 +556,8 @@ def compute(
     if missing or extra:
         fail(
             f"{SITES_TABLE.name} disagrees with the golden rows: missing {missing}, "
-            f"not golden {extra}"
+            f"not golden {extra}; add or remove those rows so it lists exactly the "
+            f"region files' `golden` rows"
         )
     # Each site's regions, and which of them each golden test executed, are
     # computed once: a row's scoped run is the union over its witnesses of
@@ -569,7 +570,7 @@ def compute(
             site = resolve_site(spec, repo_root)
             found = frozenset(r for r in universe.get(site.file, set()) if site.holds(r))
             if not found:
-                fail(f"site {spec} spans no production counter region; it handles nothing measurable")
+                fail(f"site {spec} spans no production counter region; it handles nothing measurable. Point it at the arm that handles the feature, or re-run `just golden-reach` if src/ moved since the measurement")
             inside[spec] = found
             for test, files in coverage.items():
                 executed_by[spec, test] = found & files.get(site.file, frozenset())
@@ -835,7 +836,7 @@ def sites(args: argparse.Namespace) -> int:
         census = json.loads(Path(args.census).read_text(encoding="utf-8"))
         for row in table.values():
             if not census_witnesses(census, row.selectors):
-                fail(f"{row.key}: no registered source declares any of {', '.join(row.selectors)}")
+                fail(f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or re-run `just golden-reach` if the census is stale")
     seen = set()
     for row in table.values():
         for spec in row.sites:

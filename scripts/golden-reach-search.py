@@ -148,12 +148,12 @@ def selectors_of(key: str) -> tuple[str, ...]:
     """The census selectors a row's witnesses are read off (its site-table row)."""
     table = REACH.read_sites_table()
     if key not in table:
-        fail(f"{key} is not a golden row of the site table")
+        fail(f"{key} is not a golden row of the site table; check the key against {REACH.SITES_TABLE.name}")
     if key in PREDICATE_ROWS:
         return (f"predicate:{key}",)
     selectors = tuple(s for s in table[key].selectors if not s.startswith("fixture="))
     if not selectors:
-        fail(f"{key} names its witnesses directly; no census selector can search for it")
+        fail(f"{key} names its witnesses directly; no census selector can search for it. Add it to PREDICATE_ROWS with a predicate, or give its site-table row a census selector")
     return selectors
 
 
@@ -194,7 +194,7 @@ def unreached_sites(key: str) -> tuple[str, ...]:
         if reach.key == key:
             sites = tuple(spec for spec, hit, _total in reach.sites if not hit)
             if not sites:
-                fail(f"{key} reaches every handling site; there is no arm to search for")
+                fail(f"{key} reaches every handling site; there is no arm to search for. Drop it from this search")
             return sites
     fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv, or re-run `just golden-reach-report`")
     raise AssertionError
@@ -297,7 +297,7 @@ def pinned_listing(source: str) -> list[dict[str, str]]:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     immutable = [row for row in rows if len(row["revision"]) == 40]
     if not immutable:
-        fail(f"{source}'s acquisition manifest names no document at an immutable ref")
+        fail(f"{source}'s acquisition manifest names no document at an immutable ref; re-acquire the source through its witness-search script before walking it")
     return immutable
 
 
@@ -468,7 +468,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
                 fetched += 1
         sha256 = hashlib.sha256(local.read_bytes()).hexdigest() if local else ""
         if pin.get("sha256") and sha256 and sha256 != pin["sha256"]:
-            fail(f"{pin['path']}: the blob matches but the SHA-256 differs from the pin")
+            fail(f"{pin['path']}: the blob matches but the SHA-256 differs from the pin; delete {local} and re-run `fetch-pins`")
         missing += not sha256
         resolved.append({"walk": pin["repository"], "document": pin["path"], "revision": pin["commit"],
                          "blob": pin["blob"], "sha256": sha256})
@@ -492,7 +492,7 @@ def phrasings(key: str, source: str) -> list[str]:
         ]
     found = [r["phrasing"] for r in rows]
     if len(found) < 2 or len(set(found)) != len(found):
-        fail(f"{QUERIES.name} owes {key} two distinct phrasings for {source}")
+        fail(f"{QUERIES.name} owes {key} two distinct phrasings for {source}; add them there before querying")
     return found
 
 
@@ -791,7 +791,7 @@ def screen(args: argparse.Namespace) -> int:
         None,
     )
     if census is None:
-        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records")
+        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records; `walk` or `query` {args.source} for {args.key} first, or check the candidate's spelling")
     rows = [
         {"key": args.key, "kind": "candidate", "subject": args.candidate, "result": census, "file": "probe.jsonl"},
         {"key": args.key, "kind": "screen", "subject": f"{args.candidate} licence", "result": args.licence, "file": "screens.jsonl"},
