@@ -3223,6 +3223,7 @@ const CORPORA: &[&Corpus] = &[
     &FERGUS,
     &GROUPE_PSA,
     &TIMELYAPP,
+    &NEXTGEN,
 ];
 
 #[test]
@@ -5617,6 +5618,18 @@ const GROUPE_PSA: Corpus = Corpus {
 /// Timely declares `anyOf` array variants with struct items.
 const TIMELYAPP: Corpus = Corpus {
     api: "timelyapp",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// NextGen points `$ref`s under an undeclared component head and names schemas with non-identifiers.
+const NEXTGEN: Corpus = Corpus {
+    api: "nextgen",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11174,4 +11187,9 @@ fn groupe_psa_matches_fern_output() {
 #[test]
 fn timelyapp_matches_fern_output() {
     assert_link_ok_corpus_matches(&TIMELYAPP);
+}
+
+#[test]
+fn nextgen_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXTGEN);
 }

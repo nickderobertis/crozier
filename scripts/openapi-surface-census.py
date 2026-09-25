@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 148 of the 180 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 149 of the 181 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -2038,7 +2038,8 @@ def class_name(schema_key: str) -> str:
     """`naming::class_name`: the Python class name crozier gives a named schema."""
     if re.fullmatch(r"0|[1-9][0-9]{0,3}", schema_key):
         return numeric_class_name(int(schema_key))
-    pascal = to_pascal_case(schema_key)
+    words = "".join(c if c.isalnum() or c == "_" else " " for c in schema_key)
+    pascal = to_pascal_case(words)
     if pascal and _is_digit(pascal[0]):
         pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
     return sanitize_identifier(pascal)
@@ -2068,7 +2069,7 @@ NAMING_PORT_DIGESTS = {
     "deburr_letter": "f5488da97d3f0dde",
     "collapse_digit_boundaries": "24c31560b089ab63",
     "split_words": "3a76409f152dcce6",
-    "class_name": "add019f9b00f68ca",
+    "class_name": "54033e143e484814",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
 }
 

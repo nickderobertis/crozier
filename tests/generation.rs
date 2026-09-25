@@ -9227,3 +9227,59 @@ components:
     );
     assert!(files["src/acme/types/project_state.py"].contains("Workflow state."));
 }
+
+/// The NextGen shapes: a Postman-exported URL as schema name and operationId, an
+/// untyped request body, and a bare string body with a schema example.
+#[test]
+fn postman_exported_names_and_untyped_bodies_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: NextGen, version: 1.0.0 }
+paths:
+  /persons/{personId}/allergies:
+    post:
+      tags: [Allergies]
+      operationId: "{{baseUrl}}/persons/:personId/allergies"
+      parameters:
+        - { in: path, name: personId, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/%7B%7BbaseUrl%7D%7D~1persons~1%3ApersonId~1allergiesRequest" }
+      responses: { "200": { description: ok } }
+  /persons/{personId}/documents:
+    post:
+      tags: [Documents]
+      operationId: "{{baseUrl}}/persons/:personId/documents"
+      parameters:
+        - { in: path, name: personId, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: string, example: "<string>" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    "{{baseUrl}}/persons/:personId-Request":
+      type: object
+      properties: { name: { type: string } }
+"##,
+    );
+    assert!(files.contains_key("src/acme/types/base_url_persons_person_id_request.py"));
+    let allergies = &files["src/acme/allergies/client.py"];
+    assert!(
+        allergies.contains("def base_url_persons_person_id_allergies("),
+        "{allergies}"
+    );
+    assert!(allergies.contains("request: typing.Any,"), "{allergies}");
+    let documents = &files["src/acme/documents/client.py"];
+    assert!(documents.contains("request=\"<string>\","), "{documents}");
+    // The untyped body's placeholder stays on one line in the README.
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    request={\"key\": \"value\"},\n"),
+        "{readme}"
+    );
+}

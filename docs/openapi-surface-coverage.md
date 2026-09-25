@@ -21,7 +21,7 @@ It is also not a fixture backlog on its own: what a `gap` row becomes is decided
 by its `settlement` cell, and the corpus registration rules in
 [`../tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md) still govern.
 
-**What it says today.** The walk enumerates 530 features. 415 are `golden`: a
+**What it says today.** The walk enumerates 530 features. 416 are `golden`: a
 registered source declares the feature and its committed Fern golden
 byte-matches, so crozier-versus-Fern parity is *measured* there. 68 are
 `limitations`: Fern's behaviour is measured on a locally authored probe and
@@ -29,13 +29,13 @@ recorded in [`fern-limitations.md`](fern-limitations.md), which is a verdict
 about Fern and not a byte comparison against crozier — and under
 [the amended settlement rule](#what-a-probe-may-settle-as-amended-again) every
 one of those verdicts is non-generation, each row owing a committed proof of it.
-47 are `gap`: 20 of them
+46 are `gap`: 20 of them
 `UNREACHABLE` — the shape has no position in a generated Python SDK at all — and
-27 `FIXTURE`, each a shape a real document can declare and no committed golden
+26 `FIXTURE`, each a shape a real document can declare and no committed golden
 reaches. So *does crozier byte-match Fern on
 every OpenAPI feature and scenario?* **No.** The honest answer is that byte-match
-evidence covers 415 of the 530 features this walk can see, that 68 more carry a
-Fern verdict and no byte comparison at all, that 47 have neither, and that the
+evidence covers 416 of the 530 features this walk can see, that 68 more carry a
+Fern verdict and no byte comparison at all, that 46 have neither, and that the
 walk cannot see everything — where the remaining distance lies is
 [stated in full below](#golden-classified-is-not-golden-exhausted) rather than
 left for a reader to infer from a backlog's size.
@@ -84,7 +84,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 148 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 149 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1056,8 +1056,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **180** registered sources, of which
-  **163** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **181** registered sources, of which
+  **164** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1096,16 +1096,16 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 19 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 240 | 191 | 21 | 28 | 25 | 0 | 3 |
+| [`schemas`](openapi-surface/schemas.md) | 240 | 192 | 21 | 27 | 24 | 0 | 3 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 36 | 11 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 38 | 10 | 2 | 2 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 71 | 66 | 5 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 33 | 2 | 17 | 0 | 0 | 17 |
-| **total** | **530** | **415** | **68** | **47** | **27** | **0** | **20** |
+| **total** | **530** | **416** | **68** | **46** | **26** | **0** | **20** |
 
 The walk enumerated **530** features and landed each in exactly one category:
-**415** `golden`, **68** `limitations`, **47** `gap`. The `gap` column splits by
-settlement class into **27** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
+**416** `golden`, **68** `limitations`, **46** `gap`. The `gap` column splits by
+settlement class into **26** `FIXTURE`, **0** `PROBE` and **20** `UNREACHABLE`.
 
 The denominator's previous increase came from the instrument's new selectors.
 The subsequent PayPal registration adds one source (32 vendored plus 138
@@ -1120,52 +1120,52 @@ search-incomplete within the fixture backlog. The report separates finite
 inventory closure from unanswered searches and excludes Postman from new work
 and future obligations while preserving historical source evidence.
 
-The witness searches' registrations add eight sources — corpus rows 144 to 151,
+The witness searches' registrations add nine sources — corpus rows 144 to 152,
 `paloalto-cspm-alerts`, `paloalto-cspm-reports`, `paloalto-cspm-search-manager`,
-`thrivecart`, `truefoundry-trueforge-5adde28`, `fergus`, `groupe-psa` and
-`timelyapp` (32 vendored plus 148 `link-ok`) — and promote five `schemas`
-features to `golden`:
-`annotated-ref-target-composed`, `annotated-ref-target-oneof`,
-`annotated-ref-target-closed-object`, `anyof-array-variant-struct-item` and
-`ref-pointer-undeclared-component-head`. The denominator is unchanged. Only the
-`fergus` golden reaches the `src/ir.rs` site its row names; each row's evidence
-cell says which of crozier's handling sites its golden reaches and which it does
-not.
+`thrivecart`, `truefoundry-trueforge-5adde28`, `fergus`, `groupe-psa`,
+`timelyapp` and `nextgen` (32 vendored plus 149 `link-ok`) — and promote six
+`schemas` features to `golden`: `annotated-ref-target-composed`,
+`annotated-ref-target-oneof`, `annotated-ref-target-closed-object`,
+`anyof-array-variant-struct-item`, `ref-pointer-undeclared-component-head` and
+`schema-name-nonidentifier-name`. The denominator is unchanged. Only the `fergus`
+golden reaches the `src/ir.rs` site its row names; each row's evidence cell says
+which of crozier's handling sites its golden reaches and which it does not.
 
-**What the `golden` count means, and what it does not.** 415 of those 530
+**What the `golden` count means, and what it does not.** 416 of those 530
 features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
-real bytes there and `just check` fails if they diverge. The other 115 do not. 68
-carry a Fern verdict measured on a probe and no byte comparison at all, and 47
+real bytes there and `just check` fails if they diverge. The other 114 do not. 68
+carry a Fern verdict measured on a probe and no byte comparison at all, and 46
 have neither. Neither
-column is a defect count, and neither 415 nor 530 is a claim of exhaustion —
+column is a defect count, and neither 416 nor 530 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
-**What the `gap` count means.** 47 is the number of OpenAPI shapes for which
+**What the `gap` count means.** 46 is the number of OpenAPI shapes for which
 crozier's behaviour is vouched for by nothing but crozier: no committed golden's
 source declares the shape, so no byte comparison against Fern touches it, and
 nothing in [`fern-limitations.md`](fern-limitations.md) settles it. For most of
 them the ledger has never measured Fern at all. For two it recorded something
 [the amended settlement rule](#what-a-probe-may-settle-as-amended-again) does not
 count: a verdict that Fern generates from the shape, and a qualifier that says
-nothing about what Fern emits. `just check` is green over all 47
+nothing about what Fern emits. `just check` is green over all 46
 either way. It is not a defect count — 20 of them (`UNREACHABLE`) have no
 position in a generated Python SDK at all, and saying so is their settlement.
-That leaves 27 for the two backlogs below, every one of them in the fixture one.
+That leaves 26 for the two backlogs below, every one of them in the fixture one.
 Two are the `security` rows that amended rule demoted from `limitations`,
-`securityscheme-ref` and `oauth2-password`. One more is the newly enumerable `components.schemas:nonidentifier-name` reading. The rest are branches of `src/ir.rs` a real document can select and no committed
+`securityscheme-ref` and `oauth2-password`. The rest are branches of `src/ir.rs` a real document can select and no committed
 golden reaches, named for the first time by the node-local predicate family, by
 the pointer-form one after it, by the annotated-`$ref` pass after that, by the
 discriminated-union pass after that, by the pointer-walk pass after that and by
 the negation pass after that. **Seven of them are the negation pass's**, and the
 probe backlog stays empty across all seven: each is a shape whose sibling
 spelling a registered golden-bearing source already declares, so what settles it
-is a screened real-world witness rather than a locally authored probe. Five
+is a screened real-world witness rather than a locally authored probe. Six
 rows this paragraph once counted have left it on registered witnesses:
 `annotated-ref-target-composed`, `annotated-ref-target-oneof`,
-`annotated-ref-target-closed-object`, `anyof-array-variant-struct-item` and
-`ref-pointer-undeclared-component-head` are `golden` on the witnesses the corpus
+`annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`,
+`ref-pointer-undeclared-component-head` and the `components.schemas:nonidentifier-name`
+reading, `schema-name-nonidentifier-name`, are `golden` on the witnesses the corpus
 manifest's witness-search batch registered, and each row's evidence cell says which of crozier's handling sites those
 goldens reach and which they do not.
 
@@ -1377,8 +1377,8 @@ generator has earned.
 ### The ranked `FIXTURE` backlog
 
 **Where this list stands, and the three ways a row left it.** It carries
-twenty-seven rows. It carried thirty-two before corpus rows 144 to 149 registered
-witnesses for five of them, and thirty of those thirty-two never stood here
+twenty-six rows. It carried thirty-two before corpus rows 144 to 152 registered
+witnesses for six of them, and thirty of those thirty-two never stood here
 before: the list was exhausted, and seven instrument passes refilled it from the
 one direction an exhausted backlog can be refilled from — the instrument, not the
 corpus. Twenty-nine branches of `src/ir.rs`'s six blind functions were named that
@@ -1784,7 +1784,7 @@ which the census already visited, so no count rule changed, no existing row's
 category, settlement or evidence-cell count moved, and no snapshot digest was
 re-pinned.
 
-**All 27 `FIXTURE` gaps remain
+**All 26 `FIXTURE` gaps remain
 across the six regions: the gate recomputes that total off the region files
 themselves. The rubric and its
 four criteria are how they are ordered, and a row is ranked by [the ranking
@@ -1807,17 +1807,16 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which
-  is what makes it a gap — 27 of the 27 score zero here, no registered source
+  is what makes it a gap — 26 of the 26 score zero here, no registered source
   declaring any of them at all. The one row that scored above zero,
   `annotated-ref-target-composed` (`box.com` and `asana.com`, both documents
   Fern's own check refuses), left this list when corpus row 144 registered a
   witness Fern accepts.
 
 **The median blind-spot count of this list is 235** — twenty-four entries name
-`src/ir.rs` and nothing else, `schema-name-nonidentifier-name` names
-`src/naming.rs` alone, `securityscheme-ref` names `src/openapi.rs` alone and
-`oauth2-password` names both, and 0 of the 27 entries name no `src/` file at all,
-which is the mirror image of the list this one replaced. 0 of the 27 ranked
+`src/ir.rs` and nothing else, `securityscheme-ref` names `src/openapi.rs` alone and
+`oauth2-password` names both, and 0 of the 26 entries name no `src/` file at all,
+which is the mirror image of the list this one replaced. 0 of the 26 ranked
 entries reach no blind region. Criterion 4 separates none of them, and among the
 twenty-three rows that name one `src/ir.rs` place, criterion 5 decides. Criterion 1 puts the three rows naming more than one place
 last, and between the two naming two, criterion 2 ranks `oauth2-password`'s two
@@ -1848,10 +1847,9 @@ files ahead of `ref-pointer-unnamed-segment`'s one.
 | 21 | [`property-sole-oneof-closed-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 | 22 | [`property-sole-oneof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
 | 23 | [`property-sole-oneof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 24 | [`schema-name-nonidentifier-name`](openapi-surface/schemas.md) | `schemas` | **1** (`src/naming.rs` 1) | **31** (`src/naming.rs` 31) | **1** (types/) | **0** |
-| 25 | [`oauth2-password`](openapi-surface/security.md) | `security` | **2** (`src/ir.rs` 1, `src/openapi.rs` 1) | **453** (`src/ir.rs` 235, `src/openapi.rs` 218) | **3** (types/, client.py, core/) | **0** |
-| 26 | [`ref-pointer-unnamed-segment`](openapi-surface/schemas.md) | `schemas` | **2** (`src/ir.rs` 2) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 27 | [`securityscheme-ref`](openapi-surface/security.md) | `security` | **3** (`src/openapi.rs` 3) | **218** (`src/openapi.rs` 218) | **2** (client.py, core/) | **0** |
+| 24 | [`oauth2-password`](openapi-surface/security.md) | `security` | **2** (`src/ir.rs` 1, `src/openapi.rs` 1) | **453** (`src/ir.rs` 235, `src/openapi.rs` 218) | **3** (types/, client.py, core/) | **0** |
+| 25 | [`ref-pointer-unnamed-segment`](openapi-surface/schemas.md) | `schemas` | **2** (`src/ir.rs` 2) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 26 | [`securityscheme-ref`](openapi-surface/security.md) | `security` | **3** (`src/openapi.rs` 3) | **218** (`src/openapi.rs` 218) | **2** (client.py, core/) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -1876,7 +1874,7 @@ functions named in each verdict are counted from that union.
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
 | `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
 | `src/config.rs` | 31 | all-e2e 13, non-e2e 18 | none | **Neither.** `default_package_name` 10 and `new` 8 are generator-config defaults. |
-| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | 1 (`schema-name-nonidentifier-name`) | **A shape the walk missed, and the half of it that is now enumerated.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names. The schema-name half is no longer unreachable: `components.schemas:normalized-collision` is a predicate selector over exactly those keys, and it is what made `normalization-collision` enumerable above. The enum-member predicate family now reads empty, numeric, UUID, reserved and colliding spellings from `schema.enum` values, and every one has a golden-bearing declarer. Connector and token-adjacency branches remain enumeration holes as the case table above states. The class-name sanitizer spelling is now a ranked `FIXTURE` gap: no registered source declares a schema name that reaches it. |
+| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | 0 (corpus row 152 settled `schema-name-nonidentifier-name`) | **A shape the walk missed, and the half of it that is now enumerated.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names. The schema-name half is no longer unreachable: `components.schemas:normalized-collision` is a predicate selector over exactly those keys, and it is what made `normalization-collision` enumerable above. The enum-member predicate family now reads empty, numeric, UUID, reserved and colliding spellings from `schema.enum` values, and every one has a golden-bearing declarer. Connector and token-adjacency branches remain enumeration holes as the case table above states. The class-name sanitizer spelling was a ranked `FIXTURE` gap until corpus row 152, `nextgen`, registered 58 such names; it is `golden` now, and `class_name` breaks words on those characters before `sanitize_identifier` sees them. |
 | `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 

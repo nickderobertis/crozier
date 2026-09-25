@@ -8786,6 +8786,11 @@ fn build_example_inner(
         out.extend(call.split('\n').map(String::from));
     }
     if documentation {
+        // An untyped request body's placeholder stays on its line: Fern writes
+        // NextGen's `request={"key": "value"},` flat, where a map-typed one
+        // (bunq's `AttachmentPublic`) is wrapped by `compact_documentation_values`.
+        let untyped_request = matches!(&ep.request_body, Some(RequestBody::Single(single))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)));
         Some(format_documentation_example(
             out,
             is_async,
@@ -8793,6 +8798,7 @@ fn build_example_inner(
             environment,
             reference,
             ctx.datetime_precedes_tag_import,
+            untyped_request,
         ))
     } else {
         Some(out)
@@ -8832,6 +8838,7 @@ fn format_documentation_example(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
     datetime_first: bool,
+    untyped_request: bool,
 ) -> Vec<String> {
     let client_index = lines
         .iter()
@@ -8907,10 +8914,14 @@ fn format_documentation_example(
         }
     }
     out.extend(body);
-    compact_documentation_values(out, reference)
+    compact_documentation_values(out, reference, untyped_request)
 }
 
-fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<String> {
+fn compact_documentation_values(
+    lines: Vec<String>,
+    reference: bool,
+    untyped_request: bool,
+) -> Vec<String> {
     let mut compact = Vec::with_capacity(lines.len());
     let mut index = 0;
     while index < lines.len() {
@@ -8957,6 +8968,7 @@ fn compact_documentation_values(lines: Vec<String>, reference: bool) -> Vec<Stri
                 .strip_suffix("},")
                 .and_then(|value| value.split_once("={"))
                 .filter(|(_, item)| *item == "\"key\": \"value\"")
+                .filter(|(head, _)| !(untyped_request && *head == "request"))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));

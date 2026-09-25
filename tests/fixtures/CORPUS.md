@@ -171,6 +171,7 @@ re-measure with `just fixtures-gaps`.
 | 149 | `fergus` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/fergus.com/fergus-api/v1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Fergus API; `anyOf` array variants with struct items |
 | 150 | `groupe-psa` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/groupe-psa.io/main/3.19.2/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Groupe PSA Licence`) | link-ok | Groupe PSA Connected Car B2B API; annotated `$ref`s to composed targets |
 | 151 | `timelyapp` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Timely`) | link-ok | Timely API; `anyOf` array variants with struct items |
+| 152 | `nextgen` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/nextgen.com/main/1.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | NextGen Enterprise API USCDI Routes; `$ref` pointers under an undeclared component head, non-identifier component schema names |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -746,6 +747,7 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 149 | `fergus` | `anyof-array-variant-struct-item` | ✅ byte-matched after this batch's repairs |
 | 150 | `groupe-psa` | `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 151 | `timelyapp` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 152 | `nextgen` | `schema-name-nonidentifier-name`; `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -785,7 +787,12 @@ requires a property its restatement leaves optional and example-less gets no
 importer example, so Fern's fallback lists two items. Row 151's repairs make an
 `anyOf` member declaring `properties: {}` an empty model rather than a map, and a
 property whose lone `allOf` `$ref` sits beside properties of its own a model
-rather than that `$ref`. Row 148 is a later revision of row 108's document, registered
+rather than that `$ref`. Row 152's repairs break a class name's words on every
+character an identifier cannot hold (Postman-exported component names such as
+`{{baseUrl}}/persons/:personId-Request`), name an operation whose `operationId`
+is such a URL by all of its words rather than by its first `{…}`, carry a bare
+scalar body's schema `example` into its worked call, and leave an untyped request
+body's `{"key": "value"}` placeholder on one line in the README. Row 148 is a later revision of row 108's document, registered
 under a name of its own because the shape it witnesses is absent at row 108's
 commit. The three Prisma Cloud documents are separate descriptions in
 Palo Alto Networks' own `pan.dev` repository; each is a row of its own because

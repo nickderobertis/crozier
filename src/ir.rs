@@ -4548,8 +4548,13 @@ fn resolve_request_body(
             content_type,
             content_type_override,
         );
+        // The media type's example, else the schema's own: NextGen posts a bare
+        // `{type: string, example: "<string>"}` and Fern's worked call passes
+        // `request="<string>"`.
         if let RequestBody::Single(single) = &mut body {
-            single.example = media_example(doc, media).and_then(example_literal);
+            single.example = media_example(doc, media)
+                .or_else(|| schema_example(schema))
+                .and_then(example_literal);
         }
         body
     })
@@ -6108,9 +6113,33 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
     let id = op.operation_id.as_deref().unwrap_or_default().trim();
     // An `operationId` carrying a path-template expression is named by that
     // expression's contents alone: braintrust's catch-all proxy declares
-    // `proxy{path+}` on `/v1/proxy/{path+}` and Fern's method is `path`.
-    if let Some(template) = id
-        .rsplit_once('{')
+    // `proxy{path+}` on `/v1/proxy/{path+}` and Fern's method is `path`. Only an
+    // id that *ends* on its template reads so; a Postman-exported id that is a
+    // whole URL is named by all of its words instead (NextGen's
+    // `{{baseUrl}}/persons/:personId/chart/care-plan/goals` is
+    // `base_url_persons_person_id_chart_care_plan_goals`).
+    let ends_on_template = id.ends_with('}') && !id.contains("{{");
+    let url_words: String;
+    let id = if !ends_on_template && id.contains(['{', '}', '/', ':']) {
+        url_words = id
+            .chars()
+            .map(|c| {
+                if c.is_alphanumeric() || c == '_' || c == '.' {
+                    c
+                } else {
+                    ' '
+                }
+            })
+            .collect::<String>()
+            .trim()
+            .to_string();
+        url_words.as_str()
+    } else {
+        id
+    };
+    if let Some(template) = Some(id)
+        .filter(|_| ends_on_template)
+        .and_then(|id| id.rsplit_once('{'))
         .and_then(|(_, rest)| rest.split_once('}'))
         .map(|(inner, _)| inner)
         .filter(|inner| !inner.trim().is_empty())
