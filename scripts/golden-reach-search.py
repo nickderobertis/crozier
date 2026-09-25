@@ -60,6 +60,7 @@ import sys
 import tempfile
 import urllib.parse
 from collections import defaultdict
+from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
@@ -138,7 +139,7 @@ def _parameterized_media_keys(document: Any) -> int:
 # Rows whose site table names their witnesses by `fixture=` because no census
 # selector reads the shape: the search reads them with a predicate of its own,
 # prefiltered on the raw bytes so a walk parses only the documents that could hold one.
-PREDICATE_ROWS: dict[str, tuple[str, Any]] = {
+PREDICATE_ROWS: dict[str, tuple[str, Callable[[Any], int]]] = {
     "media-type-key-parameters": (r"/[A-Za-z0-9.+-]+\s*;\s*[A-Za-z0-9_-]+\s*=", _parameterized_media_keys),
 }
 
@@ -195,7 +196,7 @@ def unreached_sites(key: str) -> tuple[str, ...]:
             if not sites:
                 fail(f"{key} reaches every handling site; there is no arm to search for")
             return sites
-    fail(f"{key} is not in the ledger")
+    fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv, or re-run `just golden-reach-report`")
     raise AssertionError
 
 
@@ -208,7 +209,7 @@ def declared(counts: dict[str, int], selectors: tuple[str, ...]) -> int:
 
 def source_dir(source: str) -> Path:
     if source not in DECLARED_SOURCES:
-        fail(f"{source} is not a declared source")
+        fail(f"{source} is not a declared source; it is one of {', '.join(DECLARED_SOURCES)}")
     path = EVIDENCE / source
     path.mkdir(parents=True, exist_ok=True)
     return path
@@ -501,7 +502,7 @@ def _quoted(url: str) -> str:
     return urllib.parse.urlunsplit(parts._replace(path=urllib.parse.quote(urllib.parse.unquote(parts.path))))
 
 
-def _fetch(read: Any, *args: Any) -> dict[str, Any]:
+def _fetch(read: Callable[..., dict[str, Any]], *args: Any) -> dict[str, Any]:
     """One result's acquisition, a failure to read it recorded rather than raised."""
     try:
         return read(*args)
@@ -513,6 +514,8 @@ def _fetch(read: Any, *args: Any) -> dict[str, Any]:
                 "path": item.get("path"), "commit": item.get("commit")}
 
 
+# `acquirer` is `scripts/witness-search-github.py`'s `Acquirer`, loaded from a
+# hyphenated file by path, so there is no importable name to annotate it with.
 def _one_query(acquirer: Any, source: str, key: str, phrasing: str, selectors: tuple[str, ...],
                new: list[dict[str, str]]) -> tuple[list[dict[str, Any]] | None, int]:
     """Issue one phrasing; its reported count and its first page's documents, or None if refused."""
@@ -893,15 +896,13 @@ def _tally(key: str, source: str) -> dict[str, int]:
     }
 
 
-# The rows a registered corpus witness executes the unreached arm of; their
-# searches read `witness-found` whatever else is outstanding.
-WITNESSED = {"property-anyof-discriminated-union": 194}
+def _outcome(tallies: dict[str, dict[str, int]]) -> str:
+    """This search's own reading of the arm it names: something outstanding, or nothing.
 
-
-def _outcome(key: str, tallies: dict[str, dict[str, int]]) -> str:
-    """This search's own reading: a witness, something outstanding, or nothing left."""
-    if key in WITNESSED:
-        return "witness-found"
+    A record searches for the sites its row still leaves unreached, and a
+    registered witness reaching one would have taken it off that list, so a
+    registration never reads here: which arms one bought is the index's to say.
+    """
     outstanding = any(
         t["unreadable"] or t["probed"] < t["declarers"] or t["timeouts"] or t["screened"] < t["reaching"]
         or t["passing"]
@@ -914,7 +915,7 @@ def render(args: argparse.Namespace) -> int:
     """One arm search record per key, one Contract B line per declared source."""
     for key in args.key:
         tallies = {source: _tally(key, source) for source in DECLARED_SOURCES}
-        outcome = _outcome(key, tallies) if args.outcome == "auto" else args.outcome
+        outcome = _outcome(tallies) if args.outcome == "auto" else args.outcome
         lines = [
             f"# Arm search: `{key}`",
             "",

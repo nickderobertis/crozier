@@ -1668,12 +1668,6 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     });
 }
 
-/// Carry a component schema's nullability to every reference to it.
-///
-/// Fern keeps nullability at the use site rather than in the declaration: helios'
-/// `FilterTopic` declares `Union[Bytes32, List[Bytes32]]` — its `type: null`
-/// alternative left the union — and every reference to it generates as
-/// `Optional[FilterTopic]`.
 /// Rename a component schema whose class name is an error class the document
 /// raises, to `{Name}Body`, rewriting every reference to it.
 ///
@@ -1733,6 +1727,12 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
     });
 }
 
+/// Carry a component schema's nullability to every reference to it.
+///
+/// Fern keeps nullability at the use site rather than in the declaration: helios'
+/// `FilterTopic` declares `Union[Bytes32, List[Bytes32]]` — its `type: null`
+/// alternative left the union — and every reference to it generates as
+/// `Optional[FilterTopic]`.
 fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
     let nullable: std::collections::BTreeSet<String> = doc
         .components

@@ -599,7 +599,7 @@ def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
     """The `crozier sites` cell a `golden` row carries: its measured reach.
 
     Generated from the ledger row and held to it by `RankedBacklogTests`, so the
-    cell is never edited by hand: re-run `just golden-reach report --write`. A
+    cell is never edited by hand: re-run `just golden-reach-report`. A
     row whose unreached arm has been searched for links its record, which sits at
     `golden-reach-witnesses/searches/<key>.md` beside the region files.
     """
@@ -657,7 +657,7 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     """The committed ledger, parsed back into `(rank, Reach)` pairs in rank order."""
     lines = path.read_text(encoding="utf-8").splitlines()
     if len(lines) < 2 or not lines[0].startswith("# golden-reach ledger") or lines[1] != LEDGER_HEADER:
-        fail(f"{path} is not a golden-reach ledger; regenerate it with `just golden-reach report --write`")
+        fail(f"{path} is not a golden-reach ledger; regenerate it with `just golden-reach-report`")
     out = []
     for line in lines[2:]:
         rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = line.split("\t")
@@ -762,7 +762,7 @@ def _census_module():
 def load_coverage(out: Path) -> tuple[dict[str, dict[str, set]], dict[str, set], str]:
     universe_path = out / "universe.json"
     if not universe_path.is_file():
-        fail(f"no measurement under {out}; run `just golden-reach measure` first")
+        fail(f"no measurement under {out}; run `just golden-reach` first")
     universe = {
         f: {tuple(r) for r in regions}
         for f, regions in json.loads(universe_path.read_text(encoding="utf-8")).items()

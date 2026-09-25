@@ -9491,7 +9491,6 @@ fn extensible_enum(values: Vec<String>) -> TypeRef {
     ])
 }
 
-/// An object with `additionalProperties` but no declared properties — a map.
 /// A map whose value is an inline union or object, which a union member names
 /// `{Variant}Value` (see [`Builder::variant_ref`]).
 fn is_map_of_inline_structure(schema: &Schema) -> bool {
@@ -9504,6 +9503,7 @@ fn is_map_of_inline_structure(schema: &Schema) -> bool {
         )
 }
 
+/// An object with `additionalProperties` but no declared properties — a map.
 fn is_map(schema: &Schema) -> bool {
     is_object_type(schema)
         && schema.properties.is_empty()
@@ -9513,8 +9513,6 @@ fn is_map(schema: &Schema) -> bool {
         )
 }
 
-/// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
-/// named type when it appears as a union variant.
 /// `member` with each undescribed `enum` property a base describes given that
 /// base's description, or `None` when no property needs one. Only a redeclared
 /// enum is measured to take it — the description documents the enum type it
@@ -9568,6 +9566,8 @@ fn is_inline_union(schema: &Schema) -> bool {
             .is_some_and(|members| members.len() > 1)
 }
 
+/// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
+/// named type when it appears as a union variant.
 fn is_inline_object(schema: &Schema) -> bool {
     schema.reference.is_none() && (!schema.properties.is_empty() || schema.all_of.is_some())
 }

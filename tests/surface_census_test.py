@@ -36,8 +36,8 @@ import textwrap
 import unittest
 import unicodedata
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any
 
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
@@ -1025,8 +1025,8 @@ def exhaustive_search_failures(
     lines: list[list[str]],
     evidence_root: Path,
     capabilities: dict[str, tuple[bool, bool, str]],
-    directory_for: Any = None,
-    pinned_for: Any = None,
+    directory_for: Callable[[str], Path] | None = None,
+    pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
     layout_files: tuple[str, ...] = (),
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
