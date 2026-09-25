@@ -1,0 +1,617 @@
+key	kind	subject	result	file
+*	wait	github-publisher-trees guard log raw-github-calls.jsonl	248 entries	raw-github-calls.jsonl
+*	wait	github-publisher-trees guard log raw-github-waits.jsonl	247 entries	raw-github-waits.jsonl
+annotated-ref-shape	document	spec/json/twilio_intelligence_v3.json	census 2	enumeration.tsv.gz
+annotated-ref-shape	document	spec/yaml/twilio_intelligence_v3.yaml	census 2	enumeration.tsv.gz
+annotated-ref-shape	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+annotated-ref-shape	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+annotated-ref-shape	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+annotated-ref-shape	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+annotated-ref-shape	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/api.github.com.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 6	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.2026-03-10.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.2026-03-10.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.json	census 1	enumeration.tsv.gz
+anyof-allof-variant	document	descriptions-next/ghec/ghec.yaml	census 1	enumeration.tsv.gz
+anyof-allof-variant	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-allof-variant	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-allof-variant	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-allof-variant	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-allof-variant	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-array-variant-annotated-ref-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-array-variant-annotated-ref-item	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-array-variant-annotated-ref-item	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-array-variant-annotated-ref-item	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-array-variant-annotated-ref-item	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-array-variant-composed-item	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-array-variant-composed-item	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-array-variant-composed-item	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-array-variant-composed-item	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-array-variant-composed-item	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-discriminated-union	candidate	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 1	probe.jsonl
+anyof-discriminated-union	candidate	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 1	probe.jsonl
+anyof-discriminated-union	candidate	descriptions-next/ghes-3.10/ghes-3.10.json	census 1	probe.jsonl
+anyof-discriminated-union	candidate	descriptions-next/ghes-3.10/ghes-3.10.yaml	census 1	probe.jsonl
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.2026-03-10.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.2026-03-10.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghec/ghec.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 3	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/.raw/v2.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-01-01.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-02-01.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-02-01.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-10-01.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-10-01.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-11-15.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2023-11-15.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-05-30.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-05-30.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-08-05.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-08-05.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-10-23.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-10-23.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-11-13.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2024-11-13.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2025-02-19.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2025-02-19.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/openapi-2025-03-12.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/private/openapi-private-preview-stream-connection.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	openapi/v2/private/openapi-private-preview-stream-connection.yaml	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	outputs/v2-dev.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json licence	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json ref	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml licence	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml ref	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.json licence	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.json ref	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.yaml licence	passed	screens.jsonl
+anyof-discriminated-union	screen	descriptions-next/ghes-3.10/ghes-3.10.yaml ref	passed	screens.jsonl
+anyof-discriminated-union	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-discriminated-union	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-discriminated-union	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-discriminated-union	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-discriminated-union	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 15	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 19	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 11	enumeration.tsv.gz
+anyof-oneof-variant	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 11	enumeration.tsv.gz
+anyof-oneof-variant	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-oneof-variant	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-oneof-variant	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-oneof-variant	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-oneof-variant	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+anyof-sole-member	candidate	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json	census 1	probe.jsonl
+anyof-sole-member	candidate	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml	census 1	probe.jsonl
+anyof-sole-member	candidate	descriptions-next/ghes-3.1/ghes-3.1.json	census 1	probe.jsonl
+anyof-sole-member	candidate	descriptions-next/ghes-3.1/ghes-3.1.yaml	census 1	probe.jsonl
+anyof-sole-member	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json	census 1	enumeration.tsv.gz
+anyof-sole-member	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml	census 1	enumeration.tsv.gz
+anyof-sole-member	document	descriptions-next/ghes-3.1/ghes-3.1.json	census 1	enumeration.tsv.gz
+anyof-sole-member	document	descriptions-next/ghes-3.1/ghes-3.1.yaml	census 1	enumeration.tsv.gz
+anyof-sole-member	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 1	enumeration.tsv.gz
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 38 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json licence	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json ref	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 38 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml licence	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml ref	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 24 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.json licence	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.json ref	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 24 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.yaml licence	passed	screens.jsonl
+anyof-sole-member	screen	descriptions-next/ghes-3.1/ghes-3.1.yaml ref	passed	screens.jsonl
+anyof-sole-member	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+anyof-sole-member	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+anyof-sole-member	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+anyof-sole-member	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+anyof-sole-member	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 3754	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 3754	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.json	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/api.github.com.yaml	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 4542	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 4542	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 4542	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 4542	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 4544	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.2022-11-28.json	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.2022-11-28.yaml	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.2026-03-10.json	census 3754	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.2026-03-10.yaml	census 3754	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.json	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghec/ghec.yaml	census 3756	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.yaml	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.0/ghes-3.0.json	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.0/ghes-3.0.yaml	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.1/ghes-3.1.json	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.1/ghes-3.1.yaml	census 33	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/ghes-3.10.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.10/ghes-3.10.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/ghes-3.11.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.11/ghes-3.11.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/ghes-3.12.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.12/ghes-3.12.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 3954	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/ghes-3.13.json	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.13/ghes-3.13.yaml	census 3386	enumeration.tsv.gz
+format-uri-template	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 4017	enumeration.tsv.gz
+format-uri-template	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+format-uri-template	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+format-uri-template	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+format-uri-template	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+format-uri-template	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/api.github.com.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 114	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 119	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.2022-11-28.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.2022-11-28.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.2026-03-10.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.2026-03-10.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.json	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghec/ghec.yaml	census 36	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json	census 23	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.yaml	census 23	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.0/ghes-3.0.json	census 3	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.0/ghes-3.0.yaml	census 3	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json	census 23	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml	census 23	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.1/ghes-3.1.json	census 3	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.1/ghes-3.1.yaml	census 3	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json	census 46	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml	census 46	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json	census 46	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml	census 46	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/ghes-3.10.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.10/ghes-3.10.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/ghes-3.11.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.11/ghes-3.11.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/ghes-3.12.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.12/ghes-3.12.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 64	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/ghes-3.13.json	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.13/ghes-3.13.yaml	census 25	enumeration.tsv.gz
+items-oneof-element	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 73	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformConfigurationNotification-v1.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformConfigurationNotification-v2.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformRelayedAuthorisationNotification-v1.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformRelayedAuthorisationNotification-v2.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformRelayedAuthorisationNotification-v4.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformService-v1.json	census 3	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformService-v2.json	census 3	enumeration.tsv.gz
+items-oneof-element	document	json/BalancePlatformTransferNotification-v4.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	json/TransferService-v4.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/.raw/v2.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-01-01.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-02-01.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-02-01.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-10-01.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-10-01.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-11-15.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2023-11-15.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-05-30.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-05-30.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-08-05.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-08-05.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-10-23.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-10-23.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-11-13.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2024-11-13.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2025-02-19.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2025-02-19.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/openapi-2025-03-12.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/private/openapi-private-preview-stream-connection.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	openapi/v2/private/openapi-private-preview-stream-connection.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	outputs/v2-dev.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformConfigurationNotification-v1.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformConfigurationNotification-v2.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformRelayedAuthorisationNotification-v1.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformRelayedAuthorisationNotification-v2.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformRelayedAuthorisationNotification-v4.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformService-v1.yaml	census 3	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformService-v2.yaml	census 3	enumeration.tsv.gz
+items-oneof-element	document	yaml/BalancePlatformTransferNotification-v4.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	document	yaml/TransferService-v4.yaml	census 1	enumeration.tsv.gz
+items-oneof-element	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+items-oneof-element	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+items-oneof-element	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+items-oneof-element	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+items-oneof-element	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+media-type-key-parameters	document	api/openapi-spec/v3/api__v1_openapi.json	census 140	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__admissionregistration.k8s.io__v1_openapi.json	census 36	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__admissionregistration.k8s.io__v1alpha1_openapi.json	census 12	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__admissionregistration.k8s.io__v1beta1_openapi.json	census 12	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__apiextensions.k8s.io__v1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__apiregistration.k8s.io__v1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__apps__v1_openapi.json	census 50	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__autoscaling__v1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__autoscaling__v2_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__batch__v1_openapi.json	census 20	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__certificates.k8s.io__v1_openapi.json	census 22	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__certificates.k8s.io__v1beta1_openapi.json	census 16	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__coordination.k8s.io__v1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__coordination.k8s.io__v1alpha2_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__coordination.k8s.io__v1beta1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__discovery.k8s.io__v1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__events.k8s.io__v1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__flowcontrol.apiserver.k8s.io__v1_openapi.json	census 12	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__internal.apiserver.k8s.io__v1alpha1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__lifecycle.k8s.io__v1alpha1_openapi.json	census 20	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__networking.k8s.io__v1_openapi.json	census 38	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__node.k8s.io__v1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__policy__v1_openapi.json	census 10	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__rbac.authorization.k8s.io__v1_openapi.json	census 32	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__resource.k8s.io__v1_openapi.json	census 38	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__resource.k8s.io__v1alpha3_openapi.json	census 12	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__resource.k8s.io__v1beta1_openapi.json	census 32	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__resource.k8s.io__v1beta2_openapi.json	census 38	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__scheduling.k8s.io__v1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__scheduling.k8s.io__v1alpha3_openapi.json	census 30	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__scheduling.k8s.io__v1beta1_openapi.json	census 20	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__storage.k8s.io__v1_openapi.json	census 40	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__storagemigration.k8s.io__v1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	document	api/openapi-spec/v3/apis__storagemigration.k8s.io__v1beta1_openapi.json	census 6	enumeration.tsv.gz
+media-type-key-parameters	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+media-type-key-parameters	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+media-type-key-parameters	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+media-type-key-parameters	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+media-type-key-parameters	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/api.github.com.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.deref.json	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 43	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.2022-11-28.json	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.2022-11-28.yaml	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.2026-03-10.json	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.2026-03-10.yaml	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.json	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghec/ghec.yaml	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.10/ghes-3.10.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.json	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.11/ghes-3.11.yaml	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.json	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.12/ghes-3.12.yaml	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.13/ghes-3.13.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 23	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformConfigurationNotification-v1.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformConfigurationNotification-v2.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformRelayedAuthorisationNotification-v1.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformRelayedAuthorisationNotification-v2.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformRelayedAuthorisationNotification-v4.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformService-v1.json	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformService-v2.json	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformTransactionNotification-v4.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformTransferNotification-v3.json	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	json/BalancePlatformTransferNotification-v4.json	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v40.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v41.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v46.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v49.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v50.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v51.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v52.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v53.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v64.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v65.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v66.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v67.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v68.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v69.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v70.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v71.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/CheckoutService-v72.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	json/ManagementService-v1.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/ManagementService-v3.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	json/TransferService-v3.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	json/TransferService-v4.json	census 9	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/.raw/v2.json	census 38	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v1-deprecated/v1.json	census 20	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v1-deprecated/v1.yaml	census 20	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2.json	census 33	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-01-01.json	census 19	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-01-01.yaml	census 19	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-02-01.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-02-01.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-10-01.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-10-01.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-11-15.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2023-11-15.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-05-30.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-05-30.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-08-05.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-08-05.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-10-23.json	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-10-23.yaml	census 22	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-11-13.json	census 23	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2024-11-13.yaml	census 23	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2025-02-19.json	census 25	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2025-02-19.yaml	census 25	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-2025-03-12.json	census 29	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-preview.json	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/openapi-preview.yaml	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.json	census 12	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-aws-transit-gateway.yaml	census 12	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-lifecycle-management.json	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-lifecycle-management.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-regional-failover.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-regional-failover.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-sandbox-resource.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-sandbox-resource.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-stream-connection.json	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	openapi/v2/private/openapi-private-preview-stream-connection.yaml	census 18	enumeration.tsv.gz
+oneof-discriminated-union	document	outputs/v2-dev.json	census 16	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_conversations_v2.json	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_intelligence_v3.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_knowledge_v2.json	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_memory_v1.json	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_messaging_v3.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/json/twilio_voice_v3.json	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_conversations_v2.yaml	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_intelligence_v3.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_knowledge_v2.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_memory_v1.yaml	census 6	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_messaging_v3.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	spec/yaml/twilio_voice_v3.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformConfigurationNotification-v1.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformConfigurationNotification-v2.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformRelayedAuthorisationNotification-v1.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformRelayedAuthorisationNotification-v2.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformRelayedAuthorisationNotification-v4.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformService-v1.yaml	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformService-v2.yaml	census 5	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformTransactionNotification-v4.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformTransferNotification-v3.yaml	census 3	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/BalancePlatformTransferNotification-v4.yaml	census 7	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v40.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v41.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v46.yaml	census 2	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v49.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v50.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v51.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v52.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v53.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v64.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v65.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v66.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v67.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v68.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v69.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v70.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v71.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/CheckoutService-v72.yaml	census 4	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/TransferService-v3.yaml	census 1	enumeration.tsv.gz
+oneof-discriminated-union	document	yaml/TransferService-v4.yaml	census 9	enumeration.tsv.gz
+oneof-discriminated-union	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+oneof-discriminated-union	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+oneof-discriminated-union	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+oneof-discriminated-union	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+oneof-discriminated-union	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+property-anyof-discriminated-union	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+property-anyof-discriminated-union	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+property-anyof-discriminated-union	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+property-anyof-discriminated-union	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+property-anyof-discriminated-union	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+ref-pointer-composition-index	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+ref-pointer-composition-index	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+ref-pointer-composition-index	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+ref-pointer-composition-index	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+ref-pointer-composition-index	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+x-fern-or-crozier-ignore	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	258	pins.tsv
+x-fern-or-crozier-ignore	walk	github/rest-api-description@3cef12e8a02d612ad032473d4fb87266f2befeae	65	pins.tsv
+x-fern-or-crozier-ignore	walk	kubernetes/kubernetes@b0e6417568f530e79579c5bcd6bbeac799a47669	65	pins.tsv
+x-fern-or-crozier-ignore	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52c62447	63	pins.tsv
+x-fern-or-crozier-ignore	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
