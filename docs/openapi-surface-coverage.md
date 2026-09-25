@@ -87,7 +87,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 144 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 145 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1487,6 +1487,24 @@ a continuation; no search is recorded for it and none is claimed.
 | 48 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — see the table below |
 
 #### The rows this measurement's first pass owned
+
+An owned row with a site still unreached carries an **arm search**: the six
+declared sources searched for a real-world document that declares the row *and*
+executes the site, recorded at `golden-reach-witnesses/searches/<key>.md` and
+linked from the row's reach cell. `scripts/golden-reach-search.py` walks the four
+enumerable sources' pinned documents and issues two phrasings to each text-query
+source through the guarded acquirer; every declarer the census finds is then run
+through the instrumented `crozier` the reach cells were measured with, and only
+a declarer that executes an unreached site is a candidate owing the licence,
+ref and Fern screens. Its evidence sits under
+`golden-reach-witnesses/<source>/` in Contract B's `records.tsv` form, and
+`RankedBacklogTests` reconciles every linked record with it through Contract B's
+own gate. A candidate passing every screen is registered, or — where it declares
+a `gap` selector, or cannot yet be generated — handed off in
+[`handoff.tsv`](openapi-surface/golden-reach-witnesses/handoff.tsv); a document
+written to exercise a generator or linter is declined as an authored probe, not
+a real specification. Whether each search reads `exhausted` is final
+reconciliation's to decide; the outcome a record states is its own reading.
 
 | key | boundary rank | outcome |
 |---|---:|---|

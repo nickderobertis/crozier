@@ -718,20 +718,18 @@ def read_probes(source: str) -> list[dict[str, Any]]:
 
 
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
-    """One key's probe results into `probe.jsonl`, and its arm-reaching declarers as candidates."""
+    """One key's probe results into `probe.jsonl`.
+
+    Every declarer's measured reach is kept here. A declarer becomes a Contract B
+    `candidate` row only when it is screened (see [`screen`]), so the record's
+    candidates are exactly the ones carrying their three screens, and an
+    arm-reaching declarer nobody screened stays visible here as outstanding.
+    """
     path = source_dir(source) / "probe.jsonl"
     kept = []
     if path.is_file():
         kept = [row for row in map(json.loads, path.read_text(encoding="utf-8").splitlines()) if row["key"] != key]
     path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
-    census_of = {r["subject"]: r["result"] for r in read_records(source) if r["kind"] == "document" and r["key"] == key}
-    candidates = [
-        {"key": key, "kind": "candidate", "subject": r["candidate"], "result": census_of[r["candidate"]],
-         "file": "probe.jsonl"}
-        for r in probed if r["reached"]
-    ]
-    others = [r for r in read_records(source) if not (r["key"] == key and r["kind"] == "candidate")]
-    replace_records(source, others + candidates)
 
 
 # -------------------------------------------------------------------- screen
@@ -742,7 +740,15 @@ def screen(args: argparse.Namespace) -> int:
     for outcome in (args.licence, args.ref, args.fern):
         if outcome != "passed" and not outcome.startswith("failed: "):
             fail(f"a screen reads `passed` or `failed: <reason>`, not {outcome!r}")
+    census = next(
+        (r["result"] for r in read_records(args.source)
+         if r["key"] == args.key and r["kind"] == "document" and r["subject"] == args.candidate),
+        None,
+    )
+    if census is None:
+        fail(f"{args.candidate} is no declarer of {args.key} in {args.source}'s records")
     rows = [
+        {"key": args.key, "kind": "candidate", "subject": args.candidate, "result": census, "file": "probe.jsonl"},
         {"key": args.key, "kind": "screen", "subject": f"{args.candidate} licence", "result": args.licence, "file": "screens.jsonl"},
         {"key": args.key, "kind": "screen", "subject": f"{args.candidate} ref", "result": args.ref, "file": "screens.jsonl"},
         {"key": args.key, "kind": "screen", "subject": f"{args.candidate} fern", "result": args.fern, "file": "screens.jsonl"},
@@ -753,7 +759,8 @@ def screen(args: argparse.Namespace) -> int:
                                  "ref": args.ref, "fern": args.fern, "gap_keys": args.gap_keys,
                                  "evidence": args.evidence, "declined": args.declined}, sort_keys=True) + "\n")
     others = [r for r in read_records(args.source)
-              if not (r["key"] == args.key and r["kind"] == "screen" and r["subject"].startswith(args.candidate + " "))]
+              if not (r["key"] == args.key and r["kind"] in ("screen", "candidate")
+                      and (r["subject"] == args.candidate or r["subject"].startswith(args.candidate + " ")))]
     replace_records(args.source, others + rows)
     return 0
 

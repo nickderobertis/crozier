@@ -3147,6 +3147,20 @@ const DEEPSEARCH_DS_V2: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `mindee-ocr`: corpus row 195, the Mindee OCR API as its publisher serves it.
+/// Its array items declare a `oneOf`, which no earlier golden sends down
+/// `nested_array_element`'s union-alias arm.
+const MINDEE_OCR: Corpus = Corpus {
+    api: "mindee-ocr",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -3278,6 +3292,7 @@ const CORPORA: &[&Corpus] = &[
     &ZIPTAX_NODE,
     &NEXMO_MESSAGES,
     &DEEPSEARCH_DS_V2,
+    &MINDEE_OCR,
 ];
 
 #[test]
@@ -6056,6 +6071,11 @@ fn nexmo_messages_matches_fern_output() {
 #[test]
 fn deepsearch_ds_v2_matches_fern_output() {
     assert_link_ok_corpus_matches(&DEEPSEARCH_DS_V2);
+}
+
+#[test]
+fn mindee_ocr_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MINDEE_OCR);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each

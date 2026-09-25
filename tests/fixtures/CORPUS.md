@@ -167,6 +167,7 @@ re-measure with `just fixtures-gaps`.
 | 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
 | 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
 | 194 | `deepsearch-ds-v2` | github-raw | https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json | `be22375ecea319b495a11e27cd0308fdcda81ba1` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | IBM Deep Search (DS) API 3.0.0 as the DS4SD toolkit pins it; properties whose `anyOf` is a discriminated union |
+| 195 | `mindee-ocr` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/mindee.com/main/0.1.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Mindee OCR API as its publisher serves it (`info.x-jentic-source-url` is `https://api.mindee.net/openapi.json`); array items declaring `oneOf` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -742,6 +743,7 @@ so the filter removes operations rather than keeping all of them.
 | 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
 | 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
 | 194 | `deepsearch-ds-v2` | `property-anyof-discriminated-union` | ✅ byte-matched after three repairs |
+| 195 | `mindee-ocr` | `items-oneof-element` | ✅ byte-matched with no repair |
 
 The repairs: a `:` separates words in a generated class name (`osdb:output_type`
 hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
@@ -769,8 +771,11 @@ toolkit pins it needed three repairs: a nullable map of an inline union hoists i
 value to `{Owner}{Prop}Value`; a query parameter whose schema declares no type is
 a `str`; and an endpoint with an untyped path parameter is exampled by Fern's
 other writer, the parameter by its own name and a free-form map body as one
-`"string"` entry. All four goldens are generated at Python 5.20.0 / CLI 5.67.1
-and match with `unmatched: &[]`.
+`"string"` entry. Row 195, the Mindee OCR API as its publisher serves it and
+jentic pins it, is a jentic-walk result whose items-level `oneOf` takes
+`nested_array_element`'s union-alias arm, and byte-matches as generated. All five
+goldens are generated at Python 5.20.0 / CLI 5.67.1 and match with
+`unmatched: &[]`.
 
 The same searches found the opencode server API as `lehhair/OpenCodeUI` publishes
 it — a different document from the DROPPED `opencode` row, which Fern refused —

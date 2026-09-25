@@ -22,6 +22,7 @@ these cases drive instead is everything that decides what a cell *says*:
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import json
 import re
@@ -405,7 +406,15 @@ class ArmSearchTests(unittest.TestCase):
             "jentic", "k", [{"key": "k", "candidate": "a.yaml", "status": "generated", "reached": ["site"]}]
         )
         rows = golden_reach_search.read_records("jentic")
-        self.assertEqual(3, len(rows), rows)
+        self.assertEqual(2, len(rows), "probing names no candidate; screening does")
+        screen = argparse.Namespace(
+            source="jentic", key="k", candidate="a.yaml", licence="passed", ref="passed",
+            fern="failed: Fern check reports 1 error", gap_keys="", evidence="", declined="",
+        )
+        golden_reach_search.screen(screen)
+        golden_reach_search.screen(screen)
+        rows = golden_reach_search.read_records("jentic")
+        self.assertEqual(6, len(rows), rows)
         self.assertEqual(
             [("candidate", "census 1")], [(r["kind"], r["result"]) for r in rows if r["kind"] == "candidate"]
         )
