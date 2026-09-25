@@ -220,12 +220,17 @@ def read_records(source: str) -> list[dict[str, str]]:
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
     """Replace `keys`' rows of one source's records.tsv, keeping every other key's."""
-    kept = [row for row in read_records(source) if row["key"] not in keys]
+    replace_records(source, [row for row in read_records(source) if row["key"] not in keys] + rows)
+
+
+def replace_records(source: str, rows: list[dict[str, str]]) -> None:
+    """Write exactly `rows` as one source's records.tsv, one line per distinct row."""
     path = source_dir(source) / "records.tsv"
+    unique = {tuple(row[f] for f in RECORD_FIELDS): row for row in rows}
     with path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, RECORD_FIELDS, delimiter="\t", lineterminator="\n")
         writer.writeheader()
-        for row in sorted(kept + rows, key=lambda r: (r["key"], r["kind"], r["subject"])):
+        for row in sorted(unique.values(), key=lambda r: (r["key"], r["kind"], r["subject"], r["result"])):
             writer.writerow(row)
 
 
@@ -643,6 +648,10 @@ def probe(args: argparse.Namespace) -> int:
         regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
                    for spec in arms for site in [REACH.resolve_site(spec)]}
         pending = declarers(args.source, key, args.root)
+        if args.resume:
+            done = {row["candidate"] for row in read_probes(args.source) if row["key"] == key}
+            if {candidate for candidate, _path in pending} <= done:
+                continue
         # The export is read for the files the unreached sites sit in, and nothing else.
         sources = sorted({str(REPO / file) for file, _found in regions.values()})
         # Byte-identical documents (a catalogue's many copies of one version) run once.
@@ -697,6 +706,11 @@ def probe(args: argparse.Namespace) -> int:
     return 0
 
 
+def read_probes(source: str) -> list[dict[str, Any]]:
+    path = source_dir(source) / "probe.jsonl"
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] if path.is_file() else []
+
+
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     """One key's probe results into `probe.jsonl`, and its arm-reaching declarers as candidates."""
     path = source_dir(source) / "probe.jsonl"
@@ -711,7 +725,7 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
         for r in probed if r["reached"]
     ]
     others = [r for r in read_records(source) if not (r["key"] == key and r["kind"] == "candidate")]
-    write_records(source, set(), others + candidates)
+    replace_records(source, others + candidates)
 
 
 # -------------------------------------------------------------------- screen
@@ -734,7 +748,7 @@ def screen(args: argparse.Namespace) -> int:
                                  "evidence": args.evidence}, sort_keys=True) + "\n")
     others = [r for r in read_records(args.source)
               if not (r["key"] == args.key and r["kind"] == "screen" and r["subject"].startswith(args.candidate + " "))]
-    write_records(args.source, set(), others + rows)
+    replace_records(args.source, others + rows)
     return 0
 
 
@@ -814,6 +828,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--root", type=Path)
     p.add_argument("--jobs", type=int, default=8)
     p.add_argument("--timeout", type=int, default=300)
+    p.add_argument("--resume", action="store_true", help="skip a key every declarer of which is already probed")
     s = sub.add_parser("screen")
     s.add_argument("--source", required=True)
     s.add_argument("--key", required=True)

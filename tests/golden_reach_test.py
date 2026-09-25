@@ -386,6 +386,30 @@ class ArmSearchTests(unittest.TestCase):
         )
         self.assertEqual(quoted, golden_reach_search._quoted(quoted))
 
+    def test_filing_a_source_s_records_again_never_repeats_a_row(self) -> None:
+        """The records a probe files on top of a walk's, read back from disk once each."""
+        directory = tempfile.TemporaryDirectory(prefix="golden-reach-search-evidence-")
+        self.addCleanup(directory.cleanup)
+        original = golden_reach_search.EVIDENCE
+        golden_reach_search.EVIDENCE = Path(directory.name)
+        self.addCleanup(setattr, golden_reach_search, "EVIDENCE", original)
+        walk = [
+            {"key": "k", "kind": "walk", "subject": "t@" + "0" * 40, "result": "2", "file": "enumeration.tsv.gz"},
+            {"key": "k", "kind": "document", "subject": "a.yaml", "result": "census 1", "file": "enumeration.tsv.gz"},
+        ]
+        golden_reach_search.write_records("jentic", {"k"}, walk)
+        golden_reach_search.file_probes(
+            "jentic", "k", [{"key": "k", "candidate": "a.yaml", "status": "generated", "reached": ["site"]}]
+        )
+        golden_reach_search.file_probes(
+            "jentic", "k", [{"key": "k", "candidate": "a.yaml", "status": "generated", "reached": ["site"]}]
+        )
+        rows = golden_reach_search.read_records("jentic")
+        self.assertEqual(3, len(rows), rows)
+        self.assertEqual(
+            [("candidate", "census 1")], [(r["kind"], r["result"]) for r in rows if r["kind"] == "candidate"]
+        )
+
     def test_a_row_naming_its_witness_by_fixture_is_read_with_its_predicate(self) -> None:
         self.assertEqual(
             ("predicate:media-type-key-parameters",),
