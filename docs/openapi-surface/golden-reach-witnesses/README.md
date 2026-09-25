@@ -28,8 +28,9 @@ files it here.
 
 - `searches/<key>.md` — the row's record, linked from its reach cell: one
   Contract B line per declared source, a per-source tally of the declarers and how
-  the instrumented run fared on each, and what became of every candidate that
-  passed all three screens.
+  the instrumented run fared on each (its `outstanding` column is what the
+  search still owes), whether `src/` has moved since the build those probes ran
+  on, and what became of every candidate that passed all three screens.
 - `<source>/records.tsv` — the evidence those lines rest on, in Contract B's
   `key kind subject result file` form. A walked or fetched declarer is a
   `document` row; a declarer becomes a `candidate` only when it is screened.

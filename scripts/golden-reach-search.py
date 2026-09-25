@@ -892,22 +892,40 @@ def _tally(key: str, source: str) -> dict[str, int]:
         "timeouts": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("timeout")),
         "failed": sum(1 for c in declarers if probes.get(c, {}).get("status", "generated") not in ("generated",)
                       and not probes[c]["status"].startswith("timeout")),
+        "unprofiled": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("no profile")),
         "reaching": len(reaching),
         "screened": len(reaching & screened),
         "passing": len(passing),
     }
 
 
-def _outcome(tallies: dict[str, dict[str, int]]) -> str:
+def _outstanding(tally: dict[str, int]) -> int:
+    """Declarers the arm may still be in: unprobed, timed out, unprofiled, or unreadable."""
+    return (tally["declarers"] - tally["probed"] + tally["timeouts"] + tally["unprofiled"]
+            + tally["unreadable"])
+
+
+def src_commits_since(build: str) -> list[str]:
+    """Commits touching `src/` after the measured build, newest first."""
+    run = subprocess.run(["git", "log", "--format=%h", f"{build}..HEAD", "--", "src/"],
+                         cwd=REPO, capture_output=True, text=True)
+    if run.returncode != 0:
+        fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
+             "fetch that commit, or re-run `just golden-reach` on this checkout")
+    return run.stdout.split()
+
+
+def _outcome(tallies: dict[str, dict[str, int]], src_moved: bool = False) -> str:
     """This search's own reading of the arm it names: something outstanding, or nothing.
 
     A record searches for the sites its row still leaves unreached, and a
     registered witness reaching one would have taken it off that list, so a
     registration never reads here: which arms one bought is the index's to say.
+    Nor does a search whose probes ran on a `src/` that has since moved: each of
+    them has to be re-taken before it can say the arm is absent.
     """
-    outstanding = any(
-        t["unreadable"] or t["probed"] < t["declarers"] or t["timeouts"] or t["screened"] < t["reaching"]
-        or t["passing"]
+    outstanding = src_moved or any(
+        _outstanding(t) or t["screened"] < t["reaching"] or t["passing"]
         for t in tallies.values()
     )
     return "search-incomplete" if outstanding else "exhausted"
@@ -917,7 +935,8 @@ def render(args: argparse.Namespace) -> int:
     """One arm search record per key, one Contract B line per declared source."""
     for key in args.key:
         tallies = {source: _tally(key, source) for source in DECLARED_SOURCES}
-        outcome = _outcome(tallies) if args.outcome == "auto" else args.outcome
+        moved = src_commits_since(_current_build())
+        outcome = _outcome(tallies, bool(moved)) if args.outcome == "auto" else args.outcome
         lines = [
             f"# Arm search: `{key}`",
             "",
@@ -970,12 +989,23 @@ def render(args: argparse.Namespace) -> int:
             f"build `{_current_build()}` only. A declarer not probed on it, one whose run",
             "did not finish (a timeout), and one crozier failed on without a profile are",
             "outstanding: the arm may be in them, and nothing here says otherwise.",
+            "`outstanding` sums the unprobed, the timed out, the failed without a profile",
+            "and the unreadable.",
+        ]
+        if moved:
+            lines += [
+                "",
+                f"When this record was rendered, `src/` had moved since that build "
+                f"({', '.join(f'`{c}`' for c in moved)}), so every probe counted here must be",
+                "re-taken on a fresh `just golden-reach` measurement before it is reused.",
+            ]
+        lines += [
             "",
-            "| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ] + [
             f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['declarers'] - t['probed']} "
-            f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} |"
+            f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} | {_outstanding(t)} |"
             for source, t in tallies.items()
         ]
         lines += _dispositions(key)

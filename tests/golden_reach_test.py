@@ -441,6 +441,37 @@ class ArmSearchTests(unittest.TestCase):
         self.assertEqual(("schema.anyOf>schema.oneOf",), golden_reach_search.selectors_of("anyof-oneof-variant"))
 
 
+class ArmSearchOutcomeTests(unittest.TestCase):
+    """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
+
+    SETTLED = {"declarers": 3, "unreadable": 0, "probed": 3, "timeouts": 0, "unprofiled": 0,
+               "failed": 0, "reaching": 0, "screened": 0, "passing": 0}
+
+    def test_a_settled_search_on_an_unmoved_src_is_exhausted(self) -> None:
+        self.assertEqual("exhausted", golden_reach_search._outcome({"jentic": dict(self.SETTLED)}))
+
+    def test_every_kind_of_outstanding_declarer_keeps_the_search_incomplete(self) -> None:
+        for field, value in (("probed", 2), ("timeouts", 1), ("unprofiled", 1), ("unreadable", 1)):
+            with self.subTest(field=field):
+                tally = dict(self.SETTLED, **{field: value})
+                self.assertEqual(1, golden_reach_search._outstanding(tally))
+                self.assertEqual("search-incomplete", golden_reach_search._outcome({"jentic": tally}))
+
+    def test_a_moved_src_keeps_even_a_settled_search_incomplete(self) -> None:
+        self.assertEqual(
+            "search-incomplete",
+            golden_reach_search._outcome({"jentic": dict(self.SETTLED)}, src_moved=True),
+        )
+
+    def test_the_commits_since_a_build_are_read_off_git(self) -> None:
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True,
+                              text=True, check=True).stdout.strip()
+        self.assertEqual([], golden_reach_search.src_commits_since(head))
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.src_commits_since("0" * 40)
+        self.assertIn("just golden-reach", str(refused.exception))
+
+
 class RecipeTests(unittest.TestCase):
     def test_the_recipes_drive_this_script_and_write_the_census_it_reads(self) -> None:
         body = recipe_body("golden-reach")

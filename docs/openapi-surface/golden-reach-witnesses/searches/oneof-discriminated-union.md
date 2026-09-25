@@ -31,12 +31,17 @@ Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
 build `8a9454cb74d0` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
+`outstanding` sums the unprobed, the timed out, the failed without a profile
+and the unreadable.
 
-| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| `apis.guru` | 49 | 0 | 49 | 0 | 0 | 10 | 0 | 0 |
-| `jentic` | 1008 | 0 | 1008 | 0 | 5 | 120 | 0 | 0 |
-| `github-code-search` | 72 | 1 | 72 | 0 | 0 | 6 | 0 | 0 |
-| `github-publisher-trees` | 161 | 8 | 0 | 161 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 87 | 2 | 87 | 0 | 0 | 9 | 0 | 0 |
-| `vendor-portals` | 514 | 58 | 0 | 514 | 0 | 0 | 0 | 0 |
+When this record was rendered, `src/` had moved since that build (`f6ee5559`, `c5bec596`), so every probe counted here must be
+re-taken on a fresh `just golden-reach` measurement before it is reused.
+
+| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `apis.guru` | 49 | 0 | 49 | 0 | 0 | 10 | 0 | 0 | 0 |
+| `jentic` | 1008 | 0 | 1008 | 0 | 5 | 120 | 0 | 0 | 20 |
+| `github-code-search` | 72 | 1 | 72 | 0 | 0 | 6 | 0 | 0 | 1 |
+| `github-publisher-trees` | 161 | 8 | 0 | 161 | 0 | 0 | 0 | 0 | 169 |
+| `sourcegraph` | 87 | 2 | 87 | 0 | 0 | 9 | 0 | 0 | 2 |
+| `vendor-portals` | 514 | 58 | 0 | 514 | 0 | 0 | 0 | 0 | 572 |
