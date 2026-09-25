@@ -56,6 +56,7 @@ import http.client
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -304,6 +305,19 @@ def pinned_listing(source: str) -> list[dict[str, str]]:
     return immutable
 
 
+def unreadable_reason(error: BaseException, document: str) -> str:
+    """Why the census could not read a document, naming it rather than the local copy.
+
+    The census's message leads with the absolute path of the scratch copy it read;
+    that path means nothing in the tree and, cut to a width, used to leave no room
+    for the reason itself.
+    """
+    message = str(error)
+    if isinstance(error, CENSUS.DocumentError):
+        message = f"line {error.line}: {message.split(f'{error.path}:{error.line}: ', 1)[-1]}"
+    return f"unreadable: {type(error).__name__}: {document}: {message}"
+
+
 def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ...]]) -> dict[str, str]:
     path, sha256, document, keys = args
     try:
@@ -315,13 +329,13 @@ def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ..
     try:
         parsed = CENSUS.load_document(Path(path))
     except Exception as error:  # the census's own parse refusal, whatever its type
-        return {"status": f"unreadable: {type(error).__name__}: {str(error)[:120]}", "matched_keys": ""}
+        return {"status": unreadable_reason(error, document), "matched_keys": ""}
     if not isinstance(parsed, dict) or not str(parsed.get("openapi", "")).startswith("3"):
         return {"status": "readable", "matched_keys": "", "counts": "{}"}
     try:
         counts = CENSUS.census_document(parsed, root_path=Path(path))
     except Exception as error:
-        return {"status": f"unreadable: {type(error).__name__}: {str(error)[:120]}", "matched_keys": ""}
+        return {"status": unreadable_reason(error, document), "matched_keys": ""}
     matched = {key: declared(counts, selectors) for key, selectors in keys}
     return {
         "status": "readable",
@@ -352,7 +366,11 @@ def _precomputed(
         elif found.get("sha256_ok") is False:
             out.append({"status": "unreadable: local bytes differ from the pinned SHA-256", "matched_keys": ""})
         elif "error" in found:
-            out.append({"status": f"unreadable: {found['error'][:120]}", "matched_keys": ""})
+            # A parse refusal (`DocumentError: …`) is worth reading again for its
+            # whole reason; a census that ran out of time is not.
+            refusal = bool(re.match(r"\w+: ", found["error"]))
+            out.append({"status": f"unreadable: {found['error']}", "matched_keys": "",
+                        "census_error": "1" if refusal else ""})
         else:
             # Only an OpenAPI 3 document is one crozier generates from; a Swagger 2
             # one is read, and declares nothing this search can use.
@@ -383,13 +401,19 @@ def walk(args: argparse.Namespace) -> int:
         for path in args.root.rglob("*"):
             if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
                 by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
+    jobs = [
+        (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys)
+        for row in listing
+    ]
     if args.census:
         results = _precomputed(args.census, listing, keys)
+        # A precomputed census keeps only the head of a parse error; the document
+        # it could not read is read again here for the whole reason.
+        again = [index for index, result in enumerate(results) if result.get("census_error")]
+        with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+            for index, result in zip(again, pool.map(_census_one, [jobs[i] for i in again])):
+                results[index] = result
     else:
-        jobs = [
-            (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys)
-            for row in listing
-        ]
         with ProcessPoolExecutor(max_workers=args.jobs) as pool:
             results = list(pool.map(_census_one, jobs, chunksize=16))
     predicate_keys = tuple(key for key, _ in keys if key in PREDICATE_ROWS)

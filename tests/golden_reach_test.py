@@ -442,6 +442,24 @@ class ArmSearchTests(unittest.TestCase):
         self.assertEqual(("schema.anyOf>schema.oneOf",), golden_reach_search.selectors_of("anyof-oneof-variant"))
 
 
+class UnreadableReasonTests(unittest.TestCase):
+    """An unreadable document's status names it and keeps the census's whole reason."""
+
+    def test_a_parse_refusal_names_the_document_and_its_line_not_the_local_copy(self) -> None:
+        import hashlib
+        with tempfile.TemporaryDirectory() as scratch:
+            local = Path(scratch) / ("deep/" * 12) / "openapi.yaml"
+            local.parent.mkdir(parents=True)
+            local.write_text("openapi: 3.0.0\ninfo:\n  ? explicit\n  : key\n", encoding="utf-8")
+            digest = hashlib.sha256(local.read_bytes()).hexdigest()
+            result = golden_reach_search._census_one(
+                (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),)))
+        status = result["status"]
+        self.assertTrue(status.startswith("unreadable: DocumentError: yaml/Pinned-v1.yaml: line 3: "), status)
+        self.assertIn("explicit `? ` mapping keys are not supported", status)
+        self.assertNotIn(scratch, status)
+
+
 class ArmSearchOutcomeTests(unittest.TestCase):
     """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
 
