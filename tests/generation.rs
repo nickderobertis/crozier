@@ -9311,3 +9311,271 @@ components:
         "{raw}"
     );
 }
+
+/// Deep Search's `bag_key` path parameter is `{title: Bag Key}`, a schema with no
+/// type, and its golden documents the endpoint by the other example writer: the
+/// parameter by its own name and the free-form `{type: object}` body as one
+/// `"string"` entry. The same body beside a typed path parameter keeps
+/// `{"key": "value"}`. A query parameter whose schema declares no type is text,
+/// while `anyOf: [{}, null]` stays `Optional[Any]`.
+#[test]
+fn an_untyped_path_parameter_examples_a_free_form_body_as_one_string_entry() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Deep Search (DS) API, version: 3.0.0 }
+paths:
+  /backend/project/{proj_key}/bags/{bag_key}:
+    patch:
+      tags: [Knowledge Graphs]
+      operationId: update_project_knowledge_graph_metadata
+      parameters:
+        - { name: bag_key, in: path, required: true, schema: { title: Bag Key } }
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, title: Data } } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: object } } } }
+  /backend/project/{proj_key}/bags:
+    get:
+      tags: [Knowledge Graphs]
+      operationId: backend_list_project_kgs
+      parameters:
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+        - { name: term, in: query, required: false, schema: { title: Term } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: array, items: { type: object } } } } }
+    post:
+      tags: [Knowledge Graphs]
+      operationId: create_project_knowledge_graph
+      parameters:
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, title: Data } } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: object } } } }
+  /project/public/bags:
+    get:
+      tags: [Knowledge Graphs]
+      operationId: list_public_knowledge_graphs
+      parameters:
+        - { name: term, in: query, required: false, schema: { anyOf: [{}, { type: 'null' }], title: Term } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: array, items: { type: object } } } } }
+"##,
+    );
+    let client = &files["src/acme/knowledge_graphs/client.py"];
+    let flat = client.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flat.contains(
+            "update_project_knowledge_graph_metadata( proj_key=\"proj_key\", bag_key=\"bag_key\", request={\"string\": {\"key\": \"value\"}}, )"
+        ),
+        "{client}"
+    );
+    assert!(
+        flat.contains(
+            "create_project_knowledge_graph( proj_key=\"proj_key\", request={\"key\": \"value\"}, )"
+        ),
+        "{client}"
+    );
+    assert!(
+        flat.contains("term: typing.Optional[str] = None"),
+        "{client}"
+    );
+    assert!(
+        flat.contains("term: typing.Optional[typing.Any] = None"),
+        "{client}"
+    );
+    let reference = files["reference.md"]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        reference.contains("bag_key=\"bag_key\", request={ \"string\": {\"key\": \"value\"} },"),
+        "{reference}"
+    );
+}
+
+/// A nullable map whose value is an inline union names that value
+/// `{Owner}{Prop}Value`, as the non-nullable map does: Deep Search's
+/// `ProjectDataIndexWithStatus.record_properties` is `anyOf` [a map of `anyOf`
+/// two `$ref`s, `null`] and its golden generates
+/// `Dict[str, Optional[ProjectDataIndexWithStatusRecordPropertiesValue]]`.
+#[test]
+fn a_nullable_map_of_an_inline_union_names_its_value() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Deep Search (DS) API, version: 3.0.0 }
+paths:
+  /indices:
+    get:
+      operationId: get_index
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectDataIndexWithStatus' } } } }
+components:
+  schemas:
+    ProjectDataIndexWithStatus:
+      type: object
+      properties:
+        record_properties:
+          anyOf:
+            - type: object
+              additionalProperties:
+                anyOf:
+                  - $ref: '#/components/schemas/ElasticIndexPropertyPrimitive'
+                  - $ref: '#/components/schemas/ElasticIndexPropertyObject'
+            - type: 'null'
+          title: Record Properties
+    ElasticIndexPropertyPrimitive:
+      type: object
+      properties: { type: { type: string } }
+      required: [type]
+    ElasticIndexPropertyObject:
+      type: object
+      properties:
+        properties:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/ElasticIndexPropertyPrimitive' }
+      required: [properties]
+"##,
+    );
+    let model = files["src/acme/types/project_data_index_with_status.py"]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        model.contains(
+            "record_properties: typing.Optional[ typing.Dict[str, typing.Optional[ProjectDataIndexWithStatusRecordPropertiesValue]] ]"
+        ),
+        "{model}"
+    );
+    let value = &files["src/acme/types/project_data_index_with_status_record_properties_value.py"];
+    let value = value.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        value.contains(
+            "ProjectDataIndexWithStatusRecordPropertiesValue = typing.Union[ ElasticIndexPropertyPrimitive, ElasticIndexPropertyObject ]"
+        ),
+        "{value}"
+    );
+}
+
+/// A union member that is a map of an inline object names that object
+/// `{Variant}Value` and generates it as a model: OpenCodeUI's `Config.formatter`
+/// is `anyOf: [false, {additionalProperties: {an object}}]` and its golden
+/// generates `Union[bool, Dict[str, ConfigFormatterOneValue]]` over the model
+/// `ConfigFormatterOneValue`.
+#[test]
+fn a_union_member_map_of_an_inline_object_names_its_value_model() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /config:
+    get:
+      operationId: config.get
+      responses:
+        '200': { description: Get config info, content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+components:
+  schemas:
+    Config:
+      type: object
+      properties:
+        formatter:
+          anyOf:
+            - { type: boolean, const: false }
+            - type: object
+              propertyNames: { type: string }
+              additionalProperties:
+                type: object
+                properties:
+                  disabled: { type: boolean }
+                  command: { type: array, items: { type: string } }
+                  environment: { type: object, propertyNames: { type: string }, additionalProperties: { type: string } }
+                  extensions: { type: array, items: { type: string } }
+"##,
+    );
+    let formatter = &files["src/acme/types/config_formatter.py"];
+    assert!(
+        formatter.contains(
+            "ConfigFormatter = typing.Union[bool, typing.Dict[str, ConfigFormatterOneValue]]"
+        ),
+        "{formatter}"
+    );
+    let value = &files["src/acme/types/config_formatter_one_value.py"];
+    assert!(
+        value.contains("class ConfigFormatterOneValue(UniversalBaseModel):"),
+        "{value}"
+    );
+    assert!(
+        value.contains("environment: typing.Optional[typing.Dict[str, str]] = None"),
+        "{value}"
+    );
+}
+
+/// The `{Name}Body` rename reaches every pointer at the schema, a discriminator
+/// mapping's included, and leaves every other schema's pointers alone: a union
+/// whose mapping names the raised `NotFoundError` resolves that member through
+/// `NotFoundErrorBody` (its hoisted `data` is `NotFoundErrorBodyData`), and no
+/// `NotFoundError` model is generated beside the error class.
+#[test]
+fn a_raised_error_class_rename_follows_references_and_mappings() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /session/{sessionID}:
+    get:
+      operationId: session.get
+      parameters: [{ name: sessionID, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Get session, content: { application/json: { schema: { $ref: '#/components/schemas/Event' } } } }
+        '404':
+          description: Not found
+          content: { application/json: { schema: { $ref: '#/components/schemas/NotFoundError' } } }
+components:
+  schemas:
+    Event:
+      oneOf:
+        - $ref: '#/components/schemas/NotFoundError'
+        - $ref: '#/components/schemas/Session'
+      discriminator:
+        propertyName: name
+        mapping:
+          NotFoundError: '#/components/schemas/NotFoundError'
+          Session: '#/components/schemas/Session'
+    NotFoundError:
+      type: object
+      properties:
+        name: { type: string, const: NotFoundError }
+        data: { type: object, properties: { message: { type: string } }, required: [message] }
+      required: [name, data]
+    Session:
+      type: object
+      properties:
+        name: { type: string, const: Session }
+        time: { $ref: '#/components/schemas/SessionTime' }
+      required: [name]
+    SessionTime:
+      type: object
+      properties: { created: { type: number } }
+"##,
+    );
+    let error = &files["src/acme/errors/not_found_error.py"];
+    assert!(
+        error.contains("from ..types.not_found_error_body import NotFoundErrorBody"),
+        "{error}"
+    );
+    assert!(!files.contains_key("src/acme/types/not_found_error.py"));
+    let event = &files["src/acme/types/event.py"];
+    assert!(event.contains("data: NotFoundErrorBodyData"), "{event}");
+    assert!(
+        event.contains("typing.Union[Event_NotFoundError, Event_Session]"),
+        "{event}"
+    );
+    let session = &files["src/acme/types/session.py"];
+    assert!(
+        session.contains("time: typing.Optional[SessionTime] = None"),
+        "{session}"
+    );
+}
