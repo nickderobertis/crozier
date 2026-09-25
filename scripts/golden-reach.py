@@ -582,13 +582,21 @@ def _witness_phrase(reach: Reach) -> str:
     return f"**{len(reach.witnesses)}** golden-only witnesses"
 
 
-def reach_cell(reach: Reach, rank: int) -> str:
+SEARCHES = "golden-reach-witnesses/searches"
+
+
+def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
     """The `crozier sites` cell a `golden` row carries: its measured reach.
 
     Generated from the ledger row and held to it by `RankedBacklogTests`, so the
-    cell is never edited by hand: re-run `just golden-reach report --write`.
+    cell is never edited by hand: re-run `just golden-reach report --write`. A
+    row whose unreached arm has been searched for links its record, which sits at
+    `golden-reach-witnesses/searches/<key>.md` beside the region files.
     """
     note = f"; not counted: {reach.note}" if reach.note else ""
+    record = (regions_dir or REGIONS_DIR) / SEARCHES / f"{reach.key}.md"
+    if record.is_file():
+        note += f"; arm search [record]({SEARCHES}/{reach.key}.md)"
     if not reach.sites:
         return (
             f"{CELL_PREFIX} no handling site — no crozier code runs because a "
@@ -677,7 +685,7 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
             if cells and cells[0][3].strip("`") == "golden":
                 row = cells[0]
                 key = row[0].strip("`")
-                cell = reach_cell(by_key[key][1], by_key[key][0])
+                cell = reach_cell(by_key[key][1], by_key[key][0], regions_dir)
                 if row[5] != cell:
                     row = row[:5] + [cell] + row[6:]
                     newline = "\n" if line.endswith("\n") else ""

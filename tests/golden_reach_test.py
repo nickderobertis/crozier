@@ -12,7 +12,12 @@ these cases drive instead is everything that decides what a cell *says*:
 * the `report` subcommand as a subprocess, over a small repository laid out
   the way this one is (a region file, a site table, `tests/e2e.rs`, a census and
   a measurement directory), so the ledger and the rewritten region cells are the
-  CLI's own output rather than a function's return value.
+  CLI's own output rather than a function's return value;
+* `scripts/golden-reach-search.py`'s offline readings — the predicate a
+  `fixture=` row is searched with, the git blob a publisher-tree pin is checked
+  against, and a result URL's quoting — over real bytes. Its network stages go
+  through the guarded acquirer and are checked, once committed, by
+  `RankedBacklogTests`' reconciliation of every arm-search record.
 """
 
 from __future__ import annotations
@@ -273,6 +278,17 @@ class ReportTests(unittest.TestCase):
         self.assertIn("not counted: no arm of `src/demo.rs` reads it", cells["flag-unread"][5])
         self.assertEqual("none", cells["flag-gap"][5], "a gap row's cells are not the reach cell's")
 
+    def test_a_searched_row_links_its_arm_search_record_and_no_other_row_does(self) -> None:
+        records = self.repo / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        records.mkdir(parents=True)
+        (records / "flag-set.md").write_text("# Arm search: `flag-set`\n", encoding="utf-8")
+        self.assertEqual(0, self.run_report("--write").returncode)
+        cells = self.cells()
+        self.assertIn(
+            "; arm search [record](golden-reach-witnesses/searches/flag-set.md)", cells["flag-set"][5]
+        )
+        self.assertNotIn("arm search", cells["flag-orphan"][5])
+
     def test_a_row_declared_only_by_a_source_without_a_golden_says_so(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)
         cell = self.cells()["flag-orphan"][5]
@@ -298,6 +314,84 @@ class ReportTests(unittest.TestCase):
         run = self.run_report()
         self.assertNotEqual(0, run.returncode)
         self.assertIn("just golden-reach", run.stderr)
+
+
+_search_spec = importlib.util.spec_from_file_location(
+    "golden_reach_search", REPO / "scripts" / "golden-reach-search.py"
+)
+assert _search_spec and _search_spec.loader
+golden_reach_search = importlib.util.module_from_spec(_search_spec)
+sys.modules["golden_reach_search"] = golden_reach_search
+_search_spec.loader.exec_module(golden_reach_search)
+
+
+class ArmSearchTests(unittest.TestCase):
+    """What `golden-reach-search.py` decides without a network: its readings of bytes."""
+
+    def document(self, text: str, suffix: str = ".yaml") -> Path:
+        directory = tempfile.TemporaryDirectory(prefix="golden-reach-search-test-")
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / f"openapi{suffix}"
+        path.write_text(textwrap.dedent(text), encoding="utf-8")
+        return path
+
+    def test_a_parameterized_media_key_is_counted_and_a_malformed_one_is_not(self) -> None:
+        """The `media-type-key-parameters` reading, over a real document on disk."""
+        path = self.document(
+            """\
+            openapi: 3.0.3
+            info: {title: demo, version: "1"}
+            paths:
+              /a:
+                get:
+                  responses:
+                    "200":
+                      description: ok
+                      content:
+                        application/json; charset=utf-8: {schema: {type: string}}
+                        text/plain; utf-8: {schema: {type: string}}
+                        application/json: {schema: {type: string}}
+            """
+        )
+        self.assertEqual(1, golden_reach_search.predicate_count("media-type-key-parameters", path))
+
+    def test_a_swagger_2_document_declares_nothing_a_search_can_use(self) -> None:
+        path = self.document(
+            """\
+            swagger: "2.0"
+            info: {title: demo, version: "1"}
+            paths:
+              /a:
+                get:
+                  produces: [application/json; charset=utf-8]
+                  responses:
+                    "200":
+                      description: ok
+                      content:
+                        application/json; charset=utf-8: {schema: {type: string}}
+            """
+        )
+        self.assertEqual(0, golden_reach_search.predicate_count("media-type-key-parameters", path))
+
+    def test_a_pin_s_blob_is_the_hash_git_itself_computes(self) -> None:
+        path = self.document('{"openapi": "3.1.0"}\n', ".json")
+        git = subprocess.run(["git", "hash-object", str(path)], capture_output=True, text=True, check=True)
+        self.assertEqual(git.stdout.strip(), golden_reach_search.git_blob(path.read_bytes()))
+
+    def test_a_result_path_holding_a_space_is_quoted_once(self) -> None:
+        url = "https://api.github.com/repositories/1/contents/REST Bindings/openapi.yaml?ref=abc"
+        quoted = golden_reach_search._quoted(url)
+        self.assertEqual(
+            "https://api.github.com/repositories/1/contents/REST%20Bindings/openapi.yaml?ref=abc", quoted
+        )
+        self.assertEqual(quoted, golden_reach_search._quoted(quoted))
+
+    def test_a_row_naming_its_witness_by_fixture_is_read_with_its_predicate(self) -> None:
+        self.assertEqual(
+            ("predicate:media-type-key-parameters",),
+            golden_reach_search.selectors_of("media-type-key-parameters"),
+        )
+        self.assertEqual(("schema.anyOf>schema.oneOf",), golden_reach_search.selectors_of("anyof-oneof-variant"))
 
 
 class RecipeTests(unittest.TestCase):

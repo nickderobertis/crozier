@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import importlib.util
 import itertools
@@ -36,6 +37,7 @@ import unittest
 import unicodedata
 from collections import Counter
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
@@ -859,12 +861,22 @@ ACQUISITION_MANIFEST_COLUMNS = ("walk", "document", "revision", "sha256")
 def enumeration_census_failures(
     key: str, source: str, walks: list[tuple[str, str, str]],
     directory: Path, records: list[dict[str, str]],
+    pinned: list[dict[str, str]] | None = None,
 ) -> list[str]:
-    """Reconcile one compact census row per walked document with positive records."""
+    """Reconcile one compact census row per walked document with positive records.
+
+    `pinned` is the acquisition manifest's rows where the caller holds them
+    elsewhere — a golden-reach arm search reads the shared pin rather than
+    copying it — and the directory's own `acquisition-manifest.tsv` otherwise. A
+    gzipped `enumeration.tsv.gz` is read where no plain one is written.
+    """
     path = directory / "enumeration.tsv"
+    if not path.is_file() and (directory / "enumeration.tsv.gz").is_file():
+        path = directory / "enumeration.tsv.gz"
     if not path.is_file():
         return [f"{key}: `{source}` has no enumeration.tsv census file"]
-    with path.open(encoding="utf-8", newline="") as handle:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, dialect="excel-tab")
         if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
             return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
@@ -881,16 +893,19 @@ def enumeration_census_failures(
     if len(identities) != len(set(identities)):
         failures.append(f"{key}: `{source}` enumeration repeats a document")
     manifest_path = directory / "acquisition-manifest.tsv"
-    if not manifest_path.is_file():
+    if pinned is None and not manifest_path.is_file():
         failures.append(f"{key}: `{source}` has no pinned acquisition-manifest.tsv")
     else:
-        with manifest_path.open(encoding="utf-8", newline="") as handle:
-            manifest_reader = csv.DictReader(handle, dialect="excel-tab")
-            if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
-                failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
-                manifest = []
-            else:
-                manifest = list(manifest_reader)
+        if pinned is not None:
+            manifest = pinned
+        else:
+            with manifest_path.open(encoding="utf-8", newline="") as handle:
+                manifest_reader = csv.DictReader(handle, dialect="excel-tab")
+                if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
+                    failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
+                    manifest = []
+                else:
+                    manifest = list(manifest_reader)
         manifest_ids = [(row["walk"], row["document"]) for row in manifest]
         if len(manifest_ids) != len(set(manifest_ids)):
             failures.append(f"{key}: `{source}` acquisition manifest repeats a document")
@@ -989,7 +1004,7 @@ def evidence_directory_failures(key: str, directory: Path) -> list[str]:
             )
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
-        if path.is_file() and rel not in ("records.tsv", "enumeration.tsv") and rel not in named:
+        if path.is_file() and rel not in ("records.tsv", "enumeration.tsv", "enumeration.tsv.gz") and rel not in named:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -1002,6 +1017,8 @@ def exhaustive_search_failures(
     lines: list[list[str]],
     evidence_root: Path,
     capabilities: dict[str, tuple[bool, bool, str]],
+    directory_for: Any = None,
+    pinned_for: Any = None,
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -1043,13 +1060,16 @@ def exhaustive_search_failures(
         if source not in DECLARED_SOURCES:
             # An undeclared source answers for nothing and owes nothing.
             continue
-        directory = evidence_root / f"witness-search-{source}"
+        directory = (
+            directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
+        )
         records = [r for r in evidence_records(directory) if r.get("key") == key]
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
         failures += evidence_directory_failures(key, directory) if directory.is_dir() else []
         failures += exhaustive_line_failures(
-            key, source, line, records, capabilities.get(source), exhausted, directory
+            key, source, line, records, capabilities.get(source), exhausted, directory,
+            pinned_for(source, line) if pinned_for else None,
         )
     return failures
 
@@ -1062,6 +1082,7 @@ def exhaustive_line_failures(
     capability: tuple[bool, bool, str] | None,
     exhausted: bool,
     directory: Path,
+    pinned: list[dict[str, str]] | None = None,
 ) -> list[str]:
     """One `(key, source)` line against its evidence and, when exhausted, its obligations."""
     failures: list[str] = []
@@ -1120,7 +1141,7 @@ def exhaustive_line_failures(
                 "accounts for nowhere"
             )
     if capability and capability[1] and walks:
-        failures += enumeration_census_failures(key, source, walks, directory, records)
+        failures += enumeration_census_failures(key, source, walks, directory, records, pinned)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
@@ -7403,6 +7424,79 @@ class RankedBacklogTests(unittest.TestCase):
                         f"`{fixture}`", self.entries[key][1][4],
                         "a witness the site table names directly is not one the row's evidence names",
                     )
+
+    ARM_SEARCHES = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses"
+
+    @classmethod
+    def arm_search_pin(cls, source: str, line: list[str]) -> list[dict[str, str]]:
+        """The pinned documents of the walks one arm-search line names.
+
+        An arm search reads a source's shared pin rather than copying it: the
+        acquisition manifest, or for the publisher trees their `documents.jsonl`.
+        """
+        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
+        named = {tree for tree, _ref, _count in recorded_walks(line[4])}
+        if source == "github-publisher-trees":
+            # The pins resolved to bytes, held to the shared pin they resolve: the
+            # same commit, path and git blob, and the same SHA-256 wherever the
+            # shared pin records one.
+            with (cls.ARM_SEARCHES / source / "pins.tsv").open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, dialect="excel-tab"))
+            pins, seen = [], set()
+            for entry in (shared / "documents.jsonl").read_text(encoding="utf-8").splitlines():
+                pin = json.loads(entry)
+                if (pin["repository"], pin["path"], pin["commit"]) not in seen:
+                    seen.add((pin["repository"], pin["path"], pin["commit"]))
+                    pins.append(pin)
+            assert [(p["repository"], p["path"], p["commit"], p["blob"]) for p in pins] == [
+                (r["walk"], r["document"], r["revision"], r["blob"]) for r in rows
+            ], "pins.tsv is not the shared publisher-tree pin"
+            for pin, row in zip(pins, rows):
+                assert not pin.get("sha256") or pin["sha256"] == row["sha256"], row["document"]
+        else:
+            with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, dialect="excel-tab"))
+        return [row for row in rows if row["walk"] in named]
+
+    def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
+        """An owned row's arm search: one line per declared source, each resting on evidence.
+
+        The record a reach cell links is read with Contract B's own gate over the
+        `golden-reach-witnesses/<source>/` directories, so a line asserting a
+        query, walk, candidate or screen its `records.tsv` does not carry — or
+        evidence the line accounts for nowhere — fails here, and an `exhausted`
+        reading owes every obligation it owes anywhere. A record no cell links is
+        refused too: a search nobody can reach from the row is not on the record.
+        """
+        capabilities = source_capabilities(self.DOC.read_text(encoding="utf-8"))
+        linked = set()
+        for key, (_region, cells) in sorted(self.entries.items()):
+            found = re.search(r"\(golden-reach-witnesses/searches/([^)]+)\.md\)", cells[5])
+            if not found:
+                continue
+            with self.subTest(key=key):
+                self.assertEqual(key, found.group(1))
+                linked.add(key)
+                text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                lines = [
+                    [cell.replace("\\|", "|") for cell in line]
+                    for line in exhaustive_search_lines(text).get(key, [])
+                ]
+                self.assertEqual(
+                    sorted(DECLARED_SOURCES), sorted(line[1].strip("`") for line in lines),
+                    "an arm search names each declared source exactly once",
+                )
+                self.assertEqual(
+                    [],
+                    exhaustive_search_failures(
+                        key, lines, self.ARM_SEARCHES, capabilities,
+                        directory_for=lambda source: self.ARM_SEARCHES / source,
+                        pinned_for=self.arm_search_pin,
+                    ),
+                )
+        records = self.ARM_SEARCHES / "searches"
+        written = {path.stem for path in records.glob("*.md")} if records.is_dir() else set()
+        self.assertEqual(set(), written - linked, "an arm search no reach cell links")
 
     def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
         """The thin end, as a list: every single-witness and no-witness golden row."""
