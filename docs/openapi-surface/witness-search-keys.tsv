@@ -3,6 +3,7 @@ annotated-ref-target-closed-object	schema.properties>schema.allOf:annotated-ref&
 annotated-ref-target-composed	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf	schemas.md	supported
 annotated-ref-target-oneof	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf	schemas.md	supported
 annotated-ref-target-string-const	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued	schemas.md	supported
+anyof-anyof-variant	schema.anyOf>schema.anyOf	schemas.md	supported
 anyof-array-variant-anyof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
 anyof-array-variant-closed-object-item	schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	schemas.md	supported
 anyof-array-variant-empty-object-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
@@ -12,6 +13,7 @@ array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union
 array-item-pointer-walk-anyof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf	schemas.md	supported
 array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf	schemas.md	supported
 oauth2-password	securityScheme.flows.password	security.md	supported
+oneof-anyof-variant	schema.oneOf>schema.anyOf	schemas.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf	schemas.md	supported
