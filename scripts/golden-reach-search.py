@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import fcntl
 import gzip
 import hashlib
 import http.client
@@ -81,8 +82,9 @@ QUERY_SOURCES = ("github-code-search", "sourcegraph")
 RECORD_FIELDS = ("key", "kind", "subject", "result", "file")
 WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
 FIRST_PAGE = 100
-# Probe results are filed this many declarers at a time, so a stopped run keeps them.
-PROBE_CHUNK = 100
+# Probe results are filed this many declarers at a time, so a stopped run keeps them;
+# some catalogue documents take minutes each under an instrumented build.
+PROBE_CHUNK = 8
 
 
 def _load(name: str, path: Path) -> Any:
@@ -659,7 +661,10 @@ def probe(args: argparse.Namespace) -> int:
         earlier: list[dict[str, Any]] = []
         if args.resume:
             # A stopped probe resumes document by document: what it filed stands.
-            earlier = [row for row in read_probes(args.source) if row["key"] == key]
+            earlier = [
+                row for row in read_probes(args.source)
+                if row["key"] == key and not (args.retry_timeouts and row["status"].startswith("timeout"))
+            ]
             done = {row["candidate"] for row in earlier}
             pending = [(candidate, path) for candidate, path in pending if candidate not in done]
             if not pending:
@@ -734,10 +739,15 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     arm-reaching declarer nobody screened stays visible here as outstanding.
     """
     path = source_dir(source) / "probe.jsonl"
-    kept = []
-    if path.is_file():
-        kept = [row for row in map(json.loads, path.read_text(encoding="utf-8").splitlines()) if row["key"] != key]
-    path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
+    # Probes of other keys of this source may be filing at the same time; the
+    # read-modify-write is theirs to wait for, not to interleave with.
+    CACHE.mkdir(parents=True, exist_ok=True)
+    with (CACHE / f"{source}.probe.lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        kept = []
+        if path.is_file():
+            kept = [row for row in map(json.loads, path.read_text(encoding="utf-8").splitlines()) if row["key"] != key]
+        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
 
 
 # -------------------------------------------------------------------- screen
@@ -821,9 +831,62 @@ def prune(args: argparse.Namespace) -> int:
     return 0
 
 
+def _tally(key: str, source: str) -> dict[str, int]:
+    """What one source's evidence says about one key: declarers, and how each fared."""
+    records = [r for r in read_records(source) if r["key"] == key]
+    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
+                 and r["result"] != "census 0"}
+    unread = sum(1 for r in records if r["kind"] == "document" and not r["result"].startswith("census "))
+    enumeration = source_dir(source) / "enumeration.tsv.gz"
+    if source in WALKS and enumeration.is_file():
+        # A walked document the census could not read may declare the row; the
+        # walk's enumeration, not a per-key row, is where that is recorded.
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            unread = sum(1 for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+                         if row["status"] != "readable")
+    probes = {row["candidate"]: row for row in read_probes(source) if row["key"] == key}
+    screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
+    reaching = {c for c, row in probes.items() if row["reached"]}
+    passing = {
+        candidate for candidate in screened
+        if all(r["result"] == "passed" for r in records
+               if r["kind"] == "screen" and r["subject"].rsplit(" ", 1)[0] == candidate)
+    }
+    return {
+        "declarers": len(declarers),
+        "unreadable": unread,
+        "probed": len(declarers & set(probes)),
+        "timeouts": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("timeout")),
+        "failed": sum(1 for c in declarers if probes.get(c, {}).get("status", "generated") not in ("generated",)
+                      and not probes[c]["status"].startswith("timeout")),
+        "reaching": len(reaching),
+        "screened": len(reaching & screened),
+        "passing": len(passing),
+    }
+
+
+# The rows a registered corpus witness executes the unreached arm of; their
+# searches read `witness-found` whatever else is outstanding.
+WITNESSED = {"property-anyof-discriminated-union": 194, "items-oneof-element": 195}
+
+
+def _outcome(key: str, tallies: dict[str, dict[str, int]]) -> str:
+    """This search's own reading: a witness, something outstanding, or nothing left."""
+    if key in WITNESSED:
+        return "witness-found"
+    outstanding = any(
+        t["unreadable"] or t["probed"] < t["declarers"] or t["timeouts"] or t["screened"] < t["reaching"]
+        or t["passing"]
+        for t in tallies.values()
+    )
+    return "search-incomplete" if outstanding else "exhausted"
+
+
 def render(args: argparse.Namespace) -> int:
     """One arm search record per key, one Contract B line per declared source."""
     for key in args.key:
+        tallies = {source: _tally(key, source) for source in DECLARED_SOURCES}
+        outcome = _outcome(key, tallies) if args.outcome == "auto" else args.outcome
         lines = [
             f"# Arm search: `{key}`",
             "",
@@ -861,8 +924,23 @@ def render(args: argparse.Namespace) -> int:
                 f"`{c}` " + " ".join(f"{s} `{screens[c][s]}`" for s in ("licence", "ref", "fern") if s in screens[c])
                 for c in reaching if c in screens) or "—"
             lines.append(
-                f"| `{key}` | `{source}` | `{args.outcome}` | {queries} | {walks} | {candidates} | {_cell(screen_cell)} |"
+                f"| `{key}` | `{source}` | `{outcome}` | {queries} | {walks} | {candidates} | {_cell(screen_cell)} |"
             )
+        lines += [
+            "",
+            "#### Declarers, and how the instrumented run fared on each",
+            "",
+            "Counted off each source's `records.tsv` and `probe.jsonl`. A declarer the run",
+            "did not finish (a timeout) or that crozier failed on without a profile is",
+            "outstanding: the arm may be in it, and nothing here says otherwise.",
+            "",
+            "| source | declarers | unreadable | probed | timed out | crozier failed | reach an arm | screened |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|",
+        ] + [
+            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['timeouts']} | {t['failed']} "
+            f"| {t['reaching']} | {t['screened']} |"
+            for source, t in tallies.items()
+        ]
         lines += _dispositions(key)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -890,7 +968,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--root", type=Path)
     p.add_argument("--jobs", type=int, default=8)
     p.add_argument("--timeout", type=int, default=300)
-    p.add_argument("--resume", action="store_true", help="skip a key every declarer of which is already probed")
+    p.add_argument("--resume", action="store_true", help="skip every declarer already probed")
+    p.add_argument("--retry-timeouts", action="store_true", help="with --resume, probe again a declarer that timed out")
     s = sub.add_parser("screen")
     s.add_argument("--source", required=True)
     s.add_argument("--key", required=True)
@@ -905,7 +984,7 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--source", action="append", required=True)
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
-    r.add_argument("--outcome", required=True, choices=("exhausted", "search-incomplete", "witness-found"))
+    r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     args = parser.parse_args(argv)
     return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "prune": prune, "render": render}[args.command](args)
 
