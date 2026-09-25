@@ -1,57 +1,57 @@
 key	source	phrasing
-property-anyof-discriminated-union	github-code-search	"anyOf:" "discriminator:" "propertyName:" "requestBody:" filename:openapi.yaml
-property-anyof-discriminated-union	github-code-search	"\"anyOf\"" "\"discriminator\"" "\"propertyName\"" "\"requestBody\"" filename:openapi.json
+property-anyof-discriminated-union	github-code-search	anyOf: "discriminator:" "propertyName:" "requestBody:" filename:openapi.yaml
+property-anyof-discriminated-union	github-code-search	\anyOf\"" "\"discriminator\"" "\"propertyName\"" "\"requestBody\"" filename:openapi.json
 property-anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"discriminator:" content:"requestBody:" count:all type:file
 property-anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"discriminator\"" content:"\"requestBody\"" count:all type:file
-ref-pointer-composition-index	github-code-search	"/oneOf/0" "$ref:" filename:openapi.yaml
-ref-pointer-composition-index	github-code-search	"/anyOf/0" "\"$ref\"" filename:openapi.json
+ref-pointer-composition-index	github-code-search	/oneOf/0 "$ref:" filename:openapi.yaml
+ref-pointer-composition-index	github-code-search	/anyOf/0 "\"$ref\"" filename:openapi.json
 ref-pointer-composition-index	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"/oneOf/0" count:all type:file
 ref-pointer-composition-index	sourcegraph	file:(openapi|swagger).*\.json$ content:"/anyOf/0" count:all type:file
-anyof-discriminated-union	github-code-search	"anyOf:" "discriminator:" "mapping:" filename:openapi.yaml
-anyof-discriminated-union	github-code-search	"\"anyOf\"" "\"discriminator\"" "\"mapping\"" filename:openapi.json
+anyof-discriminated-union	github-code-search	anyOf: "discriminator:" "mapping:" filename:openapi.yaml
+anyof-discriminated-union	github-code-search	\anyOf\"" "\"discriminator\"" "\"mapping\"" filename:openapi.json
 anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"discriminator:" content:"mapping:" count:all type:file
 anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"discriminator\"" content:"\"mapping\"" count:all type:file
-x-fern-or-crozier-ignore	github-code-search	"x-fern-ignore: true" "components:" filename:openapi.yaml
-x-fern-or-crozier-ignore	github-code-search	"\"x-fern-ignore\": true" "\"components\"" filename:openapi.json
+x-fern-or-crozier-ignore	github-code-search	x-fern-ignore: true "components:" filename:openapi.yaml
+x-fern-or-crozier-ignore	github-code-search	\x-fern-ignore\": true" "\"components\"" filename:openapi.json
 x-fern-or-crozier-ignore	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"x-fern-ignore: true" count:all type:file
 x-fern-or-crozier-ignore	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"x-fern-ignore\"" count:all type:file
-anyof-sole-member	github-code-search	"anyOf:" "items:" "requestBody:" "type: array" filename:openapi.yaml
-anyof-sole-member	github-code-search	"\"anyOf\"" "\"items\"" "\"requestBody\"" "\"array\"" filename:openapi.json
+anyof-sole-member	github-code-search	anyOf: "items:" "requestBody:" "type: array" filename:openapi.yaml
+anyof-sole-member	github-code-search	\anyOf\"" "\"items\"" "\"requestBody\"" "\"array\"" filename:openapi.json
 anyof-sole-member	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"items:" content:"anyOf:" content:"requestBody:" count:all type:file
 anyof-sole-member	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"items\"" content:"\"anyOf\"" content:"\"requestBody\"" count:all type:file
-annotated-ref-shape	github-code-search	"anyOf:" "allOf:" "title:" "type: array" "requestBody:" filename:openapi.yaml
-annotated-ref-shape	github-code-search	"\"oneOf\"" "\"allOf\"" "\"title\"" "\"array\"" "\"requestBody\"" filename:openapi.json
+annotated-ref-shape	github-code-search	anyOf: "allOf:" "title:" "type: array" "requestBody:" filename:openapi.yaml
+annotated-ref-shape	github-code-search	\oneOf\"" "\"allOf\"" "\"title\"" "\"array\"" "\"requestBody\"" filename:openapi.json
 annotated-ref-shape	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"allOf:" content:"type: array" content:"requestBody:" count:all type:file
 annotated-ref-shape	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"allOf\"" content:"\"array\"" content:"\"requestBody\"" count:all type:file
-items-oneof-element	github-code-search	"type: array" "items:" "oneOf:" "minItems:" filename:openapi.yaml
-items-oneof-element	github-code-search	"\"array\"" "\"items\"" "\"oneOf\"" "\"minItems\"" filename:openapi.json
+items-oneof-element	github-code-search	type: array "items:" "oneOf:" "minItems:" filename:openapi.yaml
+items-oneof-element	github-code-search	\array\"" "\"items\"" "\"oneOf\"" "\"minItems\"" filename:openapi.json
 items-oneof-element	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"type: array" content:"items:" content:"oneOf:" count:all type:file
 items-oneof-element	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"array\"" content:"\"items\"" content:"\"oneOf\"" count:all type:file
-anyof-array-variant-annotated-ref-item	github-code-search	"anyOf:" "type: array" "allOf:" "description:" "requestBody:" filename:openapi.yaml
-anyof-array-variant-annotated-ref-item	github-code-search	"\"anyOf\"" "\"array\"" "\"allOf\"" "\"description\"" "\"requestBody\"" filename:openapi.json
+anyof-array-variant-annotated-ref-item	github-code-search	anyOf: "type: array" "allOf:" "description:" "requestBody:" filename:openapi.yaml
+anyof-array-variant-annotated-ref-item	github-code-search	\anyOf\"" "\"array\"" "\"allOf\"" "\"description\"" "\"requestBody\"" filename:openapi.json
 anyof-array-variant-annotated-ref-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"type: array" content:"allOf:" content:"parameters:" count:all type:file
 anyof-array-variant-annotated-ref-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"array\"" content:"\"allOf\"" content:"\"parameters\"" count:all type:file
-anyof-array-variant-composed-item	github-code-search	"anyOf:" "type: array" "items:" "allOf:" filename:openapi.yaml
-anyof-array-variant-composed-item	github-code-search	"\"anyOf\"" "\"array\"" "\"items\"" "\"allOf\"" filename:openapi.json
+anyof-array-variant-composed-item	github-code-search	anyOf: "type: array" "items:" "allOf:" filename:openapi.yaml
+anyof-array-variant-composed-item	github-code-search	\anyOf\"" "\"array\"" "\"items\"" "\"allOf\"" filename:openapi.json
 anyof-array-variant-composed-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"items:" content:"allOf:" content:"type: array" count:all type:file
 anyof-array-variant-composed-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"items\"" content:"\"allOf\"" content:"\"array\"" count:all type:file
-oneof-discriminated-union	github-code-search	"oneOf:" "discriminator:" "type: array" "items:" filename:openapi.yaml
-oneof-discriminated-union	github-code-search	"\"oneOf\"" "\"discriminator\"" "\"array\"" "\"items\"" filename:openapi.json
+oneof-discriminated-union	github-code-search	oneOf: "discriminator:" "type: array" "items:" filename:openapi.yaml
+oneof-discriminated-union	github-code-search	\oneOf\"" "\"discriminator\"" "\"array\"" "\"items\"" filename:openapi.json
 oneof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"discriminator:" content:"type: array" count:all type:file
 oneof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"discriminator\"" content:"\"array\"" count:all type:file
-anyof-allof-variant	github-code-search	"anyOf:" "allOf:" "requestBody:" filename:openapi.yaml
-anyof-allof-variant	github-code-search	"\"anyOf\"" "\"allOf\"" "\"requestBody\"" filename:openapi.json
+anyof-allof-variant	github-code-search	anyOf: "allOf:" "requestBody:" filename:openapi.yaml
+anyof-allof-variant	github-code-search	\anyOf\"" "\"allOf\"" "\"requestBody\"" filename:openapi.json
 anyof-allof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"allOf:" content:"requestBody:" count:all type:file
 anyof-allof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"allOf\"" content:"\"responses\"" count:all type:file
-anyof-oneof-variant	github-code-search	"anyOf:" "- oneOf:" "requestBody:" filename:openapi.yaml
-anyof-oneof-variant	github-code-search	"\"anyOf\"" "\"oneOf\"" "\"requestBody\"" filename:openapi.json
+anyof-oneof-variant	github-code-search	anyOf: "- oneOf:" "requestBody:" filename:openapi.yaml
+anyof-oneof-variant	github-code-search	\anyOf\"" "\"oneOf\"" "\"requestBody\"" filename:openapi.json
 anyof-oneof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"- oneOf:" count:all type:file
 anyof-oneof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\": [" content:"{\"oneOf\"" count:all type:file
-media-type-key-parameters	github-code-search	"application/json; charset=utf-8" "requestBody:" filename:openapi.yaml
-media-type-key-parameters	github-code-search	"application/json; charset=utf-8" "\"requestBody\"" filename:openapi.json
+media-type-key-parameters	github-code-search	application/json; charset=utf-8 "requestBody:" filename:openapi.yaml
+media-type-key-parameters	github-code-search	application/json; charset=utf-8 "\"requestBody\"" filename:openapi.json
 media-type-key-parameters	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"application/json; charset=utf-8:" count:all type:file
 media-type-key-parameters	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"application/json; charset=utf-8\"" count:all type:file
-format-uri-template	github-code-search	"format: uri-template" "requestBody:" filename:openapi.yaml
-format-uri-template	github-code-search	"\"uri-template\"" "\"requestBody\"" filename:openapi.json
+format-uri-template	github-code-search	format: uri-template "requestBody:" filename:openapi.yaml
+format-uri-template	github-code-search	\uri-template\"" "\"requestBody\"" filename:openapi.json
 format-uri-template	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri-template" count:all type:file
 format-uri-template	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri-template\"" count:all type:file

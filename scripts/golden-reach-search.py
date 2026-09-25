@@ -215,7 +215,7 @@ def read_records(source: str) -> list[dict[str, str]]:
     if not path.is_file():
         return []
     with path.open(encoding="utf-8", newline="") as handle:
-        return list(csv.DictReader(handle, delimiter="\t"))
+        return list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
 
 
 def write_records(source: str, keys: set[str], rows: list[dict[str, str]]) -> None:
@@ -228,7 +228,10 @@ def replace_records(source: str, rows: list[dict[str, str]]) -> None:
     path = source_dir(source) / "records.tsv"
     unique = {tuple(row[f] for f in RECORD_FIELDS): row for row in rows}
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, RECORD_FIELDS, delimiter="\t", lineterminator="\n")
+        # Contract B's reader splits on tabs and nothing else, so a quote is text.
+        writer = csv.DictWriter(
+            handle, RECORD_FIELDS, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE, quotechar=None
+        )
         writer.writeheader()
         for row in sorted(unique.values(), key=lambda r: (r["key"], r["kind"], r["subject"], r["result"])):
             writer.writerow(row)
@@ -478,7 +481,10 @@ def fetch_pins(args: argparse.Namespace) -> int:
 
 def phrasings(key: str, source: str) -> list[str]:
     with QUERIES.open(encoding="utf-8", newline="") as handle:
-        rows = [r for r in csv.DictReader(handle, delimiter="\t") if r["key"] == key and r["source"] == source]
+        rows = [
+            r for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+            if r["key"] == key and r["source"] == source
+        ]
     found = [r["phrasing"] for r in rows]
     if len(found) < 2 or len(set(found)) != len(found):
         fail(f"{QUERIES.name} owes {key} two distinct phrasings for {source}")
@@ -745,7 +751,7 @@ def screen(args: argparse.Namespace) -> int:
     with (directory / "screens.jsonl").open("a", encoding="utf-8") as handle:
         handle.write(json.dumps({"key": args.key, "candidate": args.candidate, "licence": args.licence,
                                  "ref": args.ref, "fern": args.fern, "gap_keys": args.gap_keys,
-                                 "evidence": args.evidence}, sort_keys=True) + "\n")
+                                 "evidence": args.evidence, "declined": args.declined}, sort_keys=True) + "\n")
     others = [r for r in read_records(args.source)
               if not (r["key"] == args.key and r["kind"] == "screen" and r["subject"].startswith(args.candidate + " "))]
     replace_records(args.source, others + rows)
@@ -758,6 +764,31 @@ def screen(args: argparse.Namespace) -> int:
 def _cell(text: str) -> str:
     """A table cell's text, its pipes escaped so a regex phrasing stays one column."""
     return text.replace("|", "\\|")
+
+
+def _dispositions(key: str) -> list[str]:
+    """What became of a candidate that passes every screen: handed off, or declined."""
+    out: list[str] = []
+    handoff = EVIDENCE / "handoff.tsv"
+    if handoff.is_file():
+        with handoff.open(encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+                if row["golden_key"] == key:
+                    gaps = "" if row["gap_keys"] in ("", "-") else f", declaring `gap` row(s) {row['gap_keys']}"
+                    out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — {row['fern_screen']}")
+    for source in DECLARED_SOURCES:
+        screens = source_dir(source) / "screens.jsonl"
+        if not screens.is_file():
+            continue
+        latest: dict[str, dict[str, Any]] = {}
+        for line in screens.read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            if row["key"] == key:
+                latest[row["candidate"]] = row
+        for candidate, row in sorted(latest.items()):
+            if row.get("declined"):
+                out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
+    return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
 def render(args: argparse.Namespace) -> int:
@@ -802,6 +833,7 @@ def render(args: argparse.Namespace) -> int:
             lines.append(
                 f"| `{key}` | `{source}` | `{args.outcome}` | {queries} | {walks} | {candidates} | {_cell(screen_cell)} |"
             )
+        lines += _dispositions(key)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -838,6 +870,7 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--fern", required=True)
     s.add_argument("--gap-keys", default="")
     s.add_argument("--evidence", default="")
+    s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", required=True, choices=("exhausted", "search-incomplete", "witness-found"))
