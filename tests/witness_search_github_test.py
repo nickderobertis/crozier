@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import base64
 import csv
+import hashlib
 import importlib.util
 import json
 import os
@@ -1094,6 +1095,10 @@ components:
             for line in (self.root / "raw-github-calls.jsonl").read_text().splitlines()
         ]
         self.assertEqual(2, sum(row["status"] == "IncompleteRead" for row in calls))
+        completed = [row for row in calls if row["status"] == 200]
+        self.assertEqual(1, len(completed))
+        self.assertEqual("c" * 40, completed[0]["commit"])
+        self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), completed[0]["sha256"])
 
     def test_publisher_transfer_failure_stays_outstanding_after_retry_budget(
         self,

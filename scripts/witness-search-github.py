@@ -1217,9 +1217,20 @@ class Acquirer:
                     subject,
                 )
                 continue
+            # Outside the REST guard by ruling, so each download names the exact
+            # commit it read and the digest of what came back.
+            commit = re.search(r"/([0-9a-f]{40})/", url)
             self.write(
                 "raw-github-calls.jsonl",
-                {"key": key, "subject": subject, "status": status, "url": url},
+                {
+                    "key": key,
+                    "subject": subject,
+                    "status": status,
+                    "url": url,
+                    "commit": commit.group(1) if commit else None,
+                    "sha256": hashlib.sha256(data).hexdigest(),
+                    "bytes": len(data),
+                },
             )
             if status not in (429, 503):
                 return status, data
