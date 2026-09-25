@@ -7545,7 +7545,7 @@ class RankedBacklogTests(unittest.TestCase):
         ]
         published = self.reach_table(self.REACH_RANKING, 7)
         self.assertEqual(expected, [cells[:6] for cells in published])
-        owned = {cells[0].strip("`") for cells in self.reach_table(self.REACH_OWNED, 3)}
+        owned = {cells[1].strip("`") for cells in self.reach_table(self.REACH_OWNED, 3)}
         for cells in published:
             with self.subTest(key=cells[1]):
                 disposition = "owned" if cells[1].strip("`") in owned else "open"

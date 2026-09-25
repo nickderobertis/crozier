@@ -895,7 +895,7 @@ def _tally(key: str, source: str) -> dict[str, int]:
 
 # The rows a registered corpus witness executes the unreached arm of; their
 # searches read `witness-found` whatever else is outstanding.
-WITNESSED = {"property-anyof-discriminated-union": 194, "items-oneof-element": 195}
+WITNESSED = {"property-anyof-discriminated-union": 194}
 
 
 def _outcome(key: str, tallies: dict[str, dict[str, int]]) -> str:

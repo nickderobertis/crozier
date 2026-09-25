@@ -35,7 +35,7 @@ outstanding: the arm may be in them, and nothing here says otherwise.
 | source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 49 | 0 | 49 | 0 | 0 | 10 | 0 | 0 |
-| `jentic` | 1008 | 0 | 0 | 1008 | 0 | 0 | 0 | 0 |
+| `jentic` | 1008 | 0 | 1008 | 0 | 5 | 120 | 0 | 0 |
 | `github-code-search` | 72 | 1 | 72 | 0 | 0 | 6 | 0 | 0 |
 | `github-publisher-trees` | 161 | 8 | 0 | 161 | 0 | 0 | 0 | 0 |
 | `sourcegraph` | 87 | 2 | 87 | 0 | 0 | 9 | 0 | 0 |

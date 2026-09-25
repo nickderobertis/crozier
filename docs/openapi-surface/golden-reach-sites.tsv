@@ -8,7 +8,7 @@ media-type-example	mediaType.example	src/ir.rs::media_example,src/ir.rs::build_e
 media-type-examples	mediaType.examples	src/ir.rs::media_example,src/ir.rs::reference_body_example,src/ir.rs::component_example_value,src/ir.rs::build_endpoint[body_media_has_example: ]	
 encoding-object	mediaType.encoding	src/ir.rs::hoist_form_object,src/emit.rs::append_request_call_args[if let Some\(content_type\) = &f\.form_content_type]	
 media-type-concrete	requestBody.content,response.content	src/ir.rs::has_dispatchable_media	
-media-type-key-parameters	fixture=openbanking.org.uk-account-info-openapi	src/ir.rs::is_json_like_media_type,src/ir.rs::is_text_response_media	
+media-type-key-parameters	fixture=openbanking.org.uk-account-info-openapi,fixture=sftpgo,fixture=vtex-pricing	src/ir.rs::is_json_like_media_type,src/ir.rs::is_text_response_media	
 media-type-suffix-json	fixture=anchore.io,fixture=apicurio.local-registry,fixture=box.com,fixture=github.com,fixture=redocly.com-museum,fixture=free5gc-pdu-session,fixture=free5gc-namf-communication,fixture=openepcis-dpp-ready	src/ir.rs::is_json_like_media_type,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema	
 media-type-suffix-xml	fixture=atlassian.com-jira,fixture=color.pizza,fixture=traccar.org	none	
 media-type-wildcard	fixture=6-dot-authentiqio.appspot.com,fixture=apache.org-qakka,fixture=apicurio.local-registry,fixture=apideck.com-file-storage,fixture=apideck.com-proxy,fixture=atlassian.com-jira,fixture=bintable.com,fixture=bungie.net,fixture=openfigi.com	src/ir.rs::RequestBody::is_wildcard_media,src/ir.rs::has_wildcard_binary_response,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema,src/ir.rs::resolve_request_body[let binary_media = \x7c]	
