@@ -1024,6 +1024,11 @@ pub struct Endpoint {
     /// `application/json; charset=UTF-8`, always carry that header, even where
     /// an optional field would otherwise have Fern omit it.
     pub body_content_type_override: Option<String>,
+    /// The vendor JSON media type (`application/vnd.api+json`) a body's header
+    /// names where crozier would otherwise write `application/json`: Fern sends
+    /// the selected media type verbatim, and Outreach's inlined `$ref` bodies,
+    /// posted only under `application/vnd.api+json`, carry it.
+    pub body_json_media_type: Option<String>,
     /// Whether the operation uses HTTP Basic authentication. Fern leaves the
     /// ordinary JSON content type to httpx for an undocumented Basic-auth body
     /// without a path/header parameter, unless that body's schema is written
@@ -3033,6 +3038,13 @@ fn build_endpoint(
                         && media_type.contains(';'))
                 .then(|| media_type.to_string())
             }),
+        body_json_media_type: op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .map(|(media_type, _)| media_type)
+            .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
+            .map(str::to_string),
         basic_auth: operation_uses_basic_auth(doc, op),
         body_schema_ref: op
             .request_body

@@ -5068,7 +5068,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         && fields.iter().any(|field| field.convert)))
                             || body.all_fields_required()))) =>
         {
-            Some("application/json".to_string())
+            Some(
+                ep.body_json_media_type
+                    .clone()
+                    .unwrap_or_else(|| "application/json".to_string()),
+            )
         }
         _ => None,
     };
@@ -9894,6 +9898,7 @@ mod tests {
             body_media_alternatives: false,
             body_collapses_to_type_reference: false,
             body_content_type_override: None,
+            body_json_media_type: None,
             basic_auth: false,
             body_schema_ref: false,
             body_schema_dropped: false,

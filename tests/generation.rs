@@ -5809,8 +5809,10 @@ components:
         raw.contains("\"content-type\": \"application/ndjson\""),
         "{raw}"
     );
+    // Fern 5.20.0, probed with this document's `/vendor` operation, sends a
+    // vendor JSON body's own media type as its `content-type`.
     assert!(
-        !raw.contains("\"content-type\": \"application/vnd.acme+json\""),
+        raw.contains("\"content-type\": \"application/vnd.acme+json\""),
         "{raw}"
     );
 }
@@ -9478,4 +9480,46 @@ paths:
         "{environment}"
     );
     assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.PRODUCTION"));
+}
+
+/// Outreach posts its `$ref` object bodies only under `application/vnd.api+json`.
+/// Fern flattens each body into arguments, as it does a JSON one, and its header
+/// names the vendor media type rather than `application/json`.
+#[test]
+fn a_vendor_json_body_sends_its_own_media_type_like_outreach() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Outreach, version: 2.0.0 }
+paths:
+  /accounts/{id}:
+    patch:
+      operationId: updateAccount
+      tags: [accounts]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema: { $ref: "#/components/schemas/AccountUpdateRequest" }
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    AccountUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/accounts/raw_client.py"];
+    assert!(
+        raw.contains("\"content-type\": \"application/vnd.api+json\","),
+        "{raw}"
+    );
+    assert!(
+        !raw.contains("\"content-type\": \"application/json\""),
+        "{raw}"
+    );
+    assert!(files["src/acme/accounts/client.py"].contains("name: typing.Optional[str] = OMIT,"));
 }
