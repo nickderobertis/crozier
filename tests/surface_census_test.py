@@ -1689,7 +1689,7 @@ class GrammarContractTests(unittest.TestCase):
         """
         words = {
             0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
-            9: "nine", 94: "ninety-four", 95: "ninety-five",
+            9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
@@ -2059,6 +2059,11 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
         "schema.oneOf>schema.properties:non-empty": {},
         "schema.anyOf>schema.properties:non-empty": {},
+        # The nested-composition arm the case table gained with corpus row 193.
+        "schema.oneOf>schema.oneOf": {},
+        "schema.oneOf>schema.anyOf": {},
+        "schema.anyOf>schema.oneOf": {},
+        "schema.anyOf>schema.anyOf": {},
         "schema.properties>schema.enum:string-valued": {
             "discriminated-unions": 2, "exhaustive": 2, "recursive-types": 2
         },
@@ -2142,8 +2147,8 @@ class ConjunctionCensusTests(unittest.TestCase):
         # residual arm should look like: `prop_type_ref`'s own residual is the
         # widest number in this table.
         "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
-        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
-        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty": {},
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
+        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
@@ -2713,6 +2718,16 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
+# The four `hoist_union_variant` gained with its nested-composition arm (cases
+# 13a to 13d), discriminated by `NestedCompositionSelectorDiscriminationTests`.
+NESTED_COMPOSITION_SELECTORS = frozenset({
+    "schema.oneOf>schema.oneOf",
+    "schema.oneOf>schema.anyOf",
+    "schema.anyOf>schema.oneOf",
+    "schema.anyOf>schema.anyOf",
+})
+
+
 # The twenty-three the negation pass declared plus case 11's example-value
 # conjunction, kept apart from the tables above because all twenty-four depend
 # on `!` and are exercised together by `NegationSelectorDiscriminationTests`.
@@ -2735,8 +2750,8 @@ NEGATION_SELECTORS = frozenset({
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
-    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
-    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty",
+    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
     "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
@@ -3193,7 +3208,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PREDICATES_OUTSIDE_TABLE
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
-        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
+        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
         - {"components.schemas:nonidentifier-name"}
@@ -4730,7 +4745,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
             "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
             "overlap": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
-            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty",
         },
         # --- `is_inline_struct` read where the three tables read it -----------
         {
@@ -4866,7 +4881,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
         },
         {
-            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty",
             "slug": "huv-12a",
             "branch": "hoist_union_variant case 12a, its closing `base_type_ref`",
             "select": {"Root": {"oneOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -4878,7 +4893,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
         },
         {
-            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty",
+            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty",
             "slug": "huv-12b",
             "branch": "hoist_union_variant case 12b, the same arm through the other head",
             "select": {"Root": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -5141,11 +5156,87 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
 
     def test_a_negation_selector_no_source_declares_is_reported_as_absent(self) -> None:
         """Absent, not silent: the phrase a `gap` row cites as its evidence."""
-        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty"
+        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty"
         completed = run("--vendored-only", "--selector", absent)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn("(declared by no registered source)", completed.stdout)
+
+
+class NestedCompositionSelectorDiscriminationTests(unittest.TestCase):
+    """Cases 13a to 13d: a union member that is itself an inline composition.
+
+    `hoist_union_variant` names such a member as a union of its own, so the four
+    selectors are the member's `oneOf`/`anyOf` spelling under each union head.
+    Each is put to the real census, as its own process, over a document that
+    selects it and one that misses it by the member's spelling alone; the
+    residual arm's narrowing — the member no longer reaching `base_type_ref` —
+    and the overlap with case 9, which claims a member declaring `allOf` beside
+    the composition, are asserted over documents of their own.
+    """
+
+    PAIR = [{"type": "string"}, {"type": "integer"}]
+    CASES: tuple[dict, ...] = (
+        {"selector": "schema.oneOf>schema.oneOf", "head": "oneOf", "member": "oneOf", "other": "anyOf"},
+        {"selector": "schema.oneOf>schema.anyOf", "head": "oneOf", "member": "anyOf", "other": "oneOf"},
+        {"selector": "schema.anyOf>schema.oneOf", "head": "anyOf", "member": "oneOf", "other": "anyOf"},
+        {"selector": "schema.anyOf>schema.anyOf", "head": "anyOf", "member": "anyOf", "other": "oneOf"},
+    )
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        documents: dict[str, dict] = {}
+        for case in cls.CASES:
+            slug = case["selector"].replace("schema.", "").replace(">", "-").lower()
+            case["slug"] = slug
+            documents[f"{slug}-select"] = {"Root": {case["head"]: [{case["member"]: cls.PAIR}]}}
+            documents[f"{slug}-near"] = {"Root": {case["head"]: [{case["other"]: cls.PAIR}]}}
+            documents[f"{slug}-overlap"] = {
+                "Root": {case["head"]: [{"allOf": [{"title": "base"}], case["member"]: cls.PAIR}]}
+            }
+        refs = [{"$ref": "#/components/schemas/Left"}, {"$ref": "#/components/schemas/Right"}]
+        documents["nested-only"] = {
+            "Root": {"oneOf": [{"oneOf": refs}]},
+            "Left": {"type": "string"},
+            "Right": {"type": "integer"},
+        }
+        cls.reported = NegationSelectorDiscriminationTests.censused(documents)
+
+    def test_the_table_covers_every_selector_this_arm_declared(self) -> None:
+        self.assertEqual(NESTED_COMPOSITION_SELECTORS, {case["selector"] for case in self.CASES})
+        for selector in sorted(NESTED_COMPOSITION_SELECTORS):
+            with self.subTest(selector=selector):
+                self.assertIn(selector, census.CONJUNCTIONS)
+
+    def test_each_selector_counts_its_own_spelling_and_not_the_other(self) -> None:
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-select")))
+                self.assertNotIn((selector, f"{slug}-near"), self.reported)
+
+    def test_a_member_declaring_all_of_beside_the_composition_is_counted_by_case_9_too(self) -> None:
+        """The chain overlap the case analysis states: case 9 takes this member."""
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
+                self.assertEqual(
+                    1, self.reported.get((f"schema.{case['head']}>schema.allOf", f"{slug}-overlap"))
+                )
+
+    def test_the_residual_no_longer_counts_a_member_this_arm_claims(self) -> None:
+        """Adding the case narrowed case 12a, with no residual text written.
+
+        `Root`'s only member is a nested `oneOf` of two `$ref`s: the new arm takes
+        it, and the inner union's members are references, so no node of the
+        document reaches `base_type_ref` and the composed residual counts none.
+        """
+        residual = census.RESIDUAL_SELECTORS[("hoist_union_variant", "12a")]
+        self.assertIn("!schema.oneOf", residual)
+        self.assertIn("!schema.anyOf", residual)
+        self.assertEqual(1, self.reported.get(("schema.oneOf>schema.oneOf", "nested-only")))
+        self.assertNotIn((residual, "nested-only"), self.reported)
 
 
 class ObjectModelWalkTests(unittest.TestCase):

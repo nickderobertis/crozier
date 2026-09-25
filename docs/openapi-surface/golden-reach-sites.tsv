@@ -285,6 +285,8 @@ oneof-ref-variant	schema.oneOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union
 anyof-ref-variant	schema.anyOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(reference\) = &variant.reference \{],src/ir.rs::Builder::variant_ref[if let Some\(reference\) = &variant.reference \{]	
 oneof-allof-variant	schema.oneOf>schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
 anyof-allof-variant	schema.anyOf>schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::Builder::variant_ref[if described_all_of_ref\(variant\)\.is_some\(\) \{],src/ir.rs::Builder::variant_ref[if is_inline_object\(variant\) \{],src/ir.rs::is_inline_object	
+oneof-oneof-variant	schema.oneOf>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	
+anyof-oneof-variant	schema.anyOf>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	
 property-oneof-composition	schema.properties>schema.oneOf	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(members\) = prop_schema.one_of]	
 property-anyof-composition	schema.properties>schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(members\) = prop_schema.one_of]	
 type-primary-array	schema.type:primary=array	src/openapi.rs::TypeField::primary,src/ir.rs::InlineHoister::hoist_union_variant[if variant.ty.as_ref\(\)],src/ir.rs::InlineHoister::prop_type_ref[if prop_schema.ty.as_ref\(\)]	`nested_array_element`'s nested-array recursion is `items-nested-array-element`'s arm, not every array's
@@ -348,8 +350,8 @@ property-sole-inline-allof	schema.properties>!schema.$ref&!schema.additionalProp
 property-composed	schema.properties>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
 property-empty-object	schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
 array-item-residual	schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array	src/ir.rs::full_type_ref_resolved	
-oneof-variant-residual	schema.oneOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
-anyof-variant-residual	schema.anyOf>!schema.$ref&!schema.allOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
+oneof-variant-residual	schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
+anyof-variant-residual	schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
 annotated-ref-target-residual	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(target\) = resolve_ref_from_schemas]	
 property-oneof-residual	schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf	src/ir.rs::InlineHoister::prop_type_ref[self.out.push\(TypeDecl::Alias]	
 property-anyof-residual	schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[self.out.push\(TypeDecl::Alias]	

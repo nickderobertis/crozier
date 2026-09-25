@@ -3118,6 +3118,21 @@ const ZIPTAX_NODE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `nexmo-messages`: corpus row 193, the Vonage (Nexmo) Messages API 1.4.0. Its
+/// `sendMessage` body is a `oneOf` of channel `oneOf`s over `allOf` members — an
+/// operation-level union whose members are compositions, which no earlier golden
+/// sends down `hoist_union_variant`'s inline-object arm.
+const NEXMO_MESSAGES: Corpus = Corpus {
+    api: "nexmo-messages",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -3247,6 +3262,7 @@ const CORPORA: &[&Corpus] = &[
     &RAYBOT,
     &OPENLINKSW_OSDB,
     &ZIPTAX_NODE,
+    &NEXMO_MESSAGES,
 ];
 
 #[test]
@@ -6021,6 +6037,11 @@ fn openlinksw_osdb_matches_fern_output() {
 #[test]
 fn ziptax_node_matches_fern_output() {
     assert_link_ok_corpus_matches(&ZIPTAX_NODE);
+}
+
+#[test]
+fn nexmo_messages_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXMO_MESSAGES);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each

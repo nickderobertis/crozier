@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .send_message_request_four_one import SendMessageRequestFourOne
+from .send_message_request_four_three import SendMessageRequestFourThree
+from .send_message_request_four_two import SendMessageRequestFourTwo
+from .send_message_request_four_zero import SendMessageRequestFourZero
+
+SendMessageRequestFour = typing.Union[
+    SendMessageRequestFourZero, SendMessageRequestFourOne, SendMessageRequestFourTwo, SendMessageRequestFourThree
+]

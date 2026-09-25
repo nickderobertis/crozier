@@ -165,6 +165,7 @@ re-measure with `just fixtures-gaps`.
 | 140 | `raybot` | github-raw | https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml | `4428dea2f79b833aead4c89df5bd8d9e32b7b0c8` | MIT (publisher repository’s pinned `LICENSE` and the document’s `info.license`) | link-ok | Raybot’s published robot-control API references 23 sibling Path Item files; `/version` names `paths/version.yml`, whose `get` operation generates `src/fern/version/client.py`, and `/health` names `paths/health.yml`, generating `src/fern/health/client.py`. Each Path Item then references pinned parameter and schema files under the same revision. |
 | 191 | `openlinksw-osdb` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC-BY-SA 3.0 (declared by the document's `info.license`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | OpenLink OSDB REST API v1; string schemas declaring `format: uri-template` |
 | 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
+| 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -738,12 +739,24 @@ so the filter removes operations rather than keeping all of them.
 |---:|---|---|---|
 | 191 | `openlinksw-osdb` | `format-uri-template` | ✅ byte-matched after two repairs |
 | 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
+| 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
 
 The repairs: a `:` separates words in a generated class name (`osdb:output_type`
 hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
 bodyless one beside a `default` body no longer makes the method optional; and a
 `204` is empty whatever content it declares, so an unknown body beside one is
 `typing.Optional[typing.Any]` while a lone `204` or a schemaless `200` stays
-`typing.Any`. Both goldens are generated at Python 5.20.0 / CLI 5.67.1 and match
-with `unmatched: &[]`.
+`typing.Any`.
+
+Row 193, the Vonage Messages API as APIs.guru pins it (its publisher repository
+no longer exists), is the corpus's first operation-level union whose members are
+themselves compositions: a `oneOf` of five channel `oneOf`s over `allOf` members,
+which is the inline-object arm of `hoist_union_variant` no earlier witness took.
+Its repairs: a member that is itself a union is a named `{Parent}{Ordinal}` union
+and a union of one member is that member; an `allOf` member that redeclares a
+property of a composed `$ref` base flattens that base and extends the base's own
+bases instead; an untitled, undiscriminated inline union body leaves its content
+type to httpx; an inline union error body is the `{ErrorClass}Body` discriminated
+union; and a redeclared base enum keeps the base's description. All three goldens
+are generated at Python 5.20.0 / CLI 5.67.1 and match with `unmatched: &[]`.
 

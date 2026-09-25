@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 142 of the 174 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 143 of the 175 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -1190,6 +1190,10 @@ CONJUNCTIONS = {
     "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring a non-empty `properties` map",
     "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": "one per Schema Object one of whose `oneOf` members declares `array` as its primary type over `items` declaring `additionalProperties: false`",
     "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": "one per Schema Object one of whose `anyOf` members declares `array` as its primary type over `items` declaring `additionalProperties: false`",
+    "schema.oneOf>schema.oneOf": "one per Schema Object one of whose `oneOf` members itself declares `oneOf`",
+    "schema.oneOf>schema.anyOf": "one per Schema Object one of whose `oneOf` members itself declares `anyOf`",
+    "schema.anyOf>schema.oneOf": "one per Schema Object one of whose `anyOf` members itself declares `oneOf`",
+    "schema.anyOf>schema.anyOf": "one per Schema Object one of whose `anyOf` members itself declares `anyOf`",
     "schema.oneOf>schema.properties:non-empty": "one per Schema Object one of whose `oneOf` members declares a non-empty `properties` map",
     "schema.anyOf>schema.properties:non-empty": "one per Schema Object one of whose `anyOf` members declares a non-empty `properties` map",
     "schema.properties>schema.enum:string-valued": "one per Schema Object one of whose properties declares a string-valued `enum`",
@@ -1384,6 +1388,13 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("7f", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf"),
         Case("7g", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("7h", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        # Numbered after the table was published, and listed where the body
+        # reads it — between the `type: array` guard and case 8 — so the
+        # numbers rows and tests already cite for cases 8 to 12 hold.
+        Case("13a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.oneOf"),
+        Case("13b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.anyOf"),
+        Case("13c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.oneOf"),
+        Case("13d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.anyOf"),
         Case("8a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.properties:non-empty"),
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
@@ -1488,7 +1499,7 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "8b06d42a1f502227",
+    "hoist_union_variant": "af9f3705267bea98",
     "prop_type_ref": "e73a4bfddf0a3452",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
