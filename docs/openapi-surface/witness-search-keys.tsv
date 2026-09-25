@@ -1,7 +1,6 @@
 key	selector	region	census_status
 annotated-ref-target-string-const	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued	schemas.md	supported
 anyof-array-variant-anyof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
-anyof-array-variant-closed-object-item	schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	schemas.md	supported
 anyof-array-variant-empty-object-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
 anyof-array-variant-oneof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member	schemas.md	supported
 array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union	schemas.md	supported

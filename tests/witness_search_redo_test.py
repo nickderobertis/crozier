@@ -583,6 +583,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "annotated-ref-target-composed": "paloalto-cspm-alerts",
             "annotated-ref-target-oneof": "paloalto-cspm-alerts",
             "anyof-array-variant-struct-item": "fergus",
+            "anyof-array-variant-closed-object-item": "cradl",
             "ref-pointer-undeclared-component-head": "thrivecart",
             "ref-pointer-unnamed-segment": "auto-agent-protocol",
         }

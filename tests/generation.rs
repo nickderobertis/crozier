@@ -9604,3 +9604,82 @@ components:
     assert!(plan < id, "{me}");
     assert!(!me.contains("UserSubscriptionPlan"), "{me}");
 }
+
+/// Cradl's union shapes:
+/// - a list of lists of inline objects names its leaf one `Item` per level;
+/// - a `$ref` member's sibling `nullable` is not read;
+/// - a property's `nullable` array member keeps its `Optional`;
+/// - a `nullable` closed empty object member is an optional map.
+#[test]
+fn cradl_union_members_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Cradl, version: 1.0.0 }
+paths:
+  /predictions:
+    get:
+      operationId: listPredictions
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Prediction" }
+components:
+  schemas:
+    Prediction:
+      type: object
+      required: [predictions, truth]
+      properties:
+        truth:
+          anyOf:
+            - { $ref: "#/components/schemas/GroundTruthList", nullable: true }
+            - { type: string }
+        predictions:
+          anyOf:
+            - type: array
+              nullable: true
+              items:
+                anyOf:
+                  - type: object
+                    additionalProperties: false
+                    required: [label]
+                    properties: { label: { type: string } }
+                  - type: object
+                    additionalProperties: false
+                    required: [value]
+                    properties: { value: { type: string } }
+            - { type: object, additionalProperties: false, nullable: true }
+    GroundTruthList:
+      anyOf:
+        - type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [label]
+            properties: { label: { type: string } }
+        - type: array
+          items:
+            type: array
+            items:
+              type: object
+              required: [value]
+              properties: { value: { type: string } }
+"##,
+    );
+    let predictions = &files["src/acme/types/prediction_predictions.py"];
+    assert!(
+        predictions.contains("typing.Optional[typing.List[PredictionPredictionsZeroItem]]"),
+        "{predictions}"
+    );
+    assert!(
+        predictions.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
+        "{predictions}"
+    );
+    let truth = &files["src/acme/types/prediction_truth.py"];
+    assert!(
+        truth.contains("typing.Union[GroundTruthList, str]"),
+        "{truth}"
+    );
+    assert!(files.contains_key("src/acme/types/ground_truth_list_one_item_item.py"));
+}

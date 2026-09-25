@@ -182,6 +182,7 @@ re-measure with `just fixtures-gaps`.
 | 160 | `billie-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Billie Direct API, jentic's import entry: row 156's document with its object keys in another order |
 | 161 | `skool-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API, jentic's import entry: row 154's document with its object keys in another order |
 | 162 | `timelyapp-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Timely API, jentic's import entry: row 151's document with its object keys in another order |
+| 163 | `cradl` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Cradl API; `anyOf` array variants with struct and closed-object items |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -768,6 +769,7 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 160 | `billie-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 161 | `skool-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 162 | `timelyapp-entry` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 163 | `cradl` | `anyof-array-variant-closed-object-item`; `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -850,13 +852,14 @@ Skool and Timely. Each holds the same document as rows 156, 154 and 151 with
 its object keys in another order, which is a different input to Fern. Each
 golden byte-matches with no repair of its own.
 
-Two usable documents are not registered and read `pending-registration` in
-the ledgers, for a later registration to take up:
+Row 163's repairs, read off Fern's IR for Cradl:
+- a list of lists of inline objects names its leaf model one `Item` per level
+  (`GroundTruthListOneItemItem`);
+- a `$ref` member's sibling `nullable` is not read;
+- a property union's `nullable` array member keeps its `Optional`;
+- a `nullable` closed object with no properties is `Optional[Dict[str, Any]]`.
 
-- Cradl's golden (241 files) still differs in two union aliases. Fern writes
-  `Optional` on the nullable array member of `Prediction.predictions` only
-  with the exact published member pair.
-- Zulip's own description differs in 598 of its golden's 1014 files.
+Zulip's own description is the one usable document not yet registered.
 
 Every other usable candidate is one of the rows above, or a byte-identical copy
 of one whose ledger disposition names that row and the shared sha256.

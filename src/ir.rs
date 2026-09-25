@@ -8881,6 +8881,18 @@ impl Builder<'_> {
                                 sequence_of(items, TypeRef::Named(name)),
                             );
                         }
+                        // An inline object leaf is a model named one `Item` per
+                        // level: Cradl's `value` is a list of lists of objects, and
+                        // Fern declares `…ValueItemItem`.
+                        if items.reference.is_none()
+                            && items.items.as_deref().is_some_and(is_inline_struct)
+                        {
+                            let context = format!("{owner}{}", naming::class_name(prop));
+                            if let Some(element) = self.nested_array_element(&context, prop_schema)
+                            {
+                                return element;
+                            }
+                        }
                     }
                     if let Some(values) = string_enum_values(items) {
                         let name = format!("{owner}{}Item", naming::class_name(prop));
@@ -9201,7 +9213,10 @@ impl Builder<'_> {
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
                                 && m.items.as_deref().is_some_and(is_inline_struct)
                             {
-                                return self.variant_ref(&name, index, m, members);
+                                return nullable_member(
+                                    m,
+                                    self.variant_ref(&name, index, m, members),
+                                );
                             }
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                                 if let Some(item_members) = m.items.as_deref().and_then(|items| {
@@ -9220,7 +9235,10 @@ impl Builder<'_> {
                                             } else {
                                                 base_type_ref(member)
                                             };
-                                        return TypeRef::List(Box::new(optional_type_ref(element)));
+                                        return nullable_member(
+                                            m,
+                                            TypeRef::List(Box::new(optional_type_ref(element))),
+                                        );
                                     }
                                     let item_name = format!("{name}{}Item", ordinal_word(index));
                                     if let Some(decl) = self.discriminated_union(
@@ -9234,7 +9252,10 @@ impl Builder<'_> {
                                         ),
                                     ) {
                                         self.types.push(TypeDecl::DiscriminatedUnion(decl));
-                                        return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                        return nullable_member(
+                                            m,
+                                            TypeRef::List(Box::new(TypeRef::Named(item_name))),
+                                        );
                                     }
                                     let item_variants = item_members
                                         .iter()
@@ -9258,12 +9279,17 @@ impl Builder<'_> {
                                                 .and_then(|items| items.description.as_deref()),
                                         ),
                                     );
-                                    return TypeRef::List(Box::new(TypeRef::Named(item_name)));
+                                    return nullable_member(
+                                        m,
+                                        TypeRef::List(Box::new(TypeRef::Named(item_name))),
+                                    );
                                 }
                             }
                             // A bare `type: object` union member is an open map to
-                            // Fern (`Dict[str, Any]`), not an unstructured `Any`.
-                            let ty = if is_bare_object(m) {
+                            // Fern (`Dict[str, Any]`), not an unstructured `Any`, and
+                            // so is a closed one declaring no properties: Cradl's
+                            // `{type: object, additionalProperties: false}` member.
+                            let ty = if is_bare_object(m) || is_closed_empty_object(m) {
                                 TypeRef::Dict(
                                     Box::new(TypeRef::Primitive(Prim::Str)),
                                     Box::new(TypeRef::Primitive(Prim::Any)),
@@ -9271,11 +9297,10 @@ impl Builder<'_> {
                             } else {
                                 base_type_ref(m)
                             };
-                            if m.nullable == Some(true) {
-                                TypeRef::Optional(Box::new(ty))
-                            } else {
-                                ty
-                            }
+                            // A `$ref`'s sibling `nullable` is not read: Cradl's
+                            // `{$ref: groundTruthList, nullable: true}` member is
+                            // the bare `GroundTruthList` in Fern's union.
+                            nullable_member(m, ty)
                         })
                         .collect();
                     let variants = dedupe_union_members(variants);
@@ -9325,6 +9350,16 @@ impl Builder<'_> {
                     return sequence_of(variant, optional_type_ref(element));
                 }
                 let variant_name = variant_class_name(parent, index, variant, siblings);
+                // An array of arrays names its leaf one `Item` per level: Cradl's
+                // `groundTruthList` offers a list of lists of inline objects, and
+                // Fern declares `GroundTruthListOneItemItem` for the leaf.
+                if item.reference.is_none()
+                    && item.ty.as_ref().and_then(TypeField::primary) == Some("array")
+                {
+                    if let Some(nested) = self.nested_array_element(&variant_name, variant) {
+                        return nested;
+                    }
+                }
                 let item_name = format!("{variant_name}Item");
                 let item_module = naming::module_name(&item_name);
                 if is_inheritance_union_base(item) {
@@ -10308,6 +10343,22 @@ fn merge_restated_parent_properties(
         schema.all_of = Some(merged);
         schema
     })
+}
+
+/// A union member's type with the member's own `nullable` applied. A `$ref`'s
+/// sibling `nullable` is not read: Cradl's `{$ref: groundTruthList, nullable:
+/// true}` member is the bare `GroundTruthList` in Fern's union. Every other
+/// member keeps it, arrays included: Fern's IR wraps Cradl's `nullable` array
+/// member of `Prediction.predictions` in `nullable`, and the alias writes
+/// `Optional[List[PredictionPredictionsZeroItem]]`.
+fn nullable_member(member: &Schema, ty: TypeRef) -> TypeRef {
+    // Wrapped as-is: a member declaring only `nullable: true` stays
+    // `Optional[Any]`, as braintrust's `PatchProjectAutomation.config` shows.
+    if member.nullable == Some(true) && member.reference.is_none() {
+        TypeRef::Optional(Box::new(ty))
+    } else {
+        ty
+    }
 }
 
 /// The one member of a `oneOf`/`anyOf` beside a `type: null` alternative,

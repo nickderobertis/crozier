@@ -166,6 +166,13 @@ Additional issue #77 real-world OpenAPI source specs:
     Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Cradl API: the jentic-public-apis aggregation's copy at
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json.
+    The aggregating repository's LICENSE.md at that same commit grants CC0-1.0
+    redistribution; corpus row 163 records the immutable reference. Only
+    Fern-generated output is vendored, with Python comments stripped as
+    described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

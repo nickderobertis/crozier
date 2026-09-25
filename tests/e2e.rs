@@ -3234,6 +3234,7 @@ const CORPORA: &[&Corpus] = &[
     &BILLIE_ENTRY,
     &SKOOL_ENTRY,
     &TIMELYAPP_ENTRY,
+    &CRADL,
 ];
 
 #[test]
@@ -5760,6 +5761,18 @@ const SKOOL_ENTRY: Corpus = Corpus {
 /// Timely API — jentic's import entry, row 151's document with its keys reordered.
 const TIMELYAPP_ENTRY: Corpus = Corpus {
     api: "timelyapp-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Cradl API — the jentic-public-apis aggregation's copy; an `anyOf` array variant whose item is a struct.
+const CRADL: Corpus = Corpus {
+    api: "cradl",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11372,4 +11385,9 @@ fn skool_entry_matches_fern_output() {
 #[test]
 fn timelyapp_entry_matches_fern_output() {
     assert_link_ok_corpus_matches(&TIMELYAPP_ENTRY);
+}
+
+#[test]
+fn cradl_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CRADL);
 }
