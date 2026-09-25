@@ -75,8 +75,12 @@ def baseline(regions: Path, contract: Path) -> dict[str, dict]:
             ):
                 continue
             key = REDO.value(row[0])
+            if key not in frozen:
+                # Admitted after this contract froze: its own region row records
+                # its search, under docs/openapi-surface-coverage.md's search rules.
+                continue
             match = re.search(r"census `([^`]+)`", " ".join(row))
-            if not match or frozen.get(key) != match[1]:
+            if not match or frozen[key] != match[1]:
                 raise ValueError(
                     f"{name}/{key}: selector disagrees with frozen authority"
                 )

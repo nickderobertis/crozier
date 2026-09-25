@@ -1378,5 +1378,78 @@ class WideWitnessTests(unittest.TestCase):
         self.assertEqual(0, recovered.returncode, recovered.stderr)
 
 
+
+class PostFreezeGapRowTests(unittest.TestCase):
+    """The frozen contract binds its own keys; a gap row admitted later is not its to refuse."""
+
+    REGION_NAMES = ("bodies-media", "document-paths", "oas31-extensions", "parameters", "schemas", "security")
+
+    def setUp(self) -> None:
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.work = Path(self.directory.name)
+        self.regions = self.work / 'regions'
+        self.regions.mkdir()
+        for name in self.REGION_NAMES:
+            shutil.copyfile(REPO / 'docs/openapi-surface' / f'{name}.md', self.regions / f'{name}.md')
+        self.schemas = self.regions / 'schemas.md'
+        self.frozen = dict(WitnessSearchRedoTests.contract_keys(self))
+
+    def cli(self, *args) -> subprocess.CompletedProcess[str]:
+        return subprocess.run([sys.executable, str(REPO / 'scripts/witness-scrape-wide.py'),
+                               *(str(a) for a in args)], cwd=REPO, capture_output=True, encoding='utf-8')
+
+    def derive(self) -> subprocess.CompletedProcess[str]:
+        return self.cli('derive', '--report', self.work / 'report', '--regions', self.regions)
+
+    def frozen_row(self) -> tuple[str, str]:
+        """A search-incomplete gap row the contract owns, and its key."""
+        for line in self.schemas.read_text(encoding='utf-8').splitlines():
+            key = line.split('|')[1].strip().strip('`') if line.startswith('| ') else ''
+            if key in self.frozen and 'search outcome `search-incomplete`' in line and ' gap ' in line:
+                return key, line
+        raise AssertionError('no frozen search-incomplete gap row in schemas.md')
+
+    def test_a_search_incomplete_gap_row_admitted_after_the_freeze_is_skipped(self) -> None:
+        key, line = self.frozen_row()
+        admitted = line.replace(f'| {key} |', '| admitted-after-freeze |', 1).replace(
+            f'| `{key}` |', '| `admitted-after-freeze` |', 1)
+        self.assertNotEqual(line, admitted)
+        text = self.schemas.read_text(encoding='utf-8')
+        self.schemas.write_text(text.replace(line, f'{line}\n{admitted}', 1), encoding='utf-8')
+        derived = self.derive()
+        self.assertEqual(0, derived.returncode, derived.stderr)
+        keys = json.loads((self.work / 'report' / 'baseline.json').read_text(encoding='utf-8'))['keys']
+        self.assertIn(key, keys)
+        self.assertNotIn('admitted-after-freeze', keys)
+
+    def test_a_frozen_key_whose_row_leaves_its_census_selector_still_fails(self) -> None:
+        key, line = self.frozen_row()
+        moved = line.replace(f'census `{self.frozen[key]}`', 'census `schema.oneOf`', 1)
+        self.assertNotEqual(line, moved)
+        text = self.schemas.read_text(encoding='utf-8')
+        self.schemas.write_text(text.replace(line, moved, 1), encoding='utf-8')
+        refused = self.derive()
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn(f'schemas/{key}: selector disagrees with frozen authority', refused.stderr)
+
+    def test_a_frozen_shard_whose_bytes_change_still_fails(self) -> None:
+        report = self.work / 'wide'
+        shutil.copytree(REPO / 'docs/openapi-surface/witness-scrape-wide', report)
+        (REPO / '.local').mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=REPO / '.local') as local:
+            shard = Path(local) / 'catalogue-portals.md'
+            original = ROOT / 'catalogue-portals.md'
+            shard.write_bytes(original.read_bytes() + b'| `admitted-after-freeze` |\n')
+            fingerprints = report / 'historical-sha256.tsv'
+            text = fingerprints.read_text(encoding='utf-8')
+            relative = original.relative_to(REPO).as_posix()
+            self.assertIn(relative, text)
+            fingerprints.write_text(
+                text.replace(relative, shard.relative_to(REPO).as_posix(), 1), encoding='utf-8')
+            refused = self.cli('validate', '--report', report, '--inventory', report / 'inventory.json.gz')
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn('historical report bytes changed', refused.stderr)
+
 if __name__ == "__main__":
     unittest.main()

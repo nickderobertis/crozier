@@ -623,6 +623,50 @@ DECLARED_SOURCES = (
 )
 EXHAUSTED = "exhausted"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+FROZEN_SEARCH_CONTRACT = (
+    REPO / "docs" / "openapi-surface" / "witness-search-redo" / "contract.md"
+)
+
+
+def frozen_search_keys(contract: str) -> set[str]:
+    """The keys the frozen witness-search-redo contract owns and reconciles."""
+    owned = contract.split("## Owned keys", 1)[1] if "## Owned keys" in contract else ""
+    return set(re.findall(r"^\| `([^`]+)` \| `", owned, re.M))
+
+
+def entry_search_failures(key: str, cell: str) -> list[str]:
+    """An entry row's own `search outcome`, for a row the frozen contract does not own.
+
+    The frozen contract reconciles its keys against its shards; a `gap` row
+    admitted after it froze records its search on its own evidence cell, and
+    this holds that record to the same rule: every declared source named once
+    with what it returned, and `search-incomplete` while any of them did not
+    answer. `exhausted` is never read off an entry cell — it is Contract B's,
+    and owes a `### Witness search (exhaustive)` record.
+    """
+    outcome = re.search(r"search outcome `([^`]+)`", cell)
+    if not outcome:
+        return []
+    failures = []
+    named = re.findall(r"\*\*([\w.-]+)\*\* → (unanswered|\d+)", cell)
+    sources = [source for source, _result in named]
+    if sorted(sources) != sorted(DECLARED_SOURCES):
+        failures.append(
+            f"{key}: its search names {sorted(sources)}, not each of the six "
+            f"declared sources {sorted(DECLARED_SOURCES)} once"
+        )
+    unanswered = sorted(source for source, result in named if result == UNANSWERED)
+    if outcome.group(1) == EXHAUSTED:
+        failures.append(
+            f"{key}: reads `{EXHAUSTED}` on its entry cell; an exhaustive search "
+            f"is recorded under `{EXHAUSTIVE_SEARCH_HEADING}`, never here"
+        )
+    elif unanswered and outcome.group(1) != SEARCH_INCOMPLETE:
+        failures.append(
+            f"{key}: reads `{outcome.group(1)}` while {unanswered} did not answer; "
+            f"that search is `{SEARCH_INCOMPLETE}`"
+        )
+    return failures
 _index_spec = importlib.util.spec_from_file_location(
     "witness_search_github_index", REPO / "scripts/witness-search-github-index.py"
 )
@@ -7466,6 +7510,37 @@ class RankedBacklogTests(unittest.TestCase):
             with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
         return [row for row in rows if row["walk"] in named]
+
+    def test_a_gap_row_the_frozen_contract_does_not_own_records_its_own_search(self) -> None:
+        """A `gap` row admitted after the witness-search-redo contract froze.
+
+        The legacy reader skips such a row rather than refusing it, so this is
+        what holds its search to account: every declared source named with what
+        it returned, and `search-incomplete` — never `exhausted` — while any did
+        not answer.
+        """
+        frozen = frozen_search_keys(FROZEN_SEARCH_CONTRACT.read_text(encoding="utf-8"))
+        checked = []
+        for key, (_region, cells) in sorted(self.entries.items()):
+            if cells[3].strip("`") != "gap" or key in frozen:
+                continue
+            if "search outcome" not in cells[4]:
+                continue
+            checked.append(key)
+            with self.subTest(key=key):
+                self.assertEqual([], entry_search_failures(key, cells[4]))
+        self.assertTrue(checked, "no post-freeze gap row records a search; the check reads nothing")
+
+    def test_an_entry_search_is_refused_for_a_missing_source_or_an_exhausted_reading(self) -> None:
+        answered = "; ".join(f"**{source}** → unanswered: not searched yet" for source in DECLARED_SOURCES)
+        cell = f"census `schema.oneOf>schema.anyOf`; search outcome `search-incomplete`; {answered}"
+        self.assertEqual([], entry_search_failures("k", cell))
+        exhausted = cell.replace("`search-incomplete`", "`exhausted`")
+        self.assertIn("reads `exhausted` on its entry cell", " ".join(entry_search_failures("k", exhausted)))
+        absent = cell.replace("; **vendor-portals** → unanswered: not searched yet", "")
+        self.assertIn("not each of the six declared sources", " ".join(entry_search_failures("k", absent)))
+        none_found = cell.replace("`search-incomplete`", "`none-found`")
+        self.assertIn("that search is `search-incomplete`", " ".join(entry_search_failures("k", none_found)))
 
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
         """An owned row's arm search: one line per declared source, each resting on evidence.
