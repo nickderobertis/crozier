@@ -3227,6 +3227,7 @@ const CORPORA: &[&Corpus] = &[
     &AUTO_AGENT_PROTOCOL,
     &SKOOL,
     &SPENDESK,
+    &BILLIE,
 ];
 
 #[test]
@@ -5669,6 +5670,18 @@ const SKOOL: Corpus = Corpus {
 /// Spendesk API — the jentic-public-apis aggregation's copy; a `$ref` under an undeclared component head.
 const SPENDESK: Corpus = Corpus {
     api: "spendesk",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Billie Direct API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const BILLIE: Corpus = Corpus {
+    api: "billie",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11246,4 +11259,9 @@ fn skool_matches_fern_output() {
 #[test]
 fn spendesk_matches_fern_output() {
     assert_link_ok_corpus_matches(&SPENDESK);
+}
+
+#[test]
+fn billie_matches_fern_output() {
+    assert_link_ok_corpus_matches(&BILLIE);
 }

@@ -1599,18 +1599,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 }
 
 /// Generate `environment.py`: an `enum.Enum` of the SDK's server environments.
-/// Fern's OpenAPI importer emits a single member (see [`ir::Environment`]).
+/// Fern's OpenAPI importer emits a member per named server (see
+/// [`ir::Environment`]).
 fn environment_file(
     env: &Environment<'static>,
     pkg: &str,
     environment: &crate::ir::Environment,
 ) -> Result<GeneratedFile> {
-    let (member, url) = &environment.member;
-    let body = format!(
-        "import enum\n\n\nclass {}(enum.Enum):\n    {member} = \"{}\"\n",
-        environment.enum_name,
-        escape_py_str(url),
+    let mut body = format!(
+        "import enum\n\n\nclass {}(enum.Enum):\n",
+        environment.enum_name
     );
+    for (member, url) in &environment.members {
+        body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+    }
     let contents = render(
         env,
         "file.py",

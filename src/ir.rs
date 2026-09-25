@@ -191,24 +191,27 @@ pub struct Ir {
     pub extra_fields: crate::settings::ExtraFields,
 }
 
-/// The generated server-environment enum (`environment.py`). Fern maps the
-/// document's `servers` to an `enum.Enum`, but its OpenAPI importer emits only a
-/// single member — the first server, named from its description — even when the
-/// document lists several (the "2 servers → only `PRODUCTION`" oddity noted in
-/// issue #14). crozier reproduces that observed behavior.
+/// The generated server-environment enum (`environment.py`). Fern's OpenAPI
+/// importer makes a member of every server it can *name* — only the
+/// descriptions `Production` and `Sandbox` name one — and falls back to the first
+/// server, as `DEFAULT`, when none is named; every unnamed server is otherwise
+/// skipped. So a document listing several servers generates one member unless
+/// more than one is named, as Billie's `Production` and `Sandbox` pair is.
 #[derive(Debug, Clone)]
 pub struct Environment {
     /// The enum class name (`{ClientName}Environment`, e.g. `FernApiEnvironment`).
     pub enum_name: String,
-    /// The single emitted member: (member name, URL value).
-    pub member: (String, String),
-    /// The original URL template, retained for constructor-time variable overrides.
+    /// The emitted members in document order, each (member name, URL value). The
+    /// first is the default environment.
+    pub members: Vec<(String, String)>,
+    /// The default server's URL template, retained for constructor-time variable
+    /// overrides.
     pub url_template: String,
     /// Server URL variables exposed as optional root-client constructor parameters.
     pub variables: Vec<ServerUrlVariable>,
 }
 
-/// One variable from the first server URL template.
+/// One variable from the default server's URL template.
 #[derive(Debug, Clone)]
 pub struct ServerUrlVariable {
     /// The OpenAPI placeholder spelling used by Python's `str.format`.
@@ -223,39 +226,56 @@ impl Environment {
     /// The default member reference used in the root client (`FernApiEnvironment.DEFAULT`).
     #[must_use]
     pub fn default_ref(&self) -> String {
-        format!("{}.{}", self.enum_name, self.member.0)
+        format!("{}.{}", self.enum_name, self.members[0].0)
     }
 }
 
-/// Derive the [`Environment`] model from the document's `servers`. Reproduces
-/// Fern's single-member behavior: the first server only, named `DEFAULT` unless
-/// its description is one of the two environment names Fern recognizes.
+/// Derive the [`Environment`] model from the document's `servers`, by Fern's
+/// `buildEnvironments`: one member per named server, keyed by name so a repeated
+/// name keeps its first position and its last URL, else the first server alone,
+/// named `DEFAULT`.
 fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
-    // Only the first server becomes an environment, and Fern names it from the
-    // description *only* when that description is one of the two environment names
-    // it recognizes, compared whole and case-insensitively. Measured against Fern
-    // 5.20.0: `Production`/`production`/`PRODUCTION` and `Sandbox` are named, while
-    // `Prod`, `Staging`, `Live`, `Production API`, `Production server` and
-    // `Servidor de desarrollo local` all fall back to `DEFAULT` — and the URL shape
-    // does not enter into it (a templated or root-relative URL described
-    // `Production` is still `PRODUCTION`).
+    // Fern names a server from its description *only* when that description is
+    // one of the two environment names it recognizes, compared whole and
+    // case-insensitively. Measured against Fern 5.20.0: `Production`/`production`/
+    // `PRODUCTION` and `Sandbox` are named, while `Prod`, `Staging`, `Live`,
+    // `Production API`, `Production server` and `Servidor de desarrollo local`
+    // are not — and the URL shape does not enter into it (a templated or
+    // root-relative URL described `Production` is still `PRODUCTION`).
     const NAMED_ENVIRONMENTS: [&str; 2] = ["production", "sandbox"];
-    let member_name = first
-        .description
-        .as_deref()
-        .map(str::trim)
-        .and_then(|description| {
-            NAMED_ENVIRONMENTS
-                .into_iter()
-                .find(|named| description.eq_ignore_ascii_case(named))
-        })
-        .map_or_else(|| "DEFAULT".to_string(), str::to_ascii_uppercase);
+    let mut named: IndexMap<&str, &crate::openapi::Server> = IndexMap::new();
+    for server in &doc.servers {
+        let name = server
+            .description
+            .as_deref()
+            .map(str::trim)
+            .and_then(|description| {
+                NAMED_ENVIRONMENTS
+                    .into_iter()
+                    .find(|named| description.eq_ignore_ascii_case(named))
+            });
+        if let Some(name) = name {
+            named.insert(name, server);
+        }
+    }
+    let members: Vec<(String, &crate::openapi::Server)> = if named.is_empty() {
+        vec![("DEFAULT".to_string(), first)]
+    } else {
+        named
+            .into_iter()
+            .map(|(name, server)| (name.to_ascii_uppercase(), server))
+            .collect()
+    };
+    let default = members[0].1;
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
-        member: (member_name, resolve_server_url(first)),
-        url_template: first.url.clone(),
-        variables: first
+        members: members
+            .iter()
+            .map(|(name, server)| (name.clone(), resolve_server_url(server)))
+            .collect(),
+        url_template: default.url.clone(),
+        variables: default
             .variables
             .iter()
             .map(|(name, variable)| ServerUrlVariable {
@@ -10946,7 +10966,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.members[0].0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
     }
 
@@ -10961,7 +10981,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.members[0].0, "DEFAULT");
         assert_eq!(env.default_ref(), "FernApiEnvironment.DEFAULT");
 
         let cloud: OpenApi = serde_json::from_value(serde_json::json!({
@@ -10973,7 +10993,7 @@ mod tests {
         }))
         .expect("cloud document deserializes");
         let env = environment_model(&cloud, "FernApi").expect("server yields environment");
-        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.members[0].0, "DEFAULT");
     }
 
     #[test]
@@ -10986,7 +11006,43 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.member.0, "DEFAULT");
+        assert_eq!(env.members[0].0, "DEFAULT");
+    }
+
+    #[test]
+    fn every_named_server_is_an_environment_and_unnamed_ones_are_skipped() {
+        // Fern's `buildEnvironments` keys environments by server name: Billie's
+        // `Production` and `Sandbox` servers are both members, the first the
+        // default, and an unnamed server beside them is skipped even when it
+        // comes first. A repeated name keeps its place and takes the later URL.
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "info": { "title": "Probe API" },
+            "servers": [
+                { "description": "Staging", "url": "https://staging.example.com" },
+                { "description": "Production", "url": "https://old.example.com" },
+                { "description": "Sandbox", "url": "https://sandbox.example.com" },
+                { "description": "production", "url": "https://api.example.com/{v}",
+                  "variables": { "v": { "default": "v2" } } }
+            ]
+        }))
+        .expect("document deserializes");
+        let env = environment_model(&doc, "FernApi").expect("servers yield environment");
+        assert_eq!(
+            env.members,
+            [
+                (
+                    "PRODUCTION".to_string(),
+                    "https://api.example.com/v2".to_string()
+                ),
+                (
+                    "SANDBOX".to_string(),
+                    "https://sandbox.example.com".to_string()
+                ),
+            ]
+        );
+        assert_eq!(env.default_ref(), "FernApiEnvironment.PRODUCTION");
+        assert_eq!(env.url_template, "https://api.example.com/{v}");
+        assert_eq!(env.variables.len(), 1);
     }
 
     #[test]
@@ -11003,8 +11059,9 @@ mod tests {
             .expect("document deserializes");
             environment_model(&doc, "FernApi")
                 .expect("server yields environment")
-                .member
+                .members[0]
                 .0
+                .clone()
         };
         assert_eq!(named("Production", "https://api.example.com"), "PRODUCTION");
         assert_eq!(named("production", "https://api.example.com"), "PRODUCTION");
@@ -11216,7 +11273,7 @@ mod tests {
         }))
         .expect("document deserializes");
         let env = environment_model(&doc, "FernApi").expect("server yields environment");
-        assert_eq!(env.member.1, "https://api.example.com/%2Fapi%2Fv1");
+        assert_eq!(env.members[0].1, "https://api.example.com/%2Fapi%2Fv1");
     }
 
     #[test]

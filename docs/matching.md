@@ -936,10 +936,13 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    `enum.Enum` of environments) and threads an `environment` / optional-`base_url`
    through the root client, resolving the base URL via a generated `_get_base_url`
    and dropping the hardcoded `base_url` from the worked examples. Fern's OpenAPI
-   importer emits a **single** environment member — the first server only (the
-   "2 servers → only `PRODUCTION`" oddity) — and names it `DEFAULT` unless that
-   server's description is, whole and case-insensitively, one of the two
-   environment names Fern recognizes: `production` or `sandbox`. Probed directly
+   importer emits a member for every server it can *name*, the first of them the
+   default, and skips the rest; only when it names none does it emit the first
+   server alone, as `DEFAULT`. A server is named only when its
+   description is, whole and case-insensitively, one of the two environment
+   names Fern recognizes: `production` or `sandbox` — so Billie's `Production`
+   and `Sandbox` pair generates both members (`buildEnvironments` in Fern's
+   `openapi-ir-to-fern`, and its parser's server-name rule). Probed directly
    against Fern 5.20.0 over one-server documents: `Prod`, `Staging`, `Live`,
    `Test`, `Development`, `Production API`, `Production server` and
    `Servidor de desarrollo local` are all `DEFAULT`, while `Production` stays

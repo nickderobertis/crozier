@@ -9450,3 +9450,32 @@ components:
         "{reference}"
     );
 }
+
+/// Billie Direct lists a `Production` and a `Sandbox` server. Fern names both,
+/// so `environment.py` carries two members and the root client defaults to the
+/// first.
+#[test]
+fn production_and_sandbox_servers_are_both_environments_like_billie() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Billie, version: 2.0.0 }
+servers:
+  - { url: "https://paella.billie.io/api/v2", description: Production }
+  - { url: "https://paella-sandbox.billie.io/api/v2", description: Sandbox }
+paths:
+  /orders:
+    get:
+      operationId: listOrders
+      responses:
+        "200": { description: ok }
+"##,
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains(
+            "    PRODUCTION = \"https://paella.billie.io/api/v2\"\n    SANDBOX = \"https://paella-sandbox.billie.io/api/v2\"\n"
+        ),
+        "{environment}"
+    );
+    assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.PRODUCTION"));
+}
