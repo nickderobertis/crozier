@@ -9405,3 +9405,48 @@ components:
     let likes = &likes[..likes.find("class AsyncRawPostsClient").expect(raw)];
     assert!(!likes.contains("_response.text.strip()"), "{raw}");
 }
+
+/// Spendesk's `request_access_token` posts a bare `type: object` and answers a
+/// `$ref` to a component the document never declares. Fern's importer builds no
+/// example for such an operation, and its IR fallback keys the map-to-unknown
+/// body by the key type's sample.
+#[test]
+fn an_undeclared_success_component_falls_back_to_ferns_map_example_like_spendesk() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Spendesk, version: 1.0.0 }
+paths:
+  /oauth/token:
+    post:
+      operationId: requestAccessToken
+      tags: [authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiResponse" }
+components:
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+"##,
+    );
+    let client = &files["src/acme/authentication/client.py"];
+    assert!(
+        client.contains("request={\"string\": {\"key\": \"value\"}},"),
+        "{client}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("    request={\n        \"string\": {\"key\": \"value\"}\n    },"),
+        "{reference}"
+    );
+}

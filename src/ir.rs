@@ -3399,7 +3399,8 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
 /// CloudFormation's XML responses and TrueForge's `application/octet-stream`
 /// `download_sandbox_file` take the sample; TrueForge's JSON `list_versions`,
 /// Adyen's `accountHolderId` and discord's `query` pass their names, and so does
-/// CloudFormation's `SignalResource`, whose `200` has no content at all.
+/// CloudFormation's `SignalResource`, whose `200` has no content at all. It also
+/// declines when the success body cannot be exampled at all.
 fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     let unsupported_request = op.request_body.as_ref().is_some_and(|body| {
         !body.content.is_empty()
@@ -3414,7 +3415,15 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
                 media == "*/*" || media == "text/event-stream" || is_json_like_media_type(media)
             })
     });
-    unsupported_request || unsupported_response || request_example_fails(doc, op)
+    // A success body naming a component the document never declares has no
+    // example to build: Fern logs *Failed to generate required response example*
+    // for each of Spendesk's four operations answering `$ref: ApiResponse`.
+    let undeclared_response =
+        success_response_schema(op).is_some_and(|schema| schema.unresolved_reference);
+    unsupported_request
+        || unsupported_response
+        || undeclared_response
+        || request_example_fails(doc, op)
 }
 
 /// Whether Fern's importer gives up on the operation's request example because a

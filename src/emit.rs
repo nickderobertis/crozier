@@ -8321,6 +8321,21 @@ fn build_example_inner(
                     _ => v,
                 };
             }
+            // Without an importer example, Fern's IR fallback keys a map to
+            // unknown by its key type's sample: Spendesk's `request_access_token`
+            // posts a bare `type: object` and answers an undeclared `$ref`, and
+            // its golden documents `request={"string": {"key": "value"}}`.
+            if ep.importer_example_missing
+                && body_example.is_none()
+                && s.example.is_none()
+                && matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+            {
+                v = if ctx.reference {
+                    Example::ReferenceDict(vec![("string".to_string(), Example::Atom(v.flat()))])
+                } else {
+                    Example::Dict(vec![("string".to_string(), v)])
+                };
+            }
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes

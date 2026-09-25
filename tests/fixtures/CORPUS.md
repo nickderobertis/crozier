@@ -174,6 +174,7 @@ re-measure with `just fixtures-gaps`.
 | 152 | `nextgen` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/nextgen.com/main/1.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | NextGen Enterprise API USCDI Routes; `$ref` pointers under an undeclared component head, non-identifier component schema names |
 | 153 | `auto-agent-protocol` | github-raw | https://raw.githubusercontent.com/auto-agent-protocol/auto-agent-protocol/5d31c27b11c36a018754f34830954d836a55afe5/releases/v1.0/artifacts/openapi-rest.yaml | `5d31c27b11c36a018754f34830954d836a55afe5` | Apache-2.0 (declared by the document's `info.license`) | link-ok | Auto Agent Protocol A2A HTTP+JSON binding; a `$ref` pointer through an unnamed segment |
 | 154 | `skool` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API; `$ref` pointers under an undeclared component head |
+| 155 | `spendesk` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/spendesk.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Spendesk API; `$ref` pointers under an undeclared component head |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -752,6 +753,7 @@ unmodified document and byte-matches with `unmatched: &[]`.
 | 152 | `nextgen` | `schema-name-nonidentifier-name`; `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 | 153 | `auto-agent-protocol` | `ref-pointer-unnamed-segment` | ✅ byte-matched after this batch's repairs |
 | 154 | `skool` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 155 | `spendesk` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
 
 The repairs send a parameterised JSON request media type
 (`application/json; charset=UTF-8`) verbatim as the `content-type` of every
@@ -803,6 +805,9 @@ property types of an object whose `anyOf` only restates `required`, keep a
 restated base property's description, and wrap a one-pair dict argument in the
 README. Row 154's repair guards an empty response where the success body is a
 `$ref` to a component the document never declares, which Fern types unknown.
+Row 155's repair follows Fern's importer, which builds no worked example for an
+operation whose success body is such a `$ref`; its IR fallback then keys a
+bare-object body by the key type's sample, `{"string": {"key": "value"}}`.
 Row 148 is a later revision of row 108's document, registered
 under a name of its own because the shape it witnesses is absent at row 108's
 commit. The three Prisma Cloud documents are separate descriptions in
