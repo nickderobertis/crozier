@@ -8963,11 +8963,19 @@ fn compact_documentation_values(
             index += 1;
             continue;
         }
+        // The Markdown writers wrap a one-pair dict argument onto its own lines:
+        // bunq's `{"key": "value"}` placeholder and the Auto Agent Protocol's
+        // `data={"type": "dealer.information.request"}` alike.
         if !reference {
             if let Some((head, item)) = trimmed
                 .strip_suffix("},")
                 .and_then(|value| value.split_once("={"))
-                .filter(|(_, item)| *item == "\"key\": \"value\"")
+                .filter(|(_, item)| {
+                    item.starts_with('"')
+                        && item.contains("\": ")
+                        && !item.contains(['{', '[', '}', ']'])
+                        && item.matches("\", \"").count() == 0
+                })
                 .filter(|(head, _)| !(untyped_request && *head == "request"))
             {
                 let indent = line.len() - line.trim_start().len();

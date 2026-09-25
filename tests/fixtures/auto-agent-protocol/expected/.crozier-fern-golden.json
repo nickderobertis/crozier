@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "auto-agent-protocol",
+  "corpus_spec_ref": "5d31c27b11c36a018754f34830954d836a55afe5",
+  "corpus_spec_url": "https://raw.githubusercontent.com/auto-agent-protocol/auto-agent-protocol/5d31c27b11c36a018754f34830954d836a55afe5/releases/v1.0/artifacts/openapi-rest.yaml"
+}

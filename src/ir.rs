@@ -7373,6 +7373,21 @@ impl Builder<'_> {
         // and collapse structurally identical alternatives.
         if !is_map(schema) {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                // The sibling properties are converted as the union's common
+                // properties even though the alias does not carry them, so their
+                // inline types are declared: the Auto Agent Protocol's `Customer`
+                // is an object whose `anyOf` only restates `required`, its golden
+                // is `Union[Any]`, and `CustomerPreferredContact` is declared all
+                // the same.
+                if variants.iter().all(|variant| {
+                    variant.reference.is_none()
+                        && variant.properties.is_empty()
+                        && !variant.required.is_empty()
+                }) {
+                    for (prop, prop_schema) in &schema.properties {
+                        self.field_type_ref(name, prop, prop_schema);
+                    }
+                }
                 if variants.len() == 1 && is_inline_object(&variants[0]) {
                     if variants[0].required.is_empty() {
                         for (prop, prop_schema) in &variants[0].properties {
@@ -9708,7 +9723,9 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
     }
     if let Some(reference) = &schema.reference {
-        return if reference.starts_with("#/components/schemas/") {
+        return if reference.starts_with("#/components/schemas/")
+            && !pointer_has_unnamed_segment(reference)
+        {
             TypeRef::Named(ref_to_class(reference))
         } else {
             // A non-component pointer that cannot be resolved by the component
@@ -9940,6 +9957,16 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     if is_unknown(schema) && !optional {
         return None;
     }
+    // A pointer Fern cannot name is its unknown type, and a description beside
+    // it goes with it: the Auto Agent Protocol's `Facets.bodies` is `$ref:
+    // …/$defs/term_facet` beside a description, and its golden field has none.
+    if schema
+        .reference
+        .as_deref()
+        .is_some_and(pointer_has_unnamed_segment)
+    {
+        return None;
+    }
     schema
         .description
         .as_deref()
@@ -10120,6 +10147,13 @@ fn merge_restated_parent_properties(
                     restated.ty.clone_from(&base.ty);
                     changed = true;
                 }
+                // The Auto Agent Protocol's `VehicleDetailResponse.data`
+                // narrows `Vehicle.condition` to three members, and the enum
+                // it hoists keeps `Vehicle.condition`'s description.
+                if restated.description.is_none() && base.description.is_some() {
+                    restated.description.clone_from(&base.description);
+                    changed = true;
+                }
                 if restated.items.is_none() && base.items.is_some() {
                     restated.items.clone_from(&base.items);
                     changed = true;
@@ -10253,6 +10287,28 @@ fn union_variants(schema: &Schema) -> Option<(Vec<TypeRef>, bool)> {
 }
 
 /// Resolve a `$ref` to the class name it points at.
+/// Whether a component pointer walks through a segment no generated type is
+/// named by — the residual arm of [`ref_to_class`]'s walk, such as a `$defs`
+/// member. Fern types such a pointer as unknown: the Auto Agent Protocol points
+/// at `#/components/schemas/DealerInformation/$defs/rooftop`, and its golden's
+/// `rooftops` is `List[Any]`.
+fn pointer_has_unnamed_segment(reference: &str) -> bool {
+    let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
+        return false;
+    };
+    let parts: Vec<&str> = pointer.split('/').collect();
+    let mut index = 1;
+    while index < parts.len() {
+        match parts[index] {
+            "properties" if index + 1 < parts.len() => index += 2,
+            "items" => index += 1,
+            "allOf" | "oneOf" | "anyOf" => index += 2,
+            _ => return true,
+        }
+    }
+    false
+}
+
 fn ref_to_class(reference: &str) -> String {
     let Some(pointer) = reference.strip_prefix("#/components/schemas/") else {
         return naming::class_name(reference.rsplit('/').next().unwrap_or(reference));
@@ -14010,6 +14066,14 @@ mod tests {
                     "allOf": [
                         { "$ref": "#/components/schemas/Base" },
                         { "type": "object", "required": ["shared"], "properties": {
+                            "shared": { "type": "integer" }
+                        } }
+                    ]
+                },
+                "Same": {
+                    "allOf": [
+                        { "$ref": "#/components/schemas/Base" },
+                        { "type": "object", "required": ["shared"], "properties": {
                             "shared": { "type": "string" }
                         } }
                     ]
@@ -14045,6 +14109,19 @@ mod tests {
             child.fields[0].docstring.as_deref(),
             Some("Inherited docs.")
         );
+        // A restatement that says again what the base says, once the base's
+        // keys are spread under it, extends the base instead.
+        flattening.add_named("Same", &doc.components.schemas["Same"]);
+        let same = flattening
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Same" => Some(object),
+                _ => None,
+            })
+            .expect("same object emitted");
+        assert_eq!(same.bases, ["Base"]);
+        assert!(same.fields.is_empty());
 
         flattening.building_types.insert("Loop".to_string());
         flattening.add_object(

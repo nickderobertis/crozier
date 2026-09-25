@@ -97,6 +97,12 @@ Additional issue #77 real-world OpenAPI source specs:
     Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Auto Agent Protocol A2A HTTP+JSON binding: the publisher's description at
+    https://raw.githubusercontent.com/auto-agent-protocol/auto-agent-protocol/5d31c27b11c36a018754f34830954d836a55afe5/releases/v1.0/artifacts/openapi-rest.yaml.
+    The document's own info.license grants Apache-2.0 redistribution; corpus
+    row 153 records the immutable reference. Only Fern-generated output is
+    vendored, with Python comments stripped as described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

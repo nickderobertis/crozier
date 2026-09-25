@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 149 of the 181 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 150 of the 182 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -2069,7 +2069,7 @@ NAMING_PORT_DIGESTS = {
     "deburr_letter": "f5488da97d3f0dde",
     "collapse_digit_boundaries": "24c31560b089ab63",
     "split_words": "3a76409f152dcce6",
-    "class_name": "54033e143e484814",
+    "class_name": "c91fec9908234a17",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
 }
 

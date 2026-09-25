@@ -9283,3 +9283,74 @@ components:
         "{readme}"
     );
 }
+
+/// The Auto Agent Protocol shapes: `$defs` pointers, a presence-constraint
+/// `anyOf`, a narrowing restatement, and a one-pair dict argument in the README.
+#[test]
+fn auto_agent_protocol_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Aap, version: 1.0.0 }
+paths:
+  /message:
+    post:
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Part" }
+            example: { data: { type: "dealer.information.request" } }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Detail" }
+components:
+  schemas:
+    Part:
+      type: object
+      required: [data]
+      properties:
+        data: { type: object, additionalProperties: true }
+    Dealer:
+      type: object
+      properties:
+        rooftops: { type: array, items: { $ref: "#/components/schemas/Dealer/$defs/rooftop" } }
+        bodies:
+          $ref: "#/components/schemas/Dealer/$defs/term"
+          description: Dropped with the pointer.
+    Customer:
+      type: object
+      properties:
+        contact: { type: string, enum: [email, phone] }
+      anyOf: [{ required: [email] }, { required: [phone] }]
+    Vehicle:
+      type: object
+      properties:
+        condition: { type: string, enum: [new, used, fair], description: Combined vocabulary. }
+    Detail:
+      type: object
+      properties:
+        data:
+          allOf:
+            - { $ref: "#/components/schemas/Vehicle" }
+            - { type: object, properties: { condition: { enum: [new, used] } } }
+"##,
+    );
+    let dealer = &files["src/acme/types/dealer.py"];
+    assert!(
+        dealer.contains("rooftops: typing.Optional[typing.List[typing.Any]] = None"),
+        "{dealer}"
+    );
+    assert!(!dealer.contains("Dropped with the pointer."), "{dealer}");
+    assert!(files["src/acme/types/customer.py"].contains("Customer = typing.Union[typing.Any]"));
+    assert!(files.contains_key("src/acme/types/customer_contact.py"));
+    assert!(files["src/acme/types/detail_data_condition.py"].contains("Combined vocabulary."));
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    data={\n        \"type\": \"dealer.information.request\"\n    },"),
+        "{readme}"
+    );
+}
