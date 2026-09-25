@@ -211,6 +211,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e billie_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e alma_france_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e outreach_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tally_matches_fern_output
 
 # Format the codebase in place.
 format:

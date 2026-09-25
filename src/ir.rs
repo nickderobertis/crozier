@@ -1619,10 +1619,11 @@ fn build_enum(
     // Fern derives the member name and `visit` parameter from each wire value,
     // sanitizing both into legal Python identifiers (issue #50): `global` →
     // `GLOBAL`/`global_`, `0: Active` → `ZERO_ACTIVE`/`zero_active`. Exact duplicate
-    // wire values are omitted; distinct values that collapse to the same identifier
-    // are suffixed so the generated members and parameters remain valid Python.
-    let mut seen_members: std::collections::HashMap<String, usize> =
-        std::collections::HashMap::new();
+    // wire values are omitted, and so is a later value whose member name an
+    // earlier one already took: Tally's `InputDatePayload.format` lists
+    // `dd/MM/yyyy` and then `dd.MM.yyyy`, and Fern's enum keeps `DD_MM_YYYY` for
+    // the first alone. Visit parameters are suffixed only if two distinct member
+    // names still share one, so the generated signature stays valid Python.
     let mut seen_params: std::collections::HashMap<String, usize> =
         std::collections::HashMap::new();
     let mut seen_values = std::collections::HashSet::new();
@@ -1631,24 +1632,28 @@ fn build_enum(
     // (TrueForge's `MetricsUnit` names `$` as `USD`, where the derived identifier
     // would be the placeholder `_`).
     let declared: std::collections::HashMap<&str, &str> = schema.enum_member_names().collect();
+    let mut seen_members = std::collections::HashSet::new();
     let members = values
         .into_iter()
         .filter(|value| seen_values.insert(value.clone()))
-        .map(|value| {
+        .filter_map(|value| {
             let name = declared.get(value.as_str()).map_or_else(
                 || naming::enum_member_name(&value),
                 |name| naming::enum_member_name(name),
             );
+            if !seen_members.insert(name.clone()) {
+                return None;
+            }
             let visit = declared.get(value.as_str()).map_or_else(
                 || naming::enum_visit_param(&value),
                 |name| naming::enum_visit_param(name),
             );
-            EnumMember {
-                name: dedupe(name, &mut seen_members),
+            Some(EnumMember {
+                name,
                 visit_param: dedupe(visit, &mut seen_params),
                 value,
                 docstring: None,
-            }
+            })
         })
         .collect();
     EnumType {
@@ -4926,7 +4931,7 @@ impl InlineHoister<'_> {
             )
             .map(String::as_str)
             .collect();
-        let bases = schema
+        let mut bases: Vec<String> = schema
             .all_of
             .iter()
             .flatten()
@@ -4939,6 +4944,18 @@ impl InlineHoister<'_> {
             }
         }
         self.hoist_object_fields(name, schema, &required, &mut fields);
+        let (inherited, restated) = self.inherited_base_fields(schema, &fields);
+        fields.retain(|field| !restated.contains(&field.wire_name));
+        if let Some(inherited) = inherited {
+            // A base property this object restates with a schema of its own is
+            // Fern's `differentSchema` parent conflict, and the parent is inlined:
+            // Tally's `GET /users/me` answers `allOf: [$ref User]` beside a
+            // `subscriptionPlan: {type: string}` that `User` declares as an enum,
+            // and Fern's `GetCurrentUserResponse` writes that field first and then
+            // `User`'s others, extending nothing.
+            bases.clear();
+            fields.extend(inherited);
+        }
         self.out.push(TypeDecl::Object(ObjectType {
             name: name.to_string(),
             module: naming::module_name(name),
@@ -4950,6 +4967,70 @@ impl InlineHoister<'_> {
                 .unwrap_or_default(),
             docstring,
         }));
+    }
+
+    /// The fields an object inherits from its `allOf` `$ref` bases once one of
+    /// them is inlined (`None` when the object extends them), and the own fields
+    /// that merely restate a base's. As in [`Builder::add_object`], Fern compares
+    /// the object's own property, wrapped optional unless required, against the
+    /// base's unwrapped one, so only a property both require and declare alike
+    /// restates without conflict; such a restatement is dropped in favour of the
+    /// base's. The bases are lowered under their own names, and whatever that
+    /// lowering hoists is discarded: the component builder already declares it.
+    fn inherited_base_fields(
+        &mut self,
+        schema: &Schema,
+        local: &[Field],
+    ) -> (Option<Vec<Field>>, std::collections::HashSet<String>) {
+        let mut restated = std::collections::HashSet::new();
+        let Some(schemas) = self.schemas else {
+            return (None, restated);
+        };
+        let bases: Vec<(String, &Schema)> = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| {
+                let reference = member.reference.as_deref()?;
+                let base = resolve_ref_from_schemas(schemas, reference)?;
+                let alias = base.one_of.is_some() || base.any_of.is_some();
+                (!alias && !is_inheritance_union_base(base))
+                    .then(|| (ref_to_class(reference), base))
+            })
+            .collect();
+        let hoisted = self.out.len();
+        let mut inherited = Vec::new();
+        let mut overridden = false;
+        for (base_name, base) in &bases {
+            let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
+            let mut base_fields = Vec::new();
+            self.hoist_object_fields(base_name, base, &base_required, &mut base_fields);
+            for field in base_fields {
+                match local.iter().find(|own| own.wire_name == field.wire_name) {
+                    Some(own)
+                        if own.type_ref == field.type_ref
+                            && own.optional == field.optional
+                            && own.nullable == field.nullable
+                            && own.spec_required
+                            && field.spec_required
+                            && own.docstring == field.docstring =>
+                    {
+                        restated.insert(field.wire_name.clone());
+                        inherited.push(field);
+                    }
+                    Some(_) => overridden = true,
+                    None => inherited.push(field),
+                }
+            }
+        }
+        self.out.truncate(hoisted);
+        if overridden {
+            // An inlined parent's restated fields stay where the object wrote
+            // them, so only the parent's others follow.
+            inherited.retain(|field| !restated.contains(&field.wire_name));
+            restated.clear();
+        }
+        (overridden.then_some(inherited), restated)
     }
 
     /// Resolve an inline union variant, hoisting an object member to
@@ -7105,7 +7186,15 @@ fn collect_discriminant_strips(
         .filter(|property| !property.is_empty())
         .or_else(|| inferred_strip_discriminant_property(schema, schemas));
     if let Some(property) = property {
-        if schema.discriminator.is_none() {
+        // A `discriminator` that maps nothing strips like an inferred one when
+        // every variant's own tag names it: Tally's `Block` declares only
+        // `propertyName: type` over 45 `$ref` blocks, each with a one-value
+        // `type` enum, and Fern's block models have no `type` field.
+        let unmapped_inferred = schema.discriminator.as_ref().is_some_and(|discriminator| {
+            discriminator.mapping.is_empty()
+                && inferred_strip_discriminant_property(schema, schemas).as_ref() == Some(&property)
+        });
+        if schema.discriminator.is_none() || unmapped_inferred {
             if let Some(variants) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                 for variant in variants {
                     if let Some(reference) = &variant.reference {
@@ -10948,9 +11037,9 @@ mod tests {
     }
 
     #[test]
-    fn build_enum_omits_duplicate_values_and_disambiguates_colliding_names() {
-        // Fern omits exact duplicate wire values. Distinct values that sanitize to
-        // the same identifier still need unique members/`visit` params.
+    fn build_enum_omits_duplicate_values_and_colliding_names() {
+        // Fern omits exact duplicate wire values, and a later distinct value whose
+        // member name an earlier one already took (Tally's `dd.MM.yyyy`).
         let e = build_enum(
             &Schema::default(),
             "Color",
@@ -10963,12 +11052,12 @@ mod tests {
             None,
         );
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
-        assert_eq!(members, ["A_B", "A_B_1", "A_B_2"]);
+        assert_eq!(members, ["A_B"]);
         let params: Vec<&str> = e.members.iter().map(|m| m.visit_param.as_str()).collect();
-        assert_eq!(params, ["a_b", "a_b_1", "a_b_2"]);
-        // The wire values are preserved untouched for the `= "…"` initializers.
+        assert_eq!(params, ["a_b"]);
+        // The first value keeps the name; the wire value is preserved untouched.
         let values: Vec<&str> = e.members.iter().map(|m| m.value.as_str()).collect();
-        assert_eq!(values, ["a-b", "a b", "a.b"]);
+        assert_eq!(values, ["a-b"]);
     }
 
     #[test]

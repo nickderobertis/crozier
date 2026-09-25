@@ -84,7 +84,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 155 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 156 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -224,7 +224,8 @@ drift gate over the pair:
   string enum member whose normalized identifier is empty; `finalize_enum_ident`
   supplies `_`.
 - `schema.enum:wildcard-member` — one per schema with a string enum member
-  containing `*`, which `enum_words` spells ALL.
+  containing `*`, which `enum_words` spells ALL when it is the whole value and
+  treats as a word boundary otherwise (Tally's `image/*` is `IMAGE`).
 - `schema.enum:apostrophe-member` — one per schema with a string enum member
   containing an ASCII or curly apostrophe, which `enum_words` removes.
 - `schema.enum:digit-word-member` — one per schema with a UUID-shaped string
@@ -1056,8 +1057,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **187** registered sources, of which
-  **170** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **188** registered sources, of which
+  **171** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1120,12 +1121,12 @@ search-incomplete within the fixture backlog. The report separates finite
 inventory closure from unanswered searches and excludes Postman from new work
 and future obligations while preserving historical source evidence.
 
-The witness searches' registrations add fifteen sources — corpus rows 144 to
-158, `paloalto-cspm-alerts`, `paloalto-cspm-reports`,
+The witness searches' registrations add sixteen sources — corpus rows 144 to
+159, `paloalto-cspm-alerts`, `paloalto-cspm-reports`,
 `paloalto-cspm-search-manager`, `thrivecart`, `truefoundry-trueforge-5adde28`,
 `fergus`, `groupe-psa`, `timelyapp`, `nextgen`, `auto-agent-protocol`, `skool`,
-`spendesk`, `billie`, `alma-france` and `outreach` (32 vendored plus 155
-`link-ok`) — and promote seven `schemas` features to `golden`:
+`spendesk`, `billie`, `alma-france`, `outreach` and `tally` (32 vendored plus
+156 `link-ok`) — and promote seven `schemas` features to `golden`:
 `annotated-ref-target-composed`, `annotated-ref-target-oneof`,
 `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`,
 `ref-pointer-undeclared-component-head`, `ref-pointer-unnamed-segment` and

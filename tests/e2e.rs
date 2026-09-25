@@ -3230,6 +3230,7 @@ const CORPORA: &[&Corpus] = &[
     &BILLIE,
     &ALMA_FRANCE,
     &OUTREACH,
+    &TALLY,
 ];
 
 #[test]
@@ -5708,6 +5709,18 @@ const ALMA_FRANCE: Corpus = Corpus {
 /// Outreach API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
 const OUTREACH: Corpus = Corpus {
     api: "outreach",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Tally API — the jentic-public-apis aggregation's copy; `$ref`s under an undeclared component head.
+const TALLY: Corpus = Corpus {
+    api: "tally",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11300,4 +11313,9 @@ fn alma_france_matches_fern_output() {
 #[test]
 fn outreach_matches_fern_output() {
     assert_link_ok_corpus_matches(&OUTREACH);
+}
+
+#[test]
+fn tally_matches_fern_output() {
+    assert_link_ok_corpus_matches(&TALLY);
 }

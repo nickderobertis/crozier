@@ -9523,3 +9523,84 @@ components:
     );
     assert!(files["src/acme/accounts/client.py"].contains("name: typing.Optional[str] = OMIT,"));
 }
+
+/// Tally's shapes: a `discriminator` that maps nothing over variants whose own
+/// one-value tags name the union, enum values whose names collide, and an inline
+/// response that restates an `allOf` parent's enum property as a plain string.
+#[test]
+fn tally_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Tally, version: 1.0.0 }
+paths:
+  /forms:
+    get:
+      operationId: listForms
+      tags: [forms]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Block" } }
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      tags: [users]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf: [{ $ref: "#/components/schemas/User" }]
+                properties:
+                  subscriptionPlan: { type: string }
+components:
+  schemas:
+    Block:
+      oneOf:
+        - { $ref: "#/components/schemas/TextBlock" }
+        - { $ref: "#/components/schemas/EmbedBlock" }
+      discriminator: { propertyName: type }
+    TextBlock:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, enum: [TEXT] }
+        text: { type: string }
+    EmbedBlock:
+      type: object
+      required: [type, kind]
+      properties:
+        type: { type: string, enum: [EMBED] }
+        kind: { type: string, enum: [video, image, video/*, image/*] }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        subscriptionPlan: { type: string, enum: [FREE, PRO] }
+"##,
+    );
+    let text = &files["src/acme/types/text_block.py"];
+    assert!(!text.contains("\n    type:"), "{text}");
+    let kind = &files["src/acme/types/embed_block_kind.py"];
+    assert!(
+        kind.contains("    VIDEO = \"video\"\n    IMAGE = \"image\"\n"),
+        "{kind}"
+    );
+    assert!(
+        !kind.contains("video/*") && !kind.contains("image/*"),
+        "{kind}"
+    );
+    let me = &files["src/acme/users/types/get_current_user_response.py"];
+    assert!(
+        me.contains("class GetCurrentUserResponse(UniversalBaseModel):"),
+        "{me}"
+    );
+    let plan = me.find("subscription_plan:").expect(me);
+    let id = me.find("    id: typing.Optional[str] = None").expect(me);
+    assert!(plan < id, "{me}");
+    assert!(!me.contains("UserSubscriptionPlan"), "{me}");
+}

@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 155 of the 187 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 156 of the 188 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -882,7 +882,7 @@ PREDICATES = {
     ),
     "schema.enum:empty-member": "one per Schema Object with an empty string enum member, which enum_words renders as empty",
     "schema.enum:empty-identifier-member": "one per Schema Object with a non-empty string enum member that normalizes to no identifier characters, which finalize_enum_ident changes to _",
-    "schema.enum:wildcard-member": "one per Schema Object with a string enum member containing *, which enum_words spells all",
+    "schema.enum:wildcard-member": "one per Schema Object with a string enum member containing *, which enum_words spells all when it is the whole value and treats as a word boundary otherwise",
     "schema.enum:apostrophe-member": "one per Schema Object with a string enum member containing an ASCII or curly apostrophe, which enum_words removes",
     "schema.enum:digit-word-member": "one per Schema Object with a UUID-shaped string enum member beginning with exactly one digit before a letter, which digit_word spells in English",
     "schema.enum:numeric-prefix-member": "one per Schema Object with a string enum member beginning with a canonical integer from 10 through 9999, which numeric_enum_identifier spells in English",
@@ -2059,7 +2059,8 @@ _ENUM_DEBURR_EXCEPTIONS = dict(zip(
 NAMING_PORT_DIGESTS = {
     "sanitize_identifier": "9da64b4ddcfd04c9",
     "digit_word": "4d705bf2bae3d676",
-    "enum_words": "48f9f05a16515545",
+    "enum_words": "67bfc6430bc02e52",
+    "whole_value_enum_words": "baffe48e924ec4a3",
     "numeric_enum_identifier": "34ad46d37aed1b81",
     "finalize_enum_ident": "2c40bdccda3bcf5f",
     "uuid_enum_identifier": "17b81a4e21fde4fe",
@@ -2071,6 +2072,14 @@ NAMING_PORT_DIGESTS = {
     "split_words": "3a76409f152dcce6",
     "class_name": "c91fec9908234a17",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
+}
+
+
+_WHOLE_VALUE_ENUM_WORDS = {
+    "<": "less_than", ">": "greater_than", ">=": "greater_than_or_equal_to",
+    "<=": "less_than_or_equal_to", "!=": "not_equals", "=": "equal_to",
+    "==": "equal_to", "*": "all", '""': "empty_string", "-": "hyphen",
+    "|": "pipe", ".": "dot", "/": "slash",
 }
 
 
@@ -2109,10 +2118,13 @@ def enum_identifier(value: str) -> str:
         )
     if not folded:
         return "empty"
-    if folded == "=":
-        return "equal_to"
+    whole = _WHOLE_VALUE_ENUM_WORDS.get(folded)
+    if whole is None and folded.lower() == "n/a":
+        whole = "not_applicable"
+    if whole is not None:
+        return whole
     spaced = "".join(
-        " all " if char == "*" else "" if char in "'\u2019" else
+        "" if char in "'\u2019" else
         char if char.isascii() and char.isalnum() else " "
         for char in folded
     )

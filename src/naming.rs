@@ -375,22 +375,40 @@ fn digit_word(word: &str) -> Option<&'static str> {
 /// number is spelled out (`1200 bps` → `one_thousand_two_hundred_bps`), and word
 /// boundaries touching a numeric token collapse (`DB-25` → `db25`). UUID-shaped
 /// values use Fern's separate quirk in [`uuid_enum_identifier`].
+fn whole_value_enum_words(value: &str) -> Option<&'static str> {
+    Some(match value {
+        "<" => "less_than",
+        ">" => "greater_than",
+        ">=" => "greater_than_or_equal_to",
+        "<=" => "less_than_or_equal_to",
+        "!=" => "not_equals",
+        "=" | "==" => "equal_to",
+        "*" => "all",
+        "\"\"" => "empty_string",
+        "-" => "hyphen",
+        "|" => "pipe",
+        "." => "dot",
+        "/" => "slash",
+        _ if value.eq_ignore_ascii_case("n/a") => "not_applicable",
+        _ => return None,
+    })
+}
+
 fn enum_words(value: &str) -> String {
     if value.is_empty() {
         return "empty".to_string();
     }
-    // A bare `=` operator is spelled out: Prisma Cloud's `UIFilterModel.operator`
-    // enum holds the single value `=`, and Fern names its member `EQUAL_TO`.
-    if value == "=" {
-        return "equal_to".to_string();
+    // A value that is one of these symbols *whole* is spelled out, by the map in
+    // Fern's enum-name derivation (`WJe`): Prisma Cloud's `UIFilterModel.operator`
+    // holds the single value `=`, and Fern names its member `EQUAL_TO`; apideck's
+    // `*` event type is `ALL`. Inside a longer value a symbol is a word boundary
+    // like any other, so Tally's `image/*` is `IMAGE`.
+    if let Some(words) = whole_value_enum_words(value) {
+        return words.to_string();
     }
     let mut spaced = String::new();
     for c in value.chars() {
-        if c == '*' {
-            // Fern spells a bare `*` wildcard enum value the word "all"
-            // (`"*"` → `ALL`); every other non-alphanumeric is a word boundary.
-            spaced.push_str(" all ");
-        } else if c == '\'' || c == '\u{2019}' {
+        if c == '\'' || c == '\u{2019}' {
             // An apostrophe is a contraction rather than a word boundary here,
             // exactly as in [`prose_identifier`]: DaniWeb's `"Don't Know"` names
             // the member `DONT_KNOW`, not `DON_T_KNOW`.
@@ -1246,10 +1264,30 @@ mod tests {
         );
         // Past four figures Fern stops spelling; Crozier keeps the name legal.
         assert_eq!(enum_member_name("10000"), "_10000");
-        // A bare wildcard is the one non-alphanumeric value Fern names rather
-        // than treating as a separator.
+        // A value that is one of Fern's mapped symbols *whole* is spelled out;
+        // inside a longer value the same symbol is only a separator.
         assert_eq!(enum_member_name("*"), "ALL");
         assert_eq!(enum_visit_param("*"), "all_");
+        assert_eq!(enum_member_name("image/*"), "IMAGE");
+        for (value, name) in [
+            ("<", "LESS_THAN"),
+            (">", "GREATER_THAN"),
+            (">=", "GREATER_THAN_OR_EQUAL_TO"),
+            ("<=", "LESS_THAN_OR_EQUAL_TO"),
+            ("!=", "NOT_EQUALS"),
+            ("=", "EQUAL_TO"),
+            ("==", "EQUAL_TO"),
+            ("\"\"", "EMPTY_STRING"),
+            ("-", "HYPHEN"),
+            ("|", "PIPE"),
+            (".", "DOT"),
+            ("/", "SLASH"),
+            ("n/a", "NOT_APPLICABLE"),
+            ("N/A", "NOT_APPLICABLE"),
+        ] {
+            assert_eq!(enum_member_name(value), name, "{value}");
+        }
+        assert_eq!(enum_visit_param("/"), "slash");
     }
 
     #[test]
