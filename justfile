@@ -199,6 +199,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openlinksw_osdb_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ziptax_node_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_messages_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e deepsearch_ds_v2_matches_fern_output
 
 # Format the codebase in place.
 format:

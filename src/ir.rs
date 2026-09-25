@@ -2097,9 +2097,15 @@ fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
             // *coins* from an inline schema. A `$ref` body keeps its named type
             // however many operations declare the status (`exhaustive`'s three
             // `400`s all resolve to `BadObjectRequestInfo`).
-            let coined = TypeRef::Named(format!("{}Body", err.class_name));
+            // A component schema already carrying that name is a `$ref` body, not
+            // a coinage: OpenCodeUI's `BadRequestError` schema is renamed
+            // `BadRequestErrorBody` (see `openapi::normalize_error_class_schema_names`)
+            // and its forty-nine `400`s keep it.
+            let coined_name = format!("{}Body", err.class_name);
+            let coined = !doc.components.schemas.contains_key(&coined_name)
+                && err.body_type == TypeRef::Named(coined_name);
             if downgrade.contains(&err.class_name)
-                || err.body_type == coined && multiply_declared.contains(&err.class_name)
+                || coined && multiply_declared.contains(&err.class_name)
             {
                 err.body_type = TypeRef::Primitive(Prim::Any);
             }
@@ -2409,9 +2415,17 @@ fn build_endpoint(
             // `$ref`/scalar passes through `base_type_ref`.
             // Fern's OpenAPI importer treats a schema-less query parameter as a
             // string. Content-based parameters remain strings for the same reason:
-            // both arrive on the URL as text.
+            // both arrive on the URL as text. So is one whose schema declares no
+            // type at all: Deep Search's `term` is `{title: Term}` and its golden
+            // types it `Optional[str]`, while the same name declared
+            // `anyOf: [{}, null]` stays `Optional[Any]` — only the parameter's
+            // own schema being unknown makes it text.
             let type_ref = schema.map_or(TypeRef::Primitive(Prim::Str), |s| {
-                hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                if is_unknown(s) {
+                    TypeRef::Primitive(Prim::Str)
+                } else {
+                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                }
             });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
                 TypeRef::Primitive(Prim::Str)
@@ -3620,7 +3634,7 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// `every_error_status_fern_names_maps_to_its_exception` test
 /// (`tests/generation.rs`) locks every entry's class name, `errors/` module filename,
 /// and `status_code`, so an accidental edit here fails loudly. See `docs/matching.md`.
-fn error_class_name(status: u16) -> Option<&'static str> {
+pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
     Some(match status {
         400 => "BadRequestError",
         401 => "UnauthorizedError",
@@ -4921,7 +4935,7 @@ impl InlineHoister<'_> {
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop),
-                type_ref: self.prop_type_ref(owner, prop, prop_schema),
+                type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 nullable: referenced_nullable
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
@@ -4936,6 +4950,27 @@ impl InlineHoister<'_> {
                 }),
             });
         }
+    }
+
+    /// A hoisted model's field type: a map of an inline object names that object
+    /// `{Owner}{Prop}Value`, as a component model's map does, and every other
+    /// property is [`Self::prop_type_ref`]'s. OpenCodeUI's `provider.list` answers
+    /// an inline object whose `all` items carry `models`, a map of an inline model
+    /// record, and Fern generates `Dict[str, ProviderListResponseAllItemModelsValue]`.
+    fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop_schema.reference.is_none() && is_map(prop_schema) && !is_optional(prop_schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if value.reference.is_none() && is_inline_struct(value) {
+                    let name = format!("{}Value", naming::child_class_name(owner, prop));
+                    self.hoist_object(&name, value);
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(name)),
+                    );
+                }
+            }
+        }
+        self.prop_type_ref(owner, prop, prop_schema)
     }
 
     /// The type of a property, hoisting an inline object (directly or as an array
@@ -6429,9 +6464,11 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
         if let Some(tag) = first_tag(op) {
             return compact_module(tag);
         }
-        return naming::sanitize_identifier(&naming::to_snake_case(
-            id.split_once('.').map_or(id, |(group, _)| group),
-        ));
+        // Untagged, the dotted namespace names no sub-client: Fern hangs the
+        // method off the root client under the whole id. OpenCodeUI's untagged
+        // `global.config.get` is the root `global_config_get`, beside the two
+        // `Session`-tagged operations that alone make a `session` package.
+        return String::new();
     }
     if id.contains('_') {
         if first_segment_is_tag(op, id) {
@@ -6637,7 +6674,10 @@ fn inferred_discriminant_property_with(
                                     .and_then(serde_json::Value::as_str)
                                     .is_some()
                         }
-                        "role" => variant.required.contains(property),
+                        // OpenCodeUI's `ToolState` is an `anyOf` of four `$ref`s
+                        // each requiring a `const` `status`, and Fern's golden is
+                        // the `status`-discriminated `ToolState_Pending` … union.
+                        "role" | "status" => variant.required.contains(property),
                         "message_type" | "mcp_server_type" => true,
                         "name" => singleton_enum,
                         _ => false,
@@ -8751,6 +8791,47 @@ impl Builder<'_> {
                             return TypeRef::Primitive(Prim::Any);
                         }
                         if is_map(member) {
+                            // A map whose value is an inline union hoists that value to
+                            // `{Owner}{Prop}Value`, as a non-nullable map does: Deep
+                            // Search's `ProjectDataIndexWithStatus.record_properties` is
+                            // `anyOf` [a map of `anyOf` two `$ref`s, `null`] and generates
+                            // `Dict[str, Optional[ProjectDataIndexWithStatusRecordPropertiesValue]]`.
+                            if let Some(AdditionalProperties::Schema(value)) =
+                                &member.additional_properties
+                            {
+                                if let (None, Some(value_members)) = (
+                                    value.reference.as_ref(),
+                                    value.one_of.as_ref().or(value.any_of.as_ref()),
+                                ) {
+                                    let value_name =
+                                        format!("{owner}{}Value", naming::class_name(prop));
+                                    let variants = value_members
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(_, variant)| !is_null_variant(variant))
+                                        .map(|(index, variant)| {
+                                            self.variant_ref(
+                                                &value_name,
+                                                index,
+                                                variant,
+                                                value_members,
+                                            )
+                                        })
+                                        .collect();
+                                    self.push_alias(
+                                        &value_name,
+                                        naming::module_name(&value_name),
+                                        TypeRef::Union(dedupe_union_members(variants)),
+                                        clean_doc(value.description.as_deref()),
+                                    );
+                                    return TypeRef::Dict(
+                                        Box::new(TypeRef::Primitive(Prim::Str)),
+                                        Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                                            value_name,
+                                        )))),
+                                    );
+                                }
+                            }
                             return nullable_map_value_type_ref(member);
                         }
                         if matches!(
@@ -8790,7 +8871,7 @@ impl Builder<'_> {
                             member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                         })
                         .map(|(index, m)| {
-                            if is_inline_object(m) {
+                            if is_inline_object(m) || is_map_of_inline_structure(m) {
                                 return self.variant_ref(&name, index, m, members);
                             }
                             if string_enum_values(m).is_some() {
@@ -8872,6 +8953,21 @@ impl Builder<'_> {
                         })
                         .collect();
                     let variants = dedupe_union_members(variants);
+                    // Alternatives that are one schema written twice are that
+                    // schema, not a union of it: OpenCodeUI's `Command.template`
+                    // is `anyOf: [string, string]` and Fern types it `str`. Members
+                    // that merely *render* alike stay a union — Sigstore Rekor's
+                    // `AlpinePackageSchema.package` is two different
+                    // constraint-only members and Fern's alias is
+                    // `typing.Union[typing.Any]`.
+                    if let [only] = variants.as_slice() {
+                        let identical = members
+                            .windows(2)
+                            .all(|pair| format!("{:?}", pair[0]) == format!("{:?}", pair[1]));
+                        if members.len() > 1 && identical && !matches!(only, TypeRef::Named(_)) {
+                            return only.clone();
+                        }
+                    }
                     let module = naming::module_name(&name);
                     self.push_alias(
                         &name,
@@ -8994,6 +9090,59 @@ impl Builder<'_> {
             let name = variant_class_name(parent, index, variant, siblings);
             if let Some(type_ref) = self.annotated_ref_type(&name, variant) {
                 return type_ref;
+            }
+        }
+        // A member that is a map of an inline union or object names its value
+        // `{Variant}Value`, as a property's map does: OpenCodeUI's `Config.lsp` is
+        // `anyOf: [false, {additionalProperties: {anyOf: [two objects]}}]` and Fern
+        // generates `Union[bool, Dict[str, ConfigLspOneValue]]` over a
+        // `ConfigLspOneValue` alias, and `Config.formatter`'s object value is the
+        // model `ConfigFormatterOneValue`.
+        if is_map(variant) {
+            if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
+                if value.reference.is_none() {
+                    let value_name = format!(
+                        "{}Value",
+                        variant_class_name(parent, index, variant, siblings)
+                    );
+                    let value_module = naming::module_name(&value_name);
+                    let docstring = clean_doc(value.description.as_deref());
+                    let map_of = |named: String| {
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(named)),
+                        )
+                    };
+                    if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                        if let Some(decl) = self.discriminated_union(
+                            &value_name,
+                            &value_module,
+                            value,
+                            docstring.clone(),
+                        ) {
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                        } else {
+                            let nested = members
+                                .iter()
+                                .enumerate()
+                                .map(|(nested_index, member)| {
+                                    self.variant_ref(&value_name, nested_index, member, members)
+                                })
+                                .collect();
+                            self.push_alias(
+                                &value_name,
+                                value_module,
+                                TypeRef::Union(dedupe_union_members(nested)),
+                                docstring,
+                            );
+                        }
+                        return map_of(value_name);
+                    }
+                    if is_inline_struct(value) {
+                        self.add_object(&value_name, value_module, value, docstring);
+                        return map_of(value_name);
+                    }
+                }
             }
         }
         if is_inline_object(variant) {
@@ -9343,6 +9492,18 @@ fn extensible_enum(values: Vec<String>) -> TypeRef {
 }
 
 /// An object with `additionalProperties` but no declared properties — a map.
+/// A map whose value is an inline union or object, which a union member names
+/// `{Variant}Value` (see [`Builder::variant_ref`]).
+fn is_map_of_inline_structure(schema: &Schema) -> bool {
+    is_map(schema)
+        && matches!(
+            &schema.additional_properties,
+            Some(AdditionalProperties::Schema(value))
+                if value.reference.is_none()
+                    && (value.one_of.is_some() || value.any_of.is_some() || is_inline_struct(value))
+        )
+}
+
 fn is_map(schema: &Schema) -> bool {
     is_object_type(schema)
         && schema.properties.is_empty()

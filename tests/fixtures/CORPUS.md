@@ -166,6 +166,7 @@ re-measure with `just fixtures-gaps`.
 | 191 | `openlinksw-osdb` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC-BY-SA 3.0 (declared by the document's `info.license`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | OpenLink OSDB REST API v1; string schemas declaring `format: uri-template` |
 | 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
 | 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
+| 194 | `deepsearch-ds-v2` | github-raw | https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json | `be22375ecea319b495a11e27cd0308fdcda81ba1` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | IBM Deep Search (DS) API 3.0.0 as the DS4SD toolkit pins it; properties whose `anyOf` is a discriminated union |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -740,6 +741,7 @@ so the filter removes operations rather than keeping all of them.
 | 191 | `openlinksw-osdb` | `format-uri-template` | ✅ byte-matched after two repairs |
 | 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
 | 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
+| 194 | `deepsearch-ds-v2` | `property-anyof-discriminated-union` | ✅ byte-matched after three repairs |
 
 The repairs: a `:` separates words in a generated class name (`osdb:output_type`
 hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
@@ -757,6 +759,35 @@ and a union of one member is that member; an `allOf` member that redeclares a
 property of a composed `$ref` base flattens that base and extends the base's own
 bases instead; an untitled, undiscriminated inline union body leaves its content
 type to httpx; an inline union error body is the `{ErrorClass}Body` discriminated
-union; and a redeclared base enum keeps the base's description. All three goldens
-are generated at Python 5.20.0 / CLI 5.67.1 and match with `unmatched: &[]`.
+union; and a redeclared base enum keeps the base's description.
+
+Row 194 was found by the arm searches the golden-reach records under
+`docs/openapi-surface/golden-reach-witnesses/` hold: a Sourcegraph result at its
+indexed commit that the instrumented `crozier` run showed executing its row's
+unreached site, declaring no `gap` selector. IBM's Deep Search API as the DS4SD
+toolkit pins it needed three repairs: a nullable map of an inline union hoists its
+value to `{Owner}{Prop}Value`; a query parameter whose schema declares no type is
+a `str`; and an endpoint with an untyped path parameter is exampled by Fern's
+other writer, the parameter by its own name and a free-form map body as one
+`"string"` entry. All four goldens are generated at Python 5.20.0 / CLI 5.67.1
+and match with `unmatched: &[]`.
+
+The same searches found the opencode server API as `lehhair/OpenCodeUI` publishes
+it — a different document from the DROPPED `opencode` row, which Fern refused —
+reaching `anyof-sole-member`'s arm. It declares `schema.anyOf>schema.anyOf`, the
+`gap` row `anyof-anyof-variant`, so it is handed off rather than registered
+([`handoff.tsv`](../../docs/openapi-surface/golden-reach-witnesses/handoff.tsv)).
+It was byte-matched locally against its measured Fern 5.20.0 output first, and
+the nine repairs that took are kept, each with a `tests/generation.rs` test on a
+fragment of the document: an untagged dotted `operationId` hangs off the root
+client; the README walks the root client's operations after every sub-client's; a
+component schema named for an error class the document raises is renamed
+`{Name}Body`, and such a `$ref` body is never downgraded as a coined one; `status`
+joins the property names Fern infers a discriminant from over `$ref` members; a
+union member that is a map of an inline union or object hoists its value; a union
+of one schema written twice is that schema; a hoisted model's map of an inline
+object hoists its value; and a query parameter beside a body keeps the
+`content-type` header. The hoisted-map repair also closes six of `webflow-v2`'s
+open files, which proves it now; the other eight rest on the measured golden until
+the hand-off's registration commits it.
 

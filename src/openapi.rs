@@ -1380,6 +1380,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
+    normalize_error_class_schema_names(&mut doc);
     normalize_multi_type_schemas(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
@@ -1673,6 +1674,65 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
 /// `FilterTopic` declares `Union[Bytes32, List[Bytes32]]` — its `type: null`
 /// alternative left the union — and every reference to it generates as
 /// `Optional[FilterTopic]`.
+/// Rename a component schema whose class name is an error class the document
+/// raises, to `{Name}Body`, rewriting every reference to it.
+///
+/// Fern's error class and the model it would generate for the schema would share
+/// one Python name, and Fern keeps the error class: OpenCodeUI declares
+/// `BadRequestError` and `NotFoundError` schemas as the bodies of its `400` and
+/// `404` responses, and its golden generates `errors/bad_request_error.py`'s
+/// `BadRequestError` over `types/bad_request_error_body.py`'s
+/// `BadRequestErrorBody`, the renamed schema's own hoisted members following it
+/// (`NotFoundErrorBodyData`). A schema named for an error class no response of the
+/// document raises collides with nothing and keeps its name.
+fn normalize_error_class_schema_names(doc: &mut OpenApi) {
+    let raised: std::collections::BTreeSet<&str> = doc
+        .paths
+        .values()
+        .flat_map(PathItem::operations)
+        .flat_map(|(_, operation)| operation.responses.keys())
+        .filter(|code| !code.starts_with('2'))
+        .filter_map(|code| code.parse::<u16>().ok())
+        .filter_map(crate::ir::error_class_name)
+        .collect();
+    let renames: IndexMap<String, String> = doc
+        .components
+        .schemas
+        .keys()
+        .filter(|name| raised.contains(crate::naming::class_name(name).as_str()))
+        .map(|name| (name.clone(), format!("{name}Body")))
+        .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
+        .collect();
+    if renames.is_empty() {
+        return;
+    }
+    doc.components.schemas = std::mem::take(&mut doc.components.schemas)
+        .into_iter()
+        .map(|(name, schema)| (renames.get(&name).cloned().unwrap_or(name), schema))
+        .collect();
+    let rewrite = |reference: &mut String| {
+        let Some(name) = referenced_component_schema(reference) else {
+            return;
+        };
+        if let Some(renamed) = renames.get(name) {
+            let rest = &reference["#/components/schemas/".len() + name.len()..];
+            *reference = format!("#/components/schemas/{renamed}{rest}");
+        }
+    };
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if let Some(reference) = node.reference.as_mut() {
+                rewrite(reference);
+            }
+            if let Some(discriminator) = node.discriminator.as_mut() {
+                for target in discriminator.mapping.values_mut() {
+                    rewrite(target);
+                }
+            }
+        });
+    });
+}
+
 fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
     let nullable: std::collections::BTreeSet<String> = doc
         .components

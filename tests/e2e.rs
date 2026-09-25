@@ -3133,6 +3133,20 @@ const NEXMO_MESSAGES: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `deepsearch-ds-v2`: corpus row 194, IBM's Deep Search (DS) API 3.0.0 as the
+/// DS4SD toolkit pins it. Its properties declare `anyOf` discriminated unions
+/// inline, which no earlier golden hoists through `hoist_discriminated_union`.
+const DEEPSEARCH_DS_V2: Corpus = Corpus {
+    api: "deepsearch-ds-v2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -3263,6 +3277,7 @@ const CORPORA: &[&Corpus] = &[
     &OPENLINKSW_OSDB,
     &ZIPTAX_NODE,
     &NEXMO_MESSAGES,
+    &DEEPSEARCH_DS_V2,
 ];
 
 #[test]
@@ -5132,12 +5147,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/forms/types/form_submission_payload_payload.py",
         "src/fern/forms/types/form_submission_payload_payload_schema_item.py",
         "src/fern/forms/types/form_submission_payload_payload_schema_item_field_type.py",
-        "src/fern/forms/types/get_forms_response.py",
-        "src/fern/forms/types/get_forms_response_fields_value.py",
-        "src/fern/forms/types/get_forms_response_fields_value_type.py",
-        "src/fern/forms/types/list_forms_response_forms_item.py",
-        "src/fern/forms/types/list_forms_response_forms_item_fields_value.py",
-        "src/fern/forms/types/list_forms_response_forms_item_fields_value_type.py",
         "src/fern/forms/types/list_submissions_forms_response.py",
         "src/fern/inventory/__init__.py",
         "src/fern/inventory/raw_client.py",
@@ -6042,6 +6051,11 @@ fn ziptax_node_matches_fern_output() {
 #[test]
 fn nexmo_messages_matches_fern_output() {
     assert_link_ok_corpus_matches(&NEXMO_MESSAGES);
+}
+
+#[test]
+fn deepsearch_ds_v2_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DEEPSEARCH_DS_V2);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each
