@@ -86,7 +86,6 @@ def fail(message: str) -> None:
     raise SystemExit(f"golden-reach: {message}")
 
 
-# --------------------------------------------------------------------------- rows
 
 
 def region_rows(text: str) -> list[list[str]]:
@@ -118,7 +117,6 @@ def golden_rows(regions_dir: Path = REGIONS_DIR) -> dict[str, str]:
     return out
 
 
-# -------------------------------------------------------------------------- sites
 
 
 class Site(NamedTuple):
@@ -319,7 +317,6 @@ def _opening_line(lines: list[str], first: int, end: int) -> int | None:
     return None
 
 
-# ----------------------------------------------------------------------- measure
 
 
 def _llvm_tool(name: str) -> str:
@@ -477,7 +474,6 @@ def measure(args: argparse.Namespace) -> int:
     return 0
 
 
-# ------------------------------------------------------------------------ report
 
 
 def census_witnesses(census: dict, selectors: tuple[str, ...]) -> dict[str, int]:
@@ -507,11 +503,6 @@ def census_witnesses(census: dict, selectors: tuple[str, ...]) -> dict[str, int]
         if row["selector"] in matched:
             counts[row["fixture"]] += row["count"]
     return dict(counts)
-
-
-def test_for_fixture(tests: set[str], fixture: str, aliases: dict[str, str]) -> str | None:
-    """The golden test that compares `fixture`'s committed golden, if one does."""
-    return aliases.get(fixture)
 
 
 class Reach(NamedTuple):

@@ -109,7 +109,6 @@ def fail(message: str) -> None:
     raise SystemExit(f"golden-reach-search: {message}")
 
 
-# ------------------------------------------------------------------ the keys
 
 
 def _parameterized_media_keys(document: Any) -> int:
@@ -208,7 +207,6 @@ def declared(counts: dict[str, int], selectors: tuple[str, ...]) -> int:
     return sum(counts.get(selector, 0) for selector in selectors)
 
 
-# ------------------------------------------------------------------ evidence
 
 
 def source_dir(source: str) -> Path:
@@ -270,7 +268,6 @@ def record_guard_logs(source: str) -> None:
     write_records(source, {"*"}, rows)
 
 
-# ---------------------------------------------------------------------- walk
 
 
 PIN_FIELDS = ("walk", "document", "revision", "blob", "sha256")
@@ -508,7 +505,6 @@ def fetch_pins(args: argparse.Namespace) -> int:
     return 0
 
 
-# --------------------------------------------------------------------- query
 
 
 def phrasings(key: str, source: str) -> list[str]:
@@ -644,7 +640,6 @@ def _dedupe(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return out
 
 
-# --------------------------------------------------------------------- probe
 
 
 def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]]:
@@ -804,7 +799,6 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
         path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
 
 
-# -------------------------------------------------------------------- screen
 
 
 def screen(args: argparse.Namespace) -> int:
@@ -837,7 +831,6 @@ def screen(args: argparse.Namespace) -> int:
     return 0
 
 
-# -------------------------------------------------------------------- render
 
 
 def _cell(text: str) -> str:

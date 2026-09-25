@@ -3148,8 +3148,8 @@ const DEEPSEARCH_DS_V2: Corpus = Corpus {
 };
 
 /// `mindee-ocr`: corpus row 195, the Mindee OCR API as its publisher serves it.
-/// Registered on a probe that later proved misaligned: it does not execute
-/// `items-oneof-element`'s unreached arm. It stays as a real spec that byte-matches.
+/// It pins Fern's output for that spec byte for byte; it does not execute
+/// `items-oneof-element`'s unreached arm, so it is no witness for that row.
 const MINDEE_OCR: Corpus = Corpus {
     api: "mindee-ocr",
     package_name: "fern",
