@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.80](https://github.com/nickderobertis/crozier/compare/v0.0.79...v0.0.80) - 2026-09-25
+
+### Added
+
+- *(fixtures)* register every witness the witness searches found ([#294](https://github.com/nickderobertis/crozier/pull/294))
+
 ## [0.0.79](https://github.com/nickderobertis/crozier/compare/v0.0.78...v0.0.79) - 2026-09-24
 
 ### Added
