@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this measurement script sits in scripts/ beside fixtures-coverage-report.py, whose tiers it reuses, and runs as `just golden-reach`.
 """Measure how much of crozier's handling of each `golden` census row its witnesses reach.
 
 A `golden` row in `docs/openapi-surface/*.md` says a registered source declares a

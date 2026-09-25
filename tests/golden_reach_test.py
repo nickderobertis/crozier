@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside fixtures_coverage_test.py and runs under `just test-fixtures-coverage`.
 """Boundary tests for `just golden-reach` (run by `just test-fixtures-coverage`).
 
 `scripts/golden-reach.py` turns the golden-only coverage tier into a per-row
