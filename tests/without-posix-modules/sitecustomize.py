@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate with no Nx workspace; this test-only import shim sits in tests/ beside the golden-reach suite and is put on PYTHONPATH by `just test-fixtures-coverage`.
 """Make the POSIX-only standard-library modules unimportable, as they are on Windows.
 
 Put this directory on `PYTHONPATH` and every Python started under it, children
