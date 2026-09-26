@@ -2457,13 +2457,16 @@ fn build_endpoint(
                 } else {
                     parameter_example(doc, p)
                 },
+                // Only a *named* type's pattern is checked against the
+                // placeholder: discord's `guild_id: SnowflakeType` loses the
+                // example, while CloudPDF's inline `pageKey` pattern
+                // `^obj:[1-9][0-9]*$` keeps `page_key="pageKey"`.
                 pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
-                    schema.pattern.is_some()
-                        || schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| resolve_ref(doc, reference))
-                            .is_some_and(|target| target.pattern.is_some())
+                    schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .is_some_and(|target| target.pattern.is_some())
                 }),
             }
         })
@@ -4489,7 +4492,17 @@ fn resolve_request_body(
     // explicitly opts out. Wildcard request schemas remain required even when the
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
     // itself as the endpoint input.
-    let required = (media_type == "*/*" || rb.required != Some(false)) && !is_optional(schema);
+    // …and so does a referenced map, whose component Fern passes whole as the
+    // body: CloudPDF's `doc.pages.flatten` declares `required: false` over
+    // `$ref DocPagesFlattenRequest` (`additionalProperties: {}`), and its method
+    // takes a required `request: DocPagesFlattenRequest`.
+    let referenced_map = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .is_some_and(is_map);
+    let required = (media_type == "*/*" || rb.required != Some(false) || referenced_map)
+        && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
@@ -8753,6 +8766,7 @@ impl Builder<'_> {
                     .get(&property_name)
                     .and_then(discriminant_value)?;
                 let variant_name = format!("{name}{}", discriminant_class_name(&value));
+                let mut lowered_fields = None;
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
@@ -8764,6 +8778,28 @@ impl Builder<'_> {
                         &standalone,
                         clean_doc(variant.description.as_deref()),
                     );
+                    // An inline variant's fields are the ones the model lowering
+                    // just gave it, nested hoists and all: CloudPDF's `Ink`
+                    // annotation's `inkList` is a list of lists of an inline
+                    // point, and Fern's variant field is
+                    // `List[List[…InkInkListItemItem]]`.
+                    if variant.all_of.is_none() {
+                        lowered_fields = self.types.iter().rev().find_map(|decl| match decl {
+                            // …undocumented, as every union member's fields are.
+                            TypeDecl::Object(object) if object.name == variant_name => Some(
+                                object
+                                    .fields
+                                    .iter()
+                                    .cloned()
+                                    .map(|field| Field {
+                                        docstring: None,
+                                        ..field
+                                    })
+                                    .collect(),
+                            ),
+                            _ => None,
+                        });
+                    }
                 }
                 members.push(UnionMember {
                     class_name: format!(
@@ -8773,12 +8809,14 @@ impl Builder<'_> {
                         )
                     ),
                     discriminant: value,
-                    fields: member_fields(
-                        target,
-                        &property_name,
-                        self.schemas,
-                        target_name.as_deref().or(Some(variant_name.as_str())),
-                    ),
+                    fields: lowered_fields.unwrap_or_else(|| {
+                        member_fields(
+                            target,
+                            &property_name,
+                            self.schemas,
+                            target_name.as_deref().or(Some(variant_name.as_str())),
+                        )
+                    }),
                     discriminant_index: member_discriminant_index(
                         target,
                         &property_name,
@@ -9425,6 +9463,10 @@ impl Builder<'_> {
                             );
                             return TypeRef::List(Box::new(TypeRef::Named(name)));
                         }
+                        // A nullable element union is an optional element:
+                        // CloudPDF's `calculationOrder` items are the sibling
+                        // `ref` union marked `nullable: true`, and the golden is
+                        // `List[Optional[…CalculationOrderItem]]`.
                         if let Some(decl) = self.discriminated_union(
                             &name,
                             &module,
@@ -9432,7 +9474,12 @@ impl Builder<'_> {
                             clean_doc(items.description.as_deref()),
                         ) {
                             self.types.push(TypeDecl::DiscriminatedUnion(decl));
-                            return TypeRef::List(Box::new(TypeRef::Named(name)));
+                            let element = TypeRef::Named(name);
+                            return TypeRef::List(Box::new(if is_explicitly_nullable(items) {
+                                optional_type_ref(element)
+                            } else {
+                                element
+                            }));
                         }
                         // A `type: null` member states that the *element* may be
                         // absent rather than adding an `Any` alternative to the
@@ -9817,7 +9864,15 @@ impl Builder<'_> {
                             nullable_member(m, ty)
                         })
                         .collect();
-                    let variants = dedupe_union_members(variants);
+                    let mut variants = dedupe_union_members(variants);
+                    // Members that all convert to one type are that type, with no
+                    // alias (Fern's `processSubtypes`): CloudPDF's `docMdp` offers
+                    // `{type: number, enum: [1]}`, `[2]` and `[3]` and is
+                    // `Optional[float]`, and its `calloutLine` offers two tuple
+                    // arrays and is `Optional[List[Any]]`.
+                    if variants.len() == 1 && variants[0] != TypeRef::Primitive(Prim::Any) {
+                        return variants.remove(0);
+                    }
                     let module = naming::module_name(&name);
                     self.push_alias(
                         &name,

@@ -1413,7 +1413,25 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
         } else if let Some(names) = children.get(module.as_str()) {
-            files.push(module_pkg_init_file(&env, pkg, module, names)?);
+            let child_types: Vec<(String, Vec<String>)> = names
+                .iter()
+                .filter_map(|child| {
+                    let decls = tag_type_modules.get(child.as_str())?;
+                    let mut exported: Vec<String> = decls
+                        .iter()
+                        .flat_map(|decl| decl.exported_names().into_iter().map(str::to_string))
+                        .collect();
+                    exported.sort();
+                    Some((module_stem(child).to_string(), exported))
+                })
+                .collect();
+            files.push(module_pkg_init_file(
+                &env,
+                pkg,
+                module,
+                names,
+                &child_types,
+            )?);
         } else {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
@@ -1888,16 +1906,27 @@ fn module_pkg_init_file(
     pkg: &str,
     module: &str,
     children: &[String],
+    child_types: &[(String, Vec<String>)],
 ) -> Result<GeneratedFile> {
-    let names: Vec<String> = children
+    let mut names: Vec<String> = children
         .iter()
         .map(|child| module_stem(child).to_string())
         .collect();
-    let type_checking = from_import_block(".", &names, 4);
-    let pairs: Vec<(String, String)> = names
+    let mut type_checking = from_import_block(".", &names, 4);
+    let mut pairs: Vec<(String, String)> = names
         .iter()
         .map(|name| (name.clone(), format!(".{name}")))
         .collect();
+    // A sub-package's hoisted types are re-exported here, one level up, and no
+    // further: CloudPDF's `doc/__init__.py` lists `from .pages import
+    // DocPagesSetScaleRequestMeasure…`, and the package root does not.
+    for (child, exported) in child_types {
+        type_checking.push_str(&from_import_block(&format!(".{child}"), exported, 4));
+        for name in exported {
+            pairs.push((name.clone(), format!(".{child}")));
+            names.push(name.clone());
+        }
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
         contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
@@ -1956,6 +1985,9 @@ fn root_init_file(
         let names = tt.decl.exported_names().into_iter().map(str::to_string);
         if tt.module.is_empty() {
             type_names.extend(names);
+        } else if tt.module.contains('/') {
+            // A nested sub-package's types are re-exported by its parent
+            // package instead (see `module_pkg_init_file`).
         } else {
             hoisted_by_tag
                 .entry(tt.module.clone())
@@ -2234,11 +2266,20 @@ fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    // A client nested below the top level is passed over while a top-level one
+    // qualifies: CloudPDF's first `POST` is `doc.annotations.create`, two levels
+    // down, and its README demonstrates `shares.exchange`, the first `POST` of a
+    // top-level client.
+    let order = readme_endpoint_order(ir);
     select_readme_endpoint(
-        readme_endpoint_order(ir).into_iter(),
+        order
+            .iter()
+            .copied()
+            .filter(|ep| module_depth(&ep.module) <= 1),
         &ir.types,
         &ir.tag_types,
     )
+    .or_else(|| select_readme_endpoint(order.into_iter(), &ir.types, &ir.tag_types))
 }
 
 /// The endpoint the README's streaming section demonstrates: the first emittable
@@ -3662,10 +3703,12 @@ fn render_enum(
     e: &crate::ir::EnumType,
     loc: &RefLoc,
 ) -> Result<String> {
+    // A nested client module (`doc/forms`) sits one level deeper per segment:
+    // CloudPDF's `ExportDataFormsRequestFormat` imports `from ....core`.
     let core_parent = match loc {
-        RefLoc::TagTypes(_) => "...core",
-        RefLoc::RootTypes => "..core",
-        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core",
+        RefLoc::TagTypes(module) => format!("{}core", ".".repeat(module_depth(module) + 2)),
+        RefLoc::RootTypes => "..core".to_string(),
+        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core".to_string(),
     };
     let mut body = format!(
         "import typing\n\nfrom {core_parent} import enum\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass "
@@ -8446,10 +8489,13 @@ fn build_example_inner(
             // unknown by its key type's sample: Spendesk's `request_access_token`
             // posts a bare `type: object` and answers an undeclared `$ref`, and
             // its golden documents `request={"string": {"key": "value"}}`.
+            // So does a map the body names through its component alias:
+            // CloudPDF's `doc.pages.extract` posts `$ref DocPagesExtractRequest`.
             if ep.importer_example_missing
                 && body_example.is_none()
                 && s.example.is_none()
-                && matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                && (matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                    || ctx.resolves_to_unknown_map(&s.type_ref))
             {
                 v = if ctx.reference {
                     Example::ReferenceDict(vec![("string".to_string(), Example::Atom(v.flat()))])
@@ -8852,6 +8898,9 @@ fn build_example_inner(
             }
         }
         for (module, tag_names) in by_module {
+            // A nested client module imports by its dotted path (CloudPDF's
+            // `from fern.doc.signatures import …`).
+            let module = module_path(module);
             let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
             let import_width = if documentation { usize::MAX } else { 80 };
             if flat.len() > import_width {

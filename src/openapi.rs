@@ -1475,6 +1475,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_multi_type_schemas(&mut doc);
@@ -1712,6 +1713,142 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// `ApplicationCommandHandler` writes `{type: integer, oneOf: [], format: int32}`
 /// and Fern generates the plain `int` its `type` names, so the list is discarded
 /// here rather than guarded against at each use site.
+/// Replace every `$ref` that points *inside* a component schema — past its name,
+/// through `properties`, `items`, `additionalProperties` or a composition
+/// member — with a copy of the schema it points at, as though the document had
+/// written that schema at the reference. Fern's importer resolves such a
+/// pointer by walking the document (`resolveSchemaReference`) and converts what
+/// it finds at the referencing position, so the copy is named for where it is
+/// used: dnd5eapi's `Monster.legendary_actions` points its items at
+/// `Monster/allOf/3/properties/actions/items` and the golden declares
+/// `MonsterLegendaryActionsItem`, and CloudPDF's `…AffectedPagesItem.revision
+/// .page` points at the sibling `page` and is `…AffectedPagesItemRevisionPage`,
+/// where a string target is plain `str`.
+///
+/// A pointer that ends *on* a composition member, one through a segment no
+/// schema is named by (a `$defs` member), and one that names nothing are left
+/// for the lowering to type as unknown, which is what Fern makes of each of
+/// them (the `array-item-pointer-walk-*` and `ref-pointer-unnamed-segment`
+/// probes). A pointer met again while its own copy is being expanded is left
+/// in place too, so a self-referencing subtree terminates.
+fn normalize_schema_pointer_refs(doc: &mut OpenApi) {
+    let components = doc.components.schemas.clone();
+    let mut expanding = Vec::new();
+    for_each_root_schema(doc, &mut |schema| {
+        inline_schema_pointers(schema, &components, &mut expanding);
+    });
+}
+
+fn inline_schema_pointers(
+    schema: &mut Schema,
+    components: &IndexMap<String, Schema>,
+    expanding: &mut Vec<String>,
+) {
+    // A pointer that is the lone `allOf` member of a node adding only annotations
+    // is that node's schema: CloudPDF's annotation `inReplyTo` is `allOf: [→ the
+    // sibling `ref` union], nullable: true`, and the golden declares the union
+    // itself under `…InReplyTo`.
+    if schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.properties.is_empty()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+    {
+        if let Some([member]) = schema.all_of.as_deref() {
+            if let Some(reference) = member.reference.clone() {
+                if !expanding.contains(&reference) {
+                    if let Some(target) = schema_pointer_target(components, &reference) {
+                        let description = schema.description.take();
+                        let nullable = schema.nullable;
+                        *schema = target.clone();
+                        schema.description = description.or(schema.description.take());
+                        schema.nullable = nullable.or(schema.nullable);
+                        expanding.push(reference);
+                        inline_schema_pointers(schema, components, expanding);
+                        expanding.pop();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    if let Some(reference) = schema.reference.clone() {
+        if !expanding.contains(&reference) {
+            if let Some(target) = schema_pointer_target(components, &reference) {
+                *schema = target.clone();
+                expanding.push(reference);
+                inline_schema_pointers(schema, components, expanding);
+                expanding.pop();
+                return;
+            }
+        }
+    }
+    for property in schema.properties.values_mut() {
+        inline_schema_pointers(property, components, expanding);
+    }
+    if let Some(items) = &mut schema.items {
+        inline_schema_pointers(items, components, expanding);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
+        inline_schema_pointers(value, components, expanding);
+    }
+    for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of] {
+        for member in members.iter_mut().flatten() {
+            inline_schema_pointers(member, components, expanding);
+        }
+    }
+}
+
+/// The schema a pointer names *inside* a component, or `None` for a pointer to a
+/// component itself, one ending on a composition member, or one through any
+/// segment other than the Schema Object's own subschema positions.
+fn schema_pointer_target<'a>(
+    components: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    let pointer = reference.strip_prefix("#/components/schemas/")?;
+    let segments: Vec<String> = pointer
+        .split('/')
+        .map(|segment| segment.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    let (name, path) = segments.split_first()?;
+    if path.is_empty() {
+        return None;
+    }
+    let mut schema = components.get(name)?;
+    let mut index = 0;
+    let mut ends_on_member = false;
+    while index < path.len() {
+        ends_on_member = false;
+        schema = match path[index].as_str() {
+            "properties" => {
+                index += 1;
+                schema.properties.get(path.get(index)?)?
+            }
+            "items" => schema.items.as_deref()?,
+            "additionalProperties" => match &schema.additional_properties {
+                Some(AdditionalProperties::Schema(value)) => value,
+                _ => return None,
+            },
+            composition @ ("allOf" | "oneOf" | "anyOf") => {
+                index += 1;
+                let members = match composition {
+                    "allOf" => &schema.all_of,
+                    "oneOf" => &schema.one_of,
+                    _ => &schema.any_of,
+                };
+                ends_on_member = true;
+                members
+                    .as_ref()?
+                    .get(path.get(index)?.parse::<usize>().ok()?)?
+            }
+            _ => return None,
+        };
+        index += 1;
+    }
+    (!ends_on_member).then_some(schema)
+}
+
 fn normalize_empty_compositions(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
