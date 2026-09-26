@@ -1201,8 +1201,8 @@ golden reaches, named for the first time by the node-local predicate family, by
 the pointer-form one after it, by the annotated-`$ref` pass after that, by the
 discriminated-union pass after that, by the pointer-walk pass after that, by
 the negation pass after that, and by the nested-composition re-derivation of
-`hoist_union_variant`, whose `oneof-anyof-variant` and `anyof-anyof-variant` no
-registered source declares. **Seven of them are the negation pass's**, and the
+`hoist_union_variant`, whose `oneof-anyof-variant` no registered source declares
+(its sibling `anyof-anyof-variant` is `golden` on `fergus`). **Seven of them are the negation pass's**, and the
 probe backlog stays empty across all seven: each is a shape whose sibling
 spelling a registered golden-bearing source already declares, so what settles it
 is a screened real-world witness rather than a locally authored probe. Nine
