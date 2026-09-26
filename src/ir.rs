@@ -5175,7 +5175,7 @@ impl InlineHoister<'_> {
             .collect();
         let hoisted = self.out.len();
         let mut inherited = Vec::new();
-        let mut overridden = false;
+        let mut overridden = schema.all_of.iter().flatten().any(is_nullable_annotation);
         for (base_name, base) in &bases {
             let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
             let mut base_fields = Vec::new();
@@ -8270,11 +8270,15 @@ impl Builder<'_> {
             .collect();
         // A base property this model redeclares. Only the bases that have one are
         // lowered here, so an ordinary `allOf` still hoists nothing twice.
-        let collides = base_refs.iter().any(|(_, base)| {
-            base.properties
-                .keys()
-                .any(|field| declared_fields.contains(field.as_str()))
-        });
+        // A nullability-only member inlines every base (see
+        // [`is_nullable_annotation`]).
+        let nullable_annotation = schema.all_of.iter().flatten().any(is_nullable_annotation);
+        let collides = nullable_annotation
+            || base_refs.iter().any(|(_, base)| {
+                base.properties
+                    .keys()
+                    .any(|field| declared_fields.contains(field.as_str()))
+            });
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if member.reference.is_none() {
@@ -8361,6 +8365,7 @@ impl Builder<'_> {
                 inherited_by_base.push(inherited);
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
+            overridden |= nullable_annotation;
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -10874,6 +10879,23 @@ fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
 /// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
     is_explicitly_nullable(schema)
+        || is_null_variant(schema)
+        || schema.all_of.iter().flatten().any(is_nullable_annotation)
+}
+
+/// An `allOf` element that adds nothing but nullability — `{type: [object,
+/// null]}` beside a `$ref`. Fern reads the composition as nullable, and as a
+/// flat copy of the referenced object rather than a subclass: ramu-shogi's
+/// `GetUserSettingsResponse.document` is `allOf: [$ref UserSettingsDocument,
+/// {type: [object, null]}]`, and its golden is an optional
+/// `GetUserSettingsResponseDocument` restating every `UserSettingsDocument` field.
+fn is_nullable_annotation(member: &Schema) -> bool {
+    member.reference.is_none()
+        && member.properties.is_empty()
+        && member.all_of.is_none()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && is_explicitly_nullable(member)
 }
 
 /// Is this schema the explicit `type: null` alternative of a composition? Fern

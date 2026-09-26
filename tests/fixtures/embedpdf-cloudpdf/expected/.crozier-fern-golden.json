@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "embedpdf-cloudpdf",
+  "corpus_spec_ref": "2516e2786ee894383220ecd436fbd248182ef444",
+  "corpus_spec_url": "https://raw.githubusercontent.com/embedpdf/embed-pdf-viewer/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/contract/openapi.json"
+}

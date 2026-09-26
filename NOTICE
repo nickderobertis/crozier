@@ -254,6 +254,24 @@ Additional issue #77 real-world OpenAPI source specs:
     reference. Only Fern-generated output is vendored, with Python comments
     stripped as described above.
 
+  * VisKit Studio API: the publisher's own description at
+    https://raw.githubusercontent.com/MyuriKanao/viskit-studio/58b149008088c837332b57353c0f6e1fe19bbe8d/packages/schemas/openapi.yaml.
+    The repository's own LICENSE grants MIT redistribution; corpus row 167 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * CloudPDF contract API: the publisher's own description at
+    https://raw.githubusercontent.com/embedpdf/embed-pdf-viewer/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/contract/openapi.json.
+    The document's info.license grants Apache-2.0 redistribution; corpus row 171 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * NPQ registration API v3: the publisher's own description at
+    https://raw.githubusercontent.com/DFE-Digital/npq-registration/17f95361371e9bb8c3f1e41c90f5e78bda069ce5/public/api/docs/v3/swagger.yaml.
+    The repository's own LICENSE grants MIT redistribution; corpus row 175 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
   * Source: APIs.guru OpenAPI Directory (https://apis.guru/openapi-directory/),
     individual immutable API/version URLs listed in tests/fixtures/CORPUS.md.
   * Source specs for the issue #77 corpus are intentionally not vendored. The

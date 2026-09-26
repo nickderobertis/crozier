@@ -229,6 +229,9 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e osparc_payments_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_node_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_server_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e viskit_studio_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e embedpdf_cloudpdf_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e npq_registration_matches_fern_output
 
 # Format the codebase in place.
 format:

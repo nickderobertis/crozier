@@ -1,0 +1,78 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode(enum.StrEnum):
+    NORMAL = "normal"
+    MULTIPLY = "multiply"
+    SCREEN = "screen"
+    OVERLAY = "overlay"
+    DARKEN = "darken"
+    LIGHTEN = "lighten"
+    COLOR_DODGE = "color-dodge"
+    COLOR_BURN = "color-burn"
+    HARD_LIGHT = "hard-light"
+    SOFT_LIGHT = "soft-light"
+    DIFFERENCE = "difference"
+    EXCLUSION = "exclusion"
+    HUE = "hue"
+    SATURATION = "saturation"
+    COLOR = "color"
+    LUMINOSITY = "luminosity"
+
+    def visit(
+        self,
+        normal: typing.Callable[[], T_Result],
+        multiply: typing.Callable[[], T_Result],
+        screen: typing.Callable[[], T_Result],
+        overlay: typing.Callable[[], T_Result],
+        darken: typing.Callable[[], T_Result],
+        lighten: typing.Callable[[], T_Result],
+        color_dodge: typing.Callable[[], T_Result],
+        color_burn: typing.Callable[[], T_Result],
+        hard_light: typing.Callable[[], T_Result],
+        soft_light: typing.Callable[[], T_Result],
+        difference: typing.Callable[[], T_Result],
+        exclusion: typing.Callable[[], T_Result],
+        hue: typing.Callable[[], T_Result],
+        saturation: typing.Callable[[], T_Result],
+        color: typing.Callable[[], T_Result],
+        luminosity: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.NORMAL:
+            return normal()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.MULTIPLY:
+            return multiply()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.SCREEN:
+            return screen()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.OVERLAY:
+            return overlay()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.DARKEN:
+            return darken()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.LIGHTEN:
+            return lighten()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.COLOR_DODGE:
+            return color_dodge()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.COLOR_BURN:
+            return color_burn()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.HARD_LIGHT:
+            return hard_light()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.SOFT_LIGHT:
+            return soft_light()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.DIFFERENCE:
+            return difference()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.EXCLUSION:
+            return exclusion()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.HUE:
+            return hue()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.SATURATION:
+            return saturation()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.COLOR:
+            return color()
+        if self is DocAnnotationsList200ResponseAnnotationsItemRedactBlendMode.LUMINOSITY:
+            return luminosity()

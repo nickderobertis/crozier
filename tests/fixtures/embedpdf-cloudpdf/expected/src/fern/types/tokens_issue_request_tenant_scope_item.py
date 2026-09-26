@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .tokens_issue_request_tenant_scope_item_one import TokensIssueRequestTenantScopeItemOne
+from .tokens_issue_request_tenant_scope_item_zero import TokensIssueRequestTenantScopeItemZero
+
+TokensIssueRequestTenantScopeItem = typing.Union[
+    TokensIssueRequestTenantScopeItemZero, TokensIssueRequestTenantScopeItemOne
+]
