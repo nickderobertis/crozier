@@ -1177,6 +1177,10 @@ pub struct Endpoint {
     pub response: Option<TypeRef>,
     /// Whether a successful status may carry no parseable response body.
     pub response_may_be_empty: bool,
+    /// Whether the success body names a component that is itself unknown (`{}`),
+    /// so the named response type is an alias of `Any` that Fern guards the empty
+    /// body for as it does a bare unknown.
+    pub response_names_unknown: bool,
     /// The success response's description, shown in the docstring's `Returns`
     /// section (Fern emits an indented line under the return type).
     pub response_doc: Option<String>,
@@ -3109,6 +3113,13 @@ fn build_endpoint(
     // emittability (issue #43); an operation with no responses is still emitted.
     let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
+    // marimo-plugins' `read_marimo_chatbot_send_prompt_output` answers
+    // `$ref: marimo-chatbot.send_prompt.output`, a `{}` component, and its golden
+    // guards the empty body exactly as for a bare `{}`.
+    let success_names_unknown = success_response_schema(op)
+        .and_then(|schema| schema.reference.as_deref())
+        .and_then(|reference| resolve_ref(doc, reference))
+        .is_some_and(is_unknown);
     let has_parameters =
         !path_params.is_empty() || !query_params.is_empty() || !header_params.is_empty();
     let body_collapses_to_type_reference = !has_parameters
@@ -3442,11 +3453,13 @@ fn build_endpoint(
             || success_response_entry(op).is_some_and(|response| response.reference.is_some())
             || doc.openapi.starts_with("3.1")
                 && success_response_schema(op).is_some_and(is_unknown)
+            || doc.openapi.starts_with("3.1") && success_names_unknown
             // A success schema pointing at a component the document never
             // declares is unknown too, and may be empty: Skool's `GET
             // …/comments/` answers `$ref: SuccessResponse`, which no component
             // names, and its golden guards the empty body.
             || success_response_schema(op).is_some_and(|schema| schema.unresolved_reference),
+        response_names_unknown: success_names_unknown,
         response_doc: success_response_doc(op),
         errors,
         docstring: operation_doc(op.description.as_deref()),
@@ -3672,6 +3685,52 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
         || undeclared_response
         || request_example_fails(doc, op)
         || request_declares_unlisted_required(doc, op)
+        || request_requires_unexampled_unknown(doc, op)
+}
+
+/// Whether Fern's importer builds no request example because the body requires a
+/// property it cannot example: with no example written for the request, an
+/// unknown (`{}`) property yields nothing when optionals are ignored, and a
+/// required property yielding nothing fails its object. marimo-plugins'
+/// `marimo-panel.send_to_widget.input` requires `message: {}`, and its golden
+/// examples `buffers` with the fallback's two items.
+fn request_requires_unexampled_unknown(doc: &OpenApi, op: &Operation) -> bool {
+    let Some((_, media)) = op.request_body.as_ref().and_then(selected_json_request_media) else {
+        return false;
+    };
+    if media_example(doc, media).is_some() {
+        return false;
+    }
+    let Some(schema) = media.schema.as_ref() else {
+        return false;
+    };
+    requires_unexampled_unknown(doc, schema, 0)
+}
+
+fn requires_unexampled_unknown(doc: &OpenApi, schema: &Schema, depth: usize) -> bool {
+    if depth > 8 || schema_example(schema).is_some() {
+        return false;
+    }
+    let schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    if schema_example(schema).is_some() {
+        return false;
+    }
+    schema.properties.iter().any(|(name, property)| {
+        if !schema.required.iter().any(|required| required == name) || schema_example(property).is_some() {
+            return false;
+        }
+        let target = property
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref(doc, reference))
+            .unwrap_or(property);
+        is_unknown(target) && schema_example(target).is_none()
+            || !target.properties.is_empty() && requires_unexampled_unknown(doc, property, depth + 1)
+    })
 }
 
 /// Whether the JSON request body holds an object whose `required` is not a list

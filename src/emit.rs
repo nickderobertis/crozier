@@ -4674,7 +4674,8 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
     if matches!(ep.response, Some(TypeRef::Optional(_)))
-        || ep.response_may_be_empty && matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+        || ep.response_may_be_empty
+            && (matches!(ep.response, Some(TypeRef::Primitive(Prim::Any))) || ep.response_names_unknown)
     {
         lines.extend([
             "            if _response is None or not _response.text.strip():".to_string(),
@@ -10301,6 +10302,7 @@ mod tests {
             body_schema_is_success_response: false,
             response,
             response_may_be_empty: false,
+            response_names_unknown: false,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,

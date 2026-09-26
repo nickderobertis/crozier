@@ -4963,7 +4963,6 @@ const KOMGA: Corpus = Corpus {
         "src/fern/readlist_poster/client.py",
         "src/fern/readlist_poster/raw_client.py",
         "src/fern/readlists/raw_client.py",
-        "src/fern/series/raw_client.py",
         "src/fern/series_poster/client.py",
         "src/fern/series_poster/raw_client.py",
         "src/fern/server_settings/raw_client.py",

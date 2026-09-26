@@ -591,7 +591,7 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 127 | `torrentarr` | `media-type-range`, `duplicate-normalized-paths` | ✅ byte-matched, no generator change |
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
-| 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
+| 130 | `komga` | `media-type-range` | ⚠️ registered with 31 of 338 files in `unmatched` (40 when batch 14 registered it) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
 | 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 306 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair) in `unmatched` and 148 crozier-only modules declared |
 
@@ -623,7 +623,7 @@ would have left no measured reason for the gap, which is the opposite of what th
 backlog is for. Each residual is a distinct body of work, named here so the next
 change has an exact set to shorten:
 
-- **`komga` (32 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
+- **`komga` (31 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
   `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a
   `@contextlib.contextmanager`; crozier makes **6**. Komga keys its ranges on
   `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of
