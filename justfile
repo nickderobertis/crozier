@@ -68,7 +68,11 @@ test-live-e2e *args:
 # fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
 # missing spec from a skip into a hard failure so the leg can't no-op. One
 # `cargo test` invocation per corpus keeps a fetch/spec problem attributable to
-# its API rather than hidden in a shared filter.
+# its API rather than hidden in a shared filter. The list below is held to the
+# registered corpora in both directions by `tests/e2e.rs`'s
+# `every_registered_corpus_is_wired_into_the_gate` (part of `check`): a registered
+# corpus whose test is missing here fails it, and so does a line naming a test no
+# registered corpus owns, so a renamed test cannot drop a corpus silently.
 test-corpus-match:
     ./scripts/fetch-corpus.sh
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
