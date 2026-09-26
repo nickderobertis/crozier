@@ -863,6 +863,100 @@ class ArmSearchNetworkStageTests(_StageScratch):
         self.assertEqual("", listing["gone.yaml"])
 
 
+WITHOUT_POSIX = REPO / "tests" / "without-posix-modules"
+# Every script this branch's golden-reach work added or changed; the rate-limit guard
+# comes in through the ones that search.
+PORTABLE_SCRIPTS = (
+    "golden-reach.py",
+    "golden-reach-search.py",
+    "llmlint-diff.py",
+    "openapi-surface-census.py",
+    "witness-scrape-wide.py",
+    "witness-search-github.py",
+)
+LOCK_HOLDER = """\
+import importlib.util, os, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("golden_reach_search", sys.argv[1])
+search = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = search
+spec.loader.exec_module(search)
+scratch, key = Path(sys.argv[2]), sys.argv[3]
+search.CACHE, search.EVIDENCE = scratch / "cache", scratch / "evidence"
+search.CACHE.mkdir(parents=True, exist_ok=True)
+log = os.open(scratch / "held.log", os.O_WRONLY | os.O_APPEND | os.O_CREAT)
+with search.exclusive_lock(search.CACHE / "jentic.probe.lock"):
+    os.write(log, f"enter {key}\\n".encode())
+    time.sleep(0.3)
+    os.write(log, f"leave {key}\\n".encode())
+search.file_probes("jentic", key, [{"key": key, "candidate": "a.yaml", "status": "generated", "reached": []}])
+print("fcntl" if search.fcntl else "msvcrt" if search.msvcrt else "exclusive-create")
+"""
+
+
+def python_env(*, posix_modules: bool) -> dict[str, str]:
+    """This environment with the POSIX-only modules importable or, as on Windows, not."""
+    kept = [p for p in os.environ.get("PYTHONPATH", "").split(os.pathsep)
+            if p and Path(p).resolve() != WITHOUT_POSIX]
+    return dict(os.environ, PYTHONPATH=os.pathsep.join(kept if posix_modules else [str(WITHOUT_POSIX), *kept]))
+
+
+class WithoutPosixModulesTests(unittest.TestCase):
+    """The scripts run where `fcntl` and the other POSIX-only modules do not exist.
+
+    Windows has none of them; the `check (windows-latest)` leg is where this
+    used to fail, at import. `just test-fixtures-coverage` also runs this whole
+    suite under the same condition.
+    """
+
+    def test_the_shadow_makes_every_posix_only_module_unimportable(self) -> None:
+        for name in ("fcntl", "grp", "pwd", "resource", "termios"):
+            with self.subTest(name):
+                run = subprocess.run([sys.executable, "-c", f"import {name}"], capture_output=True, text=True,
+                                     env=python_env(posix_modules=False))
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(f"import of {name} halted", run.stderr)
+
+    def test_every_script_runs_its_command_line_without_them(self) -> None:
+        for script in PORTABLE_SCRIPTS:
+            with self.subTest(script):
+                run = subprocess.run([sys.executable, str(REPO / "scripts" / script), "--help"],
+                                     capture_output=True, text=True, env=python_env(posix_modules=False))
+                self.assertEqual(0, run.returncode, run.stderr)
+                self.assertIn("usage:", run.stdout)
+
+    def test_the_probe_lock_admits_one_process_at_a_time_with_or_without_them(self) -> None:
+        for posix_modules in (True, False):
+            with self.subTest(posix_modules=posix_modules), tempfile.TemporaryDirectory() as scratch:
+                keys = ("k1", "k2", "k3")
+                holders = [
+                    subprocess.Popen(
+                        [sys.executable, "-c", LOCK_HOLDER, str(REPO / "scripts" / "golden-reach-search.py"),
+                         scratch, key],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                        env=python_env(posix_modules=posix_modules),
+                    )
+                    for key in keys
+                ]
+                mechanisms = set()
+                for holder in holders:
+                    out, err = holder.communicate(timeout=120)
+                    self.assertEqual(0, holder.returncode, err)
+                    mechanisms.add(out.strip())
+                if not posix_modules:
+                    self.assertNotIn("fcntl", mechanisms)
+                elif os.name != "nt":
+                    self.assertEqual({"fcntl"}, mechanisms)
+                held = (Path(scratch) / "held.log").read_text(encoding="utf-8").split()
+                spans = [held[i:i + 4] for i in range(0, len(held), 4)]
+                self.assertEqual(len(keys), len(spans), held)
+                for enter, key, leave, same in spans:
+                    self.assertEqual(("enter", "leave", key), (enter, leave, same), f"two holders overlapped: {held}")
+                self.assertEqual(set(keys), {row["key"] for row in golden_reach_search.read_jsonl(
+                    Path(scratch) / "evidence" / "jentic" / "probe.jsonl", ("key",), "")})
+                self.assertFalse(any(Path(scratch, "cache").glob("*.held")), "a released lock left its marker")
+
+
 class RecipeTests(unittest.TestCase):
     def test_the_recipes_drive_this_script_and_write_the_census_it_reads(self) -> None:
         body = recipe_body("golden-reach")

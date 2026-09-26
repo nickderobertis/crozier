@@ -49,25 +49,36 @@ way of the acquirer; this script opens no socket of its own.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
-import fcntl
 import gzip
 import hashlib
 import http.client
 import importlib.util
+import itertools
 import json
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.parse
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
 from typing import Any
+
+try:
+    import fcntl
+except ImportError:  # Windows: no POSIX advisory locks; see `exclusive_lock`
+    fcntl = None  # type: ignore[assignment]
+try:
+    import msvcrt
+except ImportError:
+    msvcrt = None  # type: ignore[assignment]
 
 REPO = Path(__file__).resolve().parent.parent
 SURFACE = REPO / "docs" / "openapi-surface"
@@ -860,6 +871,51 @@ def read_probes(source: str) -> list[dict[str, Any]]:
                       "restore it from git, or re-run `probe` for the source")
 
 
+@contextlib.contextmanager
+def exclusive_lock(path: Path) -> Iterator[None]:
+    """Hold an inter-process lock on `path` for the body, waiting as long as it is held.
+
+    `fcntl.flock` where the platform has it and `msvcrt.locking` on Windows,
+    both released by the kernel if the holder dies. A platform with neither
+    falls back to creating `path` exclusively, which a killed holder leaves
+    behind: the wait then names the file to remove.
+    """
+    if fcntl is not None or msvcrt is not None:
+        with path.open("a+b") as handle:
+            if fcntl is not None:
+                fcntl.flock(handle, fcntl.LOCK_EX)
+                yield
+                return
+            handle.seek(0)
+            while True:
+                try:
+                    # Byte 0, past EOF or not; LK_LOCK gives up after ~10s, so wait again.
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+                    break
+                except OSError:
+                    continue
+            try:
+                yield
+            finally:
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        return
+    marker = path.with_name(path.name + ".held")
+    for tick in itertools.count(1):
+        try:
+            os.close(os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            break
+        except FileExistsError:
+            if tick % 600 == 0:
+                print(f"golden-reach-search: still waiting on {marker}; remove it if no probe is filing",
+                      file=sys.stderr)
+            time.sleep(0.1)
+    try:
+        yield
+    finally:
+        marker.unlink()
+
+
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     """One key's probe results into `probe.jsonl`.
 
@@ -872,8 +928,7 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     # Probes of other keys of this source may be filing at the same time; the
     # read-modify-write is theirs to wait for, not to interleave with.
     CACHE.mkdir(parents=True, exist_ok=True)
-    with (CACHE / f"{source}.probe.lock").open("w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with exclusive_lock(CACHE / f"{source}.probe.lock"):
         kept = [row for row in read_probes(source) if row["key"] != key]
         path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
 

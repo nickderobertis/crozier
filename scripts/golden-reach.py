@@ -61,6 +61,8 @@ REGIONS_DIR = REPO / "docs" / "openapi-surface"
 SITES_TABLE = REGIONS_DIR / "golden-reach-sites.tsv"
 LEDGER = REGIONS_DIR / "golden-reach.tsv"
 DEFAULT_OUT = REPO / ".local" / "golden-reach"
+# What a native binary's file name ends in: the llvm tools and cargo's outputs carry it.
+EXE = ".exe" if os.name == "nt" else ""
 GOLDEN_TEST = re.compile(r"matches_fern_output")
 CATEGORIES = ("golden", "limitations", "gap")
 CELL_PREFIX = "reach:"
@@ -333,7 +335,7 @@ def _llvm_tool(name: str) -> str:
         ).stdout.splitlines()
         if line.startswith("host:")
     )
-    tool = Path(sysroot) / "lib" / "rustlib" / host / "bin" / name
+    tool = Path(sysroot) / "lib" / "rustlib" / host / "bin" / f"{name}{EXE}"
     if not tool.is_file():
         fail(f"{tool} is missing — run `rustup component add llvm-tools-preview` (`just bootstrap`)")
     return str(tool)
@@ -353,12 +355,12 @@ def run_llvm(argv: list[str], stdout: IO[str] | None = None) -> None:
 def _instrumented_binaries(repo_root: Path) -> tuple[Path, Path]:
     deps = repo_root / "target" / "llvm-cov-target" / "debug" / "deps"
     candidates = [
-        p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == ""
+        p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == EXE
     ]
     if not candidates:
         fail(f"no instrumented e2e binary under {deps} — run `just golden-reach`, which builds it")
     e2e = max(candidates, key=lambda p: p.stat().st_mtime)
-    crozier = repo_root / "target" / "llvm-cov-target" / "debug" / "crozier"
+    crozier = repo_root / "target" / "llvm-cov-target" / "debug" / f"crozier{EXE}"
     if not crozier.is_file():
         fail(f"no instrumented crozier binary at {crozier} — run `just golden-reach`, which builds it")
     return e2e, crozier

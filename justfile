@@ -296,9 +296,12 @@ test-fern-probe-refusal:
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
 # of the whole corpus; the unmeasured thing would otherwise be the measurement.
 # Part of `check` (the recipe itself is not — it needs network and is slow).
+# The golden-reach suite runs twice: the second time without `fcntl` and the
+# other POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
     python3 tests/fixtures_coverage_test.py
     python3 tests/golden_reach_test.py
+    PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.
