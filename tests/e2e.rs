@@ -3352,6 +3352,7 @@ const CORPORA: &[&Corpus] = &[
     &MARIMO_PLUGINS,
     &OTOROSHI,
     &NEXMO_CONVERSATION,
+    &CODAT_ASSESS,
 ];
 
 #[test]
@@ -6117,6 +6118,19 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `codat-assess`: corpus row 224, Codat's Assess API from APIs.guru, whose
+/// `$ref` pointers index a composition member
+const CODAT_ASSESS: Corpus = Corpus {
+    api: "codat-assess",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11962,6 +11976,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn codat_assess_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CODAT_ASSESS);
 }
 
 #[test]
