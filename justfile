@@ -242,6 +242,13 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e viskit_studio_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e embedpdf_cloudpdf_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e npq_registration_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sim_logs_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sim_tables_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e vellum_gateway_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e dot_ai_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_code_technologies_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e marimo_plugins_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e otoroshi_matches_fern_output
 
 # Format the codebase in place.
 format:

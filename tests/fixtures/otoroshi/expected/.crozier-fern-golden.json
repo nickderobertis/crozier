@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "otoroshi",
+  "corpus_spec_ref": "e912f12c40eaf6de0cdda2e8c43db5cf226a301d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/MAIF/otoroshi/e912f12c40eaf6de0cdda2e8c43db5cf226a301d/otoroshi/conf/schemas/openapi.json"
+}

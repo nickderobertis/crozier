@@ -3344,6 +3344,13 @@ const CORPORA: &[&Corpus] = &[
     &VISKIT_STUDIO,
     &EMBEDPDF_CLOUDPDF,
     &NPQ_REGISTRATION,
+    &SIM_LOGS,
+    &SIM_TABLES,
+    &VELLUM_GATEWAY,
+    &DOT_AI,
+    &PALOALTO_CODE_TECHNOLOGIES,
+    &MARIMO_PLUGINS,
+    &OTOROSHI,
 ];
 
 #[test]
@@ -6012,6 +6019,104 @@ const EMBEDPDF_CLOUDPDF: Corpus = Corpus {
 /// NPQ registration API v3 — corpus row 175, the publisher's own description.
 const NPQ_REGISTRATION: Corpus = Corpus {
     api: "npq-registration",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sim-logs`: corpus row 216, Sim API v2 — Logs. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
+/// disposition left it for the golden-reach continuation.
+const SIM_LOGS: Corpus = Corpus {
+    api: "sim-logs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sim-tables`: corpus row 217, Sim Tables API v2. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
+/// disposition left it for the golden-reach continuation.
+const SIM_TABLES: Corpus = Corpus {
+    api: "sim-tables",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `vellum-gateway`: corpus row 218, the Vellum Gateway API. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
+/// disposition left it for the golden-reach continuation.
+const VELLUM_GATEWAY: Corpus = Corpus {
+    api: "vellum-gateway",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `dot-ai`: corpus row 219, the DevOps AI Toolkit REST API. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
+/// disposition left it for the golden-reach continuation.
+const DOT_AI: Corpus = Corpus {
+    api: "dot-ai",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `paloalto-code-technologies`: corpus row 220, the Prisma Cloud Technologies
+/// API. It declares `anyof-array-variant-struct-item`, a row already `golden`;
+/// its ledger disposition left it for the golden-reach continuation.
+const PALOALTO_CODE_TECHNOLOGIES: Corpus = Corpus {
+    api: "paloalto-code-technologies",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `marimo-plugins`: corpus row 221, marimo's plugin contracts. It declares
+/// `anyof-array-variant-struct-item`, a row already `golden`; its ledger
+/// disposition left it for the golden-reach continuation.
+const MARIMO_PLUGINS: Corpus = Corpus {
+    api: "marimo-plugins",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `otoroshi`: corpus row 222, the Otoroshi Admin API as its repository pins
+/// it. It declares `ref-pointer-undeclared-component-head`, a row already
+/// `golden`; its ledger disposition left it for the golden-reach continuation.
+const OTOROSHI: Corpus = Corpus {
+    api: "otoroshi",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11808,4 +11913,39 @@ fn embedpdf_cloudpdf_matches_fern_output() {
 #[test]
 fn npq_registration_matches_fern_output() {
     assert_link_ok_corpus_matches(&NPQ_REGISTRATION);
+}
+
+#[test]
+fn sim_logs_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIM_LOGS);
+}
+
+#[test]
+fn sim_tables_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIM_TABLES);
+}
+
+#[test]
+fn vellum_gateway_matches_fern_output() {
+    assert_link_ok_corpus_matches(&VELLUM_GATEWAY);
+}
+
+#[test]
+fn dot_ai_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DOT_AI);
+}
+
+#[test]
+fn paloalto_code_technologies_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
+}
+
+#[test]
+fn marimo_plugins_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MARIMO_PLUGINS);
+}
+
+#[test]
+fn otoroshi_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OTOROSHI);
 }

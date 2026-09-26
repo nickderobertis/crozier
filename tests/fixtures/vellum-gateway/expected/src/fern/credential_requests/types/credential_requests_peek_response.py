@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .credential_requests_peek_response_error import CredentialRequestsPeekResponseError
+from .credential_requests_peek_response_expires_at import CredentialRequestsPeekResponseExpiresAt
+
+CredentialRequestsPeekResponse = typing.Union[
+    CredentialRequestsPeekResponseExpiresAt, CredentialRequestsPeekResponseError
+]

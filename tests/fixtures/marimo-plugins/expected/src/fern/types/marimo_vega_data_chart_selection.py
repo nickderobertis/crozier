@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .marimo_vega_data_chart_selection_one import MarimoVegaDataChartSelectionOne
+from .marimo_vega_data_chart_selection_two import MarimoVegaDataChartSelectionTwo
+
+MarimoVegaDataChartSelection = typing.Union[bool, MarimoVegaDataChartSelectionOne, MarimoVegaDataChartSelectionTwo]

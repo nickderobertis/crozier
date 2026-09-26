@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .otoroshi_utils_mailer_console_mailer_settings import OtoroshiUtilsMailerConsoleMailerSettings
+from .otoroshi_utils_mailer_generic_mailer_settings import OtoroshiUtilsMailerGenericMailerSettings
+from .otoroshi_utils_mailer_mailgun_settings import OtoroshiUtilsMailerMailgunSettings
+from .otoroshi_utils_mailer_mailjet_settings import OtoroshiUtilsMailerMailjetSettings
+from .otoroshi_utils_mailer_none_mailer_settings import OtoroshiUtilsMailerNoneMailerSettings
+from .otoroshi_utils_mailer_sendgrid_settings import OtoroshiUtilsMailerSendgridSettings
+
+OtoroshiUtilsMailerMailerSettings = typing.Union[
+    OtoroshiUtilsMailerConsoleMailerSettings,
+    OtoroshiUtilsMailerGenericMailerSettings,
+    OtoroshiUtilsMailerMailgunSettings,
+    OtoroshiUtilsMailerMailjetSettings,
+    OtoroshiUtilsMailerNoneMailerSettings,
+    OtoroshiUtilsMailerSendgridSettings,
+]

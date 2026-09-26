@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .v2create_table_import_data_one import V2CreateTableImportDataOne
+from .v2create_table_import_data_zero import V2CreateTableImportDataZero
+
+V2CreateTableImportData = typing.Union[V2CreateTableImportDataZero, V2CreateTableImportDataOne]

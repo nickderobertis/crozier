@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .v2create_batch_table_rows_response import V2CreateBatchTableRowsResponse
+from .v2create_single_table_row_response import V2CreateSingleTableRowResponse
+
+V2CreateTableRowsResponse = typing.Union[V2CreateSingleTableRowResponse, V2CreateBatchTableRowsResponse]
