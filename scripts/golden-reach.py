@@ -167,13 +167,13 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != 4:
-            fail(f"{path}:{number} has {len(fields)} fields, not 4")
+            fail(f"{path}:{number} has {len(fields)} fields, not 4; give it `key`, `selectors`, `sites` and `note`, tab-separated, as the header names them")
         key, selectors, sites, note = fields
         if key in rows:
-            fail(f"{path}:{number} declares {key} twice")
+            fail(f"{path}:{number} declares {key} twice; merge the two rows' sites into one row")
         selector_list = tuple(s.strip() for s in selectors.split(",") if s.strip())
         if not selector_list:
-            fail(f"{path}:{number} ({key}) names no census selector")
+            fail(f"{path}:{number} ({key}) names no census selector; give it the selector(s) its region row's census cell names, comma-separated")
         site_list = () if sites.strip() == "none" else tuple(
             s.strip() for s in _split_sites(sites) if s.strip()
         )
@@ -250,7 +250,7 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
         fail(f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`")
     path = repo_root / match.group("file")
     if not path.is_file():
-        fail(f"site {spec!r} names {match.group('file')}, which does not exist")
+        fail(f"site {spec!r} names {match.group('file')}, which does not exist; correct its path in {SITES_TABLE.name}")
     lines = path.read_text(encoding="utf-8").splitlines()
     spans = _function_spans(lines, match.group("item"))
     if len(spans) != 1:
@@ -266,7 +266,8 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     pattern = re.compile(arm[1:] if line_only else arm)
     hits = [n for n in range(start, end + 1) if pattern.search(lines[n - 1])]
     if len(hits) != 1:
-        fail(f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1")
+        fail(f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1; "
+             f"anchor it (`^`, a leading-space count, more of the line) in {SITES_TABLE.name} until one line matches")
     first = hits[0]
     if line_only:
         column = pattern.search(lines[first - 1]).start() + 1
@@ -378,12 +379,19 @@ def uncommitted_changes(repo_root: Path) -> list[str]:
         cwd=repo_root, capture_output=True, text=True,
     )
     if status.returncode != 0:
-        fail(f"git status exited {status.returncode}: {status.stderr.strip()[-400:]}")
+        fail(f"git status exited {status.returncode}: {status.stderr.strip()[-400:]} — "
+             "run `just golden-reach` from inside this repository's checkout")
     return [line[3:] for line in status.stdout.splitlines() if line.strip()]
 
 
+# llmlint: ignore[changed_behavior_has_e2e] Its whole journey is an instrumented build plus one instrumented run of every golden test over the fetched corpus, which needs the network and tens of minutes, so it lives outside `just check` as `just fixtures-coverage` does. The refusals are tested; what a run produces is gated by `RankedBacklogTests` reconciling the committed ledger it writes.
 def measure(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
+    if args.tests:
+        try:
+            re.compile(args.tests)
+        except re.error as error:
+            fail(f"--tests {args.tests!r} is not a regex ({error}); pass a Python regex over golden test names")
     out: Path = args.out
     for tool in ("cargo",):
         if shutil.which(tool) is None:

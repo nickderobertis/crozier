@@ -522,10 +522,18 @@ class MeasurementInputTests(unittest.TestCase):
             subprocess.run([*git, "commit", "-q", "-m", "base"], check=True)
             (root / "ir.rs").write_text("fn b() {}\n", encoding="utf-8")
             with self.assertRaises(SystemExit) as refused:
-                golden_reach.measure(argparse.Namespace(repo_root=root, out=root / "out"))
+                golden_reach.measure(argparse.Namespace(repo_root=root, out=root / "out", tests=None))
             self.assertIn("ir.rs", str(refused.exception))
             self.assertIn("commit them first", str(refused.exception))
             self.assertFalse((root / "out").exists())
+
+    def test_a_tests_filter_that_is_no_regex_is_refused_before_anything_builds(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.main(["--repo-root", scratch, "--out", str(Path(scratch) / "out"),
+                                   "measure", "--tests", "golden_(("])
+            self.assertIn("--tests 'golden_((' is not a regex", str(refused.exception))
+            self.assertFalse((Path(scratch) / "out").exists())
 
     def test_a_records_file_with_another_header_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:

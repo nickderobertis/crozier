@@ -763,6 +763,7 @@ def measured_build() -> str:
     return commit[:12]
 
 
+# llmlint: ignore[changed_behavior_has_e2e] A probe runs the instrumented `crozier` that `just golden-reach` builds, with `src/` at the measured commit, so like that measurement it stays outside `just check`; its stale-build refusal is tested, and the probe.jsonl it files is reconciled by `RankedBacklogTests`.
 def probe(args: argparse.Namespace) -> int:
     build = measured_build()
     e2e, crozier = REACH._instrumented_binaries(REPO)
