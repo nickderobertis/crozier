@@ -78,7 +78,7 @@ except ImportError:  # Windows: no POSIX advisory locks; see `exclusive_lock`
 try:
     import msvcrt
 except ImportError:
-    msvcrt = None  # type: ignore[assignment]
+    msvcrt = None  # type: ignore[assignment]  # POSIX: no Windows locking; see `exclusive_lock`
 
 REPO = Path(__file__).resolve().parent.parent
 SURFACE = REPO / "docs" / "openapi-surface"

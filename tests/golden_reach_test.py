@@ -864,8 +864,9 @@ class ArmSearchNetworkStageTests(_StageScratch):
 
 
 WITHOUT_POSIX = REPO / "tests" / "without-posix-modules"
-# Every script this branch's golden-reach work added or changed; the rate-limit guard
-# comes in through the ones that search.
+# The maintenance scripts `check` drives on every OS, Windows included, so each must
+# import without the POSIX-only modules; the rate-limit guard comes in through the
+# ones that search.
 PORTABLE_SCRIPTS = (
     "golden-reach.py",
     "golden-reach-search.py",
