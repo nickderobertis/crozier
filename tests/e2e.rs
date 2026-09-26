@@ -5903,11 +5903,7 @@ const RAMU_SHOGI: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "src/fern/types/auth_session_response_zero.py",
-        "src/fern/types/get_user_settings_response.py",
-        "src/fern/types/get_user_settings_response_document.py",
-    ],
+    unmatched: &[],
 };
 
 /// LangChain Agent Protocol — corpus row 172, the publisher's own description.
