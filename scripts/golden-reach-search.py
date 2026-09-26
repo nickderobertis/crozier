@@ -107,9 +107,9 @@ FIRST_PAGE = 100
 # Keyword arguments every acquirer this script builds is given. A real search
 # leaves them empty; the offline tests point them at a loopback server.
 ACQUIRER_OPTIONS: dict[str, Any] = {}
-# Probe results are filed this many declarers at a time, so a stopped run keeps them;
+# Probe results are filed this many documents at a time, so a stopped run keeps them;
 # some catalogue documents take minutes each under an instrumented build.
-PROBE_CHUNK = 8
+PROBE_BATCH = 48
 
 
 def _load(name: str, path: Path) -> ModuleType:
@@ -820,16 +820,32 @@ def measured_build() -> str:
 
 # llmlint: ignore[changed_behavior_has_e2e] A probe runs the instrumented `crozier` that `just golden-reach` builds, with `src/` at the measured commit, so like that measurement it stays outside `just check`; its stale-build refusal is tested, and the probe.jsonl it files is reconciled by `RankedBacklogTests`.
 def probe(args: argparse.Namespace) -> int:
+    """Run every requested key's declarers through the instrumented build, once per document.
+
+    A document is generated once per build however many keys it declares — the
+    catalogue rows declared by nearly every document (`recursive-graph` on any
+    `$ref`, `non-identifier-operation-id` on any `operationId`) would otherwise
+    multiply the run by the keys asked for — and every key reads its own sites off
+    that one profile. The run is cached by document digest per build under
+    `.local/golden-reach-search/probe-cache/`, so the copy of a document another
+    source walked is not generated twice either.
+    """
     build = measured_build()
     e2e, crozier = REACH._instrumented_binaries(REPO)
     del e2e
     profdata, llvm_cov = REACH._llvm_tool("llvm-profdata"), REACH._llvm_tool("llvm-cov")
     universe = REACH.load_regions(REACH.DEFAULT_OUT / "universe.json")
-    results = []
+    # Every unreached site the ledger names is read off each profile, so a cached
+    # run answers any key's arm and not only the keys this invocation asked for.
+    all_sites = sorted({spec for _rank, reach in REACH.read_ledger()
+                        for spec, hit, _total in reach.sites if not hit})
+    regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
+               for spec in all_sites for site in [REACH.resolve_site(spec)]}
+    sources = sorted({str(REPO / file) for file, _found in regions.values()})
+    cache = load_probe_cache(build)
+    plans: dict[str, tuple[tuple[str, ...], list[dict[str, Any]], list[tuple[str, Path]]]] = {}
     for key in args.key:
         arms = unreached_sites(key)
-        regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
-                   for spec in arms for site in [REACH.resolve_site(spec)]}
         pending = declarers(args.source, key, args.root)
         earlier: list[dict[str, Any]] = []
         if args.resume:
@@ -841,62 +857,112 @@ def probe(args: argparse.Namespace) -> int:
             ]
             done = {row["candidate"] for row in earlier}
             pending = [(candidate, path) for candidate, path in pending if candidate not in done]
-            if not pending:
+        plans[key] = (arms, earlier, pending)
+
+    def digest_of(path: Path) -> str | None:
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            return None
+
+    by_digest: dict[str, Path] = {}
+    unread: dict[str, str] = {}
+    for _arms, _earlier, pending in plans.values():
+        for _candidate, path in pending:
+            key_path = str(path)
+            if key_path in unread:
                 continue
-        # The export is read for the files the unreached sites sit in, and nothing else.
-        sources = sorted({str(REPO / file) for file, _found in regions.values()})
-        # Byte-identical documents (a catalogue's many copies of one version) run once.
-        seen: dict[str, tuple[str, list[str]]] = {}
-
-        def one(candidate_path: tuple[str, Path]) -> dict[str, Any]:
-            candidate, path = candidate_path
-            try:
-                digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            except OSError as error:
-                return {"key": key, "candidate": candidate, "status": f"unreadable: {error.strerror}", "reached": []}
-            if digest in seen:
-                status, reached = seen[digest]
-                return {"key": key, "candidate": candidate, "status": status, "reached": reached, "build": build}
-            result = run_one(candidate, path)
-            seen[digest] = (result["status"], result["reached"])
-            return {**result, "build": build}
-
-        def run_one(candidate: str, path: Path) -> dict[str, Any]:
-            with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
-                scratch_path = Path(scratch)
-                env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
+            digest = digest_of(path)
+            if digest is None:
                 try:
-                    run = subprocess.run(
-                        [str(crozier), "generate", "--spec", str(path), "--output", str(scratch_path / "out"),
-                         "--package-name", "fern", "--project-name", "default_package_name"],
-                        capture_output=True, text=True, timeout=args.timeout, env=env,
-                    )
-                except subprocess.TimeoutExpired:
-                    return {"key": key, "candidate": candidate, "status": f"timeout after {args.timeout}s", "reached": []}
-                profiles = [str(p) for p in scratch_path.glob("*.profraw")]
-                if not profiles:
-                    return {"key": key, "candidate": candidate, "status": f"no profile (exit {run.returncode})", "reached": []}
-                merged = scratch_path / "merged.profdata"
-                REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
-                export = scratch_path / "export.json"
-                with export.open("w", encoding="utf-8") as sink:
-                    REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
-                                    *sources], stdout=sink)
-                tier = {"t": REACH.REPORT.load_tier(export, REPO)}
-                hit = {f: {tuple(r) for r, n in c.items() if n > 0} for f, c in tier["t"].items()}
-            reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
-            status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
-            return {"key": key, "candidate": candidate, "status": status, "reached": reached}
+                    path.read_bytes()
+                except OSError as error:
+                    unread[key_path] = f"unreadable: {error.strerror}"
+                continue
+            unread[key_path] = digest
+            by_digest.setdefault(digest, path)
+    todo = [digest for digest in by_digest if digest not in cache]
 
-        probed: list[dict[str, Any]] = []
-        with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-            for start in range(0, len(pending), PROBE_CHUNK):
-                probed.extend(pool.map(one, pending[start:start + PROBE_CHUNK]))
-                file_probes(args.source, key, earlier + probed)
-        results.extend(probed)
-    reaching = sum(1 for r in results if r["reached"])
-    print(f"golden-reach-search: {args.source}: probed {len(results)} declarer(s), {reaching} reach an unreached arm")
+    def run_one(digest: str) -> tuple[str, dict[str, Any]]:
+        path = by_digest[digest]
+        with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
+            scratch_path = Path(scratch)
+            env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
+            try:
+                run = subprocess.run(
+                    [str(crozier), "generate", "--spec", str(path), "--output", str(scratch_path / "out"),
+                     "--package-name", "fern", "--project-name", "default_package_name"],
+                    capture_output=True, text=True, timeout=args.timeout, env=env,
+                )
+            except subprocess.TimeoutExpired:
+                return digest, {"status": f"timeout after {args.timeout}s", "reached": []}
+            profiles = [str(p) for p in scratch_path.glob("*.profraw")]
+            if not profiles:
+                return digest, {"status": f"no profile (exit {run.returncode})", "reached": []}
+            merged = scratch_path / "merged.profdata"
+            REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
+            export = scratch_path / "export.json"
+            with export.open("w", encoding="utf-8") as sink:
+                REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
+                                *sources], stdout=sink)
+            tier = REACH.REPORT.load_tier(export, REPO)
+            hit = {f: {tuple(r) for r, n in c.items() if n > 0} for f, c in tier.items()}
+        reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
+        status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
+        return digest, {"status": status, "reached": reached}
+
+    def rows_for(key: str) -> list[dict[str, Any]]:
+        arms, earlier, pending = plans[key]
+        rows = list(earlier)
+        for candidate, path in pending:
+            digest = unread.get(str(path), "")
+            if digest.startswith("unreadable: "):
+                rows.append({"key": key, "candidate": candidate, "status": digest, "reached": []})
+            elif digest in cache:
+                result = cache[digest]
+                rows.append({"key": key, "candidate": candidate, "status": result["status"],
+                             "reached": [spec for spec in result["reached"] if spec in arms], "build": build})
+        return rows
+
+    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        for start in range(0, len(todo), PROBE_BATCH):
+            for digest, result in pool.map(run_one, todo[start:start + PROBE_BATCH]):
+                cache[digest] = result
+                append_probe_cache(build, digest, result)
+            file_probes_many(args.source, {key: rows_for(key) for key in plans})
+    file_probes_many(args.source, {key: rows_for(key) for key in plans})
+    reaching = sum(1 for key in plans for row in rows_for(key) if row["reached"])
+    print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
+          f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
     return 0
+
+
+def probe_cache_path(build: str) -> Path:
+    return CACHE / "probe-cache" / f"{build}.jsonl"
+
+
+def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
+    """One build's runs so far, by document digest; a torn last line is dropped."""
+    path = probe_cache_path(build)
+    if not path.is_file():
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and isinstance(row.get("digest"), str):
+            out[row["digest"]] = {"status": row.get("status", ""), "reached": list(row.get("reached", []))}
+    return out
+
+
+def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
+    path = probe_cache_path(build)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with exclusive_lock(CACHE / "probe-cache.lock"):
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
 def read_probes(source: str) -> list[dict[str, Any]]:
@@ -950,6 +1016,16 @@ def exclusive_lock(path: Path) -> Iterator[None]:
         yield
     finally:
         marker.unlink()
+
+
+def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> None:
+    """Several keys' probe results into `probe.jsonl` in one write, each replacing its key's rows."""
+    path = source_dir(source) / "probe.jsonl"
+    CACHE.mkdir(parents=True, exist_ok=True)
+    with exclusive_lock(CACHE / f"{source}.probe.lock"):
+        kept = [row for row in read_probes(source) if row["key"] not in probed]
+        rows = kept + [row for key in probed for row in probed[key]]
+        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
 
 
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:

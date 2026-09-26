@@ -55,3 +55,179 @@ format-uri-template	github-code-search	format: uri-template "requestBody:" filen
 format-uri-template	github-code-search	\uri-template\"" "\"requestBody\"" filename:openapi.json
 format-uri-template	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri-template" count:all type:file
 format-uri-template	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri-template\"" count:all type:file
+ref-pointer-nested-properties	github-code-search	"$ref:" "/properties/" filename:openapi.yaml
+ref-pointer-nested-properties	github-code-search	"\"$ref\"" "/properties/" filename:openapi.json
+ref-pointer-nested-properties	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"#/components/schemas/" content:"/properties/" count:all type:file
+ref-pointer-nested-properties	sourcegraph	file:(openapi|swagger).*\.json$ content:"#/components/schemas/" content:"/properties/" count:all type:file
+ref-pointer-nested-items	github-code-search	"$ref:" "/properties/" "/items" filename:openapi.yaml
+ref-pointer-nested-items	github-code-search	"\"$ref\"" "/properties/" "/items" filename:openapi.json
+ref-pointer-nested-items	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"/properties/" content:"/items'" count:all type:file
+ref-pointer-nested-items	sourcegraph	file:(openapi|swagger).*\.json$ content:"/properties/" content:"/items\"" count:all type:file
+anyof-anyof-variant	github-code-search	"- anyOf:" "anyOf:" filename:openapi.yaml
+anyof-anyof-variant	github-code-search	"\"anyOf\"" "{\"anyOf\"" filename:openapi.json
+anyof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"- anyOf:" count:all type:file
+anyof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"{\"anyOf\":" count:all type:file
+ref-pointer-undeclared-component-head	github-code-search	"$ref:" "#/components/schemas/undefined" filename:openapi.yaml
+ref-pointer-undeclared-component-head	github-code-search	"$ref:" "#/components/schemas/Unknown" filename:openapi.yml
+ref-pointer-undeclared-component-head	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"$ref:" content:"#/components/schemas/undefined" count:all type:file
+ref-pointer-undeclared-component-head	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"$ref\"" content:"#/components/schemas/Unknown" count:all type:file
+oneof-array-variant-anyof-item	github-code-search	"oneOf:" "type:" "items:" "anyOf:" "type: array" filename:openapi.yaml
+oneof-array-variant-anyof-item	github-code-search	"oneOf:" "type:" "items:" "anyOf:" "type: array" filename:openapi.yml
+oneof-array-variant-anyof-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"type:" content:"items:" content:"anyOf:" content:"type: array" count:all type:file
+oneof-array-variant-anyof-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"type\"" content:"\"items\"" content:"\"anyOf\"" content:"array" count:all type:file
+anyof-string-const-variant	github-code-search	"anyOf:" "const:" filename:openapi.yaml
+anyof-string-const-variant	github-code-search	"anyOf:" "const:" filename:openapi.yml
+anyof-string-const-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"const:" count:all type:file
+anyof-string-const-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"const\"" count:all type:file
+oneof-string-const-variant	github-code-search	"oneOf:" "const:" filename:openapi.yaml
+oneof-string-const-variant	github-code-search	"oneOf:" "const:" filename:openapi.yml
+oneof-string-const-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"const:" count:all type:file
+oneof-string-const-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"const\"" count:all type:file
+example	github-code-search	"example:" "properties:" "type: object" filename:openapi.yaml
+example	github-code-search	"\"example\"" "\"properties\"" "\"object\"" filename:openapi.json
+example	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"example:" content:"type: object" content:"properties:" count:all type:file
+example	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"example\": {" content:"\"type\": \"object\"" count:all type:file
+anyof-array-variant-closed-object-item	github-code-search	"anyOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yaml
+anyof-array-variant-closed-object-item	github-code-search	"anyOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yml
+anyof-array-variant-closed-object-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"type:" content:"items:" content:"additionalProperties:" content:"type: array" count:all type:file
+anyof-array-variant-closed-object-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"type\"" content:"\"items\"" content:"\"additionalProperties\"" content:"array" count:all type:file
+array-item-oneof-discriminated-union	github-code-search	"items:" "oneOf:" filename:openapi.yaml
+array-item-oneof-discriminated-union	github-code-search	"items:" "oneOf:" filename:openapi.yml
+array-item-oneof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"items:" content:"oneOf:" count:all type:file
+array-item-oneof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"items\"" content:"\"oneOf\"" count:all type:file
+oneof-array-variant-closed-object-item	github-code-search	"oneOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yaml
+oneof-array-variant-closed-object-item	github-code-search	"oneOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yml
+oneof-array-variant-closed-object-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"type:" content:"items:" content:"additionalProperties:" content:"type: array" count:all type:file
+oneof-array-variant-closed-object-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"type\"" content:"\"items\"" content:"\"additionalProperties\"" content:"array" count:all type:file
+array-item-anyof-discriminated-union	github-code-search	"items:" "anyOf:" filename:openapi.yaml
+array-item-anyof-discriminated-union	github-code-search	"items:" "anyOf:" filename:openapi.yml
+array-item-anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"items:" content:"anyOf:" count:all type:file
+array-item-anyof-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"items\"" content:"\"anyOf\"" count:all type:file
+array-item-pointer-walk-allof	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yaml
+array-item-pointer-walk-allof	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yml
+array-item-pointer-walk-allof	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"type:" content:"items:" content:"$ref:" content:"type: array" count:all type:file
+array-item-pointer-walk-allof	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"type\"" content:"\"items\"" content:"\"$ref\"" content:"array" count:all type:file
+array-item-pointer-walk-anyof	github-code-search	"properties:" "type:" "items:" "$ref:" "anyOf:" "type: array" filename:openapi.yaml
+array-item-pointer-walk-anyof	github-code-search	"properties:" "type:" "items:" "$ref:" "anyOf:" "type: array" filename:openapi.yml
+array-item-pointer-walk-anyof	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"type:" content:"items:" content:"$ref:" content:"anyOf:" content:"type: array" count:all type:file
+array-item-pointer-walk-anyof	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"type\"" content:"\"items\"" content:"\"$ref\"" content:"\"anyOf\"" content:"array" count:all type:file
+array-item-empty-object	github-code-search	"type: array" "properties: {}" "items:" filename:openapi.yaml
+array-item-empty-object	github-code-search	"\"array\"" "\"properties\": {}" "\"items\"" filename:openapi.json
+array-item-empty-object	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties: {}" content:"type: array" count:all type:file
+array-item-empty-object	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\": {}" content:"\"array\"" count:all type:file
+annotated-ref-target-anyof	github-code-search	"properties:" "allOf:" "$ref:" "anyOf:" "description:" filename:openapi.yaml
+annotated-ref-target-anyof	github-code-search	"properties:" "allOf:" "$ref:" "anyOf:" "title:" filename:openapi.yml
+annotated-ref-target-anyof	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"allOf:" content:"$ref:" content:"anyOf:" content:"description:" count:all type:file
+annotated-ref-target-anyof	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"allOf\"" content:"\"$ref\"" content:"\"anyOf\"" content:"\"title\"" count:all type:file
+anyof-array-variant-anyof-nullable-item	github-code-search	"anyOf:" "type:" "items:" "type: array" filename:openapi.yaml
+anyof-array-variant-anyof-nullable-item	github-code-search	"anyOf:" "type:" "items:" "type: array" filename:openapi.yml
+anyof-array-variant-anyof-nullable-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"type:" content:"items:" content:"type: array" count:all type:file
+anyof-array-variant-anyof-nullable-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"type\"" content:"\"items\"" content:"array" count:all type:file
+anyof-array-variant-oneof-nullable-item	github-code-search	"anyOf:" "type:" "items:" "oneOf:" "type: array" filename:openapi.yaml
+anyof-array-variant-oneof-nullable-item	github-code-search	"anyOf:" "type:" "items:" "oneOf:" "type: array" filename:openapi.yml
+anyof-array-variant-oneof-nullable-item	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"type:" content:"items:" content:"oneOf:" content:"type: array" count:all type:file
+anyof-array-variant-oneof-nullable-item	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"type\"" content:"\"items\"" content:"\"oneOf\"" content:"array" count:all type:file
+inheritance-discriminated-union	github-code-search	"discriminator:" filename:openapi.yaml
+inheritance-discriminated-union	github-code-search	"discriminator:" filename:openapi.yml
+inheritance-discriminated-union	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"discriminator:" count:all type:file
+inheritance-discriminated-union	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"discriminator\"" count:all type:file
+non-identifier-operation-id	github-code-search	"operationId:" "tags:" "summary:" filename:openapi.yaml
+non-identifier-operation-id	github-code-search	"\"operationId\"" "\"tags\"" "\"summary\"" filename:openapi.json
+non-identifier-operation-id	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"operationId: " content:"tags:" count:all type:file
+non-identifier-operation-id	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"operationId\": \"" content:"\"tags\"" count:all type:file
+property-sole-anyof-closed-object-member	github-code-search	"properties:" "anyOf:" "additionalProperties:" "additionalProperties: false" filename:openapi.yaml
+property-sole-anyof-closed-object-member	github-code-search	"properties:" "anyOf:" "additionalProperties:" "additionalProperties: false" filename:openapi.yml
+property-sole-anyof-closed-object-member	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"anyOf:" content:"additionalProperties:" content:"additionalProperties: false" count:all type:file
+property-sole-anyof-closed-object-member	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"anyOf\"" content:"\"additionalProperties\"" content:"false" count:all type:file
+property-sole-anyof-struct-member	github-code-search	"properties:" "anyOf:" filename:openapi.yaml
+property-sole-anyof-struct-member	github-code-search	"properties:" "anyOf:" filename:openapi.yml
+property-sole-anyof-struct-member	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"anyOf:" count:all type:file
+property-sole-anyof-struct-member	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"anyOf\"" count:all type:file
+array-item-pointer-walk-properties	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yaml
+array-item-pointer-walk-properties	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yml
+array-item-pointer-walk-properties	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"type:" content:"items:" content:"$ref:" content:"type: array" count:all type:file
+array-item-pointer-walk-properties	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"type\"" content:"\"items\"" content:"\"$ref\"" content:"array" count:all type:file
+http-dpop	github-code-search	"scheme: dpop" filename:openapi.yaml
+http-dpop	github-code-search	"\"scheme\": \"dpop\"" filename:openapi.json
+http-dpop	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"scheme: dpop" count:all type:file
+http-dpop	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"scheme\": \"dpop\"" count:all type:file
+http-mutual	github-code-search	"scheme: mutual" filename:openapi.yaml
+http-mutual	github-code-search	"\"scheme\": \"mutual\"" filename:openapi.json
+http-mutual	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"scheme: mutual" count:all type:file
+http-mutual	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"scheme\": \"mutual\"" count:all type:file
+http-negotiate	github-code-search	"scheme: negotiate" filename:openapi.yaml
+http-negotiate	github-code-search	"\"scheme\": \"negotiate\"" filename:openapi.json
+http-negotiate	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"scheme: negotiate" count:all type:file
+http-negotiate	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"scheme\": \"negotiate\"" count:all type:file
+mutualTLS	github-code-search	"type: mutualTLS" filename:openapi.yaml
+mutualTLS	github-code-search	"\"type\": \"mutualTLS\"" filename:openapi.json
+mutualTLS	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"type: mutualTLS" count:all type:file
+mutualTLS	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"type\": \"mutualTLS\"" count:all type:file
+securityscheme-type-openidconnect	github-code-search	"type: openIdConnect" filename:openapi.yaml
+securityscheme-type-openidconnect	github-code-search	"\"type\": \"openIdConnect\"" filename:openapi.json
+securityscheme-type-openidconnect	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"type: openIdConnect" count:all type:file
+securityscheme-type-openidconnect	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"type\": \"openIdConnect\"" count:all type:file
+array-item-pointer-walk-items	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yaml
+array-item-pointer-walk-items	github-code-search	"properties:" "type:" "items:" "$ref:" "type: array" filename:openapi.yml
+array-item-pointer-walk-items	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"properties:" content:"type:" content:"items:" content:"$ref:" content:"type: array" count:all type:file
+array-item-pointer-walk-items	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"properties\"" content:"\"type\"" content:"\"items\"" content:"\"$ref\"" content:"array" count:all type:file
+enum-leading-zero-member	github-code-search	"enum:" filename:openapi.yaml
+enum-leading-zero-member	github-code-search	"enum:" filename:openapi.yml
+enum-leading-zero-member	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file
+enum-leading-zero-member	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file
+mutually-recursive-graph	github-code-search	"$ref:" "parent:" "children:" filename:openapi.yaml
+mutually-recursive-graph	github-code-search	"\"$ref\"" "\"parent\"" "\"children\"" filename:openapi.json
+mutually-recursive-graph	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"parent:" content:"children:" content:"$ref:" count:all type:file
+mutually-recursive-graph	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"parent\"" content:"\"children\"" count:all type:file
+recursive-graph	github-code-search	"$ref:" "children:" "items:" filename:openapi.yaml
+recursive-graph	github-code-search	"\"$ref\"" "\"children\"" "\"items\"" filename:openapi.json
+recursive-graph	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"children:" content:"$ref:" count:all type:file
+recursive-graph	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"children\"" content:"\"$ref\"" count:all type:file
+enum-empty-identifier-member	github-code-search	"enum:" filename:openapi.yaml
+enum-empty-identifier-member	github-code-search	"enum:" filename:openapi.yml
+enum-empty-identifier-member	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file
+enum-empty-identifier-member	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file
+enum-leading-digit-identifier	github-code-search	"enum:" filename:openapi.yaml
+enum-leading-digit-identifier	github-code-search	"enum:" filename:openapi.yml
+enum-leading-digit-identifier	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file
+enum-leading-digit-identifier	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file
+format-duration	github-code-search	"format: duration" filename:openapi.yaml
+format-duration	github-code-search	"\"format\": \"duration\"" filename:openapi.json
+format-duration	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: duration" count:all type:file
+format-duration	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"duration\"" count:all type:file
+format-email	github-code-search	"format: email" filename:openapi.yaml
+format-email	github-code-search	"\"format\": \"email\"" filename:openapi.json
+format-email	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: email" count:all type:file
+format-email	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"email\"" count:all type:file
+format-hostname	github-code-search	"format: hostname" filename:openapi.yaml
+format-hostname	github-code-search	"\"format\": \"hostname\"" filename:openapi.json
+format-hostname	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: hostname" count:all type:file
+format-hostname	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"hostname\"" count:all type:file
+format-ipv4	github-code-search	"format: ipv4" filename:openapi.yaml
+format-ipv4	github-code-search	"\"format\": \"ipv4\"" filename:openapi.json
+format-ipv4	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: ipv4" count:all type:file
+format-ipv4	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"ipv4\"" count:all type:file
+format-json-pointer	github-code-search	"format: json-pointer" filename:openapi.yaml
+format-json-pointer	github-code-search	"\"format\": \"json-pointer\"" filename:openapi.json
+format-json-pointer	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: json-pointer" count:all type:file
+format-json-pointer	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"json-pointer\"" count:all type:file
+format-password	github-code-search	"format: password" filename:openapi.yaml
+format-password	github-code-search	"\"format\": \"password\"" filename:openapi.json
+format-password	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: password" count:all type:file
+format-password	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"password\"" count:all type:file
+format-regex	github-code-search	"format: regex" filename:openapi.yaml
+format-regex	github-code-search	"\"format\": \"regex\"" filename:openapi.json
+format-regex	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: regex" count:all type:file
+format-regex	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"regex\"" count:all type:file
+format-time	github-code-search	"format: time" filename:openapi.yaml
+format-time	github-code-search	"\"format\": \"time\"" filename:openapi.json
+format-time	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: time" count:all type:file
+format-time	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"time\"" count:all type:file
+format-uri	github-code-search	"format: uri" filename:openapi.yaml
+format-uri	github-code-search	"\"format\": \"uri\"" filename:openapi.json
+format-uri	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri" count:all type:file
+format-uri	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri\"" count:all type:file
+format-uri-reference	github-code-search	"format: uri-reference" filename:openapi.yaml
+format-uri-reference	github-code-search	"\"format\": \"uri-reference\"" filename:openapi.json
+format-uri-reference	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri-reference" count:all type:file
+format-uri-reference	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri-reference\"" count:all type:file
