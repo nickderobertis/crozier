@@ -1538,7 +1538,8 @@ pub struct Field {
     pub nullable: bool,
     /// Whether the property is in the schema's `required` set. Distinct from
     /// `optional` (an unknown/nullable required field is still `Optional[..]` in
-    /// Python); drives whether a synthesized example includes the field.
+    /// Python); a synthesized example includes the field only when it is required
+    /// and not optional.
     pub spec_required: bool,
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,

@@ -7762,7 +7762,11 @@ impl<'a> ExampleCtx<'a> {
     }
 
     /// An object's fields including those inherited from its base classes (bases
-    /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
+    /// first, in declaration order): `(py_name, wire_name, type, required)`, where
+    /// `required` is a `required` property that is not also `Optional` in Python.
+    /// Fern's importer reads a required nullable property as optional, so its
+    /// example omits it: ramu-shogi's `evalCp: {type: [integer, null]}` and its
+    /// `$ref`s to `type: [object, null]` components are required and absent.
     #[allow(
         clippy::type_complexity,
         reason = "a positional 5-tuple local to example synthesis: it is built here \
@@ -7785,7 +7789,7 @@ impl<'a> ExampleCtx<'a> {
                 f.py_name.clone(),
                 f.wire_name.clone(),
                 f.type_ref.clone(),
-                f.spec_required,
+                f.spec_required && !f.optional,
                 f.example.clone(),
                 obj.example_fields.contains(&f.wire_name),
             ));

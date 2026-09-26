@@ -5901,9 +5901,6 @@ const RAMU_SHOGI: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "reference.md",
-        "src/fern/analysis_snapshots/client.py",
-        "src/fern/rooms/client.py",
         "src/fern/types/auth_session_response_zero.py",
         "src/fern/types/get_user_settings_response.py",
         "src/fern/types/get_user_settings_response_document.py",
@@ -5966,9 +5963,7 @@ const MISTLE_CONTROL_PLANE: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "reference.md",
         "src/fern/__init__.py",
-        "src/fern/internal/client.py",
         "src/fern/types/__init__.py",
         "src/fern/types/bad_request_error_body_code.py",
     ],
