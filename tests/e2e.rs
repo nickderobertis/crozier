@@ -6131,50 +6131,11 @@ const OTOROSHI: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `xfsc-oidc-identity-resolver`: corpus row 228, the Eclipse XFSC notarization
-/// service's oidc-identity-resolver description, whose only security schemes
-/// are `openIdConnect`
-const XFSC_OIDC_IDENTITY_RESOLVER: Corpus = Corpus {
-    api: "xfsc-oidc-identity-resolver",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `onevoice`: corpus row 227, the OneVoice API description in f1xgun/onevoice,
-/// which declares a `mutualTLS` security scheme
-const ONEVOICE: Corpus = Corpus {
-    api: "onevoice",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `docu-goapiserver`: corpus row 226, the Primula Tracker API V3 description
-/// in JuaniGit/docu-goapiserver, whose `anyOf` variants nest an `anyOf`
-const DOCU_GOAPISERVER: Corpus = Corpus {
-    api: "docu-goapiserver",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `googleapis-monitoring-v1`: corpus row 225, Google's Cloud Monitoring API v1
-/// from APIs.guru, whose enums carry members with leading zeros
-const GOOGLEAPIS_MONITORING_V1: Corpus = Corpus {
-    api: "googleapis-monitoring-v1",
+/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
+/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
+/// members and nested properties, the pointer arms no earlier golden reached.
+const NEXMO_CONVERSATION: Corpus = Corpus {
+    api: "nexmo-conversation",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -6197,11 +6158,50 @@ const CODAT_ASSESS: Corpus = Corpus {
     unmatched: &[],
 };
 
-/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
-/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
-/// members and nested properties, the pointer arms no earlier golden reached.
-const NEXMO_CONVERSATION: Corpus = Corpus {
-    api: "nexmo-conversation",
+/// `googleapis-monitoring-v1`: corpus row 225, Google's Cloud Monitoring API v1
+/// from APIs.guru, whose enums carry members with leading zeros
+const GOOGLEAPIS_MONITORING_V1: Corpus = Corpus {
+    api: "googleapis-monitoring-v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `docu-goapiserver`: corpus row 226, the Primula Tracker API V3 description
+/// in JuaniGit/docu-goapiserver, whose `anyOf` variants nest an `anyOf`
+const DOCU_GOAPISERVER: Corpus = Corpus {
+    api: "docu-goapiserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `onevoice`: corpus row 227, the OneVoice API description in f1xgun/onevoice,
+/// which declares a `mutualTLS` security scheme
+const ONEVOICE: Corpus = Corpus {
+    api: "onevoice",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `xfsc-oidc-identity-resolver`: corpus row 228, the Eclipse XFSC notarization
+/// service's oidc-identity-resolver description, whose only security schemes
+/// are `openIdConnect`
+const XFSC_OIDC_IDENTITY_RESOLVER: Corpus = Corpus {
+    api: "xfsc-oidc-identity-resolver",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12036,23 +12036,8 @@ fn otoroshi_matches_fern_output() {
 }
 
 #[test]
-fn xfsc_oidc_identity_resolver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
-}
-
-#[test]
-fn onevoice_matches_fern_output() {
-    assert_link_ok_corpus_matches(&ONEVOICE);
-}
-
-#[test]
-fn docu_goapiserver_matches_fern_output() {
-    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
-}
-
-#[test]
-fn googleapis_monitoring_v1_matches_fern_output() {
-    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
+fn nexmo_conversation_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
 }
 
 #[test]
@@ -12061,6 +12046,21 @@ fn codat_assess_matches_fern_output() {
 }
 
 #[test]
-fn nexmo_conversation_matches_fern_output() {
-    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
+fn googleapis_monitoring_v1_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
+}
+
+#[test]
+fn docu_goapiserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
+}
+
+#[test]
+fn onevoice_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ONEVOICE);
+}
+
+#[test]
+fn xfsc_oidc_identity_resolver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
 }
