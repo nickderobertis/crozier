@@ -3592,7 +3592,7 @@ fn request_declares_unlisted_required(doc: &OpenApi, op: &Operation) -> bool {
         .clone();
     let mut found = false;
     crate::openapi::for_each_schema_in(&mut schema, &mut |node| {
-        found |= node.required.unlisted;
+        found |= node.required.is_unlisted();
     });
     found
 }

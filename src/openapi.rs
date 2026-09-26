@@ -1165,26 +1165,47 @@ where
     })
 }
 
-/// A Schema Object's `required` property names, and whether the document wrote
-/// something there that is not a list at all.
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct RequiredNames {
-    names: Vec<String>,
-    /// `required` held a boolean, number or map rather than a list — see
+/// A Schema Object's `required`: the property names it lists, or the mark that
+/// the document wrote something there that is not a list at all.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RequiredNames {
+    /// A list, keeping its string entries.
+    Listed(Vec<String>),
+    /// A boolean, number or map rather than a list, which names nothing — see
     /// [`normalize_unlisted_required`].
-    pub unlisted: bool,
+    Unlisted,
 }
 
-impl std::ops::Deref for RequiredNames {
-    type Target = Vec<String>;
-    fn deref(&self) -> &Vec<String> {
-        &self.names
+impl Default for RequiredNames {
+    fn default() -> Self {
+        Self::Listed(Vec::new())
     }
 }
 
-impl std::ops::DerefMut for RequiredNames {
-    fn deref_mut(&mut self) -> &mut Vec<String> {
-        &mut self.names
+impl RequiredNames {
+    /// Whether the document wrote something other than a list.
+    #[must_use]
+    pub fn is_unlisted(&self) -> bool {
+        matches!(self, Self::Unlisted)
+    }
+
+    /// Require one more property. A `required` that was not a list becomes a
+    /// list of that one name, as a merge of lists makes it.
+    pub fn push(&mut self, name: String) {
+        match self {
+            Self::Listed(names) => names.push(name),
+            Self::Unlisted => *self = Self::Listed(vec![name]),
+        }
+    }
+}
+
+impl std::ops::Deref for RequiredNames {
+    type Target = [String];
+    fn deref(&self) -> &[String] {
+        match self {
+            Self::Listed(names) => names,
+            Self::Unlisted => &[],
+        }
     }
 }
 
@@ -1192,16 +1213,13 @@ impl<'a> IntoIterator for &'a RequiredNames {
     type Item = &'a String;
     type IntoIter = std::slice::Iter<'a, String>;
     fn into_iter(self) -> Self::IntoIter {
-        self.names.iter()
+        self.iter()
     }
 }
 
 impl From<Vec<String>> for RequiredNames {
     fn from(names: Vec<String>) -> Self {
-        Self {
-            names,
-            unlisted: false,
-        }
+        Self::Listed(names)
     }
 }
 
@@ -1224,10 +1242,7 @@ where
             .into(),
         serde_json::Value::Bool(_)
         | serde_json::Value::Number(_)
-        | serde_json::Value::Object(_) => RequiredNames {
-            names: Vec::new(),
-            unlisted: true,
-        },
+        | serde_json::Value::Object(_) => RequiredNames::Unlisted,
         _ => RequiredNames::default(),
     })
 }
@@ -1864,7 +1879,7 @@ fn schema_pointer_target<'a>(
 fn normalize_unlisted_required(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
-            if node.required.unlisted
+            if node.required.is_unlisted()
                 && node.reference.is_none()
                 && (node.ty.as_ref().and_then(TypeField::primary) == Some("object")
                     || !node.properties.is_empty())
@@ -1874,14 +1889,11 @@ fn normalize_unlisted_required(doc: &mut OpenApi) {
                 *node = Schema {
                     description: node.description.take(),
                     nullable: node.nullable,
-                    required: RequiredNames {
-                        names: Vec::new(),
-                        unlisted: true,
-                    },
+                    required: RequiredNames::Unlisted,
                     ..Schema::default()
                 };
-            } else {
-                node.required.unlisted = false;
+            } else if node.required.is_unlisted() {
+                node.required = RequiredNames::default();
             }
         });
     });
@@ -3068,9 +3080,9 @@ components:
         let attributes = &data.properties["attributes"];
         assert!(attributes.ty.is_none() && attributes.properties.is_empty());
         assert_eq!(attributes.description.as_deref(), Some("the attributes"));
-        assert!(attributes.required.unlisted);
+        assert!(attributes.required.is_unlisted());
         assert!(data.properties["counted"].properties.is_empty());
-        assert!(data.properties["mapped"].required.unlisted);
+        assert!(data.properties["mapped"].required.is_unlisted());
         // A scalar's stray `required: true` changes nothing and leaves no mark;
         // neither does a `null`, nor a real list.
         let kind = &data.properties["kind"];
@@ -3078,13 +3090,17 @@ components:
             kind.ty.as_ref().and_then(TypeField::primary),
             Some("string")
         );
-        assert!(!kind.required.unlisted);
-        assert!(!data.properties["nulled"].required.unlisted);
-        assert_eq!(data.required.as_slice(), &[] as &[String]);
+        assert!(!kind.required.is_unlisted());
+        assert!(!data.properties["nulled"].required.is_unlisted());
+        assert!(data.required.is_empty());
         assert_eq!(
-            doc.components.schemas["Request"].required.as_slice(),
+            &doc.components.schemas["Request"].required[..],
             &["data".to_string()]
         );
+        // Requiring a name of an unlisted `required` makes it a list of that name.
+        let mut merged = RequiredNames::Unlisted;
+        merged.push("id".to_string());
+        assert_eq!(merged, RequiredNames::from(vec!["id".to_string()]));
     }
 
     #[test]
