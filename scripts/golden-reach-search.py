@@ -330,6 +330,29 @@ def git_blob(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 
 
+def committed_bytes(path: Path) -> bytes:
+    """The bytes git committed for `path`, which is what a pin's blob hashes.
+
+    A checkout may have converted a tracked file's line endings on the way out
+    (Windows' `core.autocrlf`), so its working-tree bytes are not the blob the
+    pin names. A tracked file git reads as unmodified is therefore read back from
+    its own repository's index; any other file is its own bytes.
+    """
+    data = path.read_bytes()
+    if b"\r\n" not in data:
+        return data
+    git = ["git", "-C", str(path.parent)]
+    literal = {**os.environ, "GIT_LITERAL_PATHSPECS": "1"}
+    staged = subprocess.run([*git, "ls-files", "--stage", "--", path.name],
+                            capture_output=True, text=True, env=literal)
+    fields = staged.stdout.split() if staged.returncode == 0 else []
+    if len(fields) < 2 or fields[1] == git_blob(data):
+        return data
+    if subprocess.run([*git, "diff", "--quiet", "--", path.name], capture_output=True, env=literal).returncode:
+        return data
+    return subprocess.run([*git, "cat-file", "blob", fields[1]], capture_output=True, check=True).stdout
+
+
 def pinned_listing(source: str) -> list[dict[str, str]]:
     """The source's committed pinned document listing: walk, document, revision, sha256.
 
@@ -520,20 +543,23 @@ def fetch_pins(args: argparse.Namespace) -> int:
     """Resolve every publisher-tree pin to bytes read at its pinned commit.
 
     A pin with a local copy under `--root` is matched by its SHA-256, or by its
-    git blob where the pin has no SHA-256; any other is fetched through the
-    acquirer's exact-commit raw route, whose calls land in this source's evidence
-    directory, and kept only if it is the pinned blob. The result is `pins.tsv`.
+    git blob where the pin has no SHA-256, each taken over the copy's committed
+    bytes; any other is fetched through the acquirer's exact-commit raw route,
+    whose calls land in this source's evidence directory, and kept only if it is
+    the pinned blob. A copy whose checkout converted its line endings has its
+    committed bytes written beside the fetched ones, where a walk finds them by
+    digest. The result is `pins.tsv`.
     """
     source = "github-publisher-trees"
     github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
     acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
-    by_sha: dict[str, Path] = {}
-    by_blob: dict[str, Path] = {}
+    by_sha: dict[str, tuple[Path, bytes]] = {}
+    by_blob: dict[str, tuple[Path, bytes]] = {}
     for path in args.root.rglob("*"):
         if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
-            data = path.read_bytes()
-            by_sha.setdefault(hashlib.sha256(data).hexdigest(), path)
-            by_blob.setdefault(git_blob(data), path)
+            data = committed_bytes(path)
+            by_sha.setdefault(hashlib.sha256(data).hexdigest(), (path, data))
+            by_blob.setdefault(git_blob(data), (path, data))
     target = args.root / "fetched"
     target.mkdir(parents=True, exist_ok=True)
     shared = SURFACE / f"witness-search-{source}" / "documents.jsonl"
@@ -548,7 +574,11 @@ def fetch_pins(args: argparse.Namespace) -> int:
         if identity in seen:
             continue
         seen.add(identity)
-        local = by_sha.get(pin.get("sha256", "")) or by_blob.get(pin["blob"])
+        found = by_sha.get(pin.get("sha256", "")) or by_blob.get(pin["blob"])
+        local, data = found if found else (None, b"")
+        if local is not None and data != local.read_bytes():
+            local = target / (pin["blob"] + Path(pin["path"]).suffix)
+            local.write_bytes(data)
         if local is None:
             url = f"{acquirer.raw_github_url}/{pin['repository']}/{pin['commit']}/{urllib.parse.quote(pin['path'])}"
             status, data = acquirer.raw_github_get(url, "*", f"{pin['repository']}:{pin['path']}")
@@ -556,7 +586,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
                 local = target / (pin["blob"] + Path(pin["path"]).suffix)
                 local.write_bytes(data)
                 fetched += 1
-        sha256 = hashlib.sha256(local.read_bytes()).hexdigest() if local else ""
+        sha256 = hashlib.sha256(data).hexdigest() if local else ""
         if pin.get("sha256") and sha256 and sha256 != pin["sha256"]:
             fail(f"{pin['path']}: the blob matches but the SHA-256 differs from the pin; delete {local} and re-run `fetch-pins`")
         missing += not sha256

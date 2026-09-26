@@ -367,6 +367,22 @@ class ReportTests(unittest.TestCase):
         self.assertIn("stale.profraw", message)
         self.assertIn("just golden-reach", message)
 
+    def test_a_tool_is_named_without_the_windows_exe_suffix(self) -> None:
+        """Windows' tool path ends `.exe`; the message names the tool as POSIX does."""
+        with tempfile.TemporaryDirectory() as scratch:
+            if os.name == "nt":
+                tool = golden_reach._llvm_tool("llvm-profdata")
+            else:
+                tool = str(Path(scratch) / "llvm-profdata.exe")
+                Path(tool).write_text('#!/bin/sh\necho "$3: truncated profile data" >&2\nexit 1\n', encoding="utf-8")
+                os.chmod(tool, 0o755)
+            self.assertTrue(tool.lower().endswith(".exe"), tool)
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.run_llvm([tool, "merge", "-sparse", str(Path(scratch) / "stale.profraw")])
+        self.assertIn("`llvm-profdata merge` exited 1", str(refused.exception))
+        self.assertEqual("llvm-profdata", golden_reach.tool_name(r"C:\rustlib\bin\llvm-profdata.EXE"))
+        self.assertEqual("llvm-cov", golden_reach.tool_name("/rustlib/bin/llvm-cov"))
+
 
 _search_spec = importlib.util.spec_from_file_location(
     "golden_reach_search", REPO / "scripts" / "golden-reach-search.py"
@@ -426,9 +442,43 @@ class ArmSearchTests(unittest.TestCase):
         self.assertEqual(0, golden_reach_search.predicate_count("media-type-key-parameters", path))
 
     def test_a_pin_s_blob_is_the_hash_git_itself_computes(self) -> None:
-        path = self.document('{"openapi": "3.1.0"}\n', ".json")
-        git = subprocess.run(["git", "hash-object", str(path)], capture_output=True, text=True, check=True)
+        """Over the bytes as they are: `--no-filters`, so no host's line-ending setting intervenes."""
+        path = self.document("", ".json")
+        path.write_bytes(b'{\r\n"openapi": "3.1.0"}\n')
+        git = subprocess.run(["git", "hash-object", "--no-filters", str(path)],
+                             capture_output=True, text=True, check=True)
         self.assertEqual(git.stdout.strip(), golden_reach_search.git_blob(path.read_bytes()))
+
+    def test_a_checkout_s_converted_line_endings_keep_the_committed_blob(self) -> None:
+        """A Windows checkout writes CRLF over a blob committed with LF; the pin names the blob."""
+        directory = tempfile.TemporaryDirectory(prefix="golden-reach-search-checkout-")
+        self.addCleanup(directory.cleanup)
+        repo = Path(directory.name)
+
+        def git(*argv: str) -> str:
+            return subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@t",
+                                   "-c", "commit.gpgsign=false", *argv],
+                                  capture_output=True, text=True, check=True).stdout.strip()
+
+        git("init", "-q")
+        git("config", "core.autocrlf", "false")
+        committed = b'{\n"openapi": "3.1.0"}\n'
+        path = repo / "openapi.json"
+        path.write_bytes(committed)
+        git("add", "openapi.json")
+        git("commit", "-q", "-m", "pin")
+        git("config", "core.autocrlf", "true")
+        path.unlink()
+        git("checkout", "--", "openapi.json")
+        self.assertEqual(committed.replace(b"\n", b"\r\n"), path.read_bytes(), "the checkout converted it")
+        self.assertEqual("", git("status", "--porcelain"), "git reads the converted copy as unmodified")
+        pinned = git("rev-parse", "HEAD:openapi.json")
+        self.assertNotEqual(pinned, golden_reach_search.git_blob(path.read_bytes()))
+        self.assertEqual(committed, golden_reach_search.committed_bytes(path))
+        self.assertEqual(pinned, golden_reach_search.git_blob(golden_reach_search.committed_bytes(path)))
+        untracked = repo / "other.json"
+        untracked.write_bytes(b"{}\r\n")
+        self.assertEqual(b"{}\r\n", golden_reach_search.committed_bytes(untracked))
 
     def test_a_result_path_holding_a_space_is_quoted_once(self) -> None:
         url = "https://api.github.com/repositories/1/contents/REST Bindings/openapi.yaml?ref=abc"

@@ -341,12 +341,18 @@ def _llvm_tool(name: str) -> str:
     return str(tool)
 
 
+def tool_name(path: str) -> str:
+    """The tool a path runs, as a message names it on every platform: no `.exe`."""
+    name = re.split(r"[\\/]", path)[-1]
+    return name[: -len(".exe")] if name.lower().endswith(".exe") else name
+
+
 def run_llvm(argv: list[str], stdout: IO[str] | None = None) -> None:
     """Run an llvm-profdata/llvm-cov step, failing with its stderr and the fix."""
     run = subprocess.run(argv, stdout=stdout, stderr=subprocess.PIPE, text=True)
     if run.returncode != 0:
         fail(
-            f"`{Path(argv[0]).name} {argv[1]}` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
+            f"`{tool_name(argv[0])} {argv[1]}` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
             f"the profiles and the instrumented binaries disagree; rebuild them with "
             f"`just golden-reach` and retry"
         )
