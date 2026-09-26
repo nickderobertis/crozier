@@ -36,7 +36,9 @@ from pathlib import Path
 from typing import Any
 
 from rate_limit_guard import (
+    CALLS_FILE,
     REFUSAL_STATUSES,
+    WAITS_FILE,
     RateLimitGuard,
     SecondaryLimit,
     github_api_url,
@@ -44,6 +46,11 @@ from rate_limit_guard import (
 
 REPO = Path(__file__).resolve().parent.parent
 SOURCEGRAPH_URL = "https://sourcegraph.com"
+RAW_CALLS_FILE = "raw-github-calls.jsonl"
+RAW_WAITS_FILE = "raw-github-waits.jsonl"
+INDEX_PACING_WAITS_FILE = "index-pacing-waits.jsonl"
+# Every call and wait log an acquisition writes into its evidence directory.
+GUARD_LOGS = (CALLS_FILE, WAITS_FILE, RAW_CALLS_FILE, RAW_WAITS_FILE, INDEX_PACING_WAITS_FILE)
 RAW_GITHUB_URL = "https://raw.githubusercontent.com"
 RAW_SPACING_S = 2.0
 RAW_BACKOFF_BASE_S = 10.0
@@ -399,7 +406,7 @@ class Acquirer:
         spacing, cooldown = self.extra_pacing[(host, bucket)]
         calls = [
             row
-            for row in jsonl(self.evidence / "rate-limit-calls.jsonl")
+            for row in jsonl(self.evidence / CALLS_FILE)
             if row.get("host") == host
             and (row.get("bucket") or row.get("lane")) == bucket
         ]
@@ -430,7 +437,7 @@ class Acquirer:
             started = datetime.datetime.now(datetime.timezone.utc).isoformat()
             time.sleep(duration)
             self.write(
-                "index-pacing-waits.jsonl",
+                INDEX_PACING_WAITS_FILE,
                 {
                     "host": host,
                     "bucket": bucket,
@@ -1194,7 +1201,7 @@ class Acquirer:
             except http.client.IncompleteRead as error:
                 incomplete_reads += 1
                 self.write(
-                    "raw-github-calls.jsonl",
+                    RAW_CALLS_FILE,
                     {
                         "key": key,
                         "subject": subject,
@@ -1221,7 +1228,7 @@ class Acquirer:
             # commit it read and the digest of what came back.
             commit = re.search(r"/([0-9a-f]{40})/", url)
             self.write(
-                "raw-github-calls.jsonl",
+                RAW_CALLS_FILE,
                 {
                     "key": key,
                     "subject": subject,
@@ -1262,7 +1269,7 @@ class Acquirer:
         started = time.monotonic()
         time.sleep(duration)
         self.write(
-            "raw-github-waits.jsonl",
+            RAW_WAITS_FILE,
             {
                 "key": key,
                 "subject": subject,
@@ -1699,7 +1706,7 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
                 for field in ("repository", "path", "commit")
             ):
                 raise EvidenceError(f"{path}:{number}: invalid document identity")
-        if path.name == "rate-limit-calls.jsonl":
+        if path.name == CALLS_FILE:
             stamp = row.get("at")
             if not isinstance(stamp, str):
                 raise EvidenceError(f"{path}:{number}: missing call timestamp")

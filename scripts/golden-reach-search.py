@@ -291,22 +291,17 @@ def replace_records(source: str, rows: list[dict[str, str]]) -> None:
             writer.writerow(row)
 
 
-# The guard's own logs: every call and wait `scripts/rate_limit_guard.py` made for
-# this source's searches. Contract B names each evidence file from a records row,
-# so each log is filed as a `wait` row under the pseudo-key `*` it answers for.
-GUARD_LOGS = (
-    "rate-limit-calls.jsonl",
-    "rate-limit-waits.jsonl",
-    "raw-github-calls.jsonl",
-    "raw-github-waits.jsonl",
-    "index-pacing-waits.jsonl",
-)
-
-
 def record_guard_logs(source: str) -> None:
+    """The guard's own logs: every call and wait this source's searches made.
+
+    Contract B names each evidence file from a records row, so each log is
+    filed as a `wait` row under the pseudo-key `*` it answers for. The names are
+    the acquirer's, which writes them.
+    """
+    github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
     directory = source_dir(source)
     rows = []
-    for name in GUARD_LOGS:
+    for name in github.GUARD_LOGS:
         path = directory / name
         if path.is_file():
             calls = sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
