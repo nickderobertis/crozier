@@ -370,12 +370,33 @@ def _covered(export: Path, repo_root: Path) -> tuple[dict[str, list[list[int]]],
     return universe, {f: v for f, v in hit.items() if v}
 
 
+def uncommitted_changes(repo_root: Path) -> list[str]:
+    """Tracked paths that differ from `HEAD` — what a measurement stamped with
+    `HEAD` would silently include."""
+    status = subprocess.run(
+        ["git", "status", "--porcelain", "--untracked-files=no"],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    if status.returncode != 0:
+        fail(f"git status exited {status.returncode}: {status.stderr.strip()[-400:]}")
+    return [line[3:] for line in status.stdout.splitlines() if line.strip()]
+
+
 def measure(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
     out: Path = args.out
     for tool in ("cargo",):
         if shutil.which(tool) is None:
             fail(f"{tool} is not on PATH; install the pinned toolchain with `just bootstrap`")
+    # The ledger names the commit it was measured at, so the measured tree must
+    # be that commit's: a merge measured before it is committed would stamp its
+    # first parent.
+    dirty = uncommitted_changes(repo_root)
+    if dirty:
+        fail(
+            f"{len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); "
+            "commit them first so the ledger's measured commit is the tree measured"
+        )
     build = subprocess.run(
         ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "-E",
          "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],

@@ -476,6 +476,21 @@ class MeasurementInputTests(unittest.TestCase):
             (Path(scratch) / "provenance.json").write_text(json.dumps({"commit": commit}), encoding="utf-8")
             self.assertEqual(commit, golden_reach.measured_commit(Path(scratch)))
 
+    def test_a_tree_that_differs_from_head_is_not_measured(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-C", scratch]
+            subprocess.run([*git, "init", "-q"], check=True)
+            (root / "ir.rs").write_text("fn a() {}\n", encoding="utf-8")
+            subprocess.run([*git, "add", "ir.rs"], check=True)
+            subprocess.run([*git, "commit", "-q", "-m", "base"], check=True)
+            (root / "ir.rs").write_text("fn b() {}\n", encoding="utf-8")
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach.measure(argparse.Namespace(repo_root=root, out=root / "out"))
+            self.assertIn("ir.rs", str(refused.exception))
+            self.assertIn("commit them first", str(refused.exception))
+            self.assertFalse((root / "out").exists())
+
     def test_a_records_file_with_another_header_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             evidence = golden_reach_search.EVIDENCE
