@@ -3210,7 +3210,10 @@ components:
         // remembers the pointer it came from.
         let member = &revision.properties["member"];
         assert!(member.reference.is_none());
-        assert_eq!(member.ty.as_ref().and_then(TypeField::primary), Some("string"));
+        assert_eq!(
+            member.ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
         assert_eq!(
             member.ref_origin.as_deref(),
             Some("#/components/schemas/Page/properties/choice/anyOf/1")

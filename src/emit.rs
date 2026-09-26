@@ -7200,7 +7200,13 @@ impl<'a> ExampleCtx<'a> {
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            let value = serde_json::from_str(example).ok()?;
+            let mut value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // A `null` member is no argument: Primula Tracker's student update
+            // declares `{transition_date: …, transition_room_override_id: null}`
+            // for its `Union[Any]` body, and the golden passes only the date.
+            if let serde_json::Value::Object(fields) = &mut value {
+                fields.retain(|_, field| !field.is_null());
+            }
             let rendered = example_from_json(value);
             return Some(if self.reference {
                 Example::Atom(rendered.flat())
@@ -7380,6 +7386,12 @@ impl<'a> ExampleCtx<'a> {
                         })
                 }),
                 Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
+                // An enum takes only its own values: Primula Tracker's
+                // `intended_start_date` is `Union[<TBD enum>, datetime.date]`, and
+                // the golden constructs its `2030-09-01` example as the date.
+                Some(TypeDecl::Enum(decl)) => value
+                    .as_str()
+                    .is_some_and(|text| decl.members.iter().any(|member| member.value == text)),
                 _ => true,
             },
             TypeRef::Union(variants) => variants
@@ -11657,10 +11669,11 @@ mod tests {
             &TypeRef::Named("PayloadAlias".to_string()),
             &serde_json::json!({ "id": 1 }),
         ));
-        assert!(ctx.example_matches_type(
-            &TypeRef::Named("Color".to_string()),
-            &serde_json::json!(false),
-        ));
+        // An enum matches only one of its own values.
+        let color = TypeRef::Named("Color".to_string());
+        assert!(ctx.example_matches_type(&color, &serde_json::json!("red")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!("2030-09-01")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!(false)));
         assert!(ctx.example_matches_type(
             &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
             &serde_json::Value::Null,

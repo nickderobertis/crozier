@@ -698,8 +698,12 @@ fn auth_model(doc: &OpenApi) -> Auth {
         Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
             required: all_operations_authenticated(doc),
         },
-        // Unknown scheme → Fern's default optional bearer token.
-        _ => Auth::Bearer { required: false },
+        // No scheme Fern supports: it defines no auth at all. OneVoice's
+        // requirement names a cookie `apiKey` and its other scheme is
+        // `mutualTLS`, and its golden's client takes no credential; documents
+        // whose operations require such a scheme are refused outright (*Endpoint
+        // requires auth, but no auth is defined*).
+        _ => Auth::None,
     }
 }
 
@@ -4755,8 +4759,15 @@ fn resolve_request_body(
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).
+        // Its worked example is the media type's own: Primula Tracker's
+        // `UpdateStudentRequest` is `Union[Any]` and the golden passes the
+        // declared `{"transition_date": …}`.
         if target.one_of.is_some() || target.any_of.is_some() {
-            return Some(single(TypeRef::Named(class), required, true, true));
+            let mut body = single(TypeRef::Named(class), required, true, true);
+            if let RequestBody::Single(single) = &mut body {
+                single.example = media_example(doc, media).map(serde_json::Value::to_string);
+            }
+            return Some(body);
         }
         // A `$ref` to a map (object with `additionalProperties`, no declared
         // properties) is passed straight through as `json=request`.
@@ -5024,12 +5035,18 @@ fn resolve_request_body(
             base_type_ref(items)
         };
         let convert = hoister.needs_convert(&item);
-        return Some(single(
+        let mut body = single(
             TypeRef::List(Box::new(item)),
             required,
             convert,
             doc.openapi.starts_with("3.1") && items.reference.is_some(),
-        ));
+        );
+        // So is an array body's: Primula Tracker's bulk lead-stage update
+        // declares one item, and the golden constructs it.
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(doc, media).map(serde_json::Value::to_string);
+        }
+        return Some(body);
     }
     // An inline bare object (`type: object` with no declared structure) is a
     // free-form `Dict` argument. Unlike the `$ref` form above it carries the
@@ -5698,6 +5715,14 @@ impl InlineHoister<'_> {
             if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
                 if let [member] = members.as_slice() {
                     return self.hoist_union_variant(parent, index, member, siblings);
+                }
+                // One member beside `type: null` is that member made optional,
+                // not a union of its own: Primula Tracker's pre-registration
+                // fallout answers `anyOf: [anyOf: [$ref Report, null], array]`,
+                // and its golden's alias is `Union[Optional[Report], List[…]]`.
+                if let Some(member) = simple_nullable_member(variant) {
+                    let inner = self.hoist_union_variant(parent, index, member, siblings);
+                    return optional_type_ref(inner);
                 }
                 let name = variant_class_name(parent, index, variant, siblings);
                 let docstring = clean_doc(variant.description.as_deref());

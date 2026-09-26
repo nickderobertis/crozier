@@ -11452,6 +11452,133 @@ fn codat_assess_parameter_schema_refs_and_errorless_downloads() {
     assert!(download.contains("Examples"), "{excel}");
 }
 
+/// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
+/// support — a cookie `apiKey` beside `mutualTLS` — leaves the client with no
+/// credential at all, as its Fern 5.20.0 golden's client does.
+#[test]
+fn onevoice_unsupported_schemes_define_no_auth() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: OneVoice API, version: 1.0.0 }
+security:
+  - cookieAuth: []
+paths:
+  /health:
+    get:
+      tags: [health]
+      operationId: getHealth
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    cookieAuth: { type: apiKey, in: cookie, name: access_token }
+    mtls: { type: mutualTLS }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(!client.contains("token"), "{client}");
+}
+
+/// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
+/// line of its Fern 5.20.0 golden:
+/// - an `anyOf` variant that is one member beside `null` is that member made
+///   optional, not a union of its own;
+/// - an array body and a `$ref` to a union body take the media type's example,
+///   an enum variant takes only its own values, and an unknown body's example
+///   drops its `null` members.
+#[test]
+fn primula_nullable_nested_variants_and_single_body_examples() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Primula Tracker API V3, version: 3.0.0 }
+paths:
+  /fallout:
+    get:
+      tags: [fallout]
+      operationId: GetFallout
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - anyOf:
+                      - $ref: '#/components/schemas/Report'
+                      - type: 'null'
+                  - type: array
+                    items: { $ref: '#/components/schemas/Report' }
+  /leads/start-date:
+    patch:
+      tags: [leads]
+      operationId: PatchStartDates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/StartDateUpdate' }
+            example:
+              - lead_id: 44444444-4444-4444-8444-444444444444
+                start: '2030-09-01'
+      responses: { '204': { description: done } }
+  /students/{id}:
+    patch:
+      tags: [students]
+      operationId: PatchStudent
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateStudentRequest' }
+            example:
+              transition_date: '2030-09-01'
+              room_id: null
+      responses: { '204': { description: done } }
+components:
+  schemas:
+    Report:
+      type: object
+      properties: { total: { type: integer } }
+    StartDateUpdate:
+      type: object
+      required: [lead_id, start]
+      properties:
+        lead_id: { type: string, format: uuid }
+        start:
+          anyOf:
+            - { type: string, enum: [TBD] }
+            - { type: string, format: date }
+    UpdateStudentRequest:
+      type: object
+      properties:
+        transition_date: { type: [string, 'null'] }
+        room_id: { type: [string, 'null'] }
+      anyOf:
+        - required: [transition_date]
+        - required: [room_id]
+"##,
+    );
+    let fallout = &files["src/acme/fallout/types/get_fallout_response.py"];
+    assert!(
+        fallout.contains("typing.Optional[Report], typing.List[Report]"),
+        "{fallout}"
+    );
+    let leads = &files["src/acme/leads/client.py"];
+    assert!(
+        leads.contains("lead_id=\"44444444-4444-4444-8444-444444444444\"")
+            && leads.contains("start=datetime.date.fromisoformat("),
+        "{leads}"
+    );
+    let students = &files["src/acme/students/client.py"];
+    assert!(
+        students.contains("request={\"transition_date\": \"2030-09-01\"},"),
+        "{students}"
+    );
+}
+
 /// Fragments of the Vonage Conversation API 2.0.1 as APIs.guru pins it (corpus
 /// row 223), each assertion a line of its Fern 5.20.0 golden:
 /// - Fern's importer converts any reference whose text names `properties` as a
