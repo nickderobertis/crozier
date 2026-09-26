@@ -2029,7 +2029,13 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
         .components
         .schemas
         .iter()
-        .filter(|(_, schema)| schema.explicitly_nullable())
+        // A component that is only `type: "null"` is nullable too: a `$ref` to
+        // marimo-plugins' `marimo-chatbot.cancel_prompt.output` answers
+        // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
+        .filter(|(_, schema)| {
+            schema.explicitly_nullable()
+                || matches!(&schema.ty, Some(TypeField::Single(ty)) if ty == "null")
+        })
         .map(|(name, _)| name.clone())
         .collect();
     if nullable.is_empty() {

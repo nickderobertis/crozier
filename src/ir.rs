@@ -2934,6 +2934,21 @@ fn build_endpoint(
             .or_else(|| success_response(op)),
         _ => success_response(op),
     };
+    // A `$ref` to a `type: "null"` component returns it optionally, unlike a
+    // `nullable` written beside a `$ref`: marimo-plugins'
+    // `read_marimo_chatbot_cancel_prompt_output` returns
+    // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
+    let returns_null_component = success_response_schema(op)
+        .and_then(|schema| schema.reference.as_deref())
+        .and_then(|reference| resolve_ref(doc, reference))
+        .is_some_and(|target| schema_is_null_type(target) && is_unknown_but_for_type(target));
+    let response = response.map(|response| {
+        if returns_null_component {
+            optional_type_ref(response)
+        } else {
+            response
+        }
+    });
     let response = response.map(|response| {
         if has_bodyless_success(op) && !has_text_response(op) {
             // A declared body beside an empty `204` is optional even when that
@@ -3092,9 +3107,9 @@ fn build_endpoint(
     // emittability (issue #43); an operation with no responses is still emitted.
     let emittable = body_ok && !has_unsupported_params && response_supported(op);
 
-    let body_collapses_to_type_reference = path_params.is_empty()
-        && query_params.is_empty()
-        && header_params.is_empty()
+    let has_parameters =
+        !path_params.is_empty() || !query_params.is_empty() || !header_params.is_empty();
+    let body_collapses_to_type_reference = !has_parameters
         && op
             .request_body
             .as_ref()
@@ -3170,13 +3185,18 @@ fn build_endpoint(
             })
             .and_then(|(_, media)| media.schema.as_ref())
             .and_then(|schema| schema.reference.as_deref())
+            // A model declaring no properties is documented only when the body is
+            // the operation's sole input: marimo-plugins' `write_marimo_tex_data`
+            // reads `**request:** MarimoTexData`, while TrueFoundry's session
+            // `cancel`, beside its `session_id`, documents no request at all.
             .filter(|reference| {
-                !resolve_ref(doc, reference).is_some_and(|target| {
-                    target.properties.declared()
-                        && target.properties.is_empty()
-                        && target.all_of.is_none()
-                        && target.additional_properties.is_none()
-                })
+                !has_parameters
+                    || !resolve_ref(doc, reference).is_some_and(|target| {
+                        target.properties.declared()
+                            && target.properties.is_empty()
+                            && target.all_of.is_none()
+                            && target.additional_properties.is_none()
+                    })
             })
             .map(ref_to_class)
             .map(TypeRef::Named),
@@ -4694,6 +4714,20 @@ fn resolve_request_body(
                 true,
                 content_type_override,
             ));
+        }
+        // A `$ref` to a `type: "null"` model is an optional `json=request`
+        // argument with no content-type header: marimo-plugins'
+        // `write_marimo_chatbot_cancel_prompt_output` takes
+        // `request: typing.Optional[MarimoChatbotCancelPromptOutput] = None`.
+        if schema_is_null_type(target) && is_unknown_but_for_type(target) {
+            return Some(single(TypeRef::Named(class), false, false, false));
+        }
+        // A `$ref` to an unknown (`{}`) model is one required `json=request`
+        // argument with no content-type header, as an inline unknown body is:
+        // marimo-plugins' `write_marimo_chatbot_send_prompt_output` takes
+        // `request: MarimoChatbotSendPromptOutput`.
+        if is_unknown(target) {
+            return Some(single(TypeRef::Named(class), required, false, false));
         }
         // A `$ref` to a plain scalar — Audiobookshelf's `imageUrl`, a `type: string`
         // with `format: uri` — is one `json=request` argument typed as the named
@@ -8397,6 +8431,18 @@ impl Builder<'_> {
             return;
         }
 
+        // A component that is nothing but `type: "null"` is Fern's optional
+        // unknown: marimo-plugins' `marimo-chatbot.cancel_prompt.output` is
+        // `MarimoChatbotCancelPromptOutput = typing.Optional[typing.Any]`.
+        if schema_is_null_type(schema) && is_unknown_but_for_type(schema) {
+            self.push_alias(
+                name,
+                module,
+                TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
+                docstring,
+            );
+            return;
+        }
         if schema
             .ty
             .as_ref()
@@ -11719,6 +11765,14 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
 /// single-member enum `string_enum_values` already lowers it to, which is how
 /// `mosip-esignet`'s type-less `grant_type: {const: authorization_code}` becomes
 /// `PostTokenRequestGrantType` rather than `typing.Any`.
+/// [`is_unknown`], but for a written `type`: nothing else shapes the schema.
+fn is_unknown_but_for_type(schema: &Schema) -> bool {
+    is_unknown(&Schema {
+        ty: None,
+        ..schema.clone()
+    })
+}
+
 fn is_unknown(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.ty.as_ref().is_none_or(|ty| ty.primary().is_none())

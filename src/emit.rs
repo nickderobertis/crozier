@@ -2839,7 +2839,9 @@ fn reference_entry(
         },
         pkg: pkg.to_string(),
         method: ep.method_name.trim_end_matches('_').to_string(),
-        dots: if has_args { "..." } else { "" },
+        // A documented parameter the method does not take — a propertyless model
+        // documented as `request` — still earns the dots.
+        dots: if has_args || params.len() > 1 { "..." } else { "" },
         return_type: reference_return_type(ep, &mp.inner),
         description: ep
             .docstring
