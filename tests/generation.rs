@@ -8985,10 +8985,9 @@ components:
 // The tests below each take a fragment of the opencode server API as
 // `lehhair/OpenCodeUI` publishes it (`openapi_doc.json` at
 // 8a6d4eae9424317f01e88f3819b14b24e57bab10) and assert lines of the Fern 5.20.0
-// output measured for that document. The document is handed off rather than
-// registered (it declares the `gap` row `anyof-anyof-variant`; see
-// `docs/openapi-surface/golden-reach-witnesses/handoff.tsv`), so until its
-// registration commits the golden these tests are what hold the repairs.
+// output measured for that document. The whole document is corpus row 196
+// (`opencodeui`), whose golden needs the network; these fragments hold each
+// repair offline, one shape at a time.
 
 /// An untagged dotted `operationId` names no sub-client: `global.health` is the
 /// root client's `global_health`, and no `global` package is generated.

@@ -948,6 +948,43 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
     true
 }
 
+/// The shape of a request body's selected media schema. One reading of one
+/// schema, so a body cannot be both a component `$ref` and an inline union.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BodySchemaShape {
+    /// Declared by component `$ref`.
+    Ref,
+    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring neither a `title`
+    /// nor a `discriminator`. Fern leaves such a body's content type to httpx;
+    /// see `emit.rs`.
+    InlinePlainUnion,
+    /// Any other inline schema, or no schema at all.
+    #[default]
+    Other,
+}
+
+impl BodySchemaShape {
+    /// Read the shape off the first media schema a Request Body Object declares.
+    fn of(schema: Option<&Schema>) -> Self {
+        let Some(schema) = schema else {
+            return Self::Other;
+        };
+        if schema.reference.is_some() {
+            Self::Ref
+        } else if (schema.one_of.is_some() || schema.any_of.is_some())
+            && schema.discriminator.is_none()
+            && schema
+                .title
+                .as_deref()
+                .is_none_or(|title| title.trim().is_empty())
+        {
+            Self::InlinePlainUnion
+        } else {
+            Self::Other
+        }
+    }
+}
+
 /// One API operation, resolved into the shape the raw client needs.
 #[derive(Debug)]
 pub struct Endpoint {
@@ -1036,8 +1073,9 @@ pub struct Endpoint {
     /// without a path/header parameter, unless that body's schema is written
     /// inline and flattened field by field (see [`crate::emit`]).
     pub basic_auth: bool,
-    /// Whether the selected request media schema was declared by component `$ref`.
-    pub body_schema_ref: bool,
+    /// What the selected request media schema is: a component `$ref`, an inline
+    /// union Fern treats as plain, or anything else (see [`BodySchemaShape`]).
+    pub body_schema_shape: BodySchemaShape,
     /// Whether that referenced schema is omitted from the public type layer
     /// because it is used only as this flattened request body.
     pub body_schema_dropped: bool,
@@ -1073,10 +1111,6 @@ pub struct Endpoint {
     /// Whether the referenced request schema declares a `title`. Fern's
     /// surviving-schema content-type drop turns on it; see `emit.rs`.
     pub body_schema_titled: bool,
-    /// Whether the request body is an inline union (`oneOf`/`anyOf`, no `$ref`)
-    /// that declares neither a `title` nor a `discriminator`. Fern leaves such a
-    /// body's content type to httpx; see `emit.rs`.
-    pub body_inline_plain_union: bool,
     /// Whether the referenced request schema also contains server-populated fields.
     pub body_schema_is_response_heavy: bool,
     /// Whether the referenced request object leaves `additionalProperties` open.
@@ -3098,15 +3132,11 @@ fn build_endpoint(
             .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
             .map(str::to_string),
         basic_auth: operation_uses_basic_auth(doc, op),
-        body_schema_ref: op
-            .request_body
-            .as_ref()
-            .and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
-            })
-            .is_some_and(|schema| schema.reference.is_some()),
+        body_schema_shape: BodySchemaShape::of(op.request_body.as_ref().and_then(|body| {
+            body.content
+                .values()
+                .find_map(|media| media.schema.as_ref())
+        })),
         body_schema_dropped: false,
         body_schema_shared: op
             .request_body
@@ -3232,23 +3262,6 @@ fn build_endpoint(
                     .title
                     .as_deref()
                     .is_some_and(|title| !title.trim().is_empty())
-            }),
-        body_inline_plain_union: op
-            .request_body
-            .as_ref()
-            .and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
-            })
-            .is_some_and(|schema| {
-                schema.reference.is_none()
-                    && (schema.one_of.is_some() || schema.any_of.is_some())
-                    && schema.discriminator.is_none()
-                    && schema
-                        .title
-                        .as_deref()
-                        .is_none_or(|title| title.trim().is_empty())
             }),
         body_schema_is_response_heavy: op
             .request_body

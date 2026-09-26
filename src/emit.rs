@@ -17,8 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field,
-    GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, Endpoint, EndpointPagination,
+    ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl,
+    TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -2066,7 +2067,7 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
         && path_object_documented(ep, types, tag_decls)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         && !matches!(&ep.request_body, Some(RequestBody::Form(form))
-            if ep.body_schema_ref
+            if ep.body_schema_shape == BodySchemaShape::Ref
                 && form.fields.iter().any(|field| field.is_file)
                 && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
@@ -4990,7 +4991,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(body)
             if !body.is_wildcard_media()
                 && !ep.body_collapses_to_type_reference
-                && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
+                && (ep.body_media_has_example
+                    && ep.body_schema_dropped
+                    && ep.body_schema_shape == BodySchemaShape::Ref
                     || ep.reference_body_example.is_some()
                         && !ep.body_schema_is_success_response
                         && matches!(body, RequestBody::Inline(_))
@@ -5034,7 +5037,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         if fields.iter().any(|field| field.spec_required))))
                         && (!ep.basic_auth
                             || !ep.body_description_missing
-                            || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
+                            || ep.body_schema_shape != BodySchemaShape::Ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
                         // An inline union body that neither names itself nor
                         // declares a discriminator drops the header, however it is
@@ -5044,7 +5047,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // `create_global_auth_module` all leave the content type to
                         // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
                         // and its discriminated `createTemplateNoProject` keep it.
-                        && !ep.body_inline_plain_union
+                        && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
@@ -5087,7 +5090,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // (an integer enum, a `format: uri` string) rides as a
                         // single `request` argument and keeps its header.
                         && !(matches!(body, RequestBody::Inline(_))
-                            && ep.body_schema_ref
+                            && ep.body_schema_shape == BodySchemaShape::Ref
                             && !ep.body_schema_dropped
                             && ep.query_params.is_empty()
                             && ep.stream_condition.is_none()
@@ -5108,7 +5111,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && !resource_envelope)
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(fields)
-                            if ep.body_schema_ref
+                            if ep.body_schema_shape == BodySchemaShape::Ref
                                 && (!ep.body_schema_dropped
                                     && ep.body_schema_metadata_missing
                                     && ep.body_schema_is_open
@@ -9451,9 +9454,9 @@ mod tests {
         example_from_json, example_import_cmp, field_decl, generate, natural_cmp,
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example,
-        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
-        RootClientView, RootModuleView, Slot,
+        render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
+        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
+        RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -10026,7 +10029,7 @@ mod tests {
             body_content_type_override: None,
             body_json_media_type: None,
             basic_auth: false,
-            body_schema_ref: false,
+            body_schema_shape: BodySchemaShape::Other,
             body_schema_dropped: false,
             body_schema_shared: false,
             body_schema_metadata_missing: false,
@@ -10038,7 +10041,6 @@ mod tests {
             reference_body_example: None,
             body_schema_documented: false,
             body_schema_titled: false,
-            body_inline_plain_union: false,
             body_schema_is_response_heavy: false,
             body_schema_is_open: false,
             body_schema_implicit_object: false,
@@ -12104,7 +12106,7 @@ mod tests {
                 reference_order: 0,
             }],
         }));
-        ep.body_schema_ref = true;
+        ep.body_schema_shape = BodySchemaShape::Ref;
         assert!(readme_endpoint_eligible(&ep, &[], &[]));
         let mut ctx = example_ctx(&types, &[], &auth);
         let form = build_documentation_example(
