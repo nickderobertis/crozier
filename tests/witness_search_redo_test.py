@@ -584,6 +584,16 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "annotated-ref-target-oneof": "paloalto-cspm-alerts",
             "anyof-array-variant-struct-item": "fergus",
             "anyof-array-variant-closed-object-item": "cradl",
+            "anyof-array-variant-anyof-nullable-item": "viskit-studio",
+            "anyof-array-variant-oneof-nullable-item": "ramu-shogi",
+            "oneof-array-variant-anyof-item": "langchain-agent-protocol",
+            "property-sole-anyof-struct-member": "npq-registration",
+            "property-sole-oneof-closed-object-member": "mistle-control-plane",
+            "property-sole-anyof-closed-object-member": "npq-registration",
+            "array-item-pointer-walk-anyof": "embedpdf-cloudpdf",
+            "oneof-array-variant-composed-item": "hse",
+            "oneof-array-variant-empty-object-item": "milvus-vector-operations",
+            "anyof-array-variant-empty-object-item": "milvus-restful-v2-3",
             "oneof-array-variant-closed-object-item": "zulip",
             "ref-pointer-undeclared-component-head": "thrivecart",
             "ref-pointer-unnamed-segment": "auto-agent-protocol",
@@ -1101,7 +1111,7 @@ class WideWitnessTests(unittest.TestCase):
         import hashlib
         spec = self.work / 'publisher.yaml'  # publisher suffix may disagree with unchanged JSON bytes
         spec.write_text(json.dumps({'openapi': '3.0.3', 'info': {'title': 'Réel', 'version': '1'},
-                                    'paths': {}, 'components': {'schemas': {'Sample': {'properties': {'x': {'anyOf': [{'type': 'object', 'properties': {'value': {'type': 'string'}}}]}}}}}}), encoding='utf-8')
+                                    'paths': {}, 'components': {'schemas': {'Sample': {'properties': {'x': {'anyOf': [{'type': 'object', 'properties': {}}]}}}}}}), encoding='utf-8')
         sha = hashlib.sha256(spec.read_bytes()).hexdigest()
         malformed = self.work / 'malformé.json'
         malformed.write_text('{é', encoding='utf-8')
@@ -1138,7 +1148,7 @@ class WideWitnessTests(unittest.TestCase):
         self.assertEqual('newly-fetched', outcomes[0]['acquisition'])
         self.assertEqual(sha + '.json', outcomes[0]['document'])
         self.assertNotIn('document_license', outcomes[0])
-        self.assertIn('property-sole-anyof-struct-member', output.with_suffix('.census.tsv').read_text(encoding='utf-8'))
+        self.assertIn('property-sole-anyof-empty-object-member', output.with_suffix('.census.tsv').read_text(encoding='utf-8'))
         self.assertEqual(0, self.validate('--inventory', inventory).returncode)
         spec.unlink()  # exact cached bytes still support a real census offline
         second = self.cli(*args)
