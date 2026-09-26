@@ -1,0 +1,370 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 91 errors
+    [error]
+        path: __package__.yml -> types -> 
+        issue:  is already declared in browserRestApIs.yml
+
+    [error]
+        path: __package__.yml -> types -> 
+        issue:  is already declared in browserRestApIs.yml
+
+    [error]
+        path: __package__.yml -> types -> 
+        issue:  is already declared in browserRestApIs.yml
+
+    [error]
+        path: __package__.yml -> types -> 
+        issue:  is already declared in browserRestApIs.yml
+
+    [error]
+        path: __package__.yml -> types -> 
+        issue:  is already declared in browserRestApIs.yml
+
+    [error]
+        path: __package__.yml -> types -> 
+        issue: Type name must begin with a letter
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeDownload
+        issue:  is already declared in __package__.yml
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeFunction
+        issue:  is already declared in __package__.yml
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Example is missing required property "response.body.debug.cookies.0.method"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Example is missing required property "response.body.debug.cookies.0.url"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "value"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "domain"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "path"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "expires"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "size"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "httpOnly"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "secure"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+        issue: Unexpected property "session"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Example is missing required property "response.body.cookies.0.method"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Example is missing required property "response.body.cookies.0.url"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "value"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "domain"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "path"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "expires"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "size"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "httpOnly"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "secure"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "session"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "sameSite"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "priority"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "sameParty"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "sourceScheme"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "partitionKey"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+        issue: Unexpected property "partitionKeyOpaque"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+        issue:  is already declared in __package__.yml
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+        issue:  is already declared in this file
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+        issue:  is already declared in __package__.yml
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.method"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "devtoolsFrontendUrl"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "title"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "type"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+        issue: Unexpected property "webSocketDebuggerUrl"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Example is missing required property "response.body.debug.cookies.0.method"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Example is missing required property "response.body.debug.cookies.0.url"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "value"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "domain"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "path"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "expires"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "size"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "httpOnly"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "secure"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+        issue: Unexpected property "session"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Example is missing required property "response.body.cookies.0.method"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Example is missing required property "response.body.cookies.0.url"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "value"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "domain"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "path"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "expires"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "size"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "httpOnly"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "secure"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "session"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "sameSite"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "priority"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "sameParty"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "sourceScheme"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "partitionKey"
+
+    [error]
+        path: browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+        issue: Unexpected property "partitionKeyOpaque"
+
+    [error]
+        path: browserRestApIs.yml -> types -> 
+        issue: Type name must begin with a letter
+
+    [error]
+        path: browserWebSocketApIs.yml -> service -> endpoints -> chromium
+        issue: Path must start with a slash.
+
+Found 91 errors and 0 warnings in 0.019 seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

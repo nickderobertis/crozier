@@ -1,0 +1,38 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 8 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> 云边协同列表
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 删除规则
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 插件列表
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 查询最新数据
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 获取配置菜单
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 设备不带分组列表
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> 设备带分组列表
+        issue: Duplicate example name: 成功示例
+
+    [error]
+        path: openapi/openapi.json -> tags -> 系统数据
+        issue: Tag name "系统数据" contains non-ASCII characters: 系, 统, 数, 据. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+
+Found 8 errors and 0 warnings in 0.010 seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

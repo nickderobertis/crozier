@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "36175d6e91fdc7b79e818496e1587eb0ca79a18d",
+    "path": "apis/v1/node/openapi.gen.json",
+    "repository": "github.com/ccfos/huatuo",
+    "screen": "witness-search-sourcegraph/screens.jsonl:75",
+    "sha256": "59eac83d183633586376e2a1852829822698fa19fcfd8156ffe2d11368d13110"
+  },
+  "key": "securityscheme-ref",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-publisher-trees",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

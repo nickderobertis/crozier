@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "58b149008088c837332b57353c0f6e1fe19bbe8d",
+    "path": "packages/schemas/openapi.yaml",
+    "repository": "github.com/MyuriKanao/viskit-studio",
+    "screen": "witness-search-sourcegraph/screens.jsonl:34",
+    "sha256": "a28619a09f0dfc9dcc29dc1984d08dd36b4dd9bda105894189f70f1a78fb8c17"
+  },
+  "key": "anyof-array-variant-anyof-nullable-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

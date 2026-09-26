@@ -281,6 +281,8 @@ ref-pointer-unnamed-segment	screen	codat.io:sync-for-expenses/prealpha ref	block
 ref-pointer-unnamed-segment	screen	codat.io:sync-for-expenses/prealpha fern	not-run	candidates.tsv
 schema-name-nonidentifier-name	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
 schema-name-nonidentifier-name	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
+securityscheme-ref	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	securityscheme-ref-census.tsv.gz
+securityscheme-ref	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	securityscheme-ref-census.tsv.gz
 *	wait	README.md	supporting acquisition record	README.md
 *	wait	acquisitions.jsonl	supporting acquisition record	acquisitions.jsonl
 *	wait	index.json	supporting acquisition record	index.json

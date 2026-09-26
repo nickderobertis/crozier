@@ -1,0 +1,7 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse an OpenAPI schema at the following location: postV2VectordbEntitiesSearch->Request->ids->Item. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: postV2VectordbEntitiesSearch->Request->ids->Item. Coercing to unknown.
+Found 0 errors and 7 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

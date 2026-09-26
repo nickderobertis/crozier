@@ -1,0 +1,18 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Flight Control Image Builder API
+[api]: Failed to resolve ../../core/v1beta1/openapi.yaml#/components/securitySchemes/bearerAuth 
+       CliError: Failed to resolve ../../core/v1beta1/openapi.yaml#/components/securitySchemes/bearerAuth
+           at bkt.resolveSecuritySchemeReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:38001)
+           at wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:139428)
+           at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:146396
+           at Array.map (<anonymous>)
+           at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:146374)
+           at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+           at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+           at async e.getDefinition (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:206:4557)
+           at async e.toFernWorkspace (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:21923)
+           at async /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:5009:5194
+All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

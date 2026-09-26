@@ -49,6 +49,7 @@ files:
     - "docs/openapi-surface/witness-search-*/**/*.log"
     - "docs/openapi-surface/witness-search-*/**/*.txt"
     - "docs/openapi-surface/witness-search-*/**/LICENSE*"
+    - "docs/openapi-surface/witness-search-*/licences/**"
     # The golden-reach arm searches' evidence is the same kind of data, written by
     # scripts/golden-reach-search.py: walk enumerations, query and call logs,
     # probe results and screens. The per-row records (searches/*.md), the README

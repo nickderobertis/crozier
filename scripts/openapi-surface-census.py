@@ -894,6 +894,11 @@ PREDICATES = {
     "schema.enum:normalized-collision": "one per Schema Object with two string enum members that collide after crozier enum identifier normalization",
     "schema.enum:numeric-member": "one per Schema Object with a numeric enum member; string_enum_values does not generate a named member for it",
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "securityScheme:$ref": (
+        "one per `components.securitySchemes` entry that is a Reference Object rather "
+        "than a Security Scheme Object, which `normalize_security_scheme_refs` of "
+        "`src/openapi.rs` resolves"
+    ),
     "operation.tags:multiple": (
         "one per Operation Object whose `tags` array holds more than one member"
     ),
@@ -3162,6 +3167,7 @@ class Census:
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
+            found += self.security_scheme_references(node.get("securitySchemes"))
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
             example_kind = selected_example_kind(node)
@@ -3574,6 +3580,22 @@ class Census:
             for key in node
             if isinstance(key, str) and not key.startswith("x-")
             and needs_sanitizing(key)
+        ]
+
+    @staticmethod
+    def security_scheme_references(node: Any) -> list[str]:
+        """One per `components.securitySchemes` entry written as a Reference Object.
+
+        Read at the Components Object, because the walk counts a Reference Object
+        as `reference.$ref` wherever it stands and so cannot say where it stood.
+        """
+        if not isinstance(node, dict):
+            return []
+        return [
+            "securityScheme:$ref"
+            for key, value in node.items()
+            if isinstance(key, str) and not key.startswith("x-")
+            and isinstance(value, dict) and "$ref" in value
         ]
 
     @staticmethod

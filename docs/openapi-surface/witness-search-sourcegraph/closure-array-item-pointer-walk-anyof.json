@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "2516e2786ee894383220ecd436fbd248182ef444",
+    "path": "cloudpdf/contract/openapi.json",
+    "repository": "github.com/embedpdf/embed-pdf-viewer",
+    "screen": "witness-search-sourcegraph/screens.jsonl:40",
+    "sha256": "31e57e1a59ed863b620c87505884aa138dbdef738052e29f11cd53a682151260"
+  },
+  "key": "array-item-pointer-walk-anyof",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

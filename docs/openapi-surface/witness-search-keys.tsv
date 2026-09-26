@@ -22,4 +22,4 @@ property-sole-anyof-struct-member	schema.properties>schema.anyOf:sole-member&sch
 property-sole-oneof-closed-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false	schemas.md	supported
 property-sole-oneof-composed-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf	schemas.md	supported
 property-sole-oneof-empty-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	schemas.md	supported
-securityscheme-ref	securityScheme:$ref	security.md	unsupported-by-census
+securityscheme-ref	securityScheme:$ref	security.md	supported

@@ -10,10 +10,22 @@ key's row from this directory's `candidates.tsv` and `outstanding.tsv` and the
 per-source `records.tsv`. Postman carries no search obligation.
 
 `candidates.tsv` contains only documents confirmed to declare a key by that
-key's census selector. It has no `securityscheme-ref` row: the branch-point
-`securityScheme:$ref` selector is [unsupported by the census](../witness-search-keys.tsv),
-so none of this node's sources was evaluated for that key. Its search
-remains outstanding for final reconciliation.
+key's census selector. It has no `securityscheme-ref` row because no document
+in this node's sources declares that shape. The census gained the
+`securityScheme:$ref` selector after this node's branch point, and
+`search-github-continue` then evaluated every enumerated document of
+`apis.guru`, `jentic` and `vendor-portals` for that key. Each source's
+`securityscheme-ref-census.tsv.gz` has one row per `enumeration.tsv` row,
+matched by SHA-256, carrying the parsed classification and the selector count or
+the parser's reason. The output came from
+`scripts/witness-search-local-census.py --all-documents-jsonl` over the same
+digest-verified archives and responses. The counts are 8,130 rows for
+APIs.guru, 74,240 for jentic and 13,907 for the vendor portals. Every document
+that parsed has a selector count of 0. That covers 3,797 OpenAPI 3 documents in
+APIs.guru, 31,925 in jentic and 1,128 in the vendor portals. The 39 portal files
+whose `enumeration.tsv` status is already `unreadable` do not parse for this key
+either. They stay outstanding for it, as for every other key. That key's `walk`
+rows in each `search-index.tsv` name the file.
 Adding a candidate here requires a selector output over the parsed document;
 an earlier keyword hit or another key's census output does not qualify.
 
@@ -44,9 +56,10 @@ with any row here does not read `exhausted`, and this node records none as
 `exhausted`. The kinds, which the acquisition tier reconciles with the ones the
 script emits, are:
 
-- `selector-unavailable`: `securityscheme-ref`, whose selector the census does
-  not support, in each of this node's sources. That search is delegated to
-  `search-github-continue`; nothing here records it as searched.
+- `selector-unavailable`: a key whose selector the census does not support,
+  in each of this node's sources. No key has this kind now:
+  `securityscheme-ref`, the one key that had it, was evaluated once the census
+  declared its selector.
 - `inconclusive-screen`: a declarer whose Fern screen did not finish.
 - `unreadable-document`: a walked file with a recorded parser failure.
 - `portal-unanswered`: a portal whose pinned tree could not be read.
