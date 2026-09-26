@@ -40,6 +40,9 @@ FIELDS = (
 )
 CENTRAL_FIELDS = (*FIELDS[:-1], "record")
 DIAGNOSTIC_LIMIT = 2000
+# The largest value `csv.field_size_limit` accepts everywhere: it takes a C long,
+# which is 32 bits on Windows, so `sys.maxsize` overflows there.
+CSV_FIELD_SIZE_LIMIT = 2**31 - 1
 DISPOSITIONS = ("witness-found", "rejected", "outstanding", "not-owed")
 # Why an issued query is still short when its ledger names no index limit or
 # refusal: a size window never issued, pages never requested, or pages GitHub
@@ -742,7 +745,7 @@ def search_index_failures(directory: Path) -> list[str]:
         return [dict(zip(header, line.split("\t"))) for line in lines[1:]]
 
     failures = []
-    csv.field_size_limit(sys.maxsize)
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
     index = table("search-index.tsv")
     with io.StringIO(read_ledger(directory / "records.tsv"), newline="") as stream:
         records = list(csv.DictReader(stream, delimiter="\t"))
