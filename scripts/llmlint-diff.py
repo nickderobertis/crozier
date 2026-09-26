@@ -65,9 +65,9 @@ def glob_regex(pattern: str) -> re.Pattern[str]:
     return re.compile(out + r"\Z")
 
 
-def excludes() -> list[re.Pattern[str]]:
+def excludes(llmlint: str) -> list[re.Pattern[str]]:
     """llmlint's own effective `files.exclude`, read from `llmlint config`."""
-    run = subprocess.run(["llmlint", "config"], capture_output=True, text=True)
+    run = subprocess.run([llmlint, "config"], capture_output=True, text=True)
     if run.returncode != 0:
         fail(f"`llmlint config` exited {run.returncode}: {run.stderr.strip()[-400:]} — "
              "fix llmlint.yml (`just lint-llm-validate`) and retry")
@@ -81,10 +81,10 @@ def excludes() -> list[re.Pattern[str]]:
     return [glob_regex(g) for g in globs]
 
 
-def changed(base: str) -> dict[str, int]:
+def changed(base: str, llmlint: str) -> dict[str, int]:
     """Each changed, still-present file against the merge base, with what the judge reads of it."""
     merge_base = git("merge-base", base, "HEAD").strip()
-    skip = excludes()
+    skip = excludes(llmlint)
     sizes: dict[str, int] = {}
     for path in git("diff", "--name-only", "--diff-filter=d", merge_base).splitlines():
         if not path or any(pattern.match(path) for pattern in skip) or not Path(path).is_file():
@@ -123,10 +123,13 @@ def main(argv: list[str] | None = None) -> int:
     args, extra = parser.parse_known_args(argv)
     if args.budget <= 0:
         fail(f"--budget must be a positive byte count, not {args.budget}")
-    if shutil.which("llmlint") is None:
+    # The resolved path, not the bare name: on Windows an installed CLI is a
+    # `.cmd` shim, which `which` finds through PATHEXT and a process spawn does not.
+    llmlint = shutil.which("llmlint")
+    if llmlint is None:
         fail("llmlint is not on PATH — run `just setup-llmlint`")
-    command = ["llmlint", "--diff", "git", "--diff-base", args.base, *extra]
-    sizes = changed(args.base)
+    command = [llmlint, "--diff", "git", "--diff-base", args.base, *extra]
+    sizes = changed(args.base, llmlint)
     if sum(sizes.values()) <= args.budget:
         return severity(subprocess.run(command).returncode)
     groups = batches(sizes, args.budget)

@@ -50,9 +50,17 @@ class LlmlintDiffTests(unittest.TestCase):
         self.repo.mkdir()
         bin_dir = self.root / "bin"
         bin_dir.mkdir()
-        stub = bin_dir / "llmlint"
-        stub.write_text(STUB, encoding="utf-8")
-        stub.chmod(0o755)
+        if os.name == "nt":
+            # Windows runs no shebang; a `.cmd` shim is how an installed CLI is reached there.
+            stub = self.root / "llmlint-stub.py"
+            stub.write_text(STUB, encoding="utf-8")
+            (bin_dir / "llmlint.cmd").write_text(
+                f'@"{sys.executable}" "{stub}" %*\n@exit /b %ERRORLEVEL%\n', encoding="utf-8"
+            )
+        else:
+            stub = bin_dir / "llmlint"
+            stub.write_text(STUB, encoding="utf-8")
+            stub.chmod(0o755)
         self.log = self.root / "calls.jsonl"
         self.env = {**os.environ, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "STUB_LOG": str(self.log)}
         self.git("init", "-q", "-b", "base")
