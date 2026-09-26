@@ -51,6 +51,14 @@ files it here.
   writes them. Raw downloads at an exact commit sit outside the REST guard by
   ruling and record their commit and digest.
 - `queries.tsv` — the two phrasings each text-query source was given per row.
+- `outstanding.tsv` — every item a record's `outstanding` column counts, one
+  line each: the row, the source, the document, what blocks it (unprobed on the
+  record's build, a probe that timed out or left no profile, or the census's
+  reason it could not read the document), the build, and the `src/` commits since
+  that build that make every probe of it owe a fresh `just golden-reach`. It is
+  the continuation node `thin-goldens-continue`'s work list. `outstanding`
+  regenerates it from the records and probes; `RankedBacklogTests` holds each
+  `(row, source)` group to its record's count.
 - `handoff.tsv` — candidates that pass every screen but that this node did not
   register: one declaring a `gap` selector, or one crozier cannot yet generate.
   `register-witnesses-continue` takes each up.

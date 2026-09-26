@@ -38,6 +38,9 @@ Each subcommand does one stage and writes its evidence under
   ``golden-reach-witnesses/searches/<key>.md``: one line per declared source.
   ``--build`` re-renders a committed record as of the build its probes ran on,
   keeping the arm it searched for, when its evidence moves after `src/` has.
+* ``outstanding`` — every item the committed records' ``outstanding`` columns
+  count, one line each with its blocker, into
+  ``golden-reach-witnesses/outstanding.tsv``: the continuation's work list.
 
 Screens are recorded by ``screen``, which takes the outcome, the evidence it
 rests on and a passing candidate's disposition (``--registered`` or
@@ -1033,19 +1036,44 @@ def _dispositions(key: str) -> list[str]:
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
-def _tally(key: str, source: str, build: str) -> dict[str, int]:
-    """What one source's evidence says about one key: declarers, and how each fared."""
-    records = [r for r in read_records(source) if r["key"] == key]
-    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
-                 and r["result"] != "census 0"}
-    unread = sum(1 for r in records if r["kind"] == "document" and not r["result"].startswith("census "))
+def _unreadable(key: str, source: str) -> list[tuple[str, str]]:
+    """Documents of one source the census could not read, each with the reason it gave."""
     enumeration = source_dir(source) / "enumeration.tsv.gz"
     if source in WALKS and enumeration.is_file():
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            unread = sum(1 for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-                         if row["status"] != "readable")
+            return [(row["document"], row["status"])
+                    for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+                    if row["status"] != "readable"]
+    return [(r["subject"], r["result"]) for r in read_records(source)
+            if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
+
+
+def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]]:
+    """Every item one source still owes one key's search, each with what blocks it.
+
+    Exactly the items [`_outstanding`] counts: a declarer with no probe of
+    `build`, one whose probe timed out or left no profile, and every document
+    the census could not read.
+    """
+    records = [r for r in read_records(source) if r["key"] == key]
+    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
+                 and r["result"] != "census 0"}
+    probes = {row["candidate"]: row for row in read_probes(source)
+              if row["key"] == key and row.get("build") == build}
+    items = [(c, f"unprobed on build {build}") for c in sorted(declarers - set(probes))]
+    items += [(c, f"probe on build {build}: {probes[c]['status']}") for c in sorted(declarers & set(probes))
+              if probes[c]["status"].startswith(("timeout", "no profile"))]
+    return items + [(document, reason) for document, reason in _unreadable(key, source)]
+
+
+def _tally(key: str, source: str, build: str) -> dict[str, int]:
+    """What one source's evidence says about one key: declarers, and how each fared."""
+    records = [r for r in read_records(source) if r["key"] == key]
+    declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
+                 and r["result"] != "census 0"}
+    unread = len(_unreadable(key, source))
     # Only a probe of the measured build counts; one run while `src/` differed from
     # it read another arm's regions (see [`measured_build`]) and says nothing.
     probes = {row["candidate"]: row for row in read_probes(source)
@@ -1231,6 +1259,47 @@ def render(args: argparse.Namespace) -> int:
     return 0
 
 
+OUTSTANDING = EVIDENCE / "outstanding.tsv"
+OUTSTANDING_FIELDS = ("key", "source", "item", "blocker", "build", "src_moved_since")
+RECORD_BUILD = re.compile(r"^build `([0-9a-f]+)` only\.", re.M)
+
+
+def record_build(text: str, path: Path) -> str:
+    """The build a committed arm-search record counted its probes on, as it states it."""
+    found = RECORD_BUILD.search(text)
+    if not found:
+        fail(f"{path} names no build its probes were counted on; re-render it with `render`")
+    return found.group(1)
+
+
+def outstanding(args: argparse.Namespace) -> int:
+    """Every item each committed arm search still owes, one line each, into `outstanding.tsv`.
+
+    A record's `outstanding` column is a count; this is the list it counts, with
+    what blocks each item, for whoever continues the search. Each record is read
+    as of the build it states, and `src_moved_since` names the commits that make
+    every probe of that build owe a fresh `just golden-reach` before reuse.
+    """
+    del args
+    rows: list[dict[str, str]] = []
+    for path in sorted((EVIDENCE / "searches").glob("*.md")):
+        build = record_build(path.read_text(encoding="utf-8"), path)
+        moved = " ".join(src_commits_since(build))
+        for source in DECLARED_SOURCES:
+            rows += [{"key": path.stem, "source": source, "item": item, "blocker": blocker,
+                      "build": build, "src_moved_since": moved}
+                     for item, blocker in outstanding_items(path.stem, source, build)]
+    with OUTSTANDING.open("w", encoding="utf-8", newline="") as handle:
+        # Split on tabs and nothing else, as `records.tsv` is: a quote is text.
+        writer = csv.DictWriter(handle, OUTSTANDING_FIELDS, delimiter="\t", lineterminator="\n",
+                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"golden-reach-search: {len(rows)} outstanding item(s) across "
+          f"{len({row['key'] for row in rows})} arm search(es)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1268,8 +1337,10 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
+    sub.add_parser("outstanding")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render}[args.command](args)
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render,
+            "outstanding": outstanding}[args.command](args)
 
 
 if __name__ == "__main__":

@@ -710,6 +710,7 @@ class _StageScratch(unittest.TestCase):
         for module, name, value in (
             (golden_reach_search, "SURFACE", surface),
             (golden_reach_search, "EVIDENCE", surface / "golden-reach-witnesses"),
+            (golden_reach_search, "OUTSTANDING", surface / "golden-reach-witnesses" / "outstanding.tsv"),
             (golden_reach_search, "CACHE", self.scratch / "cache"),
             (golden_reach_search.REACH, "DEFAULT_OUT", measurement),
         ):
@@ -799,6 +800,54 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1 |", record)
         self.assertIn(f"build `{self.head[:12]}` only", record)
         self.assertNotIn("had moved since that build", record)
+
+    def test_outstanding_lists_each_item_a_record_counts_with_its_blocker(self) -> None:
+        self.walk()
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["outstanding"]))
+        self.assertEqual("golden-reach-search: 2 outstanding item(s) across 1 arm search(es)\n", printed.getvalue())
+        with golden_reach_search.OUTSTANDING.open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        build = self.head[:12]
+        self.assertEqual(
+            [("jentic", "a.yaml", f"unprobed on build {build}"), ("jentic", "c.yaml", "unreadable: DocumentError")],
+            [(r["source"], r["item"], r["blocker"][:len(f"unprobed on build {build}")]
+              if r["item"] == "a.yaml" else r["blocker"][:len("unreadable: DocumentError")]) for r in rows],
+        )
+        self.assertEqual({(self.KEY, build, "")}, {(r["key"], r["build"], r["src_moved_since"]) for r in rows})
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("| `jentic` | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |", record)
+        # A probe that timed out stays outstanding, now with its probe's status as the blocker.
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "timeout after 300s", "build": build, "reached": []},
+        ])
+        with contextlib.redirect_stdout(io.StringIO()):
+            golden_reach_search.main(["outstanding"])
+        text = golden_reach_search.OUTSTANDING.read_text(encoding="utf-8")
+        self.assertIn(f"a.yaml\tprobe on build {build}: timeout after 300s\t", text)
+        (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").write_text("# no build\n", encoding="utf-8")
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(["outstanding"])
+        self.assertIn("names no build its probes were counted on", str(refused.exception))
+
+    def test_the_committed_outstanding_list_is_what_the_committed_evidence_gives(self) -> None:
+        """`outstanding.tsv` is regenerated from the records and probes beside it, byte for byte."""
+        committed = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "outstanding.tsv"
+        builds = set(re.findall(r"(?m)^build `([0-9a-f]+)` only\.", "".join(
+            p.read_text(encoding="utf-8") for p in committed.parent.glob("searches/*.md"))))
+        for build in builds:
+            if subprocess.run(["git", "rev-parse", "--verify", "-q", f"{build}^{{commit}}"], cwd=REPO,
+                              capture_output=True).returncode != 0:
+                self.skipTest(f"a shallow clone holds no build {build} to read src/'s history since")
+        for module, name, value in ((golden_reach_search, "SURFACE", committed.parent.parent),
+                                    (golden_reach_search, "EVIDENCE", committed.parent),
+                                    (golden_reach_search, "OUTSTANDING", self.scratch / "outstanding.tsv")):
+            setattr(module, name, value)
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["outstanding"]))
+        self.assertEqual(committed.read_bytes(), (self.scratch / "outstanding.tsv").read_bytes(),
+                         "re-run `python3 scripts/golden-reach-search.py outstanding` and commit the list")
 
     def test_a_screened_candidate_filed_as_registered_renders_as_its_disposition(self) -> None:
         self.walk()

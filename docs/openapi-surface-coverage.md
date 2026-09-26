@@ -1560,7 +1560,9 @@ a real specification. Whether each search reads `exhausted` is final
 reconciliation's to decide; the outcome a record states is its own reading.
 Every record here reads `search-incomplete`, and each cell below whose row still
 has an unreached site leads with its outstanding items — declarers unprobed, timed out or failed without a profile,
-and documents the census could not read — per source. The probes were counted on
+and documents the census could not read — per source; each such item is one line of
+[`outstanding.tsv`](openapi-surface/golden-reach-witnesses/outstanding.tsv), with
+its blocker, for `thin-goldens-continue` to take up. The probes were counted on
 the build `8a9454cb74d0`, and `src/` has moved since, so each must be re-taken on
 a fresh `just golden-reach` measurement before it is reused.
 The `github-publisher-trees` lines read the shared pin as #296 extended it —

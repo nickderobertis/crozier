@@ -7623,6 +7623,30 @@ class RankedBacklogTests(unittest.TestCase):
                 )
         self.assertTrue(checked, "no owned row links an arm search; the check reads nothing")
 
+    def test_the_outstanding_list_itemises_every_arm_searchs_outstanding_count(self) -> None:
+        """`outstanding.tsv` lists, per record and source, exactly the items its count owes.
+
+        A record's `outstanding` column is a number; the list is what a
+        continuation takes up, so each `(key, source)` group must hold that many
+        items, each naming its blocker and the build the record counted on.
+        """
+        with (self.ARM_SEARCHES / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        listed: dict[tuple[str, str], int] = {}
+        for row in rows:
+            self.assertTrue(row["item"] and row["blocker"], f"an item without its blocker: {row}")
+            listed[(row["key"], row["source"])] = listed.get((row["key"], row["source"]), 0) + 1
+        owed: dict[tuple[str, str], int] = {}
+        for path in sorted((self.ARM_SEARCHES / "searches").glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
+            self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
+            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M):
+                if int(cells.split("|")[-2]):
+                    owed[(path.stem, source)] = int(cells.split("|")[-2])
+        self.assertTrue(owed, "no record owes an item; the check reads nothing")
+        self.assertEqual(owed, listed)
+
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
         """An owned row's arm search: one line per declared source, each resting on evidence.
 
