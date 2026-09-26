@@ -460,7 +460,7 @@ class ArmSearchTests(unittest.TestCase):
         self.assertEqual(2, len(rows), "probing names no candidate; screening does")
         screen = argparse.Namespace(
             source="jentic", key="k", candidate="a.yaml", licence="passed", ref="passed",
-            fern="failed: Fern check reports 1 error", gap_keys="", evidence="", declined="",
+            fern="failed: Fern check reports 1 error", gap_keys="", evidence="", declined="", registered="",
         )
         golden_reach_search.screen(screen)
         golden_reach_search.screen(screen)
@@ -749,6 +749,73 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1 |", record)
         self.assertIn(f"build `{self.head[:12]}` only", record)
         self.assertNotIn("had moved since that build", record)
+
+    def test_a_screened_candidate_filed_as_registered_renders_as_its_disposition(self) -> None:
+        self.walk()
+        screen = ["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+                  "--licence", "passed", "--ref", "passed", "--fern", "passed"]
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(screen + ["--registered", "corpus row 1", "--declined", "a duplicate"])
+        self.assertIn("registered or declined, not both", str(refused.exception))
+        self.assertEqual(0, golden_reach_search.main(screen + ["--registered", "corpus row 1 (`a`)"]))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("- **Registered** (`jentic`): `a.yaml` — corpus row 1 (`a`)", record.splitlines())
+
+    def test_render_as_of_an_earlier_build_keeps_the_searched_arm_and_counts_that_builds_probes(self) -> None:
+        touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
+                                 capture_output=True, text=True, check=True).stdout.strip()
+        before = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{touched}^"], cwd=REPO,
+                                capture_output=True, text=True)
+        if before.returncode != 0:
+            self.skipTest("a shallow clone holds no commit before src/'s latest change")
+        earlier = before.stdout.strip()[:12]
+        self.walk()
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        path = golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md"
+        # The arm this record searched for, since reached by a registered witness:
+        # the ledger no longer names it, and the re-render must keep it.
+        searched = "The unreached handling site(s) searched for: `src/ir.rs::since_reached`."
+        path.write_text(re.sub(r"(?m)^The unreached handling site\(s\) searched for: .*$", searched,
+                               path.read_text(encoding="utf-8")), encoding="utf-8")
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": earlier, "reached": []},
+        ])
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY, "--build", earlier]))
+        record = path.read_text(encoding="utf-8")
+        self.assertIn(searched, record.splitlines())
+        self.assertIn(f"build of commit `{earlier}`, the one the reach ledger was measured on when these probes ran,",
+                      " ".join(record.split()))
+        # The earlier build's probe counts; only the unreadable document is outstanding.
+        self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 |", record)
+        self.assertIn("had moved since that build", record)
+        self.assertNotIn("The arm this search looked for is now reached", record)
+        # A witness registered since reaches every site: the ledger, re-read from a
+        # copy whose row is fully reached, and the record says the arm is closed.
+        ledger = self.scratch / "golden-reach.tsv"
+        rows = golden_reach_search.REACH.LEDGER.read_text(encoding="utf-8").splitlines()
+        for number, row in enumerate(rows):
+            cells = row.split("\t")
+            if len(cells) > 8 and cells[1] == self.KEY:
+                cells[3] = "0"
+                cells[8] = re.sub(r"=(\d+)/(\d+)", r"=\2/\2", cells[8])
+                rows[number] = "\t".join(cells)
+        ledger.write_text("\n".join(rows) + "\n", encoding="utf-8")
+        original = golden_reach_search.REACH.read_ledger
+        self.addCleanup(setattr, golden_reach_search.REACH, "read_ledger", original)
+        golden_reach_search.REACH.read_ledger = lambda: original(ledger)
+        self.assertEqual((), golden_reach_search.ledger_unreached(self.KEY))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY, "--build", earlier]))
+        record = path.read_text(encoding="utf-8")
+        self.assertIn(searched, record.splitlines())
+        self.assertIn("The arm this search looked for is now reached", record)
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(["render", "--key", self.KEY, "--build", "0" * 40])
+        self.assertIn("names no commit in this checkout", str(refused.exception))
+        path.unlink()
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(["render", "--key", self.KEY, "--build", earlier])
+        self.assertIn("states no arm it searched for", str(refused.exception))
 
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,

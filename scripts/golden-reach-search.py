@@ -36,9 +36,12 @@ Each subcommand does one stage and writes its evidence under
   arm is no witness for it, however it screens.
 * ``render`` — the row's search record,
   ``golden-reach-witnesses/searches/<key>.md``: one line per declared source.
+  ``--build`` re-renders a committed record as of the build its probes ran on,
+  keeping the arm it searched for, when its evidence moves after `src/` has.
 
-Screens are recorded by ``screen``, which takes the outcome and the evidence it
-rests on from the caller: a licence, an immutable ref and Fern's acceptance are
+Screens are recorded by ``screen``, which takes the outcome, the evidence it
+rests on and a passing candidate's disposition (``--registered`` or
+``--declined``) from the caller: a licence, an immutable ref and Fern's acceptance are
 each a measurement taken elsewhere (the corpus licence rule, the source's pin,
 `scripts/generate-fern-fixture.sh`), and this script only files them.
 
@@ -234,16 +237,21 @@ def _predicate_one(args: tuple[str, str, tuple[str, ...]]) -> dict[str, int]:
     return {key: n for key in keys for n in [predicate_count(key, Path(path))] if n}
 
 
-def unreached_sites(key: str) -> tuple[str, ...]:
-    """The row's unreached handling sites in the committed ledger — the arm searched for."""
+def ledger_unreached(key: str) -> tuple[str, ...]:
+    """The row's unreached handling sites in the committed ledger, none where it reaches every one."""
     for _rank, reach in REACH.read_ledger():
         if reach.key == key:
-            sites = tuple(spec for spec, hit, _total in reach.sites if not hit)
-            if not sites:
-                fail(f"{key} reaches every handling site; there is no arm to search for. Drop it from this search")
-            return sites
+            return tuple(spec for spec, hit, _total in reach.sites if not hit)
     fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv, or re-run `just golden-reach-report`")
     raise AssertionError
+
+
+def unreached_sites(key: str) -> tuple[str, ...]:
+    """The row's unreached handling sites in the committed ledger — the arm searched for."""
+    sites = ledger_unreached(key)
+    if not sites:
+        fail(f"{key} reaches every handling site; there is no arm to search for. Drop it from this search")
+    return sites
 
 
 def declared(counts: dict[str, int], selectors: tuple[str, ...]) -> int:
@@ -932,6 +940,8 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
 
 def screen(args: argparse.Namespace) -> int:
     """File one candidate's three screens, each with the evidence it rests on."""
+    if args.declined and args.registered:
+        fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
     for outcome in (args.licence, args.ref, args.fern):
         if outcome != "passed" and not outcome.startswith("failed: "):
             fail(f"a screen reads `passed` or `failed: <reason>`, not {outcome!r}")
@@ -952,7 +962,8 @@ def screen(args: argparse.Namespace) -> int:
     with (directory / "screens.jsonl").open("a", encoding="utf-8") as handle:
         handle.write(json.dumps({"key": args.key, "candidate": args.candidate, "licence": args.licence,
                                  "ref": args.ref, "fern": args.fern, "gap_keys": args.gap_keys,
-                                 "evidence": args.evidence, "declined": args.declined}, sort_keys=True) + "\n")
+                                 "evidence": args.evidence, "declined": args.declined,
+                                 "registered": args.registered}, sort_keys=True) + "\n")
     others = [r for r in read_records(args.source)
               if not (r["key"] == args.key and r["kind"] in ("screen", "candidate")
                       and (r["subject"] == args.candidate or r["subject"].startswith(args.candidate + " ")))]
@@ -968,7 +979,7 @@ def _cell(text: str) -> str:
 
 
 def _dispositions(key: str) -> list[str]:
-    """What became of a candidate that passes every screen: handed off, or declined."""
+    """What became of a candidate that passes every screen: registered, handed off, or declined."""
     out: list[str] = []
     handoff = EVIDENCE / "handoff.tsv"
     if handoff.is_file():
@@ -985,12 +996,14 @@ def _dispositions(key: str) -> list[str]:
             if row["key"] == key:
                 latest[row["candidate"]] = row
         for candidate, row in sorted(latest.items()):
+            if row.get("registered"):
+                out.append(f"- **Registered** (`{source}`): `{candidate}` — {row['registered']}")
             if row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
-def _tally(key: str, source: str) -> dict[str, int]:
+def _tally(key: str, source: str, build: str) -> dict[str, int]:
     """What one source's evidence says about one key: declarers, and how each fared."""
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
@@ -1005,7 +1018,6 @@ def _tally(key: str, source: str) -> dict[str, int]:
                          if row["status"] != "readable")
     # Only a probe of the measured build counts; one run while `src/` differed from
     # it read another arm's regions (see [`measured_build`]) and says nothing.
-    build = _current_build()
     probes = {row["candidate"]: row for row in read_probes(source)
               if row["key"] == key and row.get("build") == build}
     screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
@@ -1061,24 +1073,60 @@ def _outcome(tallies: dict[str, dict[str, int]], src_moved: bool = False) -> str
     return "search-incomplete" if outstanding else "exhausted"
 
 
+SEARCHED_FOR = "The unreached handling site(s) searched for: "
+
+
+def probed_build(commit: str) -> str:
+    """The short commit of an earlier build whose probes a record is rendered as of."""
+    run = subprocess.run(["git", "rev-parse", "--verify", "-q", f"{commit}^{{commit}}"],
+                         cwd=REPO, capture_output=True, text=True)
+    if run.returncode != 0:
+        fail(f"--build {commit} names no commit in this checkout; pass the build a record's probes "
+             "were counted on, as its `build of commit` line spells it")
+    return run.stdout.strip()[:12]
+
+
+def searched_for(key: str) -> str:
+    """The arm a committed record searched for, as that record states it.
+
+    A record re-rendered as of an earlier build keeps the arm it searched for then:
+    a witness registered since may have reached it, and the ledger would name none.
+    """
+    path = EVIDENCE / "searches" / f"{key}.md"
+    if path.is_file():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.startswith(SEARCHED_FOR):
+                return line
+    fail(f"{path} states no arm it searched for; render {key} without --build, against the current measurement")
+    raise AssertionError
+
+
 def render(args: argparse.Namespace) -> int:
-    """One arm search record per key, one Contract B line per declared source."""
+    """One arm search record per key, one Contract B line per declared source.
+
+    `--build` re-renders a committed record as of the build its probes ran on —
+    after its evidence moved, say, while `src/` has moved past that build — so
+    only what the evidence changed moves, and the record keeps its searched arm.
+    """
+    build = probed_build(args.build) if args.build else _current_build()
+    ledger = "was measured on when these probes ran" if args.build else "is measured on"
     for key in args.key:
-        tallies = {source: _tally(key, source) for source in DECLARED_SOURCES}
-        moved = src_commits_since(_current_build())
+        header = searched_for(key) if args.build else (
+            SEARCHED_FOR + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".")
+        tallies = {source: _tally(key, source, build) for source in DECLARED_SOURCES}
+        moved = src_commits_since(build)
         outcome = _outcome(tallies, bool(moved)) if args.outcome == "auto" else args.outcome
         lines = [
             f"# Arm search: `{key}`",
             "",
-            "The unreached handling site(s) searched for: "
-            + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".",
+            header,
             "Read with: " + ", ".join(f"`{s}`" for s in selectors_of(key)) + ".",
             "",
             "A walked or fetched document declaring the row is a `document` row of the",
             "source's `records.tsv`; one whose instrumented `crozier generate` executes",
             "an unreached site above is a `candidate`, and only a candidate owes the",
             "licence, ref and fern screens. A probe counts only if it ran the instrumented",
-            f"build of commit `{_current_build()}`, the one the reach ledger is measured on,",
+            f"build of commit `{build}`, the one the reach ledger {ledger},",
             "with `src/` at that commit; a declarer with no such probe is unprobed and",
             "outstanding, and a re-probe needs `src/` at that commit (or a fresh",
             "`just golden-reach`). Probes run before that rule was enforced read shifted",
@@ -1090,6 +1138,14 @@ def render(args: argparse.Namespace) -> int:
             "| key | source | outcome | queries | walk | candidates | screens |",
             "|---|---|---|---|---|---|---|",
         ]
+        if args.build and not ledger_unreached(key):
+            table = lines.index("### Witness search (exhaustive)")
+            lines[table:table] = [
+                "The arm this search looked for is now reached: a witness registered since",
+                "reaches every handling site the ledger names for the row. The tables",
+                "below record the search as it stood when the arm was still open.",
+                "",
+            ]
         for source in DECLARED_SOURCES:
             records = [r for r in read_records(source) if r["key"] == key]
             queries = "; ".join(
@@ -1116,7 +1172,7 @@ def render(args: argparse.Namespace) -> int:
             "#### Declarers, and how the instrumented run fared on each",
             "",
             "Counted off each source's `records.tsv` and `probe.jsonl`, probes of the",
-            f"build `{_current_build()}` only. A declarer not probed on it, one whose run",
+            f"build `{build}` only. A declarer not probed on it, one whose run",
             "did not finish (a timeout), and one crozier failed on without a profile are",
             "outstanding: the arm may be in them, and nothing here says otherwise.",
             "`outstanding` sums the unprobed, the timed out, the failed without a profile",
@@ -1177,9 +1233,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--gap-keys", default="")
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
+    s.add_argument("--registered", default="", help="the corpus row a candidate passing every screen is registered as")
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
+    r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
     args = parser.parse_args(argv)
     return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render}[args.command](args)
 
