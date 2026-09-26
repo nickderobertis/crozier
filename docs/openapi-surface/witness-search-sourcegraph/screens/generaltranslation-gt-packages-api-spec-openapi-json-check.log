@@ -1,0 +1,294 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 36 errors
+    [error]
+        path: cliWizard.yml -> service -> endpoints -> createCliWizardSession -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: cliWizard.yml -> service -> endpoints -> deleteCliWizardSession -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: cliWizard.yml -> service -> endpoints -> getCliWizardSession -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: context.yml -> service -> endpoints -> generateProjectContext -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> downloadFile -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> downloadFiles -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> getFileInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> getOrphanedFiles -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> getTranslationStatus -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> processFileMoves -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> publishFiles -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> submitUserEditDiffs -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> uploadSourceFiles -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: files.yml -> service -> endpoints -> uploadTranslations -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginDownload -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginEnqueue -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginImportTranslations -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginStatus -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> pluginSync -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> workspacePluginInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> workspacePluginStatus -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: integrations.yml -> service -> endpoints -> workspacePluginTranslate -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> createBranch -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> createProject -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> createProjectApiKey -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> createTag -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> getBranchInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> getProjectInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> listOrgs -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> listProjects -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> updateProjectInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: project.yml -> service -> endpoints -> uploadAssets -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: translation.yml -> service -> endpoints -> enqueueFileTranslations -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: translation.yml -> service -> endpoints -> getTranslationJobInfo -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+    [error]
+        path: translation.yml -> service -> endpoints -> translate -> examples[0] -> headers
+        issue: "gt-api-version" is not a valid example for this enum. Enum values are:
+  - 2025-01-01.v0
+  - 2025-11-03.v1
+  - 2026-02-18.v1
+  - 2026-03-06.v1
+
+Found 36 errors and 0 warnings in 0.017 seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

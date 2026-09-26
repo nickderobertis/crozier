@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "0e477d760ca6e7eb6f347cf876191e01d6ca00d7",
+    "path": "apps/docs/openapi-v2-logs.json",
+    "repository": "github.com/simstudioai/sim",
+    "screen": "witness-search-sourcegraph/screens.jsonl:51",
+    "sha256": "d178a3a724a181cba21809bb6bcce07d7752f67603d45e3ea21ae7a6ca49474a"
+  },
+  "key": "anyof-array-variant-closed-object-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

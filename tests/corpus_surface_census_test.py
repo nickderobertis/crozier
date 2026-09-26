@@ -6,6 +6,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import importlib.util
+import io
 import itertools
 import re
 import subprocess
@@ -15,6 +16,12 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "openapi-surface-census.py"
+_INDEX_SPEC = importlib.util.spec_from_file_location(
+    "witness_search_github_index_corpus", REPO / "scripts" / "witness-search-github-index.py"
+)
+assert _INDEX_SPEC and _INDEX_SPEC.loader
+INDEX = importlib.util.module_from_spec(_INDEX_SPEC)
+_INDEX_SPEC.loader.exec_module(INDEX)
 CENSUS_TIMEOUT = 60
 
 
@@ -87,7 +94,7 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
         copies = 0
         for ledger in ("witness-search-registries", "witness-search-github"):
             path = REPO / "docs" / "openapi-surface" / ledger / "candidates.tsv"
-            with path.open(encoding="utf-8", newline="") as stream:
+            with io.StringIO(INDEX.read_ledger(path), newline="") as stream:
                 for candidate in csv.DictReader(stream, delimiter="\t"):
                     match = disposition.fullmatch(candidate["disposition"])
                     if not match:

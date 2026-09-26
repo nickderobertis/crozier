@@ -23,6 +23,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import importlib.util
+import io
 import itertools
 import json
 import os
@@ -713,7 +714,7 @@ def compact_record_failures(
         failures.append(f"{key}: missing consolidated candidates.tsv")
         central = []
     else:
-        with central_path.open(encoding="utf-8", newline="") as stream:
+        with io.StringIO(_index_module.read_ledger(central_path), newline="") as stream:
             reader = csv.DictReader(stream, delimiter="\t")
             if tuple(reader.fieldnames or ()) != (
                 *COMPACT_RECORD_FIELDS[:-1],
@@ -737,7 +738,7 @@ def compact_record_failures(
         if not path.is_file():
             failures.append(f"{key}: `{source}` records.tsv is missing")
             continue
-        with path.open(encoding="utf-8", newline="") as stream:
+        with io.StringIO(_index_module.read_ledger(path), newline="") as stream:
             reader = csv.DictReader(stream, delimiter="\t")
             if tuple(reader.fieldnames or ()) != COMPACT_RECORD_FIELDS:
                 failures.append(f"{key}: `{source}` records.tsv has the wrong header")
@@ -965,7 +966,7 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
     index = directory / "records.tsv"
     if not index.is_file():
         return []
-    lines = index.read_text(encoding="utf-8").splitlines()
+    lines = _index_module.read_ledger(index).splitlines()
     header = lines[0].split("\t") if lines else []
     return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
 
@@ -987,9 +988,10 @@ def evidence_directory_failures(key: str, directory: Path) -> list[str]:
                 f"{key}: {name}/records.tsv names `{record.get('file')}`, which is "
                 "not in the evidence directory"
             )
+    tables = {part.name for part in _index_module.ledger_parts(directory / "records.tsv")}
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
-        if path.is_file() and rel not in ("records.tsv", "enumeration.tsv") and rel not in named:
+        if path.is_file() and rel not in (*tables, "enumeration.tsv") and rel not in named:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -1302,7 +1304,7 @@ class GrammarContractTests(unittest.TestCase):
         # spelled `$ref`: the gate widens to the spelling rather than the spelling
         # bending to the gate.
         documented = set(
-            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z0-9-]+)?)`", body)
+            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body)
         )
         self.assertEqual(set(census.PREDICATES), documented)
         stated = re.search(
@@ -1380,7 +1382,7 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
             "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40,
+            "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
             "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
         }
         text = self.DOC.read_text(encoding="utf-8")
@@ -3238,7 +3240,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
-        - {"components.schemas:nonidentifier-name"}
+        - {"components.schemas:nonidentifier-name", "securityScheme:$ref"}
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -9027,6 +9029,47 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                             "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_security_scheme_reference_counts_one_per_referencing_entry(self) -> None:
+        """A `components.securitySchemes` Reference Object, and nowhere else.
+
+        The positive writes two referencing entries beside the inline scheme they
+        name; the decoys write the same scheme inline only, and a Reference Object
+        in a parameter and a response position, which `reference.$ref` counts and
+        this predicate must not.
+        """
+        selector = "securityScheme:$ref"
+        scheme = {"type": "apiKey", "in": "header", "name": "X-Key"}
+        documents = {
+            "positive": {"securitySchemes": {
+                "key": scheme,
+                "alias": {"$ref": "#/components/securitySchemes/key"},
+                "remote": {"$ref": "../openapi.yaml#/components/securitySchemes/key"},
+            }},
+            "inline": {"securitySchemes": {"key": scheme, "other": dict(scheme)}},
+            "elsewhere": {
+                "securitySchemes": {"key": scheme},
+                "parameters": {"p": {"name": "p", "in": "query"},
+                               "q": {"$ref": "#/components/parameters/p"}},
+                "responses": {"ok": {"$ref": "#/components/responses/other"},
+                              "other": {"description": "ok"}},
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, components in documents.items():
+                write_fixture(root, fixture, json.dumps({
+                    "openapi": "3.0.3", "info": {"title": fixture, "version": "1"},
+                    "paths": {}, "components": components,
+                }))
+            completed = run("--vendored-only", "--fixtures-root", str(root),
+                            "--selector", selector, "--selector", "reference.$ref")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(selector, "positive"): 2, ("reference.$ref", "positive"): 2,
+             ("reference.$ref", "elsewhere"): 2},
+            rows(completed),
+        )
 
     def test_new_value_rows_cite_the_offline_census_own_counts(self) -> None:
         selectors = (

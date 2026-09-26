@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "22504221b837d01c9366a5d6c8c6a9b88f9f782b",
+    "path": "packages/api-contract/src/generated/openapi.json",
+    "repository": "SH11235/ramu-shogi",
+    "screen": "witness-search-github-code-search/screens.jsonl:54",
+    "sha256": "b1ec8858ce90846d4b9345c577d6788ae335ffe68e28b03420345cdbd03557df"
+  },
+  "key": "anyof-array-variant-oneof-nullable-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

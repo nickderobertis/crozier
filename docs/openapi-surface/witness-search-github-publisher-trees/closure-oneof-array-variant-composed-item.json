@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "6d5207f88044a3bd9b3539260074395317e276d5",
+    "path": "docs/openapi.json",
+    "repository": "github.com/hse-project/hse",
+    "screen": "witness-search-sourcegraph/screens.jsonl:42",
+    "sha256": "35114e72c580f9a1d35dbda429b6af49530e5cc9c44ed19d0f067942ca28d397"
+  },
+  "key": "oneof-array-variant-composed-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-publisher-trees",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}
