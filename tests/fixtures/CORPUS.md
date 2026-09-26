@@ -1007,7 +1007,8 @@ Every other usable candidate in the two ledgers is now disposed of:
   Vellum's gateway, `vfarcic/dot-ai`, Palo Alto's `code/Technologies.json`,
   marimo's `plugins.openapi.yaml`, MockServer's own description and Otoroshi's
   schema bundle. Batch 20 registers seven of them as rows 216 to 222, and their
-  dispositions now name those rows.
+  dispositions now name those rows; MockServer's is demoted for its mutable
+  absolute `$ref`.
 - **The three jentic documents** the `golden-reach-witnesses` handoff proposed —
   DigitalOcean, Cvent and Sellsy — are Fern refusals, recorded in
   [`AGENTS.md`](AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
@@ -1140,9 +1141,13 @@ of its document:
 
 The eighth, MockServer's own description
 (`mock-server/mockserver-monorepo@ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037`,
-`jekyll-www.mock-server.com/mockserver-openapi.yaml`, Apache-2.0), is not registered
-here yet: it `$ref`s `http://json-schema.org/draft-04/schema`, a mutable absolute
-reference, and `scripts/fetch-corpus.sh` refuses it with *absolute `$ref`
-'http://json-schema.org/draft-04/schema' is not a plain https URL on
-raw.githubusercontent.com*. Its disposition follows its instrumented probe: see
-the golden-reach search record for `oneof-array-variant-closed-object-item`.
+`jekyll-www.mock-server.com/mockserver-openapi.yaml`, Apache-2.0), is not
+registered: it `$ref`s `http://json-schema.org/draft-04/schema`, a mutable
+absolute reference, and `scripts/fetch-corpus.sh` refuses it with *absolute
+`$ref` 'http://json-schema.org/draft-04/schema' is not a plain https URL on
+raw.githubusercontent.com*. A remote-ref pin would buy nothing: its instrumented
+probe on build `1131cbbcb0e3` reaches no unreached handling site of the five
+golden-reach keys it declares. Its ledger disposition is `demoted: mutable
+absolute $ref`, and the three closures that named it as their witness now say
+`oneof-array-variant-closed-object-item` stands golden through the registered
+Zulip rows.

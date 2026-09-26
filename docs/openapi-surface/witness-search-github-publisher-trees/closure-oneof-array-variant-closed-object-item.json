@@ -7,7 +7,7 @@
     "sha256": "db67b21611bcd749d33ffb46fd93ff849d6af24a719906327103924c3855ecc0"
   },
   "key": "oneof-array-variant-closed-object-item",
-  "outcome": "witness-found pending register-witnesses",
+  "outcome": "witness-found, then demoted: the confirmed witness MockServer is not registrable because of its mutable absolute $ref (see its demotion in witness-search-sourcegraph/screens.jsonl:48); the key stands golden through the registered zulip, zulip-jentic and zulip-jentic-entry rows",
   "source": "github-publisher-trees",
-  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+  "unacquired_disposition": "not owed while this key stands golden through registered rows; every planned query is still issued, and unacquired identities stay in the ledgers"
 }
