@@ -382,7 +382,33 @@ pub struct GlobalHeader {
     /// declaration's schema names. Milvus's `Request-Timeout` is `type: integer`,
     /// and Fern's wrapper takes `typing.Optional[int]` and writes
     /// `str(self._request_timeout)` into the header.
-    pub py_type: &'static str,
+    pub py_type: HeaderType,
+}
+
+/// The Python scalar a promoted header's constructor argument takes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HeaderType {
+    /// `str`, written into the header as is.
+    Str,
+    /// `int`, from `type: integer`.
+    Int,
+    /// `float`, from `type: number`.
+    Float,
+    /// `bool`, from `type: boolean`.
+    Bool,
+}
+
+impl HeaderType {
+    /// The Python annotation, e.g. `int`.
+    #[must_use]
+    pub fn python(self) -> &'static str {
+        match self {
+            Self::Str => "str",
+            Self::Int => "int",
+            Self::Float => "float",
+            Self::Bool => "bool",
+        }
+    }
 }
 
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
@@ -397,7 +423,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
     // wire name → (operations carrying it, required in every one so far, the
     // first declaration's Python type), first-seen.
-    let mut seen: IndexMap<String, (usize, bool, &'static str)> = IndexMap::new();
+    let mut seen: IndexMap<String, (usize, bool, HeaderType)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             total += 1;
@@ -463,12 +489,12 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
 }
 
 /// The Python scalar a promoted header's schema declares, `str` for anything else.
-fn header_py_type(schema: Option<&Schema>) -> &'static str {
+fn header_py_type(schema: Option<&Schema>) -> HeaderType {
     match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
-        Some("integer") => "int",
-        Some("number") => "float",
-        Some("boolean") => "bool",
-        _ => "str",
+        Some("integer") => HeaderType::Int,
+        Some("number") => HeaderType::Float,
+        Some("boolean") => HeaderType::Bool,
+        _ => HeaderType::Str,
     }
 }
 
@@ -502,7 +528,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(header_param_stem(wire_name)),
                 wire_name: wire_name.clone(),
                 required: true,
-                py_type: "str",
+                py_type: HeaderType::Str,
             })
         })
         .collect()
@@ -15981,7 +16007,7 @@ mod tests {
         let typed: Vec<(&str, &str)> = ir
             .global_headers
             .iter()
-            .map(|header| (header.wire_name.as_str(), header.py_type))
+            .map(|header| (header.wire_name.as_str(), header.py_type.python()))
             .collect();
         assert_eq!(
             typed,

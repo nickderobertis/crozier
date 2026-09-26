@@ -18,7 +18,8 @@ use serde::Serialize;
 use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field,
-    GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    GlobalHeader, HeaderType, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl,
+    TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -3320,11 +3321,12 @@ fn client_wrapper_file(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type)
+                format!("        {}: {},\n", h.py_name, h.py_type.python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
-                    h.py_name, h.py_type
+                    h.py_name,
+                    h.py_type.python()
                 )
             }
         })
@@ -3337,7 +3339,7 @@ fn client_wrapper_file(
         .iter()
         .map(|h| {
             // A non-string header is written as its `str()`, as Fern's is.
-            let value = if h.py_type == "str" {
+            let value = if h.py_type == HeaderType::Str {
                 format!("self._{}", h.py_name)
             } else {
                 format!("str(self._{})", h.py_name)
@@ -5852,9 +5854,9 @@ fn root_client_class(
         .iter()
         .map(|h| {
             let ty = if h.required {
-                h.py_type.to_string()
+                h.py_type.python().to_string()
             } else {
-                format!("typing.Optional[{}]", h.py_type)
+                format!("typing.Optional[{}]", h.py_type.python())
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -5863,11 +5865,12 @@ fn root_client_class(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: {},\n", h.py_name, h.py_type)
+                format!("        {}: {},\n", h.py_name, h.py_type.python())
             } else {
                 format!(
                     "        {}: typing.Optional[{}] = None,\n",
-                    h.py_name, h.py_type
+                    h.py_name,
+                    h.py_type.python()
                 )
             }
         })
@@ -9532,8 +9535,9 @@ mod tests {
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
-        ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, Ir, ObjectType, PathParam, Prim,
-        QueryParam, RequestBody, SingleBody, TagTypeDecl, TypeDecl, TypeRef, UnionMember,
+        ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, HeaderType, Ir, ObjectType,
+        PathParam, Prim, QueryParam, RequestBody, SingleBody, TagTypeDecl, TypeDecl, TypeRef,
+        UnionMember,
     };
     use crate::wrap::Doc;
 
@@ -11983,7 +11987,7 @@ mod tests {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
             required: true,
-            py_type: "str",
+            py_type: HeaderType::Str,
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;

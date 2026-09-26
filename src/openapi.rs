@@ -1691,20 +1691,6 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
 }
 
-/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
-/// Fern reads it as.
-///
-/// A single non-`null` member is nullability and nothing else (`type: [string,
-/// null]` is an optional string), which is why [`TypeField::primary`] answers
-/// every other caller. Two or more are a union of those types, and Fern imports
-/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
-/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
-/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
-/// down to the name. Normalizing here rather than at the use site means the
-/// union hoisting, naming, and forward-reference passes need no second spelling
-/// of the same shape. A `null` member stays optionality: it leaves the union and
-/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
-/// emits for a five-member list ending in `null`.
 /// Drop an empty `oneOf`/`anyOf`/`allOf` list.
 ///
 /// An empty composition constrains nothing, and every later pass reads
@@ -1713,6 +1699,26 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
 /// `ApplicationCommandHandler` writes `{type: integer, oneOf: [], format: int32}`
 /// and Fern generates the plain `int` its `type` names, so the list is discarded
 /// here rather than guarded against at each use site.
+fn normalize_empty_compositions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
+                if members.as_ref().is_some_and(Vec::is_empty) {
+                    *members = None;
+                }
+            }
+            if matches!(
+                node.ty.as_ref().and_then(TypeField::primary),
+                Some("string" | "integer" | "number" | "boolean")
+            ) {
+                node.one_of = None;
+                node.any_of = None;
+                node.all_of = None;
+            }
+        });
+    });
+}
+
 /// Replace every `$ref` that points *inside* a component schema — past its name,
 /// through `properties`, `items`, `additionalProperties` or a composition
 /// member — with a copy of the schema it points at, as though the document had
@@ -1849,26 +1855,6 @@ fn schema_pointer_target<'a>(
     (!ends_on_member).then_some(schema)
 }
 
-fn normalize_empty_compositions(doc: &mut OpenApi) {
-    for_each_root_schema(doc, &mut |schema| {
-        for_each_schema_in(schema, &mut |node| {
-            for members in [&mut node.one_of, &mut node.any_of, &mut node.all_of] {
-                if members.as_ref().is_some_and(Vec::is_empty) {
-                    *members = None;
-                }
-            }
-            if matches!(
-                node.ty.as_ref().and_then(TypeField::primary),
-                Some("string" | "integer" | "number" | "boolean")
-            ) {
-                node.one_of = None;
-                node.any_of = None;
-                node.all_of = None;
-            }
-        });
-    });
-}
-
 /// An object schema whose `required` is not a list is Fern's unknown type: its
 /// importer iterates `required` while converting the object, and a boolean there
 /// fails the conversion. NPQ's `ApplicationAcceptRequest.data.attributes` is an
@@ -1901,6 +1887,20 @@ fn normalize_unlisted_required(doc: &mut OpenApi) {
     });
 }
 
+/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
+/// Fern reads it as.
+///
+/// A single non-`null` member is nullability and nothing else (`type: [string,
+/// null]` is an optional string), which is why [`TypeField::primary`] answers
+/// every other caller. Two or more are a union of those types, and Fern imports
+/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
+/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
+/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
+/// down to the name. Normalizing here rather than at the use site means the
+/// union hoisting, naming, and forward-reference passes need no second spelling
+/// of the same shape. A `null` member stays optionality: it leaves the union and
+/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
+/// emits for a five-member list ending in `null`.
 fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
@@ -2939,9 +2939,6 @@ components:
         );
     }
 
-    /// An empty `oneOf` constrains nothing. Left in place it reads downstream as
-    /// "this node is a union" and renders `typing.Union[]`, which `ruff` refuses
-    /// to parse — so the node keeps the plain `type` it also declares.
     #[test]
     fn a_pointer_inside_a_component_is_copied_where_it_is_used() {
         let mut doc = parse(
@@ -3129,6 +3126,9 @@ components:
         assert_eq!(names("Uneven"), ["a=b"]);
     }
 
+    /// An empty `oneOf` constrains nothing. Left in place it reads downstream as
+    /// "this node is a union" and renders `typing.Union[]`, which `ruff` refuses
+    /// to parse — so the node keeps the plain `type` it also declares.
     #[test]
     fn normalize_empty_compositions_drops_the_empty_list() {
         let mut doc = parse(
