@@ -928,13 +928,24 @@ def sites(args: argparse.Namespace) -> int:
     return 0
 
 
+def positive_int(text: str) -> int:
+    """An argparse type for a worker count or timeout: a whole number above zero."""
+    try:
+        value = int(text)
+    except ValueError:
+        value = 0
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"{text!r} is not a whole number above zero; pass one such as 4")
+    return value
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     sub = parser.add_subparsers(dest="command", required=True)
     m = sub.add_parser("measure", help="one instrumented run per golden test")
-    m.add_argument("--jobs", type=int, default=4)
+    m.add_argument("--jobs", type=positive_int, default=4)
     m.add_argument("--tests", help="regex restricting the golden tests measured")
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")

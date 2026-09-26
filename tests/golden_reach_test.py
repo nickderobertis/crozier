@@ -1124,6 +1124,24 @@ class WithoutPosixModulesTests(unittest.TestCase):
                 self.assertFalse(any(Path(scratch, "cache").glob("*.held")), "a released lock left its marker")
 
 
+class WorkerCountTests(unittest.TestCase):
+    """A worker count or timeout below one is refused at the command line, not in an executor."""
+
+    def test_each_entry_point_refuses_a_count_below_one(self) -> None:
+        for script, argv in (
+            ("golden-reach.py", ["measure", "--jobs", "0"]),
+            ("golden-reach-search.py", ["walk", "--source", "jentic", "--root", ".", "--key", "k", "--jobs", "-2"]),
+            ("golden-reach-search.py", ["probe", "--source", "jentic", "--key", "k", "--jobs", "four"]),
+            ("golden-reach-search.py", ["probe", "--source", "jentic", "--key", "k", "--timeout", "0"]),
+        ):
+            with self.subTest(script=script, argv=argv):
+                run = subprocess.run([sys.executable, str(REPO / "scripts" / script), *argv], cwd=REPO,
+                                     capture_output=True, text=True)
+                self.assertEqual(2, run.returncode, run.stderr)
+                self.assertIn(f"{argv[-1]!r} is not a whole number above zero", run.stderr)
+                self.assertNotIn("Traceback", run.stderr)
+
+
 class RecipeTests(unittest.TestCase):
     def test_the_recipes_drive_this_script_and_write_the_census_it_reads(self) -> None:
         body = recipe_body("golden-reach")
