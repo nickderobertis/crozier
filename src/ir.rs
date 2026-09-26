@@ -15937,6 +15937,31 @@ mod tests {
             variant_ref(serde_json::json!({ "properties": {} })),
             (TypeRef::Primitive(Prim::Any), vec![])
         );
+
+        // Cases 10a to 10d: `is_declared_empty_object` — an explicit empty
+        // `properties: {}` on a `type: object` variant, open or closed — is an
+        // empty model, against the untyped near miss above and the open map an
+        // `additionalProperties: true` makes.
+        let empty_model = (
+            TypeRef::Named("ChoiceZero".to_string()),
+            vec!["Object(ChoiceZero)".to_string()],
+        );
+        assert_eq!(
+            variant_ref(serde_json::json!({ "type": "object", "properties": {} })),
+            empty_model
+        );
+        assert_eq!(
+            variant_ref(serde_json::json!({
+                "type": "object", "properties": {}, "additionalProperties": false
+            })),
+            empty_model
+        );
+        assert_ne!(
+            variant_ref(serde_json::json!({
+                "type": "object", "properties": {}, "additionalProperties": true
+            })),
+            empty_model
+        );
     }
 
     #[test]

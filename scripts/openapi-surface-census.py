@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 163 of the 195 registered sources are `link-ok`. Pass `--allow-unfetched`
+  and 176 of the 208 registered sources are `link-ok`. Pass `--allow-unfetched`
   to downgrade that to a warning, or `--vendored-only` to census the offline half
   on purpose.
 
@@ -1249,6 +1249,10 @@ CONJUNCTIONS = {
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member declares `allOf` and no scalar `type`",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose properties declares a one-member `oneOf` whose member writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose properties declares a one-member `anyOf` whose member writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
+    "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
+    "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
 }
 
 
@@ -1401,6 +1405,10 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
         Case("10", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.allOf"),
+        Case("10a", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case("10b", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case("10c", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
+        Case("10d", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
         Case("11", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object"),
         Case("12a", block="hoist_union_variant/oneOf", residual=(
             "one per Schema Object one of whose `oneOf` members declares none of the "
@@ -1501,7 +1509,7 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "8981dd370c231090",
+    "hoist_union_variant": "76bdee0f693080de",
     "prop_type_ref": "e73a4bfddf0a3452",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",

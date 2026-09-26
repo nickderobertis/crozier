@@ -187,14 +187,14 @@ re-measure with `just fixtures-gaps`.
 | 165 | `zulip-jentic` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, the jentic-public-apis aggregation's JSON import of `https://zulip.com/api/rest`: a different revision of row 164's document, re-serialized |
 | 166 | `zulip-jentic-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, jentic's import entry: row 165's document with its object keys in another order |
 | 167 | `viskit-studio` | github-raw | https://raw.githubusercontent.com/MyuriKanao/viskit-studio/58b149008088c837332b57353c0f6e1fe19bbe8d/packages/schemas/openapi.yaml | `58b149008088c837332b57353c0f6e1fe19bbe8d` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | VisKit Studio API; the publisher's own description, declaring `anyof-array-variant-anyof-nullable-item` |
-| 171 | `embedpdf-cloudpdf` | github-raw | https://raw.githubusercontent.com/embedpdf/embed-pdf-viewer/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/contract/openapi.json | `2516e2786ee894383220ecd436fbd248182ef444` | Apache-2.0 (declared by the document's `info.license`; the repository's licence reads NOASSERTION) | link-ok | CloudPDF contract API; the publisher's own description, declaring `array-item-pointer-walk-anyof` |
-| 175 | `npq-registration` | github-raw | https://raw.githubusercontent.com/DFE-Digital/npq-registration/17f95361371e9bb8c3f1e41c90f5e78bda069ce5/public/api/docs/v3/swagger.yaml | `17f95361371e9bb8c3f1e41c90f5e78bda069ce5` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | NPQ registration API v3; the publisher's own description, declaring `property-sole-anyof-closed-object-member`, `property-sole-anyof-struct-member` |
 | 168 | `milvus-restful-v2-3` | github-raw | https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/API_Reference/milvus-restful/v2.3.x/Restful%20API%20v2.openapi.json | `d3c35ec9b46dcc2befd205a87a785896d99ce332` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Milvus RESTful API v2 (the v2.3.x reference); the publisher's own description, declaring `anyof-array-variant-empty-object-item` |
 | 169 | `milvus-restful-v2-4` | github-raw | https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/API_Reference/milvus-restful/v2.4.x/openapi.json | `d3c35ec9b46dcc2befd205a87a785896d99ce332` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Milvus RESTful API (the v2.4.x reference); the publisher's own description, declaring `anyof-array-variant-empty-object-item` |
 | 170 | `ramu-shogi` | github-raw | https://raw.githubusercontent.com/SH11235/ramu-shogi/22504221b837d01c9366a5d6c8c6a9b88f9f782b/packages/api-contract/src/generated/openapi.json | `22504221b837d01c9366a5d6c8c6a9b88f9f782b` | GPL-3.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Ramu Shogi API contract; the publisher's own description, declaring `anyof-array-variant-oneof-nullable-item` |
+| 171 | `embedpdf-cloudpdf` | github-raw | https://raw.githubusercontent.com/embedpdf/embed-pdf-viewer/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/contract/openapi.json | `2516e2786ee894383220ecd436fbd248182ef444` | Apache-2.0 (declared by the document's `info.license`; the repository's licence reads NOASSERTION) | link-ok | CloudPDF contract API; the publisher's own description, declaring `array-item-pointer-walk-anyof` |
 | 172 | `langchain-agent-protocol` | github-raw | https://raw.githubusercontent.com/langchain-ai/agent-protocol/fb81f3e27ee507557926ecf923d0f933a1c76d44/openapi.json | `fb81f3e27ee507557926ecf923d0f933a1c76d44` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | LangChain Agent Protocol; the publisher's own description, declaring `oneof-array-variant-anyof-item` |
 | 173 | `hse` | github-raw | https://raw.githubusercontent.com/hse-project/hse/6d5207f88044a3bd9b3539260074395317e276d5/docs/openapi.json | `6d5207f88044a3bd9b3539260074395317e276d5` | Apache-2.0 (declared by the document's `info.license`; the repository carries no licence file GitHub recognises) | link-ok | HSE REST API; the publisher's own description, declaring `oneof-array-variant-composed-item` |
 | 174 | `milvus-vector-operations` | github-raw | https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/scripts/apifox-docs/meta/openapi/03-vector-operations.json | `d3c35ec9b46dcc2befd205a87a785896d99ce332` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Milvus vector operations (apifox export); the publisher's own description, declaring `oneof-array-variant-empty-object-item` |
+| 175 | `npq-registration` | github-raw | https://raw.githubusercontent.com/DFE-Digital/npq-registration/17f95361371e9bb8c3f1e41c90f5e78bda069ce5/public/api/docs/v3/swagger.yaml | `17f95361371e9bb8c3f1e41c90f5e78bda069ce5` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | NPQ registration API v3; the publisher's own description, declaring `property-sole-anyof-closed-object-member`, `property-sole-anyof-struct-member` |
 | 176 | `mistle-control-plane` | github-raw | https://raw.githubusercontent.com/mistlehq/mistle/2b11ccefc658c5b707310d3cc471d5c5928554f3/apps/control-plane-api/openapi/control-plane.internal.v1.json | `2b11ccefc658c5b707310d3cc471d5c5928554f3` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Mistle control-plane internal API v1; the publisher's own description, declaring `property-sole-oneof-closed-object-member` |
 | 177 | `osparc-payments` | github-raw | https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/69b034b82f243b30953d025793c0f171fdb3c92e/services/payments/openapi.json | `69b034b82f243b30953d025793c0f171fdb3c92e` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | o²S²PARC payments service; the publisher's own description, declaring `oauth2-password` |
 | 178 | `huatuo-node` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.gen.json | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | HuaTuo node API v1; the publisher's own description, declaring `securityscheme-ref` |
@@ -906,9 +906,91 @@ repairs below, each read off the golden or a `fern ir` run:
 
 These also shrank `short-io`'s residual from 65 files to 61.
 
-Every usable candidate in the two ledgers is now one of the rows above, or a
-byte-identical copy of one whose ledger disposition names that row and the
-shared sha256.
+The usable candidates the two ledgers held beyond these rows and their
+byte-identical copies are registered or disposed of in Batch 18 below.
 
-Every other usable candidate is one of the rows above, or a byte-identical copy
-of one whose ledger disposition names that row and the shared sha256.
+## Batch 18 — the witness searches' candidates, continued
+
+Rows 167 to 179 register the usable candidates Batch 17 left: every candidate in
+the two ledgers whose three screens pass and whose key was still a `gap` row, each
+screened again here rather than inherited. Every golden is generated at Python
+5.20.0 / CLI 5.67.1 from the fetched, unmodified document with Route A, and every
+row byte-matches with `unmatched: &[]`.
+
+| # | name | settles | state |
+|---:|---|---|---|
+| 167 | `viskit-studio` | `anyof-array-variant-anyof-nullable-item` | ✅ byte-matched after this batch's repairs |
+| 168 | `milvus-restful-v2-3` | `anyof-array-variant-empty-object-item` (jointly) | ✅ byte-matched after this batch's repairs |
+| 169 | `milvus-restful-v2-4` | `anyof-array-variant-empty-object-item` (jointly) | ✅ byte-matched after this batch's repairs |
+| 170 | `ramu-shogi` | `anyof-array-variant-oneof-nullable-item` | ✅ byte-matched after this batch's repairs |
+| 171 | `embedpdf-cloudpdf` | `array-item-pointer-walk-anyof` | ✅ byte-matched after this batch's repairs |
+| 172 | `langchain-agent-protocol` | `oneof-array-variant-anyof-item` | ✅ byte-matched with no repair of its own |
+| 173 | `hse` | `oneof-array-variant-composed-item` | ✅ byte-matched with no repair of its own |
+| 174 | `milvus-vector-operations` | `oneof-array-variant-empty-object-item` | ✅ byte-matched after this batch's repairs |
+| 175 | `npq-registration` | `property-sole-anyof-closed-object-member`, `property-sole-anyof-struct-member` | ✅ byte-matched after this batch's repairs |
+| 176 | `mistle-control-plane` | `property-sole-oneof-closed-object-member` | ✅ byte-matched with no repair of its own |
+| 177 | `osparc-payments` | `oauth2-password` | ✅ byte-matched after this batch's repairs |
+| 178 | `huatuo-node` | `securityscheme-ref` (jointly) | ✅ byte-matched after this batch's repairs |
+| 179 | `huatuo-server` | `securityscheme-ref` (jointly) | ✅ byte-matched after this batch's repairs |
+
+The repairs, each read off Fern's importer source or the golden itself:
+- References and types:
+  - a `$ref` pointing *inside* a component schema — through `properties`,
+    `items` or a composition member — is copied where it is used, as Fern's
+    `resolveSchemaReference` walks it, so CloudPDF's pointers become models named
+    for their use site or plain scalars; one ending on a composition member stays
+    unknown, as the committed probe measured;
+  - a lone pointer `allOf` member beside only annotations is its holder's schema;
+  - a union whose members all convert alike is that member (`Optional[float]`),
+    and a nullable element union is an optional element;
+  - an inline discriminated-union variant takes the fields the model lowering
+    gave it, undocumented;
+  - an object whose `required` is not a list is unknown, and its request builds
+    no importer example;
+  - a union member of `type: object` with `properties: {}` is an empty model,
+    closed or not, and an inline union element of a component array is a named
+    `{Name}Item` alias;
+  - a list element beside `null` is `Optional` in a component union too;
+  - an `allOf` member adding only nullability makes the composition an optional
+    flat copy of its `$ref` (Ramu Shogi's `GetUserSettingsResponse.document`),
+    and an earlier error body's enum survives a later union declaration of the
+    same status.
+- Naming:
+  - a FastAPI `operationId` loses its `{path}_{method}` suffix under a tag, by
+    Fern's `maybeGetFastApiEndpointLocation`;
+  - `x-enum-varnames` loses the prefix all its names share, by Fern's
+    `stripCommonPrefix`;
+  - an enum drops a later value only when its pre-casing name matches an
+    earlier one case-blind, so NPQ's `created_at` and `-created_at` both stay;
+  - a model field shadowing `BaseModel.validate` is `validate_`, and an example
+    spells a model-only rename by its plain name.
+- Requests, headers and examples:
+  - a promoted header is typed by its schema (`Optional[int]`, sent as `str()`);
+  - only a binary media family is sent as bytes, so `application/proto` carries
+    no request;
+  - a referenced map body stays required;
+  - an inline JSON body property keeps its description's whitespace;
+  - an empty model takes any example, an inline path-parameter pattern keeps its
+    example, a required nullable field is left out of a constructed example, and
+    an argument-less binary `POST` is documented.
+- Package layout: a nested client's types are re-exported by its parent package
+  and imported by dotted path, its enums import `core` from their own depth, and
+  the README anchors on a top-level client.
+
+They also shrink `webflow-v2`'s residual from 364 files to 312.
+
+Every other usable candidate in the two ledgers is now disposed of:
+- **A byte-identical copy** of a row above or of Batch 17's names that row and
+  the shared sha256 in its ledger disposition — among them Milvus's
+  `v2.3.x/openapi.json` and `v2.4.x/Restful API v2.openapi.json`, the same bytes
+  as rows 169 and 168 under other paths.
+- **Eight documents whose keys were already `golden`** read
+  `pending-registration; owner thin-goldens-continue` in their ledger
+  disposition: SimStudio's `openapi-v2-logs.json` and `openapi-v2-tables.json`,
+  Vellum's gateway, `vfarcic/dot-ai`, Palo Alto's `code/Technologies.json`,
+  marimo's `plugins.openapi.yaml`, MockServer's own description and Otoroshi's
+  schema bundle.
+- **The three jentic documents** the `golden-reach-witnesses` handoff proposed —
+  DigitalOcean, Cvent and Sellsy — are Fern refusals, recorded in
+  [`AGENTS.md`](AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
+  with their measured exit status and diagnostics.
