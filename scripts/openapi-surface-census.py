@@ -2819,8 +2819,11 @@ def _candidate_tag_values(
         )
         if references_components and not (enum_tag and tagged_by_enum):
             if candidate == "type":
-                supported = candidate in required_names(variant) and isinstance(
-                    schema_example(field), str
+                supported = (
+                    candidate in required_names(variant)
+                    and isinstance(schema_example(field), str)
+                    or written(field, "const")
+                    and isinstance(field["const"], str)
                 )
             elif candidate == "role":
                 supported = candidate in required_names(variant)

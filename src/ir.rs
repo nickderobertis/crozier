@@ -3127,6 +3127,19 @@ fn build_endpoint(
                             && schema.title.is_none()
                             && schema.description.is_none()
                             && (schema.one_of.is_some() || schema.any_of.is_some())
+                            // A `$ref` sent as one `request` lowers to its bare
+                            // type name too, unless its target declares a `title`:
+                            // marimo-plugins' map, nullable-scalar and `type:
+                            // "null"` bodies send no `content-type`, where
+                            // exhaustive's titled `typesMapOfDocumentedUnknownType`
+                            // keeps it.
+                            || matches!(request_body, Some(RequestBody::Single(_)))
+                                && schema.description.is_none()
+                                && schema
+                                    .reference
+                                    .as_deref()
+                                    .and_then(|reference| resolve_ref(doc, reference))
+                                    .is_some_and(|target| target.title.is_none())
                     })
             });
 
@@ -7582,6 +7595,7 @@ fn inferred_discriminant_property_with(
                                 && schema_example(field)
                                     .and_then(serde_json::Value::as_str)
                                     .is_some()
+                                || field.const_value.as_ref().is_some_and(serde_json::Value::is_string)
                         }
                         // OpenCodeUI's `ToolState` is an `anyOf` of four `$ref`s
                         // each requiring a `const` `status`, and Fern's golden is
@@ -11083,8 +11097,16 @@ fn optional_type_ref(base: TypeRef) -> TypeRef {
 
 fn nullable_map_value_type_ref(schema: &Schema) -> TypeRef {
     match (&schema.additional_properties, base_type_ref(schema)) {
-        (Some(AdditionalProperties::Schema(_)), TypeRef::Dict(key, value)) => {
-            TypeRef::Dict(key, Box::new(optional_type_ref(*value)))
+        (Some(AdditionalProperties::Schema(value_schema)), TypeRef::Dict(key, value)) => {
+            // The nullability reaches a map nested as the value, whose own values
+            // are optional in turn: marimo-plugins' `cell_styles` is
+            // `Optional[Dict[str, Optional[Dict[str, Optional[Dict[str, Any]]]]]]`.
+            let value = if is_map(value_schema) && value_schema.reference.is_none() {
+                nullable_map_value_type_ref(value_schema)
+            } else {
+                *value
+            };
+            TypeRef::Dict(key, Box::new(optional_type_ref(value)))
         }
         (_, type_ref) => type_ref,
     }
