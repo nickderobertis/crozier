@@ -1,0 +1,8 @@
+
+
+import datetime as dt
+import typing
+
+from .update_student_request_withdrawal_date_ems_entry_one import UpdateStudentRequestWithdrawalDateEmsEntryOne
+
+UpdateStudentRequestWithdrawalDateEmsEntry = typing.Union[dt.date, UpdateStudentRequestWithdrawalDateEmsEntryOne]

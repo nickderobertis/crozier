@@ -3354,6 +3354,8 @@ const CORPORA: &[&Corpus] = &[
     &NEXMO_CONVERSATION,
     &CODAT_ASSESS,
     &GOOGLEAPIS_MONITORING_V1,
+    &DOCU_GOAPISERVER,
+    &ONEVOICE,
 ];
 
 #[test]
@@ -6119,6 +6121,32 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `onevoice`: corpus row 227, the OneVoice API description in f1xgun/onevoice,
+/// which declares a `mutualTLS` security scheme
+const ONEVOICE: Corpus = Corpus {
+    api: "onevoice",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `docu-goapiserver`: corpus row 226, the Primula Tracker API V3 description
+/// in JuaniGit/docu-goapiserver, whose `anyOf` variants nest an `anyOf`
+const DOCU_GOAPISERVER: Corpus = Corpus {
+    api: "docu-goapiserver",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11990,6 +12018,16 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn onevoice_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ONEVOICE);
+}
+
+#[test]
+fn docu_goapiserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
 }
 
 #[test]
