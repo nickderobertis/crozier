@@ -3356,6 +3356,7 @@ const CORPORA: &[&Corpus] = &[
     &GOOGLEAPIS_MONITORING_V1,
     &DOCU_GOAPISERVER,
     &ONEVOICE,
+    &XFSC_OIDC_IDENTITY_RESOLVER,
 ];
 
 #[test]
@@ -6121,6 +6122,20 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `xfsc-oidc-identity-resolver`: corpus row 228, the Eclipse XFSC notarization
+/// service's oidc-identity-resolver description, whose only security schemes
+/// are `openIdConnect`
+const XFSC_OIDC_IDENTITY_RESOLVER: Corpus = Corpus {
+    api: "xfsc-oidc-identity-resolver",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12018,6 +12033,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn xfsc_oidc_identity_resolver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
 }
 
 #[test]
