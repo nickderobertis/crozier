@@ -7139,6 +7139,10 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Object(object)) = self.find(name) {
                 let fields = self.object_fields(object);
+                if fields.is_empty() {
+                    self.record_ref(name);
+                    return Some(Example::Call(name.clone(), Vec::new()));
+                }
                 let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
@@ -7235,6 +7239,10 @@ impl<'a> ExampleCtx<'a> {
         match t {
             TypeRef::Optional(inner) => value.is_null() || self.example_matches_type(inner, value),
             TypeRef::Named(name) => match self.find(name) {
+                // A model with no fields takes any example: Milvus's `upsert`
+                // example sends `data` as a list, and Fern still renders the
+                // union's empty-object member, `PostV1VectorUpsertRequestDataZero()`.
+                Some(TypeDecl::Object(object)) if self.object_fields(object).is_empty() => true,
                 Some(TypeDecl::Object(object)) => value.as_object().is_some_and(|values| {
                     let fields = self.object_fields(object);
                     fields
@@ -9104,7 +9112,10 @@ fn compact_documentation_values(
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // Array query params always default to `None` in the generated signature, so a
     // binary download with only those params has no exampleable required argument.
-    let binary_has_no_required_arguments = ep.path_params.is_empty()
+    // That is a `GET`'s loss alone: HuaTuo's Pyroscope queries are argument-less
+    // `POST`s streaming bytes, and Fern documents each of them.
+    let binary_has_no_required_arguments = ep.http_method == "GET"
+        && ep.path_params.is_empty()
         && ep
             .query_params
             .iter()

@@ -987,12 +987,33 @@ impl Schema {
     /// `https://…/problems/invalid-argument`, where the derived identifier would
     /// spell the whole URI). A keyed declaration wins over the positional one for
     /// the same value.
+    ///
+    /// Fern first strips the prefix every positional name shares, character by
+    /// character (its importer's `stripCommonPrefix`): HuaTuo's `OperationKind`
+    /// names `OperationKindProfiling` and `OperationKindTracing`, and its golden's
+    /// members are `PROFILING` and `TRACING`.
     pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
+        let varnames = self.enum_varnames.as_deref().unwrap_or_default();
+        let shared = match varnames {
+            [first, _, ..] => first
+                .char_indices()
+                .find(|&(index, ch)| {
+                    varnames.iter().any(|name| {
+                        name.get(index..).and_then(|rest| rest.chars().next()) != Some(ch)
+                    })
+                })
+                .map_or(first.len(), |(index, _)| index),
+            _ => 0,
+        };
         let mut names: IndexMap<&str, &str> = self
             .enum_values
             .iter()
             .flatten()
-            .zip(self.enum_varnames.iter().flatten())
+            .zip(
+                varnames
+                    .iter()
+                    .map(|name| name.get(shared..).unwrap_or_default()),
+            )
             .filter_map(|(value, name)| Some((value.as_str()?, name.trim())))
             .filter(|(_, name)| !name.is_empty())
             .collect();

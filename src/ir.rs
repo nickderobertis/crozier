@@ -4373,7 +4373,7 @@ fn resolve_request_body(
         }
     }
     let binary_media = |media_type: &&String, media: &&crate::openapi::MediaType| {
-        *media_type != "*/*"
+        is_binary_media_type(media_type)
             && media.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
                     .reference
@@ -4846,6 +4846,34 @@ fn reference_body_example<'a>(
         .examples
         .values()
         .find_map(|example| component_example_value(doc, example))
+}
+
+/// A media type Fern sends as raw bytes (its `MediaType.isBinary`): any image,
+/// audio, video or font type, or one of the binary `application` subtypes. Any
+/// other media type is not a binary body however its schema reads: HuaTuo's
+/// `application/proto` Pyroscope queries declare `{type: string, format:
+/// binary}`, and Fern's methods for them take no request at all.
+fn is_binary_media_type(media_type: &str) -> bool {
+    let base = media_type.split(';').next().unwrap_or(media_type).trim();
+    let Some((top, subtype)) = base.split_once('/') else {
+        return false;
+    };
+    match top {
+        "image" | "audio" | "video" | "font" => true,
+        "application" => matches!(
+            subtype,
+            "octet-stream"
+                | "pdf"
+                | "zip"
+                | "x-zip-compressed"
+                | "gzip"
+                | "x-gzip"
+                | "tar"
+                | "x-tar"
+                | "br"
+        ),
+        _ => false,
+    }
 }
 
 pub(crate) fn is_json_like_media_type(media_type: &str) -> bool {
@@ -6565,6 +6593,8 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
     } else if id.contains('_') {
         if first_tag(op).is_none() {
             naming::sanitize_identifier(&naming::to_snake_case(id))
+        } else if let Some(name) = fastapi_endpoint_name(id, url, http_method) {
+            naming::sanitize_identifier(&naming::to_snake_case(name))
         } else if first_segment_is_tag(op, id) {
             method_after_first_segment(id)
         } else if group_prefix_is_tag(op, id) {
@@ -6580,6 +6610,37 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         method_from_groupless_id(id, first_tag(op))
     };
     naming::escape_python_keyword(method)
+}
+
+/// A FastAPI operationId under a tag, with the `{path}_{method}` suffix FastAPI
+/// appended stripped off, as Fern's importer (`maybeGetFastApiEndpointLocation`)
+/// strips it: the path is split on runs of characters other than letters, digits
+/// and braces, joined with `_`, and each brace read as `_`. oSPARC payments'
+/// `acknowledge_payment_v1_payments__payment_id__ack_post` on
+/// `POST /v1/payments/{payment_id}:ack` is `acknowledge_payment`, while VisKit's
+/// `warmup_extract_api_kits__warmup_extract_get` on `/api/kits/_warmup/extract`
+/// keeps its whole id: that split reads the path as `_api_kits_warmup_extract`.
+fn fastapi_endpoint_name<'a>(id: &'a str, url: &str, http_method: &str) -> Option<&'a str> {
+    let path = url
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '{' && c != '}')
+        .collect::<Vec<_>>();
+    // A run of separators is one split, so the empty pieces between them go.
+    let mut segment = String::new();
+    for (index, piece) in path.iter().enumerate() {
+        if index > 0 && piece.is_empty() && index + 1 < path.len() {
+            continue;
+        }
+        if index > 0 {
+            segment.push('_');
+        }
+        segment.push_str(piece);
+    }
+    let suffix = format!(
+        "{}_{}",
+        segment.replace(['{', '}'], "_"),
+        http_method.to_ascii_lowercase()
+    );
+    id.strip_suffix(&suffix).filter(|name| !name.is_empty())
 }
 
 /// The method name for a `group_method` operationId (one that contains `_`). Fern

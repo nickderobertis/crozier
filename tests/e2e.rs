@@ -5899,7 +5899,7 @@ const MILVUS_VECTOR_OPERATIONS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &["reference.md", "src/fern/vector_operations/client.py"],
+    unmatched: &[],
 };
 
 /// Mistle control-plane internal API v1 — corpus row 176, the publisher's own description.
@@ -5923,13 +5923,7 @@ const OSPARC_PAYMENTS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/acks/client.py",
-        "src/fern/acks/raw_client.py",
-        "src/fern/meta/client.py",
-        "src/fern/meta/raw_client.py",
-    ],
+    unmatched: &[],
 };
 
 /// HuaTuo node API v1 — corpus row 178, the publisher's own description.
@@ -5941,18 +5935,7 @@ const HUATUO_NODE: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/operations/client.py",
-        "src/fern/types/apis_v1components_observation_scope.py",
-        "src/fern/types/operation_kind.py",
-        "src/fern/types/operation_outcome.py",
-        "src/fern/types/operation_status.py",
-        "src/fern/types/profiling_language.py",
-        "src/fern/types/profiling_mode.py",
-        "src/fern/types/profiling_type.py",
-        "src/fern/types/tracing_type.py",
-    ],
+    unmatched: &[],
 };
 
 /// HuaTuo server API v1 — corpus row 179, the publisher's own description.
@@ -5964,20 +5947,7 @@ const HUATUO_SERVER: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "README.md",
-        "reference.md",
-        "src/fern/profiling/client.py",
-        "src/fern/profiling/raw_client.py",
-        "src/fern/tracing/client.py",
-        "src/fern/types/apis_v1components_observation_scope.py",
-        "src/fern/types/job_outcome.py",
-        "src/fern/types/job_status.py",
-        "src/fern/types/profiling_language.py",
-        "src/fern/types/profiling_mode.py",
-        "src/fern/types/profiling_type.py",
-        "src/fern/types/tracing_type.py",
-    ],
+    unmatched: &[],
 };
 
 /// VisKit Studio API — corpus row 167, the publisher's own description.
@@ -5990,37 +5960,9 @@ const VISKIT_STUDIO: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "README.md",
         "reference.md",
         "src/fern/__init__.py",
-        "src/fern/assets/client.py",
-        "src/fern/assets/raw_client.py",
-        "src/fern/copywriter/client.py",
-        "src/fern/copywriter/raw_client.py",
-        "src/fern/editor/client.py",
-        "src/fern/editor/raw_client.py",
-        "src/fern/extract/client.py",
-        "src/fern/extract/raw_client.py",
-        "src/fern/generation_jobs/client.py",
-        "src/fern/generation_jobs/raw_client.py",
-        "src/fern/generation_plan/client.py",
-        "src/fern/generation_plan/raw_client.py",
         "src/fern/imagegen/client.py",
-        "src/fern/imagegen/raw_client.py",
-        "src/fern/metrics/client.py",
-        "src/fern/metrics/raw_client.py",
-        "src/fern/onboarding/client.py",
-        "src/fern/onboarding/raw_client.py",
-        "src/fern/providers/client.py",
-        "src/fern/providers/raw_client.py",
-        "src/fern/queue/client.py",
-        "src/fern/queue/raw_client.py",
-        "src/fern/settings/client.py",
-        "src/fern/settings/raw_client.py",
-        "src/fern/source_images/client.py",
-        "src/fern/source_images/raw_client.py",
-        "src/fern/templates/client.py",
-        "src/fern/templates/raw_client.py",
         "src/fern/types/__init__.py",
         "src/fern/types/kit_list_item.py",
     ],
