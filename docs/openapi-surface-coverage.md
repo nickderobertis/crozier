@@ -92,7 +92,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 182 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 189 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1102,8 +1102,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **214** registered sources, of which
-  **197** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **221** registered sources, of which
+  **204** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1212,7 +1212,11 @@ nested-composition arm (cases 13a to 13d) beside the four cases rows 168 and 169
 added, 542 features. They settle no `gap` row, but one tree
 now holds every batch, and `fergus` declares `schema.anyOf>schema.anyOf` seven
 times: `anyof-anyof-variant`, one of the two `gap` rows the nested-composition
-re-derivation added, is `golden` here.
+re-derivation added, is `golden` here. Corpus rows 216 to 222, the seven
+pending witnesses the golden-reach continuation registered (`sim-logs`,
+`sim-tables`, `vellum-gateway`, `dot-ai`, `paloalto-code-technologies`,
+`marimo-plugins` and `otoroshi`), bring the walk to 221 sources (32 vendored
+plus 189 `link-ok`); they declare no `gap` selector and move no category.
 
 **What the `golden` count means, and what it does not.** 441 of those 542
 features carry byte-match evidence: a registered source declares the feature and

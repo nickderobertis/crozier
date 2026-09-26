@@ -72,7 +72,7 @@ import time
 import urllib.parse
 from collections import defaultdict
 from collections.abc import Callable, Iterator
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -883,34 +883,6 @@ def probe(args: argparse.Namespace) -> int:
             by_digest.setdefault(digest, path)
     todo = [digest for digest in by_digest if digest not in cache]
 
-    def run_one(digest: str) -> tuple[str, dict[str, Any]]:
-        path = by_digest[digest]
-        with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
-            scratch_path = Path(scratch)
-            env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
-            try:
-                run = subprocess.run(
-                    [str(crozier), "generate", "--spec", str(path), "--output", str(scratch_path / "out"),
-                     "--package-name", "fern", "--project-name", "default_package_name"],
-                    capture_output=True, text=True, timeout=args.timeout, env=env,
-                )
-            except subprocess.TimeoutExpired:
-                return digest, {"status": f"timeout after {args.timeout}s", "reached": []}
-            profiles = [str(p) for p in scratch_path.glob("*.profraw")]
-            if not profiles:
-                return digest, {"status": f"no profile (exit {run.returncode})", "reached": []}
-            merged = scratch_path / "merged.profdata"
-            REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
-            export = scratch_path / "export.json"
-            with export.open("w", encoding="utf-8") as sink:
-                REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
-                                *sources], stdout=sink)
-            tier = REACH.REPORT.load_tier(export, REPO)
-            hit = {f: {tuple(r) for r, n in c.items() if n > 0} for f, c in tier.items()}
-        reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
-        status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
-        return digest, {"status": status, "reached": reached}
-
     def rows_for(key: str) -> list[dict[str, Any]]:
         arms, earlier, pending = plans[key]
         rows = list(earlier)
@@ -924,9 +896,13 @@ def probe(args: argparse.Namespace) -> int:
                              "reached": [spec for spec in result["reached"] if spec in arms], "build": build})
         return rows
 
-    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+    tools = (str(crozier), str(profdata), str(llvm_cov), tuple(sources), args.timeout)
+    # One process per run: reading an export back is seconds of Python per
+    # document, which threads would serialize.
+    with ProcessPoolExecutor(max_workers=args.jobs) as pool:
         for start in range(0, len(todo), PROBE_BATCH):
-            for digest, result in pool.map(run_one, todo[start:start + PROBE_BATCH]):
+            batch = [(digest, str(by_digest[digest]), tools, regions) for digest in todo[start:start + PROBE_BATCH]]
+            for digest, result in pool.map(_probe_one, batch):
                 cache[digest] = result
                 append_probe_cache(build, digest, result)
             file_probes_many(args.source, {key: rows_for(key) for key in plans})
@@ -935,6 +911,61 @@ def probe(args: argparse.Namespace) -> int:
     print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
           f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
     return 0
+
+
+def _probe_one(
+    job: tuple[str, str, tuple[str, str, str, tuple[str, ...], int], dict[str, tuple[str, set[tuple[int, ...]]]]],
+) -> tuple[str, dict[str, Any]]:
+    """One document's instrumented `crozier generate`: the unreached sites it executes."""
+    digest, path, (crozier, profdata, llvm_cov, sources, timeout), regions = job
+    with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
+        scratch_path = Path(scratch)
+        env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
+        try:
+            run = subprocess.run(
+                [crozier, "generate", "--spec", path, "--output", str(scratch_path / "out"),
+                 "--package-name", "fern", "--project-name", "default_package_name"],
+                capture_output=True, text=True, timeout=timeout, env=env,
+            )
+        except subprocess.TimeoutExpired:
+            return digest, {"status": f"timeout after {timeout}s", "reached": []}
+        profiles = [str(p) for p in scratch_path.glob("*.profraw")]
+        if not profiles:
+            return digest, {"status": f"no profile (exit {run.returncode})", "reached": []}
+        merged = scratch_path / "merged.profdata"
+        REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
+        export = scratch_path / "export.json"
+        with export.open("w", encoding="utf-8") as sink:
+            REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier,
+                            *sources], stdout=sink)
+        hit = executed_regions(export, {file for file, _found in regions.values()})
+    reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
+    status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
+    return digest, {"status": status, "reached": reached}
+
+
+def executed_regions(export: Path, files: set[str]) -> dict[str, set[tuple[int, int, int, int]]]:
+    """The code regions of `files` a coverage export counts as executed.
+
+    What `load_tier` reads, kept to the files a site sits in and to a positive
+    count: a region is executed when any object file's copy of it ran, so the
+    maximum `load_tier` takes is positive exactly when some copy's count is.
+    """
+    report = REACH.REPORT
+    document = json.loads(export.read_text(encoding="utf-8"))
+    root = str(REPO) + "/"
+    hit: dict[str, set[tuple[int, int, int, int]]] = defaultdict(set)
+    for data in document.get("data", []):
+        for function in data.get("functions", []):
+            names = [name[len(root):] if name.startswith(root) else None
+                     for name in function.get("filenames", [])]
+            for raw in function.get("regions", []):
+                if raw[4] <= 0 or raw[report.REGION_KIND_INDEX] != report.REGION_CODE_KIND:
+                    continue
+                name = names[raw[report.REGION_FILE_INDEX]]
+                if name in files:
+                    hit[name].add((raw[0], raw[1], raw[2], raw[3]))
+    return dict(hit)
 
 
 def probe_cache_path(build: str) -> Path:
