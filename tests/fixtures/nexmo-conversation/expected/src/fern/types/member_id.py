@@ -1,0 +1,6 @@
+
+
+MemberId = str
+"""
+Member ID
+"""

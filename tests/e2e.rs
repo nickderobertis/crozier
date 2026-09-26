@@ -3351,6 +3351,7 @@ const CORPORA: &[&Corpus] = &[
     &PALOALTO_CODE_TECHNOLOGIES,
     &MARIMO_PLUGINS,
     &OTOROSHI,
+    &NEXMO_CONVERSATION,
 ];
 
 #[test]
@@ -6116,6 +6117,20 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
+/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
+/// members and nested properties, the pointer arms no earlier golden reached.
+const NEXMO_CONVERSATION: Corpus = Corpus {
+    api: "nexmo-conversation",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11947,4 +11962,9 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn nexmo_conversation_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
 }
