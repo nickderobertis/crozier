@@ -2421,6 +2421,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
+    // A client taking no argument is constructed on one line: `dot-ai` declares
+    // a server and no auth, and its streaming section reads `client = FernApi()`.
+    let client_call = if streaming_args.is_empty() {
+        format!("{}()", ir.client_name)
+    } else {
+        format!("{}(\n{streaming_args})", ir.client_name)
+    };
     let stream_ep = readme_streaming_endpoint(ir);
     let streaming = stream_ep.map_or_else(String::new, |ep| {
         // The call carries its worked arguments here, exactly as the usage example
@@ -2429,8 +2436,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         let call = readme_call_lines(ir, ep, pkg)
             .unwrap_or_else(|| format!("{}()", client_call_prefix(ep)));
         format!(
-            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{call}\n```\n\n",
-            ir.client_name, ir.client_name,
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{call}\n```\n\n",
+            ir.client_name,
         )
     });
     // The pager section, on the first paginated endpoint in client order. Fern
@@ -2441,8 +2448,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let pagination = pager_ep.map_or_else(String::new, |ep| {
         let prefix = client_call_prefix(ep);
         format!(
-            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
-            ir.client_name, ir.client_name,
+            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
+            ir.client_name,
         )
     });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
@@ -7282,7 +7289,15 @@ impl<'a> ExampleCtx<'a> {
             }
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            let value = serde_json::from_str(example).ok()?;
+            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // An empty map carries no example value, so Fern synthesizes one as it
+            // does for an empty array (`dot-ai`'s `metadata: {}` is exampled
+            // `{"key": "value"}`).
+            if matches!(t, TypeRef::Dict(_, _))
+                && value.as_object().is_some_and(serde_json::Map::is_empty)
+            {
+                return None;
+            }
             if self.reference && matches!(t, TypeRef::Dict(_, _)) {
                 let serde_json::Value::Object(fields) = value else {
                     return None;
