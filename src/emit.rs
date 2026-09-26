@@ -2850,7 +2850,11 @@ fn reference_entry(
         method: ep.method_name.trim_end_matches('_').to_string(),
         // A documented parameter the method does not take — a propertyless model
         // documented as `request` — still earns the dots.
-        dots: if has_args || params.len() > 1 { "..." } else { "" },
+        dots: if has_args || params.len() > 1 {
+            "..."
+        } else {
+            ""
+        },
         return_type: reference_return_type(ep, &mp.inner),
         description: ep
             .docstring
@@ -4675,7 +4679,8 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.extend(["        )".to_string(), "        try:".to_string()]);
     if matches!(ep.response, Some(TypeRef::Optional(_)))
         || ep.response_may_be_empty
-            && (matches!(ep.response, Some(TypeRef::Primitive(Prim::Any))) || ep.response_names_unknown)
+            && (matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+                || ep.response_names_unknown)
     {
         lines.extend([
             "            if _response is None or not _response.text.strip():".to_string(),

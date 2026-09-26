@@ -954,6 +954,7 @@ info:
 components:
   schemas:
     Weather:
+      title: Weather
       type: string
       enum: [SUNNY, RAINING]
     Pet:
@@ -1019,7 +1020,9 @@ fn named_enum_and_uuid_bodies_carry_content_type() {
     let files = render(BODY_SPEC);
 
     // A `$ref` enum body: `request: Weather`, `json=request`, and the
-    // content-type header (named types get it, unlike bare scalars).
+    // content-type header — a titled target keeps it, where an untitled one
+    // riding no parameter collapses to its bare type name and loses it (see
+    // `marimo_plugins_null_unknown_and_propertyless_components`).
     let enum_client = files
         .get("src/acme/enum/raw_client.py")
         .expect("enum raw_client");
@@ -1724,11 +1727,12 @@ fn unauthenticated_operation_makes_the_token_optional() {
 }
 
 /// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
-/// request body is emittable (json=request + content-type header).
+/// request body is emittable (json=request + content-type header, which its
+/// titled target keeps).
 #[test]
 fn integer_enum_alias_and_ref_body_are_emittable() {
     let files = render(
-        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
+        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      title: Level\n      type: integer\n      enum:\n        - 1\n        - 2\n",
     );
     assert!(files["src/acme/types/level.py"].contains("Level = int"));
     let raw = &files["src/acme/raw_client.py"];
@@ -10955,4 +10959,453 @@ paths:
         !client.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
         "{client}"
     );
+}
+
+/// Palo Alto's `code/Technologies.json` (corpus row 220) writes `"servers": null`;
+/// Fern generates it as a document declaring no servers, so crozier reads the
+/// `null` as the absent key rather than refusing the document.
+#[test]
+fn a_null_servers_list_reads_as_no_servers() {
+    let files = render(
+        r#"{"openapi": "3.0.0", "info": {"title": "Technologies", "version": "Latest"},
+"servers": null,
+"paths": {"/code/api/v1/ci-inventory": {"get": {"operationId": "getCiInventory",
+  "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "string"}}}}}}}}}"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def get_ci_inventory("), "{client}");
+    assert!(client.contains("base_url: str"), "{client}");
+}
+
+/// Fragments of `vfarcic/dot-ai`'s `schema/openapi.json` (corpus row 219), with the
+/// bytes its Fern 5.20.0 golden holds: a `Dict[str, Any]` field whose media example
+/// is `{}` is exampled `{"key": "value"}`, as an empty array is synthesized; and a
+/// client built with neither auth nor a base URL — the document declares a server
+/// — is constructed on one line in the README's streaming section.
+#[test]
+fn dot_ai_empty_map_examples_and_an_argument_free_client() {
+    let files = render(
+        r#"openapi: 3.0.0
+info: { title: DevOps AI Toolkit REST API, version: 2.3.1 }
+servers: [{ url: 'https://example.com' }]
+paths:
+  /api/v1/tools/manageKnowledge:
+    post:
+      tags: [knowledge]
+      operationId: manageKnowledge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/manageKnowledgeRequest' }
+            example: { operation: ingest, metadata: {} }
+      responses: { '200': { description: ok } }
+  /api/v1/events:
+    get:
+      tags: [mcp-protocol]
+      operationId: openMcpSseStream
+      responses:
+        '200':
+          description: stream
+          content: { text/event-stream: { schema: { type: string } } }
+components:
+  schemas:
+    manageKnowledgeRequest:
+      type: object
+      required: [operation]
+      properties:
+        operation: { type: string }
+        metadata:
+          type: object
+          propertyNames: { type: string }
+          additionalProperties: {}
+"#,
+    );
+    let knowledge = &files["src/acme/knowledge/client.py"];
+    assert!(
+        knowledge.contains("metadata={\"key\": \"value\"},"),
+        "{knowledge}"
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("client = AcmeApi()\n\nclient.mcp_protocol.open_mcp_sse_stream()"),
+        "{readme}"
+    );
+}
+
+/// Fragments of Vellum's gateway (corpus row 218): Fern's `getEndpointLocation`
+/// strips a tag's words from an operationId they prefix, so
+/// `credential_requests_peek` under `credential-requests` is `peek`; and a
+/// property that is an inline-object array beside `null` hoists its element as a
+/// bare array property does.
+#[test]
+fn vellum_tag_word_prefixes_and_nullable_array_elements() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Vellum Gateway API, version: 0.11.8 }
+paths:
+  /v1/credential-requests/peek:
+    post:
+      tags: [credential-requests]
+      operationId: credential_requests_peek
+      responses: { '200': { description: ok } }
+  /v1/trust-rules/suggest:
+    post:
+      tags: [trust-rules]
+      operationId: trust_rule_suggest
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestion:
+                    type: object
+                    properties:
+                      directoryScopeOptions:
+                        anyOf:
+                          - type: array
+                            items:
+                              type: object
+                              properties: { scope: { type: string }, label: { type: string } }
+                              required: [scope, label]
+                              additionalProperties: false
+                          - type: 'null'
+"#,
+    );
+    assert!(
+        files["src/acme/credential_requests/client.py"].contains("    def peek(self, *,"),
+        "{}",
+        files["src/acme/credential_requests/client.py"]
+    );
+    let suggestion = &files["src/acme/trust_rules/types/trust_rule_suggest_response_suggestion.py"];
+    assert!(
+        suggestion.contains(
+            "typing.Optional[typing.List[TrustRuleSuggestResponseSuggestionDirectoryScopeOptionsItem]]"
+        ),
+        "{suggestion}"
+    );
+}
+
+/// Fragments of marimo's `frontend/plugins.openapi.yaml` (corpus row 221), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a `type: "null"` component is `Optional[Any]`; reading it returns it
+///   optionally, and writing it takes an optional request with no example argument
+///   and no `content-type`, documented optional in `reference.md`;
+/// - a `$ref` to a `{}` component is one required request, and a 3.1 response
+///   naming it guards the empty body;
+/// - a propertyless model that is the operation's only input is documented as
+///   `request` although the method takes nothing;
+/// - a response naming a `type: [string, "null"]` component is optional;
+/// - `Union[float, <one-const enum>]` is exampled by the enum's member;
+/// - a union whose members tag `type` with an optional `const` is discriminated;
+/// - a nullable map's nullability reaches a map nested as its value;
+/// - a required `{}` property fails the importer's request example, so the
+///   fallback's two-item lists show.
+#[test]
+fn marimo_plugins_null_unknown_and_propertyless_components() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: marimo plugin contracts, version: 1.0.0 }
+paths:
+  /plugins/cancel/output:
+    get:
+      operationId: read_cancel_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/cancel.output' } } } }
+    put:
+      operationId: write_cancel_output
+      tags: [rpc-output]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/cancel.output' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/send/output:
+    get:
+      operationId: read_send_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/send.output' } } } }
+    put:
+      operationId: write_send_output
+      tags: [rpc-output]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/send.output' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/validate/output:
+    get:
+      operationId: read_validate_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/validate.output' } } } }
+  /plugins/tex/data:
+    get:
+      operationId: read_tex_data
+      tags: [plugin-data]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/tex.data' } } } }
+    put:
+      operationId: write_tex_data
+      tags: [plugin-data]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/tex.data' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/table/data:
+    put:
+      operationId: write_table_data
+      tags: [plugin-data]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/table.data' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/widget/input:
+    put:
+      operationId: write_widget_input
+      tags: [rpc-input]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/widget.input' } } }
+      responses: { '204': { description: Accepted. } }
+components:
+  schemas:
+    cancel.output: { type: 'null' }
+    send.output: {}
+    validate.output: { type: [string, 'null'] }
+    tex.data: { type: object, properties: {} }
+    widget.input:
+      type: object
+      properties:
+        message: {}
+        buffers: { type: array, items: { type: string } }
+      required: [message, buffers]
+    table.data:
+      type: object
+      properties:
+        totalRows:
+          anyOf:
+            - { type: number }
+            - { type: string, const: too_many }
+        filters: { $ref: '#/components/schemas/table.filter' }
+        cellStyles:
+          anyOf:
+            - type: object
+              additionalProperties:
+                type: object
+                additionalProperties: { type: object, properties: {}, additionalProperties: {} }
+            - type: 'null'
+      required: [totalRows]
+    table.filter:
+      type: object
+      properties:
+        type: { default: group, type: string, const: group }
+        children:
+          type: array
+          items:
+            anyOf:
+              - type: object
+                properties:
+                  type: { default: condition, type: string, const: condition }
+                  column_id: { type: string }
+                required: [column_id]
+              - $ref: '#/components/schemas/table.filter'
+"#,
+    );
+    assert!(
+        files["src/acme/types/cancel_output.py"]
+            .contains("CancelOutput = typing.Optional[typing.Any]"),
+        "{}",
+        files["src/acme/types/cancel_output.py"]
+    );
+    let output = &files["src/acme/rpc_output/client.py"];
+    assert!(
+        output.contains(") -> typing.Optional[CancelOutput]:"),
+        "{output}"
+    );
+    assert!(
+        output.contains("request: typing.Optional[CancelOutput] = None,"),
+        "{output}"
+    );
+    assert!(
+        output.contains("client.rpc_output.write_cancel_output()\n"),
+        "{output}"
+    );
+    assert!(
+        output.contains("self, *, request: SendOutput, request_options"),
+        "{output}"
+    );
+    assert!(
+        output.contains(") -> typing.Optional[ValidateOutput]:"),
+        "{output}"
+    );
+    let raw_output = &files["src/acme/rpc_output/raw_client.py"];
+    assert!(!raw_output.contains("\"content-type\""), "{raw_output}");
+    assert!(
+        raw_output.contains(
+            "            if _response is None or not _response.text.strip():\n                return HttpResponse(response=_response, data=None)\n            if 200 <= _response.status_code < 300:\n                _data = typing.cast(\n                    SendOutput,"
+        ),
+        "{raw_output}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("**request:** `typing.Optional[CancelOutput]`"),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("write_tex_data</a>(...)</code>")
+            && reference.contains("**request:** `TexData`"),
+        "{reference}"
+    );
+    let plugin_data = &files["src/acme/plugin_data/client.py"];
+    assert!(
+        plugin_data.contains("total_rows=TableDataTotalRowsOne.TOO_MANY,"),
+        "{plugin_data}"
+    );
+    let cell_styles = "typing.Dict[str, typing.Optional[typing.Dict[str, typing.Optional[typing.Dict[str, typing.Any]]]]]";
+    assert!(plugin_data.contains(cell_styles), "{plugin_data}");
+    let children = &files["src/acme/types/table_filter_children_item.py"];
+    assert!(
+        children.contains("pydantic.Field(discriminator=\"type\")"),
+        "{children}"
+    );
+    let input = &files["src/acme/rpc_input/client.py"];
+    assert!(
+        input.contains("buffers=[\"buffers\", \"buffers\"],"),
+        "{input}"
+    );
+}
+
+/// Fragments of Sim's `apps/docs/openapi-v2-tables.json` (corpus row 217), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a `$ref` union whose members each require a string `const` `method` is
+///   discriminated on it, so the standalone models drop `method`;
+/// - a body component's 3.1 `examples` array fills its fields, optional ones too;
+/// - a `$ref` to a map declaring only `examples` gives a field no example, since
+///   Fern's importer reads a map's own `example` alone;
+/// - a map property whose value is `anyOf: [string, null]` is
+///   `Dict[str, Optional[str]]`;
+/// - the docstring documents a header before a query parameter, and
+///   `reference.md` the other way round.
+#[test]
+fn sim_tables_examples_arrays_const_tags_and_parameter_order() {
+    let files = render(
+        r##"{"openapi": "3.1.0", "info": {"title": "Sim Tables API v2", "version": "2.0.0"},
+"paths": {
+  "/rows": {"delete": {"tags": ["tables"], "operationId": "deleteTableRows",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DeleteTableRowsRequest"}}}},
+    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Transfer"}}}}}},
+  "patch": {"tags": ["tables"], "operationId": "updateTableRows",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateTableRowsRequest"}}}},
+    "responses": {"200": {"description": "ok"}}}},
+  "/imports/{importId}/complete": {"post": {"tags": ["tables"], "operationId": "completeTableImportUpload",
+    "parameters": [
+      {"name": "importId", "in": "path", "required": true, "schema": {"type": "string"}},
+      {"name": "workspaceId", "in": "query", "required": true, "schema": {"type": "string"}},
+      {"name": "upload-token", "in": "header", "required": true, "schema": {"type": "string"}}],
+    "responses": {"200": {"description": "ok"}}}},
+  "/imports": {"post": {"tags": ["tables"], "operationId": "createTableImport",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateTableImportRequest"}}}},
+    "responses": {"200": {"description": "ok"}}}}},
+"components": {"schemas": {
+  "DeleteTableRowsRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "rowIds": {"type": "array", "items": {"type": "string"}}},
+    "required": ["workspaceId"],
+    "examples": [{"workspaceId": "a91c4b2e", "rowIds": ["row_1f3e"]}]},
+  "UpdateTableRowsRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "data": {"$ref": "#/components/schemas/V2TableRowData"}},
+    "required": ["workspaceId", "data"]},
+  "V2TableRowData": {"type": "object", "propertyNames": {"type": "string"},
+    "additionalProperties": {"description": "cell"}, "title": "Table row data",
+    "examples": [{"email": "jane@example.com"}]},
+  "CreateTableImportRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "mapping": {"type": "object", "additionalProperties": {"anyOf": [{"type": "string"}, {"type": "null"}]}}},
+    "required": ["workspaceId"]},
+  "Transfer": {"type": "object", "properties": {
+      "transfer": {"oneOf": [{"$ref": "#/components/schemas/V2PutUploadTransfer"}, {"$ref": "#/components/schemas/V2MultipartUploadTransfer"}]}}},
+  "V2PutUploadTransfer": {"type": "object", "properties": {
+      "method": {"type": "string", "const": "put"}, "url": {"type": "string"}},
+    "required": ["method", "url"]},
+  "V2MultipartUploadTransfer": {"type": "object", "properties": {
+      "method": {"type": "string", "const": "multipart"}, "partSize": {"type": "integer"}},
+    "required": ["method", "partSize"]}}}}"##,
+    );
+    let put = &files["src/acme/types/v2put_upload_transfer.py"];
+    assert!(!put.contains("method"), "{put}");
+    let transfer = &files["src/acme/types/transfer_transfer.py"];
+    assert!(
+        transfer.contains("pydantic.Field(discriminator=\"method\")"),
+        "{transfer}"
+    );
+    let tables = &files["src/acme/tables/client.py"];
+    assert!(
+        tables.contains("workspace_id=\"a91c4b2e\",\n            row_ids=[\"row_1f3e\"],"),
+        "{tables}"
+    );
+    assert!(tables.contains("data={\"key\": \"value\"},"), "{tables}");
+    assert!(
+        tables.contains("mapping: typing.Optional[typing.Dict[str, typing.Optional[str]]] = OMIT,"),
+        "{tables}"
+    );
+    assert!(
+        tables.contains(
+            "import_id=\"importId\",\n            upload_token=\"upload-token\",\n            workspace_id=\"workspaceId\","
+        ),
+        "{tables}"
+    );
+    assert!(
+        files["reference.md"]
+            .contains("import_id=\"importId\",\n    workspace_id=\"workspaceId\",\n    upload_token=\"upload-token\","),
+        "{}",
+        files["reference.md"]
+    );
+}
+
+/// Fragments of Otoroshi's own `otoroshi/conf/schemas/openapi.json` (corpus row
+/// 222), each assertion a line of its Fern 5.20.0 golden:
+/// - `application/x-ndjson` is JSON to Fern's `MediaType.isJSON`, so the bulk
+///   bodies are sent `json=` with that content type;
+/// - a `$ref` to an undeclared component is Fern's unknown, with no field docs;
+/// - a `$ref` body collapses to its bare type, with no `content-type`, whatever
+///   the request body's own description says.
+#[test]
+fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
+    let files = render(
+        r##"{"openapi": "3.0.3", "info": {"title": "Otoroshi Admin API", "version": "16.12.0-dev"},
+"paths": {
+  "/api/teams/_bulk": {"post": {"tags": ["teams"], "operationId": "otoroshi.controllers.adminapi.TeamsController.bulkCreateAction",
+    "requestBody": {"description": "nd-json", "required": true, "content": {"application/x-ndjson": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Team"}}}}},
+    "responses": {"200": {"description": "ok", "content": {"application/x-ndjson": {"schema": {"$ref": "#/components/schemas/BulkResponseBody"}}}}}}},
+  "/api/snowmonkey/_start": {"post": {"tags": ["snowmonkey"], "operationId": "otoroshi.controllers.adminapi.SnowMonkeyController.startSnowMonkey",
+    "requestBody": {"description": "the request body", "required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Empty"}}}},
+    "responses": {"200": {"description": "ok"}}}}},
+"components": {"schemas": {
+  "BulkResponseBody": {"type": "object", "description": "BulkResponseBody object"},
+  "Empty": {"type": "object", "description": "an empty body"},
+  "Team": {"type": "object", "properties": {
+      "name": {"type": "string"},
+      "tenant": {"$ref": "#/components/schemas/otoroshi.models.TenantId", "description": "Entity organization"}}}}}}"##,
+    );
+    let teams = &files["src/acme/teams/raw_client.py"];
+    assert!(
+        teams.contains("\"content-type\": \"application/x-ndjson\","),
+        "{teams}"
+    );
+    assert!(
+        teams.contains("-> HttpResponse[BulkResponseBody]:"),
+        "{teams}"
+    );
+    let team = &files["src/acme/types/team.py"];
+    assert!(
+        team.contains("    tenant: typing.Optional[typing.Any] = None\n"),
+        "{team}"
+    );
+    let snowmonkey = &files["src/acme/snowmonkey/raw_client.py"];
+    assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
 }

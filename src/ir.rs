@@ -2947,7 +2947,7 @@ fn build_endpoint(
     let returns_nullable_component = success_response_schema(op)
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|target| target.explicitly_nullable() || schema_is_null_type(target));
+        .is_some_and(|target| target.explicitly_nullable() || is_null_component(target));
     let response = response.map(|response| {
         if returns_nullable_component {
             optional_type_ref(response)
@@ -3695,7 +3695,11 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
 /// `marimo-panel.send_to_widget.input` requires `message: {}`, and its golden
 /// examples `buffers` with the fallback's two items.
 fn request_requires_unexampled_unknown(doc: &OpenApi, op: &Operation) -> bool {
-    let Some((_, media)) = op.request_body.as_ref().and_then(selected_json_request_media) else {
+    let Some((_, media)) = op
+        .request_body
+        .as_ref()
+        .and_then(selected_json_request_media)
+    else {
         return false;
     };
     if media_example(doc, media).is_some() {
@@ -3720,7 +3724,9 @@ fn requires_unexampled_unknown(doc: &OpenApi, schema: &Schema, depth: usize) -> 
         return false;
     }
     schema.properties.iter().any(|(name, property)| {
-        if !schema.required.iter().any(|required| required == name) || schema_example(property).is_some() {
+        if !schema.required.iter().any(|required| required == name)
+            || schema_example(property).is_some()
+        {
             return false;
         }
         let target = property
@@ -3729,7 +3735,8 @@ fn requires_unexampled_unknown(doc: &OpenApi, schema: &Schema, depth: usize) -> 
             .and_then(|reference| resolve_ref(doc, reference))
             .unwrap_or(property);
         is_unknown(target) && schema_example(target).is_none()
-            || !target.properties.is_empty() && requires_unexampled_unknown(doc, property, depth + 1)
+            || !target.properties.is_empty()
+                && requires_unexampled_unknown(doc, property, depth + 1)
     })
 }
 
@@ -4805,7 +4812,7 @@ fn resolve_request_body(
         // argument with no content-type header: marimo-plugins'
         // `write_marimo_chatbot_cancel_prompt_output` takes
         // `request: typing.Optional[MarimoChatbotCancelPromptOutput] = None`.
-        if schema_is_null_type(target) && is_unknown_but_for_type(target) {
+        if is_null_component(target) {
             return Some(single(TypeRef::Named(class), false, false, false));
         }
         // A `$ref` to an unknown (`{}`) model is one required `json=request`
@@ -7488,7 +7495,10 @@ fn fern_location_tokens(name: &str) -> Vec<String> {
             .collect();
         starts.insert(0, 0);
         starts.push(name.len());
-        starts.windows(2).map(|pair| &name[pair[0]..pair[1]]).collect()
+        starts
+            .windows(2)
+            .map(|pair| &name[pair[0]..pair[1]])
+            .collect()
     } else {
         name.split(|c: char| !c.is_ascii_alphanumeric()).collect()
     };
@@ -7506,7 +7516,8 @@ fn is_fern_camel_case(name: &str) -> bool {
     bytes.first().is_some_and(u8::is_ascii_lowercase)
         && bytes.iter().enumerate().all(|(index, byte)| {
             byte.is_ascii_lowercase()
-                || byte.is_ascii_uppercase() && bytes.get(index + 1).is_some_and(u8::is_ascii_lowercase)
+                || byte.is_ascii_uppercase()
+                    && bytes.get(index + 1).is_some_and(u8::is_ascii_lowercase)
         })
 }
 
@@ -7517,9 +7528,7 @@ fn is_fern_camel_case(name: &str) -> bool {
 fn method_after_tag_tokens(tag: &str, id: &str) -> Option<String> {
     let tag_words = fern_location_tokens(tag);
     let id_words = fern_location_tokens(id);
-    if tag_words.len() < 2
-        || id_words.len() <= tag_words.len()
-        || !id_words.starts_with(&tag_words)
+    if tag_words.len() < 2 || id_words.len() <= tag_words.len() || !id_words.starts_with(&tag_words)
     {
         return None;
     }
@@ -7673,7 +7682,10 @@ fn inferred_discriminant_property_with(
                                 && schema_example(field)
                                     .and_then(serde_json::Value::as_str)
                                     .is_some()
-                                || field.const_value.as_ref().is_some_and(serde_json::Value::is_string)
+                                || field
+                                    .const_value
+                                    .as_ref()
+                                    .is_some_and(serde_json::Value::is_string)
                         }
                         // OpenCodeUI's `ToolState` is an `anyOf` of four `$ref`s
                         // each requiring a `const` `status`, and Fern's golden is
@@ -7683,7 +7695,10 @@ fn inferred_discriminant_property_with(
                         "name" => singleton_enum,
                         _ => {
                             variant.required.contains(property)
-                                && field.const_value.as_ref().is_some_and(serde_json::Value::is_string)
+                                && field
+                                    .const_value
+                                    .as_ref()
+                                    .is_some_and(serde_json::Value::is_string)
                         }
                     };
                     if !supported {
@@ -8531,7 +8546,7 @@ impl Builder<'_> {
         // A component that is nothing but `type: "null"` is Fern's optional
         // unknown: marimo-plugins' `marimo-chatbot.cancel_prompt.output` is
         // `MarimoChatbotCancelPromptOutput = typing.Optional[typing.Any]`.
-        if schema_is_null_type(schema) && is_unknown_but_for_type(schema) {
+        if is_null_component(schema) {
             self.push_alias(
                 name,
                 module,
@@ -9706,8 +9721,8 @@ impl Builder<'_> {
                     // One member beside `null` is that member made optional, with
                     // no alias: Sim's `CreateTableImportRequest.mapping` is
                     // `Dict[str, Optional[str]]` over `anyOf: [string, null]`.
-                    if let Some(member) = simple_nullable_member(value)
-                        .filter(|member| !is_inline_struct(member))
+                    if let Some(member) =
+                        simple_nullable_member(value).filter(|member| !is_inline_struct(member))
                     {
                         return TypeRef::Dict(
                             Box::new(TypeRef::Primitive(Prim::Str)),
@@ -11885,12 +11900,16 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
 /// single-member enum `string_enum_values` already lowers it to, which is how
 /// `mosip-esignet`'s type-less `grant_type: {const: authorization_code}` becomes
 /// `PostTokenRequestGrantType` rather than `typing.Any`.
-/// [`is_unknown`], but for a written `type`: nothing else shapes the schema.
-fn is_unknown_but_for_type(schema: &Schema) -> bool {
-    is_unknown(&Schema {
-        ty: None,
-        ..schema.clone()
-    })
+/// A schema that is `type: "null"` and nothing else. The scalar spelling only:
+/// marimo-plugins' `marimo-chatbot.cancel_prompt.output` is Fern's
+/// `Optional[Any]`, where 3.1's one-member list `type: ['null']` is its bare
+/// unknown.
+fn is_null_component(schema: &Schema) -> bool {
+    matches!(&schema.ty, Some(TypeField::Single(ty)) if ty == "null")
+        && is_unknown(&Schema {
+            ty: None,
+            ..schema.clone()
+        })
 }
 
 fn is_unknown(schema: &Schema) -> bool {
@@ -14364,9 +14383,14 @@ mod tests {
                 { "$ref": "#/components/schemas/ChatCompletionContentPartImageParam" }
             ]
         }));
+        // A required string `const` tag discriminates, as Fern's
+        // `getPossibleDiscriminants` reads it (Sim's `V2PutUploadTransfer` and
+        // `V2MultipartUploadTransfer`); letta's golden keeps the tag on the text
+        // part's standalone model all the same, which the strips below pin.
         assert_eq!(
-            super::inferred_discriminant_property(&content, &components.components.schemas),
-            None
+            super::inferred_discriminant_property(&content, &components.components.schemas)
+                .as_deref(),
+            Some("type")
         );
         assert!(mapped_builder
             .discriminated_union("Content", "content", &content, None)
