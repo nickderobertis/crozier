@@ -9696,6 +9696,17 @@ impl Builder<'_> {
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
                 if prop_schema.properties.is_empty() && value.reference.is_none() {
                     let value_name = format!("{owner_prop}Value");
+                    // One member beside `null` is that member made optional, with
+                    // no alias: Sim's `CreateTableImportRequest.mapping` is
+                    // `Dict[str, Optional[str]]` over `anyOf: [string, null]`.
+                    if let Some(member) = simple_nullable_member(value)
+                        .filter(|member| !is_inline_struct(member))
+                    {
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(optional_type_ref(base_type_ref(member))),
+                        );
+                    }
                     if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
                         let nullable = members.iter().any(|member| {
                             member.ty.as_ref().and_then(TypeField::primary) == Some("null")
