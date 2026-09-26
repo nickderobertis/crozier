@@ -20,8 +20,9 @@ pub fn split_words(input: &str) -> Vec<String> {
         // media-type-shaped discriminant value (oSPARC maps `schema_class:
         // application/schema+json` onto a `oneOf` member) names the variant
         // class `ApplicationSchemaJson` rather than sanitizing the punctuation
-        // into underscores.
-        if c == '_' || c == '-' || c == ' ' || c == '.' || c == '/' || c == '+' {
+        // into underscores. A `:` does too: OpenLink OSDB's namespaced body
+        // property `osdb:output_type` hoists Fern's `ExecBodyOsdbOutputType`.
+        if c == '_' || c == '-' || c == ' ' || c == '.' || c == '/' || c == '+' || c == ':' {
             if !current.is_empty() {
                 words.push(std::mem::take(&mut current));
             }
@@ -1020,6 +1021,16 @@ mod tests {
         assert_eq!(module_name("NestedUser"), "nested_user");
         assert_eq!(module_name("Class"), "class_");
         assert_eq!(module_name("_5GmmCause"), "_5_gmm_cause");
+    }
+
+    #[test]
+    fn a_colon_separates_the_words_of_a_class_name() {
+        // OpenLink OSDB's namespaced body property, hoisted under `ExecBody`.
+        assert_eq!(class_name("osdb:output_type"), "OsdbOutputType");
+        assert_eq!(
+            split_words("osdb:output_type"),
+            vec!["osdb", "output", "type"]
+        );
     }
 
     #[test]

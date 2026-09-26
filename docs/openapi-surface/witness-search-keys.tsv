@@ -7,6 +7,7 @@ array-item-inheritance-union	schema.items>schema.discriminator:inheritance-union
 array-item-pointer-walk-anyof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf	schemas.md	supported
 array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf	schemas.md	supported
 oauth2-password	securityScheme.flows.password	security.md	supported
+oneof-anyof-variant	schema.oneOf>schema.anyOf	schemas.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf	schemas.md	supported

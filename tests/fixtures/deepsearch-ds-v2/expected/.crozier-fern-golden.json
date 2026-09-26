@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "deepsearch-ds-v2",
+  "corpus_spec_ref": "be22375ecea319b495a11e27cd0308fdcda81ba1",
+  "corpus_spec_url": "https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json"
+}

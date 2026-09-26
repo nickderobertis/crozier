@@ -1,0 +1,260 @@
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/latest/openapi.spec3.json", "key": "property-anyof-discriminated-union", "reached": ["src/ir.rs::InlineHoister::hoist_discriminated_union", "src/ir.rs::InlineHoister::prop_type_ref[^ {16}\\) \\{$]"], "status": "generated"}
+{"candidate": "stripe--openapi/latest/openapi.spec3.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.beta.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.beta.sdk.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.private_preview.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.private_preview.sdk.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.sdk.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/openapi/spec3.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/preview/openapi.private_preview.spec3.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "stripe--openapi/preview/openapi.spec3.sdk.json", "key": "property-anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "asana--openapi/defs/asana_oas.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi.json", "key": "annotated-ref-shape", "reached": ["src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\\{$]"], "status": "generated"}
+{"candidate": "box--box-openapi/openapi/openapi-v2025.0.json", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi/openapi-v2026.0.json", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi/openapi.json", "key": "annotated-ref-shape", "reached": ["src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\\{$]"], "status": "generated"}
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "annotated-ref-shape", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "timeout after 300s"}
+{"candidate": "intercom--Intercom-OpenAPI/descriptions/0/api.intercom.io.yaml", "key": "annotated-ref-shape", "reached": ["src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\\{$]"], "status": "generated"}
+{"candidate": "openai--openai-openapi/openapi.json", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: -trees/openai--openai-openapi/openapi.json: POST /responses?beta=true: header parameter `openai-beta` has an unsupported array schema in Fern's Python generator"}
+{"candidate": "openai--openai-openapi/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: s.CreateChatCompletionRequest.allOf[1].properties.seed.minimum: invalid type: integer `-9223372036854776000` as i128, expected any value at line 33541 column 24"}
+{"candidate": "twilio--twilio-oai/spec/json/twilio_intelligence_v3.json", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "twilio--twilio-oai/spec/yaml/twilio_intelligence_v3.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/api.github.com.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions/ghec/ghec.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "openai--openai-openapi/openapi.json", "key": "anyof-allof-variant", "reached": [], "status": "exit 1: -trees/openai--openai-openapi/openapi.json: POST /responses?beta=true: header parameter `openai-beta` has an unsupported array schema in Fern's Python generator"}
+{"candidate": "openai--openai-openapi/openapi.yaml", "key": "anyof-allof-variant", "reached": [], "status": "exit 1: s.CreateChatCompletionRequest.allOf[1].properties.seed.minimum: invalid type: integer `-9223372036854776000` as i128, expected any value at line 33541 column 24"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformConfigurationNotification-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformConfigurationNotification-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformRelayedAuthorisationNotification-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformRelayedAuthorisationNotification-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformRelayedAuthorisationNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformService-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformService-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformTransactionNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformTransferNotification-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/BalancePlatformTransferNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v40.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v41.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v46.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v49.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v50.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v51.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v52.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v53.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v64.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v65.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v66.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v67.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v68.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v69.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v70.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v71.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/CheckoutService-v72.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/ManagementService-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/ManagementService-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/TransferService-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/json/TransferService-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformConfigurationNotification-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformConfigurationNotification-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformRelayedAuthorisationNotification-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformRelayedAuthorisationNotification-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformRelayedAuthorisationNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformService-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformService-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformTransactionNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformTransferNotification-v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/BalancePlatformTransferNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v40.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v41.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v46.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v49.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v50.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v51.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v52.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v53.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v64.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v65.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v66.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v67.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v68.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v69.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v70.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v71.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/CheckoutService-v72.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/TransferService-v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "Adyen--adyen-openapi/yaml/TransferService-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi/openapi-v2025.0.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "box--box-openapi/openapi/openapi.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cohere-ai--cohere-developer-experience/cohere-openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "discord--discord-api-spec/specs/openapi.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "discord--discord-api-spec/specs/openapi_preview.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "cloudflare--api-schemas/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghec/ghec.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.json", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.yaml", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "cloudflare--api-schemas/openapi.json", "key": "x-fern-or-crozier-ignore", "reached": ["src/openapi.rs::filter_ignored[for key in &ignored_schemas \\{]", "src/openapi.rs::filter_ignored[if ignored_schemas\\.contains\\(key\\) \\{]"], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "cloudflare--api-schemas/openapi.yaml", "key": "x-fern-or-crozier-ignore", "reached": ["src/openapi.rs::filter_ignored[for key in &ignored_schemas \\{]", "src/openapi.rs::filter_ignored[if ignored_schemas\\.contains\\(key\\) \\{]"], "status": "generated"}

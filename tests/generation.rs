@@ -217,11 +217,13 @@ paths:
       - { in: path, name: parent, required: true, schema: { type: string } }
     get:
       operationId: children.get
+      tags: [children]
       responses:
         '204': { description: found }
   /contexts:
     post:
       operationId: contexts.create
+      tags: [contexts]
       requestBody:
         required: true
         content:
@@ -244,6 +246,7 @@ paths:
   /upload:
     post:
       operationId: uploads.create
+      tags: [uploads]
       requestBody:
         required: true
         content:
@@ -5215,6 +5218,198 @@ paths:
     assert!(raw.contains("def fallback("), "{raw}");
 }
 
+/// An operation-level union whose members are themselves compositions, in the
+/// shape of the Vonage Messages API's `sendMessage` (corpus row 193). A member
+/// that is a `oneOf` of several is a named union of its own; a member that is a
+/// `oneOf` of one is that one member; an `allOf` member that redeclares a
+/// property of a composed `$ref` base flattens that base — its own base becomes a
+/// parent, its fields follow the member's own — while a base nothing redeclares
+/// stays a parent. The untitled, undiscriminated body leaves its content type to
+/// httpx; an inline union error body is the `{Class}Body` type; and a subtype
+/// that redeclares a described base property without a description keeps the
+/// base's on the enum it hoists.
+#[test]
+fn nested_inline_union_members_hoist_as_fern_names_them() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Messages, version: 1.0.0 }
+paths:
+  /:
+    post:
+      operationId: sendMessage
+      requestBody:
+        description: Send a message.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: SMS
+                  oneOf:
+                    - allOf:
+                        - $ref: '#/components/schemas/Text'
+                        - properties: { text: { description: Up to 1000 characters. } }
+                        - $ref: '#/components/schemas/ChannelOptionsSms'
+                - title: MMS
+                  oneOf:
+                    - allOf:
+                        - $ref: '#/components/schemas/Text'
+                        - properties: { text: { description: A caption. } }
+                    - allOf:
+                        - $ref: '#/components/schemas/ChannelOptionsSms'
+                        - properties: { url: { type: string } }
+      responses:
+        '202': { description: Accepted }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MissingCredentials'
+                  - $ref: '#/components/schemas/InvalidApplication'
+  /status:
+    get:
+      operationId: getStatus
+      responses:
+        '200':
+          description: Status
+          content: { application/json: { schema: { $ref: '#/components/schemas/StatusViber' } } }
+components:
+  schemas:
+    BaseMessageType:
+      type: object
+      properties: { to: { type: string } }
+    Text:
+      allOf:
+        - $ref: '#/components/schemas/BaseMessageType'
+        - properties:
+            message_type: { type: string, enum: [text], description: Always text. }
+            text: { type: string }
+          required: [text]
+    ChannelOptionsSms:
+      type: object
+      properties: { channel: { type: string, enum: [sms] } }
+    MissingCredentials:
+      type: object
+      properties: { type: { type: string, enum: [missing] }, title: { type: string } }
+    InvalidApplication:
+      type: object
+      properties: { type: { type: string, enum: [invalid] }, title: { type: string } }
+    StatusBase:
+      type: object
+      properties:
+        status: { type: string, enum: [submitted, delivered], description: The status of the message. }
+    StatusViber:
+      allOf:
+        - $ref: '#/components/schemas/StatusBase'
+        - properties: { status: { type: string, enum: [submitted, read] } }
+"##,
+    );
+    let types = |name: &str| {
+        files
+            .get(&format!("src/acme/types/{name}.py"))
+            .unwrap_or_else(|| panic!("no {name}.py among {:?}", files.keys()))
+    };
+    let body = types("send_message_request");
+    assert!(
+        body.contains("typing.Union[SendMessageRequestZero, SendMessageRequestOne]"),
+        "{body}"
+    );
+    let sms = types("send_message_request_zero");
+    assert!(
+        sms.contains("class SendMessageRequestZero(ChannelOptionsSms, BaseMessageType):"),
+        "{sms}"
+    );
+    let text = sms.find("    text: ").expect("the member's own field");
+    let message_type = sms
+        .find("    message_type: ")
+        .expect("the flattened base's field");
+    assert!(text < message_type, "{sms}");
+    assert!(sms.contains("typing.Optional[TextMessageType]"), "{sms}");
+    let mms = types("send_message_request_one");
+    assert!(mms.contains("SendMessageRequestOneZero"), "{mms}");
+    assert!(mms.contains("SendMessageRequestOneOne"), "{mms}");
+    let raw = &files["src/acme/raw_client.py"];
+    let send = &raw[raw.find("def send_message(").unwrap()..];
+    let send = &send[..send.find("\n    def ").unwrap_or(send.len())];
+    assert!(!send.contains("\"content-type\""), "{send}");
+    assert!(types("unauthorized_error_body").contains("UnauthorizedErrorBody"));
+    assert!(
+        files["src/acme/errors/unauthorized_error.py"].contains("body: UnauthorizedErrorBody"),
+        "{}",
+        files["src/acme/errors/unauthorized_error.py"]
+    );
+    assert!(types("status_viber_status").contains("The status of the message."));
+}
+
+/// An unknown body is optional only beside a *separate* empty status. ZipTax's
+/// `merchantCertDelete` (`200` and `204`, both `schema: {}`) returns
+/// `typing.Optional[typing.Any]`; a lone `204` declaring `schema: {}` (Letta) and
+/// a `200` declaring no schema (Microcks) stay `typing.Any`; and a `2XX` range key
+/// types nothing, so OpenLink OSDB's example-only `2XX` beside a `default`
+/// `ErrorModel` returns that model, not an optional one.
+#[test]
+fn an_unknown_body_is_optional_only_beside_a_separate_empty_status() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Empty Statuses, version: 1.0.0 }
+paths:
+  /beside:
+    post:
+      operationId: probes_beside
+      tags: [Probes]
+      responses:
+        '200': { description: Relayed, content: { application/json: { schema: {} } } }
+        '204': { description: Deleted, content: { application/json: { schema: {} } } }
+  /alone:
+    delete:
+      operationId: probes_alone
+      tags: [Probes]
+      responses:
+        '204': { description: Deleted, content: { application/json: { schema: {} } } }
+  /schemaless:
+    get:
+      operationId: probes_schemaless
+      tags: [Probes]
+      responses:
+        '200': { description: Config, content: { application/json: {} } }
+  /ranged:
+    post:
+      operationId: probes_ranged
+      tags: [Probes]
+      responses:
+        2XX: { description: Varies, content: { '*/*': { example: { any: thing } } } }
+        default:
+          description: Error
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { message: { type: string } }
+"##,
+    );
+    let client = &files["src/acme/probes/client.py"];
+    let signature = |method: &str| {
+        let start = client
+            .find(&format!("def {method}("))
+            .unwrap_or_else(|| panic!("{client}"));
+        let rest = &client[start..];
+        rest[..rest.find(":\n").expect("signature ends")].to_string()
+    };
+    assert!(
+        signature("beside").ends_with("-> typing.Optional[typing.Any]"),
+        "{client}"
+    );
+    assert!(signature("alone").ends_with("-> typing.Any"), "{client}");
+    assert!(
+        signature("schemaless").ends_with("-> typing.Any"),
+        "{client}"
+    );
+    assert!(signature("ranged").ends_with("-> Problem"), "{client}");
+}
+
 #[test]
 fn off_string_parameter_examples_are_discarded_and_serialization_styles_survive() {
     let files = render(
@@ -8787,6 +8982,621 @@ components:
     );
 }
 
+// The tests below each take a fragment of the opencode server API as
+// `lehhair/OpenCodeUI` publishes it (`openapi_doc.json` at
+// 8a6d4eae9424317f01e88f3819b14b24e57bab10) and assert lines of the Fern 5.20.0
+// output measured for that document. The whole document is corpus row 196
+// (`opencodeui`), whose golden needs the network; these fragments hold each
+// repair offline, one shape at a time.
+
+/// An untagged dotted `operationId` names no sub-client: `global.health` is the
+/// root client's `global_health`, and no `global` package is generated.
+#[test]
+fn an_untagged_dotted_operation_id_hangs_off_the_root_client() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /global/health:
+    get:
+      operationId: global.health
+      summary: Get health
+      responses:
+        '200':
+          description: Health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { healthy: { type: boolean, const: true }, version: { type: string } }
+                required: [healthy, version]
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "def global_health(self, *, request_options: typing.Optional[RequestOptions] = None) -> GlobalHealthResponse:"
+        ),
+        "{client}"
+    );
+    assert!(!files
+        .keys()
+        .any(|path| path.starts_with("src/acme/global/")));
+}
+
+/// The README anchors on the first `POST` it meets walking every sub-client
+/// before the root client: OpenCodeUI's `Session`-tagged operations offer none,
+/// and its README shows the root's `client.global_dispose()`.
+#[test]
+fn the_readme_walks_the_root_client_after_its_sub_clients() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /global/dispose:
+    post:
+      operationId: global.dispose
+      summary: Dispose instance
+      responses:
+        '200':
+          description: Global disposed
+          content: { application/json: { schema: { type: boolean } } }
+  /session/status:
+    get:
+      operationId: session.status
+      tags: [Session]
+      responses:
+        '200':
+          description: Get session status
+          content: { application/json: { schema: { type: object, additionalProperties: { type: string } } } }
+"##,
+    );
+    let readme = &files["README.md"];
+    assert!(readme.contains("\nclient.global_dispose()\n"), "{readme}");
+    assert!(
+        readme.contains("    await client.global_dispose()\n"),
+        "{readme}"
+    );
+}
+
+/// A component schema named for an error class the document raises is that
+/// error's `{Name}Body`, and a body shared by several operations keeps it: the
+/// forty-nine `400`s naming `BadRequestError` generate
+/// `def __init__(self, body: BadRequestErrorBody, …)`.
+#[test]
+fn a_schema_named_for_a_raised_error_class_is_its_body() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /project/{projectID}:
+    patch:
+      operationId: project.update
+      parameters: [{ name: projectID, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Updated project information, content: { application/json: { schema: { type: boolean } } } }
+        '400':
+          description: Bad request
+          content: { application/json: { schema: { $ref: '#/components/schemas/BadRequestError' } } }
+  /pty:
+    post:
+      operationId: pty.create
+      responses:
+        '200': { description: Created PTY session, content: { application/json: { schema: { type: boolean } } } }
+        '400':
+          description: Bad request
+          content: { application/json: { schema: { $ref: '#/components/schemas/BadRequestError' } } }
+components:
+  schemas:
+    BadRequestError:
+      type: object
+      properties:
+        data: {}
+        errors: { type: array, items: { type: object, propertyNames: { type: string }, additionalProperties: {} } }
+        success: { type: boolean, const: false }
+      required: [data, errors, success]
+"##,
+    );
+    let error = &files["src/acme/errors/bad_request_error.py"];
+    assert!(
+        error.contains("from ..types.bad_request_error_body import BadRequestErrorBody"),
+        "{error}"
+    );
+    assert!(
+        error.contains(
+            "def __init__(self, body: BadRequestErrorBody, headers: typing.Optional[typing.Dict[str, str]] = None):"
+        ),
+        "{error}"
+    );
+    assert!(files["src/acme/types/bad_request_error_body.py"]
+        .contains("class BadRequestErrorBody(UniversalBaseModel):"));
+    assert!(!files.contains_key("src/acme/types/bad_request_error.py"));
+}
+
+/// `status` joins the properties Fern discriminates a `$ref`-only union on:
+/// `ToolState` is an `anyOf` of four schemas each requiring a `const` `status`.
+#[test]
+fn a_required_const_status_discriminates_a_ref_union() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /tool:
+    get:
+      operationId: tool.state
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/ToolState' } } } }
+components:
+  schemas:
+    ToolStatePending:
+      type: object
+      properties:
+        status: { type: string, const: pending }
+        input: { type: object, propertyNames: { type: string }, additionalProperties: {} }
+        raw: { type: string }
+      required: [status, input, raw]
+    ToolStateRunning:
+      type: object
+      properties:
+        status: { type: string, const: running }
+        input: { type: object, propertyNames: { type: string }, additionalProperties: {} }
+        title: { type: string }
+      required: [status, input]
+    ToolState:
+      anyOf:
+        - $ref: '#/components/schemas/ToolStatePending'
+        - $ref: '#/components/schemas/ToolStateRunning'
+"##,
+    );
+    let union = &files["src/acme/types/tool_state.py"];
+    assert!(union.contains("class ToolState_Pending(UniversalBaseModel):\n    status: typing.Literal[\"pending\"] = \"pending\""), "{union}");
+    assert!(
+        union.contains("class ToolState_Running(UniversalBaseModel):"),
+        "{union}"
+    );
+}
+
+/// A union member that is a map of inline objects names its value
+/// `{Variant}Value`: `Config.lsp` is `false` or a map of two objects, and Fern
+/// generates `ConfigLsp = typing.Union[bool, typing.Dict[str, ConfigLspOneValue]]`
+/// over `ConfigLspOneValue = typing.Union[ConfigLspOneValueZero, ConfigLspOneValueCommand]`.
+#[test]
+fn a_union_member_map_names_its_value() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /config:
+    get:
+      operationId: config.get
+      responses:
+        '200': { description: Get config info, content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+components:
+  schemas:
+    Config:
+      type: object
+      properties:
+        lsp:
+          anyOf:
+            - { type: boolean, const: false }
+            - type: object
+              propertyNames: { type: string }
+              additionalProperties:
+                anyOf:
+                  - type: object
+                    properties: { disabled: { type: boolean, const: true } }
+                    required: [disabled]
+                  - type: object
+                    properties:
+                      command: { type: array, items: { type: string } }
+                      extensions: { type: array, items: { type: string } }
+                      disabled: { type: boolean }
+                    required: [command]
+"##,
+    );
+    let lsp = &files["src/acme/types/config_lsp.py"];
+    assert!(
+        lsp.contains("ConfigLsp = typing.Union[bool, typing.Dict[str, ConfigLspOneValue]]"),
+        "{lsp}"
+    );
+    let value = &files["src/acme/types/config_lsp_one_value.py"];
+    assert!(
+        value.contains("typing.Union[ConfigLspOneValueZero, ConfigLspOneValueCommand]"),
+        "{value}"
+    );
+}
+
+/// A union of one schema written twice is that schema: `Command.template` is
+/// `anyOf: [string, string]` and Fern types it `str`.
+#[test]
+fn a_union_of_one_schema_written_twice_is_that_schema() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /command:
+    get:
+      operationId: command.list
+      responses:
+        '200': { description: List of commands, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Command' } } } } }
+components:
+  schemas:
+    Command:
+      type: object
+      properties:
+        name: { type: string }
+        template: { anyOf: [{ type: string }, { type: string }] }
+      required: [name, template]
+"##,
+    );
+    let command = &files["src/acme/types/command.py"];
+    assert!(command.contains("    template: str\n"), "{command}");
+    assert!(!files.contains_key("src/acme/types/command_template.py"));
+}
+
+/// A hoisted model's map of inline objects names its value: `provider.list`
+/// answers `all` items whose `models` is `Dict[str, ProviderListResponseAllItemModelsValue]`.
+#[test]
+fn a_hoisted_models_map_of_inline_objects_names_its_value() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /provider:
+    get:
+      operationId: provider.list
+      responses:
+        '200':
+          description: List of providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  all:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        models:
+                          type: object
+                          propertyNames: { type: string }
+                          additionalProperties:
+                            type: object
+                            properties: { id: { type: string }, name: { type: string } }
+                            required: [id, name]
+                      required: [id, models]
+                required: [all]
+"##,
+    );
+    let item = &files["src/acme/types/provider_list_response_all_item.py"];
+    assert!(
+        item.contains("    models: typing.Dict[str, ProviderListResponseAllItemModelsValue]\n"),
+        "{item}"
+    );
+    assert!(
+        files["src/acme/types/provider_list_response_all_item_models_value.py"]
+            .contains("class ProviderListResponseAllItemModelsValue(UniversalBaseModel):")
+    );
+}
+
+/// A query parameter beside a body keeps the `content-type` header:
+/// `config.update` rides `directory` and sends it, while `global.config.update`
+/// posts the same `Config` with no parameter and leaves it to httpx.
+#[test]
+fn a_query_parameter_beside_a_body_keeps_the_content_type_header() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /global/config:
+    patch:
+      operationId: global.config.update
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+      responses:
+        '200': { description: Successfully updated global config, content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+  /config:
+    patch:
+      operationId: config.update
+      parameters: [{ in: query, name: directory, schema: { type: string } }]
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+      responses:
+        '200': { description: Successfully updated config, content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+components:
+  schemas:
+    Config:
+      type: object
+      properties: { theme: { type: string }, username: { type: string } }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    let method = |name: &str| {
+        let start = raw.find(&format!("    def {name}(")).expect(name);
+        let rest = &raw[start..];
+        rest[..rest[1..]
+            .find("\n    def ")
+            .map_or(rest.len(), |end| end + 1)]
+            .to_string()
+    };
+    assert!(
+        method("config_update").contains("\"content-type\": \"application/json\""),
+        "{raw}"
+    );
+    assert!(
+        !method("global_config_update").contains("\"content-type\""),
+        "{raw}"
+    );
+}
+
+/// Deep Search's `bag_key` path parameter is `{title: Bag Key}`, a schema with no
+/// type, and its golden documents the endpoint by the other example writer: the
+/// parameter by its own name and the free-form `{type: object}` body as one
+/// `"string"` entry. The same body beside a typed path parameter keeps
+/// `{"key": "value"}`. A query parameter whose schema declares no type is text,
+/// while `anyOf: [{}, null]` stays `Optional[Any]`.
+#[test]
+fn an_untyped_path_parameter_examples_a_free_form_body_as_one_string_entry() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Deep Search (DS) API, version: 3.0.0 }
+paths:
+  /backend/project/{proj_key}/bags/{bag_key}:
+    patch:
+      tags: [Knowledge Graphs]
+      operationId: update_project_knowledge_graph_metadata
+      parameters:
+        - { name: bag_key, in: path, required: true, schema: { title: Bag Key } }
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, title: Data } } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: object } } } }
+  /backend/project/{proj_key}/bags:
+    get:
+      tags: [Knowledge Graphs]
+      operationId: backend_list_project_kgs
+      parameters:
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+        - { name: term, in: query, required: false, schema: { title: Term } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: array, items: { type: object } } } } }
+    post:
+      tags: [Knowledge Graphs]
+      operationId: create_project_knowledge_graph
+      parameters:
+        - { name: proj_key, in: path, required: true, schema: { type: string, title: Proj Key } }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, title: Data } } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: object } } } }
+  /project/public/bags:
+    get:
+      tags: [Knowledge Graphs]
+      operationId: list_public_knowledge_graphs
+      parameters:
+        - { name: term, in: query, required: false, schema: { anyOf: [{}, { type: 'null' }], title: Term } }
+      responses:
+        '200': { description: Successful Response, content: { application/json: { schema: { type: array, items: { type: object } } } } }
+"##,
+    );
+    let client = &files["src/acme/knowledge_graphs/client.py"];
+    let flat = client.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flat.contains(
+            "update_project_knowledge_graph_metadata( proj_key=\"proj_key\", bag_key=\"bag_key\", request={\"string\": {\"key\": \"value\"}}, )"
+        ),
+        "{client}"
+    );
+    assert!(
+        flat.contains(
+            "create_project_knowledge_graph( proj_key=\"proj_key\", request={\"key\": \"value\"}, )"
+        ),
+        "{client}"
+    );
+    assert!(
+        flat.contains("term: typing.Optional[str] = None"),
+        "{client}"
+    );
+    assert!(
+        flat.contains("term: typing.Optional[typing.Any] = None"),
+        "{client}"
+    );
+    let reference = files["reference.md"]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        reference.contains("bag_key=\"bag_key\", request={ \"string\": {\"key\": \"value\"} },"),
+        "{reference}"
+    );
+}
+
+/// A nullable map whose value is an inline union names that value
+/// `{Owner}{Prop}Value`, as the non-nullable map does: Deep Search's
+/// `ProjectDataIndexWithStatus.record_properties` is `anyOf` [a map of `anyOf`
+/// two `$ref`s, `null`] and its golden generates
+/// `Dict[str, Optional[ProjectDataIndexWithStatusRecordPropertiesValue]]`.
+#[test]
+fn a_nullable_map_of_an_inline_union_names_its_value() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Deep Search (DS) API, version: 3.0.0 }
+paths:
+  /indices:
+    get:
+      operationId: get_index
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectDataIndexWithStatus' } } } }
+components:
+  schemas:
+    ProjectDataIndexWithStatus:
+      type: object
+      properties:
+        record_properties:
+          anyOf:
+            - type: object
+              additionalProperties:
+                anyOf:
+                  - $ref: '#/components/schemas/ElasticIndexPropertyPrimitive'
+                  - $ref: '#/components/schemas/ElasticIndexPropertyObject'
+            - type: 'null'
+          title: Record Properties
+    ElasticIndexPropertyPrimitive:
+      type: object
+      properties: { type: { type: string } }
+      required: [type]
+    ElasticIndexPropertyObject:
+      type: object
+      properties:
+        properties:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/ElasticIndexPropertyPrimitive' }
+      required: [properties]
+"##,
+    );
+    let model = files["src/acme/types/project_data_index_with_status.py"]
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        model.contains(
+            "record_properties: typing.Optional[ typing.Dict[str, typing.Optional[ProjectDataIndexWithStatusRecordPropertiesValue]] ]"
+        ),
+        "{model}"
+    );
+    let value = &files["src/acme/types/project_data_index_with_status_record_properties_value.py"];
+    let value = value.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        value.contains(
+            "ProjectDataIndexWithStatusRecordPropertiesValue = typing.Union[ ElasticIndexPropertyPrimitive, ElasticIndexPropertyObject ]"
+        ),
+        "{value}"
+    );
+}
+
+/// A union member that is a map of an inline object names that object
+/// `{Variant}Value` and generates it as a model: OpenCodeUI's `Config.formatter`
+/// is `anyOf: [false, {additionalProperties: {an object}}]` and its golden
+/// generates `Union[bool, Dict[str, ConfigFormatterOneValue]]` over the model
+/// `ConfigFormatterOneValue`.
+#[test]
+fn a_union_member_map_of_an_inline_object_names_its_value_model() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /config:
+    get:
+      operationId: config.get
+      responses:
+        '200': { description: Get config info, content: { application/json: { schema: { $ref: '#/components/schemas/Config' } } } }
+components:
+  schemas:
+    Config:
+      type: object
+      properties:
+        formatter:
+          anyOf:
+            - { type: boolean, const: false }
+            - type: object
+              propertyNames: { type: string }
+              additionalProperties:
+                type: object
+                properties:
+                  disabled: { type: boolean }
+                  command: { type: array, items: { type: string } }
+                  environment: { type: object, propertyNames: { type: string }, additionalProperties: { type: string } }
+                  extensions: { type: array, items: { type: string } }
+"##,
+    );
+    let formatter = &files["src/acme/types/config_formatter.py"];
+    assert!(
+        formatter.contains(
+            "ConfigFormatter = typing.Union[bool, typing.Dict[str, ConfigFormatterOneValue]]"
+        ),
+        "{formatter}"
+    );
+    let value = &files["src/acme/types/config_formatter_one_value.py"];
+    assert!(
+        value.contains("class ConfigFormatterOneValue(UniversalBaseModel):"),
+        "{value}"
+    );
+    assert!(
+        value.contains("environment: typing.Optional[typing.Dict[str, str]] = None"),
+        "{value}"
+    );
+}
+
+/// The `{Name}Body` rename reaches every pointer at the schema, a discriminator
+/// mapping's included, and leaves every other schema's pointers alone: a union
+/// whose mapping names the raised `NotFoundError` resolves that member through
+/// `NotFoundErrorBody` (its hoisted `data` is `NotFoundErrorBodyData`), and no
+/// `NotFoundError` model is generated beside the error class.
+#[test]
+fn a_raised_error_class_rename_follows_references_and_mappings() {
+    let files = render(
+        r##"openapi: 3.1.1
+info: { title: opencode, version: 0.0.3 }
+paths:
+  /session/{sessionID}:
+    get:
+      operationId: session.get
+      parameters: [{ name: sessionID, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Get session, content: { application/json: { schema: { $ref: '#/components/schemas/Event' } } } }
+        '404':
+          description: Not found
+          content: { application/json: { schema: { $ref: '#/components/schemas/NotFoundError' } } }
+components:
+  schemas:
+    Event:
+      oneOf:
+        - $ref: '#/components/schemas/NotFoundError'
+        - $ref: '#/components/schemas/Session'
+      discriminator:
+        propertyName: name
+        mapping:
+          NotFoundError: '#/components/schemas/NotFoundError'
+          Session: '#/components/schemas/Session'
+    NotFoundError:
+      type: object
+      properties:
+        name: { type: string, const: NotFoundError }
+        data: { type: object, properties: { message: { type: string } }, required: [message] }
+      required: [name, data]
+    Session:
+      type: object
+      properties:
+        name: { type: string, const: Session }
+        time: { $ref: '#/components/schemas/SessionTime' }
+      required: [name]
+    SessionTime:
+      type: object
+      properties: { created: { type: number } }
+"##,
+    );
+    let error = &files["src/acme/errors/not_found_error.py"];
+    assert!(
+        error.contains("from ..types.not_found_error_body import NotFoundErrorBody"),
+        "{error}"
+    );
+    assert!(!files.contains_key("src/acme/types/not_found_error.py"));
+    let event = &files["src/acme/types/event.py"];
+    assert!(event.contains("data: NotFoundErrorBodyData"), "{event}");
+    assert!(
+        event.contains("typing.Union[Event_NotFoundError, Event_Session]"),
+        "{event}"
+    );
+    let session = &files["src/acme/types/session.py"];
+    assert!(
+        session.contains("time: typing.Optional[SessionTime] = None"),
+        "{session}"
+    );
+}
+
 /// Three TrueForge shapes in one document: a package that owns endpoints *and*
 /// nests a sub-client, a one-member `oneOf` tagged by a single-valued `enum`,
 /// and an ignored operation whose body schema nothing else references.
@@ -10051,6 +10861,98 @@ components:
     let client = &files["src/acme/channels/client.py"];
     assert!(
         client.contains("                    stream_id=3,\n                    value=False,"),
+        "{client}"
+    );
+}
+
+/// A model that overrides one composed base inlines only that base, and keeps
+/// extending the base's untouched parent and its other untouched bases — the
+/// shape of the Vonage Messages API's SMS channel, which Fern generates as
+/// `class SendMessageRequestZero(ChannelOptionsSms, BaseMessageType)`.
+#[test]
+fn an_overriding_model_inlines_only_the_base_it_overrides() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Messages, version: 1.0.0 }
+paths:
+  /messages:
+    post:
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/SmsMessage' } } }
+      responses:
+        '200':
+          description: sent
+          content: { application/json: { schema: { $ref: '#/components/schemas/SmsMessage' } } }
+components:
+  schemas:
+    BaseMessageType:
+      type: object
+      required: [message_type]
+      properties:
+        message_type: { type: string }
+        to: { type: string }
+    Text:
+      allOf:
+        - $ref: '#/components/schemas/BaseMessageType'
+        - type: object
+          properties:
+            text: { type: string, description: The text of the message. }
+    ChannelOptionsSms:
+      type: object
+      properties:
+        channel: { type: string }
+    SmsMessage:
+      allOf:
+        - $ref: '#/components/schemas/Text'
+        - type: object
+          required: [text]
+          properties:
+            text: { type: string }
+        - $ref: '#/components/schemas/ChannelOptionsSms'
+"#,
+    );
+    // `Text` is inlined for the `text` it restates; its parent `BaseMessageType`
+    // is extended in its place, after the untouched `ChannelOptionsSms`.
+    let sms = &files["src/acme/types/sms_message.py"];
+    assert!(
+        sms.contains(
+            "class SmsMessage(ChannelOptionsSms, BaseMessageType):\n    text: str = pydantic.Field()"
+        ),
+        "{sms}"
+    );
+    assert!(!sms.contains("    message_type:"), "{sms}");
+    assert!(!sms.contains("    channel:"), "{sms}");
+}
+
+/// A lone `204` is the typed success and keeps its declared type rather than
+/// becoming optional: Fergus's `postDisconnect`, a lone `204` declaring
+/// `{type: object}`, returns `Dict[str, Any]` in Fern's golden.
+#[test]
+fn a_lone_204_keeps_its_declared_type() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Disconnect, version: 1.0.0 }
+paths:
+  /disconnect:
+    post:
+      operationId: postDisconnect
+      responses:
+        '204':
+          description: disconnected
+          content: { application/json: { schema: { type: object } } }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "def post_disconnect(\n        self, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> typing.Dict[str, typing.Any]:"
+        ),
+        "{client}"
+    );
+    assert!(
+        !client.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
         "{client}"
     );
 }

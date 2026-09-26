@@ -1,0 +1,330 @@
+{"candidate": "spec/json/twilio_intelligence_v3.json", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_intelligence_v3.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json", "key": "anyof-sole-member", "reached": ["src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1483:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml", "key": "anyof-sole-member", "reached": ["src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1483:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/ghes-3.1.json", "key": "anyof-sole-member", "reached": ["src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/ghes-3.1.yaml", "key": "anyof-sole-member", "reached": ["src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json", "key": "anyof-sole-member", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-allof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.json", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.yaml", "key": "anyof-allof-variant", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json", "key": "anyof-oneof-variant", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1448:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1448:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.0/ghes-3.0.json", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1438:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.0/ghes-3.0.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1438:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.json", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1483:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/dereferenced/ghes-3.1.deref.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1483:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/ghes-3.1.json", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.1/ghes-3.1.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.json", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.json", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.yaml", "key": "format-uri-template", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json", "key": "format-uri-template", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.json", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.13/ghes-3.13.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json", "key": "oneof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "json/BalancePlatformConfigurationNotification-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformConfigurationNotification-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformRelayedAuthorisationNotification-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformRelayedAuthorisationNotification-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformRelayedAuthorisationNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformService-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformService-v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformTransactionNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformTransferNotification-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/BalancePlatformTransferNotification-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v40.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v41.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v46.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v49.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v50.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v51.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v52.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v53.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v64.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v65.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v66.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v67.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v68.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v69.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v70.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v71.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/CheckoutService-v72.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/ManagementService-v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/ManagementService-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/TransferService-v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "json/TransferService-v4.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/.raw/v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v1-deprecated/v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v1-deprecated/v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-01-01.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-01-01.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-02-01.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-02-01.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-10-01.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-10-01.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-11-15.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2023-11-15.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-05-30.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-05-30.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-08-05.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-08-05.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-10-23.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-10-23.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-11-13.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2024-11-13.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2025-02-19.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2025-02-19.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-2025-03-12.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-preview.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/openapi-preview.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-aws-transit-gateway.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-aws-transit-gateway.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-lifecycle-management.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-lifecycle-management.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-regional-failover.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-regional-failover.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-sandbox-resource.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-sandbox-resource.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-stream-connection.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "openapi/v2/private/openapi-private-preview-stream-connection.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "outputs/v2-dev.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_conversations_v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_intelligence_v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_knowledge_v2.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_memory_v1.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_messaging_v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/json/twilio_voice_v3.json", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_conversations_v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_intelligence_v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_knowledge_v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_memory_v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_messaging_v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "spec/yaml/twilio_voice_v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformConfigurationNotification-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformConfigurationNotification-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformRelayedAuthorisationNotification-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformRelayedAuthorisationNotification-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformRelayedAuthorisationNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformService-v1.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformService-v2.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformTransactionNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformTransferNotification-v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/BalancePlatformTransferNotification-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v40.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v41.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v46.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v49.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v50.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v51.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v52.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v53.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v64.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v65.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v66.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v67.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v68.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v69.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v70.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v71.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/CheckoutService-v72.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/TransferService-v3.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "yaml/TransferService-v4.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.2026-03-10.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/api.github.com.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/api.github.com/dereferenced/api.github.com.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/dereferenced/ghec.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.2026-03-10.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghec/ghec.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/dereferenced/ghes-3.10.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.json", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.10/ghes-3.10.yaml", "key": "anyof-discriminated-union", "reached": ["src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\\(\\) && schema.one_of.is_none\\(\\) \\{]"], "status": "generated"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.11/ghes-3.11.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "timeout after 300s"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.json", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}
+{"candidate": "descriptions-next/ghes-3.12/ghes-3.12.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "no profile (exit -6)"}

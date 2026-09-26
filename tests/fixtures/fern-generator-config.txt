@@ -8,3 +8,4 @@ audience-filter-strict|public|true||
 client-class-name||false|AcmeClient|
 pydantic-extra-fields||false||ignore
 eos.local-extra-fields-forbid||false||forbid
+ziptax-node|v60|false||

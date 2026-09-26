@@ -17,8 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, Endpoint, EndpointPagination, ErrorClass, Field,
-    GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, Endpoint, EndpointPagination,
+    ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl,
+    TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -2066,7 +2067,7 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
         && path_object_documented(ep, types, tag_decls)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         && !matches!(&ep.request_body, Some(RequestBody::Form(form))
-            if ep.body_schema_ref
+            if ep.body_schema_shape == BodySchemaShape::Ref
                 && form.fields.iter().any(|field| field.is_file)
                 && !form.fields.iter().any(|field| field.form_content_type.is_some()))
 }
@@ -2211,10 +2212,13 @@ fn reference_modules(ir: &Ir) -> Vec<&str> {
 /// first-seen module order and reads the README's endpoints from that grouped
 /// view. Keep operations within each module in source order, but do not let an
 /// operation from a later module leapfrog one from the first module merely
-/// because their paths were interleaved.
+/// because their paths were interleaved. The root client's own operations come
+/// after every sub-client's: OpenCodeUI's `Session`-tagged pair offers no `POST`,
+/// and its README anchors on the root's first one, `global_dispose`.
 fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
     let grouped: Vec<&Endpoint> = client_tree_modules(ir)
         .into_iter()
+        .chain(std::iter::once(""))
         .flat_map(|module| {
             ir.endpoints
                 .iter()
@@ -4987,12 +4991,15 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(body)
             if !body.is_wildcard_media()
                 && !ep.body_collapses_to_type_reference
-                && (ep.body_media_has_example && ep.body_schema_dropped && ep.body_schema_ref
+                && (ep.body_media_has_example
+                    && ep.body_schema_dropped
+                    && ep.body_schema_shape == BodySchemaShape::Ref
                     || ep.reference_body_example.is_some()
                         && !ep.body_schema_is_success_response
                         && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
                     || !ep.path_params.is_empty()
+                    || !ep.query_params.is_empty()
                     || (body.content_type_header()
                         // A body schema more than one operation posts, which is
                         // neither `required: true` nor sent whole, drops the
@@ -5030,8 +5037,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                         if fields.iter().any(|field| field.spec_required))))
                         && (!ep.basic_auth
                             || !ep.body_description_missing
-                            || !ep.body_schema_ref && matches!(body, RequestBody::Inline(_)))
+                            || ep.body_schema_shape != BodySchemaShape::Ref && matches!(body, RequestBody::Inline(_)))
                         && !ep.body_codegen_named
+                        // An inline union body that neither names itself nor
+                        // declares a discriminator drops the header, however it is
+                        // documented and whatever its auth: the Vonage Messages
+                        // API's described, required `sendMessage` `oneOf`,
+                        // Flowdapt's `create_config` and Otoroshi's
+                        // `create_global_auth_module` all leave the content type to
+                        // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
+                        // and its discriminated `createTemplateNoProject` keep it.
+                        && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
                         && (!ep.body_component_ref || ep.body_schema_dropped)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
@@ -5074,7 +5090,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // (an integer enum, a `format: uri` string) rides as a
                         // single `request` argument and keeps its header.
                         && !(matches!(body, RequestBody::Inline(_))
-                            && ep.body_schema_ref
+                            && ep.body_schema_shape == BodySchemaShape::Ref
                             && !ep.body_schema_dropped
                             && ep.query_params.is_empty()
                             && ep.stream_condition.is_none()
@@ -5095,7 +5111,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && !resource_envelope)
                         && !(ep.query_params.is_empty()
                             && matches!(body, RequestBody::Inline(fields)
-                            if ep.body_schema_ref
+                            if ep.body_schema_shape == BodySchemaShape::Ref
                                 && (!ep.body_schema_dropped
                                     && ep.body_schema_metadata_missing
                                     && ep.body_schema_is_open
@@ -8082,6 +8098,18 @@ fn build_example_inner(
         && (ep.path_params.iter().any(|param| param.example.is_some())
             || ep.query_params.iter().any(|param| param.example.is_some())
             || ep.header_params.iter().any(|param| param.example.is_some()));
+    // A path parameter whose schema declares no type is one Fern's example
+    // generator cannot sample, and the endpoint is then exampled by its other
+    // writer: the parameter by its own name, and a free-form map body as one
+    // `"string"` entry of an unknown value. Measured on the one golden that
+    // declares such a parameter: Deep Search's `update_project_knowledge_graph_metadata`
+    // documents `bag_key="bag_key", request={"string": {"key": "value"}}`, while
+    // `create_project_knowledge_graph` posts the same `{type: object}` body beside
+    // a typed path parameter and documents `request={"key": "value"}`.
+    let untyped_path_parameter = ep
+        .path_params
+        .iter()
+        .any(|param| matches!(param.type_ref, TypeRef::Primitive(Prim::Any)));
     // The example call's keyword arguments, in signature order: path params,
     // required query/header params, then the request body (a single `request`, or
     // each required inlined field).
@@ -8105,9 +8133,13 @@ fn build_example_inner(
             {
                 continue;
             }
-            let v = if matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
+            let v = if matches!(
+                pp.type_ref,
+                TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Primitive(Prim::Any)
+            ) {
                 // Fern's path placeholder stays a string even for the unusual array
-                // path parameters accepted by its OpenAPI importer.
+                // path parameters accepted by its OpenAPI importer, and for an
+                // untyped one (see `untyped_path_parameter` above).
                 Example::Atom(format!("{:?}", pp.wire_name))
             } else if path_object_decl(&pp.type_ref, ctx.types, ctx.tag_decls).is_some() {
                 // An object-typed path parameter is documented two different ways
@@ -8359,6 +8391,21 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            if untyped_path_parameter
+                && body_example.is_none()
+                && s.example.is_none()
+                && is_unknown_map(&s.type_ref)
+            {
+                let pairs = vec![(
+                    "string".to_string(),
+                    ctx.value(&TypeRef::Primitive(Prim::Any), Slot::Map),
+                )];
+                v = if reference {
+                    Example::ReferenceDict(pairs)
+                } else {
+                    Example::Dict(pairs)
+                };
+            }
             // A binary download's array body is exampled with TWO synthesized
             // elements where every other endpoint's takes one. SFTPGo's
             // `streamzip` posts `{type: array, items: {type: string}}` and streams
@@ -9407,9 +9454,9 @@ mod tests {
         example_from_json, example_import_cmp, field_decl, generate, natural_cmp,
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
-        render, render_class_body, render_enum, render_type_decl, url_arg, ClientCtx, Example,
-        ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView, RenderedField,
-        RootClientView, RootModuleView, Slot,
+        render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
+        ClientCtx, Example, ExampleCtx, FieldView, Imports, ParamRow, RefLoc, ReferenceEntryView,
+        RenderedField, RootClientView, RootModuleView, Slot,
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
@@ -9982,7 +10029,7 @@ mod tests {
             body_content_type_override: None,
             body_json_media_type: None,
             basic_auth: false,
-            body_schema_ref: false,
+            body_schema_shape: BodySchemaShape::Other,
             body_schema_dropped: false,
             body_schema_shared: false,
             body_schema_metadata_missing: false,
@@ -12059,7 +12106,7 @@ mod tests {
                 reference_order: 0,
             }],
         }));
-        ep.body_schema_ref = true;
+        ep.body_schema_shape = BodySchemaShape::Ref;
         assert!(readme_endpoint_eligible(&ep, &[], &[]));
         let mut ctx = example_ctx(&types, &[], &auth);
         let form = build_documentation_example(
