@@ -576,7 +576,7 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
 | 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
-| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 364 of 1,495 files (365 when batch 14 registered it) in `unmatched` and 148 crozier-only modules declared |
+| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 312 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs) in `unmatched` and 148 crozier-only modules declared |
 
 **What the three byte-matched rows cost.** AGCO: `float` joined
 `naming::is_reserved`'s builtin set; hoisted operation-scoped types are deduped by
@@ -625,7 +625,7 @@ change has an exact set to shorten:
   carries the document's full declared property set while Fern narrows it
   (`BadRequestErrorBody` is `error` plus an optional `message` in the golden,
   against crozier's seven fields).
-- **`webflow-v2` (364 files + 148 crozier-only modules).** Two independent
+- **`webflow-v2` (312 files + 148 crozier-only modules).** Two independent
   divergences. Its `servers` carry `x-fern-server-name: Data API`, so Fern names
   the environment member `DATA_API` and threads
   `base_url=self._client_wrapper.get_environment().base` through every raw client,
