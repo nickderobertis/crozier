@@ -158,11 +158,11 @@ class SiteRow(NamedTuple):
 def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
     """`key -> (selectors, site specs, note)` from the tab-separated declaration table."""
     if not path.is_file():
-        fail(f"{path} is missing; it declares every golden row's selectors and sites")
+        fail(f"{path} is missing; it declares every golden row's selectors and sites — restore it from git (`git checkout -- {path}`)")
     lines = path.read_text(encoding="utf-8").splitlines()
     header = ["key", "selectors", "sites", "note"]
     if not lines or lines[0].split("\t") != header:
-        fail(f"{path} must start with the header {'<TAB>'.join(header)}")
+        fail(f"{path} must start with the header {'<TAB>'.join(header)}; restore that first line")
     rows: dict[str, SiteRow] = {}
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
@@ -241,13 +241,15 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     """
     match = _SITE.match(spec)
     if SITE_SEPARATOR in spec:
-        fail(f"site {spec!r} contains {SITE_SEPARATOR!r}, which separates sites in the ledger")
+        fail(f"site {spec!r} contains {SITE_SEPARATOR!r}, which separates sites in the ledger; "
+             f"rewrite its regex in {SITES_TABLE.name} without that sequence (`\\s*;\\s*` matches it)")
     if "|" in spec:
         # The spec is quoted in a markdown table cell, where a pipe — escaped or
         # not — splits the row for any reader that does not unescape it first.
         fail(f"site {spec!r} contains `|`; write `\\x7c` for a literal pipe in its regex")
     if not match:
-        fail(f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`")
+        fail(f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`; "
+             f"rewrite it in {SITES_TABLE.name} in one of those forms")
     path = repo_root / match.group("file")
     if not path.is_file():
         fail(f"site {spec!r} names {match.group('file')}, which does not exist; correct its path in {SITES_TABLE.name}")

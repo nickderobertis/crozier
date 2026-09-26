@@ -703,6 +703,28 @@ class ArmSearchStageTests(_StageScratch):
             sorted(((r["kind"], r["subject"], r["result"]) for r in records), reverse=True),
         )
 
+    def test_a_walk_reads_a_precomputed_census_and_refuses_one_of_another_shape(self) -> None:
+        census = self.scratch / "census.jsonl.gz"
+        lines = [
+            {"document": "a.yaml", "sha256_ok": True, "openapi": "3.0.3", "census": {"schema.anyOf>schema.oneOf": 2}},
+            {"document": "b.yaml", "sha256_ok": True, "openapi": "3.0.3", "census": None},
+            {"document": "c.yaml", "sha256_ok": True, "error": "TimeoutError after 60s"},
+        ]
+        with gzip.open(census, "wt", encoding="utf-8") as handle:
+            handle.writelines(json.dumps(line) + "\n" for line in lines)
+        argv = ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1",
+                "--census", str(census)]
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(argv))
+        records = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("jentic")}
+        self.assertEqual("census 2", records[("document", "a.yaml")])
+        with gzip.open(census, "wt", encoding="utf-8") as handle:
+            handle.write(json.dumps({"document": "a.yaml", "census": {"schema.anyOf>schema.oneOf": "two"}}) + "\n")
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(argv)
+        self.assertIn(f"{census}:1", str(refused.exception))
+        self.assertIn("take the walk census again", str(refused.exception))
+
     def test_render_writes_one_line_per_declared_source_and_counts_what_is_outstanding(self) -> None:
         self.walk()
         golden_reach_search.file_probes("jentic", self.KEY, [

@@ -394,8 +394,16 @@ def _precomputed(
                 row = json.loads(line)
             except json.JSONDecodeError as error:
                 fail(f"{path}:{number} is not JSON ({error.msg}); take the walk census again, or walk without --census")
-            if not isinstance(row, dict) or not isinstance(row.get("document"), str):
-                fail(f"{path}:{number} names no `document`; take the walk census again, or walk without --census")
+            census = (row.get("census") or {}) if isinstance(row, dict) else None
+            if (
+                not isinstance(row, dict)
+                or not isinstance(row.get("document"), str)
+                or not isinstance(row.get("error", ""), str)
+                or not isinstance(census, dict)
+                or not all(isinstance(n, int) for n in census.values())
+            ):
+                fail(f"{path}:{number} is not `{{document, sha256_ok, status, census}}` with a string `error` "
+                     "and a selector-count `census`; take the walk census again, or walk without --census")
             taken[row["document"]] = row
     out = []
     for row in listing:
