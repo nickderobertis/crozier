@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.81](https://github.com/nickderobertis/crozier/compare/v0.0.80...v0.0.81) - 2026-09-26
+
+### Added
+
+- *(fixtures)* widen the thin golden rows to their unreached arms ([#297](https://github.com/nickderobertis/crozier/pull/297))
+
 ## [0.0.80](https://github.com/nickderobertis/crozier/compare/v0.0.79...v0.0.80) - 2026-09-25
 
 ### Added
