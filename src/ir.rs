@@ -16393,7 +16393,11 @@ mod tests {
         );
     }
 
-    /// The three rules the merge of #297 settled so both sides' goldens match.
+    /// A one-member union collapses to its member when every member converts to
+    /// one non-`Any` type or when the members are one schema written twice; a
+    /// map member whose value is one schema beside `null` is an optional value,
+    /// not a hoisted union; and a nullability-only `allOf` member makes the model
+    /// a flat copy of every base, each read with its whole `allOf` chain.
     #[test]
     fn merged_union_map_and_nullable_rules_hold_together() {
         let (ir, _) = generate(observed_document(
