@@ -17,22 +17,30 @@ these cases drive instead is everything that decides what a cell *says*:
 * `scripts/golden-reach-search.py`'s offline readings — the predicate a
   `fixture=` row is searched with, the git blob a publisher-tree pin is checked
   against, and a result URL's quoting — over real bytes, and its `walk`, `screen`
-  and `render` stages through `main` over real documents. Its network stages go
-  through the guarded acquirer, and its `probe` stage runs the instrumented build
-  `measure` makes, so both stay outside `just check` as `measure` does; only the
-  probe's refusal of a stale build is driven here. Their committed output is
-  checked by `RankedBacklogTests`' reconciliation of every arm-search record.
+  and `render` stages through `main` over real documents. Its `query` and
+  `fetch-pins` stages run the real guarded acquirer against a loopback server.
+  Its `probe` stage runs the instrumented build `measure` makes, so it stays
+  outside `just check` as `measure` does; only its refusal of a stale build is
+  driven here. What the stages commit is checked by `RankedBacklogTests`'
+  reconciliation of every arm-search record.
 """
 
 from __future__ import annotations
 
 import argparse
+import base64
 import contextlib
 import csv
 import gzip
 import hashlib
 import importlib.util
 import io
+import os
+import threading
+import time
+import urllib.parse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from unittest import mock
 import json
 import re
 import subprocess
@@ -304,6 +312,26 @@ class ReportTests(unittest.TestCase):
         cell = self.cells()["flag-orphan"][5]
         self.assertIn("**no** golden-only witness", cell)
         self.assertIn("`dropped-doc`, which carries no committed golden", cell)
+
+    def run_sites(self, *extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--repo-root", str(self.repo), "sites", *extra],
+            capture_output=True, text=True,
+        )
+
+    def test_sites_resolves_every_declared_site_and_names_its_span(self) -> None:
+        run = self.run_sites("--verbose", "--census", str(self.measurement / "census.json"))
+        self.assertEqual(0, run.returncode, run.stderr)
+        lines = run.stdout.splitlines()
+        self.assertEqual("golden-reach: 3 site(s) across 3 row(s) resolve", lines[-1])
+        self.assertTrue(any(line.startswith("src/demo.rs::unrelated\tsrc/demo.rs:") for line in lines), lines)
+
+    def test_sites_refuses_a_row_no_registered_source_declares(self) -> None:
+        census = dict(CENSUS, rows=[r for r in CENSUS["rows"] if r["selector"] != "demo.orphan"])
+        (self.measurement / "census.json").write_text(json.dumps(census), encoding="utf-8")
+        run = self.run_sites("--census", str(self.measurement / "census.json"))
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("flag-orphan: no registered source declares any of demo.orphan", run.stderr)
 
     def test_report_is_idempotent_over_its_own_output(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)
@@ -583,11 +611,11 @@ class ArmSearchOutcomeTests(unittest.TestCase):
         self.assertIn("just golden-reach", str(refused.exception))
 
 
-class ArmSearchStageTests(unittest.TestCase):
-    """The `walk`, `render` and `probe` stages driven through `main`, over real documents.
+class _StageScratch(unittest.TestCase):
+    """A scratch evidence tree for the arm search's stages, and three pinned documents.
 
-    The evidence directories are redirected to a scratch tree; the site table, the
-    reach ledger and the census engine are the repository's own.
+    The evidence directories are redirected to it; the site table, the reach
+    ledger and the census engine are the repository's own.
     """
 
     KEY = "anyof-oneof-variant"
@@ -640,6 +668,10 @@ class ArmSearchStageTests(unittest.TestCase):
         shared = surface / "witness-search-jentic"
         shared.mkdir(parents=True)
         (shared / "acquisition-manifest.tsv").write_text("\n".join(manifest) + "\n", encoding="utf-8")
+
+
+class ArmSearchStageTests(_StageScratch):
+    """The `walk`, `screen`, `render` and `probe` stages driven through `main`."""
 
     def walk(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()) as printed:
@@ -700,6 +732,105 @@ class ArmSearchStageTests(unittest.TestCase):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(["probe", "--source", "jentic", "--key", self.KEY, "--root", str(self.root)])
         self.assertIn("re-run `just golden-reach`", str(refused.exception))
+
+
+class _Loopback(BaseHTTPRequestHandler):
+    """GitHub's REST search, contents and rate-limit routes, and its exact-commit raw route."""
+
+    COMMIT = "b" * 40
+
+    def log_message(self, *args: object) -> None:
+        pass
+
+    def do_GET(self) -> None:
+        base = f"http://127.0.0.1:{self.server.server_port}"
+        declaring = textwrap.dedent(_StageScratch.DECLARING).encode()
+        if self.path == "/rate_limit":
+            bucket = {"limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 60}
+            self.reply(200, {"resources": {"code_search": bucket, "core": bucket}})
+        elif self.path.startswith("/search/code"):
+            if "refused" in urllib.parse.unquote_plus(self.path):
+                self.reply(422, {"message": "Validation Failed"})
+            else:
+                self.reply(200, {"total_count": 2, "items": [{
+                    "repository": {"full_name": "example/api"}, "path": "openapi.yaml",
+                    "sha": golden_reach_search.git_blob(declaring),
+                    "url": f"{base}/repos/example/api/contents/openapi.yaml?ref={self.COMMIT}",
+                }]})
+        elif self.path.startswith("/repos/example/api/contents/openapi.yaml"):
+            self.reply(200, {"encoding": "base64", "content": base64.b64encode(declaring).decode()})
+        elif self.path == f"/example/api/{self.COMMIT}/fetched.yaml":
+            fetched = declaring + b"# no local copy holds these bytes\n"
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(fetched)))
+            self.end_headers()
+            self.wfile.write(fetched)
+        else:
+            self.reply(404, {"message": "Not Found"})
+
+    def reply(self, status: int, body: object) -> None:
+        data = json.dumps(body).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("X-Ratelimit-Resource", "code_search" if self.path.startswith("/search/") else "core")
+        self.end_headers()
+        self.wfile.write(data)
+
+
+class ArmSearchNetworkStageTests(_StageScratch):
+    """`query` and `fetch-pins` through the real guarded acquirer, against a loopback server."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        server = ThreadingHTTPServer(("127.0.0.1", 0), _Loopback)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        environment = mock.patch.dict(os.environ, {"CROZIER_GITHUB_API_URL": url, "GITHUB_TOKEN": "offline-test-token"})
+        environment.start()
+        self.addCleanup(environment.stop)
+        options = {"github_url": url, "sourcegraph_url": url, "raw_github_url": url,
+                   "code_search_spacing_s": 0.01, "code_search_refusal_cooldown_s": 0.01}
+        self.addCleanup(setattr, golden_reach_search, "ACQUIRER_OPTIONS", golden_reach_search.ACQUIRER_OPTIONS)
+        golden_reach_search.ACQUIRER_OPTIONS = options
+
+    def test_a_query_records_each_phrasing_s_answer_and_censuses_what_it_fetched(self) -> None:
+        queries = self.scratch / "queries.tsv"
+        queries.write_text(
+            f"key\tsource\tphrasing\n{self.KEY}\tgithub-code-search\tanyOf oneOf\n"
+            f"{self.KEY}\tgithub-code-search\trefused anyOf\n", encoding="utf-8")
+        self.addCleanup(setattr, golden_reach_search, "QUERIES", golden_reach_search.QUERIES)
+        golden_reach_search.QUERIES = queries
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["query", "--source", "github-code-search", "--key", self.KEY]))
+        rows = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("github-code-search")}
+        self.assertEqual("2", rows[("query", "anyOf oneOf")])
+        self.assertEqual("unanswered: HTTP 422 refused", rows[("query", "refused anyOf")])
+        self.assertEqual("census 1", rows[("document", f"example/api:openapi.yaml@{_Loopback.COMMIT}")])
+        self.assertIn(("wait", "github-code-search guard log rate-limit-calls.jsonl"), rows)
+
+    def test_fetch_pins_resolves_a_local_copy_fetches_a_missing_one_and_leaves_a_wrong_blob_unresolved(self) -> None:
+        fetched = textwrap.dedent(self.DECLARING).encode() + b"# no local copy holds these bytes\n"
+        pins = [
+            {"repository": "example/api", "path": "a.yaml", "commit": _Loopback.COMMIT,
+             "blob": golden_reach_search.git_blob((self.root / "a.yaml").read_bytes())},
+            {"repository": "example/api", "path": "fetched.yaml", "commit": _Loopback.COMMIT,
+             "blob": golden_reach_search.git_blob(fetched)},
+            {"repository": "example/api", "path": "gone.yaml", "commit": _Loopback.COMMIT, "blob": "0" * 40},
+        ]
+        shared = golden_reach_search.SURFACE / "witness-search-github-publisher-trees"
+        shared.mkdir(parents=True)
+        (shared / "documents.jsonl").write_text("".join(json.dumps(p) + "\n" for p in pins), encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["fetch-pins", "--root", str(self.root)]))
+        self.assertEqual("golden-reach-search: github-publisher-trees: 3 pins, 1 fetched, 1 unresolved\n",
+                         printed.getvalue())
+        listing = {row["document"]: row["sha256"] for row in golden_reach_search.pinned_listing("github-publisher-trees")}
+        self.assertEqual(hashlib.sha256((self.root / "a.yaml").read_bytes()).hexdigest(), listing["a.yaml"])
+        self.assertEqual(hashlib.sha256(fetched).hexdigest(), listing["fetched.yaml"])
+        self.assertEqual("", listing["gone.yaml"])
 
 
 class RecipeTests(unittest.TestCase):

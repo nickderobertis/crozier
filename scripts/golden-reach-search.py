@@ -87,6 +87,9 @@ QUERY_SOURCES = ("github-code-search", "sourcegraph")
 RECORD_FIELDS = ("key", "kind", "subject", "result", "file")
 WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
 FIRST_PAGE = 100
+# Keyword arguments every acquirer this script builds is given. A real search
+# leaves them empty; the offline tests point them at a loopback server.
+ACQUIRER_OPTIONS: dict[str, Any] = {}
 # Probe results are filed this many declarers at a time, so a stopped run keeps them;
 # some catalogue documents take minutes each under an instrumented build.
 PROBE_CHUNK = 8
@@ -501,7 +504,7 @@ def fetch_pins(args: argparse.Namespace) -> int:
     """
     source = "github-publisher-trees"
     github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
-    acquirer = github.Acquirer(source_dir(source), cache=CACHE / source)
+    acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
     by_sha: dict[str, Path] = {}
     by_blob: dict[str, Path] = {}
     for path in args.root.rglob("*"):
@@ -593,8 +596,17 @@ def _one_query(acquirer: Any, source: str, key: str, phrasing: str, selectors: t
             acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
                                              "outcome": "refused", "status": status})
             return None, 0
-        total = int(payload.get("total_count", 0))
-        items = payload.get("items", [])[:FIRST_PAGE]
+        total = payload.get("total_count") if isinstance(payload, dict) else None
+        items = payload.get("items") if isinstance(payload, dict) else None
+        if not isinstance(total, int) or not isinstance(items, list) or not all(
+            isinstance(item, dict) and isinstance(item.get("url"), str) for item in items
+        ):
+            new.append({"key": key, "kind": "query", "subject": phrasing,
+                        "result": "unanswered: HTTP 200 carried no `total_count` and `items` list", "file": "queries.jsonl"})
+            acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
+                                             "outcome": "malformed", "status": status})
+            return None, 0
+        items = items[:FIRST_PAGE]
         acquirer.write("queries.jsonl", {"source": source, "key": key, "query": phrasing,
                                          "outcome": "answered", "result_count": total,
                                          "retrieved": len(items)})
@@ -619,10 +631,10 @@ def query(args: argparse.Namespace) -> int:
         fail(f"{source} takes no text query; `walk` it instead")
     github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
     directory = source_dir(source)
-    acquirer = github.Acquirer(directory, cache=CACHE / source)
+    acquirer = github.Acquirer(directory, cache=CACHE / source, **ACQUIRER_OPTIONS)
     new: list[dict[str, str]] = []
     index_path = CACHE / source / "candidate-documents.json"
-    index: dict[str, str] = json.loads(index_path.read_text()) if index_path.is_file() else {}
+    index = candidate_index(source)
     for key in args.key:
         selectors = selectors_of(key)
         for phrasing in phrasings(key, source):
@@ -675,6 +687,20 @@ def query(args: argparse.Namespace) -> int:
     return 0
 
 
+def candidate_index(source: str) -> dict[str, str]:
+    """A query source's cache index: each fetched candidate to its cached document's name."""
+    path = CACHE / source / "candidate-documents.json"
+    if not path.is_file():
+        return {}
+    try:
+        index = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        fail(f"{path} is not JSON ({error}); delete it and re-run `query` for {source}")
+    if not isinstance(index, dict) or not all(isinstance(v, str) for v in index.values()):
+        fail(f"{path} is not a map of candidates to cached document names; delete it and re-run `query` for {source}")
+    return index
+
+
 def _dedupe(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     seen, out = set(), []
     for row in rows:
@@ -710,8 +736,7 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
                 fail(f"{source} is a walk; pass --root with its local copy")
             out.append((row["subject"], by_document.get(row["subject"], root / row["subject"])))
         else:
-            index_path = CACHE / source / "candidate-documents.json"
-            index = json.loads(index_path.read_text()) if index_path.is_file() else {}
+            index = candidate_index(source)
             if row["subject"] in index:
                 out.append((row["subject"], CACHE / source / "documents" / index[row["subject"]]))
     return out
