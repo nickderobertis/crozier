@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "paloalto-cspm-search-manager",
+  "corpus_spec_ref": "4e989cdd4bbda669dc73c0d3f5db90bb4989bee3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/SearchManager.json"
+}

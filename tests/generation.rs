@@ -2311,7 +2311,7 @@ components:
 
 /// Ignore extension (issue #78): a kept op, a `x-fern-ignore` op, and a
 /// `x-crozier-ignore` op, each referencing an otherwise-unshared type. Both ignore
-/// spellings must drop the op *and* its exclusive type.
+/// spellings drop the op and keep its type, as Fern's TrueForge golden does.
 const IGNORE_SPEC: &str = r##"
 openapi: 3.0.1
 info:
@@ -2354,7 +2354,7 @@ components:
 "##;
 
 #[test]
-fn ignore_extension_drops_ops_and_their_exclusive_types_through_the_pipeline() {
+fn ignore_extension_drops_ops_and_keeps_their_types_through_the_pipeline() {
     let files = render(IGNORE_SPEC);
     // The kept op's client and type are generated.
     assert!(files.contains_key("src/acme/keep/client.py"), "kept op");
@@ -2368,14 +2368,14 @@ fn ignore_extension_drops_ops_and_their_exclusive_types_through_the_pipeline() {
         !files.contains_key("src/acme/crozier/client.py"),
         "x-crozier-ignore op dropped"
     );
-    // ...and the type each ignored op was the sole reference to.
+    // ...but keep the type each ignored op was the sole reference to.
     assert!(
-        !files.contains_key("src/acme/types/only_fern.py"),
-        "x-fern-ignore op's exclusive type pruned"
+        files.contains_key("src/acme/types/only_fern.py"),
+        "x-fern-ignore op's exclusive type kept"
     );
     assert!(
-        !files.contains_key("src/acme/types/only_crozier.py"),
-        "x-crozier-ignore op's exclusive type pruned"
+        files.contains_key("src/acme/types/only_crozier.py"),
+        "x-crozier-ignore op's exclusive type kept"
     );
 }
 
@@ -4540,16 +4540,17 @@ paths:
 
 #[test]
 fn a_yaml_timestamp_example_is_no_example_for_a_plain_string_field() {
-    let quoted = render(
-        r##"openapi: 3.0.3
-info: { title: Ranges, version: 1.0.0 }
+    let spec = |from: &str| {
+        format!(
+            r##"openapi: 3.0.3
+info: {{ title: Ranges, version: 1.0.0 }}
 paths:
-  /ranges/{id}:
+  /ranges/{{id}}:
     put:
       operationId: ranges_replace
       tags: [Ranges]
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
+        - {{ name: id, in: path, required: true, schema: {{ type: string }} }}
       requestBody:
         content:
           application/json:
@@ -4557,22 +4558,33 @@ paths:
               type: object
               required: [range]
               example:
-                range: { from: "2022-01-23T19:00:00.000Z", label: "winter" }
+                range: {{ from: {from}, label: "winter" }}
               properties:
                 range:
                   type: object
                   required: [from, label]
                   properties:
-                    from: { type: string }
-                    label: { type: string }
-      responses: { '204': { description: OK } }
-"##,
-    );
-    let client = &quoted["src/acme/ranges/client.py"];
-    // The timestamp is a date to a YAML reader, so it is no string example …
+                    from: {{ type: string }}
+                    label: {{ type: string }}
+      responses: {{ '204': {{ description: OK }} }}
+"##
+        )
+    };
+    // Unquoted, the timestamp is a date to a YAML reader (VTEX's `dateRange`), so
+    // it is no string example …
+    let unquoted = render(&spec("2022-01-23T19:00:00.000Z"));
+    let client = &unquoted["src/acme/ranges/client.py"];
     assert!(client.contains(r#"from_="from","#), "{client}");
     // … while the plain string beside it still is.
     assert!(client.contains(r#"label="winter","#), "{client}");
+    // Quoted, it is a string to every YAML reader: Zulip quotes
+    // `"1909-04-05"` inside a flow mapping, and its golden keeps it.
+    let quoted = render(&spec("\"2022-01-23T19:00:00.000Z\""));
+    let client = &quoted["src/acme/ranges/client.py"];
+    assert!(
+        client.contains(r#"from_="2022-01-23T19:00:00.000Z","#),
+        "{client}"
+    );
 }
 
 #[test]
@@ -6004,8 +6016,10 @@ components:
         raw.contains("\"content-type\": \"application/ndjson\""),
         "{raw}"
     );
+    // Fern 5.20.0, probed with this document's `/vendor` operation, sends a
+    // vendor JSON body's own media type as its `content-type`.
     assert!(
-        !raw.contains("\"content-type\": \"application/vnd.acme+json\""),
+        raw.contains("\"content-type\": \"application/vnd.acme+json\""),
         "{raw}"
     );
 }
@@ -7393,6 +7407,10 @@ components:
               required: [name]
               properties:
                 name: { type: string }
+        - type: object
+          required: [type]
+          properties:
+            type: { type: string, const: image }
 "##,
     );
     let client = &files["src/acme/client.py"];
@@ -9577,5 +9595,1273 @@ components:
     assert!(
         session.contains("time: typing.Optional[SessionTime] = None"),
         "{session}"
+    );
+}
+
+/// Three TrueForge shapes in one document: a package that owns endpoints *and*
+/// nests a sub-client, a one-member `oneOf` tagged by a single-valued `enum`,
+/// and an ignored operation whose body schema nothing else references.
+#[test]
+fn a_nesting_package_with_its_own_body_orders_and_spaces_like_trueforge() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Forge, version: 1.0.0 }
+paths:
+  /internal/permissions:
+    post:
+      x-fern-sdk-group-name: [internal]
+      x-fern-sdk-method-name: grant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Manifest" }
+      responses: { "204": { description: "" } }
+  /internal/metrics:
+    get:
+      x-fern-sdk-group-name: [internal, metrics]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /agents:
+    get:
+      x-fern-sdk-group-name: [agents]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /catalogs/skills:
+    get:
+      x-fern-sdk-group-name: [catalogs, skills]
+      x-fern-sdk-method-name: list
+      responses: { "204": { description: "" } }
+  /internal/import:
+    post:
+      x-fern-ignore: true
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ImportRequest" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    Manifest:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [type]
+          properties:
+            type: { type: string, enum: [parallel], description: Parallel provider. }
+            note: { type: string }
+    ImportRequest:
+      type: object
+      properties: { tenant: { type: string } }
+"##,
+    );
+    // The one-member union is its member's own model, tagged by a plain enum.
+    let manifest = &files["src/acme/types/manifest.py"];
+    assert!(
+        manifest.contains("class Manifest(UniversalBaseModel):"),
+        "{manifest}"
+    );
+    assert!(files.contains_key("src/acme/types/manifest_type.py"));
+    // The ignored operation's schema stays in the type layer.
+    assert!(files.contains_key("src/acme/types/import_request.py"));
+    // `OMIT` follows the `TYPE_CHECKING` block after one blank line.
+    let internal = &files["src/acme/internal/client.py"];
+    assert!(
+        internal.contains("MetricsClient\n\nOMIT = typing.cast(typing.Any, ...)"),
+        "{internal}"
+    );
+    // Nested sub-clients follow every package that owns endpoints, by parent name.
+    let reference = &files["reference.md"];
+    let order: Vec<usize> = [
+        "## Internal\n",
+        "## Agents\n",
+        "## Catalogs Skills\n",
+        "## Internal Metrics\n",
+    ]
+    .iter()
+    .map(|heading| {
+        reference
+            .find(heading)
+            .unwrap_or_else(|| panic!("{heading}{reference}"))
+    })
+    .collect();
+    assert!(
+        order.windows(2).all(|pair| pair[0] < pair[1]),
+        "{reference}"
+    );
+}
+
+/// The Fergus shapes, each the way Fern 5.20.0 generates it.
+#[test]
+fn fergus_shaped_compositions_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Fergus, version: 1.0.0 }
+paths:
+  /customers:
+    get:
+      operationId: getCustomers
+      tags: [customers]
+      description: "Lists customers.\n    <ul>\n      <li>One. \n    "
+      parameters:
+        - in: query
+          name: sortOrder
+          schema:
+            anyOf:
+              - { type: string, enum: [asc] }
+              - { type: string, enum: [desc] }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+  /enquiries:
+    post:
+      operationId: postEnquiries
+      tags: [enquiries]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - type: object
+                  required: [name]
+                  properties:
+                    name: { type: string }
+                    city: { type: string }
+                - type: object
+                  required: [city]
+                  properties:
+                    city: { type: string }
+      responses: { "204": { description: "" } }
+  /contacts:
+    post:
+      operationId: postContacts
+      tags: [contacts]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContactPayload" }
+      responses: { "204": { description: "" } }
+components:
+  schemas:
+    ContactPayload:
+      type: object
+      allOf:
+        - allOf:
+            - type: object
+              required: [firstName]
+              properties: { firstName: { type: string } }
+            - type: object
+              properties: { isMain: { type: boolean } }
+        - type: object
+          required: [email]
+          properties: { email: { type: string } }
+    Customer:
+      type: object
+      properties:
+        dueDays:
+          anyOf:
+            - description: Days or a keyword.
+              anyOf: [{ type: number }, { type: string }]
+            - { type: "null" }
+        contact:
+          anyOf:
+            - type: object
+              properties: { firstName: { type: string } }
+            - { type: "null" }
+        sections:
+          anyOf:
+            - type: array
+              items:
+                type: object
+                properties: { id: { type: number } }
+            - { type: "null" }
+        sectionIds:
+          anyOf:
+            - { type: array, items: { type: number } }
+            - type: array
+              items:
+                type: object
+                required: [value]
+                properties: { value: { type: number } }
+        summary:
+          anyOf:
+            - type: object
+              properties:
+                jobId: { type: number }
+                quoteSummary: { type: object, properties: { total: { type: number } } }
+            - type: object
+              properties:
+                jobId: { type: number }
+"##,
+    );
+    // An enum-only composition on a query parameter is a tag-local enum.
+    assert!(files.contains_key("src/acme/customers/types/get_customers_request_sort_order.py"));
+    let customer = &files["src/acme/types/customer.py"];
+    // The lone composition beside `null` is the alias itself, documented by it.
+    assert!(files["src/acme/types/customer_due_days.py"].contains("typing.Union[float, str]"));
+    assert!(customer.contains("Days or a keyword."), "{customer}");
+    // An inline object beside `null` is a model named for the property, and so
+    // is an inline array element beside `null`.
+    assert!(
+        customer.contains("typing.Optional[CustomerContact]"),
+        "{customer}"
+    );
+    assert!(
+        customer.contains("typing.Optional[typing.List[CustomerSectionsItem]]"),
+        "{customer}"
+    );
+    // An array-of-objects variant is a list of a variant-named model.
+    assert!(files["src/acme/types/customer_section_ids.py"]
+        .contains("typing.List[CustomerSectionIdsOneItem]"));
+    // Variant names follow Fern's unique-subtype rule.
+    let summary = &files["src/acme/types/customer_summary.py"];
+    assert!(
+        summary.contains("CustomerSummaryQuoteSummary, CustomerSummaryOne"),
+        "{summary}"
+    );
+    // A nested `allOf` flattens into one body, and an inline `allOf` body merges
+    // its members, prefixing the property two of them declare.
+    let contacts = &files["src/acme/contacts/raw_client.py"];
+    assert!(
+        contacts.contains("first_name: str,") && contacts.contains("is_main:"),
+        "{contacts}"
+    );
+    assert!(
+        contacts.contains("\"content-type\": \"application/json\""),
+        "{contacts}"
+    );
+    let enquiries = &files["src/acme/enquiries/raw_client.py"];
+    assert!(
+        enquiries.contains("post_enquiries_request_city: str,"),
+        "{enquiries}"
+    );
+    assert_eq!(enquiries.matches("\"city\":").count(), 2, "{enquiries}");
+    // A trailing indentation-only line is a blank docstring line of its own.
+    let customers = &files["src/acme/customers/raw_client.py"];
+    assert!(
+        customers.contains("<li>One.\n\n\n        Parameters"),
+        "{customers}"
+    );
+}
+
+/// The Groupe PSA shapes, each the way Fern 5.20.0 generates it.
+#[test]
+fn groupe_psa_shaped_documents_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Psa, version: 1.0.0 }
+paths:
+  /vehicles/{vid}:
+    get:
+      operationId: getVehicle
+      tags: [vehicles]
+      parameters:
+        - { in: path, name: vid, required: true, schema: { type: string } }
+        - { in: query, name: extension, schema: { $ref: "#/components/schemas/ExtensionType" } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { allOf: [{ $ref: "#/components/schemas/Vehicle" }] }
+  /callbacks:
+    post:
+      operationId: postCallback
+      tags: [remote]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoteSubscribe" }
+      responses: { "200": { description: ok } }
+  /callbacks/{cbid}:
+    put:
+      operationId: putCallback
+      tags: [remote]
+      parameters:
+        - { in: path, name: cbid, required: true, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RemoteSubscribe" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    ExtensionType:
+      type: array
+      items: { type: string, enum: [odometer, fuel] }
+    Vehicle:
+      type: object
+      description: "\nA vehicle.\n \n"
+      required: [true]
+      properties:
+        "true": { type: boolean }
+        accr: { type: string, enum: [On, false] }
+        position: { allOf: [{ $ref: "#/components/schemas/Position" }, { description: Lost. }] }
+    Position:
+      allOf:
+        - type: object
+          title: Position
+          properties: { lat: { type: number } }
+    Telemetry:
+      allOf:
+        - { description: Telemetry data. }
+        - { properties: { speed: { type: number } } }
+    Alarm:
+      type: object
+      properties: { status: { type: string } }
+    StatusAlarm:
+      allOf:
+        - { $ref: "#/components/schemas/Alarm" }
+        - { description: The current alarm. }
+    RemoteRef:
+      type: object
+      properties: { id: { type: string } }
+    RemoteAction:
+      allOf:
+        - { $ref: "#/components/schemas/RemoteRef" }
+        - type: object
+          properties:
+            id: { type: string }
+            label: { type: string }
+    Program:
+      type: object
+      properties:
+        occurence:
+          type: object
+          required: [day]
+          properties: { day: { type: array, items: { type: string } } }
+    Entry:
+      allOf:
+        - { $ref: "#/components/schemas/Program" }
+        - properties:
+            occurence:
+              type: object
+              properties:
+                day: { type: array, items: { type: string } }
+                week: { type: string }
+    Subscribe:
+      type: object
+      required: [callback]
+      properties:
+        callback: { type: object, properties: { url: { type: string } } }
+    RemoteSubscribe:
+      allOf:
+        - { $ref: "#/components/schemas/Subscribe" }
+        - type: object
+          required: [kinds]
+          properties:
+            kinds: { type: array, items: { type: string, enum: [horn, lights] } }
+            callback:
+              type: object
+              properties:
+                hook: { allOf: [{ $ref: "#/components/schemas/Alarm" }, { properties: {} }] }
+"##,
+    );
+    let vehicle = &files["src/acme/types/vehicle.py"];
+    // A non-string `required` entry requires nothing; a mixed-kind enum is `str`.
+    assert!(
+        vehicle.contains("true: typing.Optional[bool] = None"),
+        "{vehicle}"
+    );
+    assert!(
+        vehicle.contains("accr: typing.Optional[str] = None"),
+        "{vehicle}"
+    );
+    // An opening line break and an indentation-only last line both survive.
+    assert!(
+        vehicle.contains("\"\"\"\n\n    A vehicle.\n\n    \"\"\""),
+        "{vehicle}"
+    );
+    // A target wrapping one `allOf` element loses the annotation's docs.
+    assert!(!vehicle.contains("Lost."), "{vehicle}");
+    assert!(!files["src/acme/types/vehicle_position.py"].contains("\"\"\""));
+    // A short-circuited component keeps the merged description.
+    assert!(files["src/acme/types/telemetry.py"].contains("Telemetry data."));
+    // An annotated component `$ref` is a flat copy, not a subclass.
+    let status_alarm = &files["src/acme/types/status_alarm.py"];
+    assert!(
+        status_alarm.contains("class StatusAlarm(UniversalBaseModel):"),
+        "{status_alarm}"
+    );
+    // An optional restatement of a base property flattens rather than extends.
+    assert!(files["src/acme/types/remote_action.py"]
+        .contains("class RemoteAction(UniversalBaseModel):"));
+    // A restatement takes the base's `required` with it.
+    let occurence = &files["src/acme/types/entry_occurence.py"];
+    assert!(occurence.contains("day: typing.List[str]\n"), "{occurence}");
+    // An array component's enum element is a class of its own, and a query
+    // `$ref` to it takes the allow-multiple shorthand.
+    assert!(files.contains_key("src/acme/types/extension_type_item.py"));
+    let vehicles = &files["src/acme/vehicles/raw_client.py"];
+    assert!(
+        vehicles.contains("typing.Union[ExtensionTypeItem, typing.Sequence[ExtensionTypeItem]]"),
+        "{vehicles}"
+    );
+    // A lone-`allOf` response is its `$ref`.
+    assert!(vehicles.contains("HttpResponse[Vehicle]"), "{vehicles}");
+    // Fern's importer gives up on this body, so its fallback lists two items.
+    let remote = &files["src/acme/remote/client.py"];
+    assert!(
+        remote.contains("kinds=[RemoteSubscribeKindsItem.HORN, RemoteSubscribeKindsItem.HORN],"),
+        "{remote}"
+    );
+}
+
+/// The Timely shapes: an empty-object union member and a property extending a
+/// `$ref` with properties of its own.
+#[test]
+fn timely_shaped_objects_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Timely, version: 1.0.0 }
+paths: {}
+components:
+  schemas:
+    State:
+      type: object
+      properties: { id: { type: integer } }
+    Project:
+      type: object
+      properties:
+        cost:
+          description: A cost or an empty object.
+          anyOf:
+            - type: object
+              required: [amount]
+              properties: { amount: { type: number } }
+            - { type: object, properties: {} }
+        state:
+          type: object
+          description: Workflow state.
+          allOf: [{ $ref: "#/components/schemas/State" }]
+          properties:
+            name: { type: string }
+"##,
+    );
+    assert!(files["src/acme/types/project_cost.py"].contains("ProjectCostOne"));
+    assert!(files["src/acme/types/project_cost_one.py"]
+        .contains("class ProjectCostOne(UniversalBaseModel):"));
+    let project = &files["src/acme/types/project.py"];
+    assert!(
+        project.contains("state: typing.Optional[ProjectState]"),
+        "{project}"
+    );
+    assert!(files["src/acme/types/project_state.py"].contains("Workflow state."));
+}
+
+/// The NextGen shapes: a Postman-exported URL as schema name and operationId, an
+/// untyped request body, and a bare string body with a schema example.
+#[test]
+fn postman_exported_names_and_untyped_bodies_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: NextGen, version: 1.0.0 }
+paths:
+  /persons/{personId}/allergies:
+    post:
+      tags: [Allergies]
+      operationId: "{{baseUrl}}/persons/:personId/allergies"
+      parameters:
+        - { in: path, name: personId, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/%7B%7BbaseUrl%7D%7D~1persons~1%3ApersonId~1allergiesRequest" }
+      responses: { "200": { description: ok } }
+  /persons/{personId}/documents:
+    post:
+      tags: [Documents]
+      operationId: "{{baseUrl}}/persons/:personId/documents"
+      parameters:
+        - { in: path, name: personId, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: string, example: "<string>" }
+      responses: { "200": { description: ok } }
+components:
+  schemas:
+    "{{baseUrl}}/persons/:personId-Request":
+      type: object
+      properties: { name: { type: string } }
+"##,
+    );
+    assert!(files.contains_key("src/acme/types/base_url_persons_person_id_request.py"));
+    let allergies = &files["src/acme/allergies/client.py"];
+    assert!(
+        allergies.contains("def base_url_persons_person_id_allergies("),
+        "{allergies}"
+    );
+    assert!(allergies.contains("request: typing.Any,"), "{allergies}");
+    let documents = &files["src/acme/documents/client.py"];
+    assert!(documents.contains("request=\"<string>\","), "{documents}");
+    // The untyped body's placeholder stays on one line in the README.
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    request={\"key\": \"value\"},\n"),
+        "{readme}"
+    );
+}
+
+/// The Auto Agent Protocol shapes: `$defs` pointers, a presence-constraint
+/// `anyOf`, a narrowing restatement, and a one-pair dict argument in the README.
+#[test]
+fn auto_agent_protocol_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Aap, version: 1.0.0 }
+paths:
+  /message:
+    post:
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Part" }
+            example: { data: { type: "dealer.information.request" } }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Detail" }
+components:
+  schemas:
+    Part:
+      type: object
+      required: [data]
+      properties:
+        data: { type: object, additionalProperties: true }
+    Dealer:
+      type: object
+      properties:
+        rooftops: { type: array, items: { $ref: "#/components/schemas/Dealer/$defs/rooftop" } }
+        bodies:
+          $ref: "#/components/schemas/Dealer/$defs/term"
+          description: Dropped with the pointer.
+    Customer:
+      type: object
+      properties:
+        contact: { type: string, enum: [email, phone] }
+      anyOf: [{ required: [email] }, { required: [phone] }]
+    Vehicle:
+      type: object
+      properties:
+        condition: { type: string, enum: [new, used, fair], description: Combined vocabulary. }
+    Detail:
+      type: object
+      properties:
+        data:
+          allOf:
+            - { $ref: "#/components/schemas/Vehicle" }
+            - { type: object, properties: { condition: { enum: [new, used] } } }
+"##,
+    );
+    let dealer = &files["src/acme/types/dealer.py"];
+    assert!(
+        dealer.contains("rooftops: typing.Optional[typing.List[typing.Any]] = None"),
+        "{dealer}"
+    );
+    assert!(!dealer.contains("Dropped with the pointer."), "{dealer}");
+    assert!(files["src/acme/types/customer.py"].contains("Customer = typing.Union[typing.Any]"));
+    assert!(files.contains_key("src/acme/types/customer_contact.py"));
+    assert!(files["src/acme/types/detail_data_condition.py"].contains("Combined vocabulary."));
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    data={\n        \"type\": \"dealer.information.request\"\n    },"),
+        "{readme}"
+    );
+}
+
+/// Skool's `GET …/comments/` answers `$ref: SuccessResponse`, a component the
+/// document never declares. Fern types the body `typing.Any` and guards an empty
+/// response, where a written `{}` success schema in a 3.0 document is typed the
+/// same but left unguarded.
+#[test]
+fn an_undeclared_success_component_guards_the_empty_body_like_skool() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Skool, version: 1.0.0 }
+paths:
+  /comments:
+    get:
+      operationId: listComments
+      tags: [posts]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessResponse" }
+  /likes:
+    get:
+      operationId: listLikes
+      tags: [posts]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/posts/raw_client.py"];
+    let comments = &raw[raw.find("def list_comments").expect(raw)..];
+    let comments = &comments[..comments.find("def list_likes").expect(raw)];
+    assert!(
+        comments.contains("if _response is None or not _response.text.strip():"),
+        "{raw}"
+    );
+    assert!(comments.contains("typing.Any"), "{raw}");
+    let likes = &raw[raw.find("def list_likes").expect(raw)..];
+    let likes = &likes[..likes.find("class AsyncRawPostsClient").expect(raw)];
+    assert!(!likes.contains("_response.text.strip()"), "{raw}");
+}
+
+/// Spendesk's `request_access_token` posts a bare `type: object` and answers a
+/// `$ref` to a component the document never declares. Fern's importer builds no
+/// example for such an operation, and its IR fallback keys the map-to-unknown
+/// body by the key type's sample.
+#[test]
+fn an_undeclared_success_component_falls_back_to_ferns_map_example_like_spendesk() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Spendesk, version: 1.0.0 }
+paths:
+  /oauth/token:
+    post:
+      operationId: requestAccessToken
+      tags: [authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiResponse" }
+components:
+  schemas:
+    TokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+"##,
+    );
+    let client = &files["src/acme/authentication/client.py"];
+    assert!(
+        client.contains("request={\"string\": {\"key\": \"value\"}},"),
+        "{client}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("    request={\n        \"string\": {\"key\": \"value\"}\n    },"),
+        "{reference}"
+    );
+}
+
+/// Billie Direct lists a `Production` and a `Sandbox` server. Fern names both,
+/// so `environment.py` carries two members and the root client defaults to the
+/// first.
+#[test]
+fn production_and_sandbox_servers_are_both_environments_like_billie() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Billie, version: 2.0.0 }
+servers:
+  - { url: "https://paella.billie.io/api/v2", description: Production }
+  - { url: "https://paella-sandbox.billie.io/api/v2", description: Sandbox }
+paths:
+  /orders:
+    get:
+      operationId: listOrders
+      responses:
+        "200": { description: ok }
+"##,
+    );
+    let environment = &files["src/acme/environment.py"];
+    assert!(
+        environment.contains(
+            "    PRODUCTION = \"https://paella.billie.io/api/v2\"\n    SANDBOX = \"https://paella-sandbox.billie.io/api/v2\"\n"
+        ),
+        "{environment}"
+    );
+    assert!(files["src/acme/client.py"].contains("AcmeApiEnvironment.PRODUCTION"));
+}
+
+/// Outreach posts its `$ref` object bodies only under `application/vnd.api+json`.
+/// Fern flattens each body into arguments, as it does a JSON one, and its header
+/// names the vendor media type rather than `application/json`.
+#[test]
+fn a_vendor_json_body_sends_its_own_media_type_like_outreach() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Outreach, version: 2.0.0 }
+paths:
+  /accounts/{id}:
+    patch:
+      operationId: updateAccount
+      tags: [accounts]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema: { $ref: "#/components/schemas/AccountUpdateRequest" }
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    AccountUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+"##,
+    );
+    let raw = &files["src/acme/accounts/raw_client.py"];
+    assert!(
+        raw.contains("\"content-type\": \"application/vnd.api+json\","),
+        "{raw}"
+    );
+    assert!(
+        !raw.contains("\"content-type\": \"application/json\""),
+        "{raw}"
+    );
+    assert!(files["src/acme/accounts/client.py"].contains("name: typing.Optional[str] = OMIT,"));
+}
+
+/// Tally's shapes: a `discriminator` that maps nothing over variants whose own
+/// one-value tags name the union, enum values whose names collide, and an inline
+/// response that restates an `allOf` parent's enum property as a plain string.
+#[test]
+fn tally_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Tally, version: 1.0.0 }
+paths:
+  /forms:
+    get:
+      operationId: listForms
+      tags: [forms]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Block" } }
+  /users/me:
+    get:
+      operationId: getCurrentUser
+      tags: [users]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf: [{ $ref: "#/components/schemas/User" }]
+                properties:
+                  subscriptionPlan: { type: string }
+components:
+  schemas:
+    Block:
+      oneOf:
+        - { $ref: "#/components/schemas/TextBlock" }
+        - { $ref: "#/components/schemas/EmbedBlock" }
+      discriminator: { propertyName: type }
+    TextBlock:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, enum: [TEXT] }
+        text: { type: string }
+    EmbedBlock:
+      type: object
+      required: [type, kind]
+      properties:
+        type: { type: string, enum: [EMBED] }
+        kind: { type: string, enum: [video, image, video/*, image/*] }
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        subscriptionPlan: { type: string, enum: [FREE, PRO] }
+"##,
+    );
+    let text = &files["src/acme/types/text_block.py"];
+    assert!(!text.contains("\n    type:"), "{text}");
+    let kind = &files["src/acme/types/embed_block_kind.py"];
+    assert!(
+        kind.contains("    VIDEO = \"video\"\n    IMAGE = \"image\"\n"),
+        "{kind}"
+    );
+    assert!(
+        !kind.contains("video/*") && !kind.contains("image/*"),
+        "{kind}"
+    );
+    let me = &files["src/acme/users/types/get_current_user_response.py"];
+    assert!(
+        me.contains("class GetCurrentUserResponse(UniversalBaseModel):"),
+        "{me}"
+    );
+    let plan = me.find("subscription_plan:").expect(me);
+    let id = me.find("    id: typing.Optional[str] = None").expect(me);
+    assert!(plan < id, "{me}");
+    assert!(!me.contains("UserSubscriptionPlan"), "{me}");
+}
+
+/// Cradl's union shapes:
+/// - a list of lists of inline objects names its leaf one `Item` per level;
+/// - a `$ref` member's sibling `nullable` is not read;
+/// - a property's `nullable` array member keeps its `Optional`;
+/// - a `nullable` closed empty object member is an optional map.
+#[test]
+fn cradl_union_members_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Cradl, version: 1.0.0 }
+paths:
+  /predictions:
+    get:
+      operationId: listPredictions
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Prediction" }
+components:
+  schemas:
+    Prediction:
+      type: object
+      required: [predictions, truth]
+      properties:
+        truth:
+          anyOf:
+            - { $ref: "#/components/schemas/GroundTruthList", nullable: true }
+            - { type: string }
+        predictions:
+          anyOf:
+            - type: array
+              nullable: true
+              items:
+                anyOf:
+                  - type: object
+                    additionalProperties: false
+                    required: [label]
+                    properties: { label: { type: string } }
+                  - type: object
+                    additionalProperties: false
+                    required: [value]
+                    properties: { value: { type: string } }
+            - { type: object, additionalProperties: false, nullable: true }
+    GroundTruthList:
+      anyOf:
+        - type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [label]
+            properties: { label: { type: string } }
+        - type: array
+          items:
+            type: array
+            items:
+              type: object
+              required: [value]
+              properties: { value: { type: string } }
+"##,
+    );
+    let predictions = &files["src/acme/types/prediction_predictions.py"];
+    assert!(
+        predictions.contains("typing.Optional[typing.List[PredictionPredictionsZeroItem]]"),
+        "{predictions}"
+    );
+    assert!(
+        predictions.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
+        "{predictions}"
+    );
+    let truth = &files["src/acme/types/prediction_truth.py"];
+    assert!(
+        truth.contains("typing.Union[GroundTruthList, str]"),
+        "{truth}"
+    );
+    assert!(files.contains_key("src/acme/types/ground_truth_list_one_item_item.py"));
+}
+
+/// Zulip's shapes, each checked against its Fern 5.20.0 golden (corpus row 164).
+#[test]
+fn zulip_shapes_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Chat, version: 1.0.0 }
+paths:
+  /events:
+    get:
+      operationId: getEvents
+      tags: [events]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: "#/components/schemas/JsonSuccessBase" }
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      events:
+                        type: array
+                        items:
+                          oneOf:
+                            - type: object
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  allOf:
+                                    - { $ref: "#/components/schemas/EventTypeSchema" }
+                                    - { enum: [alert_words] }
+                                alert_words: { type: array, items: { type: string } }
+                            - type: object
+                              additionalProperties: false
+                              properties:
+                                type:
+                                  allOf:
+                                    - { $ref: "#/components/schemas/EventTypeSchema" }
+                                    - { enum: [heartbeat] }
+                      user_status:
+                        type: object
+                        additionalProperties:
+                          allOf:
+                            - { description: A user's status. }
+                            - { $ref: "#/components/schemas/UserStatus" }
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - { $ref: "#/components/schemas/CodedError" }
+                      - { description: The queue is gone. }
+                  - allOf:
+                      - { $ref: "#/components/schemas/CodedError" }
+                      - { description: The queue is stale. }
+        "429":
+          description: slow down
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/RateLimitedError" }
+  /register:
+    post:
+      operationId: registerQueue
+      tags: [events]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [anchor]
+              properties:
+                narrow:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        additionalProperties: false
+                        required: [operator]
+                        properties:
+                          operator: { type: string }
+                          negated: { type: boolean }
+                      - { type: array, items: { type: string } }
+                idle_queue_timeout:
+                  oneOf:
+                    - { type: integer }
+                    - { type: string, enum: [mobile] }
+                anchor:
+                  allOf:
+                    - { $ref: "#/components/schemas/Anchor" }
+                    - { description: Where to start., example: "43" }
+            encoding:
+              narrow: { contentType: application/json }
+      responses:
+        "400":
+          description: bad
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/InvalidApiKeyError" }
+                  - { $ref: "#/components/schemas/RateLimitedError" }
+  /views/{fragment}:
+    patch:
+      operationId: editView
+      tags: [views]
+      parameters:
+        - { name: fragment, in: path, required: true, schema: { type: string }, example: narrow/is/alerted }
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                is_pinned: { type: boolean }
+                name: { type: string }
+              anyOf:
+                - { required: [is_pinned] }
+                - { required: [name] }
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    JsonSuccessBase:
+      type: object
+      properties:
+        result: { type: string }
+    EventTypeSchema: { type: string, description: The event's type. }
+    Anchor: { type: string }
+    UserStatus:
+      type: object
+      properties:
+        away: { type: boolean }
+    ProfileData: { type: object, description: Free-form data., example: { python: { text: Python } } }
+    CodedErrorBase:
+      allOf:
+        - { $ref: "#/components/schemas/JsonResponseBase" }
+        - required: [code]
+          properties:
+            code: { type: string, description: A string that identifies the error. }
+    JsonResponseBase:
+      type: object
+      properties:
+        result: { type: string }
+    CodedError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedErrorBase" }
+        - additionalProperties: false
+          properties:
+            result: {}
+            code: {}
+    InvalidApiKeyError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedError" }
+        - { description: The API key is invalid. }
+    RateLimitedError:
+      allOf:
+        - { $ref: "#/components/schemas/CodedError" }
+        - { description: Too many requests. }
+"##,
+    );
+    // An `allOf` narrowing a string `$ref` to one value is an enum documented by
+    // the reference, and the field keeps that description.
+    let alert_type =
+        &files["src/acme/events/types/get_events_response_events_item_alert_words_type.py"];
+    assert!(
+        alert_type.contains("class GetEventsResponseEventsItemAlertWordsType(enum.StrEnum):"),
+        "{alert_type}"
+    );
+    assert!(alert_type.contains("The event's type."), "{alert_type}");
+    // A map value annotating an object `$ref` is a flat copy.
+    let status = &files["src/acme/events/types/get_events_response_user_status_value.py"];
+    assert!(
+        status.contains("class GetEventsResponseUserStatusValue(UniversalBaseModel):"),
+        "{status}"
+    );
+    assert!(status.contains("A user's status."), "{status}");
+    // An annotated `$ref` to a composed target is a flat copy, and an empty
+    // restatement over a property the parent declares inside its own `allOf`
+    // stays an undocumented unknown.
+    let invalid = &files["src/acme/types/invalid_api_key_error.py"];
+    assert!(
+        invalid.contains("class InvalidApiKeyError(UniversalBaseModel):"),
+        "{invalid}"
+    );
+    assert!(
+        invalid.contains("    code: typing.Optional[typing.Any] = None\n"),
+        "{invalid}"
+    );
+    // Error bodies: the last declaration of a status wins, an earlier `oneOf`
+    // leaves its variant models behind, and a one-member `oneOf` is its member.
+    assert!(files["src/acme/types/bad_request_error_body.py"]
+        .contains("BadRequestErrorBody = typing.Union[InvalidApiKeyError, RateLimitedError]"));
+    assert!(files["src/acme/types/bad_request_error_body_zero.py"].contains("The queue is gone."));
+    assert!(files["src/acme/errors/too_many_requests_error.py"].contains("body: RateLimitedError,"));
+    // A bare object component is a map whatever its example.
+    assert!(files["src/acme/types/profile_data.py"]
+        .contains("ProfileData = typing.Dict[str, typing.Any]"));
+    // Array-item and form unions hoist an untitled object and a string enum.
+    assert!(
+        files["src/acme/events/types/register_queue_request_narrow_item.py"]
+            .contains("typing.Union[RegisterQueueRequestNarrowItemNegated, typing.List[str]]")
+    );
+    assert!(
+        files["src/acme/events/types/register_queue_request_idle_queue_timeout.py"]
+            .contains("typing.Union[int, RegisterQueueRequestIdleQueueTimeoutOne]")
+    );
+    // A urlencoded body ignores a part's `contentType`, documents and examples
+    // an annotated field from its annotation.
+    let events_raw = &files["src/acme/events/raw_client.py"];
+    assert!(!events_raw.contains("with_content_type"), "{events_raw}");
+    assert!(
+        events_raw.contains("            Where to start."),
+        "{events_raw}"
+    );
+    assert!(files["src/acme/events/client.py"].contains(r#"anchor="43","#));
+    // A urlencoded union body is one `request` sent through `data=`, and without an
+    // importer example the path parameter passes its name.
+    let views_raw = &files["src/acme/views/raw_client.py"];
+    assert!(
+        views_raw.contains("data=convert_and_respect_annotation_metadata("),
+        "{views_raw}"
+    );
+    assert!(files["src/acme/views/types/edit_view_request_body.py"]
+        .contains("EditViewRequestBody = typing.Union[typing.Any]"));
+    assert!(files["src/acme/views/client.py"].contains(r#"fragment="fragment","#));
+}
+
+/// Zulip's model shapes (corpus row 164): restatements measured against the
+/// parent without its `required`, an empty restatement taking the parent's
+/// inline property, an `allOf` property's docstring, and a list-of-models form
+/// example.
+#[test]
+fn zulip_model_restatements_generate_like_fern() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Chat, version: 1.0.0 }
+paths:
+  /channels:
+    get:
+      operationId: getChannels
+      tags: [channels]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BasicChannel" }
+  /message:
+    get:
+      operationId: getMessage
+      tags: [messages]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    description: The message.
+                    allOf:
+                      - { $ref: "#/components/schemas/MessagesBase" }
+                      - additionalProperties: false
+                        properties:
+                          id: {}
+                          reaction_type: {}
+                          display_recipient: {}
+  /subscriptions:
+    post:
+      operationId: updateSubscriptions
+      tags: [channels]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [subscription_data]
+              properties:
+                subscription_data:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    required: [stream_id, value]
+                    properties:
+                      stream_id: { type: integer }
+                      value: { type: boolean }
+                  example: [{ stream_id: 1, value: true }, { stream_id: 3, value: false }]
+      responses:
+        "200": { description: ok }
+components:
+  schemas:
+    BasicChannelBase:
+      type: object
+      properties:
+        stream_id: { type: integer, description: The channel ID. }
+        creator_id: { type: integer, nullable: true, description: Who made it. }
+    BasicChannel:
+      allOf:
+        - { $ref: "#/components/schemas/BasicChannelBase" }
+        - additionalProperties: false
+          required: [stream_id, creator_id]
+          properties:
+            stream_id: {}
+            creator_id: { nullable: true }
+            weekly_traffic: { type: integer, nullable: true }
+    MessagesBase:
+      type: object
+      properties:
+        id: { type: integer }
+        reaction_type: { type: string, enum: [unicode_emoji, realm_emoji] }
+        display_recipient:
+          oneOf:
+            - { type: string }
+            - type: array
+              items:
+                type: object
+                additionalProperties: false
+                properties:
+                  id: { type: integer }
+"##,
+    );
+    // `stream_id` restates the base's unchanged and required, so it is the base's
+    // field, last and optional; the nullable `creator_id` conflicts and stays first.
+    let channel = &files["src/acme/types/basic_channel.py"];
+    let creator = channel.find("    creator_id:").expect(channel);
+    let traffic = channel.find("    weekly_traffic:").expect(channel);
+    let stream = channel
+        .find("    stream_id: typing.Optional[int]")
+        .expect(channel);
+    assert!(creator < traffic && traffic < stream, "{channel}");
+    assert!(channel.contains("The channel ID."), "{channel}");
+    // The message keeps its own description and the parent's union.
+    let message = &files["src/acme/messages/types/get_message_response_message.py"];
+    assert!(message.contains("    The message.\n"), "{message}");
+    assert!(
+        message.contains(
+            "display_recipient: typing.Optional[GetMessageResponseMessageDisplayRecipient] = None"
+        ),
+        "{message}"
+    );
+    // A list-of-models example keeps each item, `true` included.
+    let client = &files["src/acme/channels/client.py"];
+    assert!(
+        client.contains("                    stream_id=3,\n                    value=False,"),
+        "{client}"
     );
 }

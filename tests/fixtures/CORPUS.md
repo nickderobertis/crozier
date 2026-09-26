@@ -153,8 +153,8 @@ re-measure with `just fixtures-gaps`.
 | 128 | `agco-ats` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/agco-ats.com/main/v1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | AGCO's Advanced Technical Support API, the corpus's first source that **collides with itself** in two independent ways. Its Paths Object declares `/api/v2/Releases/{ReleaseId}` beside `/api/v2/Releases/{releaseId}`, two keys crozier's own `naming::field_name` normalizes to one `/api/v2/Releases/{release_id}`; and 22 of its Operation Objects share 11 `operationId` values, each written exactly twice (`Clients_Get` on `/api/v2/Clients` and `/api/v2/Clients/{ID}`, `Users_Get`, `Licenses_Get`, `PackageTypes_Get`, `UpdateGroups_Get`, `Vouchers_Get`, `ContentRelease_GetContentReleaseVersion`, `AuthorizationCodeDefinitions_GetAuthorizationCodeDefinition`, `PackageReports_Default`, `UserPermissions_Put` and `UserPermissions_GetPermissions`). Both collisions are inside one document, so the golden's own raw-client method set is what says what Fern did with them — it keeps both colliding routes, deconflicting the second's path parameter as `release_id_`, and it collapses each duplicated `operationId` to a single method. Over 163 paths and an `apiKey` header scheme |
 | 129 | `svix-webhooks` | github-raw | https://raw.githubusercontent.com/svix/svix-webhooks/ee528fb27439a298da69c628fa1fabd70e9d55b9/server/openapi.json | `ee528fb27439a298da69c628fa1fabd70e9d55b9` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Svix webhook-sending API, the second registered declarer of a duplicated `operationId` beside row 128 — `GET /api/v1/health` and `HEAD /api/v1/health` both carry `operationId: v1.health.get` — and the sharpest small illustration of what the collision costs, since the two operations differ only in HTTP method and one of them reaches no client method at all. Over 27 paths |
 | 130 | `komga` | github-raw | https://raw.githubusercontent.com/gotson/komga/656001eb03bf8b54ca909f3e74fe2ec1b95dac48/komga/docs/openapi.json | `656001eb03bf8b54ca909f3e74fe2ec1b95dac48` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | The API the Komga comics server publishes for itself, the second registered declarer of a **media type range** other than `*/*` beside row 127 — one `image/*` `default` response over `{type: string, format: binary}` on `GET /api/v1/books/{bookId}/pages/{pageNumber}`, against Torrentarr's six, and on the same response side — so the two goldens pin the range on an independent publisher each, over 139 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 32 of its 338 files, not at full parity.** The measured cause is the *binary/streaming response*: Fern makes **30** `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a `@contextlib.contextmanager`, and crozier makes **6**. Komga keys its ranges on `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of `*/*` and `default` of `image/*`, and no `200` at all — which crozier's `is_binary_response` never reaches, so `get_book_page_by_number` comes out as `HttpResponse[None]` where Fern streams it, and its `request_options` docstring loses Fern's `chunk_size` note. Two smaller causes ride along: crozier emits `content-type: application/json` on 13 request bodies Fern leaves to httpx, and types an array header parameter `typing.List` where Fern writes `typing.Sequence`. The `media-type-range` classification this row is registered for rests on row 127, which pins the `200` spelling byte for byte; this residual is the `default` spelling |
-| 131 | `short-io` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/short.io/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Short.io link API, the third registered declarer of two path templates that normalize to one — `/links/{link_id}` beside `/links/{linkId}`, folding to one `/links/{link_id}` under crozier's `naming::field_name` — and the first whose two colliding keys carry an *uneven* set of operations: `{link_id}` declares only `DELETE` while `{linkId}` declares `POST` and `GET`, and Fern keeps all three, across `client.link_management` and `client.link_queries`. Over 45 paths. **Registered with a measured `unmatched` set of 77 of its 198 files, not at full parity.** The measured cause is *hoisted per-operation models*: 68 of the 77 sit under a `types/` package. Two effects, both readable in the diff. Fern declares a module per `anyOf` member of a hoisted response type — `post_links_duplicate_link_id_response_ttl`, `…_expires_at`, `…_source` and 31 more — which crozier folds inline and never emits, so those entries report *"Crozier did not emit this Fern file"*. And where both emit a model, crozier carries the document's full declared property set while Fern narrows it: `BadRequestErrorBody` is `error` plus an optional `message` in the golden, against crozier's `error`, `success`, `message`, `field`, `link_id`, `code` and `status_code`. Neither effect touches the colliding `links` methods this row is registered for — all three survive on both sides |
-| 132 | `webflow-v2` | github-raw | https://raw.githubusercontent.com/webflow/openapi-spec/f6db607359a412dd6aa6cd304674731d7f2dbe10/openapi/v2.yml | `f6db607359a412dd6aa6cd304674731d7f2dbe10` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Webflow's Data API v2, the third registered declarer of a duplicated `operationId` and the one where Fern's answer differs from rows 128 and 129's: `GET /forms/{form_id}/submissions` and `GET /sites/{site_id}/forms/{form_id}/submissions` both carry `operationId: list-submissions` and **both** survive, under different sub-clients sharing one response type, where AGCO and Svix each lose an operation. Over 75 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 365 of its 1,495 files, and 148 crozier-only modules declared beside it in `tests/e2e.rs`'s `crozier_only_files`, not at full parity.** Two measured causes, independent of each other. Its `servers` carry `x-fern-server-name: Data API`, so Fern names the environment member `FernApiEnvironment.DATA_API` and threads `base_url=self._client_wrapper.get_environment().base` through every raw-client call — 127 and 252 divergent lines respectively — where crozier writes `DEFAULT` and no `base_url`. And Fern names a `oneOf` request body's hoisted variants differently from crozier's `…_request_body_zero`/`…_one`, which is exactly what the 148 declared crozier-only modules under `collections/fields`, `collections/items` and the package root are. Neither cause touches the two `list-submissions` methods this row is registered for — both survive on both sides |
+| 131 | `short-io` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/short.io/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Short.io link API, the third registered declarer of two path templates that normalize to one — `/links/{link_id}` beside `/links/{linkId}`, folding to one `/links/{link_id}` under crozier's `naming::field_name` — and the first whose two colliding keys carry an *uneven* set of operations: `{link_id}` declares only `DELETE` while `{linkId}` declares `POST` and `GET`, and Fern keeps all three, across `client.link_management` and `client.link_queries`. Over 45 paths. **Registered with a measured `unmatched` set of 65 of its 198 files (77 when batch 14 registered it), not at full parity.** The measured cause is *hoisted per-operation models*: 59 of the 65 sit under a `types/` package. Two effects, both readable in the diff. Fern declares a module per `anyOf` member of a hoisted response type — `post_links_duplicate_link_id_response_ttl`, `…_expires_at`, `…_source` and 31 more — which crozier folds inline and never emits, so those entries report *"Crozier did not emit this Fern file"*. And where both emit a model, crozier carries the document's full declared property set while Fern narrows it: `BadRequestErrorBody` is `error` plus an optional `message` in the golden, against crozier's `error`, `success`, `message`, `field`, `link_id`, `code` and `status_code`. Neither effect touches the colliding `links` methods this row is registered for — all three survive on both sides |
+| 132 | `webflow-v2` | github-raw | https://raw.githubusercontent.com/webflow/openapi-spec/f6db607359a412dd6aa6cd304674731d7f2dbe10/openapi/v2.yml | `f6db607359a412dd6aa6cd304674731d7f2dbe10` | MIT (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Webflow's Data API v2, the third registered declarer of a duplicated `operationId` and the one where Fern's answer differs from rows 128 and 129's: `GET /forms/{form_id}/submissions` and `GET /sites/{site_id}/forms/{form_id}/submissions` both carry `operationId: list-submissions` and **both** survive, under different sub-clients sharing one response type, where AGCO and Svix each lose an operation. Over 75 paths of an `openapi: 3.1.0` document. **Registered with a measured `unmatched` set of 364 of its 1,495 files, and 148 crozier-only modules declared beside it in `tests/e2e.rs`'s `crozier_only_files`, not at full parity.** Two measured causes, independent of each other. Its `servers` carry `x-fern-server-name: Data API`, so Fern names the environment member `FernApiEnvironment.DATA_API` and threads `base_url=self._client_wrapper.get_environment().base` through every raw-client call — 127 and 252 divergent lines respectively — where crozier writes `DEFAULT` and no `base_url`. And Fern names a `oneOf` request body's hoisted variants differently from crozier's `…_request_body_zero`/`…_one`, which is exactly what the 148 declared crozier-only modules under `collections/fields`, `collections/items` and the package root are. Neither cause touches the two `list-submissions` methods this row is registered for — both survive on both sides |
 | 133 | `loris-dataquery` | github-raw | https://raw.githubusercontent.com/aces/Loris/3305a00312178ea75f135be1564beaf222b25822/modules/dataquery/static/schema.yml | `3305a00312178ea75f135be1564beaf222b25822` | GPL-3.0 (declared by the document's `info.license`, `GNU Public License, Version 3`, and by the repository's own `LICENSE`) | link-ok | The Data Query Tool API the LORIS neuroimaging platform ships inside its own source tree, the corpus's only source declaring **`style: spaceDelimited`** over a query parameter — `share` and `star` on `PATCH /queries/{QueryID}`, each over `{type: boolean}` — and its densest declarer of **`style: pipeDelimited`** over one, at four (`adminname`, `dashboardname`, `loginpagename` and `name`, each over `{type: string}`, on that same operation). Both are the specification's array-only serialisations declared over a *scalar* schema, the crossing it leaves undefined, so this golden pins what Fern emits for a style the schema cannot satisfy. It redeclares `style: simple` over an `in: path` scalar five times besides, across four path items. Over six paths, nine component schemas and an `apiKey` header scheme |
 | 134 | `sftpgo` | github-raw | https://raw.githubusercontent.com/drakkan/sftpgo/c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842/openapi/openapi.yaml | `c737df6cd42ef375bf51a2d0a04ea2b1ab9f8842` | AGPL-3.0 (declared by the document's `info.license`, `AGPL-3.0-only`, and by the repository's own `LICENSE`) | link-ok | The administration API the SFTPGo file-transfer server publishes for itself, the third registered declarer of a **media type range** other than `*/*` and by far the densest — ten content-map keys over five distinct ranges (`application/*`, `text/*`, `image/*`, `audio/*` and `video/*`, each declared on both `POST /shares/{id}/{fileName}` and `POST /user/files/upload`) against rows 127 and 130's six and one — and the first to declare one on the **request** side, where both of those declare theirs on responses only. It is also the second registered declarer of a parameter redeclared at both levels: `PUT /quotas/folders/{name}/usage` redeclares its path item's own `mode` query parameter, one Operation-over-Path-Item collision beside row 122's 24, and the one where the two declarations are otherwise identical — same `required`, same `description`, same two-member `enum` — so the golden pins that the operation-level declaration is taken even where nothing about it differs. Over 76 paths, 116 component schemas and three security schemes — `http` `basic`, `http` `bearer` and an `apiKey` header |
 | 135 | `googleapis-servicebroker` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/servicebroker/v1alpha1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | link-ok | Google's Service Broker API (`info.x-origin` records the publisher-served `https://servicebroker.googleapis.com/$discovery/rest?version=v1alpha1`), the fourth registered declarer of **two path templates that normalize to one** and the first where one colliding group is nested inside another: `/v1alpha1/{parent}/v2/service_instances/{instanceId}` beside `…/{instance_id}`, and one segment deeper `…/{instanceId}/service_bindings/{bindingId}` beside `…/{instanceId}/service_bindings/{binding_id}` — four keys in two groups that crozier's own `naming::field_name` folds to two, where the deeper pair agrees on the `{instanceId}` spelling it inherits and collides only on its own leaf. The collisions are inside one document, so the golden's own raw clients say what Fern did with them. Over 13 paths, 21 component schemas, 11 component parameters and two `oauth2` schemes |
@@ -163,6 +163,29 @@ re-measure with `just fixtures-gaps`.
 | 138 | `paypal-catalog-products` | github-raw | https://raw.githubusercontent.com/paypal/paypal-rest-api-specifications/90e8041ffe02d80c452d2b476bedd59a8d219bdc/openapi/catalogs_products_v1.json | `90e8041ffe02d80c452d2b476bedd59a8d219bdc` | Apache-2.0 (the publisher repository's pinned `LICENSE`) | link-ok | PayPal Catalog Products API; four sole-member `anyOf` wrappers on error detail items. |
 | 139 | `folio-mod-authtoken` | github-raw | https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml | `172586c71fe936ac0b4d104b95acd508e88e43d3` | Apache-2.0 (the publisher repository’s pinned `LICENSE`) | link-ok | FOLIO mod-authtoken’s six endpoint API; `components.schemas.refreshToken` names `schemas/refreshToken.json` under the same revision, while `tokenResponse` and four other component aliases name sibling JSON files. Fern’s generated `src/fern/types/refresh_token.py` and the token client methods derive from those references. |
 | 140 | `raybot` | github-raw | https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml | `4428dea2f79b833aead4c89df5bd8d9e32b7b0c8` | MIT (publisher repository’s pinned `LICENSE` and the document’s `info.license`) | link-ok | Raybot’s published robot-control API references 23 sibling Path Item files; `/version` names `paths/version.yml`, whose `get` operation generates `src/fern/version/client.py`, and `/health` names `paths/health.yml`, generating `src/fern/health/client.py`. Each Path Item then references pinned parameter and schema files under the same revision. |
+| 144 | `paloalto-cspm-alerts` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Alerts.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Alerts API (Palo Alto Networks, publisher-owned `pan.dev`); annotated `$ref`s to composed and `oneOf` targets |
+| 145 | `paloalto-cspm-reports` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/Reports.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Reports API; annotated `$ref`s to `oneOf` targets |
+| 146 | `paloalto-cspm-search-manager` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/cspm/SearchManager.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Search Manager API; annotated `$ref`s to `oneOf` targets |
+| 147 | `thrivecart` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/thrivecart.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | ThriveCart API; `$ref` pointers under an undeclared component head |
+| 148 | `truefoundry-trueforge-5adde28` | github-raw | https://raw.githubusercontent.com/truefoundry/trueforge/5adde289683b642203b06b39ca687e9d977ca7a5/docs/openapi.json | `5adde289683b642203b06b39ca687e9d977ca7a5` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | link-ok | TrueForge API at a later revision than row 108; annotated `$ref`s to closed-object targets |
+| 149 | `fergus` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/fergus.com/fergus-api/v1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Fergus API; `anyOf` array variants with struct items |
+| 150 | `groupe-psa` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/groupe-psa.io/main/3.19.2/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Groupe PSA Licence`) | link-ok | Groupe PSA Connected Car B2B API; annotated `$ref`s to composed targets |
+| 151 | `timelyapp` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Timely`) | link-ok | Timely API; `anyOf` array variants with struct items |
+| 152 | `nextgen` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/nextgen.com/main/1.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | NextGen Enterprise API USCDI Routes; `$ref` pointers under an undeclared component head, non-identifier component schema names |
+| 153 | `auto-agent-protocol` | github-raw | https://raw.githubusercontent.com/auto-agent-protocol/auto-agent-protocol/5d31c27b11c36a018754f34830954d836a55afe5/releases/v1.0/artifacts/openapi-rest.yaml | `5d31c27b11c36a018754f34830954d836a55afe5` | Apache-2.0 (declared by the document's `info.license`) | link-ok | Auto Agent Protocol A2A HTTP+JSON binding; a `$ref` pointer through an unnamed segment |
+| 154 | `skool` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API; `$ref` pointers under an undeclared component head |
+| 155 | `spendesk` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/spendesk.com/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Spendesk API; `$ref` pointers under an undeclared component head |
+| 156 | `billie` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Billie Direct API; `$ref` pointers under an undeclared component head |
+| 157 | `alma-france` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/alma_france_api/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Alma Payments API; `$ref` pointers under an undeclared component head |
+| 158 | `outreach` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/outreach.io/main/2.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Outreach API; `$ref` pointers under an undeclared component head |
+| 159 | `tally` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/tally.so/main/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `MIT`) | link-ok | Tally API; `$ref` pointers under an undeclared component head |
+| 160 | `billie-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/billie.io/main/2.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Billie Direct API, jentic's import entry: row 156's document with its object keys in another order |
+| 161 | `skool-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/skool.com/main/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Skool API, jentic's import entry: row 154's document with its object keys in another order |
+| 162 | `timelyapp-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/timelyapp.com/main/V1/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Timely API, jentic's import entry: row 151's document with its object keys in another order |
+| 163 | `cradl` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cradl.ai/main/2026-01-28T09%3A00%3A46Z/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document declares no `info.license`) | link-ok | Cradl API; `anyOf` array variants with struct and closed-object items |
+| 164 | `zulip` | github-raw | https://raw.githubusercontent.com/zulip/zulip/6a82f40579f8adb9149aa0b04ff795c397baae73/zerver/openapi/zulip.yaml | `6a82f40579f8adb9149aa0b04ff795c397baae73` | Apache-2.0 (declared by the document's `info.license` and by the repository's own `LICENSE`) | link-ok | Zulip REST API; annotated `$ref`s to closed-object and `oneOf` targets, `oneOf` array variants with closed-object items |
+| 165 | `zulip-jentic` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, the jentic-public-apis aggregation's JSON import of `https://zulip.com/api/rest`: a different revision of row 164's document, re-serialized |
+| 166 | `zulip-jentic-entry` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/zulip.com/zulip/1.0.0/meta/import/input-entry.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE.md`; the document's own `info.license` names `Apache 2.0`) | link-ok | Zulip REST API, jentic's import entry: row 165's document with its object keys in another order |
 | 191 | `openlinksw-osdb` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC-BY-SA 3.0 (declared by the document's `info.license`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | OpenLink OSDB REST API v1; string schemas declaring `format: uri-template` |
 | 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
 | 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
@@ -548,8 +571,8 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
 | 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
-| 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 77 of 198 files in `unmatched` |
-| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 365 of 1,495 files in `unmatched` and 148 crozier-only modules declared |
+| 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
+| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 364 of 1,495 files (365 when batch 14 registered it) in `unmatched` and 148 crozier-only modules declared |
 
 **What the three byte-matched rows cost.** AGCO: `float` joined
 `naming::is_reserved`'s builtin set; hoisted operation-scoped types are deduped by
@@ -591,14 +614,14 @@ change has an exact set to shorten:
   So the `default`-response spelling of `media-type-range` **is** in this residual;
   the `200` spelling the row's classification rests on is pinned byte for byte by
   corpus row 127.
-- **`short-io` (77 files).** Hoisted per-operation models — 68 of the 77 sit under
+- **`short-io` (65 files).** Hoisted per-operation models — 59 of the 65 sit under
   a `types/` package. Fern declares a module per `anyOf` member of a hoisted
   response type (`post_links_duplicate_link_id_response_ttl` and 33 more) that
   crozier folds inline and never emits; and where both emit a model, crozier
   carries the document's full declared property set while Fern narrows it
   (`BadRequestErrorBody` is `error` plus an optional `message` in the golden,
   against crozier's seven fields).
-- **`webflow-v2` (365 files + 148 crozier-only modules).** Two independent
+- **`webflow-v2` (364 files + 148 crozier-only modules).** Two independent
   divergences. Its `servers` carry `x-fern-server-name: Data API`, so Fern names
   the environment member `DATA_API` and threads
   `base_url=self._client_wrapper.get_environment().base` through every raw client,
@@ -725,7 +748,168 @@ When a diagnostic `TMPDIR` lives inside another Git checkout, set
 Fern records that unrelated parent checkout's commit in its metadata. This
 registration was regenerated with that boundary; no generated metadata was edited.
 
-## Batch 17 — golden-reach witnesses (rows 191–215)
+## Batch 17 — the witness searches' candidates
+
+Rows 144 onward register the candidates the two witness-search ledgers,
+[`../../docs/openapi-surface/witness-search-github/candidates.tsv`](../../docs/openapi-surface/witness-search-github/candidates.tsv)
+and
+[`../../docs/openapi-surface/witness-search-registries/candidates.tsv`](../../docs/openapi-surface/witness-search-registries/candidates.tsv),
+mark usable: a licence that grants redistribution, an immutable ref, and Fern's
+acceptance of the raw document, each re-measured here rather than inherited. They
+are registered in the order the coverage document's ranking rubric gives their
+keys. Every golden is generated at Python 5.20.0 / CLI 5.67.1 from the fetched,
+unmodified document and byte-matches with `unmatched: &[]`.
+
+| # | name | settles | state |
+|---:|---|---|---|
+| 144 | `paloalto-cspm-alerts` | `annotated-ref-target-composed`, `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 145 | `paloalto-cspm-reports` | `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 146 | `paloalto-cspm-search-manager` | `annotated-ref-target-oneof` (jointly) | ✅ byte-matched after this batch's repairs |
+| 147 | `thrivecart` | `ref-pointer-undeclared-component-head` | ✅ byte-matched with no repair of its own |
+| 148 | `truefoundry-trueforge-5adde28` | `annotated-ref-target-closed-object` | ✅ byte-matched after this batch's repairs |
+| 149 | `fergus` | `anyof-array-variant-struct-item` | ✅ byte-matched after this batch's repairs |
+| 150 | `groupe-psa` | `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 151 | `timelyapp` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 152 | `nextgen` | `schema-name-nonidentifier-name`; `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 153 | `auto-agent-protocol` | `ref-pointer-unnamed-segment` | ✅ byte-matched after this batch's repairs |
+| 154 | `skool` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 155 | `spendesk` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 156 | `billie` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 157 | `alma-france` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 158 | `outreach` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 159 | `tally` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 160 | `billie-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 161 | `skool-entry` | `ref-pointer-undeclared-component-head` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 162 | `timelyapp-entry` | `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 163 | `cradl` | `anyof-array-variant-closed-object-item`; `anyof-array-variant-struct-item` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 164 | `zulip` | `oneof-array-variant-closed-object-item`; `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched after this batch's repairs |
+| 165 | `zulip-jentic` | `oneof-array-variant-closed-object-item`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched |
+| 166 | `zulip-jentic-entry` | `oneof-array-variant-closed-object-item`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `annotated-ref-target-composed` (jointly; already `golden`) | ✅ byte-matched |
+
+The repairs send a parameterised JSON request media type
+(`application/json; charset=UTF-8`) verbatim as the `content-type` of every
+request that carries it, find a single-use body's JSON representation by the same
+selection the body itself uses, so the model is dropped from the type layer and
+its hoisted use-site copies move into the tag's package, document a union's
+use-site copy with the annotation that names it, fall back to the target's own
+description for a field whose annotation adds none, and spell a bare `=` enum
+value `EQUAL_TO`. Row 148's repairs keep the component schemas an
+`x-fern-ignore` operation alone references, as Fern does; flatten a one-member
+`oneOf` over an inline object into that object rather than inferring a
+discriminated union from its single-valued tag; list a package's nested
+sub-clients in `reference.md` after every sibling that owns endpoints; and
+synthesize a query parameter's worked-example value only where Fern's importer
+builds no example of its own — read off Fern's own `ExampleEndpointFactory` and
+`generatePrimitiveStringExample`, which also closes one of `webflow-v2`'s
+residual files. Row 149's repairs follow Fern's own importer where crozier had
+fitted heuristics: union variants are named by Fern's `getUniqueSubTypeNames`,
+which alone reproduces every earlier golden's variant names; a query parameter's
+enum-only composition is a tag-local enum; a lone composition, inline object or
+inline-object array beside `null` is typed and documented as that member; a
+nested `allOf` flattens into one object, whose repeated property is one field or,
+in an inline body, one prefixed argument; an `allOf` of inline objects is no
+composition for the content-type rule; a description's indentation-only last line
+is a line of its own; and a datetime example is moved to UTC. Together they also
+close twelve of `short-io`'s residual files (77 -> 65). Row 150's repairs, each
+read off Fern's importer source or a `fern ir` bisection of the document: a
+non-string `required` entry requires nothing; an enum mixing kinds is its base
+type; an `allOf` around one inline element is that element, so an annotation on
+a `$ref` to it loses its description while a component so written keeps the
+element's; an annotated `$ref` component is a flat copy; a restated base property
+takes the base's schema keys with it, and extends only where both require it; an
+array component's enum element is a class, and a query `$ref` to such an array is
+allow-multiple; a lone-`allOf` response is its `$ref`; descriptions keep an opening
+line break and an indentation-only last line; and a request body whose base
+requires a property its restatement leaves optional and example-less gets no
+importer example, so Fern's fallback lists two items. Row 151's repairs make an
+`anyOf` member declaring `properties: {}` an empty model rather than a map, and a
+property whose lone `allOf` `$ref` sits beside properties of its own a model
+rather than that `$ref`. Row 152's repairs break a class name's words on every
+character an identifier cannot hold (Postman-exported component names such as
+`{{baseUrl}}/persons/:personId-Request`), name an operation whose `operationId`
+is such a URL by all of its words rather than by its first `{…}`, carry a bare
+scalar body's schema `example` into its worked call, and leave an untyped request
+body's `{"key": "value"}` placeholder on one line in the README. Row 153's
+repairs type a pointer through a segment no generated type is named by (a
+`$defs` member) as unknown and drop the description beside it, declare the
+property types of an object whose `anyOf` only restates `required`, keep a
+restated base property's description, and wrap a one-pair dict argument in the
+README. Row 154's repair guards an empty response where the success body is a
+`$ref` to a component the document never declares, which Fern types unknown.
+Row 155's repair follows Fern's importer, which builds no worked example for an
+operation whose success body is such a `$ref`; its IR fallback then keys a
+bare-object body by the key type's sample, `{"string": {"key": "value"}}`.
+Row 156's repair makes every server Fern names (a `Production` or `Sandbox`
+description) an environment member, the first of them the default, as Fern's
+`buildEnvironments` does; crozier had kept the first server alone.
+Row 157 needed no repair of its own: its seven `$ref: ApiResponse` success
+bodies take rows 154 and 155's empty-body guard and example fallback.
+Row 158's repair sends a flattened body's vendor JSON media type
+(`application/vnd.api+json`) as its `content-type`, where crozier had written
+`application/json`; a Fern 5.20.0 probe shows the same for an inline object body,
+which an older generation test had asserted the other way.
+Row 159's repairs, each read off Fern's importer: a `discriminator` that maps
+nothing strips its tag from the variants like an inferred one when every
+variant's one-value tag names it (Tally's 45 `Block` members); an enum value is
+spelled out only when it is one of Fern's mapped symbols *whole* (`*` is `ALL`,
+`image/*` is `IMAGE`), and a later value whose member name an earlier one took
+is dropped rather than suffixed; and an inline object restating an `allOf`
+parent's property with a schema of its own inlines that parent, as a component
+already did.
+Row 148 is a later revision of row 108's document, registered
+under a name of its own because the shape it witnesses is absent at row 108's
+commit. The three Prisma Cloud documents are separate descriptions in
+Palo Alto Networks' own `pan.dev` repository; each is a row of its own because
+each is a document Fern generates on its own.
+
+Rows 160 to 162 are jentic's `meta/import/input-entry.json` copies of Billie,
+Skool and Timely. Each holds the same document as rows 156, 154 and 151 with
+its object keys in another order, which is a different input to Fern. Each
+golden byte-matches with no repair of its own.
+
+Row 163's repairs, read off Fern's IR for Cradl:
+- a list of lists of inline objects names its leaf model one `Item` per level
+  (`GroundTruthListOneItemItem`);
+- a `$ref` member's sibling `nullable` is not read;
+- a property union's `nullable` array member keeps its `Optional`;
+- a `nullable` closed object with no properties is `Optional[Dict[str, Any]]`.
+
+Row 164, Zulip's own description, byte-matches its 1014-file golden after the
+repairs below, each read off the golden or a `fern ir` run:
+- Unions and enums:
+  - a string `$ref` narrowed by an inline `enum` is an enum documented by
+    the reference;
+  - union variants past the nineteenth are named in words (`…FiftyEight`);
+  - union members that are string enums or untitled inline objects hoist
+    models of their own.
+- Restatements:
+  - a restatement conflicts with its parent's property only if the child
+    does not require it or makes it nullable, whatever the parent requires;
+  - an empty restatement takes a property the parent declares inline;
+  - an unknown field takes no docstring from its parent;
+  - an annotated `$ref` to a composed target, or to a map value, is a flat
+    copy;
+  - a component that is a bare object is a map whatever its example.
+- Error bodies: the last declaration of a status names `{Class}Body`, and
+  earlier `oneOf` declarations leave their variant models behind.
+- Urlencoded bodies:
+  - a part's `encoding.contentType` is ignored;
+  - a union body is one `request` sent through `data=`, and Fern builds no
+    example for it, so its path parameter passes its name;
+  - fields take their annotation's docstring and example.
+- YAML examples: a timestamp-shaped example stops being a string only when
+  the YAML writes it unquoted.
+
+These also shrank `short-io`'s residual from 65 files to 61.
+
+Every usable candidate in the two ledgers is now one of the rows above, or a
+byte-identical copy of one whose ledger disposition names that row and the
+shared sha256.
+
+Every other usable candidate is one of the rows above, or a byte-identical copy
+of one whose ledger disposition names that row and the shared sha256.
+
+## Batch 18 — golden-reach witnesses (rows 191–215)
 
 These rows buy arms the [golden reach ranking](../../docs/openapi-surface-coverage.md#golden-reach-row-by-row)
 found no earlier witness reaching. Each was chosen by running the instrumented
@@ -798,4 +982,3 @@ object hoists its value; and a query parameter beside a body keeps the
 `content-type` header. The hoisted-map repair also closes six of `webflow-v2`'s
 open files, which proves it now; the other eight rest on the measured golden until
 the hand-off's registration commits it.
-

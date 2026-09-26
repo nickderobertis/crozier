@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .register_queue_request_idle_queue_timeout_one import RegisterQueueRequestIdleQueueTimeoutOne
+
+RegisterQueueRequestIdleQueueTimeout = typing.Union[int, RegisterQueueRequestIdleQueueTimeoutOne]

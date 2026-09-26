@@ -23,6 +23,19 @@ names the witness and the condition for reopening. No key is declared
 final reconciliation writes each region file's compact row over every declared
 source after both branches merge.
 
+
+## Candidates settled against the corpus
+
+A screened candidate whose three screens pass can be settled by corpus
+registration rather than by the search:
+
+- `byte-identical to CORPUS row N, sha256 <hex>`: a copy whose bytes equal
+  corpus row N's registered source. Registering it again would add no golden.
+  `tests/corpus_surface_census_test.py` re-measures each digest against row N's
+  fetched document.
+- `pending-registration`: a usable candidate the registration node neither
+  registered nor disposed. The continuation node owns it.
+
 The publisher set is `witness-search-github-publisher-trees/publisher-set.json`:
 the five earlier publisher trees, pinned root-level descriptions in the registered
 corpus, and the publisher-owned declarer repositories listed with ownership

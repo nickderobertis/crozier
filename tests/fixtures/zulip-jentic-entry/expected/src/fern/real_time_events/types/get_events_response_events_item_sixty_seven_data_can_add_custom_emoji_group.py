@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_sixty_seven_data_can_add_custom_emoji_group_direct_members import (
+    GetEventsResponseEventsItemSixtySevenDataCanAddCustomEmojiGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSixtySevenDataCanAddCustomEmojiGroup = typing.Union[
+    int, GetEventsResponseEventsItemSixtySevenDataCanAddCustomEmojiGroupDirectMembers
+]

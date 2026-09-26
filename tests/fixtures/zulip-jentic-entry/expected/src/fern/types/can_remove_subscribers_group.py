@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .can_remove_subscribers_group_direct_members import CanRemoveSubscribersGroupDirectMembers
+
+CanRemoveSubscribersGroup = typing.Union[int, CanRemoveSubscribersGroupDirectMembers]

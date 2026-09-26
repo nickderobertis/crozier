@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .detailed_customer_invoice_status_five import DetailedCustomerInvoiceStatusFive
+from .detailed_customer_invoice_status_four import DetailedCustomerInvoiceStatusFour
+from .detailed_customer_invoice_status_one import DetailedCustomerInvoiceStatusOne
+from .detailed_customer_invoice_status_three import DetailedCustomerInvoiceStatusThree
+from .detailed_customer_invoice_status_two import DetailedCustomerInvoiceStatusTwo
+from .detailed_customer_invoice_status_zero import DetailedCustomerInvoiceStatusZero
+
+DetailedCustomerInvoiceStatus = typing.Union[
+    DetailedCustomerInvoiceStatusZero,
+    DetailedCustomerInvoiceStatusOne,
+    DetailedCustomerInvoiceStatusTwo,
+    DetailedCustomerInvoiceStatusThree,
+    DetailedCustomerInvoiceStatusFour,
+    DetailedCustomerInvoiceStatusFive,
+]

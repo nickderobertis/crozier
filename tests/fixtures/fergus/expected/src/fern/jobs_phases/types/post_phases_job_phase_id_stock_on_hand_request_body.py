@@ -1,0 +1,14 @@
+
+
+import typing
+
+from .post_phases_job_phase_id_stock_on_hand_request_body_item_cost import (
+    PostPhasesJobPhaseIdStockOnHandRequestBodyItemCost,
+)
+from .post_phases_job_phase_id_stock_on_hand_request_body_price_book_line_item_id import (
+    PostPhasesJobPhaseIdStockOnHandRequestBodyPriceBookLineItemId,
+)
+
+PostPhasesJobPhaseIdStockOnHandRequestBody = typing.Union[
+    PostPhasesJobPhaseIdStockOnHandRequestBodyPriceBookLineItemId, PostPhasesJobPhaseIdStockOnHandRequestBodyItemCost
+]

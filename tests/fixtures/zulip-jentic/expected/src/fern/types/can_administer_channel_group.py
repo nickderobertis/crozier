@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .can_administer_channel_group_direct_members import CanAdministerChannelGroupDirectMembers
+
+CanAdministerChannelGroup = typing.Union[int, CanAdministerChannelGroupDirectMembers]

@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .user_group_can_add_members_group_direct_members import UserGroupCanAddMembersGroupDirectMembers
+
+UserGroupCanAddMembersGroup = typing.Union[int, UserGroupCanAddMembersGroupDirectMembers]

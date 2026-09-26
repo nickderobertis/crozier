@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_sixty_seven_data_can_access_all_users_group_direct_members import (
+    GetEventsResponseEventsItemSixtySevenDataCanAccessAllUsersGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSixtySevenDataCanAccessAllUsersGroup = typing.Union[
+    int, GetEventsResponseEventsItemSixtySevenDataCanAccessAllUsersGroupDirectMembers
+]

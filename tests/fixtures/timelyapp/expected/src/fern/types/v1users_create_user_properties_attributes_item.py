@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .v1users_create_user_properties_attributes_item_account_user_property_id import (
+    V1UsersCreateUserPropertiesAttributesItemAccountUserPropertyId,
+)
+from .v1users_create_user_properties_attributes_item_destroy import V1UsersCreateUserPropertiesAttributesItemDestroy
+from .v1users_create_user_properties_attributes_item_zero import V1UsersCreateUserPropertiesAttributesItemZero
+
+V1UsersCreateUserPropertiesAttributesItem = typing.Union[
+    V1UsersCreateUserPropertiesAttributesItemZero,
+    V1UsersCreateUserPropertiesAttributesItemDestroy,
+    V1UsersCreateUserPropertiesAttributesItemAccountUserPropertyId,
+]

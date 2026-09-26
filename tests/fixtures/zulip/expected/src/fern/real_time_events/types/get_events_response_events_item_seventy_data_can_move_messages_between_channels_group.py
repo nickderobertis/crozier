@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_move_messages_between_channels_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanMoveMessagesBetweenChannelsGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanMoveMessagesBetweenChannelsGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanMoveMessagesBetweenChannelsGroupDirectMembers
+]

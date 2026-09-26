@@ -201,6 +201,29 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_messages_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e deepsearch_ds_v2_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mindee_ocr_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_alerts_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_reports_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_search_manager_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e thrivecart_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e truefoundry_trueforge_5adde28_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e fergus_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e groupe_psa_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e timelyapp_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nextgen_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e auto_agent_protocol_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e skool_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e spendesk_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e billie_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e alma_france_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e outreach_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tally_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e billie_entry_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e skool_entry_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e timelyapp_entry_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cradl_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_entry_matches_fern_output
 
 # Format the codebase in place.
 format:

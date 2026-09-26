@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .v1users_create_user_projects_create import V1UsersCreateUserProjectsCreate
+from .v1users_create_user_projects_one_item import V1UsersCreateUserProjectsOneItem
+
+V1UsersCreateUserProjects = typing.Union[V1UsersCreateUserProjectsCreate, typing.List[V1UsersCreateUserProjectsOneItem]]

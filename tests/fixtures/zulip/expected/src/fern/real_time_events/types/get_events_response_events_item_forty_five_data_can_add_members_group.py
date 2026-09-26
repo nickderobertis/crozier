@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_forty_five_data_can_add_members_group_direct_members import (
+    GetEventsResponseEventsItemFortyFiveDataCanAddMembersGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemFortyFiveDataCanAddMembersGroup = typing.Union[
+    int, GetEventsResponseEventsItemFortyFiveDataCanAddMembersGroupDirectMembers
+]

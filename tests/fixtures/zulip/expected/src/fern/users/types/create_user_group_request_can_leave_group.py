@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .create_user_group_request_can_leave_group_direct_members import CreateUserGroupRequestCanLeaveGroupDirectMembers
+
+CreateUserGroupRequestCanLeaveGroup = typing.Union[int, CreateUserGroupRequestCanLeaveGroupDirectMembers]

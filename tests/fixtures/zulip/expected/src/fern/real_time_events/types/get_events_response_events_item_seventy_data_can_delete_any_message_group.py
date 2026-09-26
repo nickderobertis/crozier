@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .get_events_response_events_item_seventy_data_can_delete_any_message_group_direct_members import (
+    GetEventsResponseEventsItemSeventyDataCanDeleteAnyMessageGroupDirectMembers,
+)
+
+GetEventsResponseEventsItemSeventyDataCanDeleteAnyMessageGroup = typing.Union[
+    int, GetEventsResponseEventsItemSeventyDataCanDeleteAnyMessageGroupDirectMembers
+]

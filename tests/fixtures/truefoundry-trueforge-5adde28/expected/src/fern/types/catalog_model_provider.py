@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .catalog_custom_model_provider import CatalogCustomModelProvider
+from .catalog_well_known_model_provider import CatalogWellKnownModelProvider
+
+CatalogModelProvider = typing.Union[CatalogWellKnownModelProvider, CatalogCustomModelProvider]
