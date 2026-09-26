@@ -3238,6 +3238,16 @@ const CORPORA: &[&Corpus] = &[
     &ZULIP,
     &ZULIP_JENTIC,
     &ZULIP_JENTIC_ENTRY,
+    &MILVUS_RESTFUL_V2_3,
+    &MILVUS_RESTFUL_V2_4,
+    &RAMU_SHOGI,
+    &LANGCHAIN_AGENT_PROTOCOL,
+    &HSE,
+    &MILVUS_VECTOR_OPERATIONS,
+    &MISTLE_CONTROL_PLANE,
+    &OSPARC_PAYMENTS,
+    &HUATUO_NODE,
+    &HUATUO_SERVER,
 ];
 
 #[test]
@@ -5815,6 +5825,219 @@ const ZULIP_JENTIC_ENTRY: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[],
+};
+
+/// Milvus RESTful API v2 (the v2.3.x reference) — corpus row 168, the publisher's own description.
+const MILVUS_RESTFUL_V2_3: Corpus = Corpus {
+    api: "milvus-restful-v2-3",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/index_operations_v2/client.py",
+        "src/fern/index_operations_v2/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/vector.py",
+        "src/fern/types/vector_item.py",
+        "src/fern/user_operations_v2/client.py",
+        "src/fern/user_operations_v2/raw_client.py",
+        "src/fern/vector_operations_v2/__init__.py",
+        "src/fern/vector_operations_v2/client.py",
+        "src/fern/vector_operations_v2/raw_client.py",
+        "src/fern/vector_operations_v2/types/__init__.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data_zero.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data_zero.py",
+    ],
+};
+
+/// Milvus RESTful API (the v2.4.x reference) — corpus row 169, the publisher's own description.
+const MILVUS_RESTFUL_V2_4: Corpus = Corpus {
+    api: "milvus-restful-v2-4",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/__init__.py",
+        "src/fern/client.py",
+        "src/fern/core/client_wrapper.py",
+        "src/fern/index_operations_v2/client.py",
+        "src/fern/index_operations_v2/raw_client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/vector.py",
+        "src/fern/types/vector_item.py",
+        "src/fern/user_operations_v2/client.py",
+        "src/fern/user_operations_v2/raw_client.py",
+        "src/fern/vector_operations_v2/__init__.py",
+        "src/fern/vector_operations_v2/client.py",
+        "src/fern/vector_operations_v2/raw_client.py",
+        "src/fern/vector_operations_v2/types/__init__.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data_zero.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data.py",
+        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data_zero.py",
+    ],
+};
+
+/// Ramu Shogi API contract — corpus row 170, the publisher's own description.
+const RAMU_SHOGI: Corpus = Corpus {
+    api: "ramu-shogi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/analysis_snapshots/client.py",
+        "src/fern/rooms/client.py",
+        "src/fern/types/auth_session_response_zero.py",
+        "src/fern/types/get_user_settings_response.py",
+        "src/fern/types/get_user_settings_response_document.py",
+    ],
+};
+
+/// LangChain Agent Protocol — corpus row 172, the publisher's own description.
+const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
+    api: "langchain-agent-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HSE REST API — corpus row 173, the publisher's own description.
+const HSE: Corpus = Corpus {
+    api: "hse",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Milvus vector operations (apifox export) — corpus row 174, the publisher's own description.
+const MILVUS_VECTOR_OPERATIONS: Corpus = Corpus {
+    api: "milvus-vector-operations",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/__init__.py",
+        "src/fern/vector_operations/__init__.py",
+        "src/fern/vector_operations/client.py",
+        "src/fern/vector_operations/types/__init__.py",
+        "src/fern/vector_operations/types/post_v1vector_insert_request_data.py",
+        "src/fern/vector_operations/types/post_v1vector_insert_request_data_zero.py",
+        "src/fern/vector_operations/types/post_v1vector_upsert_request_data.py",
+        "src/fern/vector_operations/types/post_v1vector_upsert_request_data_zero.py",
+    ],
+};
+
+/// Mistle control-plane internal API v1 — corpus row 176, the publisher's own description.
+const MISTLE_CONTROL_PLANE: Corpus = Corpus {
+    api: "mistle-control-plane",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/__init__.py",
+        "src/fern/internal/client.py",
+        "src/fern/types/__init__.py",
+        "src/fern/types/bad_request_error_body_code.py",
+    ],
+};
+
+/// o²S²PARC payments service — corpus row 177, the publisher's own description.
+const OSPARC_PAYMENTS: Corpus = Corpus {
+    api: "osparc-payments",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/acks/client.py",
+        "src/fern/acks/raw_client.py",
+        "src/fern/meta/client.py",
+        "src/fern/meta/raw_client.py",
+    ],
+};
+
+/// HuaTuo node API v1 — corpus row 178, the publisher's own description.
+const HUATUO_NODE: Corpus = Corpus {
+    api: "huatuo-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "reference.md",
+        "src/fern/operations/client.py",
+        "src/fern/types/apis_v1components_observation_scope.py",
+        "src/fern/types/operation_kind.py",
+        "src/fern/types/operation_outcome.py",
+        "src/fern/types/operation_status.py",
+        "src/fern/types/profiling_language.py",
+        "src/fern/types/profiling_mode.py",
+        "src/fern/types/profiling_type.py",
+        "src/fern/types/tracing_type.py",
+    ],
+};
+
+/// HuaTuo server API v1 — corpus row 179, the publisher's own description.
+const HUATUO_SERVER: Corpus = Corpus {
+    api: "huatuo-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[
+        "README.md",
+        "reference.md",
+        "src/fern/profiling/client.py",
+        "src/fern/profiling/raw_client.py",
+        "src/fern/tracing/client.py",
+        "src/fern/types/apis_v1components_observation_scope.py",
+        "src/fern/types/job_outcome.py",
+        "src/fern/types/job_status.py",
+        "src/fern/types/profiling_language.py",
+        "src/fern/types/profiling_mode.py",
+        "src/fern/types/profiling_type.py",
+        "src/fern/types/tracing_type.py",
+    ],
 };
 
 #[test]
@@ -11440,4 +11663,54 @@ fn zulip_jentic_matches_fern_output() {
 #[test]
 fn zulip_jentic_entry_matches_fern_output() {
     assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
+}
+
+#[test]
+fn milvus_restful_v2_3_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_3);
+}
+
+#[test]
+fn milvus_restful_v2_4_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_4);
+}
+
+#[test]
+fn ramu_shogi_matches_fern_output() {
+    assert_link_ok_corpus_matches(&RAMU_SHOGI);
+}
+
+#[test]
+fn langchain_agent_protocol_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
+}
+
+#[test]
+fn hse_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HSE);
+}
+
+#[test]
+fn milvus_vector_operations_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
+}
+
+#[test]
+fn mistle_control_plane_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MISTLE_CONTROL_PLANE);
+}
+
+#[test]
+fn osparc_payments_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OSPARC_PAYMENTS);
+}
+
+#[test]
+fn huatuo_node_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HUATUO_NODE);
+}
+
+#[test]
+fn huatuo_server_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HUATUO_SERVER);
 }

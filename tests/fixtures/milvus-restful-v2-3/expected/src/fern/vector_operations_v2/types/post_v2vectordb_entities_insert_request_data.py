@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .post_v2vectordb_entities_insert_request_data_one_item import PostV2VectordbEntitiesInsertRequestDataOneItem
+from .post_v2vectordb_entities_insert_request_data_zero import PostV2VectordbEntitiesInsertRequestDataZero
+
+PostV2VectordbEntitiesInsertRequestData = typing.Union[
+    PostV2VectordbEntitiesInsertRequestDataZero, typing.List[PostV2VectordbEntitiesInsertRequestDataOneItem]
+]

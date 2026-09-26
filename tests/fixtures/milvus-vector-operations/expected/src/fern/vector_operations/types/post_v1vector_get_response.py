@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .post_v1vector_get_response_data import PostV1VectorGetResponseData
+from .post_v1vector_get_response_message import PostV1VectorGetResponseMessage
+
+PostV1VectorGetResponse = typing.Union[PostV1VectorGetResponseData, PostV1VectorGetResponseMessage]

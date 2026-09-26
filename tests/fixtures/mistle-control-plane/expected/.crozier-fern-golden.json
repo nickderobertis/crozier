@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "mistle-control-plane",
+  "corpus_spec_ref": "2b11ccefc658c5b707310d3cc471d5c5928554f3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/mistlehq/mistle/2b11ccefc658c5b707310d3cc471d5c5928554f3/apps/control-plane-api/openapi/control-plane.internal.v1.json"
+}

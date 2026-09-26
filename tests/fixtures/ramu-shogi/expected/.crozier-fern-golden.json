@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "ramu-shogi",
+  "corpus_spec_ref": "22504221b837d01c9366a5d6c8c6a9b88f9f782b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/SH11235/ramu-shogi/22504221b837d01c9366a5d6c8c6a9b88f9f782b/packages/api-contract/src/generated/openapi.json"
+}

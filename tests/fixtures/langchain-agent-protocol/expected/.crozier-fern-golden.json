@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "langchain-agent-protocol",
+  "corpus_spec_ref": "fb81f3e27ee507557926ecf923d0f933a1c76d44",
+  "corpus_spec_url": "https://raw.githubusercontent.com/langchain-ai/agent-protocol/fb81f3e27ee507557926ecf923d0f933a1c76d44/openapi.json"
+}

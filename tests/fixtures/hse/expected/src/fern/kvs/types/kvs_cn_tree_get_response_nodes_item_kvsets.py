@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .kvs_cn_tree_get_response_nodes_item_kvsets_one_item import KvsCnTreeGetResponseNodesItemKvsetsOneItem
+
+KvsCnTreeGetResponseNodesItemKvsets = typing.Union[int, typing.List[KvsCnTreeGetResponseNodesItemKvsetsOneItem]]

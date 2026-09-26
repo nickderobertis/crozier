@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .post_v1vector_upsert_response_data import PostV1VectorUpsertResponseData
+from .post_v1vector_upsert_response_message import PostV1VectorUpsertResponseMessage
+
+PostV1VectorUpsertResponse = typing.Union[PostV1VectorUpsertResponseData, PostV1VectorUpsertResponseMessage]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "hse",
+  "corpus_spec_ref": "6d5207f88044a3bd9b3539260074395317e276d5",
+  "corpus_spec_url": "https://raw.githubusercontent.com/hse-project/hse/6d5207f88044a3bd9b3539260074395317e276d5/docs/openapi.json"
+}

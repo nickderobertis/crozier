@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_internal_sandbox_runtime_start_profile_instance_request_started_by_kind_one import (
+    PostInternalSandboxRuntimeStartProfileInstanceRequestStartedByKindOne,
+)
+from .post_internal_sandbox_runtime_start_profile_instance_request_started_by_kind_zero import (
+    PostInternalSandboxRuntimeStartProfileInstanceRequestStartedByKindZero,
+)
+
+PostInternalSandboxRuntimeStartProfileInstanceRequestStartedByKind = typing.Union[
+    PostInternalSandboxRuntimeStartProfileInstanceRequestStartedByKindZero,
+    PostInternalSandboxRuntimeStartProfileInstanceRequestStartedByKindOne,
+]

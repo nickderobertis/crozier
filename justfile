@@ -219,6 +219,16 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_entry_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_restful_v2_3_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_restful_v2_4_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ramu_shogi_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e langchain_agent_protocol_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hse_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_vector_operations_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mistle_control_plane_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e osparc_payments_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_node_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_server_matches_fern_output
 
 # Format the codebase in place.
 format:
