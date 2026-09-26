@@ -837,7 +837,7 @@ pub struct Schema {
     pub properties: SchemaProperties,
     /// Required property names.
     #[serde(default, deserialize_with = "de_required")]
-    pub required: Vec<String>,
+    pub required: RequiredNames,
     /// Array item schema.
     #[serde(default, deserialize_with = "de_items")]
     pub items: Option<Box<Schema>>,
@@ -987,12 +987,33 @@ impl Schema {
     /// `https://…/problems/invalid-argument`, where the derived identifier would
     /// spell the whole URI). A keyed declaration wins over the positional one for
     /// the same value.
+    ///
+    /// Fern first strips the prefix every positional name shares, character by
+    /// character (its importer's `stripCommonPrefix`): HuaTuo's `OperationKind`
+    /// names `OperationKindProfiling` and `OperationKindTracing`, and its golden's
+    /// members are `PROFILING` and `TRACING`.
     pub fn enum_member_names(&self) -> impl Iterator<Item = (&str, &str)> {
+        let varnames = self.enum_varnames.as_deref().unwrap_or_default();
+        let shared = match varnames {
+            [first, _, ..] => first
+                .char_indices()
+                .find(|&(index, ch)| {
+                    varnames.iter().any(|name| {
+                        name.get(index..).and_then(|rest| rest.chars().next()) != Some(ch)
+                    })
+                })
+                .map_or(first.len(), |(index, _)| index),
+            _ => 0,
+        };
         let mut names: IndexMap<&str, &str> = self
             .enum_values
             .iter()
             .flatten()
-            .zip(self.enum_varnames.iter().flatten())
+            .zip(
+                varnames
+                    .iter()
+                    .map(|name| name.get(shared..).unwrap_or_default()),
+            )
             .filter_map(|(value, name)| Some((value.as_str()?, name.trim())))
             .filter(|(_, name)| !name.is_empty())
             .collect();
@@ -1144,11 +1165,69 @@ where
     })
 }
 
+/// A Schema Object's `required`: the property names it lists, or the mark that
+/// the document wrote something there that is not a list at all.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RequiredNames {
+    /// A list, keeping its string entries.
+    Listed(Vec<String>),
+    /// A boolean, number or map rather than a list, which names nothing — see
+    /// `normalize_unlisted_required`, which the loader runs over every schema.
+    Unlisted,
+}
+
+impl Default for RequiredNames {
+    fn default() -> Self {
+        Self::Listed(Vec::new())
+    }
+}
+
+impl RequiredNames {
+    /// Whether the document wrote something other than a list.
+    #[must_use]
+    pub fn is_unlisted(&self) -> bool {
+        matches!(self, Self::Unlisted)
+    }
+
+    /// Require one more property. A `required` that was not a list becomes a
+    /// list of that one name, as a merge of lists makes it.
+    pub fn push(&mut self, name: String) {
+        match self {
+            Self::Listed(names) => names.push(name),
+            Self::Unlisted => *self = Self::Listed(vec![name]),
+        }
+    }
+}
+
+impl std::ops::Deref for RequiredNames {
+    type Target = [String];
+    fn deref(&self) -> &[String] {
+        match self {
+            Self::Listed(names) => names,
+            Self::Unlisted => &[],
+        }
+    }
+}
+
+impl<'a> IntoIterator for &'a RequiredNames {
+    type Item = &'a String;
+    type IntoIter = std::slice::Iter<'a, String>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl From<Vec<String>> for RequiredNames {
+    fn from(names: Vec<String>) -> Self {
+        Self::Listed(names)
+    }
+}
+
 /// Deserialize `required`, keeping only its string entries. A non-string entry
 /// names no property, and Fern reads the list as-is, so it requires nothing:
 /// Groupe PSA's `RemoteLights` declares `required: [true]` beside a property named
 /// `"true"`, and the golden's `true` field is optional.
-fn de_required<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
+fn de_required<'de, D>(deserializer: D) -> std::result::Result<RequiredNames, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -1159,8 +1238,12 @@ where
                 serde_json::Value::String(name) => Some(name),
                 _ => None,
             })
-            .collect(),
-        _ => Vec::new(),
+            .collect::<Vec<_>>()
+            .into(),
+        serde_json::Value::Bool(_)
+        | serde_json::Value::Number(_)
+        | serde_json::Value::Object(_) => RequiredNames::Unlisted,
+        _ => RequiredNames::default(),
     })
 }
 
@@ -1407,10 +1490,12 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_error_class_schema_names(&mut doc);
     normalize_multi_type_schemas(&mut doc);
+    normalize_unlisted_required(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     reject_unemittable_parameters(&doc, path)?;
@@ -1622,20 +1707,6 @@ pub(crate) fn referenced_component_schema(reference: &str) -> Option<&str> {
         .map(|pointer| pointer.split('/').next().unwrap_or(pointer))
 }
 
-/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
-/// Fern reads it as.
-///
-/// A single non-`null` member is nullability and nothing else (`type: [string,
-/// null]` is an optional string), which is why [`TypeField::primary`] answers
-/// every other caller. Two or more are a union of those types, and Fern imports
-/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
-/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
-/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
-/// down to the name. Normalizing here rather than at the use site means the
-/// union hoisting, naming, and forward-reference passes need no second spelling
-/// of the same shape. A `null` member stays optionality: it leaves the union and
-/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
-/// emits for a five-member list ending in `null`.
 /// Drop an empty `oneOf`/`anyOf`/`allOf` list.
 ///
 /// An empty composition constrains nothing, and every later pass reads
@@ -1664,6 +1735,185 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
     });
 }
 
+/// Replace every `$ref` that points *inside* a component schema — past its name,
+/// through `properties`, `items`, `additionalProperties` or a composition
+/// member — with a copy of the schema it points at, as though the document had
+/// written that schema at the reference. Fern's importer resolves such a
+/// pointer by walking the document (`resolveSchemaReference`) and converts what
+/// it finds at the referencing position, so the copy is named for where it is
+/// used: dnd5eapi's `Monster.legendary_actions` points its items at
+/// `Monster/allOf/3/properties/actions/items` and the golden declares
+/// `MonsterLegendaryActionsItem`, and CloudPDF's `…AffectedPagesItem.revision
+/// .page` points at the sibling `page` and is `…AffectedPagesItemRevisionPage`,
+/// where a string target is plain `str`.
+///
+/// A pointer that ends *on* a composition member, one through a segment no
+/// schema is named by (a `$defs` member), and one that names nothing are left
+/// for the lowering to type as unknown, which is what Fern makes of each of
+/// them (the `array-item-pointer-walk-*` and `ref-pointer-unnamed-segment`
+/// probes). A pointer met again while its own copy is being expanded is left
+/// in place too, so a self-referencing subtree terminates.
+fn normalize_schema_pointer_refs(doc: &mut OpenApi) {
+    let components = doc.components.schemas.clone();
+    let mut expanding = Vec::new();
+    for_each_root_schema(doc, &mut |schema| {
+        inline_schema_pointers(schema, &components, &mut expanding);
+    });
+}
+
+fn inline_schema_pointers(
+    schema: &mut Schema,
+    components: &IndexMap<String, Schema>,
+    expanding: &mut Vec<String>,
+) {
+    // A pointer that is the lone `allOf` member of a node adding only annotations
+    // is that node's schema: CloudPDF's annotation `inReplyTo` is `allOf: [→ the
+    // sibling `ref` union], nullable: true`, and the golden declares the union
+    // itself under `…InReplyTo`.
+    if schema.reference.is_none()
+        && schema.ty.is_none()
+        && schema.properties.is_empty()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+    {
+        if let Some([member]) = schema.all_of.as_deref() {
+            if let Some(reference) = member.reference.clone() {
+                if !expanding.contains(&reference) {
+                    if let Some(target) = schema_pointer_target(components, &reference) {
+                        let description = schema.description.take();
+                        let nullable = schema.nullable;
+                        *schema = target.clone();
+                        schema.description = description.or(schema.description.take());
+                        schema.nullable = nullable.or(schema.nullable);
+                        expanding.push(reference);
+                        inline_schema_pointers(schema, components, expanding);
+                        expanding.pop();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    if let Some(reference) = schema.reference.clone() {
+        if !expanding.contains(&reference) {
+            if let Some(target) = schema_pointer_target(components, &reference) {
+                *schema = target.clone();
+                expanding.push(reference);
+                inline_schema_pointers(schema, components, expanding);
+                expanding.pop();
+                return;
+            }
+        }
+    }
+    for property in schema.properties.values_mut() {
+        inline_schema_pointers(property, components, expanding);
+    }
+    if let Some(items) = &mut schema.items {
+        inline_schema_pointers(items, components, expanding);
+    }
+    if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
+        inline_schema_pointers(value, components, expanding);
+    }
+    for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of] {
+        for member in members.iter_mut().flatten() {
+            inline_schema_pointers(member, components, expanding);
+        }
+    }
+}
+
+/// The schema a pointer names *inside* a component, or `None` for a pointer to a
+/// component itself, one ending on a composition member, or one through any
+/// segment other than the Schema Object's own subschema positions.
+fn schema_pointer_target<'a>(
+    components: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    let pointer = reference.strip_prefix("#/components/schemas/")?;
+    let segments: Vec<String> = pointer
+        .split('/')
+        .map(|segment| segment.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    let (name, path) = segments.split_first()?;
+    if path.is_empty() {
+        return None;
+    }
+    let mut schema = components.get(name)?;
+    let mut index = 0;
+    let mut ends_on_member = false;
+    while index < path.len() {
+        ends_on_member = false;
+        schema = match path[index].as_str() {
+            "properties" => {
+                index += 1;
+                schema.properties.get(path.get(index)?)?
+            }
+            "items" => schema.items.as_deref()?,
+            "additionalProperties" => match &schema.additional_properties {
+                Some(AdditionalProperties::Schema(value)) => value,
+                _ => return None,
+            },
+            composition @ ("allOf" | "oneOf" | "anyOf") => {
+                index += 1;
+                let members = match composition {
+                    "allOf" => &schema.all_of,
+                    "oneOf" => &schema.one_of,
+                    _ => &schema.any_of,
+                };
+                ends_on_member = true;
+                members
+                    .as_ref()?
+                    .get(path.get(index)?.parse::<usize>().ok()?)?
+            }
+            _ => return None,
+        };
+        index += 1;
+    }
+    (!ends_on_member).then_some(schema)
+}
+
+/// An object schema whose `required` is not a list is Fern's unknown type: its
+/// importer iterates `required` while converting the object, and a boolean there
+/// fails the conversion. NPQ's `ApplicationAcceptRequest.data.attributes` is an
+/// object with properties and `required: false`, and its golden field is a bare
+/// `typing.Any`. A scalar with a stray `required: true` is no object and is
+/// unaffected (the same document's `data.type` stays `str`).
+fn normalize_unlisted_required(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node.required.is_unlisted()
+                && node.reference.is_none()
+                && (node.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                    || !node.properties.is_empty())
+            {
+                // The mark stays, because the failure also costs the operation
+                // its worked example (see `ir::fern_imports_no_endpoint_example`).
+                *node = Schema {
+                    description: node.description.take(),
+                    nullable: node.nullable,
+                    required: RequiredNames::Unlisted,
+                    ..Schema::default()
+                };
+            } else if node.required.is_unlisted() {
+                node.required = RequiredNames::default();
+            }
+        });
+    });
+}
+
+/// Rewrite a `type` list with more than one non-`null` member into the `anyOf`
+/// Fern reads it as.
+///
+/// A single non-`null` member is nullability and nothing else (`type: [string,
+/// null]` is an optional string), which is why [`TypeField::primary`] answers
+/// every other caller. Two or more are a union of those types, and Fern imports
+/// them as exactly that: EN 18222's `value: {type: [string, number, boolean]}`
+/// generates the hoisted alias `SingleValuedDataElementValue = typing.Union[str,
+/// float, bool]` in its own module — the same treatment an inline `anyOf` gets,
+/// down to the name. Normalizing here rather than at the use site means the
+/// union hoisting, naming, and forward-reference passes need no second spelling
+/// of the same shape. A `null` member stays optionality: it leaves the union and
+/// sets `nullable`, matching the `typing.Optional[ReadModelSummaryValue]` Fern
+/// emits for a five-member list ending in `null`.
 fn normalize_multi_type_schemas(doc: &mut OpenApi) {
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut |node| {
@@ -2759,6 +3009,197 @@ components:
             ok.reference.as_deref(),
             Some("#/components/responses/ItemsResponse")
         );
+    }
+
+    #[test]
+    fn a_pointer_inside_a_component_is_copied_where_it_is_used() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Page:
+      type: object
+      properties:
+        page:
+          type: object
+          properties:
+            kind: { type: string }
+        tags:
+          type: array
+          items: { type: string, enum: [a, b] }
+        extra:
+          type: object
+          additionalProperties: { type: integer }
+        closed:
+          type: object
+          additionalProperties: false
+        choice:
+          anyOf:
+            - type: object
+              properties:
+                label: { type: string }
+            - type: string
+        revision:
+          type: object
+          properties:
+            page: { $ref: '#/components/schemas/Page/properties/page' }
+            tag: { $ref: '#/components/schemas/Page/properties/tags/items' }
+            count: { $ref: '#/components/schemas/Page/properties/extra/additionalProperties' }
+            label: { $ref: '#/components/schemas/Page/properties/choice/anyOf/0/properties/label' }
+            member: { $ref: '#/components/schemas/Page/properties/choice/anyOf/1' }
+            open: { $ref: '#/components/schemas/Page/properties/closed/additionalProperties' }
+            missing: { $ref: '#/components/schemas/Page/properties/nothing' }
+            defs: { $ref: '#/components/schemas/Page/$defs/thing' }
+            whole: { $ref: '#/components/schemas/Page' }
+            again:
+              allOf:
+                - $ref: '#/components/schemas/Page/properties/choice'
+              nullable: true
+              description: the reply
+    Loop:
+      type: object
+      properties:
+        next: { $ref: '#/components/schemas/Loop/properties/next' }
+"##,
+        );
+        normalize_schema_pointer_refs(&mut doc);
+        let revision = &doc.components.schemas["Page"].properties["revision"];
+        // Walked through `properties`, `items`, `additionalProperties` and a
+        // composition member, each copy is the schema the pointer reaches.
+        assert!(revision.properties["page"].properties.contains_key("kind"));
+        assert!(revision.properties["page"].reference.is_none());
+        assert!(revision.properties["tag"].enum_values.is_some());
+        assert_eq!(
+            revision.properties["count"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("integer")
+        );
+        assert_eq!(
+            revision.properties["label"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("string")
+        );
+        // A pointer ending on a composition member, through a non-schema
+        // `additionalProperties`, to nothing, through `$defs`, or at a whole
+        // component is left for the lowering.
+        for kept in ["member", "open", "missing", "defs", "whole"] {
+            assert!(
+                revision.properties[kept].reference.is_some(),
+                "{kept} should keep its $ref"
+            );
+        }
+        // A lone pointer `allOf` member is its holder's schema, keeping the
+        // holder's own annotations.
+        let again = &revision.properties["again"];
+        assert!(again.all_of.is_none());
+        assert_eq!(again.any_of.as_ref().map(Vec::len), Some(2));
+        assert_eq!(again.nullable, Some(true));
+        assert_eq!(again.description.as_deref(), Some("the reply"));
+        // A pointer met again while its own copy expands terminates.
+        let next = &doc.components.schemas["Loop"].properties["next"];
+        assert!(next.reference.is_some());
+    }
+
+    #[test]
+    fn an_object_whose_required_is_not_a_list_is_unknown() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Request:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          properties:
+            kind: { type: string, required: true }
+            attributes:
+              description: the attributes
+              type: object
+              required: false
+              properties:
+                funded: { type: boolean }
+            counted: { properties: { n: { type: integer } }, required: 3 }
+            mapped: { type: object, required: { a: 1 } }
+            nulled: { type: object, required: null }
+"##,
+        );
+        normalize_unlisted_required(&mut doc);
+        let data = &doc.components.schemas["Request"].properties["data"];
+        let attributes = &data.properties["attributes"];
+        assert!(attributes.ty.is_none() && attributes.properties.is_empty());
+        assert_eq!(attributes.description.as_deref(), Some("the attributes"));
+        assert!(attributes.required.is_unlisted());
+        assert!(data.properties["counted"].properties.is_empty());
+        assert!(data.properties["mapped"].required.is_unlisted());
+        // A scalar's stray `required: true` changes nothing and leaves no mark;
+        // neither does a `null`, nor a real list.
+        let kind = &data.properties["kind"];
+        assert_eq!(
+            kind.ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
+        assert!(!kind.required.is_unlisted());
+        assert!(!data.properties["nulled"].required.is_unlisted());
+        assert!(data.required.is_empty());
+        assert_eq!(
+            &doc.components.schemas["Request"].required[..],
+            &["data".to_string()]
+        );
+        // Requiring a name of an unlisted `required` makes it a list of that name.
+        let mut merged = RequiredNames::Unlisted;
+        merged.push("id".to_string());
+        assert_eq!(merged, RequiredNames::from(vec!["id".to_string()]));
+    }
+
+    #[test]
+    fn enum_varnames_lose_the_prefix_every_name_shares() {
+        let doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    OperationKind:
+      type: string
+      enum: [profiling, tracing]
+      x-enum-varnames: [OperationKindProfiling, OperationKindTracing]
+    Single:
+      type: string
+      enum: ["1.0"]
+      x-enum-varnames: [WatchEventSpecVersion10]
+    Uneven:
+      type: string
+      enum: [a, b]
+      x-enum-varnames: [Ab, A]
+"##,
+        );
+        let names = |name: &str| {
+            doc.components.schemas[name]
+                .enum_member_names()
+                .map(|(value, name)| format!("{value}={name}"))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            names("OperationKind"),
+            ["profiling=Profiling", "tracing=Tracing"]
+        );
+        // One name has nothing to share; a name that is all prefix is blank and
+        // names nothing.
+        assert_eq!(names("Single"), ["1.0=WatchEventSpecVersion10"]);
+        assert_eq!(names("Uneven"), ["a=b"]);
     }
 
     /// An empty `oneOf` constrains nothing. Left in place it reads downstream as

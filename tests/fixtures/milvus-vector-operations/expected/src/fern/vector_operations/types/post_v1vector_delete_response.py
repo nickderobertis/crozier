@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .post_v1vector_delete_response_data import PostV1VectorDeleteResponseData
+from .post_v1vector_delete_response_message import PostV1VectorDeleteResponseMessage
+
+PostV1VectorDeleteResponse = typing.Union[PostV1VectorDeleteResponseData, PostV1VectorDeleteResponseMessage]

@@ -1,0 +1,11 @@
+
+
+import typing
+
+from ...types.participant_declaration_completed_request import ParticipantDeclarationCompletedRequest
+from ...types.participant_declaration_retained_request import ParticipantDeclarationRetainedRequest
+from ...types.participant_declaration_started_request import ParticipantDeclarationStartedRequest
+
+ParticipantDeclarationRequestDataAttributes = typing.Union[
+    ParticipantDeclarationStartedRequest, ParticipantDeclarationRetainedRequest, ParticipantDeclarationCompletedRequest
+]

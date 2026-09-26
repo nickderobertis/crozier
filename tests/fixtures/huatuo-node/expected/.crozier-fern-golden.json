@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "huatuo-node",
+  "corpus_spec_ref": "36175d6e91fdc7b79e818496e1587eb0ca79a18d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.gen.json"
+}

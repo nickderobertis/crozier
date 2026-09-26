@@ -325,7 +325,7 @@ def record_guard_logs(source: str) -> None:
 
 PIN_FIELDS = ("walk", "document", "revision", "blob", "sha256")
 HANDOFF_FIELDS = ("golden_key", "unreached_site", "candidate_url", "immutable_ref", "sha256",
-                  "licence_spdx", "fern_screen", "gap_keys")
+                  "licence_spdx", "fern_screen", "gap_keys", "disposition")
 
 
 def git_blob(data: bytes) -> str:
@@ -1019,7 +1019,8 @@ def _dispositions(key: str) -> list[str]:
         for row in read_tsv(handoff, HANDOFF_FIELDS, "restore it from git"):
             if row["golden_key"] == key:
                 gaps = "" if row["gap_keys"] in ("", "-") else f", declaring `gap` row(s) {row['gap_keys']}"
-                out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — {row['fern_screen']}")
+                out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — "
+                           f"{row['fern_screen']} — disposition: {row['disposition']}")
     for source in DECLARED_SOURCES:
         screens = source_dir(source) / "screens.jsonl"
         if not screens.is_file():

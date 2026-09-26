@@ -456,7 +456,9 @@ class WitnessSearchGithubTests(unittest.TestCase):
     def test_key_derivation_and_both_serialization_query_plan(self) -> None:
         keys = SEARCH.derive_keys(REPO / "docs/openapi-surface")
         self.assertIn("annotated-ref-target-string-const", keys)
-        self.assertIn("securityscheme-ref", keys)
+        # A row a registered witness settled leaves the key set: corpus rows 178
+        # and 179 made `securityscheme-ref` `golden`.
+        self.assertNotIn("securityscheme-ref", keys)
         queries = SEARCH.query_plan(
             keys["annotated-ref-target-string-const"]["selector"]
         )
@@ -481,7 +483,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
                 for q in pointer_queries["github-code-search"]
             )
         )
-        security_queries = SEARCH.query_plan(keys["securityscheme-ref"]["selector"])
+        security_queries = SEARCH.query_plan("securityScheme:$ref")
         self.assertEqual(7, len(security_queries["github-code-search"]))
         self.assertEqual(2, len(security_queries["sourcegraph"]))
         self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))

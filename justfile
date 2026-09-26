@@ -68,7 +68,11 @@ test-live-e2e *args:
 # fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
 # missing spec from a skip into a hard failure so the leg can't no-op. One
 # `cargo test` invocation per corpus keeps a fetch/spec problem attributable to
-# its API rather than hidden in a shared filter.
+# its API rather than hidden in a shared filter. The list below is held to the
+# registered corpora in both directions by `tests/e2e.rs`'s
+# `every_registered_corpus_is_wired_into_the_gate` (part of `check`): a registered
+# corpus whose test is missing here fails it, and so does a line naming a test no
+# registered corpus owns, so a renamed test cannot drop a corpus silently.
 test-corpus-match:
     ./scripts/fetch-corpus.sh
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
@@ -225,6 +229,19 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e zulip_jentic_entry_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_restful_v2_3_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_restful_v2_4_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ramu_shogi_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e langchain_agent_protocol_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e hse_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e milvus_vector_operations_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mistle_control_plane_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e osparc_payments_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_node_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e huatuo_server_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e viskit_studio_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e embedpdf_cloudpdf_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e npq_registration_matches_fern_output
 
 # Format the codebase in place.
 format:

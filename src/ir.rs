@@ -378,6 +378,37 @@ pub struct GlobalHeader {
     /// Whether the header is required on every operation (so the constructor arg is
     /// mandatory and the `get_headers` assignment is unconditional).
     pub required: bool,
+    /// The constructor argument's Python type: `str`, or the scalar its first
+    /// declaration's schema names. Milvus's `Request-Timeout` is `type: integer`,
+    /// and Fern's wrapper takes `typing.Optional[int]` and writes
+    /// `str(self._request_timeout)` into the header.
+    pub py_type: HeaderType,
+}
+
+/// The Python scalar a promoted header's constructor argument takes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HeaderType {
+    /// `str`, written into the header as is.
+    Str,
+    /// `int`, from `type: integer`.
+    Int,
+    /// `float`, from `type: number`.
+    Float,
+    /// `bool`, from `type: boolean`.
+    Bool,
+}
+
+impl HeaderType {
+    /// The Python annotation, e.g. `int`.
+    #[must_use]
+    pub fn python(self) -> &'static str {
+        match self {
+            Self::Str => "str",
+            Self::Int => "int",
+            Self::Float => "float",
+            Self::Bool => "bool",
+        }
+    }
 }
 
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
@@ -390,15 +421,20 @@ pub struct GlobalHeader {
 /// scheme, even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
-    // wire name → (operations carrying it, required in every one so far), first-seen.
-    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
+    // wire name → (operations carrying it, required in every one so far, the
+    // first declaration's Python type), first-seen.
+    let mut seen: IndexMap<String, (usize, bool, HeaderType)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             total += 1;
             let mut in_op: std::collections::HashSet<&str> = std::collections::HashSet::new();
             for p in &op.parameters {
                 if p.location == Some(ParameterLocation::Header) && in_op.insert(p.name.as_str()) {
-                    let entry = seen.entry(p.name.clone()).or_insert((0, true));
+                    let entry = seen.entry(p.name.clone()).or_insert((
+                        0,
+                        true,
+                        header_py_type(p.schema.as_ref()),
+                    ));
                     entry.0 += 1;
                     entry.1 = entry.1 && p.required == Some(true);
                 }
@@ -418,7 +454,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         .collect();
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(wire_name, (count, required))| {
+        .filter(|(wire_name, (count, required, _))| {
             // Fern promotes a header carried by *every* operation with its own
             // declared optionality, and one carried by at least three quarters
             // of them as an unconditionally optional constructor field.
@@ -432,9 +468,10 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
-        .map(|(wire_name, (count, required))| GlobalHeader {
+        .map(|(wire_name, (count, required, py_type))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
+            py_type,
             // A header short of every operation is promoted as optional
             // whatever the operations that do declare it say.
             required: required && count == total,
@@ -449,6 +486,16 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // then security headers).
     headers.extend(api_key_headers);
     headers
+}
+
+/// The Python scalar a promoted header's schema declares, `str` for anything else.
+fn header_py_type(schema: Option<&Schema>) -> HeaderType {
+    match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
+        Some("integer") => HeaderType::Int,
+        Some("number") => HeaderType::Float,
+        Some("boolean") => HeaderType::Bool,
+        _ => HeaderType::Str,
+    }
 }
 
 fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
@@ -481,6 +528,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(header_param_stem(wire_name)),
                 wire_name: wire_name.clone(),
                 required: true,
+                py_type: HeaderType::Str,
             })
         })
         .collect()
@@ -1576,7 +1624,8 @@ pub struct Field {
     pub nullable: bool,
     /// Whether the property is in the schema's `required` set. Distinct from
     /// `optional` (an unknown/nullable required field is still `Optional[..]` in
-    /// Python); drives whether a synthesized example includes the field.
+    /// Python); a synthesized example includes the field only when it is required
+    /// and not optional.
     pub spec_required: bool,
     /// Optional field docstring (from the property `description`).
     pub docstring: Option<String>,
@@ -1672,25 +1721,37 @@ fn build_enum(
     // (TrueForge's `MetricsUnit` names `$` as `USD`, where the derived identifier
     // would be the placeholder `_`).
     let declared: std::collections::HashMap<&str, &str> = schema.enum_member_names().collect();
-    let mut seen_members = std::collections::HashSet::new();
+    let mut seen_names = std::collections::HashSet::new();
+    let mut member_params: std::collections::HashMap<String, String> =
+        std::collections::HashMap::new();
     let members = values
         .into_iter()
         .filter(|value| seen_values.insert(value.clone()))
         .filter_map(|value| {
-            let name = declared.get(value.as_str()).map_or_else(
-                || naming::enum_member_name(&value),
-                |name| naming::enum_member_name(name),
-            );
-            if !seen_members.insert(name.clone()) {
+            let declared_name = declared.get(value.as_str()).copied();
+            if !seen_names.insert(fern_enum_name_key(&value, declared_name)) {
                 return None;
             }
-            let visit = declared.get(value.as_str()).map_or_else(
-                || naming::enum_visit_param(&value),
-                |name| naming::enum_visit_param(name),
+            let name = declared_name.map_or_else(
+                || naming::enum_member_name(&value),
+                naming::enum_member_name,
             );
+            // A member whose Python name an earlier one already took shares its
+            // callback: NPQ's `created_at` and `-created_at` are both `CREATED_AT`.
+            let visit_param = if let Some(param) = member_params.get(&name) {
+                param.clone()
+            } else {
+                let visit = declared_name.map_or_else(
+                    || naming::enum_visit_param(&value),
+                    naming::enum_visit_param,
+                );
+                let param = dedupe(visit, &mut seen_params);
+                member_params.insert(name.clone(), param.clone());
+                param
+            };
             Some(EnumMember {
                 name,
-                visit_param: dedupe(visit, &mut seen_params),
+                visit_param,
                 value,
                 docstring: None,
             })
@@ -1701,6 +1762,40 @@ fn build_enum(
         module: naming::module_name(name),
         members,
         docstring,
+    }
+}
+
+/// The name Fern's importer gives an enum value before any casing, which is what
+/// it omits a later value over, compared without regard to letter case: a
+/// declared name, the value itself when it is already a name
+/// (`^[a-zA-Z][a-zA-Z0-9_]*$`), and otherwise the camel-cased name it generates
+/// from the value's words. So Tally's `dd/MM/yyyy` and `dd.MM.yyyy` both generate
+/// `DdMmYyyy`, and NPQ's `-name` generates `Name` beside `name`, and Fern keeps
+/// the first of each pair alone; but NPQ's `-created_at` generates `CreatedAt`,
+/// which is not `created_at`, and Fern keeps both (as two `CREATED_AT` members).
+fn fern_enum_name_key(value: &str, declared: Option<&str>) -> String {
+    if let Some(name) = declared {
+        return name.to_lowercase();
+    }
+    let mut chars = value.chars();
+    if chars.next().is_some_and(|ch| ch.is_ascii_alphabetic())
+        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_')
+    {
+        return value.to_lowercase();
+    }
+    // The generated name is `upperFirst(camelCase(value))`: its words' letters and
+    // digits, which is all a case-blind comparison sees. A value opening on a
+    // digit is spelled out instead, and one with no word characters takes a
+    // fixed name; both are left to their own spelling here.
+    let generated: String = value
+        .chars()
+        .filter(char::is_ascii_alphanumeric)
+        .map(|ch| ch.to_ascii_lowercase())
+        .collect();
+    if generated.is_empty() || value.starts_with(|ch: char| ch.is_ascii_digit()) {
+        value.to_lowercase()
+    } else {
+        generated
     }
 }
 
@@ -2432,13 +2527,16 @@ fn build_endpoint(
                 } else {
                     parameter_example(doc, p)
                 },
+                // Only a *named* type's pattern is checked against the
+                // placeholder: discord's `guild_id: SnowflakeType` loses the
+                // example, while CloudPDF's inline `pageKey` pattern
+                // `^obj:[1-9][0-9]*$` keeps `page_key="pageKey"`.
                 pattern_constrained: p.schema.as_ref().is_some_and(|schema| {
-                    schema.pattern.is_some()
-                        || schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| resolve_ref(doc, reference))
-                            .is_some_and(|target| target.pattern.is_some())
+                    schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                        .is_some_and(|target| target.pattern.is_some())
                 }),
             }
         })
@@ -3538,6 +3636,33 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
         || unsupported_response
         || undeclared_response
         || request_example_fails(doc, op)
+        || request_declares_unlisted_required(doc, op)
+}
+
+/// Whether the JSON request body holds an object whose `required` is not a list
+/// (see `openapi::normalize_unlisted_required`). The conversion that fails there
+/// fails the request example too: NPQ's `accept_an_npq_application` posts one,
+/// and its golden's example is Fern's fallback (`id="id"`, `type="type"`) rather
+/// than the document's `example`s.
+fn request_declares_unlisted_required(doc: &OpenApi, op: &Operation) -> bool {
+    let Some(schema) = op
+        .request_body
+        .as_ref()
+        .and_then(|body| selected_json_request_media(body)?.1.schema.as_ref())
+    else {
+        return false;
+    };
+    let mut schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema)
+        .clone();
+    let mut found = false;
+    crate::openapi::for_each_schema_in(&mut schema, &mut |node| {
+        found |= node.required.is_unlisted();
+    });
+    found
 }
 
 /// Whether Fern's importer gives up on the operation's request example because a
@@ -4093,8 +4218,24 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // `BadRequestErrorBody`, and the seven inline variants of its
                 // `/users/{user_id}/status` `400` remain as
                 // `BadRequestErrorBodyZero` to `…Six`.
+                // An earlier object declaration's enum properties stay behind in
+                // the same way: Mistle's `400`s declare `code: {enum:
+                // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
+                // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                     if members.len() > 1 {
+                        if let Some(existing) = bodies.get(&name).filter(|existing| {
+                            existing.one_of.is_none() && existing.any_of.is_none()
+                        }) {
+                            for (property, property_schema) in &existing.properties {
+                                if string_enum_values(property_schema).is_some() {
+                                    superseded_enums.insert(
+                                        format!("{name}{}", naming::class_name(property)),
+                                        property_schema.clone(),
+                                    );
+                                }
+                            }
+                        }
                         union_declarations.push((name.clone(), schema.clone()));
                         bodies.insert(name, schema.clone());
                     }
@@ -4105,6 +4246,14 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                         existing.one_of.is_some() || existing.any_of.is_some()
                     }) {
                         bodies.shift_remove(&name);
+                        for (property, property_schema) in &schema.properties {
+                            if string_enum_values(property_schema).is_some() {
+                                superseded_enums.shift_remove(&format!(
+                                    "{name}{}",
+                                    naming::class_name(property)
+                                ));
+                            }
+                        }
                     }
                     if let Some(existing) = bodies.get_mut(&name) {
                         // The last declaration documents the body: Zulip's `404`s
@@ -4405,7 +4554,7 @@ fn resolve_request_body(
         }
     }
     let binary_media = |media_type: &&String, media: &&crate::openapi::MediaType| {
-        *media_type != "*/*"
+        is_binary_media_type(media_type)
             && media.schema.as_ref().is_some_and(|schema| {
                 let schema = schema
                     .reference
@@ -4448,7 +4597,17 @@ fn resolve_request_body(
     // explicitly opts out. Wildcard request schemas remain required even when the
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
     // itself as the endpoint input.
-    let required = (media_type == "*/*" || rb.required != Some(false)) && !is_optional(schema);
+    // …and so does a referenced map, whose component Fern passes whole as the
+    // body: CloudPDF's `doc.pages.flatten` declares `required: false` over
+    // `$ref DocPagesFlattenRequest` (`additionalProperties: {}`), and its method
+    // takes a required `request: DocPagesFlattenRequest`.
+    let referenced_map = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .is_some_and(is_map);
+    let required = (media_type == "*/*" || rb.required != Some(false) || referenced_map)
+        && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
@@ -4880,6 +5039,34 @@ fn reference_body_example<'a>(
         .find_map(|example| component_example_value(doc, example))
 }
 
+/// A media type Fern sends as raw bytes (its `MediaType.isBinary`): any image,
+/// audio, video or font type, or one of the binary `application` subtypes. Any
+/// other media type is not a binary body however its schema reads: HuaTuo's
+/// `application/proto` Pyroscope queries declare `{type: string, format:
+/// binary}`, and Fern's methods for them take no request at all.
+fn is_binary_media_type(media_type: &str) -> bool {
+    let base = media_type.split(';').next().unwrap_or(media_type).trim();
+    let Some((top, subtype)) = base.split_once('/') else {
+        return false;
+    };
+    match top {
+        "image" | "audio" | "video" | "font" => true,
+        "application" => matches!(
+            subtype,
+            "octet-stream"
+                | "pdf"
+                | "zip"
+                | "x-zip-compressed"
+                | "gzip"
+                | "x-gzip"
+                | "tar"
+                | "x-tar"
+                | "br"
+        ),
+        _ => false,
+    }
+}
+
 pub(crate) fn is_json_like_media_type(media_type: &str) -> bool {
     // A media type's parameters do not change what it is: VTEX declares its
     // `/pricing/config` body under `application/json; charset=utf-8` alone, and
@@ -4956,7 +5143,7 @@ fn hoist_inline_object(
             }),
             media_example: false,
             schema_body_example: false,
-            docstring: clean_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref()),
             is_file: false,
             form_json: false,
             form_content_type: None,
@@ -5229,7 +5416,7 @@ impl InlineHoister<'_> {
             .collect();
         let hoisted = self.out.len();
         let mut inherited = Vec::new();
-        let mut overridden = false;
+        let mut overridden = schema.all_of.iter().flatten().any(is_nullable_annotation);
         for (base_name, base) in &bases {
             let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
             let mut base_fields = Vec::new();
@@ -5402,6 +5589,7 @@ impl InlineHoister<'_> {
             }
         }
         if is_inline_object(variant)
+            || is_declared_empty_object(variant)
             || is_bare_object(variant)
                 && schema_example(variant).is_some_and(|example| {
                     example.is_object() && !example_is_schema_definition(example)
@@ -6661,6 +6849,8 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
     } else if id.contains('_') {
         if first_tag(op).is_none() {
             naming::sanitize_identifier(&naming::to_snake_case(id))
+        } else if let Some(name) = fastapi_endpoint_name(id, url, http_method) {
+            naming::sanitize_identifier(&naming::to_snake_case(name))
         } else if first_segment_is_tag(op, id) {
             method_after_first_segment(id)
         } else if group_prefix_is_tag(op, id) {
@@ -6676,6 +6866,37 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         method_from_groupless_id(id, first_tag(op))
     };
     naming::escape_python_keyword(method)
+}
+
+/// A FastAPI operationId under a tag, with the `{path}_{method}` suffix FastAPI
+/// appended stripped off, as Fern's importer (`maybeGetFastApiEndpointLocation`)
+/// strips it: the path is split on runs of characters other than letters, digits
+/// and braces, joined with `_`, and each brace read as `_`. oSPARC payments'
+/// `acknowledge_payment_v1_payments__payment_id__ack_post` on
+/// `POST /v1/payments/{payment_id}:ack` is `acknowledge_payment`, while VisKit's
+/// `warmup_extract_api_kits__warmup_extract_get` on `/api/kits/_warmup/extract`
+/// keeps its whole id: that split reads the path as `_api_kits_warmup_extract`.
+fn fastapi_endpoint_name<'a>(id: &'a str, url: &str, http_method: &str) -> Option<&'a str> {
+    let path = url
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '{' && c != '}')
+        .collect::<Vec<_>>();
+    // A run of separators is one split, so the empty pieces between them go.
+    let mut segment = String::new();
+    for (index, piece) in path.iter().enumerate() {
+        if index > 0 && piece.is_empty() && index + 1 < path.len() {
+            continue;
+        }
+        if index > 0 {
+            segment.push('_');
+        }
+        segment.push_str(piece);
+    }
+    let suffix = format!(
+        "{}_{}",
+        segment.replace(['{', '}'], "_"),
+        http_method.to_ascii_lowercase()
+    );
+    id.strip_suffix(&suffix).filter(|name| !name.is_empty())
 }
 
 /// The method name for a `group_method` operationId (one that contains `_`). Fern
@@ -8221,6 +8442,22 @@ impl Builder<'_> {
                         return;
                     }
                 }
+                // An inline undiscriminated union element is a union alias of its
+                // own: Milvus's `vector` is an array of `anyOf: [integer,
+                // string]`, and Fern declares `VectorItem = Union[int, str]` and
+                // `Vector = List[VectorItem]`.
+                if items.reference.is_none()
+                    && union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                {
+                    self.add_named(&item_name, items);
+                    self.push_alias(
+                        name,
+                        module,
+                        sequence_of(schema, TypeRef::Named(item_name)),
+                        docstring,
+                    );
+                    return;
+                }
                 if is_inline_struct(items) {
                     let item_doc = clean_doc(items.description.as_deref());
                     self.add_object(&item_name, item_module, items, item_doc);
@@ -8401,11 +8638,15 @@ impl Builder<'_> {
             .collect();
         // A base property this model redeclares. Only the bases that have one are
         // lowered here, so an ordinary `allOf` still hoists nothing twice.
-        let collides = base_refs.iter().any(|(_, base)| {
-            base.properties
-                .keys()
-                .any(|field| declared_fields.contains(field.as_str()))
-        });
+        // A nullability-only member inlines every base (see
+        // [`is_nullable_annotation`]).
+        let nullable_annotation = schema.all_of.iter().flatten().any(is_nullable_annotation);
+        let collides = nullable_annotation
+            || base_refs.iter().any(|(_, base)| {
+                base.properties
+                    .keys()
+                    .any(|field| declared_fields.contains(field.as_str()))
+            });
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if member.reference.is_none() {
@@ -8490,6 +8731,7 @@ impl Builder<'_> {
                 inherited_by_base.push(inherited);
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
+            overridden |= nullable_annotation;
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -8507,25 +8749,34 @@ impl Builder<'_> {
             // required. Zulip's `JsonSuccess` restates `result`, which both
             // `JsonSuccessBase` and its parent `JsonResponseBase` declare, so
             // both are inlined and the model extends nothing.
-            let mut extended = Vec::new();
-            let mut inlined_by_base = Vec::new();
-            for (index, (base_name, _)) in base_refs.iter().enumerate() {
-                if !overridden_by_base[index] {
-                    bases.push(base_name.clone());
-                    continue;
+            //
+            // A nullability-only member is the exception: the model is a flat
+            // copy of every base, each read with its whole `allOf` chain, and
+            // extends nothing (see [`is_nullable_annotation`]).
+            let inlined_by_base = if nullable_annotation {
+                inherited_by_base
+            } else {
+                let mut extended = Vec::new();
+                let mut inlined_by_base = Vec::new();
+                for (index, (base_name, _)) in base_refs.iter().enumerate() {
+                    if !overridden_by_base[index] {
+                        bases.push(base_name.clone());
+                        continue;
+                    }
+                    let inline = self.inlined_part(raw_bases[index], &fields, &mut extended, 0);
+                    let inline_required: Vec<&str> =
+                        inline.required.iter().map(String::as_str).collect();
+                    let mut inherited = Vec::new();
+                    self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
+                    inlined_by_base.push(inherited);
                 }
-                let inline = self.inlined_part(raw_bases[index], &fields, &mut extended, 0);
-                let inline_required: Vec<&str> =
-                    inline.required.iter().map(String::as_str).collect();
-                let mut inherited = Vec::new();
-                self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
-                inlined_by_base.push(inherited);
-            }
-            for parent in extended {
-                if !bases.contains(&parent) {
-                    bases.push(parent);
+                for parent in extended {
+                    if !bases.contains(&parent) {
+                        bases.push(parent);
+                    }
                 }
-            }
+                inlined_by_base
+            };
             for mut inherited in inlined_by_base {
                 inherited.retain(|field| {
                     if let Some(existing) = fields
@@ -8628,7 +8879,7 @@ impl Builder<'_> {
         required.extend(schema.required.iter().cloned());
         required.dedup();
         merged.properties = properties;
-        merged.required = required;
+        merged.required = required.into();
         merged
     }
 
@@ -8807,6 +9058,7 @@ impl Builder<'_> {
                     .get(&property_name)
                     .and_then(discriminant_value)?;
                 let variant_name = format!("{name}{}", discriminant_class_name(&value));
+                let mut lowered_fields = None;
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
@@ -8818,6 +9070,28 @@ impl Builder<'_> {
                         &standalone,
                         clean_doc(variant.description.as_deref()),
                     );
+                    // An inline variant's fields are the ones the model lowering
+                    // just gave it, nested hoists and all: CloudPDF's `Ink`
+                    // annotation's `inkList` is a list of lists of an inline
+                    // point, and Fern's variant field is
+                    // `List[List[…InkInkListItemItem]]`.
+                    if variant.all_of.is_none() {
+                        lowered_fields = self.types.iter().rev().find_map(|decl| match decl {
+                            // …undocumented, as every union member's fields are.
+                            TypeDecl::Object(object) if object.name == variant_name => Some(
+                                object
+                                    .fields
+                                    .iter()
+                                    .cloned()
+                                    .map(|field| Field {
+                                        docstring: None,
+                                        ..field
+                                    })
+                                    .collect(),
+                            ),
+                            _ => None,
+                        });
+                    }
                 }
                 members.push(UnionMember {
                     class_name: format!(
@@ -8827,12 +9101,14 @@ impl Builder<'_> {
                         )
                     ),
                     discriminant: value,
-                    fields: member_fields(
-                        target,
-                        &property_name,
-                        self.schemas,
-                        target_name.as_deref().or(Some(variant_name.as_str())),
-                    ),
+                    fields: lowered_fields.unwrap_or_else(|| {
+                        member_fields(
+                            target,
+                            &property_name,
+                            self.schemas,
+                            target_name.as_deref().or(Some(variant_name.as_str())),
+                        )
+                    }),
                     discriminant_index: member_discriminant_index(
                         target,
                         &property_name,
@@ -9479,6 +9755,10 @@ impl Builder<'_> {
                             );
                             return TypeRef::List(Box::new(TypeRef::Named(name)));
                         }
+                        // A nullable element union is an optional element:
+                        // CloudPDF's `calculationOrder` items are the sibling
+                        // `ref` union marked `nullable: true`, and the golden is
+                        // `List[Optional[…CalculationOrderItem]]`.
                         if let Some(decl) = self.discriminated_union(
                             &name,
                             &module,
@@ -9486,7 +9766,12 @@ impl Builder<'_> {
                             clean_doc(items.description.as_deref()),
                         ) {
                             self.types.push(TypeDecl::DiscriminatedUnion(decl));
-                            return TypeRef::List(Box::new(TypeRef::Named(name)));
+                            let element = TypeRef::Named(name);
+                            return TypeRef::List(Box::new(if is_explicitly_nullable(items) {
+                                optional_type_ref(element)
+                            } else {
+                                element
+                            }));
                         }
                         // A `type: null` member states that the *element* may be
                         // absent rather than adding an `Any` alternative to the
@@ -9638,6 +9923,18 @@ impl Builder<'_> {
                                     )));
                                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                                 }
+                                // An element that is one member beside `null` is an
+                                // optional element here too: VisKit's
+                                // `KitListItem.image_ids` is `anyOf: [array of
+                                // anyOf: [string, null], null]`, and Fern types it
+                                // `Optional[List[Optional[str]]]`.
+                                if let Some(member) = simple_nullable_member(items) {
+                                    let element = member.reference.as_deref().map_or_else(
+                                        || base_type_ref(member),
+                                        |reference| TypeRef::Named(ref_to_class(reference)),
+                                    );
+                                    return TypeRef::List(Box::new(optional_type_ref(element)));
+                                }
                                 if let Some(item_members) =
                                     items.one_of.as_ref().or(items.any_of.as_ref())
                                 {
@@ -9774,11 +10071,18 @@ impl Builder<'_> {
                     // beneath a one-element `typing.Union`.
                     if let [only] = members.as_slice() {
                         if is_inline_struct(only) {
+                            // Documented by the member when the property is not:
+                            // NPQ's one-member `anyOf` `attributes`.
                             self.add_object(
                                 &name,
                                 naming::module_name(&name),
                                 only,
-                                clean_doc(prop_schema.description.as_deref()),
+                                clean_doc(
+                                    prop_schema
+                                        .description
+                                        .as_deref()
+                                        .or(only.description.as_deref()),
+                                ),
                             );
                             return TypeRef::Named(name);
                         }
@@ -9896,11 +10200,16 @@ impl Builder<'_> {
                             nullable_member(m, ty)
                         })
                         .collect();
-                    let variants = dedupe_union_members(variants);
-                    // Alternatives that are one schema written twice are that
-                    // schema, not a union of it: OpenCodeUI's `Command.template`
-                    // is `anyOf: [string, string]` and Fern types it `str`. Members
-                    // that merely *render* alike stay a union — Sigstore Rekor's
+                    let mut variants = dedupe_union_members(variants);
+                    // Members that all convert to one type are that type, with no
+                    // alias (Fern's `processSubtypes`): CloudPDF's `docMdp` offers
+                    // `{type: number, enum: [1]}`, `[2]` and `[3]` and is
+                    // `Optional[float]`, and its `calloutLine` offers two tuple
+                    // arrays and is `Optional[List[Any]]`. Alternatives that are
+                    // one schema written twice are that schema, not a union of it:
+                    // OpenCodeUI's `Command.template` is `anyOf: [string, string]`
+                    // and Fern types it `str`. Members that merely *render* alike
+                    // as `Any` stay a union — Sigstore Rekor's
                     // `AlpinePackageSchema.package` is two different
                     // constraint-only members and Fern's alias is
                     // `typing.Union[typing.Any]`.
@@ -9908,8 +10217,10 @@ impl Builder<'_> {
                         let identical = members
                             .windows(2)
                             .all(|pair| format!("{:?}", pair[0]) == format!("{:?}", pair[1]));
-                        if members.len() > 1 && identical && !matches!(only, TypeRef::Named(_)) {
-                            return only.clone();
+                        let written_twice =
+                            members.len() > 1 && identical && !matches!(only, TypeRef::Named(_));
+                        if written_twice || *only != TypeRef::Primitive(Prim::Any) {
+                            return variants.remove(0);
                         }
                     }
                     let module = naming::module_name(&name);
@@ -10051,10 +10362,13 @@ impl Builder<'_> {
         // `anyOf: [false, {additionalProperties: {anyOf: [two objects]}}]` and Fern
         // generates `Union[bool, Dict[str, ConfigLspOneValue]]` over a
         // `ConfigLspOneValue` alias, and `Config.formatter`'s object value is the
-        // model `ConfigFormatterOneValue`.
+        // model `ConfigFormatterOneValue`. A value that is one schema beside
+        // `null` is no inline union but an optional value: Ramu Shogi's
+        // `JsonValue` offers `{additionalProperties: {oneOf: [$ref JsonValue,
+        // null]}}` and Fern types it `Dict[str, Optional["JsonValue"]]`.
         if is_map(variant) {
             if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
-                if value.reference.is_none() {
+                if value.reference.is_none() && simple_nullable_member(value).is_none() {
                     let value_name = format!(
                         "{}Value",
                         variant_class_name(parent, index, variant, siblings)
@@ -10470,21 +10784,26 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
     required.extend(schema.required.iter().cloned());
     required.dedup();
     merged.properties = properties;
-    merged.required = required;
+    merged.required = required.into();
     merged
 }
 
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
 /// union member written so is an empty model to Fern, not a map: Timely's
 /// `V1.Project.cost` offers a cost object or one, and Fern declares
-/// `V1ProjectCostOne`.
+/// `V1ProjectCostOne`. Closing it changes nothing: Milvus's insert `data` offers
+/// `{type: object, properties: {}, additionalProperties: false}` or a list, and
+/// Fern declares `PostV2VectordbEntitiesInsertRequestDataZero`.
 fn is_declared_empty_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.properties.declared()
         && schema.properties.is_empty()
         && schema.all_of.is_none()
-        && schema.additional_properties.is_none()
-        && is_object_type(schema)
+        && matches!(
+            schema.additional_properties,
+            None | Some(AdditionalProperties::Bool(false))
+        )
+        && schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or
@@ -10953,6 +11272,14 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
         .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+        // …and so does a composition's only member (NPQ's one-member `anyOf`
+        // `attributes`).
+        .or_else(
+            || match schema.any_of.as_deref().or(schema.one_of.as_deref()) {
+                Some([only]) => only.description.as_deref(),
+                _ => None,
+            },
+        )
 }
 
 /// A `$ref` to a plain string schema narrowed by inline `allOf` members that
@@ -11283,6 +11610,23 @@ fn sole_non_null_member(schema: &Schema) -> Option<&Schema> {
 /// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
     is_explicitly_nullable(schema)
+        || is_null_variant(schema)
+        || schema.all_of.iter().flatten().any(is_nullable_annotation)
+}
+
+/// An `allOf` element that adds nothing but nullability — `{type: [object,
+/// null]}` beside a `$ref`. Fern reads the composition as nullable, and as a
+/// flat copy of the referenced object rather than a subclass: ramu-shogi's
+/// `GetUserSettingsResponse.document` is `allOf: [$ref UserSettingsDocument,
+/// {type: [object, null]}]`, and its golden is an optional
+/// `GetUserSettingsResponseDocument` restating every `UserSettingsDocument` field.
+fn is_nullable_annotation(member: &Schema) -> bool {
+    member.reference.is_none()
+        && member.properties.is_empty()
+        && member.all_of.is_none()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && is_explicitly_nullable(member)
 }
 
 /// Is this schema the explicit `type: null` alternative of a composition? Fern
@@ -15960,6 +16304,339 @@ mod tests {
         );
     }
 
+    /// One component object, the `Holder` whose fields a test reads.
+    fn holder_field(ir: &super::Ir, name: &str) -> TypeRef {
+        ir.types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Holder" => object
+                    .fields
+                    .iter()
+                    .find(|field| field.wire_name == name)
+                    .map(|field| field.type_ref.clone()),
+                _ => None,
+            })
+            .expect("Holder declares the field")
+    }
+
+    fn holder_document(properties: serde_json::Value) -> serde_json::Value {
+        observed_document(
+            serde_json::json!({
+                "Holder": { "type": "object", "properties": properties },
+                "Vector": { "type": "array", "items": { "anyOf": [
+                    { "type": "integer" }, { "type": "string" }
+                ] } },
+                "Tags": { "type": "array", "items": { "anyOf": [
+                    { "type": "integer" }, { "type": "null" }
+                ] } }
+            }),
+            serde_json::json!({ "holder": { "$ref": "#/components/schemas/Holder" } }),
+        )
+    }
+
+    #[test]
+    fn component_unions_lower_the_way_the_new_goldens_measured() {
+        let (ir, _) = generate(holder_document(serde_json::json!({
+            // VisKit's `image_ids`: a nullable list of a nullable element.
+            "image_ids": { "anyOf": [
+                { "type": "array", "items": { "anyOf": [
+                    { "type": "string" }, { "type": "null" }
+                ] } },
+                { "type": "null" }
+            ] },
+            // CloudPDF's `docMdp`: members that all convert to `float`.
+            "doc_mdp": { "anyOf": [
+                { "type": "number", "enum": [1] },
+                { "type": "number", "enum": [2] }
+            ], "nullable": true },
+            // CloudPDF's `calculationOrder`: a nullable discriminated element.
+            "order": { "type": "array", "items": {
+                "nullable": true,
+                "anyOf": [
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["index"] },
+                        "position": { "type": "integer" }
+                    } },
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["name"] },
+                        "label": { "type": "string" }
+                    } }
+                ]
+            } }
+        })));
+        assert_eq!(
+            holder_field(&ir, "image_ids"),
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
+        );
+        assert_eq!(
+            holder_field(&ir, "doc_mdp"),
+            TypeRef::Primitive(Prim::Float)
+        );
+        assert_eq!(
+            holder_field(&ir, "order"),
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                "HolderOrderItem".to_string()
+            )))))
+        );
+        // Milvus's `vector`: an inline union element of a component array is an
+        // alias of its own, and a lone member beside `null` is not a union.
+        let labels = declarations(&ir);
+        assert!(
+            labels.contains(&"Alias(VectorItem)".to_string()),
+            "{labels:?}"
+        );
+        assert!(
+            !labels.contains(&"Alias(TagsItem)".to_string()),
+            "{labels:?}"
+        );
+    }
+
+    /// A one-member union collapses to its member when every member converts to
+    /// one non-`Any` type or when the members are one schema written twice; a
+    /// map member whose value is one schema beside `null` is an optional value,
+    /// not a hoisted union; and a nullability-only `allOf` member makes the model
+    /// a flat copy of every base, each read with its whole `allOf` chain.
+    #[test]
+    fn merged_union_map_and_nullable_rules_hold_together() {
+        let (ir, _) = generate(observed_document(
+            serde_json::json!({
+                "Holder": { "type": "object", "properties": {
+                    // One schema written twice is that schema, even where it
+                    // lowers to `Any` (the half OpenCodeUI's rule adds to
+                    // CloudPDF's), while two different `Any` members stay a union.
+                    "twice": { "anyOf": [
+                        { "description": "free" }, { "description": "free" }
+                    ] },
+                    "rekor": { "anyOf": [
+                        { "description": "one" }, { "description": "two" }
+                    ] },
+                    // Ramu Shogi's `GetUserSettingsResponse.document`.
+                    "document": { "allOf": [
+                        { "$ref": "#/components/schemas/Document" },
+                        { "type": ["object", "null"] }
+                    ] }
+                } },
+                "Document": { "allOf": [
+                    { "$ref": "#/components/schemas/Stamped" },
+                    { "type": "object", "required": ["key"], "properties": {
+                        "key": { "type": "string" }
+                    } }
+                ] },
+                "Stamped": { "type": "object", "required": ["version"], "properties": {
+                    "version": { "type": "integer" }
+                } },
+                // Ramu Shogi's `JsonValue`: a map member whose value is one schema
+                // beside `null`.
+                "JsonValue": { "oneOf": [
+                    { "type": "string" },
+                    { "type": "object", "additionalProperties": { "oneOf": [
+                        { "$ref": "#/components/schemas/JsonValue" }, { "type": "null" }
+                    ] } }
+                ] }
+            }),
+            serde_json::json!({ "holder": { "$ref": "#/components/schemas/Holder" } }),
+        ));
+        assert_eq!(holder_field(&ir, "twice"), TypeRef::Primitive(Prim::Any));
+        assert_eq!(
+            holder_field(&ir, "rekor"),
+            TypeRef::Named("HolderRekor".to_string())
+        );
+        let document = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "HolderDocument" => Some(object),
+                _ => None,
+            })
+            .expect("the nullable allOf is a model of its own");
+        assert!(document.bases.is_empty(), "{:?}", document.bases);
+        let fields: Vec<&str> = document
+            .fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect();
+        assert_eq!(fields, ["version", "key"]);
+        let labels = declarations(&ir);
+        assert!(
+            !labels.contains(&"Alias(JsonValueOneValue)".to_string()),
+            "{labels:?}"
+        );
+    }
+
+    #[test]
+    fn fastapi_operation_ids_lose_their_route_suffix_under_a_tag() {
+        let operation = |id: &str, tag: Option<&str>| {
+            let mut op = serde_json::json!({
+                "operationId": id,
+                "responses": { "200": { "description": "ok" } }
+            });
+            if let Some(tag) = tag {
+                op["tags"] = serde_json::json!([tag]);
+            }
+            op
+        };
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "fastapi", "version": "1" },
+            "paths": {
+                "/v1/payments/{payment_id}:ack": { "post": operation(
+                    "acknowledge_payment_v1_payments__payment_id__ack_post", Some("acks")
+                ) },
+                "/api/kits/_warmup/extract": { "get": operation(
+                    "warmup_extract_api_kits__warmup_extract_get", Some("extract")
+                ) },
+                "/": { "get": operation("healthcheck__get", None) },
+                "/v1/meta": { "get": operation("v1_meta_get", Some("meta")) }
+            }
+        }));
+        let methods: Vec<&str> = ir
+            .endpoints
+            .iter()
+            .map(|ep| ep.method_name.as_str())
+            .collect();
+        assert_eq!(
+            methods,
+            [
+                "acknowledge_payment",
+                "warmup_extract_api_kits_warmup_extract_get",
+                "healthcheck_get",
+                // An id that is the whole suffix is left to the ordinary naming.
+                "v1meta_get",
+            ]
+        );
+    }
+
+    #[test]
+    fn a_promoted_header_is_typed_by_its_schema() {
+        let header = |name: &str, ty: Option<&str>| {
+            let mut parameter = serde_json::json!({ "name": name, "in": "header" });
+            if let Some(ty) = ty {
+                parameter["schema"] = serde_json::json!({ "type": ty });
+            }
+            parameter
+        };
+        let parameters = serde_json::json!([
+            header("Request-Timeout", Some("integer")),
+            header("X-Ratio", Some("number")),
+            header("X-Dry-Run", Some("boolean")),
+            header("X-Tenant", Some("string")),
+            header("X-Untyped", None)
+        ]);
+        let operation = serde_json::json!({
+            "parameters": parameters,
+            "responses": { "200": { "description": "ok" } }
+        });
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "headers", "version": "1" },
+            "paths": { "/a": { "get": operation.clone() }, "/b": { "get": operation } }
+        }));
+        let typed: Vec<(&str, &str)> = ir
+            .global_headers
+            .iter()
+            .map(|header| (header.wire_name.as_str(), header.py_type.python()))
+            .collect();
+        assert_eq!(
+            typed,
+            [
+                ("Request-Timeout", "int"),
+                ("X-Ratio", "float"),
+                ("X-Dry-Run", "bool"),
+                ("X-Tenant", "str"),
+                ("X-Untyped", "str"),
+            ]
+        );
+    }
+
+    #[test]
+    fn only_a_binary_media_family_is_a_bytes_body() {
+        for binary in [
+            "image/png",
+            "audio/mpeg",
+            "video/mp4",
+            "font/woff2",
+            "application/octet-stream",
+            "application/pdf",
+            "application/zip; charset=binary",
+            "application/x-gzip",
+            "application/br",
+        ] {
+            assert!(super::is_binary_media_type(binary), "{binary}");
+        }
+        for other in [
+            "application/proto",
+            "application/json",
+            "text/plain",
+            "*/*",
+            "nonsense",
+        ] {
+            assert!(!super::is_binary_media_type(other), "{other}");
+        }
+        let body = |media: &str| {
+            let mut content = serde_json::Map::new();
+            content.insert(
+                media.to_string(),
+                serde_json::json!({ "schema": { "type": "string", "format": "binary" } }),
+            );
+            serde_json::json!({
+                "requestBody": { "content": content },
+                "responses": { "200": { "description": "ok" } }
+            })
+        };
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "bodies", "version": "1" },
+            "paths": {
+                "/proto": { "post": body("application/proto") },
+                "/zip": { "post": body("application/zip") }
+            }
+        }));
+        let bodies: Vec<bool> = ir
+            .endpoints
+            .iter()
+            .map(|ep| matches!(ep.request_body, Some(super::RequestBody::Bytes { .. })))
+            .collect();
+        assert_eq!(bodies, [false, true]);
+    }
+
+    #[test]
+    fn an_enum_drops_a_later_value_only_when_fern_names_it_alike() {
+        let e = build_enum(
+            &Schema::default(),
+            "Sort",
+            [
+                "created_at",
+                "-created_at",
+                "name",
+                "-name",
+                "video",
+                "video/*",
+                "2x",
+                "<",
+            ]
+            .map(str::to_string)
+            .to_vec(),
+            None,
+        );
+        let members: Vec<(&str, &str, &str)> = e
+            .members
+            .iter()
+            .map(|m| (m.name.as_str(), m.visit_param.as_str(), m.value.as_str()))
+            .collect();
+        assert_eq!(
+            members[..4],
+            [
+                ("CREATED_AT", "created_at", "created_at"),
+                ("CREATED_AT", "created_at", "-created_at"),
+                ("NAME", "name", "name"),
+                ("VIDEO", "video", "video"),
+            ]
+        );
+        assert_eq!(members.len(), 6, "{members:?}");
+    }
+
     #[test]
     fn hoist_union_variant_separates_the_branches_its_selectors_name() {
         let variant_ref = |value: serde_json::Value| {
@@ -16075,6 +16752,31 @@ mod tests {
         assert_eq!(
             variant_ref(serde_json::json!({ "properties": {} })),
             (TypeRef::Primitive(Prim::Any), vec![])
+        );
+
+        // Cases 10a to 10d: `is_declared_empty_object` — an explicit empty
+        // `properties: {}` on a `type: object` variant, open or closed — is an
+        // empty model, against the untyped near miss above and the open map an
+        // `additionalProperties: true` makes.
+        let empty_model = (
+            TypeRef::Named("ChoiceZero".to_string()),
+            vec!["Object(ChoiceZero)".to_string()],
+        );
+        assert_eq!(
+            variant_ref(serde_json::json!({ "type": "object", "properties": {} })),
+            empty_model
+        );
+        assert_eq!(
+            variant_ref(serde_json::json!({
+                "type": "object", "properties": {}, "additionalProperties": false
+            })),
+            empty_model
+        );
+        assert_ne!(
+            variant_ref(serde_json::json!({
+                "type": "object", "properties": {}, "additionalProperties": true
+            })),
+            empty_model
         );
     }
 

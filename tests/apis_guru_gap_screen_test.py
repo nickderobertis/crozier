@@ -416,6 +416,16 @@ components:
             "oneof-array-variant-closed-object-item": ("zulip",),
             "ref-pointer-undeclared-component-head": ("thrivecart", "nextgen", "skool"),
             "ref-pointer-unnamed-segment": ("auto-agent-protocol",),
+            "anyof-array-variant-anyof-nullable-item": ("viskit-studio",),
+            "anyof-array-variant-empty-object-item": ("milvus-restful-v2-3", "milvus-restful-v2-4"),
+            "anyof-array-variant-oneof-nullable-item": ("ramu-shogi",),
+            "array-item-pointer-walk-anyof": ("embedpdf-cloudpdf",),
+            "oneof-array-variant-anyof-item": ("langchain-agent-protocol",),
+            "oneof-array-variant-composed-item": ("hse",),
+            "oneof-array-variant-empty-object-item": ("milvus-vector-operations",),
+            "property-sole-anyof-closed-object-member": ("npq-registration",),
+            "property-sole-anyof-struct-member": ("npq-registration",),
+            "property-sole-oneof-closed-object-member": ("mistle-control-plane",),
         }
         self.assertLessEqual(set(settled), owned)
         self.assertIn("**4** declaration sites", entries["anyof-sole-member"][4])

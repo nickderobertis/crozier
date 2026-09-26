@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "viskit-studio",
+  "corpus_spec_ref": "58b149008088c837332b57353c0f6e1fe19bbe8d",
+  "corpus_spec_url": "https://raw.githubusercontent.com/MyuriKanao/viskit-studio/58b149008088c837332b57353c0f6e1fe19bbe8d/packages/schemas/openapi.yaml"
+}

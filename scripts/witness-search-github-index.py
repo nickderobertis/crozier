@@ -54,15 +54,16 @@ SHORT_SERVED = "short-served"
 UNREAD = (UNISSUED_WINDOW, UNREAD_PAGES)
 # A screened candidate can also be settled against the corpus itself: a copy
 # whose bytes equal a registered row's source document, named with the digest
-# that proves it, or one left for a later registration node to register.
-PENDING_REGISTRATION = "pending-registration"
+# that proves it, or one left for a later registration node to register —
+# optionally naming that node, as `pending-registration; owner <node>`.
+PENDING_REGISTRATION = re.compile(r"pending-registration(?:; owner [a-z0-9][a-z0-9-]*)?")
 BYTE_IDENTICAL = re.compile(r"byte-identical to CORPUS row \d+, sha256 [0-9a-f]{64}")
 
 
 def known_disposition(disposition: str) -> bool:
     return (
         disposition in DISPOSITIONS
-        or disposition == PENDING_REGISTRATION
+        or PENDING_REGISTRATION.fullmatch(disposition) is not None
         or BYTE_IDENTICAL.fullmatch(disposition) is not None
     )
 # GitHub refuses a pushed blob over 100 MB and warns over 50 MB. A ledger that
@@ -257,7 +258,8 @@ def classify(
             settled = screen["disposition"]
             disposition = (
                 settled
-                if settled in ("witness-found", "not-owed", PENDING_REGISTRATION)
+                if settled in ("witness-found", "not-owed")
+                or PENDING_REGISTRATION.fullmatch(settled)
                 or BYTE_IDENTICAL.fullmatch(settled)
                 else "rejected"
             )

@@ -194,6 +194,84 @@ Additional issue #77 real-world OpenAPI source specs:
     Fern-generated output is vendored, with Python comments stripped as
     described above.
 
+  * Milvus RESTful API v2 (the v2.3.x reference): the publisher's own description at
+    https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/API_Reference/milvus-restful/v2.3.x/Restful%20API%20v2.openapi.json.
+    The repository's own LICENSE grants Apache-2.0 redistribution; corpus row 168 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * Milvus RESTful API (the v2.4.x reference): the publisher's own description at
+    https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/API_Reference/milvus-restful/v2.4.x/openapi.json.
+    The repository's own LICENSE grants Apache-2.0 redistribution; corpus row 169 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * Ramu Shogi API contract: the publisher's own description at
+    https://raw.githubusercontent.com/SH11235/ramu-shogi/22504221b837d01c9366a5d6c8c6a9b88f9f782b/packages/api-contract/src/generated/openapi.json.
+    The repository's own LICENSE grants GPL-3.0 redistribution; corpus row 170 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * LangChain Agent Protocol: the publisher's own description at
+    https://raw.githubusercontent.com/langchain-ai/agent-protocol/fb81f3e27ee507557926ecf923d0f933a1c76d44/openapi.json.
+    The repository's own LICENSE grants MIT redistribution; corpus row 172 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * HSE REST API: the publisher's own description at
+    https://raw.githubusercontent.com/hse-project/hse/6d5207f88044a3bd9b3539260074395317e276d5/docs/openapi.json.
+    The document's info.license grants Apache-2.0 redistribution; corpus row 173 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * Milvus vector operations (apifox export): the publisher's own description at
+    https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/scripts/apifox-docs/meta/openapi/03-vector-operations.json.
+    The repository's own LICENSE grants Apache-2.0 redistribution; corpus row 174 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * Mistle control-plane internal API v1: the publisher's own description at
+    https://raw.githubusercontent.com/mistlehq/mistle/2b11ccefc658c5b707310d3cc471d5c5928554f3/apps/control-plane-api/openapi/control-plane.internal.v1.json.
+    The repository's own LICENSE grants MIT redistribution; corpus row 176 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * o²S²PARC payments service: the publisher's own description at
+    https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/69b034b82f243b30953d025793c0f171fdb3c92e/services/payments/openapi.json.
+    The repository's own LICENSE grants MIT redistribution; corpus row 177 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * HuaTuo node API v1: the publisher's own description at
+    https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.gen.json.
+    The repository's own LICENSE grants Apache-2.0 redistribution; corpus row 178 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * HuaTuo server API v1: the publisher's own description at
+    https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/server/openapi.gen.json.
+    The repository's own LICENSE grants Apache-2.0 redistribution; corpus row 179 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * VisKit Studio API: the publisher's own description at
+    https://raw.githubusercontent.com/MyuriKanao/viskit-studio/58b149008088c837332b57353c0f6e1fe19bbe8d/packages/schemas/openapi.yaml.
+    The repository's own LICENSE grants MIT redistribution; corpus row 167 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * CloudPDF contract API: the publisher's own description at
+    https://raw.githubusercontent.com/embedpdf/embed-pdf-viewer/2516e2786ee894383220ecd436fbd248182ef444/cloudpdf/contract/openapi.json.
+    The document's info.license grants Apache-2.0 redistribution; corpus row 171 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
+  * NPQ registration API v3: the publisher's own description at
+    https://raw.githubusercontent.com/DFE-Digital/npq-registration/17f95361371e9bb8c3f1e41c90f5e78bda069ce5/public/api/docs/v3/swagger.yaml.
+    The repository's own LICENSE grants MIT redistribution; corpus row 175 records the immutable
+    reference. Only Fern-generated output is vendored, with Python comments
+    stripped as described above.
+
   * OpenLink OSDB REST API: the APIs.guru OpenAPI Directory's copy at
     https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml.
     The document's info.license grants CC-BY-SA 3.0 redistribution, inside the

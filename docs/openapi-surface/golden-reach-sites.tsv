@@ -306,7 +306,10 @@ items-nested-array-element	schema.items>schema.type:primary=array	src/ir.rs::Bui
 items-inline-struct-element	schema.items>schema.properties:non-empty	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
 items-closed-object-element	schema.items>schema.additionalProperties=false	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
 oneof-array-variant-oneof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
+anyof-array-variant-anyof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
+anyof-array-variant-oneof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
 oneof-array-variant-oneof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
+oneof-array-variant-anyof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
 anyof-array-variant-oneof-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
 anyof-array-variant-anyof-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
 oneof-array-variant-struct-item	schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
@@ -315,6 +318,9 @@ oneof-array-variant-closed-object-item	schema.oneOf>schema.type:primary=array&sc
 anyof-array-variant-closed-object-item	schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
 oneof-inline-object-variant	schema.oneOf>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
 anyof-inline-object-variant	schema.anyOf>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
+oneof-empty-object-variant	schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+anyof-empty-object-variant	schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+anyof-closed-empty-object-variant	schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
 property-string-enum	schema.properties>schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
 property-string-const	schema.properties>schema.const:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
 property-inline-struct	schema.properties>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
@@ -322,6 +328,9 @@ property-closed-object	schema.properties>schema.additionalProperties=false	src/i
 property-oneof-nullable-pair	schema.properties>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1]	
 property-anyof-nullable-pair	schema.properties>schema.anyOf:sole-non-null-member	src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1]	
 property-sole-oneof-struct-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-anyof-struct-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-oneof-closed-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-anyof-closed-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
 property-array-type	schema.properties>schema.type:primary=array	src/ir.rs::InlineHoister::prop_type_ref[if prop_schema.ty.as_ref\(\)],src/ir.rs::InlineHoister::hoist_array_item_type	
 ref-pointer-cross-document	schema.$ref:cross-document	src/refs.rs::split_external,src/refs.rs::split_remote,src/refs.rs::Resolver::resolve_schema,src/refs.rs::Resolver::resolve_reference,src/refs.rs::Resolver::import_named_schema	`src/ir.rs::ref_to_class`'s cross-document arm: `src/refs.rs` rewrites every cross-document `$ref` to a local one before `ir.rs` reads it
 ref-pointer-same-document-foreign	schema.$ref:same-document-foreign-pointer	src/openapi.rs::normalize_response_schema_refs,src/openapi.rs::resolve_response_schema_refs,src/ir.rs::ref_to_class[let Some\(pointer\) = reference.strip_prefix],src/ir.rs::base_type_ref[if let Some\(reference\) = &schema.reference \{]	
@@ -353,12 +362,16 @@ property-anyof-discriminated-union	schema.properties>schema.anyOf:discriminated-
 array-item-pointer-walk-allof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	
 array-item-pointer-walk-properties	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	
 array-item-pointer-walk-items	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	
+array-item-pointer-walk-anyof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	
 type-primary-object	schema.type:primary=object	src/ir.rs::is_object_type	
 type-primary-scalar	schema.type:primary-scalar	src/ir.rs::declares_scalar_type	
 allof-sole-member	schema.allOf:sole-member	src/ir.rs::sole_inline_all_of,src/ir.rs::InlineHoister::prop_type_ref[sole_inline_all_of\(prop_schema\) \{]	
 array-item-composed	schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
 array-item-empty-object	schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
 anyof-array-variant-composed-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-composed-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-empty-object-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+anyof-array-variant-empty-object-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
 property-sole-inline-allof	schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref	src/ir.rs::InlineHoister::prop_type_ref[sole_inline_all_of\(prop_schema\) \{],src/ir.rs::sole_inline_all_of	
 property-composed	schema.properties>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
 property-empty-object	schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
@@ -403,7 +416,9 @@ http-mutual	securityScheme.scheme=mutual	src/ir.rs::auth_model[find\(\x7cscheme\
 securityscheme-bearerformat	securityScheme.bearerFormat	none	
 securityscheme-openidconnecturl	securityScheme.openIdConnectUrl	none	
 securityscheme-flows	securityScheme.flows	src/ir.rs::oauth_scope_enum	
+securityscheme-ref	securityScheme:$ref	src/openapi.rs::normalize_security_scheme_refs	
 oauth2-implicit	securityScheme.flows.implicit	src/ir.rs::oauth_scope_enum	
+oauth2-password	securityScheme.flows.password	src/ir.rs::oauth_scope_enum	
 oauth2-clientcredentials	securityScheme.flows.clientCredentials	src/ir.rs::oauth_scope_enum	
 oauth2-authorizationcode	securityScheme.flows.authorizationCode	src/ir.rs::oauth_scope_enum	
 oauth2-multiple-flows	securityScheme.flows	src/ir.rs::oauth_scope_enum	

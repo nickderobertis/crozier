@@ -1771,6 +1771,7 @@ class GrammarContractTests(unittest.TestCase):
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
             78: "seventy-eight", 83: "eighty-three", 89: "eighty-nine",
+            107: "one-hundred-and-seven",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -2224,6 +2225,12 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        # The four `hoist_union_variant` cases 10a to 10d added beside the empty
+        # `properties: {}` union member. No vendored document writes one.
+        "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
+        "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": {},
+        "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": {},
         # The seven residual arms, whose selectors are composed from the case
         # table rather than written. They are the most-travelled paths in the six
         # functions and the vendored half declares four of them, which is what a
@@ -2811,8 +2818,10 @@ NESTED_COMPOSITION_SELECTORS = frozenset({
 })
 
 
-# The twenty-three the negation pass declared plus case 11's example-value
-# conjunction, kept apart from the tables above because all twenty-four depend
+# The twenty-three the negation pass declared, case 11's example-value
+# conjunction and `hoist_union_variant`'s cases 10a to 10d (the empty
+# `properties: {}` member), kept apart from the tables above because all
+# twenty-eight depend
 # on `!` and are exercised together by `NegationSelectorDiscriminationTests`.
 NEGATION_SELECTORS = frozenset({
     "schema.type:primary=object",
@@ -2832,6 +2841,10 @@ NEGATION_SELECTORS = frozenset({
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
     "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
     "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+    "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+    "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
     "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
     "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
@@ -4920,6 +4933,42 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "near": {"Root": _array_variant("anyOf", CLOSED_EMPTY_OBJECT_ITEM)},
             "overlap": {"Root": _array_variant("anyOf", STRUCT_EMPTY_ITEM)},
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        {
+            "selector": "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "huv-10a",
+            "branch": "hoist_union_variant case 10a",
+            "select": {"Root": {"oneOf": [EMPTY_OBJECT_ITEM]}},
+            "near": {"Root": {"oneOf": [CLOSED_EMPTY_OBJECT_ITEM]}},
+            "overlap": {"Root": {"oneOf": [{**EMPTY_OBJECT_ITEM, "allOf": [{"title": "x"}]}]}},
+            "overlap_selector": "schema.oneOf>schema.allOf",
+        },
+        {
+            "selector": "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+            "slug": "huv-10b",
+            "branch": "hoist_union_variant case 10b",
+            "select": {"Root": {"anyOf": [EMPTY_OBJECT_ITEM]}},
+            "near": {"Root": {"anyOf": [CLOSED_EMPTY_OBJECT_ITEM]}},
+            "overlap": {"Root": {"anyOf": [{**EMPTY_OBJECT_ITEM, "allOf": [{"title": "x"}]}]}},
+            "overlap_selector": "schema.anyOf>schema.allOf",
+        },
+        {
+            "selector": "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+            "slug": "huv-10c",
+            "branch": "hoist_union_variant case 10c",
+            "select": {"Root": {"oneOf": [CLOSED_EMPTY_OBJECT_ITEM]}},
+            "near": {"Root": {"oneOf": [EMPTY_OBJECT_ITEM]}},
+            "overlap": {"Root": {"oneOf": [{**CLOSED_EMPTY_OBJECT_ITEM, "allOf": [{"title": "x"}]}]}},
+            "overlap_selector": "schema.oneOf>schema.allOf",
+        },
+        {
+            "selector": "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+            "slug": "huv-10d",
+            "branch": "hoist_union_variant case 10d",
+            "select": {"Root": {"anyOf": [CLOSED_EMPTY_OBJECT_ITEM]}},
+            "near": {"Root": {"anyOf": [EMPTY_OBJECT_ITEM]}},
+            "overlap": {"Root": {"anyOf": [{**CLOSED_EMPTY_OBJECT_ITEM, "allOf": [{"title": "x"}]}]}},
+            "overlap_selector": "schema.anyOf>schema.allOf",
         },
         {
             "selector": "schema.properties>!schema.type:primary-scalar&schema.allOf",
@@ -7240,6 +7289,10 @@ class RankedBacklogTests(unittest.TestCase):
         r"\*\*Committed Fern measurement:\*\* \[`([^`]+)`\]\(([^)]+)\)"
     )
     DEMOTED = re.compile(r"\*\*demoted to gap:\*\* `([a-z]+)`")
+    # A demoted row a registered specification has since settled: `golden`, and
+    # still counted in the population that read `limitations` before the
+    # amendment, under the verdict that demoted it.
+    SETTLED_AFTER_DEMOTION = re.compile(r"\*\*settled after demotion:\*\* `([a-z]+)`")
     PROOF_FORMS = {
         "absent-tree": ("discards",),
         "refusal": ("refuses", "crashes"),
@@ -7382,7 +7435,26 @@ class RankedBacklogTests(unittest.TestCase):
             for key, (_region, cells) in self.entries.items()
             if self.DEMOTED.search(cells[4])
         }
-        self.assertTrue(demoted, "no row records a demotion by the amended rule")
+        settled = {
+            key: cells
+            for key, (_region, cells) in self.entries.items()
+            if self.SETTLED_AFTER_DEMOTION.search(cells[4])
+        }
+        self.assertTrue(
+            demoted or settled, "no row records a demotion by the amended rule"
+        )
+        for key, cells in sorted(settled.items()):
+            with self.subTest(key=key, settled=True):
+                self.assertEqual("golden", cells[3].strip("`"))
+                self.assertFalse(self.DEMOTED.search(cells[4]))
+                self.assertIn(
+                    self.SETTLED_AFTER_DEMOTION.search(cells[4]).group(1),
+                    ("implements", "unmeasured"),
+                )
+                self.assertRegex(
+                    cells[4], r"corpus rows? \d+",
+                    f"{key}: names no corpus row that settled it",
+                )
         for key, cells in sorted(demoted.items()):
             with self.subTest(key=key):
                 self.assertEqual("gap", cells[3].strip("`"))
@@ -7404,9 +7476,11 @@ class RankedBacklogTests(unittest.TestCase):
         }
 
     def test_the_classification_table_is_the_region_cells_own(self) -> None:
-        """Four classes, each counted off the cells, adding up to the population
+        """Five classes, each counted off the cells, adding up to the population
         that read `limitations` before the amendment."""
-        counts = {"artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0}
+        counts = {
+            "artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0, "settled": 0,
+        }
         manifest = {
             fields[0]: fields[1]
             for line in (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv")
@@ -7418,15 +7492,24 @@ class RankedBacklogTests(unittest.TestCase):
             form = self.PROOF_OUTSTANDING.search(cells[4])
             committed = self.PROOF_COMMITTED.search(cells[4])
             demoted = self.DEMOTED.search(cells[4])
+            settled = self.SETTLED_AFTER_DEMOTION.search(cells[4])
             if form or committed:
                 proof_form = form.group(1) if form else manifest[committed.group(1)]
                 counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
+            elif settled:
+                counts["settled"] += 1
         table = self.classification_table()
         stated = [
             next(n for label, n in table.items() if marker in label)
-            for marker in ("Contract A artifact", "`differential` pair", "(`implements`)", "`unmeasured`")
+            for marker in (
+                "Contract A artifact",
+                "`differential` pair",
+                "(`implements`)",
+                "`unmeasured`",
+                "since settled `golden`",
+            )
         ]
         self.assertEqual(list(counts.values()), stated)
         body = self.section("#### The limitations rows under the amended rule", "\n#### ")

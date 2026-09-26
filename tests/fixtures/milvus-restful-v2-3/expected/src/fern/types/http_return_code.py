@@ -1,0 +1,3 @@
+
+
+HttpReturnCode = int

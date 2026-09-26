@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .post_v1vector_query_response_data import PostV1VectorQueryResponseData
+from .post_v1vector_query_response_message import PostV1VectorQueryResponseMessage
+
+PostV1VectorQueryResponse = typing.Union[PostV1VectorQueryResponseData, PostV1VectorQueryResponseMessage]

@@ -3,7 +3,7 @@
 What the golden-reach witness search fetched from GitHub, and why a candidate was
 or was not registered. The search itself is described in
 [`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md#golden-reach-row-by-row);
-the corpus rows it registered are `CORPUS.md` batch 17.
+the corpus rows it registered are `CORPUS.md` batch 19.
 
 - `acquisitions.jsonl` — every document, licence file, repository record and
   commit this search read from GitHub, one line per call, with its URL, HTTP

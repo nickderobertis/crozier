@@ -18,8 +18,8 @@ use serde::Serialize;
 use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, BodySchemaShape, Endpoint, EndpointPagination,
-    ErrorClass, Field, GlobalHeader, Ir, ObjectType, Prim, QueryParam, RequestBody, TagTypeDecl,
-    TypeDecl, TypeRef,
+    ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim, QueryParam, RequestBody,
+    TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::ExtraFields;
@@ -1414,7 +1414,25 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         if let Some(decls) = tag_type_modules.get(module.as_str()) {
             files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
         } else if let Some(names) = children.get(module.as_str()) {
-            files.push(module_pkg_init_file(&env, pkg, module, names)?);
+            let child_types: Vec<(String, Vec<String>)> = names
+                .iter()
+                .filter_map(|child| {
+                    let decls = tag_type_modules.get(child.as_str())?;
+                    let mut exported: Vec<String> = decls
+                        .iter()
+                        .flat_map(|decl| decl.exported_names().into_iter().map(str::to_string))
+                        .collect();
+                    exported.sort();
+                    Some((module_stem(child).to_string(), exported))
+                })
+                .collect();
+            files.push(module_pkg_init_file(
+                &env,
+                pkg,
+                module,
+                names,
+                &child_types,
+            )?);
         } else {
             files.push(GeneratedFile {
                 path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
@@ -1889,16 +1907,27 @@ fn module_pkg_init_file(
     pkg: &str,
     module: &str,
     children: &[String],
+    child_types: &[(String, Vec<String>)],
 ) -> Result<GeneratedFile> {
-    let names: Vec<String> = children
+    let mut names: Vec<String> = children
         .iter()
         .map(|child| module_stem(child).to_string())
         .collect();
-    let type_checking = from_import_block(".", &names, 4);
-    let pairs: Vec<(String, String)> = names
+    let mut type_checking = from_import_block(".", &names, 4);
+    let mut pairs: Vec<(String, String)> = names
         .iter()
         .map(|name| (name.clone(), format!(".{name}")))
         .collect();
+    // A sub-package's hoisted types are re-exported here, one level up, and no
+    // further: CloudPDF's `doc/__init__.py` lists `from .pages import
+    // DocPagesSetScaleRequestMeasure…`, and the package root does not.
+    for (child, exported) in child_types {
+        type_checking.push_str(&from_import_block(&format!(".{child}"), exported, 4));
+        for name in exported {
+            pairs.push((name.clone(), format!(".{child}")));
+            names.push(name.clone());
+        }
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
         contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
@@ -1957,6 +1986,9 @@ fn root_init_file(
         let names = tt.decl.exported_names().into_iter().map(str::to_string);
         if tt.module.is_empty() {
             type_names.extend(names);
+        } else if tt.module.contains('/') {
+            // A nested sub-package's types are re-exported by its parent
+            // package instead (see `module_pkg_init_file`).
         } else {
             hoisted_by_tag
                 .entry(tt.module.clone())
@@ -2125,6 +2157,8 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     let lines = build_documentation_example(
         ep,
@@ -2236,11 +2270,20 @@ fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
+    // A client nested below the top level is passed over while a top-level one
+    // qualifies: CloudPDF's first `POST` is `doc.annotations.create`, two levels
+    // down, and its README demonstrates `shares.exchange`, the first `POST` of a
+    // top-level client.
+    let order = readme_endpoint_order(ir);
     select_readme_endpoint(
-        readme_endpoint_order(ir).into_iter(),
+        order
+            .iter()
+            .copied()
+            .filter(|ep| module_depth(&ep.module) <= 1),
         &ir.types,
         &ir.tag_types,
     )
+    .or_else(|| select_readme_endpoint(order.into_iter(), &ir.types, &ir.tag_types))
 }
 
 /// The endpoint the README's streaming section demonstrates: the first emittable
@@ -2323,6 +2366,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: BTreeSet::new(),
         };
         build_documentation_example(
             first,
@@ -2353,6 +2398,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: BTreeSet::new(),
         };
         build_documentation_example(
             first,
@@ -2577,6 +2624,8 @@ fn reference_entry(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     let example = (!ep.binary_schema_response || !module.is_empty() || ep.openapi_31)
         .then(|| {
@@ -3275,9 +3324,13 @@ fn client_wrapper_file(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: str,\n", h.py_name)
+                format!("        {}: {},\n", h.py_name, h.py_type.python())
             } else {
-                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+                format!(
+                    "        {}: typing.Optional[{}] = None,\n",
+                    h.py_name,
+                    h.py_type.python()
+                )
             }
         })
         .collect();
@@ -3288,15 +3341,20 @@ fn client_wrapper_file(
     let gh_header: String = global_headers
         .iter()
         .map(|h| {
+            // A non-string header is written as its `str()`, as Fern's is.
+            let value = if h.py_type == HeaderType::Str {
+                format!("self._{}", h.py_name)
+            } else {
+                format!("str(self._{})", h.py_name)
+            };
             if h.required {
                 format!(
-                    "        headers[\"{1}\"] = self._{0}\n",
-                    h.py_name,
+                    "        headers[\"{}\"] = {value}\n",
                     escape_py_str(&h.wire_name)
                 )
             } else {
                 format!(
-                    "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
+                    "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
                     h.py_name,
                     escape_py_str(&h.wire_name)
                 )
@@ -3650,10 +3708,12 @@ fn render_enum(
     e: &crate::ir::EnumType,
     loc: &RefLoc,
 ) -> Result<String> {
+    // A nested client module (`doc/forms`) sits one level deeper per segment:
+    // CloudPDF's `ExportDataFormsRequestFormat` imports `from ....core`.
     let core_parent = match loc {
-        RefLoc::TagTypes(_) => "...core",
-        RefLoc::RootTypes => "..core",
-        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core",
+        RefLoc::TagTypes(module) => format!("{}core", ".".repeat(module_depth(module) + 2)),
+        RefLoc::RootTypes => "..core".to_string(),
+        RefLoc::Client(_) | RefLoc::Errors | RefLoc::PackageRoot => ".core".to_string(),
     };
     let mut body = format!(
         "import typing\n\nfrom {core_parent} import enum\n\nT_Result = typing.TypeVar(\"T_Result\")\n\n\nclass "
@@ -3678,9 +3738,12 @@ fn render_enum(
         }
     }
     body.push('\n');
+    // Two members Fern names alike share one callback, listed once.
+    let mut listed = std::collections::HashSet::new();
     let params: Vec<String> = e
         .members
         .iter()
+        .filter(|m| listed.insert(m.visit_param.as_str()))
         .map(|m| format!("{}: typing.Callable[[], T_Result]", m.visit_param))
         .collect();
     body.push_str(&format!(
@@ -5806,9 +5869,9 @@ fn root_client_class(
         .iter()
         .map(|h| {
             let ty = if h.required {
-                "str"
+                h.py_type.python().to_string()
             } else {
-                "typing.Optional[str]"
+                format!("typing.Optional[{}]", h.py_type.python())
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -5817,9 +5880,13 @@ fn root_client_class(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: str,\n", h.py_name)
+                format!("        {}: {},\n", h.py_name, h.py_type.python())
             } else {
-                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+                format!(
+                    "        {}: typing.Optional[{}] = None,\n",
+                    h.py_name,
+                    h.py_type.python()
+                )
             }
         })
         .collect();
@@ -6378,6 +6445,8 @@ fn client_stream_docstring(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     if let Some(ex_lines) = build_example(
         ep,
@@ -6505,6 +6574,8 @@ fn client_binary_stream_docstring(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
         .then(|| {
@@ -6600,6 +6671,8 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
@@ -6971,6 +7044,12 @@ struct ExampleCtx<'a> {
     /// Whether the active Markdown snippet belongs to `reference.md`, whose
     /// literal and parameter-order writer differs from README examples.
     reference: bool,
+    /// Whether a model field's own declared example is passed over, as Fern's IR
+    /// fallback generator passes it over when its importer built no example.
+    field_examples_ignored: bool,
+    /// The keyword arguments whose value is the placeholder of an *unknown*
+    /// (`typing.Any`) field, which the Markdown writers leave on one line.
+    untyped_arguments: BTreeSet<String>,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -7144,6 +7223,10 @@ impl<'a> ExampleCtx<'a> {
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Object(object)) = self.find(name) {
                 let fields = self.object_fields(object);
+                if fields.is_empty() {
+                    self.record_ref(name);
+                    return Some(Example::Call(name.clone(), Vec::new()));
+                }
                 let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
@@ -7240,6 +7323,10 @@ impl<'a> ExampleCtx<'a> {
         match t {
             TypeRef::Optional(inner) => value.is_null() || self.example_matches_type(inner, value),
             TypeRef::Named(name) => match self.find(name) {
+                // A model with no fields takes any example: Milvus's `upsert`
+                // example sends `data` as a list, and Fern still renders the
+                // union's empty-object member, `PostV1VectorUpsertRequestDataZero()`.
+                Some(TypeDecl::Object(object)) if self.object_fields(object).is_empty() => true,
                 Some(TypeDecl::Object(object)) => value.as_object().is_some_and(|values| {
                     let fields = self.object_fields(object);
                     fields
@@ -7584,6 +7671,9 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
                     .map(|(py, wire, ty, _, example, _)| {
+                        if is_any_type(&ty) {
+                            self.untyped_arguments.insert(py.clone());
+                        }
                         (Some(py), self.field_example(&ty, &wire, example.as_deref()))
                     })
                     .collect::<Vec<_>>();
@@ -7759,7 +7849,11 @@ impl<'a> ExampleCtx<'a> {
         // this map through `value_from_example`, which is why the suppression is
         // here rather than there — `mosip-esignet`'s `Purpose.title` keeps the
         // `{"@none": "Title"}` its request example gives it.
-        let example = example.filter(|_| !self.resolves_to_unknown_map(ty));
+        // Without an importer example Fern's IR fallback reads no field's own
+        // example: NPQ's `accept_an_npq_application` documents `type="type"`
+        // over the `npq-application-accept` its schema declares.
+        let example =
+            example.filter(|_| !self.field_examples_ignored && !self.resolves_to_unknown_map(ty));
         let literal = match example {
             // A date/date-time field's declared example is used like any other:
             // EN 18222's `last_updated` is typed by the `Timestamp` alias and
@@ -7778,7 +7872,11 @@ impl<'a> ExampleCtx<'a> {
     }
 
     /// An object's fields including those inherited from its base classes (bases
-    /// first, in declaration order): `(py_name, wire_name, type, spec_required)`.
+    /// first, in declaration order): `(py_name, wire_name, type, required)`, where
+    /// `required` is a `required` property that is not also `Optional` in Python.
+    /// Fern's importer reads a required nullable property as optional, so its
+    /// example omits it: ramu-shogi's `evalCp: {type: [integer, null]}` and its
+    /// `$ref`s to `type: [object, null]` components are required and absent.
     #[allow(
         clippy::type_complexity,
         reason = "a positional 5-tuple local to example synthesis: it is built here \
@@ -7797,11 +7895,19 @@ impl<'a> ExampleCtx<'a> {
             }
         }
         for f in &obj.fields {
+            // An example spells a field Fern renames only on the model under its
+            // plain name: VisKit's `ThreePieceIn.copy` is the model field `copy_`,
+            // and Fern's example constructs `ThreePieceIn(copy="copy", …)`.
+            let py_name = if f.py_name == naming::model_field_name(&f.wire_name) {
+                naming::field_name(&f.wire_name)
+            } else {
+                f.py_name.clone()
+            };
             out.push((
-                f.py_name.clone(),
+                py_name,
                 f.wire_name.clone(),
                 f.type_ref.clone(),
-                f.spec_required,
+                f.spec_required && !f.optional,
                 f.example.clone(),
                 obj.example_fields.contains(&f.wire_name),
             ));
@@ -8084,6 +8190,7 @@ fn build_example_inner(
 
     ctx.documentation = documentation;
     ctx.reference = reference;
+    ctx.field_examples_ignored = ep.importer_example_missing;
     // A `*/*` binary download whose parameters carry a DECLARED example documents
     // no arguments at all. Measured on the corpus's only two such endpoints:
     // apideck's `filesDownload` takes a required `id` beside an optional `fields`
@@ -8431,10 +8538,13 @@ fn build_example_inner(
             // unknown by its key type's sample: Spendesk's `request_access_token`
             // posts a bare `type: object` and answers an undeclared `$ref`, and
             // its golden documents `request={"string": {"key": "value"}}`.
+            // So does a map the body names through its component alias:
+            // CloudPDF's `doc.pages.extract` posts `$ref DocPagesExtractRequest`.
             if ep.importer_example_missing
                 && body_example.is_none()
                 && s.example.is_none()
-                && matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                && (matches!(&s.type_ref, TypeRef::Dict(_, value) if is_any_type(value))
+                    || ctx.resolves_to_unknown_map(&s.type_ref))
             {
                 v = if ctx.reference {
                     Example::ReferenceDict(vec![("string".to_string(), Example::Atom(v.flat()))])
@@ -8837,6 +8947,9 @@ fn build_example_inner(
             }
         }
         for (module, tag_names) in by_module {
+            // A nested client module imports by its dotted path (CloudPDF's
+            // `from fern.doc.signatures import …`).
+            let module = module_path(module);
             let flat = format!("from {pkg}.{module} import {}", tag_names.join(", "));
             let import_width = if documentation { usize::MAX } else { 80 };
             if flat.len() > import_width {
@@ -8918,11 +9031,16 @@ fn build_example_inner(
         out.extend(call.split('\n').map(String::from));
     }
     if documentation {
-        // An untyped request body's placeholder stays on its line: Fern writes
-        // NextGen's `request={"key": "value"},` flat, where a map-typed one
-        // (bunq's `AttachmentPublic`) is wrapped by `compact_documentation_values`.
-        let untyped_request = matches!(&ep.request_body, Some(RequestBody::Single(single))
-            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)));
+        // An untyped value's placeholder stays on its line: Fern writes NextGen's
+        // `request={"key": "value"},` and NPQ's model field
+        // `attributes={"key": "value"},` flat, where a map-typed one (bunq's
+        // `AttachmentPublic`) is wrapped by `compact_documentation_values`.
+        let mut untyped_arguments = std::mem::take(&mut ctx.untyped_arguments);
+        if matches!(&ep.request_body, Some(RequestBody::Single(single))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)))
+        {
+            untyped_arguments.insert("request".to_string());
+        }
         Some(format_documentation_example(
             out,
             is_async,
@@ -8930,7 +9048,7 @@ fn build_example_inner(
             environment,
             reference,
             ctx.datetime_precedes_tag_import,
-            untyped_request,
+            &untyped_arguments,
         ))
     } else {
         Some(out)
@@ -8970,7 +9088,7 @@ fn format_documentation_example(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
     datetime_first: bool,
-    untyped_request: bool,
+    untyped_arguments: &BTreeSet<String>,
 ) -> Vec<String> {
     let client_index = lines
         .iter()
@@ -9046,13 +9164,13 @@ fn format_documentation_example(
         }
     }
     out.extend(body);
-    compact_documentation_values(out, reference, untyped_request)
+    compact_documentation_values(out, reference, untyped_arguments)
 }
 
 fn compact_documentation_values(
     lines: Vec<String>,
     reference: bool,
-    untyped_request: bool,
+    untyped_arguments: &BTreeSet<String>,
 ) -> Vec<String> {
     let mut compact = Vec::with_capacity(lines.len());
     let mut index = 0;
@@ -9108,7 +9226,7 @@ fn compact_documentation_values(
                         && !item.contains(['{', '[', '}', ']'])
                         && item.matches("\", \"").count() == 0
                 })
-                .filter(|(head, _)| !(untyped_request && *head == "request"))
+                .filter(|(head, _)| !untyped_arguments.contains(*head))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));
@@ -9136,7 +9254,10 @@ fn compact_documentation_values(
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // Array query params always default to `None` in the generated signature, so a
     // binary download with only those params has no exampleable required argument.
-    let binary_has_no_required_arguments = ep.path_params.is_empty()
+    // That is a `GET`'s loss alone: HuaTuo's Pyroscope queries are argument-less
+    // `POST`s streaming bytes, and Fern documents each of them.
+    let binary_get_has_no_required_args = ep.http_method == "GET"
+        && ep.path_params.is_empty()
         && ep
             .query_params
             .iter()
@@ -9176,7 +9297,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
-    !(ep.binary_response && (binary_has_no_required_arguments || binary_path_placeholder_rejected)
+    !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -9460,10 +9581,95 @@ mod tests {
     };
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
-        ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, Ir, ObjectType, PathParam, Prim,
-        QueryParam, RequestBody, SingleBody, TagTypeDecl, TypeDecl, TypeRef, UnionMember,
+        ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, HeaderType, Ir, ObjectType,
+        PathParam, Prim, QueryParam, RequestBody, SingleBody, TagTypeDecl, TypeDecl, TypeRef,
+        UnionMember,
     };
     use crate::wrap::Doc;
+
+    /// Every file the generator writes for `document`, before `ruff format`.
+    fn files_for(document: serde_json::Value) -> Vec<(String, String)> {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .expect("the config is well formed");
+        generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    fn file<'a>(files: &'a [(String, String)], suffix: &str) -> &'a str {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no generated file ends with {suffix}"))
+    }
+
+    #[test]
+    fn a_nested_client_package_owns_its_types_and_its_typed_header() {
+        let operation = |group: serde_json::Value, method: &str| {
+            serde_json::json!({
+                "x-fern-sdk-group-name": group,
+                "x-fern-sdk-method-name": method,
+                "parameters": [{
+                    "name": "Request-Timeout", "in": "header",
+                    "schema": { "type": "integer" }
+                }],
+                "requestBody": { "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "properties": { "unit": { "type": "string", "enum": ["mm", "pt"] } }
+                } } } },
+                "responses": { "200": { "description": "ok" } }
+            })
+        };
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "nested", "version": "1" },
+            "paths": {
+                "/doc/scale": { "post": operation(serde_json::json!(["doc", "pages"]), "setScale") },
+                "/doc/rotate": { "post": operation(serde_json::json!(["doc", "pages"]), "rotate") }
+            }
+        }));
+        // CloudPDF's layout: the nested package's types are re-exported one level
+        // up, and not at the root.
+        let parent = file(&files, "src/api/doc/__init__.py");
+        assert!(parent.contains("from .pages import"), "{parent}");
+        assert!(
+            parent.contains("\"SetScalePagesRequestUnit\": \".pages\""),
+            "{parent}"
+        );
+        let root = file(&files, "src/api/__init__.py");
+        assert!(!root.contains("SetScalePagesRequestUnit"), "{root}");
+        // Its enum imports `core` from four levels up.
+        let unit = file(&files, "doc/pages/types/set_scale_pages_request_unit.py");
+        assert!(unit.contains("from ....core import enum"), "{unit}");
+        // Milvus's integer `Request-Timeout`, promoted to the wrapper.
+        let wrapper = file(&files, "src/api/core/client_wrapper.py");
+        assert!(
+            wrapper.contains("request_timeout: typing.Optional[int] = None"),
+            "{wrapper}"
+        );
+        assert!(
+            wrapper.contains("headers[\"Request-Timeout\"] = str(self._request_timeout)"),
+            "{wrapper}"
+        );
+    }
 
     /// Render a class body through the real `class_body.py` template — the fast
     /// feedback loop for layout/filter changes (no binary, no `ruff`). Returns the
@@ -10880,6 +11086,8 @@ mod tests {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: std::collections::BTreeSet::new(),
         }
     }
 
@@ -11825,6 +12033,7 @@ mod tests {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
             required: true,
+            py_type: HeaderType::Str,
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;

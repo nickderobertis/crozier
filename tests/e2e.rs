@@ -3331,6 +3331,19 @@ const CORPORA: &[&Corpus] = &[
     &ZULIP,
     &ZULIP_JENTIC,
     &ZULIP_JENTIC_ENTRY,
+    &MILVUS_RESTFUL_V2_3,
+    &MILVUS_RESTFUL_V2_4,
+    &RAMU_SHOGI,
+    &LANGCHAIN_AGENT_PROTOCOL,
+    &HSE,
+    &MILVUS_VECTOR_OPERATIONS,
+    &MISTLE_CONTROL_PLANE,
+    &OSPARC_PAYMENTS,
+    &HUATUO_NODE,
+    &HUATUO_SERVER,
+    &VISKIT_STUDIO,
+    &EMBEDPDF_CLOUDPDF,
+    &NPQ_REGISTRATION,
 ];
 
 #[test]
@@ -5054,30 +5067,7 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/analyze/reports/client.py",
         "src/fern/analyze/reports/raw_client.py",
         "src/fern/analyze/reports/types/__init__.py",
-        "src/fern/analyze/reports/types/time_on_page_reports_request_device_type.py",
-        "src/fern/analyze/reports/types/time_on_page_reports_request_metric_scope.py",
-        "src/fern/analyze/reports/types/time_on_page_reports_response_bucketing_granularity_period.py",
-        "src/fern/analyze/reports/types/time_on_page_reports_response_metric_scope.py",
-        "src/fern/analyze/reports/types/time_on_page_reports_response_report.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_request_device_type.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_request_dimension.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_request_metric_scope.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_response_dimension.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_response_metric_scope.py",
-        "src/fern/analyze/reports/types/top_dimensions_reports_response_report.py",
-        "src/fern/analyze/reports/types/top_events_reports_request_device_type.py",
-        "src/fern/analyze/reports/types/top_events_reports_response_bucketing_granularity_period.py",
-        "src/fern/analyze/reports/types/top_events_reports_response_report.py",
-        "src/fern/analyze/reports/types/top_pages_reports_request_device_type.py",
         "src/fern/analyze/reports/types/top_pages_reports_request_sort_by.py",
-        "src/fern/analyze/reports/types/top_pages_reports_response_bucketing_granularity_period.py",
-        "src/fern/analyze/reports/types/top_pages_reports_response_report.py",
-        "src/fern/analyze/reports/types/top_pages_reports_response_sort_by.py",
-        "src/fern/analyze/reports/types/traffic_reports_request_device_type.py",
-        "src/fern/analyze/reports/types/traffic_reports_request_metric_scope.py",
-        "src/fern/analyze/reports/types/traffic_reports_response_bucketing_granularity_period.py",
-        "src/fern/analyze/reports/types/traffic_reports_response_metric_scope.py",
-        "src/fern/analyze/reports/types/traffic_reports_response_report.py",
         "src/fern/assets/raw_client.py",
         "src/fern/client.py",
         "src/fern/collections/__init__.py",
@@ -5097,7 +5087,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/fields/types/reference_field_type.py",
         "src/fern/collections/fields/types/static_field.py",
         "src/fern/collections/fields/types/static_field_type.py",
-        "src/fern/collections/fields/types/update_fields_response_type.py",
         "src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py",
         "src/fern/collections/items/__init__.py",
         "src/fern/collections/items/client.py",
@@ -5113,15 +5102,11 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/items/types/list_items_items_request_filter_value_exists.py",
         "src/fern/collections/items/types/list_items_items_request_filter_value_in.py",
         "src/fern/collections/items/types/list_items_items_request_filter_value_nin.py",
-        "src/fern/collections/items/types/list_items_items_request_sort_by.py",
-        "src/fern/collections/items/types/list_items_items_request_sort_order.py",
         "src/fern/collections/items/types/list_items_items_request_sort_value.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_exists.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_in.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_nin.py",
-        "src/fern/collections/items/types/list_items_live_items_request_sort_by.py",
-        "src/fern/collections/items/types/list_items_live_items_request_sort_order.py",
         "src/fern/collections/items/types/list_items_live_items_request_sort_value.py",
         "src/fern/collections/items/types/multiple_cms_items_item.py",
         "src/fern/collections/items/types/multiple_items.py",
@@ -5293,12 +5278,9 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/scripts/raw_client.py",
         "src/fern/pages/scripts/types/get_custom_code_scripts_response.py",
         "src/fern/pages/scripts/types/get_custom_code_scripts_response_scripts_item.py",
-        "src/fern/pages/scripts/types/get_custom_code_scripts_response_scripts_item_location.py",
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_request_scripts_item.py",
-        "src/fern/pages/scripts/types/upsert_custom_code_scripts_request_scripts_item_location.py",
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_response.py",
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_response_scripts_item.py",
-        "src/fern/pages/scripts/types/upsert_custom_code_scripts_response_scripts_item_location.py",
         "src/fern/pages/types/__init__.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/pages/types/page_created_payload.py",
@@ -5323,23 +5305,10 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/scripts/raw_client.py",
         "src/fern/sites/__init__.py",
         "src/fern/sites/activity_logs/raw_client.py",
-        "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_actor_type.py",
-        "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_event.py",
-        "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_resource_operation.py",
-        "src/fern/sites/activity_logs/types/list_activity_logs_response_items_item_source.py",
         "src/fern/sites/comments/raw_client.py",
-        "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_by.py",
-        "src/fern/sites/comments/types/get_comment_thread_comments_request_sort_order.py",
-        "src/fern/sites/comments/types/list_comment_replies_comments_request_sort_by.py",
-        "src/fern/sites/comments/types/list_comment_replies_comments_request_sort_order.py",
-        "src/fern/sites/comments/types/list_comment_threads_comments_request_sort_by.py",
-        "src/fern/sites/comments/types/list_comment_threads_comments_request_sort_order.py",
         "src/fern/sites/forms/raw_client.py",
-        "src/fern/sites/google_tag/client.py",
         "src/fern/sites/google_tag/raw_client.py",
         "src/fern/sites/plans/raw_client.py",
-        "src/fern/sites/plans/types/get_site_plan_plans_response_id.py",
-        "src/fern/sites/plans/types/get_site_plan_plans_response_name.py",
         "src/fern/sites/raw_client.py",
         "src/fern/sites/redirects/client.py",
         "src/fern/sites/redirects/raw_client.py",
@@ -5347,18 +5316,12 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/sites/robots_txt/raw_client.py",
         "src/fern/sites/scripts/client.py",
         "src/fern/sites/scripts/raw_client.py",
-        "src/fern/sites/scripts/types/get_custom_code_scripts_response_scripts_item_location.py",
-        "src/fern/sites/scripts/types/list_custom_code_blocks_scripts_response_blocks_item_scripts_item_location.py",
-        "src/fern/sites/scripts/types/list_custom_code_blocks_scripts_response_blocks_item_type.py",
-        "src/fern/sites/scripts/types/upsert_custom_code_scripts_request_scripts_item_location.py",
-        "src/fern/sites/scripts/types/upsert_custom_code_scripts_response_scripts_item_location.py",
         "src/fern/sites/types/__init__.py",
         "src/fern/sites/types/site_publish_payload.py",
         "src/fern/sites/types/site_publish_payload_payload.py",
         "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
         "src/fern/sites/well_known/client.py",
         "src/fern/sites/well_known/raw_client.py",
-        "src/fern/sites/well_known/types/put_well_known_request_content_type.py",
         "src/fern/token/raw_client.py",
         "src/fern/types/__init__.py",
         "src/fern/webhooks/client.py",
@@ -5368,8 +5331,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/workspaces/audit_logs/raw_client.py",
         "src/fern/workspaces/audit_logs/types/__init__.py",
         "src/fern/workspaces/audit_logs/types/custom_role.py",
-        "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_request_event_type.py",
-        "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_request_sort_order.py",
         "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py",
         "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role.py",
         "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type.py",
@@ -5895,6 +5856,162 @@ const ZULIP_JENTIC: Corpus = Corpus {
 /// Zulip API — jentic's import entry, row 165's document with its keys reordered.
 const ZULIP_JENTIC_ENTRY: Corpus = Corpus {
     api: "zulip-jentic-entry",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Milvus RESTful API v2 (the v2.3.x reference) — corpus row 168, the publisher's own description.
+const MILVUS_RESTFUL_V2_3: Corpus = Corpus {
+    api: "milvus-restful-v2-3",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Milvus RESTful API (the v2.4.x reference) — corpus row 169, the publisher's own description.
+const MILVUS_RESTFUL_V2_4: Corpus = Corpus {
+    api: "milvus-restful-v2-4",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Ramu Shogi API contract — corpus row 170, the publisher's own description.
+const RAMU_SHOGI: Corpus = Corpus {
+    api: "ramu-shogi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// LangChain Agent Protocol — corpus row 172, the publisher's own description.
+const LANGCHAIN_AGENT_PROTOCOL: Corpus = Corpus {
+    api: "langchain-agent-protocol",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HSE REST API — corpus row 173, the publisher's own description.
+const HSE: Corpus = Corpus {
+    api: "hse",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Milvus vector operations (apifox export) — corpus row 174, the publisher's own description.
+const MILVUS_VECTOR_OPERATIONS: Corpus = Corpus {
+    api: "milvus-vector-operations",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// Mistle control-plane internal API v1 — corpus row 176, the publisher's own description.
+const MISTLE_CONTROL_PLANE: Corpus = Corpus {
+    api: "mistle-control-plane",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// o²S²PARC payments service — corpus row 177, the publisher's own description.
+const OSPARC_PAYMENTS: Corpus = Corpus {
+    api: "osparc-payments",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HuaTuo node API v1 — corpus row 178, the publisher's own description.
+const HUATUO_NODE: Corpus = Corpus {
+    api: "huatuo-node",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// HuaTuo server API v1 — corpus row 179, the publisher's own description.
+const HUATUO_SERVER: Corpus = Corpus {
+    api: "huatuo-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// VisKit Studio API — corpus row 167, the publisher's own description.
+const VISKIT_STUDIO: Corpus = Corpus {
+    api: "viskit-studio",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// CloudPDF contract API — corpus row 171, the publisher's own description.
+const EMBEDPDF_CLOUDPDF: Corpus = Corpus {
+    api: "embedpdf-cloudpdf",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// NPQ registration API v3 — corpus row 175, the publisher's own description.
+const NPQ_REGISTRATION: Corpus = Corpus {
+    api: "npq-registration",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11626,4 +11743,69 @@ fn zulip_jentic_matches_fern_output() {
 #[test]
 fn zulip_jentic_entry_matches_fern_output() {
     assert_link_ok_corpus_matches(&ZULIP_JENTIC_ENTRY);
+}
+
+#[test]
+fn milvus_restful_v2_3_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_3);
+}
+
+#[test]
+fn milvus_restful_v2_4_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_RESTFUL_V2_4);
+}
+
+#[test]
+fn ramu_shogi_matches_fern_output() {
+    assert_link_ok_corpus_matches(&RAMU_SHOGI);
+}
+
+#[test]
+fn langchain_agent_protocol_matches_fern_output() {
+    assert_link_ok_corpus_matches(&LANGCHAIN_AGENT_PROTOCOL);
+}
+
+#[test]
+fn hse_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HSE);
+}
+
+#[test]
+fn milvus_vector_operations_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MILVUS_VECTOR_OPERATIONS);
+}
+
+#[test]
+fn mistle_control_plane_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MISTLE_CONTROL_PLANE);
+}
+
+#[test]
+fn osparc_payments_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OSPARC_PAYMENTS);
+}
+
+#[test]
+fn huatuo_node_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HUATUO_NODE);
+}
+
+#[test]
+fn huatuo_server_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HUATUO_SERVER);
+}
+
+#[test]
+fn viskit_studio_matches_fern_output() {
+    assert_link_ok_corpus_matches(&VISKIT_STUDIO);
+}
+
+#[test]
+fn embedpdf_cloudpdf_matches_fern_output() {
+    assert_link_ok_corpus_matches(&EMBEDPDF_CLOUDPDF);
+}
+
+#[test]
+fn npq_registration_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NPQ_REGISTRATION);
 }

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "milvus-restful-v2-4",
+  "corpus_spec_ref": "d3c35ec9b46dcc2befd205a87a785896d99ce332",
+  "corpus_spec_url": "https://raw.githubusercontent.com/milvus-io/web-content/d3c35ec9b46dcc2befd205a87a785896d99ce332/API_Reference/milvus-restful/v2.4.x/openapi.json"
+}
