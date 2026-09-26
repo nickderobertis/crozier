@@ -378,6 +378,11 @@ pub struct GlobalHeader {
     /// Whether the header is required on every operation (so the constructor arg is
     /// mandatory and the `get_headers` assignment is unconditional).
     pub required: bool,
+    /// The constructor argument's Python type: `str`, or the scalar its first
+    /// declaration's schema names. Milvus's `Request-Timeout` is `type: integer`,
+    /// and Fern's wrapper takes `typing.Optional[int]` and writes
+    /// `str(self._request_timeout)` into the header.
+    pub py_type: &'static str,
 }
 
 /// Collect the operation headers Fern promotes to client-wrapper-level fields: a
@@ -390,15 +395,20 @@ pub struct GlobalHeader {
 /// scheme, even when it rides every operation.
 fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     let mut total = 0usize;
-    // wire name → (operations carrying it, required in every one so far), first-seen.
-    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
+    // wire name → (operations carrying it, required in every one so far, the
+    // first declaration's Python type), first-seen.
+    let mut seen: IndexMap<String, (usize, bool, &'static str)> = IndexMap::new();
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             total += 1;
             let mut in_op: std::collections::HashSet<&str> = std::collections::HashSet::new();
             for p in &op.parameters {
                 if p.location == Some(ParameterLocation::Header) && in_op.insert(p.name.as_str()) {
-                    let entry = seen.entry(p.name.clone()).or_insert((0, true));
+                    let entry = seen.entry(p.name.clone()).or_insert((
+                        0,
+                        true,
+                        header_py_type(p.schema.as_ref()),
+                    ));
                     entry.0 += 1;
                     entry.1 = entry.1 && p.required == Some(true);
                 }
@@ -418,7 +428,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
         .collect();
     let mut headers: Vec<GlobalHeader> = seen
         .into_iter()
-        .filter(|(wire_name, (count, required))| {
+        .filter(|(wire_name, (count, required, _))| {
             // Fern promotes a header carried by *every* operation with its own
             // declared optionality, and one carried by at least three quarters
             // of them as an unconditionally optional constructor field.
@@ -432,9 +442,10 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 && !is_promotion_reserved_header(wire_name)
                 && !api_key_wire_names.contains(wire_name.as_str())
         })
-        .map(|(wire_name, (count, required))| GlobalHeader {
+        .map(|(wire_name, (count, required, py_type))| GlobalHeader {
             py_name: naming::field_name(header_param_stem(&wire_name)),
             wire_name,
+            py_type,
             // A header short of every operation is promoted as optional
             // whatever the operations that do declare it say.
             required: required && count == total,
@@ -449,6 +460,16 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
     // then security headers).
     headers.extend(api_key_headers);
     headers
+}
+
+/// The Python scalar a promoted header's schema declares, `str` for anything else.
+fn header_py_type(schema: Option<&Schema>) -> &'static str {
+    match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
+        Some("integer") => "int",
+        Some("number") => "float",
+        Some("boolean") => "bool",
+        _ => "str",
+    }
 }
 
 fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
@@ -481,6 +502,7 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(header_param_stem(wire_name)),
                 wire_name: wire_name.clone(),
                 required: true,
+                py_type: "str",
             })
         })
         .collect()
@@ -4902,7 +4924,7 @@ fn hoist_inline_object(
             }),
             media_example: false,
             schema_body_example: false,
-            docstring: clean_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref()),
             is_file: false,
             form_json: false,
             form_content_type: None,
@@ -5313,6 +5335,7 @@ impl InlineHoister<'_> {
             }
         }
         if is_inline_object(variant)
+            || is_declared_empty_object(variant)
             || is_bare_object(variant)
                 && schema_example(variant).is_some_and(|example| {
                     example.is_object() && !example_is_schema_definition(example)
@@ -8097,6 +8120,22 @@ impl Builder<'_> {
                         return;
                     }
                 }
+                // An inline undiscriminated union element is a union alias of its
+                // own: Milvus's `vector` is an array of `anyOf: [integer,
+                // string]`, and Fern declares `VectorItem = Union[int, str]` and
+                // `Vector = List[VectorItem]`.
+                if items.reference.is_none()
+                    && union_variants(items).is_some_and(|(variants, _)| variants.len() > 1)
+                {
+                    self.add_named(&item_name, items);
+                    self.push_alias(
+                        name,
+                        module,
+                        sequence_of(schema, TypeRef::Named(item_name)),
+                        docstring,
+                    );
+                    return;
+                }
                 if is_inline_struct(items) {
                     let item_doc = clean_doc(items.description.as_deref());
                     self.add_object(&item_name, item_module, items, item_doc);
@@ -10073,14 +10112,19 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
 /// union member written so is an empty model to Fern, not a map: Timely's
 /// `V1.Project.cost` offers a cost object or one, and Fern declares
-/// `V1ProjectCostOne`.
+/// `V1ProjectCostOne`. Closing it changes nothing: Milvus's insert `data` offers
+/// `{type: object, properties: {}, additionalProperties: false}` or a list, and
+/// Fern declares `PostV2VectordbEntitiesInsertRequestDataZero`.
 fn is_declared_empty_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.properties.declared()
         && schema.properties.is_empty()
         && schema.all_of.is_none()
-        && schema.additional_properties.is_none()
-        && is_object_type(schema)
+        && matches!(
+            schema.additional_properties,
+            None | Some(AdditionalProperties::Bool(false))
+        )
+        && schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or

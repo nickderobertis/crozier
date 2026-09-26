@@ -3271,9 +3271,12 @@ fn client_wrapper_file(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: str,\n", h.py_name)
+                format!("        {}: {},\n", h.py_name, h.py_type)
             } else {
-                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+                format!(
+                    "        {}: typing.Optional[{}] = None,\n",
+                    h.py_name, h.py_type
+                )
             }
         })
         .collect();
@@ -3284,15 +3287,20 @@ fn client_wrapper_file(
     let gh_header: String = global_headers
         .iter()
         .map(|h| {
+            // A non-string header is written as its `str()`, as Fern's is.
+            let value = if h.py_type == "str" {
+                format!("self._{}", h.py_name)
+            } else {
+                format!("str(self._{})", h.py_name)
+            };
             if h.required {
                 format!(
-                    "        headers[\"{1}\"] = self._{0}\n",
-                    h.py_name,
+                    "        headers[\"{}\"] = {value}\n",
                     escape_py_str(&h.wire_name)
                 )
             } else {
                 format!(
-                    "        if self._{0} is not None:\n            headers[\"{1}\"] = self._{0}\n",
+                    "        if self._{} is not None:\n            headers[\"{}\"] = {value}\n",
                     h.py_name,
                     escape_py_str(&h.wire_name)
                 )
@@ -5790,9 +5798,9 @@ fn root_client_class(
         .iter()
         .map(|h| {
             let ty = if h.required {
-                "str"
+                h.py_type.to_string()
             } else {
-                "typing.Optional[str]"
+                format!("typing.Optional[{}]", h.py_type)
             };
             format!("    {} : {ty}\n", h.py_name)
         })
@@ -5801,9 +5809,12 @@ fn root_client_class(
         .into_iter()
         .map(|h| {
             if h.required {
-                format!("        {}: str,\n", h.py_name)
+                format!("        {}: {},\n", h.py_name, h.py_type)
             } else {
-                format!("        {}: typing.Optional[str] = None,\n", h.py_name)
+                format!(
+                    "        {}: typing.Optional[{}] = None,\n",
+                    h.py_name, h.py_type
+                )
             }
         })
         .collect();
@@ -11782,6 +11793,7 @@ mod tests {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
             required: true,
+            py_type: "str",
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;

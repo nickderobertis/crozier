@@ -5839,27 +5839,7 @@ const MILVUS_RESTFUL_V2_3: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/client.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/index_operations_v2/client.py",
-        "src/fern/index_operations_v2/raw_client.py",
-        "src/fern/types/__init__.py",
-        "src/fern/types/vector.py",
-        "src/fern/types/vector_item.py",
-        "src/fern/user_operations_v2/client.py",
-        "src/fern/user_operations_v2/raw_client.py",
-        "src/fern/vector_operations_v2/__init__.py",
-        "src/fern/vector_operations_v2/client.py",
-        "src/fern/vector_operations_v2/raw_client.py",
-        "src/fern/vector_operations_v2/types/__init__.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data_zero.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data_zero.py",
-    ],
+    unmatched: &[],
 };
 
 /// Milvus RESTful API (the v2.4.x reference) — corpus row 169, the publisher's own description.
@@ -5871,27 +5851,7 @@ const MILVUS_RESTFUL_V2_4: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/client.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/index_operations_v2/client.py",
-        "src/fern/index_operations_v2/raw_client.py",
-        "src/fern/types/__init__.py",
-        "src/fern/types/vector.py",
-        "src/fern/types/vector_item.py",
-        "src/fern/user_operations_v2/client.py",
-        "src/fern/user_operations_v2/raw_client.py",
-        "src/fern/vector_operations_v2/__init__.py",
-        "src/fern/vector_operations_v2/client.py",
-        "src/fern/vector_operations_v2/raw_client.py",
-        "src/fern/vector_operations_v2/types/__init__.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_insert_request_data_zero.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data.py",
-        "src/fern/vector_operations_v2/types/post_v2vectordb_entities_upsert_request_data_zero.py",
-    ],
+    unmatched: &[],
 };
 
 /// Ramu Shogi API contract — corpus row 170, the publisher's own description.
@@ -5939,17 +5899,7 @@ const MILVUS_VECTOR_OPERATIONS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/vector_operations/__init__.py",
-        "src/fern/vector_operations/client.py",
-        "src/fern/vector_operations/types/__init__.py",
-        "src/fern/vector_operations/types/post_v1vector_insert_request_data.py",
-        "src/fern/vector_operations/types/post_v1vector_insert_request_data_zero.py",
-        "src/fern/vector_operations/types/post_v1vector_upsert_request_data.py",
-        "src/fern/vector_operations/types/post_v1vector_upsert_request_data_zero.py",
-    ],
+    unmatched: &["reference.md", "src/fern/vector_operations/client.py"],
 };
 
 /// Mistle control-plane internal API v1 — corpus row 176, the publisher's own description.
