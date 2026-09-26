@@ -1472,62 +1472,64 @@ repair gave `hoist_union_variant` its nested-composition arm, and it ranks above
 `anyof-allof-variant` on the current ledger, so the table gives its current rank
 marked `(new)`. The rows the witness searches' registrations (corpus rows 144 to
 166) made `golden`, and `anyof-anyof-variant`, which `fergus` made `golden` once
-both batches stood in one tree, joined the ledger after the boundary was fixed;
-those ranked above `anyof-allof-variant` now are open like every other row
-outside the owned set. Each
+both batches stood in one tree, joined the ledger after the boundary was fixed.
+The boundary stays where the ranking measured at `721c6090`, before that merge,
+put it: the rows the merged ranking newly places above `anyof-allof-variant` are
+open like every other row outside the owned set, pending the continuation node
+`thin-goldens-continue`. Each
 owned row is left either with a registered real-world witness reaching the arm no
 earlier witness reached, or with a search record over the six declared sources
 for one. Every other row listed here with an unreached site is **open**, pending
-a continuation; no search is recorded for it and none is claimed.
+`thin-goldens-continue`; no search is recorded for it and none is claimed.
 
 | rank | key | region | unreached sites | unreached regions | witnesses | disposition |
 |---:|---|---|---:|---:|---:|---|
 | 1 | `ref-pointer-composition-index` | `schemas` | **2** | **29** | **1** | owned — see the table below |
 | 2 | `anyof-discriminated-union` | `schemas` | **2** | **14** | **7** | owned — see the table below |
 | 3 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **2** | **11** | **2** | owned — see the table below |
-| 4 | `anyof-anyof-variant` | `schemas` | **1** | **51** | **1** | open — pending the continuation |
+| 4 | `anyof-anyof-variant` | `schemas` | **1** | **51** | **1** | open — pending `thin-goldens-continue` |
 | 5 | `anyof-oneof-variant` | `schemas` | **1** | **51** | **3** | owned — see the table below |
-| 6 | `ref-pointer-undeclared-component-head` | `schemas` | **1** | **50** | **10** | open — pending the continuation |
+| 6 | `ref-pointer-undeclared-component-head` | `schemas` | **1** | **50** | **10** | open — pending `thin-goldens-continue` |
 | 7 | `anyof-sole-member` | `schemas` | **1** | **33** | **1** | owned — see the table below |
 | 8 | `items-oneof-element` | `schemas` | **1** | **23** | **15** | owned — see the table below |
-| 9 | `anyof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — pending the continuation |
-| 10 | `oneof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — pending the continuation |
+| 9 | `anyof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — pending `thin-goldens-continue` |
+| 10 | `oneof-string-const-variant` | `schemas` | **1** | **22** | **2** | open — pending `thin-goldens-continue` |
 | 11 | `annotated-ref-shape` | `schemas` | **1** | **17** | **12** | owned — see the table below |
 | 12 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **16** | **1** | owned — see the table below |
-| 13 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **16** | **1** | open — pending the continuation |
+| 13 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **16** | **1** | open — pending `thin-goldens-continue` |
 | 14 | `anyof-array-variant-composed-item` | `schemas` | **1** | **15** | **1** | owned — see the table below |
-| 15 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **15** | **3** | open — pending the continuation |
-| 16 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **14** | **6** | open — pending the continuation |
+| 15 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **15** | **3** | open — pending `thin-goldens-continue` |
+| 16 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **14** | **6** | open — pending `thin-goldens-continue` |
 | 17 | `oneof-discriminated-union` | `schemas` | **1** | **13** | **24** | owned — see the table below |
 | 18 | `anyof-allof-variant` | `schemas` | **1** | **12** | **1** | owned — see the table below |
-| 19 | `array-item-composed` | `schemas` | **1** | **12** | **10** | open — pending the continuation |
-| 20 | `array-item-empty-object` | `schemas` | **1** | **12** | **1** | open — pending the continuation |
-| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **11** | **5** | open — pending the continuation |
+| 19 | `array-item-composed` | `schemas` | **1** | **12** | **10** | open — pending `thin-goldens-continue` |
+| 20 | `array-item-empty-object` | `schemas` | **1** | **12** | **1** | open — pending `thin-goldens-continue` |
+| 21 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **11** | **5** | open — pending `thin-goldens-continue` |
 | 22 | `property-anyof-discriminated-union` | `schemas` | **1** | **11** | **2** | owned — see the table below |
-| 23 | `property-empty-object` | `schemas` | **1** | **11** | **1** | open — pending the continuation |
-| 24 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — pending the continuation |
-| 25 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **2** | open — pending the continuation |
-| 26 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **152** | open — pending the continuation |
-| 27 | `http-dpop` | `security` | **1** | **4** | **3** | open — pending the continuation |
-| 28 | `http-mutual` | `security` | **1** | **4** | **1** | open — pending the continuation |
-| 29 | `http-negotiate` | `security` | **1** | **4** | **2** | open — pending the continuation |
-| 30 | `mutualTLS` | `security` | **1** | **4** | **1** | open — pending the continuation |
-| 31 | `securityscheme-type-openidconnect` | `security` | **1** | **4** | **4** | open — pending the continuation |
-| 32 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **3** | open — pending the continuation |
-| 33 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **161** | open — pending the continuation |
-| 34 | `recursive-graph` | `schemas` | **1** | **2** | **161** | open — pending the continuation |
-| 35 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — pending the continuation |
-| 36 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
-| 37 | `format-duration` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
-| 38 | `format-email` | `schemas` | **1** | **1** | **28** | open — pending the continuation |
-| 39 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
-| 40 | `format-ipv4` | `schemas` | **1** | **1** | **3** | open — pending the continuation |
-| 41 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
-| 42 | `format-password` | `schemas` | **1** | **1** | **7** | open — pending the continuation |
-| 43 | `format-regex` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
-| 44 | `format-time` | `schemas` | **1** | **1** | **1** | open — pending the continuation |
-| 45 | `format-uri` | `schemas` | **1** | **1** | **47** | open — pending the continuation |
-| 46 | `format-uri-reference` | `schemas` | **1** | **1** | **2** | open — pending the continuation |
+| 23 | `property-empty-object` | `schemas` | **1** | **11** | **1** | open — pending `thin-goldens-continue` |
+| 24 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — pending `thin-goldens-continue` |
+| 25 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **2** | open — pending `thin-goldens-continue` |
+| 26 | `non-identifier-operation-id` | `document-paths` | **1** | **8** | **152** | open — pending `thin-goldens-continue` |
+| 27 | `http-dpop` | `security` | **1** | **4** | **3** | open — pending `thin-goldens-continue` |
+| 28 | `http-mutual` | `security` | **1** | **4** | **1** | open — pending `thin-goldens-continue` |
+| 29 | `http-negotiate` | `security` | **1** | **4** | **2** | open — pending `thin-goldens-continue` |
+| 30 | `mutualTLS` | `security` | **1** | **4** | **1** | open — pending `thin-goldens-continue` |
+| 31 | `securityscheme-type-openidconnect` | `security` | **1** | **4** | **4** | open — pending `thin-goldens-continue` |
+| 32 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **3** | open — pending `thin-goldens-continue` |
+| 33 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **161** | open — pending `thin-goldens-continue` |
+| 34 | `recursive-graph` | `schemas` | **1** | **2** | **161** | open — pending `thin-goldens-continue` |
+| 35 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — pending `thin-goldens-continue` |
+| 36 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — pending `thin-goldens-continue` |
+| 37 | `format-duration` | `schemas` | **1** | **1** | **2** | open — pending `thin-goldens-continue` |
+| 38 | `format-email` | `schemas` | **1** | **1** | **28** | open — pending `thin-goldens-continue` |
+| 39 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — pending `thin-goldens-continue` |
+| 40 | `format-ipv4` | `schemas` | **1** | **1** | **3** | open — pending `thin-goldens-continue` |
+| 41 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — pending `thin-goldens-continue` |
+| 42 | `format-password` | `schemas` | **1** | **1** | **7** | open — pending `thin-goldens-continue` |
+| 43 | `format-regex` | `schemas` | **1** | **1** | **1** | open — pending `thin-goldens-continue` |
+| 44 | `format-time` | `schemas` | **1** | **1** | **1** | open — pending `thin-goldens-continue` |
+| 45 | `format-uri` | `schemas` | **1** | **1** | **47** | open — pending `thin-goldens-continue` |
+| 46 | `format-uri-reference` | `schemas` | **1** | **1** | **2** | open — pending `thin-goldens-continue` |
 | 47 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — see the table below |
 
 #### The rows this measurement's first pass owned
@@ -3234,10 +3236,11 @@ So refreshing is: run the recipe, then bring the table to what it printed.
 **The cells in the join table now come from one run**: `just fixtures-coverage`
 on 2026-09-25 over the `src/` of the tree that merges the witness searches'
 registrations (corpus rows 144 to 166) with the golden-reach witnesses (rows 191
-to 195) — 183 golden-only tests, 347 all-e2e, 477 non-e2e. Every function count
+to 195) — 183 golden-only tests, 347 all-e2e, 479 non-e2e. Every function count
 quoted in the join's verdicts is that run's union, attributed by the script
 above. The per-row reach cells are a separate, per-test measurement
-(`just golden-reach`), not this run's golden-only tier.
+(`just golden-reach`), not this run's golden-only tier; `golden-reach.tsv`'s
+first line names the commit that measurement was taken at.
 
 ```sh
 just fixtures-coverage | sed -n '/golden blind spots/,/^  total/p'
