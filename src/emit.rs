@@ -9210,7 +9210,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // binary download with only those params has no exampleable required argument.
     // That is a `GET`'s loss alone: HuaTuo's Pyroscope queries are argument-less
     // `POST`s streaming bytes, and Fern documents each of them.
-    let binary_has_no_required_arguments = ep.http_method == "GET"
+    let binary_get_has_no_required_args = ep.http_method == "GET"
         && ep.path_params.is_empty()
         && ep
             .query_params
@@ -9251,7 +9251,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
-    !(ep.binary_response && (binary_has_no_required_arguments || binary_path_placeholder_rejected)
+    !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
         || opaque_multipart_example
         || list_path_param_with_body)
 }
