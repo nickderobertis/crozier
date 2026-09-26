@@ -3204,10 +3204,20 @@ components:
                 .and_then(TypeField::primary),
             Some("string")
         );
-        // A pointer ending on a composition member, through a non-schema
-        // `additionalProperties`, to nothing, through `$defs`, or at a whole
-        // component is left for the lowering.
-        for kept in ["member", "open", "missing", "defs", "whole"] {
+        // A pointer whose text names `properties` is copied even where it ends
+        // on a composition member, as Fern's importer copies the Vonage
+        // Conversation API's `…/channel/properties/from/oneOf/0`, and the copy
+        // remembers the pointer it came from.
+        let member = &revision.properties["member"];
+        assert!(member.reference.is_none());
+        assert_eq!(member.ty.as_ref().and_then(TypeField::primary), Some("string"));
+        assert_eq!(
+            member.ref_origin.as_deref(),
+            Some("#/components/schemas/Page/properties/choice/anyOf/1")
+        );
+        // One through a non-schema `additionalProperties`, to nothing, through
+        // `$defs`, or at a whole component is left for the lowering.
+        for kept in ["open", "missing", "defs", "whole"] {
             assert!(
                 revision.properties[kept].reference.is_some(),
                 "{kept} should keep its $ref"

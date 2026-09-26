@@ -65,6 +65,7 @@ paths:
         '200':
           description: file
           content: { application/octet-stream: { schema: { type: string } } }
+        '404': { description: Invalid byte length in virtual file request }
   /chat:
     post:
       parameters:
@@ -718,7 +719,7 @@ fn wide_string_enum_wraps_like_ruff() {
     let big = render(&spec)["src/acme/types/big.py"].clone();
     assert!(big.contains("class Big(enum.StrEnum):"), "{big}");
     assert!(
-        big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
+        big.contains("    VALUE_NUMBER00WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
     );
     // ruff explodes the wide `visit` signature: `def visit(` then `self,` and each
@@ -728,11 +729,11 @@ fn wide_string_enum_wraps_like_ruff() {
         "exploded visit: {big}"
     );
     assert!(
-        big.contains("        value_number_00_with_padding: typing.Callable[[], T_Result],\n"),
+        big.contains("        value_number00with_padding: typing.Callable[[], T_Result],\n"),
         "{big}"
     );
     assert!(
-        big.contains("        if self is Big.VALUE_NUMBER_00_WITH_PADDING:\n"),
+        big.contains("        if self is Big.VALUE_NUMBER00WITH_PADDING:\n"),
         "{big}"
     );
 }
