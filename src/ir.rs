@@ -7662,7 +7662,10 @@ fn inferred_discriminant_property_with(
                         "role" | "status" => variant.required.contains(property),
                         "message_type" | "mcp_server_type" => true,
                         "name" => singleton_enum,
-                        _ => false,
+                        _ => {
+                            variant.required.contains(property)
+                                && field.const_value.as_ref().is_some_and(serde_json::Value::is_string)
+                        }
                     };
                     if !supported {
                         return None;

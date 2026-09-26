@@ -2825,12 +2825,18 @@ def _candidate_tag_values(
                     or written(field, "const")
                     and isinstance(field["const"], str)
                 )
-            elif candidate == "role":
+            elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)
             elif candidate in ("message_type", "mcp_server_type"):
                 supported = True
+            elif candidate == "name":
+                supported = singleton_enum
             else:
-                supported = False
+                supported = (
+                    candidate in required_names(variant)
+                    and written(field, "const")
+                    and isinstance(field["const"], str)
+                )
             if not supported:
                 return None
         elif not singleton_enum:
