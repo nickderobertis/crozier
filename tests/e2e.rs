@@ -3353,6 +3353,7 @@ const CORPORA: &[&Corpus] = &[
     &OTOROSHI,
     &NEXMO_CONVERSATION,
     &CODAT_ASSESS,
+    &GOOGLEAPIS_MONITORING_V1,
 ];
 
 #[test]
@@ -6118,6 +6119,19 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `googleapis-monitoring-v1`: corpus row 225, Google's Cloud Monitoring API v1
+/// from APIs.guru, whose enums carry members with leading zeros
+const GOOGLEAPIS_MONITORING_V1: Corpus = Corpus {
+    api: "googleapis-monitoring-v1",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -11976,6 +11990,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn googleapis_monitoring_v1_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
 }
 
 #[test]
