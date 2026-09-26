@@ -16393,6 +16393,74 @@ mod tests {
         );
     }
 
+    /// The three rules the merge of #297 settled so both sides' goldens match.
+    #[test]
+    fn merged_union_map_and_nullable_rules_hold_together() {
+        let (ir, _) = generate(observed_document(
+            serde_json::json!({
+                "Holder": { "type": "object", "properties": {
+                    // One schema written twice is that schema, even where it
+                    // lowers to `Any` (the half OpenCodeUI's rule adds to
+                    // CloudPDF's), while two different `Any` members stay a union.
+                    "twice": { "anyOf": [
+                        { "description": "free" }, { "description": "free" }
+                    ] },
+                    "rekor": { "anyOf": [
+                        { "description": "one" }, { "description": "two" }
+                    ] },
+                    // Ramu Shogi's `GetUserSettingsResponse.document`.
+                    "document": { "allOf": [
+                        { "$ref": "#/components/schemas/Document" },
+                        { "type": ["object", "null"] }
+                    ] }
+                } },
+                "Document": { "allOf": [
+                    { "$ref": "#/components/schemas/Stamped" },
+                    { "type": "object", "required": ["key"], "properties": {
+                        "key": { "type": "string" }
+                    } }
+                ] },
+                "Stamped": { "type": "object", "required": ["version"], "properties": {
+                    "version": { "type": "integer" }
+                } },
+                // Ramu Shogi's `JsonValue`: a map member whose value is one schema
+                // beside `null`.
+                "JsonValue": { "oneOf": [
+                    { "type": "string" },
+                    { "type": "object", "additionalProperties": { "oneOf": [
+                        { "$ref": "#/components/schemas/JsonValue" }, { "type": "null" }
+                    ] } }
+                ] }
+            }),
+            serde_json::json!({ "holder": { "$ref": "#/components/schemas/Holder" } }),
+        ));
+        assert_eq!(holder_field(&ir, "twice"), TypeRef::Primitive(Prim::Any));
+        assert_eq!(
+            holder_field(&ir, "rekor"),
+            TypeRef::Named("HolderRekor".to_string())
+        );
+        let document = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "HolderDocument" => Some(object),
+                _ => None,
+            })
+            .expect("the nullable allOf is a model of its own");
+        assert!(document.bases.is_empty(), "{:?}", document.bases);
+        let fields: Vec<&str> = document
+            .fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect();
+        assert_eq!(fields, ["version", "key"]);
+        let labels = declarations(&ir);
+        assert!(
+            !labels.contains(&"Alias(JsonValueOneValue)".to_string()),
+            "{labels:?}"
+        );
+    }
+
     #[test]
     fn fastapi_operation_ids_lose_their_route_suffix_under_a_tag() {
         let operation = |id: &str, tag: Option<&str>| {
