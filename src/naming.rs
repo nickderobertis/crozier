@@ -409,6 +409,17 @@ fn enum_words(value: &str) -> String {
     if let Some(words) = whole_value_enum_words(value) {
         return words.to_string();
     }
+    // A value that is a number *whole* is spelled as that number, its leading
+    // zeros read away: Adyen's `challengeIndicator` values `01`…`09` are `ONE` …
+    // `NINE` in its golden. A zero-led run that only leads a longer value names a
+    // member Fern refuses (see below).
+    if value.len() > 1 && value.starts_with('0') && value.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        let number = value.trim_start_matches('0');
+        if let Some(words) = numeric_enum_identifier(if number.is_empty() { "0" } else { number }) {
+            return words;
+        }
+    }
     let mut spaced = String::new();
     for c in value.chars() {
         if c == '\'' || c == '\u{2019}' {
@@ -1193,6 +1204,11 @@ mod tests {
         );
         // Fern refuses a name led by one; crozier keeps it as written.
         assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
+        // A zero-led value that is a number whole is spelled as that number
+        // (Adyen's challenge indicators, corpus row 229's golden).
+        assert_eq!(enum_member_name("01"), "ONE");
+        assert_eq!(enum_visit_param("09"), "nine");
+        assert_eq!(enum_member_name("00"), "ZERO");
     }
 
     #[test]
