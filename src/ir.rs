@@ -659,11 +659,13 @@ fn auth_model(doc: &OpenApi) -> Auth {
                     Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
                 ))
             || scheme.ty == SecuritySchemeType::OAuth2
+            || scheme.ty == SecuritySchemeType::OpenIdConnect
     });
     if !requirement_declared
         && selected.is_none_or(|scheme| {
             scheme.ty != SecuritySchemeType::ApiKey
                 && scheme.ty != SecuritySchemeType::OAuth2
+                && scheme.ty != SecuritySchemeType::OpenIdConnect
                 && !(scheme.ty == SecuritySchemeType::Http
                     && scheme.scheme == Some(HttpAuthScheme::Bearer))
         })
@@ -696,6 +698,13 @@ fn auth_model(doc: &OpenApi) -> Auth {
             }
         }
         Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
+            required: all_operations_authenticated(doc),
+        },
+        // An `openIdConnect` scheme is a bearer token to Fern, required on the
+        // same terms as OAuth2's: the Virtual Cell's `openId` scheme leaves
+        // `token` optional, and a book manager requiring its `bearerAuth` OIDC
+        // scheme on every operation makes it required.
+        Some(s) if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer {
             required: all_operations_authenticated(doc),
         },
         // No scheme Fern supports: it defines no auth at all. OneVoice's

@@ -11478,6 +11478,40 @@ components:
     assert!(!client.contains("token"), "{client}");
 }
 
+/// The Eclipse XFSC OIDC identity resolver (corpus row 228): an `openIdConnect`
+/// scheme is a bearer token to Fern, optional unless every operation requires
+/// it, as its Fern 5.20.0 golden's client takes an optional `token`.
+#[test]
+fn openid_connect_schemes_are_bearer_tokens() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: oidc-identity-resolver API, version: 1.0.0-SNAPSHOT }
+paths:
+  /resolve:
+    get:
+      tags: [resolver]
+      operationId: resolve
+      security: [{ oidc: [] }]
+      responses: { '200': { description: ok } }
+  /health:
+    get:
+      tags: [resolver]
+      operationId: health
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    oidc: { type: openIdConnect, openIdConnectUrl: 'https://example.com/.well-known/openid-configuration' }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"
+        ),
+        "{client}"
+    );
+}
+
 /// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
 /// line of its Fern 5.20.0 golden:
 /// - an `anyOf` variant that is one member beside `null` is that member made
