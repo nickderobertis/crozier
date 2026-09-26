@@ -1,0 +1,78 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 12 errors
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append_stream -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationAppendRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append_stream
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationAppendRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationAppendRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_append
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationAppendRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart_stream -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationRestartRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart_stream
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationRestartRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationRestartRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_restart
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationRestartRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start_stream -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start_stream
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start -> request -> body
+        issue: Object has multiple properties named "stream":
+  - <Inlined Request> -> stream
+  - <Inlined Request> -> (extends) root.ConversationRequestBase -> stream
+
+    [error]
+        path: betaConversations.yml -> service -> endpoints -> agents_api_v1_conversations_start
+        issue: Multiple request properties have the name stream. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> stream
+  - Body property: <Request Body> -> (extends) root.ConversationRequestBase -> stream
+
+Found 12 errors and 2 warnings in 0.009 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

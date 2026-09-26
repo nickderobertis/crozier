@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "fb81f3e27ee507557926ecf923d0f933a1c76d44",
+    "path": "openapi.json",
+    "repository": "github.com/langchain-ai/agent-protocol",
+    "screen": "witness-search-sourcegraph/screens.jsonl:43",
+    "sha256": "7d069e43ca105e8127ce07ba7bd8bd7a78a2fadd6420009f2634a24cfb153f32"
+  },
+  "key": "oneof-array-variant-anyof-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

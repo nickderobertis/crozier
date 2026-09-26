@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "d3c35ec9b46dcc2befd205a87a785896d99ce332",
+    "path": "API_Reference/milvus-restful/v2.4.x/openapi.json",
+    "repository": "milvus-io/web-content",
+    "screen": "witness-search-github-code-search/screens.jsonl:33",
+    "sha256": "1c6d0a3178cad4ec92085240c04dc7d630d0b96e8331819ef51dcc6c014ceeb4"
+  },
+  "key": "anyof-array-variant-empty-object-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

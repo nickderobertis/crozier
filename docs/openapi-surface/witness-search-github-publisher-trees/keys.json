@@ -159,8 +159,8 @@
     "securityscheme-ref": {
       "region": "security",
       "selector": "securityScheme:$ref",
-      "selector_status": "parsed Reference Object; census selector unavailable"
+      "selector_status": "available"
     }
   },
-  "source_commit": "ee9b0ccb15f824bea6eea7c015dee55dad2469b3"
+  "source_commit": "ff5fd6f0b1d919aa584f4ef7d81ce05fa79c0c92"
 }

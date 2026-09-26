@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "e912f12c40eaf6de0cdda2e8c43db5cf226a301d",
+    "path": "otoroshi/conf/schemas/openapi.json",
+    "repository": "github.com/MAIF/otoroshi",
+    "screen": "witness-search-sourcegraph/screens.jsonl:67",
+    "sha256": "fc4932a45bb2684c3165a3241c4847bafc085946d4a8c35771790a925c036964"
+  },
+  "key": "ref-pointer-undeclared-component-head",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

@@ -1,0 +1,30 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 5 errors
+    [error]
+        path: __package__.yml -> types -> 123456
+        issue: Type name must begin with a letter
+
+    [error]
+        path: openapi/openapi.json -> paths -> /test-cases/parameters/{duplicateParam} -> get
+        issue: Parameters query parameter 'duplicateParam', path parameter 'duplicateParam' all normalize to 'duplicateParam' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.json -> paths -> /test-cases/reserved-keywords/{const} -> get
+        issue: Parameters path parameter 'const', query parameter 'const' all normalize to 'const' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: testCase.yml -> service -> endpoints -> export
+        issue: Multiple request properties have the name const. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "const"
+  - Query Parameter "const"
+
+    [error]
+        path: testCase.yml -> service -> endpoints -> getDuplicateParameters
+        issue: Multiple request properties have the name duplicateParam. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "duplicateParam"
+  - Query Parameter "duplicateParam"
+
+Found 5 errors and 2 warnings in 0.006 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

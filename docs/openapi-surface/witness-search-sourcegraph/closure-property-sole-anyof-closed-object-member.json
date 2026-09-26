@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "17f95361371e9bb8c3f1e41c90f5e78bda069ce5",
+    "path": "public/api/docs/v3/swagger.yaml",
+    "repository": "DFE-Digital/npq-registration",
+    "screen": "witness-search-github-code-search/screens.jsonl:55",
+    "sha256": "754c42c97b3027cddcfd66c203143ef5a65b4bfa7bd6e1bfa76944b745fb7629"
+  },
+  "key": "property-sole-anyof-closed-object-member",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

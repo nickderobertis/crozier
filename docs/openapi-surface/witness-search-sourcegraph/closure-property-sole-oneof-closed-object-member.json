@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "2b11ccefc658c5b707310d3cc471d5c5928554f3",
+    "path": "apps/control-plane-api/openapi/control-plane.internal.v1.json",
+    "repository": "github.com/mistlehq/mistle",
+    "screen": "witness-search-sourcegraph/screens.jsonl:46",
+    "sha256": "b1c2a7b35510274d1050dbc04df056bc54a15ef53bc130b40fa88e482fd5c2f4"
+  },
+  "key": "property-sole-oneof-closed-object-member",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

@@ -1,0 +1,18 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Kie.ai API
+[api]: Unexpected error: Failed to resolve schema reference: Structured%20outputs 
+       CliError: Unexpected error: Failed to resolve schema reference: Structured%20outputs
+           at e.getResolvedSchema (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19561)
+           at e.getAllRequiredProperties (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:19198)
+           at e.buildExampleHelper (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:14172)
+           at e.buildExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:207:8892)
+           at d1r.buildEndpointExample (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:2422)
+           at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148756
+           at Array.map (<anonymous>)
+           at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:148660)
+           at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+           at e.getOpenAPIIr (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:920:17537)
+All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

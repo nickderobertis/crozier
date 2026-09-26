@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "d3c35ec9b46dcc2befd205a87a785896d99ce332",
+    "path": "scripts/apifox-docs/meta/openapi/03-vector-operations.json",
+    "repository": "github.com/milvus-io/web-content",
+    "screen": "witness-search-sourcegraph/screens.jsonl:90",
+    "sha256": "a3103bf1afdc730a0fc8edf0bed2bd1b0ec3d7f645e5c4747235772f6a7c6d60"
+  },
+  "key": "oneof-array-variant-empty-object-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

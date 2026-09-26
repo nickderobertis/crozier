@@ -1,0 +1,96 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 23 errors
+    [error]
+        path: __package__.yml -> types -> ClaimsCreateNewClaimRequestSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ClaimsCreateNewClaimResponseSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ClaimsGetAllClaimsResponseClaimsItemSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsCreateRequestResponseCreditor
+        issue: Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsGetAdmissionResponseAdmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsGetBankAccountPaymentsResponsePaymentsItemCreditor
+        issue: Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsGetDetailsResponseCreditor
+        issue: Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsGetSubmissionResponseSubmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsListAdmissionsResponseAdmissionsItemAdmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsListBankAccountAdmissionsResponseAdmissionsItemAdmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsListSubmissions200ResponseSubmissionsItemSubmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsListSubmissionsResponseSubmissionsItemSubmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> PaymentsSubmitPaymentSubmissionResponseSubmissionSchemeInformation
+        issue: Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> RelianceOnboardingGetApplicationResponse
+        issue: Discriminant value onboarding-application-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> TransactionsListBalanceChangesResponseIncludedPaymentsItemCreditor
+        issue: Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> WebhooksGetLatestTestStatusResponse
+        issue: Discriminant value webhook-request-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> WebhooksSendTestEventResponse
+        issue: Discriminant value webhook-request-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: legalPersons.yml -> types -> LegalPersonsCreateNewLegalPersonRequestClaimsItemSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: openapi/openapi.json -> paths -> /v0/legal-persons/{legal-person-id}/verifications -> post -> description
+        issue: Endpoint description for POST /v0/legal-persons/{legal-person-id}/verifications contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.json -> paths -> /v0/organizations/{organization-id}/onboarding/applications -> post -> description
+        issue: Endpoint description for POST /v0/organizations/{organization-id}/onboarding/applications contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: payments.yml -> types -> PaymentsCreateRequestRequestCreditor
+        issue: Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: relianceOnboarding.yml -> types -> RelianceOnboardingCreateApplicationRequestRelatedProfilesItemClaimsItemSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: relianceOnboarding.yml -> types -> RelianceOnboardingCreateApplicationRequestSubjectProfileClaimsItemSixteen
+        issue: Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 23 errors and 0 warnings in 0.008 seconds.

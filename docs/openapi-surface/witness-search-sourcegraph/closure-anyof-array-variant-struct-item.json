@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "4e989cdd4bbda669dc73c0d3f5db90bb4989bee3",
+    "path": "openapi-specs/code/Technologies.json",
+    "repository": "github.com/PaloAltoNetworks/pan.dev",
+    "screen": "witness-search-sourcegraph/screens.jsonl:35",
+    "sha256": "cd1d03bf9c0321bf4b332955db94d2b0a3655e5299a063c3de5f7cd5d12a826d"
+  },
+  "key": "anyof-array-variant-struct-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "sourcegraph",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

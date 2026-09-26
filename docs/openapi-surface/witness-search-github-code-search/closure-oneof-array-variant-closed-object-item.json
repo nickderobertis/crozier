@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037",
+    "path": "jekyll-www.mock-server.com/mockserver-openapi.yaml",
+    "repository": "github.com/mock-server/mockserver-monorepo",
+    "screen": "witness-search-sourcegraph/screens.jsonl:48",
+    "sha256": "db67b21611bcd749d33ffb46fd93ff849d6af24a719906327103924c3855ecc0"
+  },
+  "key": "oneof-array-variant-closed-object-item",
+  "outcome": "witness-found pending register-witnesses",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

@@ -1,0 +1,47 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse an OpenAPI schema at the following location: schema-2. Coercing to unknown.
+[sdk] 10 errors
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> request -> query-parameters -> f -> type
+        issue: Type GetApiRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> errors -> root.NotFoundError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> request -> query-parameters -> f -> type
+        issue: Type GetApiProcessesRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> response -> type
+        issue: Type root.DynamicEnumeration is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIProcesses -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+Found 10 errors and 0 warnings in 0.004 seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

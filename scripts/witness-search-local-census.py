@@ -167,8 +167,13 @@ def main() -> int:
         keys = contract_keys(args.contract)
     except (OSError, ValueError) as error:
         parser.error(f"invalid --contract {args.contract}: {error}; pass a readable key/selector contract")
+    # Only a conjunction is compiled: a field, valued or predicate selector is
+    # recorded by the walk itself, and compiling one as a conjunction would count
+    # it a second time (`securityScheme:$ref` read 3 for two referencing entries).
     conjunctions = {
-        selector: CENSUS.compile_conjunction(selector) for _key, selector in keys
+        selector: CENSUS.compile_conjunction(selector)
+        for _key, selector in keys
+        if selector in CENSUS.CONJUNCTIONS
     }
     selector_by_key = dict(keys)
     failures: list[str] = []

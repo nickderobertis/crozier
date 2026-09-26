@@ -24,6 +24,7 @@ import hashlib
 import http.client
 import importlib.util
 import json
+import math
 import os
 import re
 import subprocess
@@ -36,7 +37,9 @@ from pathlib import Path
 from typing import Any
 
 from rate_limit_guard import (
+    CALLS_FILE,
     REFUSAL_STATUSES,
+    WAITS_FILE,
     RateLimitGuard,
     SecondaryLimit,
     github_api_url,
@@ -54,6 +57,44 @@ SOURCEGRAPH_SPACING_S = 10.0
 SOURCEGRAPH_REFUSAL_COOLDOWN_S = 3600.0
 OPENAPI_VERSION = re.compile(r"3\.\d+\.\d+(?:[-+].*)?")
 FIELD = re.compile(r"(?:schema|securityScheme|components)\.([A-Za-z$][A-Za-z0-9$]*)")
+# Every `outcome` a queries.jsonl row carries, split by what it says of the
+# source: it answered, up to whatever limit its index sets, or it gave no answer
+# this time. `witness-search-github-index.py` reads the split from here, and a
+# test holds every outcome this module writes to one side of it.
+ANSWER_OUTCOMES = (
+    "answered",
+    "partitioned",
+    "outstanding-index-truncation",
+    "outstanding-index-cap",
+    "outstanding-incomplete-results",
+    "outstanding-index-truncation-floor",
+)
+NON_ANSWER_OUTCOMES = (
+    "refused",
+    "secondary-limiter",
+    "acquisition-failure",
+    "outstanding-malformed-response",
+    "incomplete-stream",
+)
+# The index limits a code-search window can end at, and the integer fields each
+# row carries: the index reads its reasons from these, and a test holds the rows
+# this module writes to them.
+TRUNCATION = "outstanding-index-truncation"
+TRUNCATION_FLOOR = "outstanding-index-truncation-floor"
+INDEX_CAP = "outstanding-index-cap"
+INCOMPLETE_RESULTS = "outstanding-incomplete-results"
+INDEX_LIMIT_FIELDS = {
+    TRUNCATION: ("reported", "retrieved", "page"),
+    TRUNCATION_FLOOR: ("reported", "retrieved", "lower", "upper", "floor"),
+    INDEX_CAP: ("reported",),
+    INCOMPLETE_RESULTS: (),
+}
+# The ledgers each call and each wait is written to, beside the guard's own.
+INDEX_PACING_WAITS = "index-pacing-waits.jsonl"
+RAW_CALLS = "raw-github-calls.jsonl"
+RAW_WAITS = "raw-github-waits.jsonl"
+CALL_LEDGERS = (CALLS_FILE, RAW_CALLS)
+WAIT_LEDGERS = (WAITS_FILE, INDEX_PACING_WAITS, RAW_WAITS)
 DOCUMENT_NAMES = (
     "openapi.yaml",
     "openapi.yml",
@@ -113,11 +154,7 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
                 "region": region,
                 "selector": selector,
                 "selector_status": (
-                    "available"
-                    if CENSUS.selector_error(selector) is None
-                    else "parsed Reference Object; census selector unavailable"
-                    if selector == "securityScheme:$ref"
-                    else "unavailable"
+                    "available" if CENSUS.selector_error(selector) is None else "unavailable"
                 ),
             }
     return dict(sorted(keys.items()))
@@ -324,8 +361,22 @@ class Acquirer:
         code_search_refusal_cooldown_s: float = CODE_SEARCH_REFUSAL_COOLDOWN_S,
         sourcegraph_spacing_s: float = SOURCEGRAPH_SPACING_S,
         sourcegraph_refusal_cooldown_s: float = SOURCEGRAPH_REFUSAL_COOLDOWN_S,
+        first_page_only: bool = False,
+        split_truncated_floor: int | None = None,
+        split_budget: int = 0,
     ) -> None:
         self.evidence = evidence
+        # Breadth before depth: every planned query answers its first page, and so
+        # records its count, before any one query's partitions and later pages are
+        # read. A deferred window stays in the ledger and a later run resumes it.
+        self.first_page_only = first_page_only
+        # A window GitHub truncates (an empty page before its reported count) is
+        # split by size, since a narrower window can serve results a wide one
+        # withheld. It stops at a window no wider than the floor, recorded as
+        # such, and after `split_budget` splits in one run, leaving the rest as
+        # recorded truncations for a later run.
+        self.split_truncated_floor = split_truncated_floor
+        self.split_budget = split_budget
         evidence.mkdir(parents=True, exist_ok=True)
         self.cache = cache or evidence
         self.cache.mkdir(parents=True, exist_ok=True)
@@ -349,6 +400,8 @@ class Acquirer:
             host: RateLimitGuard(host, evidence_dir=evidence)
             for host in ("github", "sourcegraph")
         }
+        # One parse and one census per distinct byte string, whichever keys ask.
+        self.verdicts: dict[str, tuple[str, dict[str, int] | str | None]] = {}
 
     def write(self, filename: str, record: dict[str, Any]) -> None:
         if filename in ("candidates.jsonl", "documents.jsonl"):
@@ -361,8 +414,7 @@ class Acquirer:
             ),
             **record,
         }
-        with (self.evidence / filename).open("a", encoding="utf-8") as output:
-            output.write(json.dumps(record, sort_keys=True) + "\n")
+        INDEX.append_ledger(self.evidence / filename, json.dumps(record, sort_keys=True) + "\n")
 
     def request(
         self, host: str, bucket: str, url: str, *, accept: str | None = None
@@ -399,7 +451,7 @@ class Acquirer:
         spacing, cooldown = self.extra_pacing[(host, bucket)]
         calls = [
             row
-            for row in jsonl(self.evidence / "rate-limit-calls.jsonl")
+            for row in jsonl(self.evidence / CALLS_FILE)
             if row.get("host") == host
             and (row.get("bucket") or row.get("lane")) == bucket
         ]
@@ -430,7 +482,7 @@ class Acquirer:
             started = datetime.datetime.now(datetime.timezone.utc).isoformat()
             time.sleep(duration)
             self.write(
-                "index-pacing-waits.jsonl",
+                INDEX_PACING_WAITS,
                 {
                     "host": host,
                     "bucket": bucket,
@@ -691,19 +743,8 @@ class Acquirer:
                 return {"sha256": digest, "status": "excluded-non-openapi-3"}
             counts = CENSUS.census_document(parsed)
             selected = {
-                key: counts.get(value["selector"], 0)
-                for key, value in keys.items()
-                if value["selector"] != "securityScheme:$ref"
+                key: counts.get(value["selector"], 0) for key, value in keys.items()
             }
-            schemes = (parsed.get("components") or {}).get("securitySchemes") or {}
-            selected["securityscheme-ref"] = (
-                sum(
-                    isinstance(value, dict) and isinstance(value.get("$ref"), str)
-                    for value in schemes.values()
-                )
-                if isinstance(schemes, dict)
-                else 0
-            )
             return {"sha256": digest, "status": "readable", "selector_counts": selected}
         except (CENSUS.DocumentError, ValueError, UnicodeError) as error:
             return {
@@ -730,6 +771,8 @@ class Acquirer:
             (row for row in previous if row.get("outcome") == "partitioned"), None
         )
         if partition:
+            if self.first_page_only:
+                return None
             found = []
             complete = True
             for child in partition["windows"]:
@@ -750,6 +793,8 @@ class Acquirer:
             raise EvidenceError(
                 f"{self.evidence / 'queries.jsonl'}: answered GitHub query {query!r} lacks integer result counts"
             )
+        if answered and self.first_page_only:
+            return None
         if answered and answered[0].get("result_count", 0) > 1000:
             return self._partition_window(
                 key, query, lower, upper, answered[0]["result_count"]
@@ -759,6 +804,12 @@ class Acquirer:
         ):
             return [item for row in answered for item in row["results"]]
         if answered and answered[-1].get("page_count") == 0:
+            split = self._split_truncated(
+                key, query, lower, upper, answered[0]["result_count"],
+                answered[-1]["retrieved_total"],
+            )
+            if split is not False:
+                return split
             if not any(
                 row.get("outcome") == "outstanding-index-truncation" for row in previous
             ):
@@ -900,6 +951,8 @@ class Acquirer:
                 return None
             if len(found) >= total:
                 return found
+            if self.first_page_only:
+                return None
             if not items:
                 self.write(
                     "queries.jsonl",
@@ -913,8 +966,46 @@ class Acquirer:
                         "page": page,
                     },
                 )
-                return None
+                split = self._split_truncated(key, query, lower, upper, total, len(found))
+                return None if split is False else split
             page += 1
+
+    def _split_truncated(
+        self, key: str, query: str, lower: int, upper: int | None,
+        reported: int, retrieved: int,
+    ) -> list[dict[str, Any]] | None | bool:
+        """Split a truncated window by size, or say it cannot be split now.
+
+        Returns False when splitting is off or this run's budget is spent, so the
+        caller keeps the window's recorded truncation; otherwise the split's result.
+        """
+        if self.split_truncated_floor is None:
+            return False
+        if upper is not None and upper - lower + 1 <= self.split_truncated_floor:
+            if not any(
+                row.get("outcome") == "outstanding-index-truncation-floor"
+                for row in jsonl(self.evidence / "queries.jsonl")
+                if row.get("key") == key and row.get("query") == query
+            ):
+                self.write(
+                    "queries.jsonl",
+                    {
+                        "source": "github-code-search",
+                        "key": key,
+                        "query": query,
+                        "outcome": "outstanding-index-truncation-floor",
+                        "reported": reported,
+                        "retrieved": retrieved,
+                        "lower": lower,
+                        "upper": upper,
+                        "floor": self.split_truncated_floor,
+                    },
+                )
+            return None
+        if self.split_budget <= 0:
+            return False
+        self.split_budget -= 1
+        return self._partition_window(key, query, lower, upper, reported)
 
     def _partition_window(
         self, key: str, query: str, lower: int, upper: int | None, total: int
@@ -966,6 +1057,8 @@ class Acquirer:
                 "windows": windows,
             },
         )
+        if self.first_page_only:
+            return None
         return self._github_window(key, query, lower, upper)
 
     def sourcegraph_search(self, key: str, query: str) -> list[dict[str, Any]] | None:
@@ -1194,7 +1287,7 @@ class Acquirer:
             except http.client.IncompleteRead as error:
                 incomplete_reads += 1
                 self.write(
-                    "raw-github-calls.jsonl",
+                    RAW_CALLS,
                     {
                         "key": key,
                         "subject": subject,
@@ -1218,7 +1311,7 @@ class Acquirer:
                 )
                 continue
             self.write(
-                "raw-github-calls.jsonl",
+                RAW_CALLS,
                 {"key": key, "subject": subject, "status": status, "url": url},
             )
             if status not in (429, 503):
@@ -1251,7 +1344,7 @@ class Acquirer:
         started = time.monotonic()
         time.sleep(duration)
         self.write(
-            "raw-github-waits.jsonl",
+            RAW_WAITS,
             {
                 "key": key,
                 "subject": subject,
@@ -1260,8 +1353,16 @@ class Acquirer:
             },
         )
 
-    def github_document(self, key: str, item: dict[str, Any]) -> dict[str, Any]:
-        """Fetch exact result content at its indexed commit, then run the census."""
+    def github_document(
+        self, key: str, item: dict[str, Any], *, route: str = "contents"
+    ) -> dict[str, Any]:
+        """Fetch exact result content at its indexed commit, then run the census.
+
+        `route` `contents` reads the REST contents API on the guarded `core`
+        bucket; `raw` downloads the same path at the same commit SHA from
+        raw.githubusercontent.com on its own paced lane, which spends no REST
+        bucket and waits out a 429 or `Retry-After` rather than skipping.
+        """
         identity = {
             "source": "github-code-search",
             "key": key,
@@ -1277,6 +1378,36 @@ class Acquirer:
             )[0],
             "url": item["url"],
         }
+        if route == "raw":
+            commit = identity["commit"]
+            if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+                record = {
+                    **identity,
+                    "disposition": "acquisition-failure",
+                    "diagnostic": "search result names no commit SHA for an exact-commit download",
+                }
+                self.write("candidates.jsonl", record)
+                return record
+            raw_url = (
+                self.raw_github_url + "/" + urllib.parse.quote(identity["repository"], safe="/")
+                + "/" + commit + "/" + urllib.parse.quote(identity["path"], safe="/")
+            )
+            identity["acquisition_route"] = "pinned-raw-github"
+            identity["raw_url"] = raw_url
+            subject = f"{identity['repository']}/{identity['path']}@{commit}"
+            try:
+                status, data = self.raw_github_get(raw_url, key, subject)
+            except OSError as error:
+                record = {**identity, "disposition": "acquisition-failure",
+                          "diagnostic": f"{type(error).__name__}: {error}"}
+                self.write("candidates.jsonl", record)
+                return record
+            if status != 200:
+                record = {**identity, "disposition": "acquisition-failure", "status": status,
+                          "diagnostic": data.decode("utf-8", "replace")[:1000]}
+                self.write("candidates.jsonl", record)
+                return record
+            return self.classify_and_record(identity, data)
         url = item["url"]
         if not url.startswith(self.github_url + "/"):
             record = {
@@ -1286,8 +1417,13 @@ class Acquirer:
             }
             self.write("candidates.jsonl", record)
             return record
+        # A search result's contents URL can carry its path unescaped (a space in
+        # a directory name), which urllib refuses; escape it, keeping escapes.
+        path, mark, query = url[len(self.github_url) :].partition("?")
         try:
-            status, data, diagnostic = self.github_contents(url[len(self.github_url) :])
+            status, data, diagnostic = self.github_contents(
+                urllib.parse.quote(path, safe="/%") + mark + query
+            )
         except OSError as error:
             record = {
                 **identity,
@@ -1339,44 +1475,77 @@ class Acquirer:
             "sha256": digest,
             "document": path.name,
         }
-        try:
-            parsed = CENSUS.load_document(path)
-            if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(
-                str(parsed.get("openapi", ""))
-            ):
-                record.update(disposition="excluded-non-openapi-3", selector_count=0)
-            else:
-                selector = identity["selector"]
-                if selector == "securityScheme:$ref":
-                    schemes = (parsed.get("components") or {}).get(
-                        "securitySchemes"
-                    ) or {}
-                    if not isinstance(schemes, dict):
-                        raise ValueError("components.securitySchemes is not a mapping")
-                    count = sum(
-                        isinstance(value, dict) and isinstance(value.get("$ref"), str)
-                        for value in schemes.values()
-                    )
-                    record.update(
-                        disposition="declares" if count else "does-not-declare",
-                        selector_count=count,
-                        selector_method="parsed security scheme Reference Object; census selector unavailable",
-                    )
-                elif CENSUS.selector_error(selector) is not None:
-                    record.update(
-                        disposition="selector-unavailable",
-                        diagnostic=f"census engine does not accept {selector}",
-                    )
+        verdict = self.verdicts.get(digest)
+        if verdict is None:
+            try:
+                parsed = CENSUS.load_document(path)
+                if not isinstance(parsed, dict) or not OPENAPI_VERSION.fullmatch(
+                    str(parsed.get("openapi", ""))
+                ):
+                    verdict = ("excluded", None)
                 else:
-                    count = CENSUS.census_document(parsed).get(selector, 0)
-                    record.update(
-                        disposition="declares" if count else "does-not-declare",
-                        selector_count=count,
-                    )
-        except (CENSUS.DocumentError, ValueError, UnicodeError) as error:
-            record.update(disposition="parse-failure", diagnostic=str(error))
+                    verdict = ("counts", CENSUS.census_document(parsed))
+            except (CENSUS.DocumentError, ValueError, UnicodeError) as error:
+                verdict = ("error", str(error))
+            self.verdicts[digest] = verdict
+        kind, value = verdict
+        selector = identity["selector"]
+        if kind == "excluded":
+            record.update(disposition="excluded-non-openapi-3", selector_count=0)
+        elif kind == "error":
+            record.update(disposition="parse-failure", diagnostic=value)
+        elif CENSUS.selector_error(selector) is not None:
+            record.update(
+                disposition="selector-unavailable",
+                diagnostic=f"census engine does not accept {selector}",
+            )
+        else:
+            count = value.get(selector, 0)
+            record.update(
+                disposition="declares" if count else "does-not-declare",
+                selector_count=count,
+            )
         self.write("candidates.jsonl", record)
         return record
+
+    def reuse(
+        self, fetched: dict[str, Any], key: str, selector: str
+    ) -> dict[str, Any]:
+        """Classify one more key over a document another key's result fetched.
+
+        Deduplication by repository, path and revision is the one reduction the
+        record admits: the bytes are read once and the census runs once, and each
+        key reaching that document still carries its own selector output, or the
+        same acquisition failure with the key it was recorded under.
+        """
+        identity = {
+            **{
+                field: fetched[field]
+                for field in (
+                    "source", "repository", "path", "commit", "blob", "url",
+                    "acquisition_route", "raw_url",
+                )
+                if field in fetched
+            },
+            "key": key,
+            "selector": selector,
+            "shared_with_key": fetched["key"],
+        }
+        document = fetched.get("document")
+        if document is None:
+            record = {
+                **identity,
+                **{
+                    field: fetched[field]
+                    for field in ("disposition", "status", "diagnostic")
+                    if field in fetched
+                },
+            }
+            self.write("candidates.jsonl", record)
+            return record
+        return self.classify_and_record(
+            identity, (self.cache / "documents" / document).read_bytes()
+        )
 
 
 def _main() -> int:
@@ -1394,10 +1563,41 @@ def _main() -> int:
     parser.add_argument("--key", action="append", default=[])
     parser.add_argument("--stage", choices=("search", "evaluate", "walk"))
     parser.add_argument(
+        "--route",
+        choices=("contents", "raw"),
+        default="contents",
+        help="GitHub code search evaluate: read documents through the guarded contents API or download them at their commit SHA from raw.githubusercontent.com",
+    )
+    parser.add_argument(
+        "--shard",
+        default="0/1",
+        help="evaluate only documents whose identity hashes to shard I of N, so two routes can split one ledger",
+    )
+    parser.add_argument(
+        "--split-truncated-floor",
+        type=int,
+        help="GitHub code search: split a truncated size window in two until it is no wider than this many bytes",
+    )
+    parser.add_argument(
+        "--split-budget",
+        type=int,
+        default=0,
+        help="the most truncated windows one run may split",
+    )
+    parser.add_argument(
+        "--first-page-only",
+        action="store_true",
+        help="GitHub code search: answer page 1 of every planned query that has none, deferring partitions and later pages",
+    )
+    parser.add_argument(
         "--source-commit",
         help="branch-point commit recorded in keys.json; defaults to git merge-base origin/main HEAD",
     )
     args = parser.parse_args()
+    if args.split_truncated_floor is not None and args.split_truncated_floor < 1:
+        parser.error("--split-truncated-floor must be a positive number of bytes")
+    if args.split_budget < 0:
+        parser.error("--split-budget must not be negative")
     try:
         keys = derive_keys(args.regions)
     except (OSError, ValueError) as error:
@@ -1423,19 +1623,39 @@ def _main() -> int:
             )
             return 1
     args.evidence.mkdir(parents=True, exist_ok=True)
-    (args.evidence / "keys.json").write_text(
-        json.dumps(
-            {
-                "source_commit": source_commit,
-                "derivation": "RankedBacklogTests.region_rows over six region files: category gap and settlement FIXTURE",
-                "keys": keys,
-            },
-            indent=2,
-            sort_keys=True,
+    recorded = args.evidence / "keys.json"
+    if recorded.is_file() and not args.derive_only:
+        # A search keeps the key set it was derived with: registering a witness
+        # later removes its key from the region files' gap rows, and that must
+        # not drop the key's evidence from this directory's inventory.
+        try:
+            keys = json.loads(recorded.read_text(encoding="utf-8"))["keys"]
+            if not isinstance(keys, dict) or any(
+                not isinstance(value, dict) or not isinstance(value.get("selector"), str)
+                for value in keys.values()
+            ):
+                raise ValueError("every key must map to an object carrying its selector")
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print(
+                f"witness-search-github: cannot read {recorded}: {error}; "
+                "rerun with --derive-only to record the key set again",
+                file=sys.stderr,
+            )
+            return 1
+    else:
+        recorded.write_text(
+            json.dumps(
+                {
+                    "source_commit": source_commit,
+                    "derivation": "RankedBacklogTests.region_rows over six region files: category gap and settlement FIXTURE",
+                    "keys": keys,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
         )
-        + "\n",
-        encoding="utf-8",
-    )
     if args.derive_only:
         print(f"derived {len(keys)} FIXTURE gap keys")
         return 0
@@ -1476,12 +1696,28 @@ def _main() -> int:
         )
     except ValueError as error:
         parser.error(str(error))
+    # The offline tier drives this CLI against a loopback server; only there may
+    # the code-search spacing be shortened, so production pacing cannot be.
+    loopback = urllib.parse.urlsplit(github_url).hostname in {"localhost", "127.0.0.1", "::1"}
+    spacing = CODE_SEARCH_SPACING_S
+    override = os.environ.get("CROZIER_TEST_CODE_SEARCH_SPACING_S")
+    if loopback and override:
+        try:
+            spacing = float(override)
+        except ValueError:
+            spacing = -1.0
+        if not math.isfinite(spacing) or spacing < 0:
+            parser.error("CROZIER_TEST_CODE_SEARCH_SPACING_S must be a non-negative number of seconds")
     acquirer = Acquirer(
         args.evidence,
         cache=args.cache,
+        code_search_spacing_s=spacing,
         github_url=github_url,
         sourcegraph_url=sourcegraph_url,
         raw_github_url=raw_github_url,
+        first_page_only=args.first_page_only,
+        split_truncated_floor=args.split_truncated_floor,
+        split_budget=args.split_budget,
     )
     if args.stage == "walk":
         if args.publisher_file:
@@ -1538,11 +1774,19 @@ def _main() -> int:
             (row["key"], row["query"])
             for row in jsonl(args.evidence / "queries.jsonl")
             if row.get("source") == args.source
-            and row.get("outcome") == "answered"
-            and not row.get("incomplete_results")
             and (
-                args.source == "sourcegraph"
-                or row.get("retrieved_total") >= row.get("result_count")
+                (
+                    row.get("outcome") == "answered"
+                    and not row.get("incomplete_results")
+                    and (
+                        args.source == "sourcegraph"
+                        or row.get("retrieved_total") >= row.get("result_count")
+                    )
+                )
+                or (
+                    args.first_page_only
+                    and row.get("outcome") in ("answered", "partitioned")
+                )
             )
         }
         for key in selected:
@@ -1599,16 +1843,30 @@ def _main() -> int:
                     or item.get("sha"),
                 )
                 candidates[identity] = item
+        match = re.fullmatch(r"(\d+)/(\d+)", args.shard)
+        if not match or int(match.group(1)) >= int(match.group(2)):
+            parser.error("--shard must be I/N with 0 <= I < N")
+        shard, shards = int(match.group(1)), int(match.group(2))
+        documents: dict[tuple[str, ...], list[tuple[str, dict[str, Any]]]] = {}
         for identity, item in sorted(candidates.items(), key=candidate_priority):
             if identity in complete:
                 continue
-            key = identity[0]
+            digest = hashlib.sha256("\0".join(map(str, identity[1:])).encode()).digest()
+            if digest[0] % shards != shard:
+                continue
+            documents.setdefault(identity[1:], []).append((identity[0], item))
+        for members in documents.values():
+            key, item = members[0]
             selector = keys[key]["selector"]
             try:
                 if args.source == "sourcegraph":
-                    acquirer.sourcegraph_document(key, selector, item)
+                    fetched = acquirer.sourcegraph_document(key, selector, item)
                 else:
-                    acquirer.github_document(key, {**item, "selector": selector})
+                    fetched = acquirer.github_document(
+                        key, {**item, "selector": selector}, route=args.route
+                    )
+                for other, _ in members[1:]:
+                    acquirer.reuse(fetched, other, keys[other]["selector"])
             except SearchStopped as error:
                 print(
                     f"witness-search-github: {error}; wait for the guard's backoff, then rerun --source {args.source} --stage evaluate",
@@ -1639,7 +1897,7 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
+        lines = INDEX.read_ledger(path).splitlines()
     except OSError as error:
         raise EvidenceError(f"{path}: {error}") from error
     records = []
@@ -1688,7 +1946,7 @@ def jsonl(path: Path) -> list[dict[str, Any]]:
                 for field in ("repository", "path", "commit")
             ):
                 raise EvidenceError(f"{path}:{number}: invalid document identity")
-        if path.name == "rate-limit-calls.jsonl":
+        if path.name == CALLS_FILE:
             stamp = row.get("at")
             if not isinstance(stamp, str):
                 raise EvidenceError(f"{path}:{number}: missing call timestamp")

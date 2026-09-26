@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> types -> CreateDocumentResponseData
+        issue: CreateDocumentResponseData is already declared in document.yml
+
+    [error]
+        path: document.yml -> service -> endpoints -> copy_document
+        issue: Multiple request properties resolve to the same generated name versionId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "version_id" (name: "version_id")
+  - Body property: <Request Body> -> versionId (name: "versionId")
+
+Found 2 errors and 46 warnings in 0.008 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

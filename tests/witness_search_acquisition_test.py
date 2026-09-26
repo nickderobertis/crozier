@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import importlib.util
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -690,7 +691,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         self.assertEqual(len({row["key"] for row in rows}), 23)
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],
-            ["securityscheme-ref"],
+            [],
         )
         self.assertEqual(completed.stdout, TRACKED_KEYS.read_text(encoding="utf-8"))
 
@@ -959,6 +960,92 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                               "metadata.json": {"array": 0},
                               "notes.yaml": {"array": 0}})
 
+    def test_predicate_selector_counts_once_per_declaration_site(self) -> None:
+        """A predicate is recorded by the walk alone, never again as a conjunction."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            documents = root / "documents"
+            documents.mkdir()
+            contract = root / "keys.tsv"
+            contract.write_text(
+                "key\tselector\tregion\tcensus_status\n"
+                "securityscheme-ref\tsecurityScheme:$ref\tsecurity.md\tsupported\n",
+                encoding="utf-8",
+            )
+            scheme = {"type": "http", "scheme": "bearer"}
+            (documents / "two.json").write_text(json.dumps({
+                "openapi": "3.0.3", "info": {"title": "two", "version": "1"}, "paths": {},
+                "components": {"securitySchemes": {
+                    "real": scheme,
+                    "a": {"$ref": "#/components/securitySchemes/real"},
+                    "b": {"$ref": "#/components/securitySchemes/real"},
+                }},
+            }), encoding="utf-8")
+            (documents / "inline.json").write_text(json.dumps({
+                "openapi": "3.0.3", "info": {"title": "inline", "version": "1"}, "paths": {},
+                "components": {"securitySchemes": {"real": scheme}},
+            }), encoding="utf-8")
+            completed = subprocess.run(
+                [sys.executable, str(SCRIPT), "--contract", str(contract),
+                 "--documents", f"local={documents}", "--all-documents-jsonl"],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                {row["document"]: row["selectors"]["securityscheme-ref"]
+                 for row in map(json.loads, completed.stdout.splitlines())},
+                {"two.json": 2, "inline.json": 0},
+            )
+
+
+
+class SecuritySchemeRefCensusReadmeTest(unittest.TestCase):
+    """The registries README's securityscheme-ref counts are the census archives' own."""
+
+    SOURCES = (("apis.guru", "APIs.guru"), ("jentic", "jentic"),
+               ("vendor-portals", "the vendor portals"))
+
+    def test_readme_counts_are_derived_from_each_sources_census(self) -> None:
+        root = REPO / "docs/openapi-surface"
+        readme = " ".join((root / "witness-search-registries/README.md").read_text().split())
+        rows, parsed, unreadable = {}, {}, {}
+        for source, _ in self.SOURCES:
+            with gzip.open(root / f"witness-search-{source}/securityscheme-ref-census.tsv.gz",
+                           "rt", encoding="utf-8", newline="") as stream:
+                census = list(csv.DictReader(stream, delimiter="\t"))
+            with (root / f"witness-search-{source}/enumeration.tsv").open(
+                encoding="utf-8", newline=""
+            ) as stream:
+                enumerated = list(csv.DictReader(stream, delimiter="\t"))
+            with self.subTest(source=source):
+                self.assertEqual(
+                    sorted(row["sha256"] for row in enumerated),
+                    sorted(row["sha256"] for row in census),
+                )
+                declared = [row for row in census if row["classification"] == "openapi-3"
+                            and row["securityscheme-ref"] != "0"]
+                self.assertEqual([], declared)
+                self.assertEqual(
+                    sorted(row["sha256"] for row in census if row["classification"] == "unreadable"),
+                    sorted(row["sha256"] for row in enumerated
+                           if row["status"].startswith("unreadable")),
+                )
+            rows[source] = len(census)
+            parsed[source] = sum(row["classification"] == "openapi-3" for row in census)
+            unreadable[source] = sum(row["classification"] == "unreadable" for row in census)
+        (first, first_name), (second, second_name), (third, third_name) = self.SOURCES
+        self.assertIn(
+            f"The counts are {rows[first]:,} rows for {first_name}, {rows[second]:,} for"
+            f" {second_name} and {rows[third]:,} for {third_name}.", readme,
+        )
+        self.assertIn(
+            f"That covers {parsed[first]:,} OpenAPI 3 documents in {first_name},"
+            f" {parsed[second]:,} in {second_name} and {parsed[third]:,} in {third_name}.",
+            readme,
+        )
+        self.assertEqual(0, unreadable[first] + unreadable[second])
+        self.assertIn(f"The {unreadable[third]} portal files whose `enumeration.tsv` status"
+                      " is already `unreadable`", readme)
 
 if __name__ == "__main__":
     unittest.main()

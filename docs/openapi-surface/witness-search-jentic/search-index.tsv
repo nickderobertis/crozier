@@ -4635,6 +4635,7 @@ schema-name-nonidentifier-name	candidate	apis/openapi/zenegy.com/main/v2/openapi
 schema-name-nonidentifier-name	screen	apis/openapi/zenegy.com/main/v2/openapi.json licence	failed	candidates.tsv
 schema-name-nonidentifier-name	screen	apis/openapi/zenegy.com/main/v2/openapi.json ref	failed	candidates.tsv
 schema-name-nonidentifier-name	screen	apis/openapi/zenegy.com/main/v2/openapi.json fern	not-run	candidates.tsv
+securityscheme-ref	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	securityscheme-ref-census.tsv.gz
 *	wait	acquisitions.jsonl	supporting acquisition record	acquisitions.jsonl
 *	wait	fern-screens.jsonl	supporting acquisition record	fern-screens.jsonl
 *	wait	rate-limit-calls.jsonl	supporting acquisition record	rate-limit-calls.jsonl

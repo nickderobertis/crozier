@@ -181,7 +181,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-48, declared in `scripts/openapi-surface-census.py` and restated here, with a
+49, declared in `scripts/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -218,6 +218,11 @@ drift gate over the pair:
   `OB_Rate1_0` collide while `OBRate1` and `OBRate1_0` do not.
 - `components.schemas:nonidentifier-name` — one per component schema name whose
   Pascal casing contains a character `sanitize_identifier` replaces with `_`.
+- `securityScheme:$ref` — one per `components.securitySchemes` entry that is a
+  Reference Object rather than a Security Scheme Object, the entry
+  `normalize_security_scheme_refs` of `src/openapi.rs` resolves. The walk counts
+  every Reference Object as `reference.$ref` wherever it stands, so this is read
+  at the Components Object, from that one map's own values.
 - `schema.enum:empty-member` — one per schema with an empty string enum member;
   `enum_words` names that member EMPTY.
 - `schema.enum:empty-identifier-member` — one per schema with a non-empty
@@ -400,7 +405,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is exactly
   `example_is_schema_definition` of `src/ir.rs`.
 
-**Forty of the 48 are node-local**, which is what makes them one family:
+**Forty-one of the 49 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
