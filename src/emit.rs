@@ -8345,6 +8345,7 @@ fn build_example_inner(
         .request_body
         .as_ref()
         .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
+    let parameters_start = args.len();
     for qp in ep
         .query_params
         .iter()
@@ -8521,6 +8522,21 @@ fn build_example_inner(
                 ctx.value(&hp.type_ref, Slot::Named(&slot))
             });
         args.push((Some(hp.py_name.clone()), value));
+    }
+    // The docstring writer walks an example's headers before its query
+    // parameters, whatever the body (`EndpointFunctionSnippetGenerator`); the
+    // Markdown writers keep the order above. Sim's `create_table_import_part_urls`
+    // documents its `upload-token` header ahead of its `workspaceId` query in
+    // `client.py` and after it in `reference.md`.
+    if !documentation {
+        let (headers, rest): (Vec<_>, Vec<_>) =
+            args.drain(parameters_start..).partition(|(name, _)| {
+                ep.header_params
+                    .iter()
+                    .any(|header| Some(&header.py_name) == name.as_ref())
+            });
+        args.extend(headers);
+        args.extend(rest);
     }
     if documentation && !suppressed {
         for (name, value) in &ep.constant_headers {

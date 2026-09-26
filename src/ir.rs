@@ -3974,6 +3974,18 @@ fn schema_example_literal(schema: &Schema) -> Option<String> {
         })
 }
 
+/// The example a property naming `target` by `$ref` takes from it. Fern's
+/// importer reads a map's own `example` alone — an object reads its full
+/// examples, the 3.1 `examples` array included — so a map declaring only
+/// `examples` gives nothing: Sim's `V2TableRowData` does, and its golden
+/// examples `data` as `{"key": "value"}`.
+fn referenced_example_literal(target: &Schema) -> Option<String> {
+    if is_map(target) && target.example.is_none() {
+        return None;
+    }
+    schema_example_literal(target)
+}
+
 fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
     op.request_body
         .as_ref()
@@ -4772,7 +4784,7 @@ fn resolve_request_body(
                         field.example = Some("\"x\"".to_string());
                     }
                 }
-                apply_body_example(&mut fields, target.example.as_ref(), false);
+                apply_body_example(&mut fields, schema_example(target), false);
                 apply_body_example(&mut fields, media_example(doc, media), true);
                 RequestBody::Inline(fields)
             });
@@ -5247,7 +5259,7 @@ fn hoist_inline_object(
             // `example`.
             example: schema_example_literal(prop_schema).or_else(|| {
                 let reference = prop_schema.reference.as_deref()?;
-                schema_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
+                referenced_example_literal(resolve_ref_from_schemas(hoister.schemas?, reference)?)
             }),
             media_example: false,
             schema_body_example: false,
@@ -5748,7 +5760,7 @@ impl InlineHoister<'_> {
                         described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                     })?;
                     let target = resolve_ref_from_schemas(self.schemas?, reference)?;
-                    schema_example_literal(target)
+                    referenced_example_literal(target)
                 }),
             });
         }
@@ -6323,7 +6335,7 @@ fn hoist_form_object(
                         let reference = prop_schema.reference.as_deref().or_else(|| {
                             described_all_of_ref(prop_schema).map(|(reference, _)| reference)
                         })?;
-                        schema_example_literal(resolve_ref_from_schemas(
+                        referenced_example_literal(resolve_ref_from_schemas(
                             hoister.schemas?,
                             reference,
                         )?)
@@ -9171,12 +9183,12 @@ impl Builder<'_> {
                             .as_deref()
                             .and_then(|reference| reference.rsplit('/').next())
                             .and_then(|key| self.schemas.get(key))
-                            .and_then(schema_example_literal)
+                            .and_then(referenced_example_literal)
                     })
                     .or_else(|| {
                         sole_all_of_ref(prop_schema)
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(schema_example_literal)
+                            .and_then(referenced_example_literal)
                     })
                     .or_else(|| {
                         // An array whose element is a `$ref` to an exampled scalar
@@ -9193,7 +9205,7 @@ impl Builder<'_> {
                                     .or_else(|| sole_all_of_ref(items))
                             })
                             .and_then(|reference| resolve_ref_from_schemas(self.schemas, reference))
-                            .and_then(schema_example_literal)?;
+                            .and_then(referenced_example_literal)?;
                         Some(format!("[{item}]"))
                     }),
             });
