@@ -7061,9 +7061,12 @@ struct ExampleCtx<'a> {
 
 /// The slot a string value sits in, which decides its placeholder text: a named
 /// field/param uses the name, a map value uses `"value"`, anything else `"string"`.
+/// A path parameter is named too, and differs only in how a union is exampled
+/// (see [`ExampleCtx::union_value`]).
 #[derive(Clone, Copy)]
 enum Slot<'a> {
     Named(&'a str),
+    Path(&'a str),
     Map,
     Plain,
 }
@@ -7493,7 +7496,7 @@ impl<'a> ExampleCtx<'a> {
         match t {
             TypeRef::Primitive(Prim::Str) => {
                 let s = match slot {
-                    Slot::Named(name) => name,
+                    Slot::Named(name) | Slot::Path(name) => name,
                     Slot::Map => "value",
                     Slot::Plain => "string",
                 };
@@ -7613,12 +7616,27 @@ impl<'a> ExampleCtx<'a> {
     /// The example for a union: the first alternative that names concrete values,
     /// else its first alternative. A free-form scalar can only supply a
     /// placeholder, so Fern reaches past helios' `Union[Uint, BlockTag, Hash32]`
-    /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
-    /// annotation accepts, not the enum member a `BlockTag` argument would take.
+    /// to `BlockTag`'s `"earliest"`. In a path parameter — helios' `block_id` —
+    /// that is the plain string the union's own annotation accepts; anywhere else
+    /// it is the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
         if let Some(TypeRef::Named(name)) = variants.first() {
             if matches!(self.find(name), Some(TypeDecl::Enum(_))) {
                 let name = name.clone();
+                return self.named_value(&name, slot);
+            }
+        }
+        // A later enum alternative is exampled by its first member (marimo's
+        // `totalRows`, `Union[float, MarimoTableDataTotalRowsOne]`, is
+        // `MarimoTableDataTotalRowsOne.TOO_MANY`), except in a path, where the
+        // value below is its plain string.
+        if !matches!(slot, Slot::Path(_)) {
+            if let Some(name) = variants.iter().skip(1).find_map(|variant| match variant {
+                TypeRef::Named(name) if matches!(self.find(name), Some(TypeDecl::Enum(_))) => {
+                    Some(name.clone())
+                }
+                _ => None,
+            }) {
                 return self.named_value(&name, slot);
             }
         }
@@ -8299,7 +8317,7 @@ fn build_example_inner(
                             && ctx.example_is_scalar(&pp.type_ref)
                     })
                     .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
-                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
+                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Path(&pp.wire_name)))
             };
             args.push((Some(pp.py_name.clone()), v));
         }
