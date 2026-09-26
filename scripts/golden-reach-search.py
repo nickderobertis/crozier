@@ -386,8 +386,13 @@ def _precomputed(
     """
     taken = {}
     with gzip.open(path, "rt", encoding="utf-8") as handle:
-        for line in handle:
-            row = json.loads(line)
+        for number, line in enumerate(handle, start=1):
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as error:
+                fail(f"{path}:{number} is not JSON ({error.msg}); take the walk census again, or walk without --census")
+            if not isinstance(row, dict) or not isinstance(row.get("document"), str):
+                fail(f"{path}:{number} names no `document`; take the walk census again, or walk without --census")
             taken[row["document"]] = row
     out = []
     for row in listing:
@@ -738,7 +743,7 @@ def probe(args: argparse.Namespace) -> int:
     e2e, crozier = REACH._instrumented_binaries(REPO)
     del e2e
     profdata, llvm_cov = REACH._llvm_tool("llvm-profdata"), REACH._llvm_tool("llvm-cov")
-    universe = {f: {tuple(r) for r in v} for f, v in json.loads((REACH.DEFAULT_OUT / "universe.json").read_text()).items()}
+    universe = REACH.load_regions(REACH.DEFAULT_OUT / "universe.json")
     results = []
     for key in args.key:
         arms = unreached_sites(key)

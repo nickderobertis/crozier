@@ -523,6 +523,25 @@ class MeasurementInputTests(unittest.TestCase):
                 self.assertIn(f"{ledger}:3", str(refused.exception))
                 self.assertIn("just golden-reach-report", str(refused.exception))
 
+    def test_a_measurement_or_census_of_another_shape_is_refused_with_the_recipe(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            regions = Path(scratch) / "universe.json"
+            census = Path(scratch) / "census.json"
+            for path, text, load in (
+                (regions, '{"src/ir.rs": [[1, 2, 3]]}', golden_reach.load_regions),
+                (regions, "[]", golden_reach.load_regions),
+                (census, '{"sources": []}', golden_reach.load_census),
+                (census, '{"sources": [], "rows": [{"selector": "schema.oneOf"}]}', golden_reach.load_census),
+            ):
+                with self.subTest(text):
+                    path.write_text(text, encoding="utf-8")
+                    with self.assertRaises(SystemExit) as refused:
+                        load(path)
+                    self.assertIn(str(path), str(refused.exception))
+                    self.assertIn("re-run `just golden-reach`", str(refused.exception))
+            regions.write_text('{"src/ir.rs": [[1, 2, 3, 4]]}', encoding="utf-8")
+            self.assertEqual({"src/ir.rs": {(1, 2, 3, 4)}}, golden_reach.load_regions(regions))
+
     def test_a_hand_off_file_missing_a_column_is_refused_by_name(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             handoff = Path(scratch) / "handoff.tsv"

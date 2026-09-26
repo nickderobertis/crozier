@@ -54,7 +54,7 @@ import tempfile
 import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, NamedTuple
+from typing import IO, Any, NamedTuple
 
 REPO = Path(__file__).resolve().parent.parent
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -801,20 +801,49 @@ def _census_module():
     return module
 
 
+def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
+    """A measurement's `{file: [[line, col, line, col], ...]}` map, refused unless it is one."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        fail(f"{path} is unreadable ({error}); re-run `just golden-reach` to measure again")
+    if not isinstance(raw, dict) or not all(
+        isinstance(regions, list)
+        and all(isinstance(r, list) and len(r) == 4 and all(isinstance(n, int) for n in r) for r in regions)
+        for regions in raw.values()
+    ):
+        fail(f"{path} is not a map of files to [line, col, line, col] regions; "
+             "re-run `just golden-reach` to measure again")
+    return {f: {tuple(r) for r in regions} for f, regions in raw.items()}
+
+
+def load_census(path: Path) -> dict[str, Any]:
+    """The census's `--json` output, refused unless it carries its `sources` and `rows`."""
+    if not path.is_file():
+        fail(f"no census at {path}; run `just golden-reach` (it writes one there)")
+    try:
+        census = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        fail(f"{path} is not JSON ({error}); re-run `just golden-reach` to write it again")
+    shaped = (
+        isinstance(census, dict)
+        and isinstance(census.get("sources"), list)
+        and all(isinstance(s, dict) and "fixture" in s for s in census["sources"])
+        and isinstance(census.get("rows"), list)
+        and all(isinstance(r, dict) and {"selector", "fixture", "count"} <= r.keys() for r in census["rows"])
+    )
+    if not shaped:
+        fail(f"{path} is not the census's `--json` output (`sources` and `rows`); "
+             "re-run `just golden-reach` to write it again")
+    return census
+
+
 def load_coverage(out: Path) -> tuple[dict[str, dict[str, set]], dict[str, set], str]:
     universe_path = out / "universe.json"
     if not universe_path.is_file():
         fail(f"no measurement under {out}; run `just golden-reach` first")
-    universe = {
-        f: {tuple(r) for r in regions}
-        for f, regions in json.loads(universe_path.read_text(encoding="utf-8")).items()
-    }
-    coverage = {}
-    for path in sorted((out / "tests").glob("*.json")):
-        coverage[path.stem] = {
-            f: {tuple(r) for r in regions}
-            for f, regions in json.loads(path.read_text(encoding="utf-8")).items()
-        }
+    universe = load_regions(universe_path)
+    coverage = {path.stem: load_regions(path) for path in sorted((out / "tests").glob("*.json"))}
     return coverage, universe, measured_commit(out)
 
 
@@ -832,10 +861,7 @@ def measured_commit(out: Path) -> str:
 
 def report(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
-    census_path = Path(args.census) if args.census else args.out / "census.json"
-    if not census_path.is_file():
-        fail(f"no census at {census_path}; run `just golden-reach` (it writes one there)")
-    census = json.loads(census_path.read_text(encoding="utf-8"))
+    census = load_census(Path(args.census) if args.census else args.out / "census.json")
     coverage, universe, commit = load_coverage(args.out)
     fixture_tests = {f: t for f, t in fixture_test_map(repo_root).items() if t in coverage}
     reaches = compute(
@@ -867,7 +893,7 @@ def sites(args: argparse.Namespace) -> int:
         args.table or args.repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
     )
     if args.census:
-        census = json.loads(Path(args.census).read_text(encoding="utf-8"))
+        census = load_census(Path(args.census))
         for row in table.values():
             if not census_witnesses(census, row.selectors):
                 fail(f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or re-run `just golden-reach` if the census is stale")
