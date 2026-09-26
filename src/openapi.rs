@@ -1172,7 +1172,7 @@ pub enum RequiredNames {
     /// A list, keeping its string entries.
     Listed(Vec<String>),
     /// A boolean, number or map rather than a list, which names nothing — see
-    /// [`normalize_unlisted_required`].
+    /// `normalize_unlisted_required`, which the loader runs over every schema.
     Unlisted,
 }
 
