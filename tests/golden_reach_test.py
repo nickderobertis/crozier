@@ -637,6 +637,22 @@ class MeasurementInputTests(unittest.TestCase):
             self.assertIn("'unreached_site'", str(refused.exception))
             self.assertIn("restore it from git", str(refused.exception))
 
+    def test_every_committed_hand_off_is_disposed_of_in_its_arm_search_record(self) -> None:
+        evidence = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses"
+        rows = golden_reach_search.read_tsv(evidence / "handoff.tsv", golden_reach_search.HANDOFF_FIELDS,
+                                            "restore it from git")
+        self.assertTrue(rows)
+        with mock.patch.object(golden_reach_search, "EVIDENCE", evidence):
+            for row in rows:
+                with self.subTest(candidate=row["candidate_url"]):
+                    self.assertRegex(row["disposition"], r"^(registered|byte-identical|rejected): \S")
+                    rendered = [line for line in golden_reach_search._dispositions(row["golden_key"])
+                                if row["candidate_url"] in line]
+                    self.assertEqual(1, len(rendered))
+                    self.assertTrue(rendered[0].endswith(f" — disposition: {row['disposition']}"))
+                    record = (evidence / "searches" / f"{row['golden_key']}.md").read_text(encoding="utf-8")
+                    self.assertIn(rendered[0] + "\n", record)
+
 
 class ArmSearchOutcomeTests(unittest.TestCase):
     """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
