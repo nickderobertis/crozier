@@ -14,6 +14,10 @@ outstanding, and a re-probe needs `src/` at that commit (or a fresh
 spans and are not counted. The outcome is this search's own reading;
 final reconciliation decides whether the arm's search reads `exhausted`.
 
+The arm this search looked for is now reached: corpus row 196 (`opencodeui`),
+the candidate listed below, is registered, and its golden reaches the site. The
+tables below record the search as it stood when the arm was still open.
+
 ### Witness search (exhaustive)
 
 | key | source | outcome | queries | walk | candidates | screens |
@@ -48,5 +52,5 @@ re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 #### Candidates passing every screen
 
-- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json>, declaring `gap` row(s) anyof-anyof-variant — passed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated 399 files; crozier byte-matched all 399 locally after nine repairs kept in src/ with tests/generation.rs tests an_untagged_dotted_operation_id_hangs_off_the_root_client, the_readme_walks_the_root_client_after_its_sub_clients, a_schema_named_for_a_raised_error_class_is_its_body, a_required_const_status_discriminates_a_ref_union, a_union_member_map_names_its_value, a_union_of_one_schema_written_twice_is_that_schema, a_hoisted_models_map_of_inline_objects_names_its_value, a_query_parameter_beside_a_body_keeps_the_content_type_header
-- **Declined** (`sourcegraph`): `github.com/lehhair/OpenCodeUI:openapi_formatted.json@8a6d4eae9424317f01e88f3819b14b24e57bab10` — the same API as the handed-off openapi_doc.json in the same repository and commit, formatted differently; the hand-off stands for both
+- **Registered** as corpus row 196 (`opencodeui`): <https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json> — first handed off because it declared `anyof-anyof-variant`, then a `gap` row. Merging crozier main made that row `golden` (`fergus`), and the census over the pinned document then declared none of the current `gap` selectors, so the hand-off no longer applied and the document was registered. Fern 5.20.0 generates 399 files, and crozier byte-matches every one with `unmatched: &[]`. The golden-only ledger measured at `a6b9e016` shows `hoist_array_item_type`'s sole-member arm reached (6/6 regions), so the row has no unreached site left
+- **Declined** (`sourcegraph`): `github.com/lehhair/OpenCodeUI:openapi_formatted.json@8a6d4eae9424317f01e88f3819b14b24e57bab10` — the same API as the handed-off openapi_doc.json in the same repository and commit, formatted differently; the registration stands for both
