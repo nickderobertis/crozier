@@ -2679,9 +2679,18 @@ fn reference_entry(
             .map_or_else(
                 || mp.body,
                 |request| {
+                    // An optional `json=request` body is documented optional:
+                    // marimo-plugins' `type: "null"` bodies read
+                    // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
+                    let request = match &ep.request_body {
+                        Some(RequestBody::Single(single)) if !single.required => {
+                            TypeRef::Optional(Box::new(request.clone()))
+                        }
+                        _ => request.clone(),
+                    };
                     vec![DocParam {
                         name: "request".to_string(),
-                        annotation: raw_type_str_ctx(request, &mut imports, true),
+                        annotation: raw_type_str_ctx(&request, &mut imports, true),
                         default: None,
                         description: None,
                     }]
@@ -8590,11 +8599,13 @@ fn build_example_inner(
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes
-            // `request=`.
+            // `request=`. Nor does one naming an alias of it: marimo-plugins'
+            // `write_marimo_chatbot_cancel_prompt_output` takes a `type: "null"`
+            // component and is documented with no argument.
             if s.required
                 || body_example.is_some()
                 || s.example.is_some()
-                || !is_any_type(&s.type_ref)
+                || !(is_any_type(&s.type_ref) || ctx.resolves_to_any(&s.type_ref))
             {
                 args.push((Some("request".to_string()), v));
             }

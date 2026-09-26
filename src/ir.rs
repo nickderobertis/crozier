@@ -2934,16 +2934,18 @@ fn build_endpoint(
             .or_else(|| success_response(op)),
         _ => success_response(op),
     };
-    // A `$ref` to a `type: "null"` component returns it optionally, unlike a
-    // `nullable` written beside a `$ref`: marimo-plugins'
-    // `read_marimo_chatbot_cancel_prompt_output` returns
-    // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
-    let returns_null_component = success_response_schema(op)
+    // A `$ref` to a component that is itself nullable returns it optionally,
+    // unlike a `nullable` written beside a `$ref`: marimo-plugins'
+    // `read_marimo_chatbot_cancel_prompt_output` (a `type: "null"` component)
+    // returns `typing.Optional[MarimoChatbotCancelPromptOutput]`, and
+    // `read_marimo_form_validate_output` (`type: [string, "null"]`)
+    // `typing.Optional[MarimoFormValidateOutput]`.
+    let returns_nullable_component = success_response_schema(op)
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(|target| schema_is_null_type(target) && is_unknown_but_for_type(target));
+        .is_some_and(|target| target.explicitly_nullable() || schema_is_null_type(target));
     let response = response.map(|response| {
-        if returns_null_component {
+        if returns_nullable_component {
             optional_type_ref(response)
         } else {
             response
