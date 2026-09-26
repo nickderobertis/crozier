@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .event_tui_command_execute_properties_command_zero import EventTuiCommandExecutePropertiesCommandZero
+
+EventTuiCommandExecutePropertiesCommand = typing.Union[EventTuiCommandExecutePropertiesCommandZero, str]

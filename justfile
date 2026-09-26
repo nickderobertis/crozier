@@ -201,6 +201,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_messages_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e deepsearch_ds_v2_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mindee_ocr_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e opencodeui_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_alerts_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_reports_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_search_manager_matches_fern_output

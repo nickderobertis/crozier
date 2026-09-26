@@ -3161,6 +3161,20 @@ const MINDEE_OCR: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `opencodeui`: corpus row 196, the opencode server API as the OpenCodeUI web
+/// client pins it. Its array items declare an `anyOf` of one inline object,
+/// which no earlier golden sends down `hoist_array_item_type`'s sole-member arm.
+const OPENCODEUI: Corpus = Corpus {
+    api: "opencodeui",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const CORPORA: &[&Corpus] = &[
     &QUERY_PARAMETERS,
     &EXHAUSTIVE,
@@ -3293,6 +3307,7 @@ const CORPORA: &[&Corpus] = &[
     &NEXMO_MESSAGES,
     &DEEPSEARCH_DS_V2,
     &MINDEE_OCR,
+    &OPENCODEUI,
     &PALOALTO_CSPM_ALERTS,
     &PALOALTO_CSPM_REPORTS,
     &PALOALTO_CSPM_SEARCH_MANAGER,
@@ -6378,6 +6393,11 @@ fn deepsearch_ds_v2_matches_fern_output() {
 #[test]
 fn mindee_ocr_matches_fern_output() {
     assert_link_ok_corpus_matches(&MINDEE_OCR);
+}
+
+#[test]
+fn opencodeui_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENCODEUI);
 }
 
 /// One golden test per feature target, named like every other corpus's, so each

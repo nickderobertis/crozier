@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .provider_auth_authorization_method_one import ProviderAuthAuthorizationMethodOne
+from .provider_auth_authorization_method_zero import ProviderAuthAuthorizationMethodZero
+
+ProviderAuthAuthorizationMethod = typing.Union[ProviderAuthAuthorizationMethodZero, ProviderAuthAuthorizationMethodOne]

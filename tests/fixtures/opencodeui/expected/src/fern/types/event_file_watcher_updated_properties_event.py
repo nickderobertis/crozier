@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .event_file_watcher_updated_properties_event_one import EventFileWatcherUpdatedPropertiesEventOne
+from .event_file_watcher_updated_properties_event_two import EventFileWatcherUpdatedPropertiesEventTwo
+from .event_file_watcher_updated_properties_event_zero import EventFileWatcherUpdatedPropertiesEventZero
+
+EventFileWatcherUpdatedPropertiesEvent = typing.Union[
+    EventFileWatcherUpdatedPropertiesEventZero,
+    EventFileWatcherUpdatedPropertiesEventOne,
+    EventFileWatcherUpdatedPropertiesEventTwo,
+]

@@ -191,6 +191,7 @@ re-measure with `just fixtures-gaps`.
 | 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
 | 194 | `deepsearch-ds-v2` | github-raw | https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json | `be22375ecea319b495a11e27cd0308fdcda81ba1` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | IBM Deep Search (DS) API 3.0.0 as the DS4SD toolkit pins it; properties whose `anyOf` is a discriminated union |
 | 195 | `mindee-ocr` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/mindee.com/main/0.1.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Mindee OCR API as its publisher serves it (`info.x-jentic-source-url` is `https://api.mindee.net/openapi.json`); array items declaring `oneOf` |
+| 196 | `opencodeui` | github-raw | https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json | `8a6d4eae9424317f01e88f3819b14b24e57bab10` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | The opencode server API as the OpenCodeUI web client pins it (a different document from the DROPPED `opencode` row); array items whose `anyOf` is one inline object |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -928,6 +929,7 @@ so the filter removes operations rather than keeping all of them.
 | 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
 | 194 | `deepsearch-ds-v2` | `property-anyof-discriminated-union` | ✅ byte-matched after three repairs |
 | 195 | `mindee-ocr` | none — see below | ✅ byte-matched with no repair |
+| 196 | `opencodeui` | `anyof-sole-member` | ✅ byte-matched |
 
 The repairs: a `:` separates words in a generated class name (`osdb:output_type`
 hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
