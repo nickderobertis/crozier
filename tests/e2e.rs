@@ -5962,11 +5962,7 @@ const MISTLE_CONTROL_PLANE: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "src/fern/__init__.py",
-        "src/fern/types/__init__.py",
-        "src/fern/types/bad_request_error_body_code.py",
-    ],
+    unmatched: &[],
 };
 
 /// o²S²PARC payments service — corpus row 177, the publisher's own description.

@@ -4019,8 +4019,24 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // `BadRequestErrorBody`, and the seven inline variants of its
                 // `/users/{user_id}/status` `400` remain as
                 // `BadRequestErrorBodyZero` to `…Six`.
+                // An earlier object declaration's enum properties stay behind in
+                // the same way: Mistle's `400`s declare `code: {enum:
+                // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
+                // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
                     if members.len() > 1 {
+                        if let Some(existing) = bodies.get(&name).filter(|existing| {
+                            existing.one_of.is_none() && existing.any_of.is_none()
+                        }) {
+                            for (property, property_schema) in &existing.properties {
+                                if string_enum_values(property_schema).is_some() {
+                                    superseded_enums.insert(
+                                        format!("{name}{}", naming::class_name(property)),
+                                        property_schema.clone(),
+                                    );
+                                }
+                            }
+                        }
                         union_declarations.push((name.clone(), schema.clone()));
                         bodies.insert(name, schema.clone());
                     }
@@ -4031,6 +4047,14 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                         existing.one_of.is_some() || existing.any_of.is_some()
                     }) {
                         bodies.shift_remove(&name);
+                        for (property, property_schema) in &schema.properties {
+                            if string_enum_values(property_schema).is_some() {
+                                superseded_enums.shift_remove(&format!(
+                                    "{name}{}",
+                                    naming::class_name(property)
+                                ));
+                            }
+                        }
                     }
                     if let Some(existing) = bodies.get_mut(&name) {
                         // The last declaration documents the body: Zulip's `404`s
