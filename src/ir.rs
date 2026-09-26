@@ -5768,6 +5768,14 @@ impl InlineHoister<'_> {
                         );
                         return TypeRef::Named(name);
                     }
+                    // An array beside `null` names its inline element as a bare
+                    // array property does: Vellum's `directoryScopeOptions` is
+                    // `List[TrustRuleSuggestResponseSuggestionDirectoryScopeOptionsItem]`.
+                    if member.ty.as_ref().and_then(TypeField::primary) == Some("array") {
+                        if let Some(array) = self.hoist_array_item_type(&name, member) {
+                            return array;
+                        }
+                    }
                     return self.schemas.map_or_else(
                         || base_type_ref(member),
                         |schemas| full_type_ref_resolved(member, schemas),
@@ -6853,6 +6861,8 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             naming::sanitize_identifier(&naming::to_snake_case(name))
         } else if first_segment_is_tag(op, id) {
             method_after_first_segment(id)
+        } else if let Some(name) = first_tag(op).and_then(|tag| method_after_tag_tokens(tag, id)) {
+            name
         } else if group_prefix_is_tag(op, id) {
             // A `group_method` operationId whose prefix *is* the group has its group
             // stripped, Fern-style (`widgets_getWidget` → `getwidget`).
@@ -7337,6 +7347,71 @@ fn first_segment_is_tag(op: &Operation, id: &str) -> bool {
         return false;
     };
     rest.contains('_') && alnum_lower(first) == alnum_lower(tag)
+}
+
+/// A tag and an operationId split into lowercase words the way Fern's
+/// `getEndpointLocation` splits them: a purely camelCase spelling at its capitals,
+/// anything else at every run of characters other than letters and digits.
+fn fern_location_tokens(name: &str) -> Vec<String> {
+    let words: Vec<&str> = if is_fern_camel_case(name) {
+        let mut starts: Vec<usize> = name
+            .char_indices()
+            .filter(|(_, c)| c.is_ascii_uppercase())
+            .map(|(index, _)| index)
+            .collect();
+        starts.insert(0, 0);
+        starts.push(name.len());
+        starts.windows(2).map(|pair| &name[pair[0]..pair[1]]).collect()
+    } else {
+        name.split(|c: char| !c.is_ascii_alphanumeric()).collect()
+    };
+    words
+        .into_iter()
+        .filter(|word| !word.is_empty())
+        .map(str::to_ascii_lowercase)
+        .collect()
+}
+
+/// Fern's camelCase test, `^[a-z]+(?:[A-Z][a-z]+)*$`: ASCII letters only, a
+/// lowercase first letter, and every capital followed by a lowercase letter.
+fn is_fern_camel_case(name: &str) -> bool {
+    let bytes = name.as_bytes();
+    bytes.first().is_some_and(u8::is_ascii_lowercase)
+        && bytes.iter().enumerate().all(|(index, byte)| {
+            byte.is_ascii_lowercase()
+                || byte.is_ascii_uppercase() && bytes.get(index + 1).is_some_and(u8::is_ascii_lowercase)
+        })
+}
+
+/// The method a multi-word tag leaves of an operationId it prefixes, word for
+/// word, as Fern's `getEndpointLocation` strips it: Vellum's
+/// `credential_requests_peek` under the tag `credential-requests` is `peek`. A
+/// one-word tag is [`first_segment_is_tag`]'s and [`group_prefix_is_tag`]'s.
+fn method_after_tag_tokens(tag: &str, id: &str) -> Option<String> {
+    let tag_words = fern_location_tokens(tag);
+    let id_words = fern_location_tokens(id);
+    if tag_words.len() < 2
+        || id_words.len() <= tag_words.len()
+        || !id_words.starts_with(&tag_words)
+    {
+        return None;
+    }
+    let rest = &id_words[tag_words.len()..];
+    let camel = rest
+        .iter()
+        .enumerate()
+        .map(|(index, word)| {
+            if index == 0 {
+                word.clone()
+            } else {
+                let mut chars = word.chars();
+                chars.next().map_or_else(String::new, |first| {
+                    first.to_ascii_uppercase().to_string() + chars.as_str()
+                })
+            }
+        })
+        .collect::<String>();
+    Some(naming::sanitize_identifier(&naming::to_snake_case(&camel)))
 }
 
 fn method_after_first_segment(id: &str) -> String {

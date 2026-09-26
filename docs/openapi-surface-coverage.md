@@ -2840,7 +2840,11 @@ composition, so the gate below fires — which is the chain overlap
 It is called on each member of `properties`, so `schema.properties` is the
 leftmost member of every case. Cases 8a to 8d are `is_inline_struct` read one
 disjunct at a time, as in `nested_array_element`; cases 12a to 12f are the same
-helper read again, inside the one-member arity its own arm tests.
+helper read again, inside the one-member arity its own arm tests. Cases 11a and
+11b are read at their gate: the arms inside it — the member's string enum, its
+`$ref`, an unknown, a map, an inline struct, and an array whose inline element
+hoists as case 15's does (corpus row 218's `directoryScopeOptions`) — are not
+split into rows.
 
 **Cases 1 to 5 are one path and are read at two grains.** Case 1 is the gate,
 which reads the property in front of it and nothing else; cases 2 to 5 sit inside
