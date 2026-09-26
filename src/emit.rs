@@ -2124,6 +2124,8 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     let lines = build_documentation_example(
         ep,
@@ -2319,6 +2321,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: BTreeSet::new(),
         };
         build_documentation_example(
             first,
@@ -2349,6 +2353,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: BTreeSet::new(),
         };
         build_documentation_example(
             first,
@@ -2573,6 +2579,8 @@ fn reference_entry(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     let example = (!ep.binary_schema_response || !module.is_empty() || ep.openapi_31)
         .then(|| {
@@ -3682,9 +3690,12 @@ fn render_enum(
         }
     }
     body.push('\n');
+    // Two members Fern names alike share one callback, listed once.
+    let mut listed = std::collections::HashSet::new();
     let params: Vec<String> = e
         .members
         .iter()
+        .filter(|m| listed.insert(m.visit_param.as_str()))
         .map(|m| format!("{}: typing.Callable[[], T_Result]", m.visit_param))
         .collect();
     body.push_str(&format!(
@@ -6373,6 +6384,8 @@ fn client_stream_docstring(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     if let Some(ex_lines) = build_example(
         ep,
@@ -6500,6 +6513,8 @@ fn client_binary_stream_docstring(
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
         .then(|| {
@@ -6595,6 +6610,8 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         building: Default::default(),
         documentation: false,
         reference: false,
+        field_examples_ignored: false,
+        untyped_arguments: BTreeSet::new(),
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
@@ -6966,6 +6983,12 @@ struct ExampleCtx<'a> {
     /// Whether the active Markdown snippet belongs to `reference.md`, whose
     /// literal and parameter-order writer differs from README examples.
     reference: bool,
+    /// Whether a model field's own declared example is passed over, as Fern's IR
+    /// fallback generator passes it over when its importer built no example.
+    field_examples_ignored: bool,
+    /// The keyword arguments whose value is the placeholder of an *unknown*
+    /// (`typing.Any`) field, which the Markdown writers leave on one line.
+    untyped_arguments: BTreeSet<String>,
 }
 
 /// The slot a string value sits in, which decides its placeholder text: a named
@@ -7587,6 +7610,9 @@ impl<'a> ExampleCtx<'a> {
                     .into_iter()
                     .filter(|(_, _, _, required, _, parent_example)| *required || *parent_example)
                     .map(|(py, wire, ty, _, example, _)| {
+                        if is_any_type(&ty) {
+                            self.untyped_arguments.insert(py.clone());
+                        }
                         (Some(py), self.field_example(&ty, &wire, example.as_deref()))
                     })
                     .collect::<Vec<_>>();
@@ -7762,7 +7788,11 @@ impl<'a> ExampleCtx<'a> {
         // this map through `value_from_example`, which is why the suppression is
         // here rather than there — `mosip-esignet`'s `Purpose.title` keeps the
         // `{"@none": "Title"}` its request example gives it.
-        let example = example.filter(|_| !self.resolves_to_unknown_map(ty));
+        // Without an importer example Fern's IR fallback reads no field's own
+        // example: NPQ's `accept_an_npq_application` documents `type="type"`
+        // over the `npq-application-accept` its schema declares.
+        let example =
+            example.filter(|_| !self.field_examples_ignored && !self.resolves_to_unknown_map(ty));
         let literal = match example {
             // A date/date-time field's declared example is used like any other:
             // EN 18222's `last_updated` is typed by the `Timestamp` alias and
@@ -7804,8 +7834,16 @@ impl<'a> ExampleCtx<'a> {
             }
         }
         for f in &obj.fields {
+            // An example spells a field Fern renames only on the model under its
+            // plain name: VisKit's `ThreePieceIn.copy` is the model field `copy_`,
+            // and Fern's example constructs `ThreePieceIn(copy="copy", …)`.
+            let py_name = if f.py_name == naming::model_field_name(&f.wire_name) {
+                naming::field_name(&f.wire_name)
+            } else {
+                f.py_name.clone()
+            };
             out.push((
-                f.py_name.clone(),
+                py_name,
                 f.wire_name.clone(),
                 f.type_ref.clone(),
                 f.spec_required && !f.optional,
@@ -8091,6 +8129,7 @@ fn build_example_inner(
 
     ctx.documentation = documentation;
     ctx.reference = reference;
+    ctx.field_examples_ignored = ep.importer_example_missing;
     // A `*/*` binary download whose parameters carry a DECLARED example documents
     // no arguments at all. Measured on the corpus's only two such endpoints:
     // apideck's `filesDownload` takes a required `id` beside an optional `fields`
@@ -8894,11 +8933,16 @@ fn build_example_inner(
         out.extend(call.split('\n').map(String::from));
     }
     if documentation {
-        // An untyped request body's placeholder stays on its line: Fern writes
-        // NextGen's `request={"key": "value"},` flat, where a map-typed one
-        // (bunq's `AttachmentPublic`) is wrapped by `compact_documentation_values`.
-        let untyped_request = matches!(&ep.request_body, Some(RequestBody::Single(single))
-            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)));
+        // An untyped value's placeholder stays on its line: Fern writes NextGen's
+        // `request={"key": "value"},` and NPQ's model field
+        // `attributes={"key": "value"},` flat, where a map-typed one (bunq's
+        // `AttachmentPublic`) is wrapped by `compact_documentation_values`.
+        let mut untyped_arguments = std::mem::take(&mut ctx.untyped_arguments);
+        if matches!(&ep.request_body, Some(RequestBody::Single(single))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)))
+        {
+            untyped_arguments.insert("request".to_string());
+        }
         Some(format_documentation_example(
             out,
             is_async,
@@ -8906,7 +8950,7 @@ fn build_example_inner(
             environment,
             reference,
             ctx.datetime_precedes_tag_import,
-            untyped_request,
+            &untyped_arguments,
         ))
     } else {
         Some(out)
@@ -8946,7 +8990,7 @@ fn format_documentation_example(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
     datetime_first: bool,
-    untyped_request: bool,
+    untyped_arguments: &BTreeSet<String>,
 ) -> Vec<String> {
     let client_index = lines
         .iter()
@@ -9022,13 +9066,13 @@ fn format_documentation_example(
         }
     }
     out.extend(body);
-    compact_documentation_values(out, reference, untyped_request)
+    compact_documentation_values(out, reference, untyped_arguments)
 }
 
 fn compact_documentation_values(
     lines: Vec<String>,
     reference: bool,
-    untyped_request: bool,
+    untyped_arguments: &BTreeSet<String>,
 ) -> Vec<String> {
     let mut compact = Vec::with_capacity(lines.len());
     let mut index = 0;
@@ -9084,7 +9128,7 @@ fn compact_documentation_values(
                         && !item.contains(['{', '[', '}', ']'])
                         && item.matches("\", \"").count() == 0
                 })
-                .filter(|(head, _)| !(untyped_request && *head == "request"))
+                .filter(|(head, _)| !untyped_arguments.contains(*head))
             {
                 let indent = line.len() - line.trim_start().len();
                 compact.push(format!("{}{head}={{", " ".repeat(indent)));
@@ -10859,6 +10903,8 @@ mod tests {
             building: Default::default(),
             documentation: false,
             reference: false,
+            field_examples_ignored: false,
+            untyped_arguments: std::collections::BTreeSet::new(),
         }
     }
 

@@ -5959,13 +5959,7 @@ const VISKIT_STUDIO: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/imagegen/client.py",
-        "src/fern/types/__init__.py",
-        "src/fern/types/kit_list_item.py",
-    ],
+    unmatched: &[],
 };
 
 /// CloudPDF contract API — corpus row 171, the publisher's own description.
@@ -8148,19 +8142,7 @@ const NPQ_REGISTRATION: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "README.md",
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/npq_applications/__init__.py",
-        "src/fern/npq_applications/client.py",
-        "src/fern/npq_applications/types/__init__.py",
-        "src/fern/npq_applications/types/application_accept_request_data.py",
-        "src/fern/participant_declarations/types/participant_declaration_change_delivery_partner_request_data.py",
-        "src/fern/participant_declarations/types/participant_declaration_change_delivery_partner_request_data_attributes.py",
-        "src/fern/types/delivery_partners_sorting_options.py",
-        "src/fern/types/sorting_options.py",
-    ],
+    unmatched: &[],
 };
 
 #[test]

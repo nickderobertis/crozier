@@ -837,7 +837,7 @@ pub struct Schema {
     pub properties: SchemaProperties,
     /// Required property names.
     #[serde(default, deserialize_with = "de_required")]
-    pub required: Vec<String>,
+    pub required: RequiredNames,
     /// Array item schema.
     #[serde(default, deserialize_with = "de_items")]
     pub items: Option<Box<Schema>>,
@@ -1165,11 +1165,51 @@ where
     })
 }
 
+/// A Schema Object's `required` property names, and whether the document wrote
+/// something there that is not a list at all.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct RequiredNames {
+    names: Vec<String>,
+    /// `required` held a boolean, number or map rather than a list — see
+    /// [`normalize_unlisted_required`].
+    pub unlisted: bool,
+}
+
+impl std::ops::Deref for RequiredNames {
+    type Target = Vec<String>;
+    fn deref(&self) -> &Vec<String> {
+        &self.names
+    }
+}
+
+impl std::ops::DerefMut for RequiredNames {
+    fn deref_mut(&mut self) -> &mut Vec<String> {
+        &mut self.names
+    }
+}
+
+impl<'a> IntoIterator for &'a RequiredNames {
+    type Item = &'a String;
+    type IntoIter = std::slice::Iter<'a, String>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.names.iter()
+    }
+}
+
+impl From<Vec<String>> for RequiredNames {
+    fn from(names: Vec<String>) -> Self {
+        Self {
+            names,
+            unlisted: false,
+        }
+    }
+}
+
 /// Deserialize `required`, keeping only its string entries. A non-string entry
 /// names no property, and Fern reads the list as-is, so it requires nothing:
 /// Groupe PSA's `RemoteLights` declares `required: [true]` beside a property named
 /// `"true"`, and the golden's `true` field is optional.
-fn de_required<'de, D>(deserializer: D) -> std::result::Result<Vec<String>, D::Error>
+fn de_required<'de, D>(deserializer: D) -> std::result::Result<RequiredNames, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
@@ -1180,8 +1220,15 @@ where
                 serde_json::Value::String(name) => Some(name),
                 _ => None,
             })
-            .collect(),
-        _ => Vec::new(),
+            .collect::<Vec<_>>()
+            .into(),
+        serde_json::Value::Bool(_)
+        | serde_json::Value::Number(_)
+        | serde_json::Value::Object(_) => RequiredNames {
+            names: Vec::new(),
+            unlisted: true,
+        },
+        _ => RequiredNames::default(),
     })
 }
 
@@ -1431,6 +1478,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_multi_type_schemas(&mut doc);
+    normalize_unlisted_required(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
     reject_unemittable_parameters(&doc, path)?;
@@ -1679,6 +1727,38 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 node.one_of = None;
                 node.any_of = None;
                 node.all_of = None;
+            }
+        });
+    });
+}
+
+/// An object schema whose `required` is not a list is Fern's unknown type: its
+/// importer iterates `required` while converting the object, and a boolean there
+/// fails the conversion. NPQ's `ApplicationAcceptRequest.data.attributes` is an
+/// object with properties and `required: false`, and its golden field is a bare
+/// `typing.Any`. A scalar with a stray `required: true` is no object and is
+/// unaffected (the same document's `data.type` stays `str`).
+fn normalize_unlisted_required(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node.required.unlisted
+                && node.reference.is_none()
+                && (node.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                    || !node.properties.is_empty())
+            {
+                // The mark stays, because the failure also costs the operation
+                // its worked example (see `ir::fern_imports_no_endpoint_example`).
+                *node = Schema {
+                    description: node.description.take(),
+                    nullable: node.nullable,
+                    required: RequiredNames {
+                        names: Vec::new(),
+                        unlisted: true,
+                    },
+                    ..Schema::default()
+                };
+            } else {
+                node.required.unlisted = false;
             }
         });
     });

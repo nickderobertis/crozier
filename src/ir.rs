@@ -1657,25 +1657,37 @@ fn build_enum(
     // (TrueForge's `MetricsUnit` names `$` as `USD`, where the derived identifier
     // would be the placeholder `_`).
     let declared: std::collections::HashMap<&str, &str> = schema.enum_member_names().collect();
-    let mut seen_members = std::collections::HashSet::new();
+    let mut seen_names = std::collections::HashSet::new();
+    let mut member_params: std::collections::HashMap<String, String> =
+        std::collections::HashMap::new();
     let members = values
         .into_iter()
         .filter(|value| seen_values.insert(value.clone()))
         .filter_map(|value| {
-            let name = declared.get(value.as_str()).map_or_else(
-                || naming::enum_member_name(&value),
-                |name| naming::enum_member_name(name),
-            );
-            if !seen_members.insert(name.clone()) {
+            let declared_name = declared.get(value.as_str()).copied();
+            if !seen_names.insert(fern_enum_name_key(&value, declared_name)) {
                 return None;
             }
-            let visit = declared.get(value.as_str()).map_or_else(
-                || naming::enum_visit_param(&value),
-                |name| naming::enum_visit_param(name),
+            let name = declared_name.map_or_else(
+                || naming::enum_member_name(&value),
+                naming::enum_member_name,
             );
+            // A member whose Python name an earlier one already took shares its
+            // callback: NPQ's `created_at` and `-created_at` are both `CREATED_AT`.
+            let visit_param = if let Some(param) = member_params.get(&name) {
+                param.clone()
+            } else {
+                let visit = declared_name.map_or_else(
+                    || naming::enum_visit_param(&value),
+                    naming::enum_visit_param,
+                );
+                let param = dedupe(visit, &mut seen_params);
+                member_params.insert(name.clone(), param.clone());
+                param
+            };
             Some(EnumMember {
                 name,
-                visit_param: dedupe(visit, &mut seen_params),
+                visit_param,
                 value,
                 docstring: None,
             })
@@ -1686,6 +1698,40 @@ fn build_enum(
         module: naming::module_name(name),
         members,
         docstring,
+    }
+}
+
+/// The name Fern's importer gives an enum value before any casing, which is what
+/// it omits a later value over, compared without regard to letter case: a
+/// declared name, the value itself when it is already a name
+/// (`^[a-zA-Z][a-zA-Z0-9_]*$`), and otherwise the camel-cased name it generates
+/// from the value's words. So Tally's `dd/MM/yyyy` and `dd.MM.yyyy` both generate
+/// `DdMmYyyy`, and NPQ's `-name` generates `Name` beside `name`, and Fern keeps
+/// the first of each pair alone; but NPQ's `-created_at` generates `CreatedAt`,
+/// which is not `created_at`, and Fern keeps both (as two `CREATED_AT` members).
+fn fern_enum_name_key(value: &str, declared: Option<&str>) -> String {
+    if let Some(name) = declared {
+        return name.to_lowercase();
+    }
+    let mut chars = value.chars();
+    if chars.next().is_some_and(|ch| ch.is_ascii_alphabetic())
+        && chars.all(|ch| ch.is_ascii_alphanumeric() || ch == '_')
+    {
+        return value.to_lowercase();
+    }
+    // The generated name is `upperFirst(camelCase(value))`: its words' letters and
+    // digits, which is all a case-blind comparison sees. A value opening on a
+    // digit is spelled out instead, and one with no word characters takes a
+    // fixed name; both are left to their own spelling here.
+    let generated: String = value
+        .chars()
+        .filter(char::is_ascii_alphanumeric)
+        .map(|ch| ch.to_ascii_lowercase())
+        .collect();
+    if generated.is_empty() || value.starts_with(|ch: char| ch.is_ascii_digit()) {
+        value.to_lowercase()
+    } else {
+        generated
     }
 }
 
@@ -3493,6 +3539,33 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
         || unsupported_response
         || undeclared_response
         || request_example_fails(doc, op)
+        || request_declares_unlisted_required(doc, op)
+}
+
+/// Whether the JSON request body holds an object whose `required` is not a list
+/// (see `openapi::normalize_unlisted_required`). The conversion that fails there
+/// fails the request example too: NPQ's `accept_an_npq_application` posts one,
+/// and its golden's example is Fern's fallback (`id="id"`, `type="type"`) rather
+/// than the document's `example`s.
+fn request_declares_unlisted_required(doc: &OpenApi, op: &Operation) -> bool {
+    let Some(schema) = op
+        .request_body
+        .as_ref()
+        .and_then(|body| selected_json_request_media(body)?.1.schema.as_ref())
+    else {
+        return false;
+    };
+    let mut schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema)
+        .clone();
+    let mut found = false;
+    crate::openapi::for_each_schema_in(&mut schema, &mut |node| {
+        found |= node.required.unlisted;
+    });
+    found
 }
 
 /// Whether Fern's importer gives up on the operation's request example because a
@@ -9511,6 +9584,18 @@ impl Builder<'_> {
                                     )));
                                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                                 }
+                                // An element that is one member beside `null` is an
+                                // optional element here too: VisKit's
+                                // `KitListItem.image_ids` is `anyOf: [array of
+                                // anyOf: [string, null], null]`, and Fern types it
+                                // `Optional[List[Optional[str]]]`.
+                                if let Some(member) = simple_nullable_member(items) {
+                                    let element = member.reference.as_deref().map_or_else(
+                                        || base_type_ref(member),
+                                        |reference| TypeRef::Named(ref_to_class(reference)),
+                                    );
+                                    return TypeRef::List(Box::new(optional_type_ref(element)));
+                                }
                                 if let Some(item_members) =
                                     items.one_of.as_ref().or(items.any_of.as_ref())
                                 {
@@ -9606,11 +9691,18 @@ impl Builder<'_> {
                     // beneath a one-element `typing.Union`.
                     if let [only] = members.as_slice() {
                         if is_inline_struct(only) {
+                            // Documented by the member when the property is not:
+                            // NPQ's one-member `anyOf` `attributes`.
                             self.add_object(
                                 &name,
                                 naming::module_name(&name),
                                 only,
-                                clean_doc(prop_schema.description.as_deref()),
+                                clean_doc(
+                                    prop_schema
+                                        .description
+                                        .as_deref()
+                                        .or(only.description.as_deref()),
+                                ),
                             );
                             return TypeRef::Named(name);
                         }
@@ -10166,7 +10258,7 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
     required.extend(schema.required.iter().cloned());
     required.dedup();
     merged.properties = properties;
-    merged.required = required;
+    merged.required = required.into();
     merged
 }
 
@@ -10654,6 +10746,14 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
         // composition does not: Fergus's `PricebookSearchItem.name` is
         // `anyOf: [{type: string, description}, null]`.
         .or_else(|| sole_non_null_member(schema).and_then(|member| member.description.as_deref()))
+        // …and so does a composition's only member (NPQ's one-member `anyOf`
+        // `attributes`).
+        .or_else(
+            || match schema.any_of.as_deref().or(schema.one_of.as_deref()) {
+                Some([only]) => only.description.as_deref(),
+                _ => None,
+            },
+        )
 }
 
 /// A `$ref` to a plain string schema narrowed by inline `allOf` members that
