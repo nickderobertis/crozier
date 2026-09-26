@@ -387,7 +387,7 @@ enum-digit-word-member	schema.enum:digit-word-member	src/naming.rs::digit_word,s
 enum-empty-identifier-member	schema.enum:empty-identifier-member	src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]	
 enum-empty-member	schema.enum:empty-member	src/naming.rs::enum_words[if value.is_empty\(\) \{]	
 enum-leading-digit-identifier	schema.enum:leading-digit-identifier	src/naming.rs::finalize_enum_ident[if name.starts_with]	
-enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if has_leading_zero_identifier_segment \{]	
+enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if leads_with_zero_led_digits \{]	
 enum-normalized-collision	schema.enum:normalized-collision	src/ir.rs::dedupe	
 enum-numeric-member	schema.enum:numeric-member	src/ir.rs::string_enum_values[if !is_string_type\(schema\) \{],src/ir.rs::string_enum_values[if strings.is_empty\(\) \{],src/ir.rs::is_int_enum	
 enum-numeric-prefix-member	schema.enum:numeric-prefix-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if digits > 0 \{]	

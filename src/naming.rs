@@ -422,8 +422,11 @@ fn enum_words(value: &str) -> String {
         }
     }
     let mut words = split_words(&spaced);
-    let has_leading_zero_identifier_segment = value.contains('_')
-        && words.iter().any(|word| {
+    // A value whose *first* word is a zero-led digit run names a member Fern
+    // refuses (`_01_00_AM` would lead with a digit), so crozier's legal
+    // fallback keeps it as written.
+    let leads_with_zero_led_digits = value.contains('_')
+        && words.first().is_some_and(|word| {
             word.len() > 1
                 && word.starts_with('0')
                 && word.bytes().all(|byte| byte.is_ascii_digit())
@@ -502,10 +505,12 @@ fn enum_words(value: &str) -> String {
         }
     }
     let identifier = words.join("_");
-    if has_leading_zero_identifier_segment {
-        // Fern rejects this shape; keep Crozier's existing legal fallback stable.
+    if leads_with_zero_led_digits {
         identifier
     } else {
+        // Anywhere later, a zero-led digit run collapses onto the word before
+        // it like any other: Google Cloud Monitoring's `ALIGN_PERCENTILE_05` is
+        // `ALIGN_PERCENTILE05` in Fern's golden, as `_99` is `ALIGN_PERCENTILE99`.
         collapse_digit_boundaries(&identifier)
     }
 }
@@ -1169,6 +1174,25 @@ mod tests {
     #[test]
     fn digit_leading_request_fields_get_underscore_prefix() {
         assert_eq!(request_field_name("5gMmCauseValue"), "_5g_mm_cause_value");
+    }
+
+    #[test]
+    fn zero_led_digit_runs_collapse_unless_they_lead_the_name() {
+        // Google Cloud Monitoring v1's aligners (corpus row 225's golden).
+        assert_eq!(
+            enum_member_name("ALIGN_PERCENTILE_05"),
+            "ALIGN_PERCENTILE05"
+        );
+        assert_eq!(
+            enum_member_name("ALIGN_PERCENTILE_99"),
+            "ALIGN_PERCENTILE99"
+        );
+        assert_eq!(
+            enum_visit_param("ALIGN_PERCENTILE_05"),
+            "align_percentile05"
+        );
+        // Fern refuses a name led by one; crozier keeps it as written.
+        assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
     }
 
     #[test]
