@@ -1154,9 +1154,9 @@ reference, and `scripts/fetch-corpus.sh` refuses it with *absolute `$ref`
 raw.githubusercontent.com*. Its disposition follows its instrumented probe: see
 the golden-reach search record for `oneof-array-variant-closed-object-item`.
 
-### Rows 223–228: witnesses the arm searches found
+### Rows 223–229: witnesses the arm searches found
 
-The instrumented probes of build `1131cbbcb0e3` found six Fern-accepted,
+The instrumented probes of build `1131cbbcb0e3` found seven Fern-accepted,
 licensed documents that execute a handling site no earlier golden reached. Each
 is registered here with its Fern 5.20.0 golden and byte-matches with
 `unmatched: &[]`:
@@ -1169,6 +1169,7 @@ is registered here with its Fern 5.20.0 golden and byte-matches with
 | 226 | `docu-goapiserver` | `anyof-anyof-variant` | ✅ byte-matched after four repairs |
 | 227 | `onevoice` | `mutualTLS` | ✅ byte-matched after one repair |
 | 228 | `xfsc-oidc-identity-resolver` | `securityscheme-type-openidconnect` | ✅ byte-matched after one repair |
+| 229 | `adyen-acs-notification` | `enum-leading-digit-identifier` | ✅ byte-matched after one repair |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Pointers: Fern's importer converts any reference whose text names `properties`
@@ -1181,7 +1182,9 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   timestamp is left out of the worked call (Vonage).
 - Names: a zero-led digit run collapses onto the word before it like any other
   (`ALIGN_PERCENTILE_05` is `ALIGN_PERCENTILE05`); only a name *led* by one,
-  which Fern refuses, keeps crozier's legal fallback (Cloud Monitoring).
+  which Fern refuses, keeps crozier's legal fallback (Cloud Monitoring); and a
+  value that is a number *whole* is spelled as that number with its leading
+  zeros read away, so `01` is `ONE` (Adyen).
 - Types: an `anyOf` variant that is one member beside `null` is that member made
   optional (Primula Tracker).
 - Auth: an `openIdConnect` scheme is a bearer token, required on OAuth2's terms
