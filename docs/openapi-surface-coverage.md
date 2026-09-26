@@ -1161,10 +1161,10 @@ declare is already `golden`. Only the `fergus`, `auto-agent-protocol` and three
 Zulip goldens reach the `src/ir.rs` sites their rows name; each row's evidence cell says
 which of crozier's handling sites its golden reaches and which it does not.
 
-The golden-reach witnesses, corpus rows 191 to 195 (`openlinksw-osdb`,
-`ziptax-node`, `nexmo-messages`, `deepsearch-ds-v2` and `mindee-ocr`), were
-registered beside them, so the walk reads 200 sources (32 vendored plus 168
-`link-ok`) and both arms' features, 538. They settle no `gap` row, but one tree
+The golden-reach witnesses, corpus rows 191 to 196 (`openlinksw-osdb`,
+`ziptax-node`, `nexmo-messages`, `deepsearch-ds-v2`, `mindee-ocr` and
+`opencodeui`), were registered beside them, so the walk reads 201 sources (32
+vendored plus 169 `link-ok`) and both arms' features, 538. They settle no `gap` row, but one tree
 now holds both batches, and `fergus` declares `schema.anyOf>schema.anyOf` seven
 times: `anyof-anyof-variant`, one of the two `gap` rows the nested-composition
 re-derivation added, is `golden` here.
