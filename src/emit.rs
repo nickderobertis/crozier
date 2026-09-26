@@ -9386,7 +9386,15 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
+    // A binary download the importer declines has only Fern's IR-generated
+    // examples, and the success one fails (*File download unsupported*): what
+    // the docstring shows is the first *error* example, so a download declaring
+    // no error response shows none. Codat Assess's `get_excel_report` answers a
+    // lone `200` of `application/octet-stream` and its golden has no example.
+    let binary_download_without_errors =
+        ep.binary_response && ep.importer_example_missing && ep.errors.is_empty();
     !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
+        || binary_download_without_errors
         || opaque_multipart_example
         || list_path_param_with_body)
 }

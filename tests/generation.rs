@@ -11410,6 +11410,47 @@ fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
     assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
 }
 
+/// Fragments of Codat Assess 1.0 as APIs.guru pins it (corpus row 224), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a schema `$ref` into a component parameter's schema is that schema, copied
+///   at the reference with its description;
+/// - a binary download that declares no error response has no worked example,
+///   where one declaring an error keeps it.
+#[test]
+fn codat_assess_parameter_schema_refs_and_errorless_downloads() {
+    let files = render(
+        r##"{"openapi": "3.0.3", "info": {"title": "Assess API", "version": "1.0"},
+"paths": {
+  "/companies/{companyId}/excel/download": {
+    "parameters": [{"$ref": "#/components/parameters/companyId"}],
+    "get": {"tags": ["Excel reports"], "operationId": "get-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}}}},
+    "post": {"tags": ["Excel reports"], "operationId": "download-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}},
+        "404": {"description": "Not found"}}}},
+  "/webhooks/categories": {"get": {"tags": ["Webhooks"], "operationId": "categories-updated",
+    "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CategoriesWebhook"}}}}}}}},
+"components": {
+  "parameters": {"companyId": {"in": "path", "name": "companyId", "required": true,
+    "schema": {"description": "Unique identifier for your SMB in Codat.", "format": "uuid", "type": "string"}}},
+  "schemas": {"CategoriesWebhook": {"type": "object", "properties": {
+    "companyId": {"$ref": "#/components/parameters/companyId/schema"}}}}}}"##,
+    );
+    let webhook = &files["src/acme/types/categories_webhook.py"];
+    assert!(
+        webhook.contains("typing.Optional[str],")
+            && webhook.contains("description=\"Unique identifier for your SMB in Codat.\""),
+        "{webhook}"
+    );
+    let excel = &files["src/acme/excel_reports/client.py"];
+    let get = &excel[excel.find("def get_excel_report").unwrap()..];
+    let get = &get[..get.find("def download_excel_report").unwrap()];
+    assert!(!get.contains("Examples"), "{excel}");
+    let download = &excel[excel.find("def download_excel_report").unwrap()..];
+    let download = &download[..download.find("class ").unwrap()];
+    assert!(download.contains("Examples"), "{excel}");
+}
+
 /// Fragments of the Vonage Conversation API 2.0.1 as APIs.guru pins it (corpus
 /// row 223), each assertion a line of its Fern 5.20.0 golden:
 /// - Fern's importer converts any reference whose text names `properties` as a

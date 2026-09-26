@@ -1510,6 +1510,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_parameter_schema_refs(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -2291,8 +2292,9 @@ fn normalize_response_schema_refs(doc: &mut OpenApi) {
             for response in operation.responses.values_mut() {
                 for media in response.content.values_mut() {
                     if let Some(schema) = &mut media.schema {
-                        resolve_response_schema_refs(
+                        resolve_indexed_schema_refs(
                             schema,
+                            "#/paths/",
                             &schemas,
                             &mut std::collections::BTreeSet::new(),
                         );
@@ -2301,6 +2303,34 @@ fn normalize_response_schema_refs(doc: &mut OpenApi) {
             }
         }
     }
+}
+
+/// Resolve schema `$ref`s that point into a component parameter's schema
+/// (`#/components/parameters/companyId/schema`) as a copy at the reference, the
+/// way Fern's importer resolves any local pointer: Codat's webhook bodies share
+/// their identifier fields' type and description with the path parameters.
+fn normalize_parameter_schema_refs(doc: &mut OpenApi) {
+    let mut schemas = IndexMap::new();
+    for (name, parameter) in &doc.components.parameters {
+        if let Some(schema) = &parameter.schema {
+            let pointer = format!(
+                "#/components/parameters/{}/schema",
+                json_pointer_segment(name)
+            );
+            index_schema_pointers(schema, &pointer, &mut schemas);
+        }
+    }
+    if schemas.is_empty() {
+        return;
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        resolve_indexed_schema_refs(
+            schema,
+            "#/components/parameters/",
+            &schemas,
+            &mut std::collections::BTreeSet::new(),
+        );
+    });
 }
 
 fn json_pointer_segment(segment: &str) -> String {
@@ -2333,41 +2363,42 @@ fn index_schema_pointers(schema: &Schema, pointer: &str, schemas: &mut IndexMap<
     }
 }
 
-fn resolve_response_schema_refs(
+fn resolve_indexed_schema_refs(
     schema: &mut Schema,
+    prefix: &str,
     schemas: &IndexMap<String, Schema>,
     resolving: &mut std::collections::BTreeSet<String>,
 ) {
     if let Some(reference) = schema
         .reference
         .as_deref()
-        .filter(|reference| reference.starts_with("#/paths/"))
+        .filter(|reference| reference.starts_with(prefix))
         .map(str::to_string)
     {
         if resolving.insert(reference.clone()) {
             if let Some(target) = schemas.get(&reference) {
                 *schema = target.clone();
-                resolve_response_schema_refs(schema, schemas, resolving);
+                resolve_indexed_schema_refs(schema, prefix, schemas, resolving);
             }
             resolving.remove(&reference);
         }
         return;
     }
     for property in schema.properties.values_mut() {
-        resolve_response_schema_refs(property, schemas, resolving);
+        resolve_indexed_schema_refs(property, prefix, schemas, resolving);
     }
     if let Some(items) = &mut schema.items {
-        resolve_response_schema_refs(items, schemas, resolving);
+        resolve_indexed_schema_refs(items, prefix, schemas, resolving);
     }
     if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
-        resolve_response_schema_refs(value, schemas, resolving);
+        resolve_indexed_schema_refs(value, prefix, schemas, resolving);
     }
     for member in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
         .into_iter()
         .flatten()
         .flatten()
     {
-        resolve_response_schema_refs(member, schemas, resolving);
+        resolve_indexed_schema_refs(member, prefix, schemas, resolving);
     }
 }
 

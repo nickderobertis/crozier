@@ -9034,7 +9034,7 @@ fn referenced_binary_success_responses_stream_bytes() {
 #[test]
 fn binary_response_examples_use_neutral_path_placeholders() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\n        '404': { description: Missing }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
