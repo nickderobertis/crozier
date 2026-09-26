@@ -1152,3 +1152,46 @@ reference, and `scripts/fetch-corpus.sh` refuses it with *absolute `$ref`
 'http://json-schema.org/draft-04/schema' is not a plain https URL on
 raw.githubusercontent.com*. Its disposition follows its instrumented probe: see
 the golden-reach search record for `oneof-array-variant-closed-object-item`.
+
+### Rows 223–228: witnesses the arm searches found
+
+The instrumented probes of build `1131cbbcb0e3` found six Fern-accepted,
+licensed documents that execute a handling site no earlier golden reached. Each
+is registered here with its Fern 5.20.0 golden and byte-matches with
+`unmatched: &[]`:
+
+| # | name | the row whose unreached site it reached | status |
+|---:|---|---|---|
+| 223 | `nexmo-conversation` | `ref-pointer-composition-index`, `ref-pointer-nested-properties` | ✅ byte-matched after three repairs |
+| 224 | `codat-assess` | `ref-pointer-composition-index` | ✅ byte-matched after two repairs |
+| 225 | `googleapis-monitoring-v1` | `enum-leading-zero-member` | ✅ byte-matched after one repair |
+| 226 | `docu-goapiserver` | `anyof-anyof-variant` | ✅ byte-matched after four repairs |
+| 227 | `onevoice` | `mutualTLS` | ✅ byte-matched after one repair |
+| 228 | `xfsc-oidc-identity-resolver` | `securityscheme-type-openidconnect` | ✅ byte-matched after one repair |
+
+Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
+- Pointers: Fern's importer converts any reference whose text names `properties`
+  as a copy at the reference, walking the whole pointer to a composition member,
+  and names a discriminated variant so copied after the pointer (Vonage); a
+  schema `$ref` into `#/components/parameters/<name>/schema` is that schema
+  copied with its description (Codat).
+- Requests: an inline schema in `components.requestBodies` keeps its
+  `content-type`, and an optional query parameter whose example YAML reads as a
+  timestamp is left out of the worked call (Vonage).
+- Names: a zero-led digit run collapses onto the word before it like any other
+  (`ALIGN_PERCENTILE_05` is `ALIGN_PERCENTILE05`); only a name *led* by one,
+  which Fern refuses, keeps crozier's legal fallback (Cloud Monitoring).
+- Types: an `anyOf` variant that is one member beside `null` is that member made
+  optional (Primula Tracker).
+- Auth: an `openIdConnect` scheme is a bearer token, required on OAuth2's terms
+  (XFSC); a requirement naming only schemes Fern does not support — a cookie
+  `apiKey`, `mutualTLS` — defines no auth at all (OneVoice).
+- Examples: a binary download the importer declines shows only Fern's first IR
+  *error* example, so one declaring no error response has none (Codat); an array
+  body and a `$ref`-to-union body take the media type's example, an enum variant
+  matches only its own values, and an unknown body's example drops its `null`
+  members (Primula Tracker).
+
+OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
+unresolved without a diagnostic, so its golden is the document's types and
+client wrapper only; the wrapper is what pins the auth arm.
