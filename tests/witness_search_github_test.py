@@ -1059,7 +1059,9 @@ components:
             "path": "openapi.yaml",
             "commit": "c" * 40,
         }
-        with patch.object(SEARCH, "RAW_SPACING_S", 0.05), patch.object(
+        # Spacing wide enough that parsing the first document still ends
+        # inside it; at 0.05s a Windows runner outlasted the window.
+        with patch.object(SEARCH, "RAW_SPACING_S", 1.0), patch.object(
             SEARCH, "RAW_BACKOFF_BASE_S", 0.05
         ):
             result = self.search.sourcegraph_document(
