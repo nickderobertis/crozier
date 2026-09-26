@@ -2943,6 +2943,193 @@ components:
     /// "this node is a union" and renders `typing.Union[]`, which `ruff` refuses
     /// to parse — so the node keeps the plain `type` it also declares.
     #[test]
+    fn a_pointer_inside_a_component_is_copied_where_it_is_used() {
+        let mut doc = parse(
+            r##"
+openapi: 3.1.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Page:
+      type: object
+      properties:
+        page:
+          type: object
+          properties:
+            kind: { type: string }
+        tags:
+          type: array
+          items: { type: string, enum: [a, b] }
+        extra:
+          type: object
+          additionalProperties: { type: integer }
+        closed:
+          type: object
+          additionalProperties: false
+        choice:
+          anyOf:
+            - type: object
+              properties:
+                label: { type: string }
+            - type: string
+        revision:
+          type: object
+          properties:
+            page: { $ref: '#/components/schemas/Page/properties/page' }
+            tag: { $ref: '#/components/schemas/Page/properties/tags/items' }
+            count: { $ref: '#/components/schemas/Page/properties/extra/additionalProperties' }
+            label: { $ref: '#/components/schemas/Page/properties/choice/anyOf/0/properties/label' }
+            member: { $ref: '#/components/schemas/Page/properties/choice/anyOf/1' }
+            open: { $ref: '#/components/schemas/Page/properties/closed/additionalProperties' }
+            missing: { $ref: '#/components/schemas/Page/properties/nothing' }
+            defs: { $ref: '#/components/schemas/Page/$defs/thing' }
+            whole: { $ref: '#/components/schemas/Page' }
+            again:
+              allOf:
+                - $ref: '#/components/schemas/Page/properties/choice'
+              nullable: true
+              description: the reply
+    Loop:
+      type: object
+      properties:
+        next: { $ref: '#/components/schemas/Loop/properties/next' }
+"##,
+        );
+        normalize_schema_pointer_refs(&mut doc);
+        let revision = &doc.components.schemas["Page"].properties["revision"];
+        // Walked through `properties`, `items`, `additionalProperties` and a
+        // composition member, each copy is the schema the pointer reaches.
+        assert!(revision.properties["page"].properties.contains_key("kind"));
+        assert!(revision.properties["page"].reference.is_none());
+        assert!(revision.properties["tag"].enum_values.is_some());
+        assert_eq!(
+            revision.properties["count"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("integer")
+        );
+        assert_eq!(
+            revision.properties["label"]
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary),
+            Some("string")
+        );
+        // A pointer ending on a composition member, through a non-schema
+        // `additionalProperties`, to nothing, through `$defs`, or at a whole
+        // component is left for the lowering.
+        for kept in ["member", "open", "missing", "defs", "whole"] {
+            assert!(
+                revision.properties[kept].reference.is_some(),
+                "{kept} should keep its $ref"
+            );
+        }
+        // A lone pointer `allOf` member is its holder's schema, keeping the
+        // holder's own annotations.
+        let again = &revision.properties["again"];
+        assert!(again.all_of.is_none());
+        assert_eq!(again.any_of.as_ref().map(Vec::len), Some(2));
+        assert_eq!(again.nullable, Some(true));
+        assert_eq!(again.description.as_deref(), Some("the reply"));
+        // A pointer met again while its own copy expands terminates.
+        let next = &doc.components.schemas["Loop"].properties["next"];
+        assert!(next.reference.is_some());
+    }
+
+    #[test]
+    fn an_object_whose_required_is_not_a_list_is_unknown() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Request:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          properties:
+            kind: { type: string, required: true }
+            attributes:
+              description: the attributes
+              type: object
+              required: false
+              properties:
+                funded: { type: boolean }
+            counted: { properties: { n: { type: integer } }, required: 3 }
+            mapped: { type: object, required: { a: 1 } }
+            nulled: { type: object, required: null }
+"##,
+        );
+        normalize_unlisted_required(&mut doc);
+        let data = &doc.components.schemas["Request"].properties["data"];
+        let attributes = &data.properties["attributes"];
+        assert!(attributes.ty.is_none() && attributes.properties.is_empty());
+        assert_eq!(attributes.description.as_deref(), Some("the attributes"));
+        assert!(attributes.required.unlisted);
+        assert!(data.properties["counted"].properties.is_empty());
+        assert!(data.properties["mapped"].required.unlisted);
+        // A scalar's stray `required: true` changes nothing and leaves no mark;
+        // neither does a `null`, nor a real list.
+        let kind = &data.properties["kind"];
+        assert_eq!(
+            kind.ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
+        assert!(!kind.required.unlisted);
+        assert!(!data.properties["nulled"].required.unlisted);
+        assert_eq!(data.required.as_slice(), &[] as &[String]);
+        assert_eq!(
+            doc.components.schemas["Request"].required.as_slice(),
+            &["data".to_string()]
+        );
+    }
+
+    #[test]
+    fn enum_varnames_lose_the_prefix_every_name_shares() {
+        let doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    OperationKind:
+      type: string
+      enum: [profiling, tracing]
+      x-enum-varnames: [OperationKindProfiling, OperationKindTracing]
+    Single:
+      type: string
+      enum: ["1.0"]
+      x-enum-varnames: [WatchEventSpecVersion10]
+    Uneven:
+      type: string
+      enum: [a, b]
+      x-enum-varnames: [Ab, A]
+"##,
+        );
+        let names = |name: &str| {
+            doc.components.schemas[name]
+                .enum_member_names()
+                .map(|(value, name)| format!("{value}={name}"))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            names("OperationKind"),
+            ["profiling=Profiling", "tracing=Tracing"]
+        );
+        // One name has nothing to share; a name that is all prefix is blank and
+        // names nothing.
+        assert_eq!(names("Single"), ["1.0=WatchEventSpecVersion10"]);
+        assert_eq!(names("Uneven"), ["a=b"]);
+    }
+
+    #[test]
     fn normalize_empty_compositions_drops_the_empty_list() {
         let mut doc = parse(
             r##"

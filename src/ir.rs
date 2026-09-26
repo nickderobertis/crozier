@@ -15821,6 +15821,267 @@ mod tests {
         );
     }
 
+    /// One component object, the `Holder` whose fields a test reads.
+    fn holder_field(ir: &super::Ir, name: &str) -> TypeRef {
+        ir.types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "Holder" => object
+                    .fields
+                    .iter()
+                    .find(|field| field.wire_name == name)
+                    .map(|field| field.type_ref.clone()),
+                _ => None,
+            })
+            .expect("Holder declares the field")
+    }
+
+    fn holder_document(properties: serde_json::Value) -> serde_json::Value {
+        observed_document(
+            serde_json::json!({
+                "Holder": { "type": "object", "properties": properties },
+                "Vector": { "type": "array", "items": { "anyOf": [
+                    { "type": "integer" }, { "type": "string" }
+                ] } },
+                "Tags": { "type": "array", "items": { "anyOf": [
+                    { "type": "integer" }, { "type": "null" }
+                ] } }
+            }),
+            serde_json::json!({ "holder": { "$ref": "#/components/schemas/Holder" } }),
+        )
+    }
+
+    #[test]
+    fn component_unions_lower_the_way_the_new_goldens_measured() {
+        let (ir, _) = generate(holder_document(serde_json::json!({
+            // VisKit's `image_ids`: a nullable list of a nullable element.
+            "image_ids": { "anyOf": [
+                { "type": "array", "items": { "anyOf": [
+                    { "type": "string" }, { "type": "null" }
+                ] } },
+                { "type": "null" }
+            ] },
+            // CloudPDF's `docMdp`: members that all convert to `float`.
+            "doc_mdp": { "anyOf": [
+                { "type": "number", "enum": [1] },
+                { "type": "number", "enum": [2] }
+            ], "nullable": true },
+            // CloudPDF's `calculationOrder`: a nullable discriminated element.
+            "order": { "type": "array", "items": {
+                "nullable": true,
+                "anyOf": [
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["index"] },
+                        "position": { "type": "integer" }
+                    } },
+                    { "type": "object", "required": ["kind"], "properties": {
+                        "kind": { "type": "string", "enum": ["name"] },
+                        "label": { "type": "string" }
+                    } }
+                ]
+            } }
+        })));
+        assert_eq!(
+            holder_field(&ir, "image_ids"),
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Primitive(
+                Prim::Str
+            )))))
+        );
+        assert_eq!(
+            holder_field(&ir, "doc_mdp"),
+            TypeRef::Primitive(Prim::Float)
+        );
+        assert_eq!(
+            holder_field(&ir, "order"),
+            TypeRef::List(Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                "HolderOrderItem".to_string()
+            )))))
+        );
+        // Milvus's `vector`: an inline union element of a component array is an
+        // alias of its own, and a lone member beside `null` is not a union.
+        let labels = declarations(&ir);
+        assert!(
+            labels.contains(&"Alias(VectorItem)".to_string()),
+            "{labels:?}"
+        );
+        assert!(
+            !labels.contains(&"Alias(TagsItem)".to_string()),
+            "{labels:?}"
+        );
+    }
+
+    #[test]
+    fn fastapi_operation_ids_lose_their_route_suffix_under_a_tag() {
+        let operation = |id: &str, tag: Option<&str>| {
+            let mut op = serde_json::json!({
+                "operationId": id,
+                "responses": { "200": { "description": "ok" } }
+            });
+            if let Some(tag) = tag {
+                op["tags"] = serde_json::json!([tag]);
+            }
+            op
+        };
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "fastapi", "version": "1" },
+            "paths": {
+                "/v1/payments/{payment_id}:ack": { "post": operation(
+                    "acknowledge_payment_v1_payments__payment_id__ack_post", Some("acks")
+                ) },
+                "/api/kits/_warmup/extract": { "get": operation(
+                    "warmup_extract_api_kits__warmup_extract_get", Some("extract")
+                ) },
+                "/": { "get": operation("healthcheck__get", None) },
+                "/v1/meta": { "get": operation("v1_meta_get", Some("meta")) }
+            }
+        }));
+        let methods: Vec<&str> = ir
+            .endpoints
+            .iter()
+            .map(|ep| ep.method_name.as_str())
+            .collect();
+        assert_eq!(
+            methods,
+            [
+                "acknowledge_payment",
+                "warmup_extract_api_kits_warmup_extract_get",
+                "healthcheck_get",
+                // An id that is the whole suffix is left to the ordinary naming.
+                "v1meta_get",
+            ]
+        );
+    }
+
+    #[test]
+    fn a_promoted_header_is_typed_by_its_schema() {
+        let header = |name: &str, ty: Option<&str>| {
+            let mut parameter = serde_json::json!({ "name": name, "in": "header" });
+            if let Some(ty) = ty {
+                parameter["schema"] = serde_json::json!({ "type": ty });
+            }
+            parameter
+        };
+        let parameters = serde_json::json!([
+            header("Request-Timeout", Some("integer")),
+            header("X-Ratio", Some("number")),
+            header("X-Dry-Run", Some("boolean")),
+            header("X-Tenant", Some("string")),
+            header("X-Untyped", None)
+        ]);
+        let operation = serde_json::json!({
+            "parameters": parameters,
+            "responses": { "200": { "description": "ok" } }
+        });
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "headers", "version": "1" },
+            "paths": { "/a": { "get": operation.clone() }, "/b": { "get": operation } }
+        }));
+        let typed: Vec<(&str, &str)> = ir
+            .global_headers
+            .iter()
+            .map(|header| (header.wire_name.as_str(), header.py_type))
+            .collect();
+        assert_eq!(
+            typed,
+            [
+                ("Request-Timeout", "int"),
+                ("X-Ratio", "float"),
+                ("X-Dry-Run", "bool"),
+                ("X-Tenant", "str"),
+                ("X-Untyped", "str"),
+            ]
+        );
+    }
+
+    #[test]
+    fn only_a_binary_media_family_is_a_bytes_body() {
+        for binary in [
+            "image/png",
+            "audio/mpeg",
+            "video/mp4",
+            "font/woff2",
+            "application/octet-stream",
+            "application/pdf",
+            "application/zip; charset=binary",
+            "application/x-gzip",
+            "application/br",
+        ] {
+            assert!(super::is_binary_media_type(binary), "{binary}");
+        }
+        for other in [
+            "application/proto",
+            "application/json",
+            "text/plain",
+            "*/*",
+            "nonsense",
+        ] {
+            assert!(!super::is_binary_media_type(other), "{other}");
+        }
+        let body = |media: &str| {
+            let mut content = serde_json::Map::new();
+            content.insert(
+                media.to_string(),
+                serde_json::json!({ "schema": { "type": "string", "format": "binary" } }),
+            );
+            serde_json::json!({
+                "requestBody": { "content": content },
+                "responses": { "200": { "description": "ok" } }
+            })
+        };
+        let (ir, _) = generate(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "bodies", "version": "1" },
+            "paths": {
+                "/proto": { "post": body("application/proto") },
+                "/zip": { "post": body("application/zip") }
+            }
+        }));
+        let bodies: Vec<bool> = ir
+            .endpoints
+            .iter()
+            .map(|ep| matches!(ep.request_body, Some(super::RequestBody::Bytes { .. })))
+            .collect();
+        assert_eq!(bodies, [false, true]);
+    }
+
+    #[test]
+    fn an_enum_drops_a_later_value_only_when_fern_names_it_alike() {
+        let e = build_enum(
+            &Schema::default(),
+            "Sort",
+            [
+                "created_at",
+                "-created_at",
+                "name",
+                "-name",
+                "video",
+                "video/*",
+                "2x",
+                "<",
+            ]
+            .map(str::to_string)
+            .to_vec(),
+            None,
+        );
+        let members: Vec<(&str, &str, &str)> = e
+            .members
+            .iter()
+            .map(|m| (m.name.as_str(), m.visit_param.as_str(), m.value.as_str()))
+            .collect();
+        assert_eq!(
+            members[..4],
+            [
+                ("CREATED_AT", "created_at", "created_at"),
+                ("CREATED_AT", "created_at", "-created_at"),
+                ("NAME", "name", "name"),
+                ("VIDEO", "video", "video"),
+            ]
+        );
+        assert_eq!(members.len(), 6, "{members:?}");
+    }
+
     #[test]
     fn hoist_union_variant_separates_the_branches_its_selectors_name() {
         let variant_ref = |value: serde_json::Value| {

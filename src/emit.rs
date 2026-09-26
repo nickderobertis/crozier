@@ -9537,6 +9537,90 @@ mod tests {
     };
     use crate::wrap::Doc;
 
+    /// Every file the generator writes for `document`, before `ruff format`.
+    fn files_for(document: serde_json::Value) -> Vec<(String, String)> {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(document).expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .expect("the config is well formed");
+        generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    fn file<'a>(files: &'a [(String, String)], suffix: &str) -> &'a str {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no generated file ends with {suffix}"))
+    }
+
+    #[test]
+    fn a_nested_client_package_owns_its_types_and_its_typed_header() {
+        let operation = |group: serde_json::Value, method: &str| {
+            serde_json::json!({
+                "x-fern-sdk-group-name": group,
+                "x-fern-sdk-method-name": method,
+                "parameters": [{
+                    "name": "Request-Timeout", "in": "header",
+                    "schema": { "type": "integer" }
+                }],
+                "requestBody": { "content": { "application/json": { "schema": {
+                    "type": "object",
+                    "properties": { "unit": { "type": "string", "enum": ["mm", "pt"] } }
+                } } } },
+                "responses": { "200": { "description": "ok" } }
+            })
+        };
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "nested", "version": "1" },
+            "paths": {
+                "/doc/scale": { "post": operation(serde_json::json!(["doc", "pages"]), "setScale") },
+                "/doc/rotate": { "post": operation(serde_json::json!(["doc", "pages"]), "rotate") }
+            }
+        }));
+        // CloudPDF's layout: the nested package's types are re-exported one level
+        // up, and not at the root.
+        let parent = file(&files, "src/api/doc/__init__.py");
+        assert!(parent.contains("from .pages import"), "{parent}");
+        assert!(
+            parent.contains("\"SetScalePagesRequestUnit\": \".pages\""),
+            "{parent}"
+        );
+        let root = file(&files, "src/api/__init__.py");
+        assert!(!root.contains("SetScalePagesRequestUnit"), "{root}");
+        // Its enum imports `core` from four levels up.
+        let unit = file(&files, "doc/pages/types/set_scale_pages_request_unit.py");
+        assert!(unit.contains("from ....core import enum"), "{unit}");
+        // Milvus's integer `Request-Timeout`, promoted to the wrapper.
+        let wrapper = file(&files, "src/api/core/client_wrapper.py");
+        assert!(
+            wrapper.contains("request_timeout: typing.Optional[int] = None"),
+            "{wrapper}"
+        );
+        assert!(
+            wrapper.contains("headers[\"Request-Timeout\"] = str(self._request_timeout)"),
+            "{wrapper}"
+        );
+    }
+
     /// Render a class body through the real `class_body.py` template — the fast
     /// feedback loop for layout/filter changes (no binary, no `ruff`). Returns the
     /// body exactly as emitted, before the file-level `ruff format` pass.
