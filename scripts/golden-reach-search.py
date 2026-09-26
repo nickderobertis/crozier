@@ -65,6 +65,7 @@ import itertools
 import json
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
@@ -392,8 +393,41 @@ def unreadable_reason(error: BaseException, document: str) -> str:
     return f"unreadable: {type(error).__name__}: {document}: {message}"
 
 
-def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ...]]) -> dict[str, str]:
-    path, sha256, document, keys = args
+class CensusTimeout(BaseException):
+    """A document the census did not finish within the walk's per-document limit.
+
+    A `BaseException`, so the census's own catch-all for a document it cannot
+    parse does not record the cut-off as a parse refusal.
+    """
+
+
+def _alarm(_signum: int, _frame: Any) -> None:
+    raise CensusTimeout
+
+
+def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ...], int]) -> dict[str, str]:
+    """One document's walk census, bounded by `timeout` seconds where the platform can.
+
+    A document whose census runs past the limit is recorded as unreadable with that
+    reason rather than holding up the walk: one Kubernetes document held a worker for
+    hours. Windows has no `SIGALRM`, so there the census is unbounded.
+    """
+    path, sha256, document, keys, timeout = args
+    alarm = getattr(signal, "SIGALRM", None)
+    if alarm is None:
+        return _census_body(path, sha256, document, keys)
+    previous = signal.signal(alarm, _alarm)
+    signal.alarm(timeout)
+    try:
+        return _census_body(path, sha256, document, keys)
+    except CensusTimeout:
+        return {"status": f"unreadable: census exceeded {timeout}s", "matched_keys": ""}
+    finally:
+        signal.alarm(0)
+        signal.signal(alarm, previous)
+
+
+def _census_body(path: str, sha256: str, document: str, keys: tuple[tuple[str, tuple[str, ...]], ...]) -> dict[str, str]:
     try:
         data = Path(path).read_bytes()
     except OSError as error:
@@ -489,7 +523,7 @@ def walk(args: argparse.Namespace) -> int:
             if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
                 by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
     jobs = [
-        (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys)
+        (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys, args.census_timeout)
         for row in listing
     ]
     if args.census:
@@ -1417,6 +1451,8 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--key", action="append", required=True)
     w.add_argument("--jobs", type=REACH.positive_int, default=8)
     w.add_argument("--census", type=Path, help="a census already taken over these pinned bytes (JSONL.gz)")
+    w.add_argument("--census-timeout", type=REACH.positive_int, default=600,
+                   help="seconds one document's census may take before it is recorded unreadable")
     f = sub.add_parser("fetch-pins")
     f.add_argument("--root", type=Path, required=True, help="local copies; fetched pins land in its fetched/")
     q = sub.add_parser("query")

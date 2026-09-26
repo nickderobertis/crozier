@@ -539,11 +539,32 @@ class UnreadableReasonTests(unittest.TestCase):
             local.write_text("openapi: 3.0.0\ninfo:\n  ? explicit\n  : key\n", encoding="utf-8")
             digest = hashlib.sha256(local.read_bytes()).hexdigest()
             result = golden_reach_search._census_one(
-                (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),)))
+                (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),), 60))
         status = result["status"]
         self.assertTrue(status.startswith("unreadable: DocumentError: yaml/Pinned-v1.yaml: line 3: "), status)
         self.assertIn("explicit `? ` mapping keys are not supported", status)
         self.assertNotIn(scratch, status)
+
+    @unittest.skipUnless(hasattr(__import__("signal"), "SIGALRM"), "no SIGALRM on this platform")
+    def test_a_census_past_the_walk_limit_is_recorded_unreadable_with_that_reason(self) -> None:
+        """One document's census cannot hold a walk up: it is cut off and named."""
+        import hashlib
+        import time
+        with tempfile.TemporaryDirectory() as scratch:
+            local = Path(scratch) / "openapi.yaml"
+            local.write_text("openapi: 3.0.0\ninfo: {title: t, version: '1'}\npaths: {}\n", encoding="utf-8")
+            digest = hashlib.sha256(local.read_bytes()).hexdigest()
+            census = golden_reach_search.CENSUS.census_document
+            golden_reach_search.CENSUS.census_document = lambda *_args, **_kwargs: time.sleep(5)
+            try:
+                started = time.monotonic()
+                result = golden_reach_search._census_one(
+                    (str(local), digest, "slow.yaml", (("k", ("schema.oneOf",)),), 1))
+                elapsed = time.monotonic() - started
+            finally:
+                golden_reach_search.CENSUS.census_document = census
+        self.assertEqual({"status": "unreadable: census exceeded 1s", "matched_keys": ""}, result)
+        self.assertLess(elapsed, 4)
 
 
 class MeasurementInputTests(unittest.TestCase):
