@@ -1881,7 +1881,7 @@ checked rather than trusted.
   Fern's own check refuses), left this list when corpus row 144 registered a
   witness Fern accepts.
 
-**The median blind-spot count of this list is 235** — all twelve entries name
+**The median blind-spot count of this list is 451** — all twelve entries name
 `src/ir.rs` and nothing else, and 0 of the 12 entries name no `src/` file at all,
 which is the mirror image of the list this one replaced. 0 of the 12 ranked
 entries reach no blind region. Criteria 1 to 4 separate none of them — each
@@ -1891,18 +1891,18 @@ rows 177 to 179 — so criterion 5 decides.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
-| 1 | [`annotated-ref-target-string-const`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 2 | [`array-item-inheritance-union`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 3 | [`array-item-pointer-walk-oneof`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 4 | [`oneof-array-variant-annotated-ref-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 5 | [`oneof-array-variant-anyof-discriminated-union-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 6 | [`oneof-array-variant-anyof-nullable-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 7 | [`oneof-bare-object-example-variant`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 8 | [`oneof-closed-empty-object-variant`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 9 | [`property-sole-anyof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 10 | [`property-sole-anyof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 11 | [`property-sole-oneof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
-| 12 | [`property-sole-oneof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **235** (`src/ir.rs` 235) | **1** (types/) | **0** |
+| 1 | [`annotated-ref-target-string-const`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 2 | [`array-item-inheritance-union`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 3 | [`array-item-pointer-walk-oneof`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 4 | [`oneof-array-variant-annotated-ref-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 5 | [`oneof-array-variant-anyof-discriminated-union-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 6 | [`oneof-array-variant-anyof-nullable-item`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 7 | [`oneof-bare-object-example-variant`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 8 | [`oneof-closed-empty-object-variant`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 9 | [`property-sole-anyof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 10 | [`property-sole-anyof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 11 | [`property-sole-oneof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
+| 12 | [`property-sole-oneof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **451** (`src/ir.rs` 451) | **1** (types/) | **0** |
 
 ### The ranked list against `golden blind spots`
 
@@ -1913,22 +1913,22 @@ two are joined below, in the report's own columns: **printed** is the count
 `just fixtures-coverage` prints for the file and the one criterion 2 ranks on,
 and **by tier** is the breakdown it prints beside it. Printed sums the two
 non-golden tiers, so a region both tiers reach counts twice — the report's own
-`total 1472 region(s) across 12 file(s)` line is the de-duplicated union, and the
+`total 1764 region(s) across 12 file(s)` line is the de-duplicated union, and the
 functions named in each verdict are counted from that union.
 
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 864 | all-e2e 434, non-e2e 430 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 434 of the 448. |
-| `src/emit.rs` | 437 | all-e2e 137, non-e2e 300 | none | **A shape the walk missed, and now the sharpest measured price of settling a row by probe.** This file is where the block moved most since these cells were last taken — 175 printed to 437 — and the largest new block is one change's: the object-typed path parameter [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail) found crozier diverging on and repaired. `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10 are 125 of this file's 312-region union, and `build_example_inner` rose 7 to 19 beside them. The shape driving all of it is one **no registered source declares**, so no committed golden can reach a line of it: a probe settles a row's category and buys no byte-comparison evidence, and this is what that costs, in regions rather than in argument. `append_request_call_args` 10 — the function the one ranked gap that ever pointed here, `media-type-range`, named — was not among the blind regions when that row was ranked; corpus row 127 settled the row `golden` and the function is blind now. The rest is example rendering, as before: `example_matches_type` 24, `header_first_query_example` 16, `example_is_object` 14, `raw_type_str_ctx` 13, `value_from_example` 10, `named_value_inner` 10, `flat` 9. `type_serializes_as` 8 a committed golden reaches now, as the streaming docstrings `client_stream_docstring` 11 + `raw_stream_docstring` 10 already did. The census now distinguishes all six JSON kinds selected from schema-level `example`/`examples`; five are newly classified, all `golden`. The generated-type and nested-value tests in these functions remain enumeration holes, named in the case table above. |
+| `src/emit.rs` | 425 | all-e2e 141, non-e2e 284 | none | **A shape the walk missed, and now the sharpest measured price of settling a row by probe.** This file is where the block moved most two refreshes ago — 175 printed to 437 — and it prints 425 on the run this table is now taken on, 430 on the same tree with corpus rows 167 to 179 left out: their goldens take `named_value_inner` 13 → 10 and `client_wrapper_file` 1 → 0. The largest block is one change's: the object-typed path parameter [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail) found crozier diverging on and repaired. `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10 are 125 of this file's 300-region union, and `build_example_inner` rose 7 to 19 beside them. The shape driving all of it is one **no registered source declares**, so no committed golden can reach a line of it: a probe settles a row's category and buys no byte-comparison evidence, and this is what that costs, in regions rather than in argument. `append_request_call_args` 12 — the function the one ranked gap that ever pointed here, `media-type-range`, named — was not among the blind regions when that row was ranked; corpus row 127 settled the row `golden` and the function is blind now. The rest is example rendering, as before: `example_matches_type` 15, `header_first_query_example` 16, `raw_type_str_ctx` 13, `named_value_inner` 10, `flat` 9, `url_arg` 9, `value_from_example` 6, `example_is_object` 4. `type_serializes_as` 8 a committed golden reaches now, as the streaming docstrings `client_stream_docstring` 11 + `raw_stream_docstring` 10 already did. The census now distinguishes all six JSON kinds selected from schema-level `example`/`examples`; five are newly classified, all `golden`. The generated-type and nested-value tests in these functions remain enumeration holes, named in the case table above. |
 | `src/cli.rs` | 292 | all-e2e 133, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
-| `src/ir.rs` | 235 | all-e2e 6, non-e2e 229 | 12 (after PayPal settled `anyof-sole-member`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares, and `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Joined to a ranked gap — twelve of them — and no longer wholly unreached.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: twelve ranked `FIXTURE` rows point here, every one a branch of this file's six blind functions that no golden-bearing registered source declares; `oauth2-password`, whose site here is `oauth_scope_enum` rather than one of the six, left with corpus row 177. The printed 235 is the run before corpus rows 167 to 179: coverage runs over those goldens one at a time enter `hoist_union_variant`'s struct-element arm (`hse`, the three Milvus goldens), `prop_type_ref`'s sole-member arm (`mistle-control-plane`) and `oauth_scope_enum` (`osparc-payments`), so a fresh `just fixtures-coverage` run is what replaces the count. The rows were added by [the eleven the node-local predicates added](#the-eleven-rows-the-node-local-predicates-added), [the two the pointer-form ones did](#the-two-rows-the-pointer-form-predicates-added), [the five the annotated-`$ref` pass did](#the-five-rows-the-annotated-ref-pass-added), [the two the discriminated-union pass did](#the-two-rows-the-discriminated-union-pass-added), [the two the pointer-walk pass did](#the-two-rows-the-pointer-walk-pass-added), and [the seven the negation pass did](#the-seven-rows-the-negation-pass-added). `resolve_schema_pointer` 25 is the second-largest blind block in this file and the one the pointer-form and pointer-walk passes read between them: five of the seven branches the first named came back `golden`, three of the five the second named did, and the function's last enumeration hole is closed — so the corpus had been sending documents down most of them all along. The other half was the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refreshed run printed; it held until corpus rows 167 to 179, whose goldens reach the arms named above. The blind regions are type-lowering conjunctions: `hoist_union_variant` 43, `resolve_schema_pointer` 25, `nested_array_element` 23, `prop_type_ref` 22, `variant_ref` 21, `field_type_ref` 20, `path_group` 15, `hoist_array_item_type` 13, `error_class_name` 8 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The forty selectors these passes declared did not: twenty-eight are `golden` and twelve are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-seven of the forty rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and every case of these six functions is now measured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
-| `src/openapi.rs` | 218 | all-e2e 84, non-e2e 134 | 0 (corpus rows 177 to 179 settled `oauth2-password` and `securityscheme-ref`, both demoted from `limitations` by the amended settlement rule) | **Accounts for what is left, and two ranked gaps point here again.** Four that did — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256`, one `#[serde(other)]` scheme fallback arm and four IANA scheme members collapsing through it — are `limitations` since [Round 6](fern-limitations.md#round-6--security) measured Fern on all four. The fifth ranked row this file ever carried, `securityscheme-ref`, was `limitations` on the same round and is ranked again: its verdict is `implements`, and [the amended settlement rule](#what-a-probe-may-settle-as-amended-again) lets no probe settle a shape Fern generates from. The `$ref` position it names is `normalize_security_scheme_refs`, reached by a probe rather than by a golden. `oauth2-password` points here too, at the `OAuthFlows.password` field, since its ledger cell measured nothing about what Fern emits. `normalize_parameters` was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way; neither is blind at all now. The largest block, `filter_by_audience` 47 + `audiences` 8, belongs to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `load` 26 + `expecting` 5 + `de_composition` 5 + the four `visit_*` arms 12 between them are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. `filter_ignored` 13 is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. **This file is where the corpus moved most.** `collect_schema_refs` 46, `expand_schema_closure` 32, `operation_schema_seed` 24, `visit_seq` 7 and `normalize_parameters` 3 were all blind two measurements ago and are reached by a committed golden now, and `filter_ignored` fell from 72; that is the whole of the file's 511 → 184. **The 184 has since risen to 218, and the rise is a probe's.** `normalize_security_scheme_refs` 18 is the `$ref` position `securityscheme-ref` named, written when [Round 6](fern-limitations.md#round-6--security) settled that row by probe — code a measurement drove into `src/` that no committed golden reaches, which is what `src/emit.rs` above now shows at four times the size. |
-| `src/refs.rs` | 74 | all-e2e 17, non-e2e 57 | none | **The printed coverage is a dated pre-tree measurement.** FOLIO row 139 resolves sibling schema and parameter files; Raybot row 140 resolves sibling Path Items and their schema dependencies, with all 185 expected files byte-matching. The corpus can now reach `resolve_reference`, `document` and `pointer` through real registered trees. Helios already names absolute URLs; whether the current instrumented corpus reaches `curl_fetch` is a measurement for a fresh `just fixtures-coverage` run. |
+| `src/ir.rs` | 451 | all-e2e 115, non-e2e 336 | 12 (after PayPal settled `anyof-sole-member`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares, and `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Joined to a ranked gap — twelve of them — and no longer wholly unreached.** The old verdict opened *"agrees on the file, misses the shapes"*, then became *"no longer joined to a ranked gap at all"* when the backlog emptied. Both halves are answered now, and by the same change. The agreement is back: twelve ranked `FIXTURE` rows point here, every one a branch of this file's six blind functions that no golden-bearing registered source declares; `oauth2-password`, whose site here is `oauth_scope_enum` rather than one of the six, left with corpus row 177. The printed 451 is the run this table is now taken on; the same tree with corpus rows 167 to 179 left out prints 509, so those thirteen goldens take 58 printed regions, 49 of this file's union: `add_named` 16 → 1, `field_type_ref` 79 → 66, `variant_ref` 75 → 64, `build_enum` 3 → 0, `fastapi_endpoint_name` 2 → 0, one region each of `is_declared_empty_object` and `python`, and three at the file's top level. The arms the rows' evidence cells name — `hoist_union_variant`'s struct-element arm, `prop_type_ref`'s sole-member arm, `oauth_scope_enum` — are in neither run's block, so those goldens pin their bytes without moving this count: `hoist_union_variant` holds 52 and `prop_type_ref` 9 either way. The rows were added by [the eleven the node-local predicates added](#the-eleven-rows-the-node-local-predicates-added), [the two the pointer-form ones did](#the-two-rows-the-pointer-form-predicates-added), [the five the annotated-`$ref` pass did](#the-five-rows-the-annotated-ref-pass-added), [the two the discriminated-union pass did](#the-two-rows-the-discriminated-union-pass-added), [the two the pointer-walk pass did](#the-two-rows-the-pointer-walk-pass-added), and [the seven the negation pass did](#the-seven-rows-the-negation-pass-added). `resolve_schema_pointer` 49 is the fourth-largest blind block in this file and the one the pointer-form and pointer-walk passes read between them: five of the seven branches the first named came back `golden`, three of the five the second named did, and the function's last enumeration hole is closed — so the corpus had been sending documents down most of them all along. The other half was the answer to *are this file's regions still unreached?* — **yes, all 235 of them**, which is the count these cells carried before the conjunction pass and the count the refresh after it printed. It is not today's count: the file has grown by the lowering code landed since, which crozier's own journeys and unit tests reach (`all-e2e` 6 → 115) and no golden does, and this run prints 451. The blind regions are type-lowering conjunctions: `field_type_ref` 66, `variant_ref` 64, `hoist_union_variant` 52, `resolve_schema_pointer` 49, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 9, `error_class_name` 8, `nested_array_element` 7 of a 423-region union, beside `ordinal_word` 23 and `example_is_schema_definition` 20 — six of them the six this file's [case analysis](#the-six-blind-regions-of-srcirrs-case-by-case) derives its selectors from, whose [before-and-after counts](#what-the-conjunction-pass-moved-in-those-six-regions) that section publishes. Each driving field — `$ref`, `items`, `oneOf`, `properties` — is `golden` on its own, and this verdict used to go on: *"it is their combinations that no golden reaches."* **That was a statement about the instrument, and the measurement contradicts it in one direction and confirms it in another.** The nine conjunctions the first pass declared all came back `golden`. The forty selectors these passes declared did not: twenty-eight are `golden` and twelve are `gap`, so the corpus is blind to some of these combinations after all, and it took a finer instrument to say which. The `schemas` region carries thirty-seven of the forty rows and `document-paths` the three `path_group` ones. What stays true of this file is the *branch* reading: a golden pinning a shape pins the bytes for the shapes its own document sends down the arm, not the arm's whole behaviour, and every case of these six functions is now measured. Two regions built bespoke conjunction passes for exactly this reason (`parameters`' style × `in` × schema matrix, `schemas`' variant scan); the third is now the census's own. |
+| `src/openapi.rs` | 215 | all-e2e 88, non-e2e 127 | 0 (corpus rows 177 to 179 settled `oauth2-password` and `securityscheme-ref`, both demoted from `limitations` by the amended settlement rule) | **Accounts for what is left, and the two ranked gaps that pointed here again are settled.** Four that did — `http-hoba`, `http-oauth`, `http-scram-sha-1` and `http-scram-sha-256`, one `#[serde(other)]` scheme fallback arm and four IANA scheme members collapsing through it — are `limitations` since [Round 6](fern-limitations.md#round-6--security) measured Fern on all four. The fifth ranked row this file ever carried, `securityscheme-ref`, was `limitations` on the same round and is ranked again: its verdict is `implements`, and [the amended settlement rule](#what-a-probe-may-settle-as-amended-again) lets no probe settle a shape Fern generates from. The `$ref` position it names is `normalize_security_scheme_refs`, reached by a probe rather than by a golden. `oauth2-password` points here too, at the `OAuthFlows.password` field, since its ledger cell measured nothing about what Fern emits. `normalize_parameters` was a sixth until corpus row 122 settled `operation-overrides-path-item-parameter` `golden` and it left the ranked list, and the `operation_id` field declaration was a sixth until corpus row 128 settled `duplicate-operation-id` the same way; neither is blind at all now. The largest block, `filter_by_audience` 47 + `audiences` 8, belongs to `audience-dual-header-policy`, classified `golden`: golden-classified is not golden-*exhausted*, since the two audience goldens declare 8 sites between them and leave the rest of the branch space to unit tests. `load` 28 + `expecting` 5 + `de_composition` 5 + the four `visit_*` arms 12 between them are malformed-document deserialization paths the corpus excludes by taking only documents Fern generates. `filter_ignored` 13 is the walk's `x-fern-or-crozier-ignore` — now `golden`, on corpus row 108's four `x-fern-ignore` operations, though golden-classified is not golden-*exhausted*: one witness reaches the Operation-Object arm and leaves the schema arm and the `x-crozier-*` precedence to unit tests. **This file is where the corpus moved most.** `collect_schema_refs` 46, `expand_schema_closure` 32, `operation_schema_seed` 24, `visit_seq` 7 and `normalize_parameters` 3 were all blind two measurements ago and are reached by a committed golden now, and `filter_ignored` fell from 72; that is the whole of the file's 511 → 184. **The 184 then rose to 218, and the rise was a probe's.** `normalize_security_scheme_refs` 18 is the `$ref` position `securityscheme-ref` named, written when [Round 6](fern-limitations.md#round-6--security) settled that row by probe — code a measurement drove into `src/` that no committed golden reached, which is what `src/emit.rs` above shows at four times the size. **Corpus rows 167 to 179 took it back down**: this run prints 215, and 291 on the same tree with those thirteen goldens left out. They take `normalize_security_scheme_refs` 18 → 2 (the HuaTuo goldens, rows 178 and 179, are the witnesses that row's evidence cell names), `inline_schema_pointers` 27 → 1, `normalize_unlisted_required` 11 → 0, `schema_pointer_target` 8 → 6, `visit_map` 2 → 0 and `de_required` 2 → 1, 58 of the file's union, which is 143 after them. What remains beside the blocks above is new since the last refresh and unit-tested only: `reject_unemittable_operation_ids` 6 and `reject_unemittable_parameters` 6. |
+| `src/refs.rs` | 247 | all-e2e 114, non-e2e 133 | none | **Refreshed; the resolver code has grown past what the two trees reach.** The count was 74 when these cells were last taken, before the multi-document resolver landed, and is 247 on this run, the same with or without corpus rows 167 to 179: `from_reference` 34, `resolve_path_item` 22, `document` 18, `resolve_reference` 16, `resolve_parameter` 12, `resolve_schema` 11, `pointer` 9, `curl_fetch` 7, `error` 7 and `import_named_schema_at_path` 7 of a 149-region union. FOLIO row 139 resolves sibling schema and parameter files; Raybot row 140 resolves sibling Path Items and their schema dependencies, with all 185 expected files byte-matching. The corpus can now reach `resolve_reference`, `document` and `pointer` through real registered trees. Helios names absolute URLs, and this run answers whether the corpus reaches `curl_fetch`: the goldens reach 14 of its 23 regions and leave 7 to crozier's own tests. |
 | `src/schema.rs` | 46 | all-e2e 23, non-e2e 23 | none | **Neither.** `build` 20 emits crozier's own config JSON Schema. |
-| `src/lib.rs` | 33 | all-e2e 1, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
+| `src/lib.rs` | 34 | all-e2e 2, non-e2e 32 | none | **Neither.** `render_files` 29 is the filesystem write path. |
 | `src/config.rs` | 31 | all-e2e 13, non-e2e 18 | none | **Neither.** `default_package_name` 10 and `new` 8 are generator-config defaults. |
-| `src/naming.rs` | 31 | all-e2e 8, non-e2e 23 | 0 (corpus row 152 settled `schema-name-nonidentifier-name`) | **A shape the walk missed, and the half of it that is now enumerated.** `digit_word` 10, `enum_words` 7, `numeric_enum_identifier` 2, `finalize_enum_ident` 2, `sanitize_identifier` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names. The schema-name half is no longer unreachable: `components.schemas:normalized-collision` is a predicate selector over exactly those keys, and it is what made `normalization-collision` enumerable above. The enum-member predicate family now reads empty, numeric, UUID, reserved and colliding spellings from `schema.enum` values, and every one has a golden-bearing declarer. Connector and token-adjacency branches remain enumeration holes as the case table above states. The class-name sanitizer spelling was a ranked `FIXTURE` gap until corpus row 152, `nextgen`, registered 58 such names; it is `golden` now, and `class_name` breaks words on those characters before `sanitize_identifier` sees them. |
-| `src/pyfmt.rs` | 24 | all-e2e 0, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
+| `src/naming.rs` | 40 | all-e2e 7, non-e2e 33 | 0 (corpus row 152 settled `schema-name-nonidentifier-name`) | **A shape the walk missed, and the half of it that is now enumerated.** `whole_value_enum_words` 12, `digit_word` 10, `enum_words` 7, `finalize_enum_ident` 2, `numeric_enum_identifier` 1, `module_name` 1 are driven by OpenAPI *names* — schema names, enum member spellings — which the grammar excludes as map keys that are names. The schema-name half is no longer unreachable: `components.schemas:normalized-collision` is a predicate selector over exactly those keys, and it is what made `normalization-collision` enumerable above. The enum-member predicate family now reads empty, numeric, UUID, reserved and colliding spellings from `schema.enum` values, and every one has a golden-bearing declarer. Connector and token-adjacency branches remain enumeration holes as the case table above states. The class-name sanitizer spelling was a ranked `FIXTURE` gap until corpus row 152, `nextgen`, registered 58 such names; it is `golden` now, and `class_name` breaks words on those characters before `sanitize_identifier` sees them. |
+| `src/pyfmt.rs` | 31 | all-e2e 7, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 
 **Where the two backlogs agree.** At one file now. `src/ir.rs` carries twelve
@@ -1947,15 +1947,18 @@ agreeing but one measurement finding what the other pointed at. `src/openapi.rs`
 is back for a different reason: a rule, not a measurement.
 [The amended settlement rule](#what-a-probe-may-settle-as-amended-again) returned
 `securityscheme-ref` from `limitations` and demoted `oauth2-password` with it.
-Ranking on criterion 2 now separates rows for the first time since the list
-refilled. Twenty-nine rows score `src/ir.rs`'s 235. `oauth2-password` scores 453
-because it names both files, and `securityscheme-ref` scores `src/openapi.rs`'s
-218. Criterion 1 decides first, though: it separates the three rows naming more
-than one place from the rest, and criterion 2 then orders the two that name two.
-**The order of size at the top has moved twice over** — it was
-`openapi.rs` 511 > `ir.rs` 201, then `ir.rs` 235 > `openapi.rs` 184, and the
-refreshed run makes it `emit.rs` 437 > `ir.rs` 235 > `openapi.rs` 218, on a rise
-in `emit.rs` no corpus row caused.
+Criterion 2 separated rows while both files were named: twenty-nine rows scored
+`src/ir.rs`'s 235, `oauth2-password` 453 because it named both files, and
+`securityscheme-ref` `src/openapi.rs`'s 218. Corpus rows 177 to 179 settled those
+two, so it separates none of the twelve left: each names `src/ir.rs` alone and
+scores its 451.
+**The order of size at the top has moved three times over** — it was
+`openapi.rs` 511 > `ir.rs` 201, then `ir.rs` 235 > `openapi.rs` 184, then
+`emit.rs` 437 > `ir.rs` 235 > `openapi.rs` 218, on a rise in `emit.rs` no corpus
+row caused, and this run makes it `ir.rs` 451 > `emit.rs` 425 > `openapi.rs` 215,
+on lowering code crozier's own tests reach in `ir.rs` and on the thirteen goldens
+of corpus rows 167 to 179 in `openapi.rs`. `src/refs.rs`'s 247 sits between the
+last two, on resolver code rather than on a shape a row names.
 
 **Where they do not, and the reading that has to change with them.** No ranked
 gap points at eleven of the twelve: one
@@ -1964,8 +1967,8 @@ gap points at eleven of the twelve: one
 ranked rows settled `golden` by registered witnesses, and the remaining seven are outside the
 walk's subject entirely — they carry no OpenAPI-derived code, so neither a
 fixture nor a probe is their instrument. The two largest of the twelve,
-`src/settings.rs` and `src/emit.rs`, together 1,301 of the block's 2,291 printed
-regions — more than half of it — and **the pair no longer makes one point.**
+`src/settings.rs` and `src/emit.rs`, together 1,289 of the block's 2,682 printed
+regions — just under half of it — and **the pair no longer makes one point.**
 `src/settings.rs` holds no OpenAPI-derived code at all, so no fixture and no
 probe could ever shorten it; `src/emit.rs` holds nothing but, and the block it
 grew is a shape a *probe* measured and no golden declares. So a reader taking
@@ -2834,10 +2837,11 @@ file's printed count stands at 235 while `src/openapi.rs`'s fell from 511 to 184
 So the pair of columns answers *what did the conjunction pass buy in the
 generator?* with **nothing**, and it is only by publishing both halves that the
 much larger movement beside them is not mistaken for an answer to that
-question. **The refresh this document's own numbers are now taken on reproduces
-the `after` column digit for digit** — 43, 25, 23, 22, 15 and 2, the same 130 —
-so a column that moved elsewhere in the join table moved because the measurement
-did, not because the attribution drifted.
+question. **The refresh after it reproduced the `after` column digit for digit**
+— 43, 25, 23, 22, 15 and 2, the same 130 — so a column that moved elsewhere in
+the join table moved because the measurement did, not because the attribution
+drifted. The run the join table is taken on now is later still, and
+[the next section](#what-corpus-rows-167-to-179-moved) publishes it.
 
 **This measurement moves no row's category**, exactly as the previous round's
 crozier-versus-Fern comparison of the probe documents did not. The nine
@@ -2927,12 +2931,63 @@ for target in sys.argv[1:]:
         print(f"  {name:<34} {n}")
 ```
 
-**The nine files whose verdicts did not move are what says the attribution is
-the join table's own.** Run over this tree, the script reproduces every function
-count `src/settings.rs`, `src/cli.rs`, `src/refs.rs`, `src/schema.rs`,
-`src/lib.rs`, `src/naming.rs`, `src/config.rs`, `src/pyfmt.rs` and `src/main.rs`
-already publish, digit for digit and with no cell edited — so where a count did
-move, it moved because the measurement did.
+**The files whose verdicts did not move are what says the attribution is the
+join table's own.** Run over this tree, the script reproduces every function
+count `src/settings.rs`, `src/cli.rs`, `src/schema.rs`, `src/lib.rs`,
+`src/config.rs`, `src/pyfmt.rs` and `src/main.rs` publish, digit for digit and
+with no cell edited — so where a count did move, it moved because the
+measurement did. `src/refs.rs` and `src/naming.rs` were re-taken on the same run:
+the first published no function counts before, and the second's moved on code
+landed since, the same with or without corpus rows 167 to 179.
+
+#### What corpus rows 167 to 179 moved
+
+The thirteen goldens this continuation registered are the only change a golden
+blind spot answers to, so they are measured the only way that isolates them:
+the same tree, run twice. **With** is the unscoped `just fixtures-coverage` the
+join table quotes; **without** is the same recipe scoped to leave out those
+thirteen `*_matches_fern_output` tests (`just fixtures-coverage --no-fetch --out
+DIR 'not (test(=viskit_studio_matches_fern_output) or …)'`, one `test(=…)` per
+row), so a region they alone reach reads blind. The recipe prints `total 1875
+region(s)` without them and `total 1764` with them; the three files that moved,
+and every function in them whose count did, attributed by the script above
+against each run's exports:
+
+| file | function | without | with | |
+|---|---|---:|---:|---:|
+| `src/ir.rs` | `add_named` | 16 | 1 | −15 |
+| `src/ir.rs` | `field_type_ref` | 79 | 66 | −13 |
+| `src/ir.rs` | `variant_ref` | 75 | 64 | −11 |
+| `src/ir.rs` | `build_enum` | 3 | 0 | −3 |
+| `src/ir.rs` | `fastapi_endpoint_name` | 2 | 0 | −2 |
+| `src/ir.rs` | `is_declared_empty_object`, `python`, top level | 10 | 5 | −5 |
+| `src/ir.rs` | **union** | **472** | **423** | **−49** |
+| `src/openapi.rs` | `inline_schema_pointers` | 27 | 1 | −26 |
+| `src/openapi.rs` | `normalize_security_scheme_refs` | 18 | 2 | −16 |
+| `src/openapi.rs` | `normalize_unlisted_required` | 11 | 0 | −11 |
+| `src/openapi.rs` | `schema_pointer_target`, `visit_map`, `de_required` | 12 | 7 | −5 |
+| `src/openapi.rs` | **union** | **201** | **143** | **−58** |
+| `src/emit.rs` | `named_value_inner`, `client_wrapper_file` | 14 | 10 | −4 |
+| `src/emit.rs` | **union** | **304** | **300** | **−4** |
+
+**None of the six blind functions moved.** `hoist_union_variant` holds 52,
+`resolve_schema_pointer` 49, `ref_to_class` 12, `prop_type_ref` 9,
+`path_group` 15 and `nested_array_element` 7 with and without the thirteen,
+though the rows those goldens promoted name arms of `hoist_union_variant` and
+`prop_type_ref`: the arms they enter are ones another golden already reached or
+no other tier reaches at all, so they pin those arms' bytes without shrinking a
+count. What the thirteen did shorten is the code the byte-match repairs landed
+beside them — the loader's pointer inlining and the `required` normalization
+in `src/openapi.rs`, the component and variant naming in `src/ir.rs` — and
+the `$ref` position `securityscheme-ref` names, which a probe had put there.
+What stays blind of the code this branch added is five `src/ir.rs` regions and
+ten `src/openapi.rs` ones, each a defensive arm only unit tests reach. In
+`src/ir.rs`: three of the `HeaderType` float and boolean arms,
+`is_binary_media_type`'s slashless fallback, and one short-circuit of
+`is_declared_empty_object`. In `src/openapi.rs`: six in `schema_pointer_target`'s
+`properties`, `additionalProperties` and composition segments, three in
+`RequiredNames`' unlisted-to-listed promotion and its non-list fallback, and
+`inline_schema_pointers`' cycle guard.
 
 #### The arms an observation surface answers for
 
