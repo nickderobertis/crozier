@@ -29,7 +29,8 @@ Each subcommand does one stage and writes its evidence under
   recorded, and its first page of results fetched at their indexed commits and
   censused. A fetched result is a ``document`` row, as a walked one is.
 * ``probe`` — every declarer the two stages found, run through the instrumented
-  build `just golden-reach` measures with; the row's unreached sites it executes
+  build `just golden-reach` measures with (so, like that measurement, it runs
+  outside `just check`); the row's unreached sites it executes
   go to ``probe.jsonl``. A declarer that executes one is the row's ``candidate``,
   and only a candidate owes the three screens: a declarer that never reaches the
   arm is no witness for it, however it screens.
@@ -107,6 +108,34 @@ CENSUS = _load("openapi_surface_census", REPO / "scripts" / "openapi-surface-cen
 
 def fail(message: str) -> None:
     raise SystemExit(f"golden-reach-search: {message}")
+
+
+def read_tsv(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, str]]:
+    """A tab-separated file's rows, refused unless its header names every `required` column."""
+    if not path.is_file():
+        fail(f"{path} is missing; {remedy}")
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        missing = [column for column in required if column not in (reader.fieldnames or ())]
+        if missing:
+            fail(f"{path} has no {missing} column(s) (header {reader.fieldnames}); {remedy}")
+        return list(reader)
+
+
+def read_jsonl(path: Path, required: tuple[str, ...], remedy: str) -> list[dict[str, Any]]:
+    """A JSON-lines file's objects, refused at the first line that is not one carrying `required`."""
+    rows = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            fail(f"{path}:{number} is not JSON ({error.msg}); {remedy}")
+        if not isinstance(row, dict) or any(field not in row for field in required):
+            fail(f"{path}:{number} lacks one of {list(required)}; {remedy}")
+        rows.append(row)
+    return rows
 
 
 
@@ -275,6 +304,8 @@ def record_guard_logs(source: str) -> None:
 
 
 PIN_FIELDS = ("walk", "document", "revision", "blob", "sha256")
+HANDOFF_FIELDS = ("golden_key", "unreached_site", "candidate_url", "immutable_ref", "sha256",
+                  "licence_spdx", "fern_screen", "gap_keys")
 
 
 def git_blob(data: bytes) -> str:
@@ -296,10 +327,9 @@ def pinned_listing(source: str) -> list[dict[str, str]]:
         resolved = source_dir(source) / "pins.tsv"
         if not resolved.is_file():
             fail("the publisher trees' pins are unresolved; run `fetch-pins` first")
-        with resolved.open(encoding="utf-8", newline="") as handle:
-            return list(csv.DictReader(handle, delimiter="\t"))
-    with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle, delimiter="\t"))
+        return read_tsv(resolved, PIN_FIELDS, "re-run `fetch-pins` to rewrite it")
+    rows = read_tsv(shared / "acquisition-manifest.tsv", ("walk", "document", "revision", "sha256"),
+                    f"restore it from git, or re-acquire {source} through its witness-search script")
     immutable = [row for row in rows if len(row["revision"]) == 40]
     if not immutable:
         fail(f"{source}'s acquisition manifest names no document at an immutable ref; re-acquire the source through its witness-search script before walking it")
@@ -309,9 +339,9 @@ def pinned_listing(source: str) -> list[dict[str, str]]:
 def unreadable_reason(error: BaseException, document: str) -> str:
     """Why the census could not read a document, naming it rather than the local copy.
 
-    The census's message leads with the absolute path of the scratch copy it read;
-    that path means nothing in the tree and, cut to a width, used to leave no room
-    for the reason itself.
+    The census's message leads with the absolute path of the scratch copy it read,
+    which means nothing in the tree, so the pinned document's name replaces it and
+    the census's reason is kept whole.
     """
     message = str(error)
     if isinstance(error, CENSUS.DocumentError):
@@ -479,7 +509,9 @@ def fetch_pins(args: argparse.Namespace) -> int:
     shared = SURFACE / f"witness-search-{source}" / "documents.jsonl"
     resolved, fetched, missing = [], 0, 0
     seen: set[tuple[str, str, str]] = set()
-    for pin in map(json.loads, shared.read_text(encoding="utf-8").splitlines()):
+    pins = read_jsonl(shared, ("repository", "path", "commit", "blob"),
+                      "restore it from git; it is the publisher trees' committed pin list")
+    for pin in pins:
         # The shared pin lists a few documents twice over, word for word; a walk
         # reads each document once.
         identity = (pin["repository"], pin["path"], pin["commit"])
@@ -512,11 +544,10 @@ def fetch_pins(args: argparse.Namespace) -> int:
 
 
 def phrasings(key: str, source: str) -> list[str]:
-    with QUERIES.open(encoding="utf-8", newline="") as handle:
-        rows = [
-            r for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-            if r["key"] == key and r["source"] == source
-        ]
+    rows = [
+        r for r in read_tsv(QUERIES, ("key", "source", "phrasing"), "restore it from git")
+        if r["key"] == key and r["source"] == source
+    ]
     found = [r["phrasing"] for r in rows]
     if len(found) < 2 or len(set(found)) != len(found):
         fail(f"{QUERIES.name} owes {key} two distinct phrasings for {source}; add them there before querying")
@@ -616,8 +647,13 @@ def query(args: argparse.Namespace) -> int:
                     elif key in PREDICATE_ROWS:
                         count = predicate_count(key, local)
                     else:
-                        count = declared(CENSUS.census_document(CENSUS.load_document(local)), selectors)
-                    result = f"census {count}"
+                        try:
+                            count = declared(CENSUS.census_document(CENSUS.load_document(local)), selectors)
+                        except Exception as error:  # the census's own parse refusal, whatever its type
+                            count = None
+                            result = unreadable_reason(error, candidate)
+                    if count is not None:
+                        result = f"census {count}"
                 else:
                     result = f"acquisition-failure: {document.get('disposition')}"
                 new.append({"key": key, "kind": "document", "subject": candidate, "result": result,
@@ -779,7 +815,10 @@ def probe(args: argparse.Namespace) -> int:
 
 def read_probes(source: str) -> list[dict[str, Any]]:
     path = source_dir(source) / "probe.jsonl"
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] if path.is_file() else []
+    if not path.is_file():
+        return []
+    return read_jsonl(path, ("key", "candidate", "status", "reached"),
+                      "restore it from git, or re-run `probe` for the source")
 
 
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
@@ -796,9 +835,7 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     CACHE.mkdir(parents=True, exist_ok=True)
     with (CACHE / f"{source}.probe.lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        kept = []
-        if path.is_file():
-            kept = [row for row in map(json.loads, path.read_text(encoding="utf-8").splitlines()) if row["key"] != key]
+        kept = [row for row in read_probes(source) if row["key"] != key]
         path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in kept + probed), encoding="utf-8")
 
 
@@ -846,39 +883,22 @@ def _dispositions(key: str) -> list[str]:
     out: list[str] = []
     handoff = EVIDENCE / "handoff.tsv"
     if handoff.is_file():
-        with handoff.open(encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-                if row["golden_key"] == key:
-                    gaps = "" if row["gap_keys"] in ("", "-") else f", declaring `gap` row(s) {row['gap_keys']}"
-                    out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — {row['fern_screen']}")
+        for row in read_tsv(handoff, HANDOFF_FIELDS, "restore it from git"):
+            if row["golden_key"] == key:
+                gaps = "" if row["gap_keys"] in ("", "-") else f", declaring `gap` row(s) {row['gap_keys']}"
+                out.append(f"- **Hand-off** (see [`handoff.tsv`](../handoff.tsv)): <{row['candidate_url']}>{gaps} — {row['fern_screen']}")
     for source in DECLARED_SOURCES:
         screens = source_dir(source) / "screens.jsonl"
         if not screens.is_file():
             continue
         latest: dict[str, dict[str, Any]] = {}
-        for line in screens.read_text(encoding="utf-8").splitlines():
-            row = json.loads(line)
+        for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
             if row["key"] == key:
                 latest[row["candidate"]] = row
         for candidate, row in sorted(latest.items()):
             if row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
     return ["", "#### Candidates passing every screen", ""] + out if out else []
-
-
-def prune(args: argparse.Namespace) -> int:
-    """Drop `candidate` rows no screen answers for: a declarer is a candidate once screened.
-
-    Records written before that rule named every arm-reaching declarer a
-    candidate; the reach itself stays in `probe.jsonl`.
-    """
-    for source in args.source:
-        rows = read_records(source)
-        screened = {(r["key"], r["subject"].rsplit(" ", 1)[0]) for r in rows if r["kind"] == "screen"}
-        kept = [r for r in rows if r["kind"] != "candidate" or (r["key"], r["subject"]) in screened]
-        replace_records(source, kept)
-        print(f"golden-reach-search: {source}: {len(rows) - len(kept)} unscreened candidate row(s) dropped")
-    return 0
 
 
 def _tally(key: str, source: str) -> dict[str, int]:
@@ -1068,13 +1088,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--gap-keys", default="")
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
-    pr = sub.add_parser("prune")
-    pr.add_argument("--source", action="append", required=True)
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "prune": prune, "render": render}[args.command](args)
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render}[args.command](args)
 
 
 if __name__ == "__main__":

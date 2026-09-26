@@ -404,7 +404,7 @@ def measure(args: argparse.Namespace) -> int:
     )
     if build.returncode != 0:
         sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
-        fail("the instrumented build failed; run `cargo llvm-cov nextest` to see why")
+        fail("the instrumented build failed (its output is above); fix what it names and re-run `just golden-reach`")
     e2e, crozier = _instrumented_binaries(repo_root)
     listed = subprocess.run(
         [str(e2e), "--list", "--format", "terse"], cwd=repo_root,
@@ -691,17 +691,27 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     if len(lines) < 2 or not lines[0].startswith("# golden-reach ledger") or lines[1] != LEDGER_HEADER:
         fail(f"{path} is not a golden-reach ledger; regenerate it with `just golden-reach-report`")
     out = []
-    for line in lines[2:]:
-        rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = line.split("\t")
+    columns = len(LEDGER_HEADER.split("\t"))
+    for number, line in enumerate(lines[2:], start=3):
+        fields = line.split("\t")
+        if len(fields) != columns:
+            fail(f"{path}:{number} has {len(fields)} tab-separated fields, not {columns}; "
+                 "regenerate it with `just golden-reach-report`")
+        rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = fields
         parsed = []
-        if sites != "none":
-            for entry in sites.split(SITE_SEPARATOR):
-                spec, _, counts = entry.rpartition("=")
-                hit, _, total = counts.partition("/")
-                parsed.append((spec, int(hit), int(total)))
+        try:
+            if sites != "none":
+                for entry in sites.split(SITE_SEPARATOR):
+                    spec, _, counts = entry.rpartition("=")
+                    hit, _, total = counts.partition("/")
+                    parsed.append((spec, int(hit), int(total)))
+            rank_number = int(rank)
+        except ValueError:
+            fail(f"{path}:{number} carries a rank or a `site=hit/total` count that is not a number; "
+                 "regenerate it with `just golden-reach-report`")
         out.append(
             (
-                int(rank),
+                rank_number,
                 Reach(
                     key,
                     region,
