@@ -949,6 +949,14 @@ pub struct Schema {
     /// same position is inlined — so the origin has to outlive the rewrite.
     #[serde(skip)]
     pub multi_type_union: bool,
+    /// The `$ref` this node was copied from by `normalize_schema_pointer_refs`,
+    /// when that reference named `properties` and so was one Fern's importer
+    /// converts as a copy at its use site. Not a wire field: a discriminated-union
+    /// variant copied this way is declared under a name read off the reference
+    /// itself, as Fern's variant conversion names it (the Vonage Conversation
+    /// API's `ComponentsSchemasChannelPropertiesFromOneOf0`).
+    #[serde(skip)]
+    pub ref_origin: Option<String>,
     /// Set when this node stood where a schema object was expected but the document
     /// carried a non-object value there (e.g. a JSON array, from a `required` list
     /// misplaced inside `properties`). Not a wire field — the `properties`
@@ -1815,6 +1823,23 @@ fn inline_schema_pointers(
                 expanding.pop();
                 return;
             }
+            // Fern's v1 importer converts *any* reference whose text names
+            // `properties` as a copy at the reference (`$ref.includes("properties")`
+            // in its `convertSchema`), walking the whole pointer: a plain
+            // component named `conversation_properties` and a pointer that ends on
+            // a composition member (the Vonage Conversation API's
+            // `…/channel/properties/from/oneOf/0`) are copied like the pointers
+            // above, where one without the word keeps its reference.
+            if reference.contains("properties") {
+                if let Some(target) = properties_reference_target(components, &reference) {
+                    *schema = target.clone();
+                    schema.ref_origin = Some(reference.clone());
+                    expanding.push(reference);
+                    inline_schema_pointers(schema, components, expanding);
+                    expanding.pop();
+                    return;
+                }
+            }
         }
     }
     for property in schema.properties.values_mut() {
@@ -1881,6 +1906,50 @@ fn schema_pointer_target<'a>(
         index += 1;
     }
     (!ends_on_member).then_some(schema)
+}
+
+/// The schema a reference naming `properties` resolves to by a walk of the whole
+/// pointer, a composition member at its end included — Fern's
+/// `resolveSchemaReference` — or `None` where no component or segment names one.
+fn properties_reference_target<'a>(
+    components: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    let pointer = reference.strip_prefix("#/components/schemas/")?;
+    let segments: Vec<String> = pointer
+        .split('/')
+        .map(|segment| segment.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    let (name, path) = segments.split_first()?;
+    let mut schema = components.get(name)?;
+    let mut index = 0;
+    while index < path.len() {
+        schema = match path[index].as_str() {
+            "properties" => {
+                index += 1;
+                schema.properties.get(path.get(index)?)?
+            }
+            "items" => schema.items.as_deref()?,
+            "additionalProperties" => match &schema.additional_properties {
+                Some(AdditionalProperties::Schema(value)) => value,
+                _ => return None,
+            },
+            composition @ ("allOf" | "oneOf" | "anyOf") => {
+                index += 1;
+                let members = match composition {
+                    "allOf" => &schema.all_of,
+                    "oneOf" => &schema.one_of,
+                    _ => &schema.any_of,
+                };
+                members
+                    .as_ref()?
+                    .get(path.get(index)?.parse::<usize>().ok()?)?
+            }
+            _ => return None,
+        };
+        index += 1;
+    }
+    Some(schema)
 }
 
 /// An object schema whose `required` is not a list is Fern's unknown type: its

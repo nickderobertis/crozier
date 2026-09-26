@@ -5135,7 +5135,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
                         // and its discriminated `createTemplateNoProject` keep it.
                         && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
-                        && (!ep.body_component_ref || ep.body_schema_dropped)
+                        // …and so does one whose schema the `requestBodies` entry
+                        // writes inline, which names no type at all: the Vonage
+                        // Conversation API's `Conversation` body.
+                        && (!ep.body_component_ref
+                            || ep.body_schema_dropped
+                            || ep.body_schema_shape != BodySchemaShape::Ref)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
                         // (a response, another body) needs it — is a documented
@@ -8490,6 +8495,22 @@ fn build_example_inner(
             continue;
         }
         let example = qp.example.as_deref().unwrap_or_default();
+        // A YAML timestamp is a date to Fern's parser, so it is no example for a
+        // parameter that is not temporal, and an optional one then goes
+        // unshown: the Vonage Conversation API's `date_start` writes
+        // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
+        if let Ok(serde_json::Value::String(value)) =
+            serde_json::from_str::<serde_json::Value>(example)
+        {
+            if ctx
+                .yaml_unquoted_timestamps
+                .is_some_and(|unquoted| unquoted.contains(&value))
+                && !ctx.example_is_temporal(&qp.type_ref)
+                && yaml_resolves_as_timestamp(&value)
+            {
+                continue;
+            }
+        }
         args.push((
             Some(qp.py_name.clone()),
             ctx.value_from_example(&qp.type_ref, example)

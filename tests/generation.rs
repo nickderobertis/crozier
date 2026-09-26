@@ -11409,3 +11409,100 @@ fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
     let snowmonkey = &files["src/acme/snowmonkey/raw_client.py"];
     assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
 }
+
+/// Fragments of the Vonage Conversation API 2.0.1 as APIs.guru pins it (corpus
+/// row 223), each assertion a line of its Fern 5.20.0 golden:
+/// - Fern's importer converts any reference whose text names `properties` as a
+///   copy at the reference — a plain `conversation_properties` component
+///   included — and names a discriminated-union variant so copied after the
+///   reference itself (`ComponentsSchemasChannelPropertiesFromOneOf0`);
+/// - a `components.requestBodies` body writing its schema inline keeps its
+///   `content-type`;
+/// - an unquoted YAML timestamp is no example for an optional string query
+///   parameter, which then goes unshown.
+#[test]
+fn vonage_conversation_properties_references_and_yaml_timestamps() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Conversation API, version: 2.0.1 }
+paths:
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [conversation]
+      parameters:
+        - in: query
+          name: date_start
+          required: false
+          schema: { example: 2018-01-01 10:00:00, format: dateTime, type: string }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/channel" } } } }
+    post:
+      operationId: createConversation
+      tags: [conversation]
+      requestBody: { $ref: "#/components/requestBodies/Conversation" }
+      responses: { "200": { description: ok } }
+components:
+  requestBodies:
+    Conversation:
+      description: Conversation Request Payload Object
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              properties: { $ref: "#/components/schemas/conversation_properties" }
+  schemas:
+    conversation_properties:
+      description: Conversation properties
+      type: object
+      properties: { ttl: { type: number } }
+    channel:
+      type: object
+      properties:
+        from:
+          oneOf:
+            - { description: Connect to an App User, type: object, required: [type, user], properties: { type: { type: string, example: app }, user: { type: string } } }
+            - { type: object, required: [type, number], properties: { type: { type: string, example: phone }, number: { type: string } } }
+        to:
+          oneOf:
+            - $ref: "#/components/schemas/channel/properties/from/oneOf/0"
+            - type: object
+              required: [type, number]
+              properties:
+                type: { type: string, example: phone }
+                number: { $ref: "#/components/schemas/channel/properties/from/oneOf/1/properties/number" }
+"##,
+    );
+    let client = &files["src/acme/conversation/client.py"];
+    assert!(
+        client.contains("properties: typing.Optional[CreateConversationRequestProperties] = OMIT,"),
+        "{client}"
+    );
+    assert!(!client.contains("date_start=\"2018"), "{client}");
+    let raw = &files["src/acme/conversation/raw_client.py"];
+    assert!(
+        raw.contains("\"content-type\": \"application/json\","),
+        "{raw}"
+    );
+    let variant = &files["src/acme/types/components_schemas_channel_properties_from_one_of0.py"];
+    assert!(
+        variant.contains("class ComponentsSchemasChannelPropertiesFromOneOf0(UniversalBaseModel):"),
+        "{variant}"
+    );
+    assert!(
+        variant.contains("    type: str\n    user: str\n"),
+        "{variant}"
+    );
+    let to = &files["src/acme/types/channel_to.py"];
+    assert!(
+        to.contains("pydantic.Field(discriminator=\"type\")"),
+        "{to}"
+    );
+    assert!(
+        to.contains("class ChannelTo_App(UniversalBaseModel):"),
+        "{to}"
+    );
+    assert!(files.contains_key("src/acme/types/channel_to_phone.py"));
+}

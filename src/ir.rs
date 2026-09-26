@@ -7612,6 +7612,12 @@ struct Builder<'a> {
     building_types: std::collections::HashSet<String>,
 }
 
+/// The class Fern's importer names a schema after the reference it was converted
+/// from: every segment of the pointer, `#/components/schemas/` included.
+fn reference_path_class_name(reference: &str) -> String {
+    naming::class_name(&reference.replace(|c: char| !c.is_ascii_alphanumeric(), " "))
+}
+
 /// A wire discriminant can be prose; punctuation separates its class-name words.
 fn discriminant_class_name(value: &str) -> String {
     naming::class_name(&value.replace(|c: char| !c.is_ascii_alphanumeric(), " "))
@@ -9290,13 +9296,23 @@ impl Builder<'_> {
                     .properties
                     .get(&property_name)
                     .and_then(discriminant_value)?;
-                let variant_name = format!("{name}{}", discriminant_class_name(&value));
+                // A variant the loader copied from a reference naming `properties`
+                // is declared under that reference, tag and all, as Fern converts
+                // a reference variant with the reference as its breadcrumbs: the
+                // Vonage Conversation API's `to` members are
+                // `ComponentsSchemasChannelPropertiesFromOneOf0` and on.
+                let origin_name = variant.ref_origin.as_deref().map(reference_path_class_name);
+                let variant_name = origin_name
+                    .clone()
+                    .unwrap_or_else(|| format!("{name}{}", discriminant_class_name(&value)));
                 let mut lowered_fields = None;
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
                     let mut standalone = variant.clone();
-                    standalone.properties.shift_remove(&property_name);
+                    if origin_name.is_none() {
+                        standalone.properties.shift_remove(&property_name);
+                    }
                     self.add_object(
                         &variant_name,
                         naming::module_name(&variant_name),
@@ -9315,6 +9331,7 @@ impl Builder<'_> {
                                 object
                                     .fields
                                     .iter()
+                                    .filter(|field| field.wire_name != property_name)
                                     .cloned()
                                     .map(|field| Field {
                                         docstring: None,
