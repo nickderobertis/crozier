@@ -10865,3 +10865,95 @@ components:
         "{client}"
     );
 }
+
+/// A model that overrides one composed base inlines only that base, and keeps
+/// extending the base's untouched parent and its other untouched bases — the
+/// shape of the Vonage Messages API's SMS channel, which Fern generates as
+/// `class SendMessageRequestZero(ChannelOptionsSms, BaseMessageType)`.
+#[test]
+fn an_overriding_model_inlines_only_the_base_it_overrides() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Messages, version: 1.0.0 }
+paths:
+  /messages:
+    post:
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/SmsMessage' } } }
+      responses:
+        '200':
+          description: sent
+          content: { application/json: { schema: { $ref: '#/components/schemas/SmsMessage' } } }
+components:
+  schemas:
+    BaseMessageType:
+      type: object
+      required: [message_type]
+      properties:
+        message_type: { type: string }
+        to: { type: string }
+    Text:
+      allOf:
+        - $ref: '#/components/schemas/BaseMessageType'
+        - type: object
+          properties:
+            text: { type: string, description: The text of the message. }
+    ChannelOptionsSms:
+      type: object
+      properties:
+        channel: { type: string }
+    SmsMessage:
+      allOf:
+        - $ref: '#/components/schemas/Text'
+        - type: object
+          required: [text]
+          properties:
+            text: { type: string }
+        - $ref: '#/components/schemas/ChannelOptionsSms'
+"#,
+    );
+    // `Text` is inlined for the `text` it restates; its parent `BaseMessageType`
+    // is extended in its place, after the untouched `ChannelOptionsSms`.
+    let sms = &files["src/acme/types/sms_message.py"];
+    assert!(
+        sms.contains(
+            "class SmsMessage(ChannelOptionsSms, BaseMessageType):\n    text: str = pydantic.Field()"
+        ),
+        "{sms}"
+    );
+    assert!(!sms.contains("    message_type:"), "{sms}");
+    assert!(!sms.contains("    channel:"), "{sms}");
+}
+
+/// A lone `204` is the typed success and keeps its declared type rather than
+/// becoming optional: Fergus's `postDisconnect`, a lone `204` declaring
+/// `{type: object}`, returns `Dict[str, Any]` in Fern's golden.
+#[test]
+fn a_lone_204_keeps_its_declared_type() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: Disconnect, version: 1.0.0 }
+paths:
+  /disconnect:
+    post:
+      operationId: postDisconnect
+      responses:
+        '204':
+          description: disconnected
+          content: { application/json: { schema: { type: object } } }
+"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "def post_disconnect(\n        self, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> typing.Dict[str, typing.Any]:"
+        ),
+        "{client}"
+    );
+    assert!(
+        !client.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
+        "{client}"
+    );
+}
