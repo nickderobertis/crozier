@@ -1,0 +1,584 @@
+{"candidate": "APIs/clever-cloud.com/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/dataflowkit.com/1.3/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ebay.com/sell-compliance/1.4.1/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ebay.com/sell-recommendation/1.1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/fraudlabspro.com/fraud-detection/1.1/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/fraudlabspro.com/sms-verification/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/gamesparks.net/game-details/v2/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/geodatasource.com/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/gsmtasks.com/2.4.13/openapi.yaml", "key": "media-type-key-parameters", "reached": [], "status": "exit 1: uru-tree/APIs/gsmtasks.com/2.4.13/openapi.yaml: components.schemas.Device.properties.free_disk_storage.minimum: JSON number out of range at line 40016 column 20"}
+{"candidate": "APIs/influxdata.com/2.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ip2location.com/geolocation/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ip2proxy.com/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ip2whois.com/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/jellyfin.local/v1/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/loket.nl/V2/openapi.yaml", "key": "media-type-key-parameters", "reached": [], "status": "timeout after 300s"}
+{"candidate": "APIs/mailboxvalidator.com/checker/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/mailboxvalidator.com/disposable/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/mailboxvalidator.com/validation/0.1/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/nbg.gr/v3.1.5/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/openbanking.org.uk/account-info-openapi/3.1.7/openapi.yaml", "key": "media-type-key-parameters", "reached": [], "status": "generated"}
+{"candidate": "APIs/openbanking.org.uk/confirmation-funds-openapi/3.1.7/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/openbanking.org.uk/payment-initiation-openapi/3.1.7/openapi.yaml", "key": "media-type-key-parameters", "reached": [], "status": "generated"}
+{"candidate": "APIs/opensuse.org/obs/2.10.50/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/optimade.local/1.1.0~develop/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/rapidapi.com/idealspot-geodata/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ritekit.com/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/snyk.io/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/soundcloud.com/1.0.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/ticketmaster.com/discovery/v2/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Customer-Credit-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/GiftCard-Hub-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Logistics-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Orders-API-(PII-version)/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Orders-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Payments-Gateway-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/vtex.local/Pricing-API/1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/windows.net/batch-BatchService/2015-12-01.2.2/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type"], "status": "generated"}
+{"candidate": "APIs/windows.net/batch-BatchService/2016-02-01.3.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type"], "status": "generated"}
+{"candidate": "APIs/xtrf.eu/2.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/yodlee.com/1.1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/zuora.com/2021-08-20/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
+{"candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "property-anyof-discriminated-union", "reached": ["src/ir.rs::InlineHoister::hoist_discriminated_union"], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/codat.io/accounting/2.1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "exit 1: /2.1.0/openapi.yaml: found a tab character where an indentation space is expected at line 43982 column 17, while scanning a block scalar at line 43981 column 28"}
+{"build": "8a9454cb74d0", "candidate": "APIs/codat.io/assess/1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/codat.io/commerce/2.1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/dnd5eapi.co/0.1/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/conversation/2.0.1/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/apideck.com/accounting/10.0.0/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/cpy.re/peertube/5.1.0/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.2/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1476:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.3/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1485:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.4/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1834:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.5/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2183:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.6/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2279:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.7/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2285:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.8/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2825:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/github.ae/1.1.4/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1169:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/increase.com/0.0.1/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
+{"build": "8a9454cb74d0", "candidate": "APIs/slack.com/1.7.0/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/vercel.com/0.0.1/openapi.yaml", "key": "anyof-discriminated-union", "reached": [], "status": "exit 1: ith exit status: 2: error: Failed to parse src/fern/projects/types/create_project_request_environment_variables_item_target.py:5:146: Expected `:`, found string"}
+{"build": "8a9454cb74d0", "candidate": "APIs/intellifi.nl/2.23.4+0.gb463b49.dirty/openapi.yaml", "key": "anyof-oneof-variant", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.1/1.1.4/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
+{"build": "8a9454cb74d0", "candidate": "APIs/shotstack.io/v1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/soundcloud.com/1.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/AWSMigrationHub/2017-05-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/accessanalyzer/2019-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/account/2021-02-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/acm-pca/2017-08-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/acm/2015-12-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/alexaforbusiness/2017-11-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/amp/2020-08-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/amplify/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/amplifybackend/2020-08-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/amplifyuibuilder/2021-08-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/apigateway/2015-07-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/apigatewaymanagementapi/2018-11-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/apigatewayv2/2018-11-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appconfig/2019-10-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:218:104: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appconfigdata/2021-11-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appfabric/2023-05-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appflow/2020-08-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appintegrations/2020-07-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/application-autoscaling/2016-02-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/application-insights/2018-11-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/applicationcostprofiler/2020-09-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appmesh/2018-10-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appmesh/2019-01-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/apprunner/2020-05-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appstream/2016-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/appsync/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/arc-zonal-shift/2022-10-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/athena/2017-05-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/auditmanager/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/autoscaling-plans/2018-01-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/autoscaling/2011-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/backup-gateway/2021-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/backup/2018-11-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:315:137: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/backupstorage/2018-04-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:382:120: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/batch/2016-08-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/billingconductor/2021-07-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/braket/2019-09-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/budgets/2016-10-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ce/2017-10-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime-sdk-identity/2021-04-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:226:105: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime-sdk-media-pipelines/2021-07-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:224:115: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime-sdk-meetings/2021-07-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:343:113: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime-sdk-messaging/2021-05-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:511:152: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime-sdk-voice/2022-08-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:503:111: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/chime/2018-05-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:996:153: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cleanrooms/2022-02-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloud9/2017-09-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudcontrol/2021-09-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/clouddirectory/2016-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/clouddirectory/2017-01-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudformation/2010-05-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2016-11-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2017-03-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2017-10-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2018-06-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2018-11-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2019-03-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudfront/2020-05-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudhsm/2014-05-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudhsmv2/2017-04-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudsearch/2011-02-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudsearch/2013-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudsearchdomain/2013-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudtrail-data/2021-08-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cloudtrail/2013-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codeartifact/2018-09-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1642:249: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codebuild/2016-10-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codecatalyst/2022-09-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codecommit/2015-04-13/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codedeploy/2014-10-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codeguru-reviewer/2019-09-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codeguru-security/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codeguruprofiler/2019-07-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codepipeline/2015-07-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codestar-connections/2019-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codestar-notifications/2019-10-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/codestar/2017-04-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cognito-identity/2014-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cognito-idp/2016-04-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cognito-sync/2014-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/comprehend/2017-11-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/comprehendmedical/2018-10-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/compute-optimizer/2019-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/config/2014-11-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/connect-contact-lens/2020-08-21/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/connect/2017-08-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1058:158: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/connectcampaigns/2021-01-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/connectcases/2022-10-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/connectparticipant/2018-09-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/controltower/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/cur/2017-01-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/customer-profiles/2020-08-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:2221:118: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/databrew/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:313:100: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dataexchange/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:335:116: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/datapipeline/2012-10-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/datasync/2018-11-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dax/2017-04-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/detective/2018-10-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/devicefarm/2015-06-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/devops-guru/2020-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/directconnect/2012-10-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/discovery/2015-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dlm/2018-01-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dms/2016-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/docdb-elastic/2022-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/docdb/2014-10-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/drs/2020-02-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ds/2015-04-16/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dynamodb/2011-12-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/dynamodb/2012-08-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ebs/2019-11-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:308:206: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ec2-instance-connect/2018-04-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ec2/2016-11-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ecr-public/2020-10-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ecr/2015-09-21/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ecs/2014-11-13/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/eks/2017-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elastic-inference/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticache/2015-02-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticbeanstalk/2010-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticfilesystem/2015-02-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticloadbalancing/2012-06-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticloadbalancingv2/2015-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elasticmapreduce/2009-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/elastictranscoder/2012-09-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/email/2010-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/emr-containers/2020-10-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/emr-serverless/2021-07-13/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/entitlement.marketplace/2017-01-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/entityresolution/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/es/2015-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1446:162: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/eventbridge/2015-10-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/events/2015-10-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/evidently/2021-02-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/finspace-data/2020-07-13/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/finspace/2021-03-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/firehose/2015-08-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/fis/2020-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/fms/2018-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/forecast/2018-06-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/forecastquery/2018-06-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/frauddetector/2019-11-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/fsx/2018-03-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/gamelift/2015-10-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/gamesparks/2021-08-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/glacier/2012-06-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/globalaccelerator/2018-08-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/glue/2017-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/grafana/2020-08-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/greengrass/2017-06-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/greengrassv2/2020-11-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/groundstation/2019-05-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/guardduty/2017-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:509:101: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/health/2016-08-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/healthlake/2017-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/honeycode/2020-03-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iam/2010-05-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/identitystore/2020-06-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/imagebuilder/2019-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/inspector/2016-02-16/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/inspector2/2020-06-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/internetmonitor/2021-06-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot-data/2015-05-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot-jobs-data/2017-09-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot-roborunner/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot/2015-05-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot1click-devices/2018-05-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iot1click-projects/2018-05-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotanalytics/2017-11-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotdeviceadvisor/2020-09-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotevents-data/2018-10-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotevents/2018-07-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotfleethub/2020-11-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotfleetwise/2021-06-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotsecuretunneling/2018-10-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotsitewise/2019-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotthingsgraph/2018-09-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iottwinmaker/2021-11-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/iotwireless/2020-11-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:985:104: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ivs-realtime/2020-07-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ivs/2020-07-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ivschat/2020-07-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kafka/2018-11-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:269:118: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kafkaconnect/2021-09-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kendra-ranking/2022-10-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kendra/2019-02-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/keyspaces/2022-02-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesis-video-archived-media/2017-09-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesis-video-media/2017-09-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesis-video-signaling/2019-12-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesis-video-webrtc-storage/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesis/2013-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesisanalytics/2015-08-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesisanalyticsv2/2018-05-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kinesisvideo/2017-09-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/kms/2014-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lakeformation/2017-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lambda/2014-11-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lambda/2015-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lex-models/2017-04-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/license-manager-linux-subscriptions/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/license-manager-user-subscriptions/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/license-manager/2018-08-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lightsail/2016-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: matting src/fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:1963:122: Expected an expression"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/location/2020-11-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/logs/2014-03-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lookoutequipment/2020-12-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lookoutmetrics/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/lookoutvision/2020-11-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:271:112: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/m2/2021-04-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/machinelearning/2014-12-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/macie/2017-12-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/macie2/2020-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/managedblockchain-query/2023-05-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/managedblockchain/2018-09-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:234:101: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/marketplace-catalog/2018-09-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/marketplacecommerceanalytics/2015-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediaconnect/2018-11-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:551:122: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediaconvert/2017-08-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:371:137: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:453:116: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediapackage-vod/2018-11-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:258:137: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediapackage/2017-10-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:267:100: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediapackagev2/2022-12-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:225:120: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediastore-data/2017-09-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediastore/2017-09-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mediatailor/2018-04-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1651:156: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/medical-imaging/2023-07-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/memorydb/2021-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/meteringmarketplace/2016-01-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mgn/2020-02-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/migration-hub-refactor-spaces/2021-10-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:231:128: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/migrationhub-config/2019-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/migrationhuborchestrator/2021-08-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/migrationhubstrategy/2020-02-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mobile/2017-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/models.lex.v2/2020-08-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/monitoring/2010-08-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mq/2017-11-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:232:99: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mturk-requester/2017-01-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/mwaa/2020-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/neptune/2014-10-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/network-firewall/2020-11-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/networkmanager/2019-07-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:357:170: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/nimble/2020-08-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/oam/2022-06-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/omics/2022-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/opensearch/2021-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1563:148: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/opensearchserverless/2021-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/opsworks/2013-02-18/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/opsworkscm/2016-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/organizations/2016-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/osis/2022-01-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:453:101: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/outposts/2019-12-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/panorama/2019-07-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:250:163: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/payment-cryptography-data/2022-02-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/payment-cryptography/2021-09-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/personalize-events/2018-03-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/personalize-runtime/2018-05-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/personalize/2018-05-22/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pi/2018-02-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pinpoint-email/2018-07-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pinpoint-sms-voice-v2/2022-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pinpoint/2016-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pipes/2015-10-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/polly/2016-06-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/pricing/2017-10-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/privatenetworks/2021-12-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/proton/2020-07-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/qldb-session/2019-07-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/qldb/2019-01-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:305:99: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/quicksight/2018-04-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: c/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:1372:117: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ram/2018-01-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rbin/2021-06-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds-data/2018-08-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds/2013-01-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds/2013-02-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds/2013-09-09/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds/2014-09-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rds/2014-10-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: _message.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/types/create_db_cluster_message.py:82:278: Expected an expression"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/redshift-data/2019-12-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/redshift-serverless/2021-04-21/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/redshift/2012-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rekognition/2016-06-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/resiliencehub/2020-04-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/resource-explorer/2-2022-07-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/resource-groups/2017-11-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:675:98: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/resourcegroupstaggingapi/2017-01-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/robomaker/2018-06-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rolesanywhere/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53-recovery-cluster/2019-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53-recovery-control-config/2020-11-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53-recovery-readiness/2019-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:219:97: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53/2013-04-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: ing src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:599:112: Duplicate keyword argument \"marker\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53domains/2014-05-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/route53resolver/2018-04-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/rum/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:403:195: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/runtime.lex.v2/2020-08-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/runtime.lex/2016-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/runtime.sagemaker/2017-05-13/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/s3/2006-03-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: tus: 2: error: Failed to parse src/fern/types/select_parameters_input_serialization_csv.py:29:137: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/s3control/2018-08-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:494:123: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/s3outposts/2017-07-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:288:101: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker-a2i-runtime/2019-11-07/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker-edge/2020-09-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker-featurestore-runtime/2020-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker-geospatial/2020-05-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker-metrics/2022-09-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sagemaker/2017-07-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/savingsplans/2019-06-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/scheduler/2021-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/schemas/2019-12-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: ting src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:225:171: Duplicate keyword argument \"limit\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sdb/2009-04-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/secretsmanager/2017-10-17/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/securityhub/2018-10-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/securitylake/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/serverlessrepo/2017-09-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1:  src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:207:100: Duplicate keyword argument \"max_items\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/service-quotas/2019-06-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/servicecatalog-appregistry/2020-06-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/servicecatalog/2015-12-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/servicediscovery/2017-03-14/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sesv2/2019-09-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/shield/2016-06-02/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/signer/2017-08-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/simspaceweaver/2022-10-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:430:134: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sms-voice/2018-09-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sms/2016-10-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/snow-device-management/2021-08-04/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/snowball/2016-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sns/2010-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sqs/2012-11-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ssm-contacts/2021-05-03/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ssm-incidents/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ssm-sap/2018-05-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/ssm/2014-11-06/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sso-admin/2020-07-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sso-oidc/2019-06-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sso/2019-06-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:244:151: Duplicate keyword argument \"next_token\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/states/2016-11-23/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/storagegateway/2013-06-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/streams.dynamodb/2012-08-10/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/sts/2011-06-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/support-app/2021-08-20/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/support/2013-04-15/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/swf/2012-01-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/synthetics/2017-10-11/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/textract/2018-06-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/timestream-query/2018-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/timestream-write/2018-11-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/tnb/2008-10-21/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: rc/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:266:137: Duplicate keyword argument \"max_results\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/transcribe/2017-10-26/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/transfer/2018-11-05/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/translate/2017-07-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/verifiedpermissions/2021-12-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/voice-id/2021-09-27/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/vpc-lattice/2022-11-30/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/waf-regional/2016-11-28/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/waf/2015-08-24/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/wafv2/2019-07-29/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "no profile (exit -6)"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/wellarchitected/2020-03-31/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/wisdom/2020-10-19/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/workdocs/2016-05-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: ting src/fern/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/client.py:474:136: Duplicate keyword argument \"limit\""}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/worklink/2018-09-25/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/workmail/2017-10-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/workmailmessageflow/2019-05-01/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/workspaces-web/2020-07-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/workspaces/2015-04-08/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amazonaws.com/xray/2016-04-12/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/asana.com/1.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/beezup.com/2.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: l: GET /orders/v3/lov/orderManagementReadyMarketplaceBusinessCode: header parameter `Accept-Language` has an unsupported array schema in Fern's Python generator"}
+{"build": "8a9454cb74d0", "candidate": "APIs/box.com/2.0.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/codat.io/accounting/2.1.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: /2.1.0/openapi.yaml: found a tab character where an indentation space is expected at line 43982 column 17, while scanning a block scalar at line 43981 column 28"}
+{"build": "8a9454cb74d0", "candidate": "APIs/codat.io/commerce/2.1.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/digitalocean.com/2.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "exit 1: perties.config.anyOf[0].properties.group_concat_max_len.maximum: invalid type: integer `18446744073709552000` as u128, expected any value at line 8629 column 38"}
+{"build": "8a9454cb74d0", "candidate": "APIs/docker.com/hub/beta/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/giphy.com/1.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/graphhopper.com/1.0.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/impala.travel/hotels/1.003/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ndhm.gov.in/ndhm-cm/0.5/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ndhm.gov.in/ndhm-gateway/0.5/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ndhm.gov.in/ndhm-hip/0.5/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ndhm.gov.in/ndhm-hiu/0.5/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/reports/2.2.2/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/pandascore.co/2.23.1/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/plaid.com/2020-09-14_1.345.1/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/probely.com/1.2.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/twinehealth.com/v7.78.1/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/youneedabudget.com/1.0.0/openapi.yaml", "key": "annotated-ref-shape", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/digitalocean.com/2.0/openapi.yaml", "key": "anyof-allof-variant", "reached": [], "status": "exit 1: perties.config.anyOf[0].properties.group_concat_max_len.maximum: invalid type: integer `18446744073709552000` as u128, expected any value at line 8629 column 38"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.18/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.19/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.20/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.21/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.22/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1082:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.0/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1438:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.1/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.2/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1476:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.3/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1485:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.4/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1834:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.5/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2183:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.6/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2279:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.7/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2285:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.8/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2825:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/github.ae/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1169:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/openlinksw.com/osdb/1.0.0/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/BalancePlatformService/2/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/amadeus.com/amadeus-trip-parser/3.0.1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: arser/3.0.1/openapi.yaml: found a tab character where an indentation space is expected at line 276 column 9, while scanning a block scalar at line 275 column 20"}
+{"build": "8a9454cb74d0", "candidate": "APIs/apple.com/app-store-connect/1.4.1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/bbci.co.uk/1.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: c/fern/search/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/search/raw_client.py:26:9: Expected an identifier"}
+{"build": "8a9454cb74d0", "candidate": "APIs/billingo.hu/3.0.7/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/box.com/2.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/contentgroove.com/1.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/digitalocean.com/2.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: perties.config.anyOf[0].properties.group_concat_max_len.maximum: invalid type: integer `18446744073709552000` as u128, expected any value at line 8629 column 38"}
+{"build": "8a9454cb74d0", "candidate": "APIs/dnd5eapi.co/0.1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/doqs.dev/1.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/formapi.io/v1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/api.github.com/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1:  ruff exited with exit status: 2: error: Failed to parse src/fern/dependabot/raw_client.py:509:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghec/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2785:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.18/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.19/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.20/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.21/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-2.22/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1082:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.0/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1438:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.1/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.2/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1476:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.3/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1485:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.4/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1834:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.5/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2183:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.6/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2279:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.7/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2285:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.8/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2825:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/github.com/github.ae/1.1.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1169:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "8a9454cb74d0", "candidate": "APIs/here.com/tracking/2.1.192/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/hetzner.cloud/1.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/hubapi.com/automation/v4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/hubapi.com/crm/v3/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ideal-postcodes.co.uk/3.7.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/influxdata.com/2.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/iqualify.com/v1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/json2video.com/2.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/listennotes.com/2.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/maif.local/otoroshi/1.5.0-dev/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mailchimp.com/3.0.55/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mailscript.com/0.4.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mist.com/0.37.7/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/dispatch/0.3.4/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/voice/1.3.10/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/portfoliooptimizer.io/1.0.9/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
+{"build": "8a9454cb74d0", "candidate": "APIs/rudder.example.local/17/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/snyk.io/1.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/spotify.com/1.0.0/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/spotify.com/sonallux/2023.2.27/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/vercel.com/0.0.1/openapi.yaml", "key": "items-oneof-element", "reached": [], "status": "exit 1: ith exit status: 2: error: Failed to parse src/fern/projects/types/create_project_request_environment_variables_item_target.py:5:146: Expected `:`, found string"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ably.net/control/1.0.14/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ably.net/control/v1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/BalancePlatformConfigurationNotification-v1/1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/BalancePlatformService/1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/BalancePlatformService/2/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/49/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/49/openapi.yaml: found a tab character where an indentation space is expected at line 5376 column 13, while scanning a block scalar at line 5375 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/50/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/50/openapi.yaml: found a tab character where an indentation space is expected at line 5434 column 13, while scanning a block scalar at line 5433 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/51/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/51/openapi.yaml: found a tab character where an indentation space is expected at line 5436 column 13, while scanning a block scalar at line 5435 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/52/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/52/openapi.yaml: found a tab character where an indentation space is expected at line 5442 column 13, while scanning a block scalar at line 5441 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/53/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/53/openapi.yaml: found a tab character where an indentation space is expected at line 5442 column 13, while scanning a block scalar at line 5441 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/64/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/64/openapi.yaml: found a tab character where an indentation space is expected at line 5442 column 13, while scanning a block scalar at line 5441 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/65/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/65/openapi.yaml: found a tab character where an indentation space is expected at line 5457 column 13, while scanning a block scalar at line 5456 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/adyen.com/CheckoutService/66/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: rvice/66/openapi.yaml: found a tab character where an indentation space is expected at line 5457 column 13, while scanning a block scalar at line 5456 column 24"}
+{"build": "8a9454cb74d0", "candidate": "APIs/apple.com/app-store-connect/1.4.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/apple.com/sirikit-cloud-media/1.0.2/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/box.com/2.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/cpy.re/peertube/5.1.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/dnd5eapi.co/0.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/doqs.dev/1.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/fire.com/1.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/gerermesaffaires.com/1.0.6/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/here.com/tracking/2.1.192/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/hubapi.com/automation/v4/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/hubapi.com/crm/v3/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ideal-postcodes.co.uk/3.7.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/influxdata.com/2.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/ix-api.net/2.1.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mailchimp.com/3.0.55/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mailscript.com/0.4.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/microcks.local/1.7.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/mist.com/0.37.7/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/account/1.0.4/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/conversation/2.0.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/redact/1.0.6/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/subaccounts/1.0.8/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/nexmo.com/voice/1.3.10/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/pandascore.co/2.23.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
+{"build": "8a9454cb74d0", "candidate": "APIs/spotify.com/1.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/stream-io-api.com/v80.2.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/telnyx.com/2.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/velopayments.com/2.35.57/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/vercel.com/0.0.1/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "exit 1: ith exit status: 2: error: Failed to parse src/fern/projects/types/create_project_request_environment_variables_item_target.py:5:146: Expected `:`, found string"}
+{"build": "8a9454cb74d0", "candidate": "APIs/webflow.com/2023-03-23T154040Z/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/wiremock.org/admin/2.35.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "8a9454cb74d0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "oneof-discriminated-union", "reached": [], "status": "generated"}

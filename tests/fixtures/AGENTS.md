@@ -199,6 +199,20 @@ scope, asserts the three tiers partition the suite exactly, and proves the
 spawned binary's profile is captured by requiring non-zero coverage of
 `src/main.rs`, which exists only inside that binary.
 
+The golden-only tier is every `*matches_fern_output*` test, feature targets
+included (one test each), so `just golden-reach` can run it one golden at a time
+and answer the per-row question the per-file block cannot: which of a `golden`
+census row's handling sites *its own* witnesses execute. A new corpus row moves
+that ledger; re-run it after registering one. An owned row's still-unreached
+site is searched for with `scripts/golden-reach-search.py`, whose candidates are
+the declarers an instrumented `crozier generate` shows executing the site — not
+every declarer; a candidate declaring a `gap` selector, or one crozier cannot
+generate yet, is handed off in
+`docs/openapi-surface/golden-reach-witnesses/handoff.tsv` rather than registered.
+The probes run the instrumented build `just golden-reach` measures with, so
+rebuilding it (`just golden-reach`, `just fixtures-coverage`, `just test`) while
+a probe runs mixes two builds' regions.
+
 ## Why a file *doesn't* match — `just fixtures-diff`
 
 The inverse tool. `just fixtures-diff [<corpus> [<file-substring>]]` prints the

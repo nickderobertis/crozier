@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import base64
 import csv
+import hashlib
 import importlib.util
 import json
 import os
@@ -1447,7 +1448,9 @@ components:
             "path": "openapi.yaml",
             "commit": "c" * 40,
         }
-        with patch.object(SEARCH, "RAW_SPACING_S", 0.05), patch.object(
+        # Spacing wide enough that parsing the first document still ends
+        # inside it; at 0.05s a Windows runner outlasted the window.
+        with patch.object(SEARCH, "RAW_SPACING_S", 1.0), patch.object(
             SEARCH, "RAW_BACKOFF_BASE_S", 0.05
         ):
             result = self.search.sourcegraph_document(
@@ -1483,6 +1486,10 @@ components:
             for line in (self.root / "raw-github-calls.jsonl").read_text(encoding="utf-8").splitlines()
         ]
         self.assertEqual(2, sum(row["status"] == "IncompleteRead" for row in calls))
+        completed = [row for row in calls if row["status"] == 200]
+        self.assertEqual(1, len(completed))
+        self.assertEqual("c" * 40, completed[0]["commit"])
+        self.assertEqual(hashlib.sha256(DOCUMENT).hexdigest(), completed[0]["sha256"])
 
     def test_publisher_transfer_failure_stays_outstanding_after_retry_budget(
         self,

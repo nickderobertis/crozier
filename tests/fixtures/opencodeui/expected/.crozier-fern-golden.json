@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "opencodeui",
+  "corpus_spec_ref": "8a6d4eae9424317f01e88f3819b14b24e57bab10",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json"
+}

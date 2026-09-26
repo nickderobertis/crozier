@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -200,6 +200,12 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paypal_catalog_products_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e folio_mod_authtoken_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e raybot_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openlinksw_osdb_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ziptax_node_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_messages_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e deepsearch_ds_v2_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mindee_ocr_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e opencodeui_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_alerts_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_reports_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_cspm_search_manager_matches_fern_output
@@ -307,8 +313,12 @@ test-fern-probe-refusal:
 # Drives the real recipe under a SCOPE so it measures a handful of tests instead
 # of the whole corpus; the unmeasured thing would otherwise be the measurement.
 # Part of `check` (the recipe itself is not — it needs network and is slow).
+# The golden-reach suite runs twice: the second time without `fcntl` and the
+# other POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
     python3 tests/fixtures_coverage_test.py
+    python3 tests/golden_reach_test.py
+    PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.
@@ -376,6 +386,21 @@ fixtures-diff corpus="" file="":
 # tests/fixtures/AGENTS.md.
 fixtures-coverage *args:
     ./scripts/fixtures-coverage.sh "$@"
+
+# Per `golden` census row: which of crozier's declared handling sites for it
+# (docs/openapi-surface/golden-reach-sites.tsv) the row's own witnesses execute
+# in the golden-only tier, one instrumented run per golden test. Writes the
+# ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden row's
+# reach cell. Outside `check`: needs network and runs the corpus instrumented.
+golden-reach:
+    ./scripts/fetch-corpus.sh
+    python3 scripts/golden-reach.py measure
+    "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
+    python3 scripts/golden-reach.py report --write
+
+# Re-join the last `just golden-reach` measurement after the site table changes.
+golden-reach-report:
+    python3 scripts/golden-reach.py report --write
 
 # Census which OpenAPI shapes the registered golden sources DECLARE — the input
 # to docs/openapi-surface-coverage.md, and the only measurement of what the
@@ -485,12 +510,17 @@ lint-llm *paths:
 lint-llm-validate *args:
     PATH="$HOME/.local/bin:$PATH" llmlint validate {{args}}
 
-# `--diff` self-discovers the changed files (a three-dot compare against the base
-# that skips files main also touched) and honors llmlint.yml's excludes, so no
-# wrapper script is needed — it lints only what this branch introduced.
+# `--diff` lints only what this branch introduced against the merge base, and
+# honors llmlint.yml's excludes. llmlint hands one rule batch every changed file,
+# so scripts/llmlint-diff.py splits a diff too large for the judge into file
+# batches it can hold, and runs the one plain invocation otherwise.
 # Blocking `llmlint` PR check; run before pushing. BASE defaults to origin/main.
 lint-llm-diff base="origin/main" *args:
-    llmlint --diff git --diff-base {{base}} {{args}}
+    python3 scripts/llmlint-diff.py {{base}} {{args}}
+
+# Offline tests of the batching wrapper, against a stub llmlint.
+test-llmlint-diff:
+    python3 tests/llmlint_diff_test.py
 
 # --- Terminal screenshots (informational; never part of `check`) --------------
 # Deterministic SVGs of the real CLI output, rendered by `freeze` from a vendored

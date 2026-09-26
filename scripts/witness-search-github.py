@@ -95,6 +95,8 @@ RAW_CALLS = "raw-github-calls.jsonl"
 RAW_WAITS = "raw-github-waits.jsonl"
 CALL_LEDGERS = (CALLS_FILE, RAW_CALLS)
 WAIT_LEDGERS = (WAITS_FILE, INDEX_PACING_WAITS, RAW_WAITS)
+# Every call and wait log an acquisition writes into its evidence directory.
+GUARD_LOGS = (*CALL_LEDGERS, *WAIT_LEDGERS)
 DOCUMENT_NAMES = (
     "openapi.yaml",
     "openapi.yml",
@@ -1310,9 +1312,20 @@ class Acquirer:
                     subject,
                 )
                 continue
+            # Outside the REST guard by ruling, so each download names the exact
+            # commit it read and the digest of what came back.
+            commit = re.search(r"/([0-9a-f]{40})/", url)
             self.write(
                 RAW_CALLS,
-                {"key": key, "subject": subject, "status": status, "url": url},
+                {
+                    "key": key,
+                    "subject": subject,
+                    "status": status,
+                    "url": url,
+                    "commit": commit.group(1) if commit else None,
+                    "sha256": hashlib.sha256(data).hexdigest(),
+                    "bytes": len(data),
+                },
             )
             if status not in (429, 503):
                 return status, data

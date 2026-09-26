@@ -13,6 +13,9 @@ llmlint.buildout.yml
 # Scratch output from local generation runs
 /out
 /.crozier-tmp
+# LLVM profile dumps an instrumented binary writes into its working directory
+# when run without LLVM_PROFILE_FILE (the coverage recipes always set it)
+*.profraw
 
 # Machine-local corpus cache: `link-ok` OpenAPI specs fetched by
 # scripts/fetch-corpus.sh for the byte-match corpus tests. The specs are

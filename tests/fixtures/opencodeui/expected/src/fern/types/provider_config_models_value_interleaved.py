@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .provider_config_models_value_interleaved_field import ProviderConfigModelsValueInterleavedField
+
+ProviderConfigModelsValueInterleaved = typing.Union[bool, ProviderConfigModelsValueInterleavedField]

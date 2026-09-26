@@ -199,6 +199,12 @@ re-measure with `just fixtures-gaps`.
 | 177 | `osparc-payments` | github-raw | https://raw.githubusercontent.com/ITISFoundation/osparc-simcore/69b034b82f243b30953d025793c0f171fdb3c92e/services/payments/openapi.json | `69b034b82f243b30953d025793c0f171fdb3c92e` | MIT (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | o²S²PARC payments service; the publisher's own description, declaring `oauth2-password` |
 | 178 | `huatuo-node` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/node/openapi.gen.json | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | HuaTuo node API v1; the publisher's own description, declaring `securityscheme-ref` |
 | 179 | `huatuo-server` | github-raw | https://raw.githubusercontent.com/ccfos/huatuo/36175d6e91fdc7b79e818496e1587eb0ca79a18d/apis/v1/server/openapi.gen.json | `36175d6e91fdc7b79e818496e1587eb0ca79a18d` | Apache-2.0 (the repository's own `LICENSE`; the document declares no `info.license`) | link-ok | HuaTuo server API v1; the publisher's own description, declaring `securityscheme-ref` |
+| 191 | `openlinksw-osdb` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/openlinksw.com/osdb/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC-BY-SA 3.0 (declared by the document's `info.license`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | OpenLink OSDB REST API v1; string schemas declaring `format: uri-template` |
+| 192 | `ziptax-node` | github-raw | https://raw.githubusercontent.com/ZipTax/ziptax-node/ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0/docs/openapi.json | `ac6cc26208ad2bdd594886ea323e4b0a5ffd8da0` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | ZipTax's sales-tax API as its Node SDK repository publishes it; its 34 operations are labelled `x-fern-audiences` by API version (`v10`-`v60`) and generated for `v60`, which keeps 27 and filters out 7 |
+| 193 | `nexmo-messages` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/messages-olympus/1.4.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`, and its publisher repository `nexmo/api-specification` no longer exists) | link-ok | The Vonage (Nexmo) Messages API 1.4.0; operation-level unions whose members compose with `allOf` |
+| 194 | `deepsearch-ds-v2` | github-raw | https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json | `be22375ecea319b495a11e27cd0308fdcda81ba1` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | IBM Deep Search (DS) API 3.0.0 as the DS4SD toolkit pins it; properties whose `anyOf` is a discriminated union |
+| 195 | `mindee-ocr` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/mindee.com/main/0.1.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Mindee OCR API as its publisher serves it (`info.x-jentic-source-url` is `https://api.mindee.net/openapi.json`); array items declaring `oneOf` |
+| 196 | `opencodeui` | github-raw | https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json | `8a6d4eae9424317f01e88f3819b14b24e57bab10` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | The opencode server API as the OpenCodeUI web client pins it (a different document from the DROPPED `opencode` row); array items whose `anyOf` is one inline object |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -374,6 +380,10 @@ workflow-owned goldens are committed and all three are byte-matched.
 | `jaewook-epcis` | **REJECTED** — Fern check reports 35 endpoint-example errors because `headers` examples are strings rather than maps |
 | `mardi-gras` | **REJECTED** — Fern-clean and MIT, but it has no `allOf` and therefore could not consolidate the nested composition requirement |
 | `paypal-checkout` | **DROPPED** — the only revision with `not` fails Fern on five invalid carrier enum names; Fern-clean older revisions lack `not` |
+| `fern-docs-fai` (`fern-api/docs` `fern/apis/fai/openapi.json`) | **DROPPED** — every revision declaring `x-fern-audiences` or a component `x-fern-ignore` fails the Fern 5.20.0 generate: `Multiple request properties have the name domain` on `create_feedback` (do not retry any of its 70 revisions) |
+| `count-co` (jentic `count.co/main/1.0` at `eb9d12a2`) | **DROPPED** — the Fern 5.20.0 generate reports `Found 8 errors`, each `Path parameter is unreferenced in endpoint` (do not retry this ref) |
+| `instabase-aihub` (`instabase/aihub-openapi` at `a25f51e5`) | **DROPPED** — the Fern 5.20.0 generate reports `Found 1 errors`: `Expected example to be an object. Example is: [{"custom":{}}]` (do not retry this ref) |
+| `ziptax-reference` (`ZipTax/ziptax-reference` at `918973a8`) | **DROPPED** — the Fern 5.20.0 generate reports `Multiple request properties resolve to the same generated name merchantType after camelCase normalization`; row 192 registers the same API from `ZipTax/ziptax-node`, whose older document predates that field |
 
 ## Batch 7 — shape-targeted additions (issue #77)
 
@@ -576,7 +586,7 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
 | 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
-| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 312 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs) in `unmatched` and 148 crozier-only modules declared |
+| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 306 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair) in `unmatched` and 148 crozier-only modules declared |
 
 **What the three byte-matched rows cost.** AGCO: `float` joined
 `naming::is_reserved`'s builtin set; hoisted operation-scoped types are deduped by
@@ -625,7 +635,7 @@ change has an exact set to shorten:
   carries the document's full declared property set while Fern narrows it
   (`BadRequestErrorBody` is `error` plus an optional `message` in the golden,
   against crozier's seven fields).
-- **`webflow-v2` (312 files + 148 crozier-only modules).** Two independent
+- **`webflow-v2` (306 files + 148 crozier-only modules).** Two independent
   divergences. Its `servers` carry `x-fern-server-name: Data API`, so Fern names
   the environment member `DATA_API` and threads
   `base_url=self._client_wrapper.get_environment().base` through every raw client,
@@ -994,3 +1004,78 @@ Every other usable candidate in the two ledgers is now disposed of:
   DigitalOcean, Cvent and Sellsy — are Fern refusals, recorded in
   [`AGENTS.md`](AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
   with their measured exit status and diagnostics.
+
+## Batch 19 — golden-reach witnesses (rows 191–215)
+
+These rows buy arms the [golden reach ranking](../../docs/openapi-surface-coverage.md#golden-reach-row-by-row)
+found no earlier witness reaching. Each was chosen by running the instrumented
+crozier over candidate documents and keeping those that execute the arm, then
+screened for licence, immutable ref and Fern acceptance, and checked against every
+`gap` row's selector so that no registration here settles a `gap` row. Row 191
+gives `format-uri-template` its first golden-bearing witness — its only earlier
+declarer, `github.com`, is a DROPPED row — and row 192 gives
+`audience-dual-header-policy` its first real-world one, generated for an audience
+so the filter removes operations rather than keeping all of them.
+
+| # | name | row it buys an arm for | status |
+|---:|---|---|---|
+| 191 | `openlinksw-osdb` | `format-uri-template` | ✅ byte-matched after two repairs |
+| 192 | `ziptax-node` | `audience-dual-header-policy` | ✅ byte-matched after one repair |
+| 193 | `nexmo-messages` | `all-of-nested-composition` | ✅ byte-matched after five repairs |
+| 194 | `deepsearch-ds-v2` | `property-anyof-discriminated-union` | ✅ byte-matched after three repairs |
+| 195 | `mindee-ocr` | none — see below | ✅ byte-matched with no repair |
+| 196 | `opencodeui` | `anyof-sole-member` | ✅ byte-matched |
+
+The repairs: a `:` separates words in a generated class name (`osdb:output_type`
+hoists `ExecBodyOsdbOutputType`); a `2XX` range key is no success status, so a
+bodyless one beside a `default` body no longer makes the method optional; and a
+`204` is empty whatever content it declares, so an unknown body beside one is
+`typing.Optional[typing.Any]` while a lone `204` or a schemaless `200` stays
+`typing.Any`.
+
+Row 193, the Vonage Messages API as APIs.guru pins it (its publisher repository
+no longer exists), is the corpus's first operation-level union whose members are
+themselves compositions: a `oneOf` of five channel `oneOf`s over `allOf` members,
+which is the inline-object arm of `hoist_union_variant` no earlier witness took.
+Its repairs: a member that is itself a union is a named `{Parent}{Ordinal}` union
+and a union of one member is that member; an `allOf` member that redeclares a
+property of a composed `$ref` base flattens that base and extends the base's own
+bases instead; an untitled, undiscriminated inline union body leaves its content
+type to httpx; an inline union error body is the `{ErrorClass}Body` discriminated
+union; and a redeclared base enum keeps the base's description.
+
+Row 194 was found by the arm searches the golden-reach records under
+`docs/openapi-surface/golden-reach-witnesses/` hold: a Sourcegraph result at its
+indexed commit that the instrumented `crozier` run showed executing its row's
+unreached site, declaring no `gap` selector. IBM's Deep Search API as the DS4SD
+toolkit pins it needed three repairs: a nullable map of an inline union hoists its
+value to `{Owner}{Prop}Value`; a query parameter whose schema declares no type is
+a `str`; and an endpoint with an untyped path parameter is exampled by Fern's
+other writer, the parameter by its own name and a free-form map body as one
+`"string"` entry. Row 195, the Mindee OCR API as its publisher serves it and
+jentic pins it, was registered for `items-oneof-element` on a probe that ran while
+`src/` no longer matched the instrumented build, so it read another arm's regions;
+re-probed on a consistent build it executes no site of that row, and the
+golden-only ledger agrees. It stays as a real specification that byte-matches as
+generated, and buys no arm. All five
+goldens are generated at Python 5.20.0 / CLI 5.67.1 and match with
+`unmatched: &[]`.
+
+The same searches found the opencode server API as `lehhair/OpenCodeUI` publishes
+it — a different document from the DROPPED `opencode` row, which Fern refused —
+reaching `anyof-sole-member`'s arm. It declares `schema.anyOf>schema.anyOf`, the
+`gap` row `anyof-anyof-variant`, so it is handed off rather than registered
+([`handoff.tsv`](../../docs/openapi-surface/golden-reach-witnesses/handoff.tsv)).
+It was byte-matched locally against its measured Fern 5.20.0 output first, and
+the nine repairs that took are kept, each with a `tests/generation.rs` test on a
+fragment of the document: an untagged dotted `operationId` hangs off the root
+client; the README walks the root client's operations after every sub-client's; a
+component schema named for an error class the document raises is renamed
+`{Name}Body`, and such a `$ref` body is never downgraded as a coined one; `status`
+joins the property names Fern infers a discriminant from over `$ref` members; a
+union member that is a map of an inline union or object hoists its value; a union
+of one schema written twice is that schema; a hoisted model's map of an inline
+object hoists its value; and a query parameter beside a body keeps the
+`content-type` header. The hoisted-map repair also closes six of `webflow-v2`'s
+open files, which proves it now; the other eight rest on the measured golden until
+the hand-off's registration commits it.

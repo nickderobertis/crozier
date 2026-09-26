@@ -1,0 +1,442 @@
+key	selectors	sites	note
+request-body-description	requestBody.description	src/ir.rs::build_endpoint[body_description_empty: op]	
+request-body-content	requestBody.content	src/ir.rs::selected_json_request_media,src/ir.rs::request_body_ignored,src/openapi.rs::request_body_schemas	
+request-body-required	requestBody.required	src/ir.rs::resolve_request_body[if let Some\(member\) = simple_nullable_member\(schema\)],src/ir.rs::resolve_request_body[if is_unknown\(schema\) \{]	
+components-request-bodies	components.requestBodies	src/openapi.rs::resolve_request_body,src/openapi.rs::normalize_request_bodies	
+media-type-schema	mediaType.schema	src/openapi.rs::media_schemas,src/ir.rs::success_response_schema,src/ir.rs::response_schema	
+media-type-example	mediaType.example	src/ir.rs::media_example,src/ir.rs::build_endpoint[body_media_has_example: ]	
+media-type-examples	mediaType.examples	src/ir.rs::media_example,src/ir.rs::reference_body_example,src/ir.rs::component_example_value,src/ir.rs::build_endpoint[body_media_has_example: ]	
+encoding-object	mediaType.encoding	src/ir.rs::hoist_form_object,src/emit.rs::append_request_call_args[if let Some\(content_type\) = &f\.form_content_type]	
+media-type-concrete	requestBody.content,response.content	src/ir.rs::has_dispatchable_media	
+media-type-key-parameters	fixture=openbanking.org.uk-account-info-openapi,fixture=sftpgo,fixture=vtex-pricing	src/ir.rs::is_json_like_media_type,src/ir.rs::is_text_response_media	
+media-type-suffix-json	fixture=anchore.io,fixture=apicurio.local-registry,fixture=box.com,fixture=github.com,fixture=redocly.com-museum,fixture=free5gc-pdu-session,fixture=free5gc-namf-communication,fixture=openepcis-dpp-ready	src/ir.rs::is_json_like_media_type,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema	
+media-type-suffix-xml	fixture=atlassian.com-jira,fixture=color.pizza,fixture=traccar.org	none	
+media-type-wildcard	fixture=6-dot-authentiqio.appspot.com,fixture=apache.org-qakka,fixture=apicurio.local-registry,fixture=apideck.com-file-storage,fixture=apideck.com-proxy,fixture=atlassian.com-jira,fixture=bintable.com,fixture=bungie.net,fixture=openfigi.com	src/ir.rs::RequestBody::is_wildcard_media,src/ir.rs::has_wildcard_binary_response,src/ir.rs::selected_json_request_media,src/ir.rs::success_response_schema,src/ir.rs::resolve_request_body[let binary_media = \x7c]	
+media-type-range	fixture=sftpgo,fixture=torrentarr,fixture=audiobookshelf,fixture=api-openverse-org,fixture=komga	src/ir.rs::resolve_request_body[\.find\(\x7c\(media_type\x2c media\)\x7c \{],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response	
+media-type-multipart	fixture=form-bodies,fixture=anchore.io,fixture=appwrite.io-client,fixture=appwrite.io-server,fixture=asana.com,fixture=atlassian.com-jira,fixture=box.com,fixture=discourse.local,fixture=microcks.local,fixture=appng-rest-api,fixture=free5gc-pdu-session,fixture=letta,fixture=free5gc-namf-communication,fixture=livepeer-ai-runner	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(\"multipart/related\"\)],src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::form_body_source_names	
+media-type-form-urlencoded	fixture=bracketed-property-names,fixture=form-bodies,fixture=anchore.io,fixture=box.com,fixture=conjur.local,fixture=traccar.org,fixture=twilio.com-twilio_voice_v1,fixture=twilio.com-twilio_messaging_v1	src/ir.rs::resolve_request_body[if let Some\(media\) = rb\.content\.get\(media_type\)],src/ir.rs::urlencoded_body_source_names,src/ir.rs::form_body_source_names	
+media-type-octet-stream	fixture=exhaustive,fixture=apache.org-qakka,fixture=box.com,fixture=conjur.local,fixture=github.com	src/ir.rs::resolve_request_body[if rb\.content\.contains_key\(\"application/octet-stream\"\)],src/ir.rs::is_binary_response	
+media-type-event-stream	fixture=sse-streaming,fixture=maif.local-otoroshi,fixture=electric-sql,fixture=letta,fixture=exa-gate	src/ir.rs::is_streaming,src/ir.rs::stream_chunk_type	
+media-type-malformed-key	fixture=eozilla,fixture=free5gc-pdu-session,fixture=anchore.io	src/ir.rs::has_dispatchable_media	
+encoding-content-type	mediaType.encoding.contentType	src/ir.rs::hoist_form_object,src/emit.rs::append_request_call_args[if let Some\(content_type\) = &f\.form_content_type]	
+encoding-headers	mediaType.encoding.headers	none	
+encoding-style	mediaType.encoding.style	none	
+response-status-literal	operation.responses	src/ir.rs::success_response_entry,src/ir.rs::resolve_errors,src/ir.rs::error_class_name	`success_response_key` is the stream-condition split's helper, not a status-code read
+range-2XX	fixture=sigstore-rekor	src/ir.rs::uses_codegen_request_body_name,src/ir.rs::has_bodyless_success	
+response-default	operation.responses.default	src/ir.rs::success_response_entry[=code\.as_str\(\) == "default"]	`success_response_key` is the stream-condition split's helper; this row's arm is `success_response_entry`'s `default` fallback
+response-description	response.description	src/ir.rs::success_response_doc	
+response-headers	response.headers	none	
+response-content	response.content	src/ir.rs::response_schema,src/ir.rs::success_response_schema,src/ir.rs::error_body_type,src/openapi.rs::response_schemas	
+response-links	response.links	none	
+components-responses	components.responses	src/openapi.rs::resolve_response,src/openapi.rs::normalize_responses,src/ir.rs::error_body_type[Some\(schema\) if resp\.reference\.is_none\(\) && is_inline_struct]	
+link-operation-ref	link.operationRef	none	
+link-operation-id	link.operationId	none	
+link-parameters	link.parameters	none	
+components-links	components.links	none	
+callback-runtime-expression	operation.callbacks	none	
+components-callbacks	components.callbacks	none	
+document-info	openapi.info	none	`src/config.rs::default_package_name` names the package only when no `--package-name` is set, a generator setting rather than a document shape, and every corpus row sets one
+document-servers	openapi.servers	src/ir.rs::environment_model,src/ir.rs::resolve_server_url,src/emit.rs::environment_file,src/emit.rs::EnvClientParts::new	
+document-paths	openapi.paths	src/openapi.rs::deserialize_paths,src/ir.rs::endpoints[for \(path, item\) in &doc.paths \{],src/ir.rs::endpoint_modules	
+document-components	openapi.components	src/ir.rs::build[for \(key, schema\) in &doc.components.schemas \{],src/ir.rs::resolve_ref	
+document-security	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+document-tags	openapi.tags	src/ir.rs::title_from_tag	
+document-external-docs	openapi.externalDocs	none	
+info-title	info.title	none	`src/config.rs::default_package_name` names the package only when no `--package-name` is set, a generator setting rather than a document shape, and every corpus row sets one
+info-description	info.description	none	
+info-terms-of-service	info.termsOfService	none	
+info-contact	info.contact	none	
+contact-name	info.contact.name	none	
+contact-url	info.contact.url	none	
+contact-email	info.contact.email	none	
+info-license	info.license	none	
+license-name	info.license.name	none	
+license-url	info.license.url	none	
+info-version	info.version	none	
+server-url	server.url	src/ir.rs::resolve_server_url,src/ir.rs::environment_model,src/emit.rs::environment_file	
+server-description	server.description	src/ir.rs::environment_model[\.and_then\(\x7cdescription\x7c \{]	
+server-variables	server.variables	src/ir.rs::resolve_server_url[for \(name, var\) in &server.variables \{],src/ir.rs::environment_model[\.map\(\x7c\(name, variable\)\x7c ServerUrlVariable \{],src/ir.rs::server_variable_py_name,src/emit.rs::EnvClientParts::new	
+server-variable-enum	server.variables.enum	none	
+server-variable-default	server.variables.default	src/ir.rs::resolve_server_url[for \(name, var\) in &server.variables \{],src/ir.rs::percent_encode_server_variable,src/ir.rs::environment_model[\.map\(\x7c\(name, variable\)\x7c ServerUrlVariable \{],src/emit.rs::EnvClientParts::new[^\s*\} else \{]	
+server-variable-description	server.variables.description	none	
+pathitem-summary	pathItem.summary	none	
+pathitem-description	pathItem.description	none	
+pathitem-servers	pathItem.servers	none	
+get-operation	pathItem.get	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+put-operation	pathItem.put	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+post-operation	pathItem.post	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+delete-operation	pathItem.delete	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+options-operation	pathItem.options	none	
+head-operation	pathItem.head	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+patch-operation	pathItem.patch	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
+operation-tags	operation.tags	src/ir.rs::first_tag,src/ir.rs::group_prefix_is_tag,src/ir.rs::first_segment_is_tag,src/ir.rs::title_from_tag,src/ir.rs::endpoint_module[^    if let Some\(tag\) = first_tag\(op\) \{]	
+operation-summary	operation.summary	src/ir.rs::endpoint_method_name[\} else if id.is_empty\(\) \{],src/naming.rs::summary_identifier	
+operation-description	operation.description	src/ir.rs::operation_doc,src/emit.rs::raw_docstring[if let Some\(summary\) = &ep.docstring \{]	
+operation-external-docs	operation.externalDocs	none	
+operation-id	operation.operationId	src/ir.rs::endpoint_method_name,src/ir.rs::endpoint_module,src/ir.rs::endpoint_pascal_context,src/openapi.rs::reject_unemittable_operation_ids	
+operation-parameters	operation.parameters	src/openapi.rs::normalize_parameters,src/openapi.rs::resolve_parameter,src/openapi.rs::reject_unemittable_parameters	
+operation-request-body	operation.requestBody	src/openapi.rs::normalize_request_bodies,src/openapi.rs::resolve_request_body,src/ir.rs::resolve_request_body	
+operation-responses	operation.responses	src/openapi.rs::normalize_responses,src/openapi.rs::resolve_response,src/ir.rs::success_response_entry,src/ir.rs::resolve_errors	
+operation-callbacks	operation.callbacks	none	
+operation-deprecated	operation.deprecated	none	
+operation-security	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+operation-servers	operation.servers	none	
+tag-name	tag.name	src/ir.rs::title_from_tag	
+tag-description	tag.description	none	
+tag-external-docs	tag.externalDocs	none	
+external-docs-description	externalDocs.description	none	
+external-docs-url	externalDocs.url	none	
+components-schemas	components.schemas	src/ir.rs::build[for \(key, schema\) in &doc.components.schemas \{],src/ir.rs::resolve_ref	
+reference-ref	reference.$ref	src/ir.rs::resolve_ref,src/ir.rs::ref_to_class,src/openapi.rs::referenced_component_schema,src/refs.rs::Resolver::resolve_schema[if let Some\(reference\) = schema.reference.clone\(\) \{]	
+templated-path-segment	openapi.paths:templated-key	src/ir.rs::path_template_expressions,src/ir.rs::build_endpoint[for name in path_template_expressions\(path\) \{],src/emit.rs::url_arg[if stripped.contains\('\{'\) \{]	
+several-path-template-variables	openapi.paths:several-template-expressions	src/ir.rs::path_param_position,src/ir.rs::build_endpoint[path_params.sort_by\(\x7ca, b\x7c \{],src/emit.rs::url_arg[for pp in &ep.path_params \{]	
+duplicate-normalized-paths	openapi.paths:normalized-collision	src/ir.rs::endpoints[if let Some\(index\) = out.iter\(\).position\(],src/ir.rs::synthesized_method_name	
+pathitem-ref	pathItem.$ref	src/refs.rs::Resolver::resolve_path_item[if let Some\(reference\) = item.reference.clone\(\) \{],src/refs.rs::split_external,src/refs.rs::DocumentLocation::from_reference	
+relative-file-ref	pathItem.$ref:relative-file	src/refs.rs::Resolver::resolve_path_item[if let DocumentLocation::Local\(file\) = &source_path \{],src/refs.rs::split_external,src/refs.rs::DocumentLocation::from_reference[match source \{]	
+missing-operation-id	operation.operationId	src/ir.rs::endpoint_method_name[\} else if id.is_empty\(\) \{],src/ir.rs::synthesized_method_name,src/ir.rs::endpoint_pascal_context[if id.is_empty\(\) \{],src/ir.rs::module_title[if id.is_empty\(\) \{],src/ir.rs::endpoint_module[if id.is_empty\(\) && first_tag\(op\).is_none\(\) \{]	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
+duplicate-operation-id	operation.operationId:duplicate	src/ir.rs::endpoints[if let Some\(index\) = out.iter\(\).position\(],src/ir.rs::endpoints[tag_types.retain\(\x7ctag_type\x7c \{]	
+non-identifier-operation-id	operation.operationId	src/openapi.rs::reject_unemittable_operation_ids,src/ir.rs::dotted_id_names_a_group,src/ir.rs::method_from_groupless_id,src/ir.rs::endpoint_module[if !id.is_empty\(\) \{]	
+untagged-operation	operation.tags	src/ir.rs::endpoint_method_name[if first_tag\(op\).is_none\(\) \{],src/ir.rs::endpoint_module[if first_tag\(op\).is_none\(\) && !id.contains\('.'\) \{],src/ir.rs::endpoint_module[if id.is_empty\(\) && first_tag\(op\).is_none\(\) \{]	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
+multi-tagged-operation	operation.tags:multiple	src/ir.rs::first_tag	
+path-leading-literal-segment	openapi.paths:leading-literal-segment	none	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
+path-template-before-literal-segment	openapi.paths:template-before-literal-segment	none	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
+path-all-segments-templated	openapi.paths:all-segments-templated	none	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
+openapi-version-field	openapi.openapi	none	`src/openapi.rs::load`'s empty-version and non-3 arms reject a document; one declaring a 3.x `openapi` never takes them
+openapi-version-3.0.0	openapi.openapi=3.0	none	a 3.0 document takes crozier's default path: every version-conditional arm in `src/` is a 3.1 arm, and `src/openapi.rs::load`'s non-3 arm is a rejection
+openapi-version-3.0.1	openapi.openapi=3.0	none	a 3.0 document takes crozier's default path: every version-conditional arm in `src/` is a 3.1 arm, and `src/openapi.rs::load`'s non-3 arm is a rejection
+openapi-version-3.0.2	openapi.openapi=3.0	none	a 3.0 document takes crozier's default path: every version-conditional arm in `src/` is a 3.1 arm, and `src/openapi.rs::load`'s non-3 arm is a rejection
+openapi-version-3.0.3	openapi.openapi=3.0	none	a 3.0 document takes crozier's default path: every version-conditional arm in `src/` is a 3.1 arm, and `src/openapi.rs::load`'s non-3 arm is a rejection
+openapi-version-3.0.4	openapi.openapi=3.0	none	a 3.0 document takes crozier's default path: every version-conditional arm in `src/` is a 3.1 arm, and `src/openapi.rs::load`'s non-3 arm is a rejection
+openapi-version-3.1.0	openapi.openapi=3.1	src/ir.rs::build_endpoint[if doc\.openapi\.starts_with\("3\.1"\) \{],src/emit.rs::raw_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_stream_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{]	`src/openapi.rs::load`'s non-3 arm rejects a document; a 3.1 document never takes it
+openapi-version-3.1.1	openapi.openapi=3.1	src/ir.rs::build_endpoint[if doc\.openapi\.starts_with\("3\.1"\) \{],src/emit.rs::raw_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_stream_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{]	`src/openapi.rs::load`'s non-3 arm rejects a document; a 3.1 document never takes it
+openapi-version-3.1.2	openapi.openapi=3.1	src/ir.rs::build_endpoint[if doc\.openapi\.starts_with\("3\.1"\) \{],src/emit.rs::raw_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_stream_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{],src/emit.rs::client_docstring[if ep\.module\.is_empty\(\) && ep\.openapi_31 \{]	`src/openapi.rs::load`'s non-3 arm rejects a document; a 3.1 document never takes it
+json-schema-dialect	openapi.jsonSchemaDialect	none	
+webhooks	openapi.webhooks	src/ir.rs::build[for \(event.\sitem\) in &doc\.webhooks \{],src/ir.rs::stream_condition_body_source_names[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{],src/ir.rs::standalone_referenced_classes[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{],src/ir.rs::document_discriminant_strips[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{]	
+info-summary	info.summary	none	
+license-identifier	info.license.identifier	none	
+reference-description	reference.description	src/openapi.rs::resolve_parameter[if let Some\(target\) = defs\.get\(name\) \{]	
+webhooks-without-paths	openapi.webhooks	src/ir.rs::build[for \(event.\sitem\) in &doc\.webhooks \{],src/ir.rs::stream_condition_body_source_names[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{],src/ir.rs::standalone_referenced_classes[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{],src/ir.rs::document_discriminant_strips[for item in doc\.paths\.values\(\)\.chain\(doc\.webhooks\.values\(\)\) \{],src/ir.rs::all_operations_authenticated[if !any \{],src/emit.rs::root_client_methods[if endpoints\.is_empty\(\) \{]	
+paths-absent	openapi.paths	src/ir.rs::all_operations_authenticated[if !any \{],src/emit.rs::root_client_methods[if endpoints\.is_empty\(\) \{]	
+paths-empty	openapi.paths	src/ir.rs::all_operations_authenticated[if !any \{],src/emit.rs::root_client_methods[if endpoints\.is_empty\(\) \{]	
+extension-openapi	openapi.x-*	none	
+extension-info	info.x-*	none	
+extension-contact	info.contact.x-*	none	
+extension-paths	openapi.paths.x-*	src/openapi.rs::deserialize_paths[if key\.starts_with\("x-"\) \{]	
+extension-path-item	pathItem.x-*	none	
+extension-operation	operation.x-*	src/openapi.rs::Operation::audiences,src/openapi.rs::Operation::ignored,src/openapi.rs::Operation::sdk_group_name,src/openapi.rs::Operation::sdk_method_name,src/openapi.rs::Operation::pagination,src/openapi.rs::Operation::streaming,src/ir.rs::uses_codegen_request_body_name	
+extension-parameter	parameter.x-*	none	
+extension-response	response.x-*	none	
+extension-tag	tag.x-*	none	
+extension-schema	schema.x-*	src/openapi.rs::Schema::ignored,src/openapi.rs::Schema::enum_member_names,src/ir.rs::resolve_request_body[return hoist_fields\(&class, types\)\.map\(\x7cmut fields\x7c \{]	
+extension-security-scheme	securityScheme.x-*	none	
+audience-dual-header-policy	operation.x-fern-audiences,operation.x-crozier-audiences	src/openapi.rs::Operation::audiences,src/openapi.rs::filter_by_audience[let keep = \x7cop: &Operation\x7c \{],src/openapi.rs::filter_by_audience[if labels\.is_empty\(\) \{],src/openapi.rs::filter_by_audience[\} else \{],src/openapi.rs::filter_by_audience[if slot\.as_ref\(\)\.is_some_and\(\x7cop\x7c !keep\(op\)\) \{]	
+x-fern-or-crozier-ignore	operation.x-fern-ignore,schema.x-fern-ignore,operation.x-crozier-ignore,schema.x-crozier-ignore	src/openapi.rs::Operation::ignored,src/openapi.rs::Schema::ignored,src/openapi.rs::filter_ignored[for key in &ignored_schemas \{],src/openapi.rs::filter_ignored[if slot\.as_ref\(\)\.is_some_and\(\x7cop\x7c op\.ignored\(\)\) \{],src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]	`filter_ignored`'s early return is the absence arm, taken by a document that ignores nothing
+codegen-request-body-name-extension	operation.x-codegen-request-body-name	src/ir.rs::uses_codegen_request_body_name	
+is-beta-extension	schema.x-is-beta	src/ir.rs::resolve_request_body[return hoist_fields\(&class, types\)\.map\(\x7cmut fields\x7c \{]	
+fern-streaming-extension	operation.x-fern-streaming	src/openapi.rs::Operation::streaming,src/openapi.rs::Streaming::condition_property,src/ir.rs::stream_condition_body_source_names,src/ir.rs::stream_condition_variants	
+parameter-name	parameter.name	src/ir.rs::header_param_stem,src/ir.rs::path_param_position,src/openapi.rs::normalize_parameters,src/emit.rs::url_arg[if stripped\.contains]	
+parameter-in	parameter.in	src/ir.rs::build_endpoint[let has_unsupported_params],src/ir.rs::build_endpoint[^\s*PathParam \{],src/ir.rs::build_endpoint[^\s*QueryParam \{],src/ir.rs::build_endpoint[^\s*HeaderParam \{]	
+parameter-description	parameter.description	src/emit.rs::push_path_param,src/emit.rs::raw_docstring[if let Some\(desc\) = &dp\.description],src/emit.rs::push_param_doc	
+parameter-required	parameter.required	src/emit.rs::method_params[if required && !base\.starts_with],src/ir.rs::build_endpoint[&& p\.schema\.as_ref\(\)\.is_some_and],src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)]	
+parameter-deprecated	parameter.deprecated	none	
+parameter-allow-empty-value	parameter.allowEmptyValue	none	
+parameter-style	parameter.style	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
+parameter-explode	parameter.explode	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
+parameter-allow-reserved	parameter.allowReserved	none	
+parameter-schema	parameter.schema	src/ir.rs::InlineHoister::hoist_param_enum,src/ir.rs::build_endpoint[let type_ref = schema\.map_or],src/ir.rs::one_or_many_query_schema,src/openapi.rs::parameter_schemas,src/openapi.rs::reject_unemittable_parameters	
+parameter-example	parameter.example	src/ir.rs::parameter_example_value,src/ir.rs::parameter_example,src/ir.rs::query_parameter_example	
+parameter-examples	parameter.examples	src/ir.rs::parameter_example_value,src/ir.rs::component_example_value	
+parameter-content	parameter.content	src/openapi.rs::parameter_schemas	
+parameter-in-query	parameter.in=query	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/ir.rs::build_endpoint[let type_ref = schema\.map_or],src/emit.rs::method_params[\.map\(\x7cqp\x7c \{],src/emit.rs::append_request_call_args[if !ep\.query_params\.is_empty\(\) \{],src/ir.rs::query_parameter_example	
+parameter-in-header	parameter.in=header	src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::build_endpoint[\.filter_map\(\x7cp\x7c \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)],src/ir.rs::header_param_stem,src/openapi.rs::reject_unemittable_parameters,src/emit.rs::append_request_call_args[for hp in &ep\.header_params \{],src/emit.rs::method_params[\.map\(\x7chp\x7c \{]	
+parameter-in-path	parameter.in=path	src/ir.rs::build_endpoint[^\s*PathParam \{],src/ir.rs::build_endpoint[path_params\.sort_by],src/ir.rs::path_param_position,src/emit.rs::url_arg[if stripped\.contains],src/emit.rs::push_path_param,src/emit.rs::method_params[\.map\(\x7cpp\x7c \{]	
+cookie-parameter	parameter.in=cookie	src/ir.rs::build_endpoint[let has_unsupported_params]	
+parameter-style-label-path-scalar	parameter.style=label	src/ir.rs::build_endpoint[^\s*PathParam \{],src/emit.rs::url_arg[if stripped\.contains]	
+parameter-style-simple-path-scalar	parameter.style=simple	src/ir.rs::build_endpoint[^\s*PathParam \{],src/emit.rs::url_arg[if stripped\.contains]	
+parameter-style-simple-path-array	parameter.style=simple	src/ir.rs::build_endpoint[^\s*PathParam \{],src/emit.rs::url_arg[if stripped\.contains]	
+parameter-style-simple-header-scalar	parameter.style=simple	src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/emit.rs::append_request_call_args[for hp in &ep\.header_params \{]	
+parameter-style-form-query-scalar	parameter.style=form	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if !ep\.query_params\.is_empty\(\) \{]	
+parameter-style-form-query-array	parameter.style=form	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{],src/emit.rs::method_params[if qp\.allow_multiple \{]	
+parameter-style-form-query-object	parameter.style=form	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	
+parameter-style-spacedelimited-query-scalar	parameter.style=spaceDelimited	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::append_request_call_args[if !ep\.query_params\.is_empty\(\) \{]	
+parameter-style-spacedelimited-query-array	parameter.style=spaceDelimited	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::method_params[if qp\.allow_multiple \{]	
+parameter-style-pipedelimited-query-scalar	parameter.style=pipeDelimited	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::append_request_call_args[if !ep\.query_params\.is_empty\(\) \{]	
+parameter-style-deepobject-query-scalar	parameter.style=deepObject	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::append_request_call_args[if !ep\.query_params\.is_empty\(\) \{]	
+parameter-style-deepobject-query-array	parameter.style=deepObject	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::method_params[if qp\.allow_multiple \{]	
+deepObject-real-object	parameter.style=deepObject	src/ir.rs::build_endpoint[^\s*QueryParam \{],src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	
+param-content-query	parameter.content	src/openapi.rs::parameter_schemas,src/ir.rs::build_endpoint[^\s*QueryParam \{]	
+param-content-header	parameter.content	src/openapi.rs::parameter_schemas,src/ir.rs::build_endpoint[^\s*HeaderParam \{]	
+header-description	header.description	none	
+header-required	header.required	none	
+header-allow-empty-value	header.allowEmptyValue	none	
+header-style	header.style	none	
+header-explode	header.explode	none	
+header-schema	header.schema	none	
+header-example	header.example	none	
+header-examples	header.examples	none	
+header-content	header.content	none	
+example-summary	example.summary	none	
+example-description	example.description	none	
+example-value	example.value	src/ir.rs::component_example_value[if let Some\(value\) = current\.value],src/ir.rs::media_example	
+example-external-value	example.externalValue	none	
+components-parameters	components.parameters	src/openapi.rs::resolve_parameter,src/openapi.rs::normalize_parameters	
+components-headers	components.headers	none	
+components-examples	components.examples	src/ir.rs::component_example_value	
+parameter-reference	components.parameters	src/openapi.rs::resolve_parameter,src/openapi.rs::normalize_parameters,src/refs.rs::Resolver::resolve_parameter	
+path-item-parameters	pathItem.parameters	src/openapi.rs::normalize_parameters,src/ir.rs::build_endpoint[path_params\.sort_by]	
+operation-overrides-path-item-parameter	pathItem.parameters	src/openapi.rs::normalize_parameters	
+title	schema.title	src/ir.rs::build_endpoint[\x7c\x7c op\.parameters\.iter\(\)\.any\(\x7cparameter\x7c \{],src/ir.rs::build_endpoint[^ {8}\.filter_map\(\x7cparameter\x7c \{],src/ir.rs::build_endpoint[&& media\.schema\.as_ref\(\)\.is_some_and\(\x7cschema\x7c \{]	
+maximum	schema.maximum	none	
+exclusive-maximum-boolean	schema.exclusiveMaximum	none	
+exclusive-maximum-numeric	schema.exclusiveMaximum	none	
+minimum	schema.minimum	none	
+exclusive-minimum	schema.exclusiveMinimum	none	
+max-length	schema.maxLength	src/ir.rs::query_parameter_example,src/ir.rs::resolve_request_body[\.is_some_and\(\x7cproperty\x7c \{]	
+min-length	schema.minLength	src/ir.rs::query_parameter_example,src/ir.rs::resolve_request_body[\.is_some_and\(\x7cproperty\x7c \{]	
+pattern	schema.pattern	src/ir.rs::query_parameter_example,src/ir.rs::build_endpoint[pattern_constrained: p\.schema\.as_ref\(\)\.is_some_and\(\x7cschema\x7c \{]	
+max-items	schema.maxItems	none	
+min-items	schema.minItems	none	
+unique-items	schema.uniqueItems	src/ir.rs::array_uses_set	
+max-properties	schema.maxProperties	none	
+min-properties	schema.minProperties	none	
+required	schema.required	src/ir.rs::Builder::collect_fields,src/ir.rs::InlineHoister::hoist_object_fields,src/ir.rs::member_fields,src/ir.rs::hoist_inline_object,src/ir.rs::hoist_error_body_types[for required in &schema\.required \{]	
+enum	schema.enum	src/ir.rs::string_enum_values,src/ir.rs::build_enum,src/ir.rs::is_int_enum,src/ir.rs::Builder::add_named[if let Some\(values\) = string_enum_values\(schema\) \{],src/ir.rs::base_type_ref[if let Some\(values\) = string_enum_values\(schema\) \{],src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(values\) = string_enum_values\(schema\) \{]	
+type-single	schema.type	src/openapi.rs::TypeField::primary,src/ir.rs::base_type_ref[match schema\.ty\.as_ref\(\)\.and_then\(\x7ct\x7c t\.primary\(\)\) \{],src/ir.rs::scalar_body,src/ir.rs::is_object_type,src/ir.rs::is_string_type,src/ir.rs::declares_scalar_type	
+allof	schema.allOf	src/ir.rs::member_fields,src/ir.rs::single_all_of_ref,src/ir.rs::sole_all_of_ref,src/ir.rs::described_all_of_ref,src/ir.rs::sole_inline_all_of,src/ir.rs::Builder::add_object[for member in schema\.all_of\.iter\(\)\.flatten\(\) \{]	
+oneof	schema.oneOf	src/ir.rs::union_variants,src/ir.rs::Builder::add_named[if let Some\(variants\) = schema\.one_of\.as_ref\(\)\.or\(schema\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::variant_ref[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/openapi.rs::collapse_sole_composition_member	
+anyof	schema.anyOf	src/ir.rs::union_variants,src/ir.rs::Builder::add_named[if let Some\(variants\) = schema\.one_of\.as_ref\(\)\.or\(schema\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::field_type_ref[if let Some\(members\) = prop_schema\.any_of\.as_ref\(\)\.or\(prop_schema\.one_of\.as_ref\(\)\) \{],src/ir.rs::simple_nullable_member,src/openapi.rs::collapse_sole_composition_member	
+not	schema.not	none	
+items	schema.items	src/ir.rs::base_type_ref[Some\("array"\) => \{],src/ir.rs::array_item_type_ref,src/ir.rs::Builder::nested_array_element,src/ir.rs::InlineHoister::hoist_array_item_type	
+properties	schema.properties	src/ir.rs::Builder::collect_fields,src/ir.rs::InlineHoister::hoist_object_fields,src/ir.rs::hoist_inline_object,src/ir.rs::is_inline_object,src/ir.rs::is_inline_struct	
+additional-properties-boolean-true	schema.additionalProperties=true	src/ir.rs::is_map,src/ir.rs::base_type_ref[=Some\(AdditionalProperties::Bool\(true\)\) =>],src/ir.rs::is_object_type	
+additional-properties-boolean-false	schema.additionalProperties=false	src/ir.rs::is_inline_struct,src/ir.rs::is_closed_empty_object,src/ir.rs::resolve_request_body[if schema\.ty\.as_ref\(\)\.and_then\(\x7cty\x7c ty\.primary\(\)\) == Some\("object"\)$]	
+additional-properties-schema	schema.additionalProperties	src/ir.rs::is_map,src/ir.rs::base_type_ref[Some\(AdditionalProperties::Schema\(value\)\) => \{],src/ir.rs::Builder::add_named[if is_map\(schema\) && schema\.all_of\.is_none\(\) \{],src/ir.rs::Builder::field_type_ref[if is_map\(prop_schema\) && is_optional\(prop_schema\) \{],src/ir.rs::nullable_map_value_type_ref,src/ir.rs::legacy_nullable_map_type_ref	
+description	schema.description	src/ir.rs::property_description,src/ir.rs::clean_doc,src/ir.rs::declared_doc,src/ir.rs::described_all_of_ref	
+format	schema.format	src/ir.rs::base_type_ref[Some\("string"\) => match schema\.format],src/ir.rs::scalar_body["string" => match schema\.format],src/ir.rs::number_prim,src/ir.rs::int_prim	
+default	schema.default	src/ir.rs::build_endpoint[\.filter_map\(\x7cp\x7c \{]	
+nullable	schema.nullable	src/openapi.rs::Schema::explicitly_nullable,src/openapi.rs::normalize_nullable_schema_refs,src/ir.rs::InlineHoister::hoist_union_variant[return if variant\.nullable == Some\(true\) \{],src/ir.rs::nullable_member,src/ir.rs::Builder::variant_ref[if variant\.reference\.is_none\(\) && variant\.nullable == Some\(true\)],src/ir.rs::base_type_ref[if i\.nullable == Some\(true\) \{]	
+discriminator	schema.discriminator	src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::inheritance_discriminated_union,src/ir.rs::is_inheritance_union_base,src/ir.rs::collect_discriminant_strips[if let Some\(discriminator\) = &schema\.discriminator \{],src/ir.rs::Builder::field_type_ref[if prop_schema\.discriminator\.is_some\(\) \x7c\x7c members\.len\(\) > 1 \{]	`field_type_ref`'s inheritance-union item arm is the `gap` row `array-item-inheritance-union`'s, not every discriminator's
+read-only	schema.readOnly	src/ir.rs::schema_property_is_read_only,src/ir.rs::Builder::collect_fields,src/ir.rs::InlineHoister::hoist_object_fields,src/ir.rs::append_member_fields[fields\.push\(Field \{],src/ir.rs::build[if endpoint\.body_schema_dropped \{]	
+write-only	schema.writeOnly	none	
+xml	schema.xml	none	
+externaldocs	schema.externalDocs	none	
+example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_literal,src/ir.rs::parameter_example_value,src/ir.rs::array_item_example,src/ir.rs::example_is_schema_definition,src/ir.rs::Builder::add_object[if let Some\(example\) = schema_example\(schema\)]	
+deprecated	schema.deprecated	none	
+dollar-schema	schema.$schema	none	
+dollar-id	schema.$id	none	
+dollar-ref	schema.$ref	src/ir.rs::base_type_ref[if let Some\(reference\) = &schema\.reference \{],src/ir.rs::ref_to_class,src/ir.rs::resolve_ref,src/ir.rs::resolve_ref_from_schemas,src/ir.rs::resolve_schema_pointer,src/refs.rs::Resolver::resolve_schema	
+dollar-defs	schema.$defs	none	
+dollar-comment	schema.$comment	none	
+prefix-items	schema.prefixItems	none	
+pattern-properties	schema.patternProperties	none	
+property-names	schema.propertyNames	none	
+if	schema.if	none	
+then	schema.then	none	
+else	schema.else	none	
+unevaluated-properties	schema.unevaluatedProperties	none	
+type-array-with-null	schema.type=null	src/openapi.rs::TypeField::primary,src/openapi.rs::Schema::explicitly_nullable	
+type-array-multi-nonnull	schema.type	src/openapi.rs::normalize_multi_type_schemas,src/ir.rs::Builder::variant_ref[if variant\.multi_type_union \{]	
+const	schema.const	src/ir.rs::string_enum_values[\} else \{],src/ir.rs::preserve_const_discriminant,src/ir.rs::inferred_strip_discriminant_property	
+dependent-required	schema.dependentRequired	none	
+examples	schema.examples	src/openapi.rs::de_schema_examples,src/ir.rs::schema_example,src/ir.rs::schema_example_literal	
+format-date-time	schema.format=date-time	src/ir.rs::base_type_ref[=Some\("date-time"\)],src/ir.rs::scalar_body[=Some\("date-time"\)],src/emit.rs::render_type[Prim::Datetime => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Datetime\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Datetime\) => \{]	
+format-date	schema.format=date	src/ir.rs::base_type_ref[=Some\("date"\) =>],src/ir.rs::scalar_body[=Some\("date"\) =>],src/emit.rs::render_type[Prim::Date => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Date\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Date\) => \{]	
+format-time	schema.format=time	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-duration	schema.format=duration	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-email	schema.format=email	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-hostname	schema.format=hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-ipv4	schema.format=ipv4	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-uuid	schema.format=uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-uri	schema.format=uri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-uri-reference	schema.format=uri-reference	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-uri-template	schema.format=uri-template	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-json-pointer	schema.format=json-pointer	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-regex	schema.format=regex	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-int32	schema.format=int32	src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/ir.rs::int_prim	
+format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>]	
+format-float	schema.format=float	src/ir.rs::number_prim[=_ => Prim::Float]	
+format-double	schema.format=double	src/ir.rs::number_prim[=_ => Prim::Float]	
+format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-byte	schema.format=byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-binary	schema.format=binary	src/ir.rs::base_type_ref[=Some\("binary"\)],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response,src/ir.rs::has_wildcard_binary_response,src/ir.rs::resolve_request_body[let binary_media = \x7cmedia_type],src/ir.rs::hoist_form_object[let binary_scalar = \x7cschema: &Schema\x7c \{],src/ir.rs::Builder::variant_ref[match base_type_ref\(variant\) \{]	
+content-encoding	schema.contentEncoding	none	
+content-media-type	schema.contentMediaType	none	
+content-schema	schema.contentSchema	none	
+boolean-schema-false	schema.unevaluatedProperties	none	
+ref-siblings	schema.$ref	src/ir.rs::Builder::collect_fields,src/ir.rs::property_description,src/ir.rs::hoist_inline_object,src/ir.rs::success_response[if schema\.reference\.is_none\(\) && is_optional\(schema\) \{]	
+recursive-graph	schema.$ref	src/emit.rs::forward_ref_map,src/emit.rs::forward_repair_map[if reaches_cycle \{],src/emit.rs::render_type_decl[if !forward\.is_empty\(\) \x7c\x7c needs_forward \{],src/emit.rs::update_forward_refs_call,src/ir.rs::Builder::add_object[if !self\.building_types\.insert]	
+mutually-recursive-graph	schema.$ref	src/emit.rs::forward_ref_map,src/emit.rs::forward_repair_map[if reaches_cycle \{],src/emit.rs::render_type_decl[if !forward\.is_empty\(\) \x7c\x7c needs_forward \{],src/emit.rs::update_forward_refs_call,src/ir.rs::Builder::add_object[if !self\.building_types\.insert]	
+cycle-via-additionalProperties	schema.additionalProperties	src/emit.rs::forward_ref_map,src/emit.rs::forward_repair_map[if reaches_cycle \{],src/ir.rs::collect_standalone_references[if let Some\(AdditionalProperties::Schema\(child\)\)],src/ir.rs::Builder::add_named[if is_map\(schema\) && schema\.all_of\.is_none\(\) \{]	
+nesting-depth-ge-15	schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if prop_schema\.reference\.is_none\(\) && is_inline_struct\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[if is_inline_struct\(prop_schema\)$],src/naming.rs::child_class_name	
+all-of-nested-composition	schema.anyOf>schema.allOf,schema.oneOf>schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object,src/ir.rs::Builder::variant_ref[if is_inline_object\(variant\) \x7c\x7c is_declared_empty_object\(variant\) \{],src/ir.rs::Builder::variant_ref[if described_all_of_ref\(variant\)\.is_some\(\) \{]	
+any-of-nested-composition	schema.anyOf	src/ir.rs::Builder::variant_ref[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::add_object[if let Some\(branches\) = member\.one_of],src/ir.rs::union_variants	
+one-of-nested-composition	schema.oneOf	src/ir.rs::Builder::variant_ref[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::add_object[if let Some\(branches\) = member\.one_of],src/ir.rs::union_variants	
+not-nested-composition	schema.not	none	
+discriminator-property-name	schema.discriminator.propertyName	src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::inheritance_discriminated_union,src/ir.rs::is_inheritance_union_base,src/ir.rs::collect_discriminant_strips[if let Some\(property\) = property \{]	
+discriminator-mapping	schema.discriminator.mapping	src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::inheritance_discriminated_union[for \(value. reference\) in &discriminator\.mapping \{],src/ir.rs::collect_discriminant_strips[for reference in discriminator\.mapping\.values\(\) \{],src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	`field_type_ref`'s inheritance-union item arm is the `gap` row `array-item-inheritance-union`'s, not every mapping's
+xml-name	schema.xml.name	none	
+xml-namespace	schema.xml.namespace	none	
+xml-attribute	schema.xml.attribute	none	
+normalization-collision	components.schemas:normalized-collision	src/ir.rs::deduplicate_type_names,src/naming.rs::class_name	
+items-ref-element	schema.items>schema.$ref	src/ir.rs::Builder::nested_array_element[if items.reference.is_some\(\) \{],src/ir.rs::InlineHoister::hoist_array_item_type[if item_schema.reference.is_some\(\) \{]	
+items-oneof-element	schema.items>schema.oneOf	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if let Some\(members\) = item_schema.one_of]	
+items-anyof-element	schema.items>schema.anyOf	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of],src/ir.rs::InlineHoister::hoist_array_item_type[if let Some\(members\) = item_schema.one_of]	
+oneof-ref-variant	schema.oneOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(reference\) = &variant.reference \{],src/ir.rs::Builder::variant_ref[if let Some\(reference\) = &variant.reference \{]	
+anyof-ref-variant	schema.anyOf>schema.$ref	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(reference\) = &variant.reference \{],src/ir.rs::Builder::variant_ref[if let Some\(reference\) = &variant.reference \{]	
+oneof-string-enum-variant	schema.oneOf>schema.enum:string-valued	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::Builder::variant_ref[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::string_enum_values	
+anyof-string-enum-variant	schema.anyOf>schema.enum:string-valued	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::Builder::variant_ref[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::string_enum_values	
+oneof-string-const-variant	schema.oneOf>schema.const:string-valued	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::Builder::variant_ref[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::string_enum_values	
+anyof-string-const-variant	schema.anyOf>schema.const:string-valued	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::Builder::variant_ref[if let Some\(values\) = string_enum_values\(variant\) \{],src/ir.rs::string_enum_values	
+oneof-allof-variant	schema.oneOf>schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
+anyof-allof-variant	schema.anyOf>schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::Builder::variant_ref[if described_all_of_ref\(variant\)\.is_some\(\) \{],src/ir.rs::Builder::variant_ref[if is_inline_object\(variant\) \x7c\x7c is_declared_empty_object\(variant\) \{],src/ir.rs::is_inline_object	
+oneof-oneof-variant	schema.oneOf>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	
+anyof-oneof-variant	schema.anyOf>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	
+anyof-anyof-variant	schema.anyOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	
+property-oneof-composition	schema.properties>schema.oneOf	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(members\) = prop_schema.one_of]	
+property-anyof-composition	schema.properties>schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(members\) = prop_schema.one_of]	
+type-primary-array	schema.type:primary=array	src/openapi.rs::TypeField::primary,src/ir.rs::InlineHoister::hoist_union_variant[if variant.ty.as_ref\(\)],src/ir.rs::InlineHoister::prop_type_ref[if prop_schema.ty.as_ref\(\)]	`nested_array_element`'s nested-array recursion is `items-nested-array-element`'s arm, not every array's
+properties-non-empty	schema.properties:non-empty	src/ir.rs::is_inline_struct,src/ir.rs::is_inline_object,src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{]	`nested_array_element`'s inline-struct item arm is the array-of-arrays case, not every property map's
+oneof-sole-member	schema.oneOf:sole-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct],src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\(\) == 1 && is_inline_struct],src/openapi.rs::collapse_sole_composition_member	
+anyof-sole-member	schema.anyOf:sole-member	src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\(\) == 1 && is_inline_struct],src/openapi.rs::collapse_sole_composition_member	`InlineHoister::prop_type_ref`'s inline-struct sole-member arm is the `gap` row `property-sole-anyof-struct-member`'s
+oneof-sole-non-null-member	schema.oneOf:sole-non-null-member	src/ir.rs::simple_nullable_member,src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1],src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	
+anyof-sole-non-null-member	schema.anyOf:sole-non-null-member	src/ir.rs::simple_nullable_member,src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1]	`hoist_union_variant`'s nullable array-item arm is the `gap` rows `anyof-array-variant-anyof-nullable-item`, `anyof-array-variant-oneof-nullable-item` and `oneof-array-variant-anyof-nullable-item`'s
+enum-string-valued	schema.enum:string-valued	src/ir.rs::string_enum_values,src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{]	
+const-string-valued	schema.const:string-valued	src/ir.rs::string_enum_values,src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{]	
+items-nested-array-element	schema.items>schema.type:primary=array	src/ir.rs::Builder::nested_array_element[^\s*\{$]	
+items-inline-struct-element	schema.items>schema.properties:non-empty	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
+items-closed-object-element	schema.items>schema.additionalProperties=false	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-oneof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
+anyof-array-variant-anyof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
+anyof-array-variant-oneof-nullable-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{],src/ir.rs::simple_nullable_member	
+oneof-array-variant-oneof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
+oneof-array-variant-anyof-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
+anyof-array-variant-oneof-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
+anyof-array-variant-anyof-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	
+oneof-array-variant-struct-item	schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+anyof-array-variant-struct-item	schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-closed-object-item	schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+anyof-array-variant-closed-object-item	schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-inline-object-variant	schema.oneOf>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
+anyof-inline-object-variant	schema.anyOf>schema.properties:non-empty	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_inline_object	
+oneof-empty-object-variant	schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+anyof-empty-object-variant	schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+anyof-closed-empty-object-variant	schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+property-string-enum	schema.properties>schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
+property-string-const	schema.properties>schema.const:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
+property-inline-struct	schema.properties>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
+property-closed-object	schema.properties>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
+property-oneof-nullable-pair	schema.properties>schema.oneOf:sole-non-null-member	src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1]	
+property-anyof-nullable-pair	schema.properties>schema.anyOf:sole-non-null-member	src/ir.rs::InlineHoister::prop_type_ref[if non_null.len\(\) == 1]	
+property-sole-oneof-struct-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-anyof-struct-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-oneof-closed-object-member	schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-sole-anyof-closed-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
+property-array-type	schema.properties>schema.type:primary=array	src/ir.rs::InlineHoister::prop_type_ref[if prop_schema.ty.as_ref\(\)],src/ir.rs::InlineHoister::hoist_array_item_type	
+ref-pointer-cross-document	schema.$ref:cross-document	src/refs.rs::split_external,src/refs.rs::split_remote,src/refs.rs::Resolver::resolve_schema,src/refs.rs::Resolver::resolve_reference,src/refs.rs::Resolver::import_named_schema	`src/ir.rs::ref_to_class`'s cross-document arm: `src/refs.rs` rewrites every cross-document `$ref` to a local one before `ir.rs` reads it
+ref-pointer-same-document-foreign	schema.$ref:same-document-foreign-pointer	src/openapi.rs::normalize_response_schema_refs,src/openapi.rs::resolve_response_schema_refs,src/ir.rs::ref_to_class[let Some\(pointer\) = reference.strip_prefix],src/ir.rs::base_type_ref[if let Some\(reference\) = &schema.reference \{]	
+ref-pointer-nested-properties	schema.$ref:nested-properties	src/ir.rs::ref_to_class["properties" if index],src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	
+ref-pointer-nested-items	schema.$ref:nested-items	src/ir.rs::ref_to_class["items" => \{],src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	
+ref-pointer-composition-index	schema.$ref:composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{],src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	
+ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	src/ir.rs::ref_to_class[=_ => index \+= 1],src/ir.rs::resolve_schema_pointer[=_ => return None]	
+ref-pointer-undeclared-component-head	schema.$ref:undeclared-component-head	src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]	
+annotated-ref-property	schema.properties>schema.allOf:annotated-ref	src/ir.rs::InlineHoister::prop_type_ref[^ {8}\{$],src/ir.rs::described_all_of_ref	
+annotated-ref-target-string-enum	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(&target\) \{]	
+annotated-ref-target-anyof	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)],src/ir.rs::InlineHoister::hoist_named_copy	
+annotated-ref-target-oneof	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)],src/ir.rs::InlineHoister::hoist_named_copy	
+annotated-ref-target-struct	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[^ {16}\{$]	
+annotated-ref-target-composed	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf	src/ir.rs::InlineHoister::prop_type_ref[^ {16}\{$]	
+annotated-ref-target-closed-object	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[^ {16}\{$]	
+anyof-array-variant-annotated-ref-item	schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$],src/ir.rs::InlineHoister::hoist_named_copy	
+annotated-ref-shape	schema.allOf:annotated-ref	src/ir.rs::described_all_of_ref,src/ir.rs::InlineHoister::prop_type_ref[^ {8}\{$],src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$],src/ir.rs::Builder::annotated_ref_type	
+ref-resolves-to-component	schema.$ref:resolves-to-component	src/ir.rs::resolve_ref_from_schemas,src/ir.rs::InlineHoister::prop_type_ref[if let Some\(target\) = resolve_ref_from_schemas]	`hoist_union_variant`'s annotated-`$ref` item arm is `annotated-ref-shape`'s, not every resolving `$ref`'s
+oneof-discriminated-union	schema.oneOf:discriminated-union	src/ir.rs::Builder::discriminated_union,src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::inferred_union_discriminant_property,src/ir.rs::Builder::nested_array_element[^\s*\) \{$],src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\) \{$],src/ir.rs::InlineHoister::prop_type_ref[^ {16}\) \{$]	
+anyof-discriminated-union	schema.anyOf:discriminated-union	src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::inferred_union_discriminant_property,src/ir.rs::Builder::nested_array_element[^\s*\) \{$],src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\) \{$],src/ir.rs::InlineHoister::prop_type_ref[^ {16}\) \{$]	
+inheritance-discriminated-union	schema.discriminator:inheritance-union	src/ir.rs::Builder::inheritance_discriminated_union,src/ir.rs::Builder::discriminated_union[if schema.one_of.is_none\(\) && schema.any_of.is_none\(\) \{],src/ir.rs::is_inheritance_union_base,src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	
+array-item-oneof-discriminated-union	schema.items>schema.oneOf:discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$],src/ir.rs::Builder::discriminated_union	
+array-item-anyof-discriminated-union	schema.items>schema.anyOf:discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$],src/ir.rs::Builder::discriminated_union	
+oneof-array-variant-oneof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\) \{$],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::Builder::discriminated_union	
+anyof-array-variant-oneof-discriminated-union-item	schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\) \{$],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::Builder::discriminated_union	
+anyof-array-variant-anyof-discriminated-union-item	schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\) \{$],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::Builder::discriminated_union	
+property-oneof-discriminated-union	schema.properties>schema.oneOf:discriminated-union	src/ir.rs::InlineHoister::prop_type_ref[^ {16}\) \{$],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::Builder::discriminated_union	
+property-anyof-discriminated-union	schema.properties>schema.anyOf:discriminated-union	src/ir.rs::InlineHoister::prop_type_ref[^ {16}\) \{$],src/ir.rs::InlineHoister::hoist_discriminated_union,src/ir.rs::Builder::discriminated_union	
+array-item-pointer-walk-allof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	
+array-item-pointer-walk-properties	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	
+array-item-pointer-walk-items	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	
+array-item-pointer-walk-anyof	schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	
+type-primary-object	schema.type:primary=object	src/ir.rs::is_object_type	
+type-primary-scalar	schema.type:primary-scalar	src/ir.rs::declares_scalar_type	
+allof-sole-member	schema.allOf:sole-member	src/ir.rs::sole_inline_all_of,src/ir.rs::InlineHoister::prop_type_ref[sole_inline_all_of\(prop_schema\) \{]	
+array-item-composed	schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
+array-item-empty-object	schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{],src/ir.rs::is_inline_struct	
+anyof-array-variant-composed-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-composed-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+oneof-array-variant-empty-object-item	schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+anyof-array-variant-empty-object-item	schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{],src/ir.rs::is_inline_struct	
+property-sole-inline-allof	schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref	src/ir.rs::InlineHoister::prop_type_ref[sole_inline_all_of\(prop_schema\) \{],src/ir.rs::sole_inline_all_of	
+property-composed	schema.properties>!schema.type:primary-scalar&schema.allOf	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
+property-empty-object	schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
+array-item-residual	schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array	src/ir.rs::full_type_ref_resolved	
+oneof-variant-residual	schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
+anyof-variant-residual	schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::base_type_ref	
+annotated-ref-target-residual	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[if let Some\(target\) = resolve_ref_from_schemas]	
+property-oneof-residual	schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf	src/ir.rs::InlineHoister::prop_type_ref[self.out.push\(TypeDecl::Alias]	
+property-anyof-residual	schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[self.out.push\(TypeDecl::Alias]	
+property-residual	schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array	src/ir.rs::base_type_ref	
+enum-apostrophe-member	schema.enum:apostrophe-member	src/naming.rs::enum_words[if c == '\\'' \x7c\x7c]	
+enum-digit-word-member	schema.enum:digit-word-member	src/naming.rs::digit_word,src/naming.rs::uuid_enum_identifier[if digit_len > 0 \{]	
+enum-empty-identifier-member	schema.enum:empty-identifier-member	src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]	
+enum-empty-member	schema.enum:empty-member	src/naming.rs::enum_words[if value.is_empty\(\) \{]	
+enum-leading-digit-identifier	schema.enum:leading-digit-identifier	src/naming.rs::finalize_enum_ident[if name.starts_with]	
+enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if has_leading_zero_identifier_segment \{]	
+enum-normalized-collision	schema.enum:normalized-collision	src/ir.rs::dedupe	
+enum-numeric-member	schema.enum:numeric-member	src/ir.rs::string_enum_values[if !is_string_type\(schema\) \{],src/ir.rs::string_enum_values[if strings.is_empty\(\) \{],src/ir.rs::is_int_enum	
+enum-numeric-prefix-member	schema.enum:numeric-prefix-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if digits > 0 \{]	
+enum-reserved-member	schema.enum:reserved-member	src/naming.rs::finalize_enum_ident[if is_reserved\(&name\) \{],src/naming.rs::enum_visit_param[if name == "self" \{]	
+enum-uuid-member	schema.enum:uuid-member	src/naming.rs::is_uuid,src/naming.rs::enum_identifier[if is_uuid\(value\) \{],src/naming.rs::uuid_enum_identifier	
+enum-wildcard-member	schema.enum:wildcard-member	src/naming.rs::enum_words[if let Some\(words\) = whole_value_enum_words\(value\) \{],src/naming.rs::whole_value_enum_words	
+schema-example-array	schema.example=array	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples,src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::List\(inner\) \x7c TypeRef::Set\(inner\) = t \{]	
+schema-example-boolean	schema.example=boolean	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
+schema-example-null	schema.example=null	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
+schema-example-number	schema.example=number	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
+schema-example-string	schema.example=string	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples	
+securityscheme-type-apikey	securityScheme.type=apiKey	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+securityscheme-type-http	securityScheme.type=http	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::operation_uses_basic_auth,src/ir.rs::is_auth_managed_header,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+securityscheme-type-oauth2	securityScheme.type=oauth2	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[SecuritySchemeType::OAuth2 => Auth::Bearer \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::oauth_scope_enum,src/ir.rs::build[if let Some\(oauth_scope\) = oauth_scope_enum\(doc\) \{],src/ir.rs::body_response_same_ref,src/ir.rs::is_auth_managed_header	
+securityscheme-type-openidconnect	securityScheme.type=openIdConnect	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+mutualTLS	securityScheme.type=mutualTLS	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+securityscheme-description	securityScheme.description	none	
+securityscheme-name	securityScheme.name	src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{]	
+apikey-header	securityScheme.in=header	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header	
+apiKey-cookie	securityScheme.in=cookie	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers	
+http-basic	securityScheme.scheme=basic	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::operation_uses_basic_auth,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+http-bearer	securityScheme.scheme=bearer	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::is_auth_managed_header,src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
+http-negotiate	securityScheme.scheme=negotiate	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+http-dpop	securityScheme.scheme=dpop,securityScheme.scheme=DPoP	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+http-mutual	securityScheme.scheme=mutual	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+securityscheme-bearerformat	securityScheme.bearerFormat	none	
+securityscheme-openidconnecturl	securityScheme.openIdConnectUrl	none	
+securityscheme-flows	securityScheme.flows	src/ir.rs::oauth_scope_enum	
+securityscheme-ref	securityScheme:$ref	src/openapi.rs::normalize_security_scheme_refs	
+oauth2-implicit	securityScheme.flows.implicit	src/ir.rs::oauth_scope_enum	
+oauth2-password	securityScheme.flows.password	src/ir.rs::oauth_scope_enum	
+oauth2-clientcredentials	securityScheme.flows.clientCredentials	src/ir.rs::oauth_scope_enum	
+oauth2-authorizationcode	securityScheme.flows.authorizationCode	src/ir.rs::oauth_scope_enum	
+oauth2-multiple-flows	securityScheme.flows	src/ir.rs::oauth_scope_enum	
+oauthflow-authorizationurl	securityScheme.flows.authorizationCode.authorizationUrl	none	
+oauthflow-tokenurl	securityScheme.flows.authorizationCode.tokenUrl,securityScheme.flows.clientCredentials.tokenUrl	none	
+oauthflow-refreshurl	securityScheme.flows.clientCredentials.refreshUrl	none	
+oauthflow-scopes	securityScheme.flows.authorizationCode.scopes,securityScheme.flows.clientCredentials.scopes	src/ir.rs::oauth_scope_enum,src/ir.rs::build[if let Some\(oauth_scope\) = oauth_scope_enum\(doc\) \{]	
+security-requirement-scopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-requirement-scopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-requirement-noscopes-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-requirement-noscopes-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-optional-requirement-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+security-optional-requirement-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
+security-empty-list-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref	
+security-empty-list-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref	
+security-alternatives-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+operation-security-alternatives	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-conjunction-document	openapi.security	src/ir.rs::all_operations_authenticated,src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+security-conjunction-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
+components-securityschemes	components.securitySchemes	src/openapi.rs::normalize_security_scheme_refs,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers,src/ir.rs::oauth_scope_enum	`src/ir.rs::auth_model`'s empty-`securitySchemes` arm is the absence arm
+schema-name-nonidentifier-name	components.schemas:nonidentifier-name	src/naming.rs::class_name	

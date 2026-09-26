@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import importlib.util
 import io
@@ -36,6 +37,7 @@ import textwrap
 import unittest
 import unicodedata
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
@@ -622,6 +624,50 @@ DECLARED_SOURCES = (
 )
 EXHAUSTED = "exhausted"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+FROZEN_SEARCH_CONTRACT = (
+    REPO / "docs" / "openapi-surface" / "witness-search-redo" / "contract.md"
+)
+
+
+def frozen_search_keys(contract: str) -> set[str]:
+    """The keys the frozen witness-search-redo contract owns and reconciles."""
+    owned = contract.split("## Owned keys", 1)[1] if "## Owned keys" in contract else ""
+    return set(re.findall(r"^\| `([^`]+)` \| `", owned, re.M))
+
+
+def entry_search_failures(key: str, cell: str) -> list[str]:
+    """An entry row's own `search outcome`, for a row the frozen contract does not own.
+
+    The frozen contract reconciles its keys against its shards; a `gap` row
+    admitted after it froze records its search on its own evidence cell, and
+    this holds that record to the same rule: every declared source named once
+    with what it returned, and `search-incomplete` while any of them did not
+    answer. `exhausted` is never read off an entry cell — it is Contract B's,
+    and owes a `### Witness search (exhaustive)` record.
+    """
+    outcome = re.search(r"search outcome `([^`]+)`", cell)
+    if not outcome:
+        return []
+    failures = []
+    named = re.findall(r"\*\*([\w.-]+)\*\* → (unanswered|\d+)", cell)
+    sources = [source for source, _result in named]
+    if sorted(sources) != sorted(DECLARED_SOURCES):
+        failures.append(
+            f"{key}: its search names {sorted(sources)}, not each of the six "
+            f"declared sources {sorted(DECLARED_SOURCES)} once"
+        )
+    unanswered = sorted(source for source, result in named if result == UNANSWERED)
+    if outcome.group(1) == EXHAUSTED:
+        failures.append(
+            f"{key}: reads `{EXHAUSTED}` on its entry cell; an exhaustive search "
+            f"is recorded under `{EXHAUSTIVE_SEARCH_HEADING}`, never here"
+        )
+    elif unanswered and outcome.group(1) != SEARCH_INCOMPLETE:
+        failures.append(
+            f"{key}: reads `{outcome.group(1)}` while {unanswered} did not answer; "
+            f"that search is `{SEARCH_INCOMPLETE}`"
+        )
+    return failures
 _index_spec = importlib.util.spec_from_file_location(
     "witness_search_github_index", REPO / "scripts/witness-search-github-index.py"
 )
@@ -860,12 +906,22 @@ ACQUISITION_MANIFEST_COLUMNS = ("walk", "document", "revision", "sha256")
 def enumeration_census_failures(
     key: str, source: str, walks: list[tuple[str, str, str]],
     directory: Path, records: list[dict[str, str]],
+    pinned: list[dict[str, str]] | None = None,
 ) -> list[str]:
-    """Reconcile one compact census row per walked document with positive records."""
+    """Reconcile one compact census row per walked document with positive records.
+
+    `pinned` is the acquisition manifest's rows where the caller holds them
+    elsewhere — a golden-reach arm search reads the shared pin rather than
+    copying it — and the directory's own `acquisition-manifest.tsv` otherwise. A
+    gzipped `enumeration.tsv.gz` is read where no plain one is written.
+    """
     path = directory / "enumeration.tsv"
+    if not path.is_file() and (directory / "enumeration.tsv.gz").is_file():
+        path = directory / "enumeration.tsv.gz"
     if not path.is_file():
         return [f"{key}: `{source}` has no enumeration.tsv census file"]
-    with path.open(encoding="utf-8", newline="") as handle:
+    opener = gzip.open if path.suffix == ".gz" else open
+    with opener(path, "rt", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, dialect="excel-tab")
         if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
             return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
@@ -882,16 +938,19 @@ def enumeration_census_failures(
     if len(identities) != len(set(identities)):
         failures.append(f"{key}: `{source}` enumeration repeats a document")
     manifest_path = directory / "acquisition-manifest.tsv"
-    if not manifest_path.is_file():
+    if pinned is None and not manifest_path.is_file():
         failures.append(f"{key}: `{source}` has no pinned acquisition-manifest.tsv")
     else:
-        with manifest_path.open(encoding="utf-8", newline="") as handle:
-            manifest_reader = csv.DictReader(handle, dialect="excel-tab")
-            if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
-                failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
-                manifest = []
-            else:
-                manifest = list(manifest_reader)
+        if pinned is not None:
+            manifest = pinned
+        else:
+            with manifest_path.open(encoding="utf-8", newline="") as handle:
+                manifest_reader = csv.DictReader(handle, dialect="excel-tab")
+                if tuple(manifest_reader.fieldnames or ()) != ACQUISITION_MANIFEST_COLUMNS:
+                    failures.append(f"{key}: `{source}` acquisition-manifest.tsv has wrong columns")
+                    manifest = []
+                else:
+                    manifest = list(manifest_reader)
         manifest_ids = [(row["walk"], row["document"]) for row in manifest]
         if len(manifest_ids) != len(set(manifest_ids)):
             failures.append(f"{key}: `{source}` acquisition manifest repeats a document")
@@ -971,8 +1030,15 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
     return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
 
 
-def evidence_directory_failures(key: str, directory: Path) -> list[str]:
-    """Every file under the directory is named by a row, and every named file exists."""
+def evidence_directory_failures(
+    key: str, directory: Path, layout_files: tuple[str, ...] = ()
+) -> list[str]:
+    """Every file under the directory is named by a row, and every named file exists.
+
+    `layout_files` are files the evidence layout itself defines rather than a
+    row: a golden-reach arm search's `probe.jsonl` holds every declarer's
+    measured reach, and its publisher-tree `pins.tsv` the resolved pin.
+    """
     name = directory.name
     records = evidence_records(directory)
     failures = []
@@ -991,7 +1057,8 @@ def evidence_directory_failures(key: str, directory: Path) -> list[str]:
     tables = {part.name for part in _index_module.ledger_parts(directory / "records.tsv")}
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
-        if path.is_file() and rel not in (*tables, "enumeration.tsv") and rel not in named:
+        exempt = (*tables, "enumeration.tsv", "enumeration.tsv.gz", *layout_files)
+        if path.is_file() and rel not in exempt and rel not in named:
             failures.append(
                 f"{key}: {name}/{rel} is evidence the table accounts for nowhere — "
                 "no records.tsv row names it"
@@ -1004,6 +1071,9 @@ def exhaustive_search_failures(
     lines: list[list[str]],
     evidence_root: Path,
     capabilities: dict[str, tuple[bool, bool, str]],
+    directory_for: Callable[[str], Path] | None = None,
+    pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
+    layout_files: tuple[str, ...] = (),
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -1045,13 +1115,16 @@ def exhaustive_search_failures(
         if source not in DECLARED_SOURCES:
             # An undeclared source answers for nothing and owes nothing.
             continue
-        directory = evidence_root / f"witness-search-{source}"
+        directory = (
+            directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
+        )
         records = [r for r in evidence_records(directory) if r.get("key") == key]
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
-        failures += evidence_directory_failures(key, directory) if directory.is_dir() else []
+        failures += evidence_directory_failures(key, directory, layout_files) if directory.is_dir() else []
         failures += exhaustive_line_failures(
-            key, source, line, records, capabilities.get(source), exhausted, directory
+            key, source, line, records, capabilities.get(source), exhausted, directory,
+            pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
         )
     return failures
 
@@ -1064,6 +1137,7 @@ def exhaustive_line_failures(
     capability: tuple[bool, bool, str] | None,
     exhausted: bool,
     directory: Path,
+    pinned: list[dict[str, str]] | None = None,
 ) -> list[str]:
     """One `(key, source)` line against its evidence and, when exhausted, its obligations."""
     failures: list[str] = []
@@ -1122,7 +1196,7 @@ def exhaustive_line_failures(
                 "accounts for nowhere"
             )
     if capability and capability[1] and walks:
-        failures += enumeration_census_failures(key, source, walks, directory, records)
+        failures += enumeration_census_failures(key, source, walks, directory, records, pinned)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
@@ -1692,11 +1766,12 @@ class GrammarContractTests(unittest.TestCase):
         words = {
             0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
             9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
+            103: "one-hundred-and-three",
             15: "fifteen", 20: "twenty", 23: "twenty-three",
             28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
             60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
             78: "seventy-eight", 83: "eighty-three", 89: "eighty-nine",
-            103: "one-hundred-and-three",
+            107: "one-hundred-and-seven",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -2068,6 +2143,11 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
         "schema.oneOf>schema.properties:non-empty": {},
         "schema.anyOf>schema.properties:non-empty": {},
+        # The nested-composition arm the case table gained with corpus row 193.
+        "schema.oneOf>schema.oneOf": {},
+        "schema.oneOf>schema.anyOf": {},
+        "schema.anyOf>schema.oneOf": {},
+        "schema.anyOf>schema.anyOf": {},
         "schema.properties>schema.enum:string-valued": {
             "discriminated-unions": 2, "exhaustive": 2, "recursive-types": 2
         },
@@ -2157,8 +2237,8 @@ class ConjunctionCensusTests(unittest.TestCase):
         # residual arm should look like: `prop_type_ref`'s own residual is the
         # widest number in this table.
         "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array": {"client-class-name": 1, "error-responses": 1, "exhaustive": 9, "malformed-property-schema": 1, "missing-operation-id": 1, "operation-id-non-identifier": 1, "pydantic-extra-fields": 1, "query-parameters-openapi": 5, "schema-constraints": 1, "tag-based-grouping": 2},
-        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
-        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty": {},
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {"exhaustive": 1, "query-parameters-openapi": 2},
+        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {},
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf": {},
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf": {},
@@ -2728,6 +2808,16 @@ POINTER_FORM_PREDICATES = frozenset({
 })
 
 
+# The four `hoist_union_variant` gained with its nested-composition arm (cases
+# 13a to 13d), discriminated by `NestedCompositionSelectorDiscriminationTests`.
+NESTED_COMPOSITION_SELECTORS = frozenset({
+    "schema.oneOf>schema.oneOf",
+    "schema.oneOf>schema.anyOf",
+    "schema.anyOf>schema.oneOf",
+    "schema.anyOf>schema.anyOf",
+})
+
+
 # The twenty-three the negation pass declared, case 11's example-value
 # conjunction and `hoist_union_variant`'s cases 10a to 10d (the empty
 # `properties: {}` member), kept apart from the tables above because all
@@ -2756,8 +2846,8 @@ NEGATION_SELECTORS = frozenset({
     "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
     "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
     "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
-    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
-    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
+    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
     "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
     "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
@@ -3250,7 +3340,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
         PREDICATES_OUTSIDE_TABLE
     ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
-        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS \
+        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
         - {name for name in census.PREDICATES
            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
         - {"components.schemas:nonidentifier-name", "securityScheme:$ref"}
@@ -4787,7 +4877,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "select": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
             "near": {"Root": {"oneOf": [{"type": "object", "example": {"id": {"type": "string"}}}]}},
             "overlap": {"Root": {"oneOf": [{"type": "object", "example": {"id": "one"}}]}},
-            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         },
         # --- `is_inline_struct` read where the three tables read it -----------
         {
@@ -4959,7 +5049,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.items>!schema.type:primary-scalar&schema.allOf",
         },
         {
-            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
+            "selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
             "slug": "huv-12a",
             "branch": "hoist_union_variant case 12a, its closing `base_type_ref`",
             "select": {"Root": {"oneOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -4971,7 +5061,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
         },
         {
-            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty",
+            "selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
             "slug": "huv-12b",
             "branch": "hoist_union_variant case 12b, the same arm through the other head",
             "select": {"Root": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
@@ -5234,11 +5324,87 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
 
     def test_a_negation_selector_no_source_declares_is_reported_as_absent(self) -> None:
         """Absent, not silent: the phrase a `gap` row cites as its evidence."""
-        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.properties:non-empty"
+        absent = "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty"
         completed = run("--vendored-only", "--selector", absent)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
         self.assertIn("(declared by no registered source)", completed.stdout)
+
+
+class NestedCompositionSelectorDiscriminationTests(unittest.TestCase):
+    """Cases 13a to 13d: a union member that is itself an inline composition.
+
+    `hoist_union_variant` names such a member as a union of its own, so the four
+    selectors are the member's `oneOf`/`anyOf` spelling under each union head.
+    Each is put to the real census, as its own process, over a document that
+    selects it and one that misses it by the member's spelling alone; the
+    residual arm's narrowing — the member no longer reaching `base_type_ref` —
+    and the overlap with case 9, which claims a member declaring `allOf` beside
+    the composition, are asserted over documents of their own.
+    """
+
+    PAIR = [{"type": "string"}, {"type": "integer"}]
+    CASES: tuple[dict, ...] = (
+        {"selector": "schema.oneOf>schema.oneOf", "head": "oneOf", "member": "oneOf", "other": "anyOf"},
+        {"selector": "schema.oneOf>schema.anyOf", "head": "oneOf", "member": "anyOf", "other": "oneOf"},
+        {"selector": "schema.anyOf>schema.oneOf", "head": "anyOf", "member": "oneOf", "other": "anyOf"},
+        {"selector": "schema.anyOf>schema.anyOf", "head": "anyOf", "member": "anyOf", "other": "oneOf"},
+    )
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        documents: dict[str, dict] = {}
+        for case in cls.CASES:
+            slug = case["selector"].replace("schema.", "").replace(">", "-").lower()
+            case["slug"] = slug
+            documents[f"{slug}-select"] = {"Root": {case["head"]: [{case["member"]: cls.PAIR}]}}
+            documents[f"{slug}-near"] = {"Root": {case["head"]: [{case["other"]: cls.PAIR}]}}
+            documents[f"{slug}-overlap"] = {
+                "Root": {case["head"]: [{"allOf": [{"title": "base"}], case["member"]: cls.PAIR}]}
+            }
+        refs = [{"$ref": "#/components/schemas/Left"}, {"$ref": "#/components/schemas/Right"}]
+        documents["nested-only"] = {
+            "Root": {"oneOf": [{"oneOf": refs}]},
+            "Left": {"type": "string"},
+            "Right": {"type": "integer"},
+        }
+        cls.reported = NegationSelectorDiscriminationTests.censused(documents)
+
+    def test_the_table_covers_every_selector_this_arm_declared(self) -> None:
+        self.assertEqual(NESTED_COMPOSITION_SELECTORS, {case["selector"] for case in self.CASES})
+        for selector in sorted(NESTED_COMPOSITION_SELECTORS):
+            with self.subTest(selector=selector):
+                self.assertIn(selector, census.CONJUNCTIONS)
+
+    def test_each_selector_counts_its_own_spelling_and_not_the_other(self) -> None:
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-select")))
+                self.assertNotIn((selector, f"{slug}-near"), self.reported)
+
+    def test_a_member_declaring_all_of_beside_the_composition_is_counted_by_case_9_too(self) -> None:
+        """The chain overlap the case analysis states: case 9 takes this member."""
+        for case in self.CASES:
+            selector, slug = case["selector"], case["slug"]
+            with self.subTest(selector=selector):
+                self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
+                self.assertEqual(
+                    1, self.reported.get((f"schema.{case['head']}>schema.allOf", f"{slug}-overlap"))
+                )
+
+    def test_the_residual_no_longer_counts_a_member_this_arm_claims(self) -> None:
+        """Adding the case narrowed case 12a, with no residual text written.
+
+        `Root`'s only member is a nested `oneOf` of two `$ref`s: the new arm takes
+        it, and the inner union's members are references, so no node of the
+        document reaches `base_type_ref` and the composed residual counts none.
+        """
+        residual = census.RESIDUAL_SELECTORS[("hoist_union_variant", "12a")]
+        self.assertIn("!schema.oneOf", residual)
+        self.assertIn("!schema.anyOf", residual)
+        self.assertEqual(1, self.reported.get(("schema.oneOf>schema.oneOf", "nested-only")))
+        self.assertNotIn((residual, "nested-only"), self.reported)
 
 
 class ObjectModelWalkTests(unittest.TestCase):
@@ -7352,6 +7518,307 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertTrue(total and population, "the classification states no total")
         self.assertEqual(sum(counts.values()), int(total.group(1)))
         self.assertEqual(int(total.group(1)), int(population.group(1)))
+
+    # The golden reach measurement (`just golden-reach`): every `golden` row's
+    # `crozier sites` cell is its reach cell, generated from the committed ledger
+    # `docs/openapi-surface/golden-reach.tsv`, and the index publishes the ranking
+    # and the rows resting on one document off that same ledger.
+    REACH_RANKING = "#### The reach ranking"
+    REACH_OWNED = "#### The rows this measurement's first pass owned"
+    REACH_ONE_DOCUMENT = "#### Rows resting on one document"
+    REACH_NO_WITNESS = "#### Golden rows with no golden-only witness"
+
+    @staticmethod
+    def golden_reach():
+        spec = importlib.util.spec_from_file_location(
+            "golden_reach", REPO / "scripts" / "golden-reach.py"
+        )
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def reach_ledger(self):
+        return self.golden_reach().read_ledger()
+
+    def reach_table(self, heading: str, width: int) -> list[list[str]]:
+        """The body rows of the first table under `heading`, header and rule dropped."""
+        body = self.section(heading).split("\n#", 1)[0]
+        rows = []
+        for line in body.splitlines():
+            cells = table_cells(line, width)
+            if cells and not all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
+                rows.append(cells)
+        self.assertTrue(rows, f"no table under {heading!r}")
+        return rows[1:]
+
+    def test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders(self) -> None:
+        """A `golden` row with no reach cell, or a stale one, is refused."""
+        module = self.golden_reach()
+        rendered = {
+            reach.key: module.reach_cell(reach, rank)
+            for rank, reach in self.reach_ledger()
+        }
+        for key, (region, cells) in sorted(self.entries.items()):
+            if cells[3].strip("`") != "golden":
+                continue
+            with self.subTest(region=region, key=key):
+                self.assertTrue(
+                    cells[5].startswith(module.CELL_PREFIX),
+                    f"`{key}` is golden and carries no reach cell in its `crozier sites` "
+                    "column; run `just golden-reach` (or `just golden-reach-report`)",
+                )
+                self.assertEqual(rendered.get(key), cells[5], f"`{key}`'s reach cell is not its ledger row's")
+
+    def test_the_reach_ledger_is_every_golden_row_in_ranking_order(self) -> None:
+        """One ledger row per golden row, owned by the right region, in rubric order."""
+        module = self.golden_reach()
+        ledger = self.reach_ledger()
+        golden = {
+            key: region
+            for key, (region, cells) in self.entries.items()
+            if cells[3].strip("`") == "golden"
+        }
+        self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
+        self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
+        self.assertEqual(
+            sorted((reach for _rank, reach in ledger), key=module.ranking_key),
+            [reach for _rank, reach in ledger],
+            "the ledger is not in ranking order: unreached sites, unreached regions, key",
+        )
+
+    def test_the_ledger_measures_exactly_the_declared_sites_and_every_site_resolves(self) -> None:
+        """The site table is what the ledger measured, and each site still bounds code."""
+        module = self.golden_reach()
+        table = module.read_sites_table()
+        for _rank, reach in self.reach_ledger():
+            with self.subTest(key=reach.key):
+                self.assertEqual(table[reach.key].sites, tuple(spec for spec, _h, _t in reach.sites))
+        for spec in sorted({spec for row in table.values() for spec in row.sites}):
+            with self.subTest(site=spec):
+                module.resolve_site(spec)
+        for key, row in sorted(table.items()):
+            named = [s.removeprefix("fixture=") for s in row.selectors if s.startswith("fixture=")]
+            for fixture in named:
+                with self.subTest(key=key, fixture=fixture):
+                    self.assertIn(
+                        f"`{fixture}`", self.entries[key][1][4],
+                        "a witness the site table names directly is not one the row's evidence names",
+                    )
+
+    ARM_SEARCHES = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses"
+
+    @classmethod
+    def arm_search_pin(cls, source: str, line: list[str]) -> list[dict[str, str]]:
+        """The pinned documents of the walks one arm-search line names.
+
+        An arm search reads a source's shared pin rather than copying it: the
+        acquisition manifest, or for the publisher trees their `documents.jsonl`.
+        """
+        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
+        named = {tree for tree, _ref, _count in recorded_walks(line[4])}
+        if source == "github-publisher-trees":
+            # The pins resolved to bytes, held to the shared pin they resolve: the
+            # same commit, path and git blob, and the same SHA-256 wherever the
+            # shared pin records one.
+            with (cls.ARM_SEARCHES / source / "pins.tsv").open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, dialect="excel-tab"))
+            pins, seen = [], set()
+            for entry in (shared / "documents.jsonl").read_text(encoding="utf-8").splitlines():
+                pin = json.loads(entry)
+                if (pin["repository"], pin["path"], pin["commit"]) not in seen:
+                    seen.add((pin["repository"], pin["path"], pin["commit"]))
+                    pins.append(pin)
+            assert [(p["repository"], p["path"], p["commit"], p["blob"]) for p in pins] == [
+                (r["walk"], r["document"], r["revision"], r["blob"]) for r in rows
+            ], "pins.tsv is not the shared publisher-tree pin"
+            for pin, row in zip(pins, rows):
+                assert not pin.get("sha256") or pin["sha256"] == row["sha256"], row["document"]
+        else:
+            with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, dialect="excel-tab"))
+        return [row for row in rows if row["walk"] in named]
+
+    def test_a_gap_row_the_frozen_contract_does_not_own_records_its_own_search(self) -> None:
+        """A `gap` row admitted after the witness-search-redo contract froze.
+
+        The legacy reader skips such a row rather than refusing it, so this is
+        what holds its search to account: every declared source named with what
+        it returned, and `search-incomplete` — never `exhausted` — while any did
+        not answer.
+        """
+        frozen = frozen_search_keys(FROZEN_SEARCH_CONTRACT.read_text(encoding="utf-8"))
+        checked = []
+        for key, (_region, cells) in sorted(self.entries.items()):
+            if cells[3].strip("`") != "gap" or key in frozen:
+                continue
+            if "search outcome" not in cells[4]:
+                continue
+            checked.append(key)
+            with self.subTest(key=key):
+                self.assertEqual([], entry_search_failures(key, cells[4]))
+        self.assertTrue(checked, "no post-freeze gap row records a search; the check reads nothing")
+
+    def test_an_entry_search_is_refused_for_a_missing_source_or_an_exhausted_reading(self) -> None:
+        answered = "; ".join(f"**{source}** → unanswered: not searched yet" for source in DECLARED_SOURCES)
+        cell = f"census `schema.oneOf>schema.anyOf`; search outcome `search-incomplete`; {answered}"
+        self.assertEqual([], entry_search_failures("k", cell))
+        exhausted = cell.replace("`search-incomplete`", "`exhausted`")
+        self.assertIn("reads `exhausted` on its entry cell", " ".join(entry_search_failures("k", exhausted)))
+        absent = cell.replace("; **vendor-portals** → unanswered: not searched yet", "")
+        self.assertIn("not each of the six declared sources", " ".join(entry_search_failures("k", absent)))
+        none_found = cell.replace("`search-incomplete`", "`none-found`")
+        self.assertIn("that search is `search-incomplete`", " ".join(entry_search_failures("k", none_found)))
+
+    def test_the_owned_table_states_each_arm_searchs_outstanding_items_as_its_record_does(self) -> None:
+        """An owned row's outcome cell leads with its record's own outstanding tally.
+
+        The cell reads `search incomplete, N items outstanding (source n, …)`,
+        and every number is the linked record's `outstanding` column — so a
+        re-rendered record whose tally moves fails here until the cell follows,
+        and no cell reads searched or settled while its record owes anything.
+        """
+        table = self.doc.split("| boundary rank | key | outcome |", 1)[1].split("\n\n", 1)[0]
+        checked = 0
+        for line in table.splitlines()[2:]:
+            linked = re.search(r"golden-reach-witnesses/searches/([\w-]+)\.md\)", line)
+            if not linked:
+                continue
+            key = linked.group(1)
+            checked += 1
+            with self.subTest(key=key):
+                text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                owed = {
+                    source: int(cells.split("|")[-2])
+                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M)
+                }
+                self.assertEqual(set(DECLARED_SOURCES), set(owed), "a record tallies each declared source")
+                owing = {source: n for source, n in owed.items() if n}
+                stated = re.search(r"\| search incomplete, ([\d,]+) items outstanding \(([^)]*)\);", line)
+                if not owing:
+                    self.assertIsNone(stated, "a cell states outstanding items its record does not owe")
+                    continue
+                self.assertIsNotNone(stated, "a record owing items reads incomplete in its cell, with its tally")
+                self.assertEqual(sum(owing.values()), int(stated.group(1).replace(",", "")))
+                self.assertEqual(
+                    owing,
+                    {source: int(n) for source, n in re.findall(r"([\w.-]+) (\d+)", stated.group(2))},
+                )
+        self.assertTrue(checked, "no owned row links an arm search; the check reads nothing")
+
+    def test_the_outstanding_list_itemises_every_arm_searchs_outstanding_count(self) -> None:
+        """`outstanding.tsv` lists, per record and source, exactly the items its count owes.
+
+        A record's `outstanding` column is a number; the list is what a
+        continuation takes up, so each `(key, source)` group must hold that many
+        items, each naming its blocker and the build the record counted on.
+        """
+        with (self.ARM_SEARCHES / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        listed: dict[tuple[str, str], int] = {}
+        for row in rows:
+            self.assertTrue(row["item"] and row["blocker"], f"an item without its blocker: {row}")
+            listed[(row["key"], row["source"])] = listed.get((row["key"], row["source"]), 0) + 1
+        owed: dict[tuple[str, str], int] = {}
+        for path in sorted((self.ARM_SEARCHES / "searches").glob("*.md")):
+            text = path.read_text(encoding="utf-8")
+            build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
+            self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
+            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M):
+                if int(cells.split("|")[-2]):
+                    owed[(path.stem, source)] = int(cells.split("|")[-2])
+        self.assertTrue(owed, "no record owes an item; the check reads nothing")
+        self.assertEqual(owed, listed)
+
+    def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
+        """An owned row's arm search: one line per declared source, each resting on evidence.
+
+        The record a reach cell links is read with Contract B's own gate over the
+        `golden-reach-witnesses/<source>/` directories, so a line asserting a
+        query, walk, candidate or screen its `records.tsv` does not carry — or
+        evidence the line accounts for nowhere — fails here, and an `exhausted`
+        reading owes every obligation it owes anywhere. A record no cell links is
+        refused too: a search nobody can reach from the row is not on the record.
+        """
+        capabilities = source_capabilities(self.DOC.read_text(encoding="utf-8"))
+        linked = set()
+        for key, (_region, cells) in sorted(self.entries.items()):
+            found = re.search(r"\(golden-reach-witnesses/searches/([^)]+)\.md\)", cells[5])
+            if not found:
+                continue
+            with self.subTest(key=key):
+                self.assertEqual(key, found.group(1))
+                linked.add(key)
+                text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                lines = [
+                    [cell.replace("\\|", "|") for cell in line]
+                    for line in exhaustive_search_lines(text).get(key, [])
+                ]
+                self.assertEqual(
+                    sorted(DECLARED_SOURCES), sorted(line[1].strip("`") for line in lines),
+                    "an arm search names each declared source exactly once",
+                )
+                self.assertEqual(
+                    [],
+                    exhaustive_search_failures(
+                        key, lines, self.ARM_SEARCHES, capabilities,
+                        directory_for=lambda source: self.ARM_SEARCHES / source,
+                        pinned_for=self.arm_search_pin,
+                        layout_files=("probe.jsonl", "pins.tsv"),
+                    ),
+                )
+        records = self.ARM_SEARCHES / "searches"
+        written = {path.stem for path in records.glob("*.md")} if records.is_dir() else set()
+        self.assertEqual(set(), written - linked, "an arm search no reach cell links")
+
+    def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
+        """The thin end, as a list: every single-witness and no-witness golden row."""
+        ledger = self.reach_ledger()
+        one = {
+            reach.key: (reach.region, reach.witnesses[0])
+            for _rank, reach in ledger
+            if len(reach.witnesses) == 1
+        }
+        published = {
+            cells[0].strip("`"): (cells[1].strip("`"), cells[2].strip("`"))
+            for cells in self.reach_table(self.REACH_ONE_DOCUMENT, 3)
+        }
+        self.assertEqual(one, published, "the index's one-document list is not the ledger's")
+        none = {
+            reach.key: (reach.region, ", ".join(f"`{f}`" for f in reach.outside))
+            for _rank, reach in ledger
+            if not reach.witnesses
+        }
+        published_none = {
+            cells[0].strip("`"): (cells[1].strip("`"), cells[2])
+            for cells in self.reach_table(self.REACH_NO_WITNESS, 3)
+        }
+        self.assertEqual(none, published_none, "the index's no-witness list is not the ledger's")
+        flat = " ".join(self.doc.split())
+        self.assertIn(f"**{len(one)}** golden rows rest on one document", flat)
+
+    def test_the_reach_ranking_is_every_row_with_an_unreached_site_and_its_boundary(self) -> None:
+        """The committed ranking, off the ledger, and each row's owner stated."""
+        ledger = self.reach_ledger()
+        expected = [
+            [str(rank), f"`{reach.key}`", f"`{reach.region}`", f"**{reach.unreached_sites}**",
+             f"**{reach.unreached}**", f"**{len(reach.witnesses)}**"]
+            for rank, reach in ledger
+            if reach.unreached_sites
+        ]
+        published = self.reach_table(self.REACH_RANKING, 7)
+        self.assertEqual(expected, [cells[:6] for cells in published])
+        owned = {cells[1].strip("`") for cells in self.reach_table(self.REACH_OWNED, 3)}
+        for cells in published:
+            with self.subTest(key=cells[1]):
+                disposition = "owned" if cells[1].strip("`") in owned else "open"
+                self.assertTrue(
+                    cells[6].startswith(disposition),
+                    f"{cells[1]} reads {cells[6]!r}; the boundary makes it `{disposition}`",
+                )
+        flat = " ".join(self.doc.split())
+        reaching = sum(1 for _rank, reach in ledger if not reach.unreached_sites)
+        self.assertIn(f"**{reaching}** golden rows reach every handling site", flat)
 
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
         """Six declared sources, both capabilities each, each one cited."""

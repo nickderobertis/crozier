@@ -996,6 +996,43 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
     true
 }
 
+/// The shape of a request body's selected media schema. One reading of one
+/// schema, so a body cannot be both a component `$ref` and an inline union.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum BodySchemaShape {
+    /// Declared by component `$ref`.
+    Ref,
+    /// An inline union (`oneOf`/`anyOf`, no `$ref`) declaring neither a `title`
+    /// nor a `discriminator`. Fern leaves such a body's content type to httpx;
+    /// see `emit.rs`.
+    InlinePlainUnion,
+    /// Any other inline schema, or no schema at all.
+    #[default]
+    Other,
+}
+
+impl BodySchemaShape {
+    /// Read the shape off the first media schema a Request Body Object declares.
+    fn of(schema: Option<&Schema>) -> Self {
+        let Some(schema) = schema else {
+            return Self::Other;
+        };
+        if schema.reference.is_some() {
+            Self::Ref
+        } else if (schema.one_of.is_some() || schema.any_of.is_some())
+            && schema.discriminator.is_none()
+            && schema
+                .title
+                .as_deref()
+                .is_none_or(|title| title.trim().is_empty())
+        {
+            Self::InlinePlainUnion
+        } else {
+            Self::Other
+        }
+    }
+}
+
 /// One API operation, resolved into the shape the raw client needs.
 #[derive(Debug)]
 pub struct Endpoint {
@@ -1084,8 +1121,9 @@ pub struct Endpoint {
     /// without a path/header parameter, unless that body's schema is written
     /// inline and flattened field by field (see [`crate::emit`]).
     pub basic_auth: bool,
-    /// Whether the selected request media schema was declared by component `$ref`.
-    pub body_schema_ref: bool,
+    /// What the selected request media schema is: a component `$ref`, an inline
+    /// union Fern treats as plain, or anything else (see [`BodySchemaShape`]).
+    pub body_schema_shape: BodySchemaShape,
     /// Whether that referenced schema is omitted from the public type layer
     /// because it is used only as this flattened request body.
     pub body_schema_dropped: bool,
@@ -2233,9 +2271,15 @@ fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
             // *coins* from an inline schema. A `$ref` body keeps its named type
             // however many operations declare the status (`exhaustive`'s three
             // `400`s all resolve to `BadObjectRequestInfo`).
-            let coined = TypeRef::Named(format!("{}Body", err.class_name));
+            // A component schema already carrying that name is a `$ref` body, not
+            // a coinage: OpenCodeUI's `BadRequestError` schema is renamed
+            // `BadRequestErrorBody` (see `openapi::normalize_error_class_schema_names`)
+            // and its forty-nine `400`s keep it.
+            let coined_name = format!("{}Body", err.class_name);
+            let coined = !doc.components.schemas.contains_key(&coined_name)
+                && err.body_type == TypeRef::Named(coined_name);
             if downgrade.contains(&err.class_name)
-                || err.body_type == coined && multiply_declared.contains(&err.class_name)
+                || coined && multiply_declared.contains(&err.class_name)
             {
                 err.body_type = TypeRef::Primitive(Prim::Any);
             }
@@ -2555,9 +2599,17 @@ fn build_endpoint(
             // `$ref`/scalar passes through `base_type_ref`.
             // Fern's OpenAPI importer treats a schema-less query parameter as a
             // string. Content-based parameters remain strings for the same reason:
-            // both arrive on the URL as text.
+            // both arrive on the URL as text. So is one whose schema declares no
+            // type at all: Deep Search's `term` is `{title: Term}` and its golden
+            // types it `Optional[str]`, while the same name declared
+            // `anyOf: [{}, null]` stays `Optional[Any]` — only the parameter's
+            // own schema being unknown makes it text.
             let type_ref = schema.map_or(TypeRef::Primitive(Prim::Str), |s| {
-                hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                if is_unknown(s) {
+                    TypeRef::Primitive(Prim::Str)
+                } else {
+                    hoister.hoist_param_enum(&request_ctx, &p.name, s)
+                }
             });
             let type_ref = if p.schema.is_none() && !p.content.is_empty() {
                 TypeRef::Primitive(Prim::Str)
@@ -2884,7 +2936,27 @@ fn build_endpoint(
     };
     let response = response.map(|response| {
         if has_bodyless_success(op) && !has_text_response(op) {
-            optional_type_ref(response)
+            // A declared body beside an empty `204` is optional even when that
+            // body is unknown: ZipTax's `merchantCertDelete` (a `200` of
+            // `schema: {}` beside a `204`) returns `typing.Optional[typing.Any]`.
+            // When the typed success is itself the empty status it is left as
+            // typed: a lone `204` (Letta's `deleteClientSideAccessToken`) stays
+            // `Any`, and Fergus's `postDisconnect`, a lone `204` declaring
+            // `{type: object}`, stays `Dict[str, Any]`. A `200` declaring no
+            // schema (Microcks' `GetFeaturesConfiguration`) stays `Any` too.
+            let typed_by_empty_status = success_response_entry(op).is_some_and(|entry| {
+                op.responses
+                    .get("204")
+                    .is_some_and(|empty| std::ptr::eq(entry, empty))
+            });
+            let empty_beside_body = success_response_schema(op).is_some() && !typed_by_empty_status;
+            match response {
+                other if typed_by_empty_status => other,
+                TypeRef::Primitive(Prim::Any) if empty_beside_body => {
+                    TypeRef::Optional(Box::new(response))
+                }
+                other => optional_type_ref(other),
+            }
         } else {
             response
         }
@@ -3158,15 +3230,11 @@ fn build_endpoint(
             .filter(|media_type| *media_type != "application/json" && *media_type != "*/*")
             .map(str::to_string),
         basic_auth: operation_uses_basic_auth(doc, op),
-        body_schema_ref: op
-            .request_body
-            .as_ref()
-            .and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
-            })
-            .is_some_and(|schema| schema.reference.is_some()),
+        body_schema_shape: BodySchemaShape::of(op.request_body.as_ref().and_then(|body| {
+            body.content
+                .values()
+                .find_map(|media| media.schema.as_ref())
+        })),
         body_schema_dropped: false,
         body_schema_shared: op
             .request_body
@@ -4004,7 +4072,7 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// `every_error_status_fern_names_maps_to_its_exception` test
 /// (`tests/generation.rs`) locks every entry's class name, `errors/` module filename,
 /// and `status_code`, so an accidental edit here fails loudly. See `docs/matching.md`.
-fn error_class_name(status: u16) -> Option<&'static str> {
+pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
     Some(match status {
         400 => "BadRequestError",
         401 => "UnauthorizedError",
@@ -4096,6 +4164,13 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
         Some(schema) if resp.reference.is_none() && is_inline_struct(schema) => {
+            TypeRef::Named(format!("{class}Body"))
+        }
+        // An inline union body is hoisted the same way (see
+        // `hoist_error_body_types`): the Vonage Messages API's `401` is a `oneOf`
+        // of two `$ref`s sharing a `type` discriminant, and Fern's exception
+        // carries the discriminated union `UnauthorizedErrorBody`.
+        Some(schema) if resp.reference.is_none() && is_inline_union(schema) => {
             TypeRef::Named(format!("{class}Body"))
         }
         // A named `$ref`, scalar, or container keeps its resolved type. An inline
@@ -4209,6 +4284,10 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     } else {
                         bodies.insert(name, schema.clone());
                     }
+                } else if is_inline_union(schema) {
+                    bodies
+                        .entry(format!("{class}Body"))
+                        .or_insert_with(|| schema.clone());
                 } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                     if let Some(item) = schema.items.as_deref() {
                         if item.reference.is_none() && is_inline_struct(item) {
@@ -5474,6 +5553,41 @@ impl InlineHoister<'_> {
                 }
             }
         }
+        // A member that is itself an inline composition is a named union, as it
+        // is in a component union (`Builder::variant_ref`): the Vonage Messages
+        // API's `sendMessage` body is a `oneOf` of five channel `oneOf`s, and Fern
+        // names them `SendMessageRequestZero` … `SendMessageRequestFour` with
+        // their own members `…OneZero`, `…OneOne` beneath. A composition of one
+        // member is that member: the SMS channel's single `allOf` is the model
+        // `SendMessageRequestZero` itself, not an alias of it.
+        if variant.reference.is_none() && variant.all_of.is_none() {
+            if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
+                if let [member] = members.as_slice() {
+                    return self.hoist_union_variant(parent, index, member, siblings);
+                }
+                let name = variant_class_name(parent, index, variant, siblings);
+                let docstring = clean_doc(variant.description.as_deref());
+                let discriminated =
+                    self.hoist_discriminated_union(&name, variant, docstring.clone());
+                if let Some(union) = discriminated {
+                    return union;
+                }
+                let nested = members
+                    .iter()
+                    .enumerate()
+                    .map(|(nested_index, member)| {
+                        self.hoist_union_variant(&name, nested_index, member, members)
+                    })
+                    .collect();
+                self.out.push(TypeDecl::Alias(AliasType {
+                    name: name.clone(),
+                    module: naming::module_name(&name),
+                    target: TypeRef::Union(nested),
+                    docstring,
+                }));
+                return TypeRef::Named(name);
+            }
+        }
         if is_inline_object(variant)
             || is_declared_empty_object(variant)
             || is_bare_object(variant)
@@ -5510,7 +5624,7 @@ impl InlineHoister<'_> {
             fields.push(Field {
                 wire_name: prop.clone(),
                 py_name: naming::model_field_name(prop),
-                type_ref: self.prop_type_ref(owner, prop, prop_schema),
+                type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 nullable: referenced_nullable
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
@@ -5530,6 +5644,27 @@ impl InlineHoister<'_> {
                 }),
             });
         }
+    }
+
+    /// A hoisted model's field type: a map of an inline object names that object
+    /// `{Owner}{Prop}Value`, as a component model's map does, and every other
+    /// property is [`Self::prop_type_ref`]'s. OpenCodeUI's `provider.list` answers
+    /// an inline object whose `all` items carry `models`, a map of an inline model
+    /// record, and Fern generates `Dict[str, ProviderListResponseAllItemModelsValue]`.
+    fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if prop_schema.reference.is_none() && is_map(prop_schema) && !is_optional(prop_schema) {
+            if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                if value.reference.is_none() && is_inline_struct(value) {
+                    let name = format!("{}Value", naming::child_class_name(owner, prop));
+                    self.hoist_object(&name, value);
+                    return TypeRef::Dict(
+                        Box::new(TypeRef::Primitive(Prim::Str)),
+                        Box::new(TypeRef::Named(name)),
+                    );
+                }
+            }
+        }
+        self.prop_type_ref(owner, prop, prop_schema)
     }
 
     /// The type of a property, hoisting an inline object (directly or as an array
@@ -6476,12 +6611,21 @@ fn has_markdown_response(op: &Operation) -> bool {
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
+    // Only a numeric `2xx` code counts, as in [`success_response_entry`]: Fern
+    // types a method from no range key, so OpenLink OSDB's `executeAction`, whose
+    // `2XX` carries an example and no schema beside a `default` `ErrorModel`,
+    // returns that `ErrorModel` rather than an optional one.
+    // A `204` is bodyless whatever content it declares — the status forbids a
+    // body — so ZipTax's `merchantCertDelete`, whose `200` and `204` both
+    // declare `schema: {}`, returns Fern's `typing.Optional[typing.Any]`.
     let bodyless = op.responses.iter().filter(|(code, response)| {
-        code.starts_with('2')
-            && !response
-                .content
-                .values()
-                .any(|media| media.schema.is_some())
+        code.parse::<u16>()
+            .is_ok_and(|status| (200..300).contains(&status))
+            && (code.as_str() == "204"
+                || !response
+                    .content
+                    .values()
+                    .any(|media| media.schema.is_some()))
     });
     let codes: Vec<&str> = bodyless.map(|(code, _)| code.as_str()).collect();
     // A bodyless `201`/`202` beside a success body is not an empty-body case: it
@@ -7118,9 +7262,11 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
         if let Some(tag) = first_tag(op) {
             return compact_module(tag);
         }
-        return naming::sanitize_identifier(&naming::to_snake_case(
-            id.split_once('.').map_or(id, |(group, _)| group),
-        ));
+        // Untagged, the dotted namespace names no sub-client: Fern hangs the
+        // method off the root client under the whole id. OpenCodeUI's untagged
+        // `global.config.get` is the root `global_config_get`, beside the two
+        // `Session`-tagged operations that alone make a `session` package.
+        return String::new();
     }
     if id.contains('_') {
         if first_segment_is_tag(op, id) {
@@ -7326,7 +7472,10 @@ fn inferred_discriminant_property_with(
                                     .and_then(serde_json::Value::as_str)
                                     .is_some()
                         }
-                        "role" => variant.required.contains(property),
+                        // OpenCodeUI's `ToolState` is an `anyOf` of four `$ref`s
+                        // each requiring a `const` `status`, and Fern's golden is
+                        // the `status`-discriminated `ToolState_Pending` … union.
+                        "role" | "status" => variant.required.contains(property),
                         "message_type" | "mcp_server_type" => true,
                         "name" => singleton_enum,
                         _ => false,
@@ -8460,24 +8609,31 @@ impl Builder<'_> {
         // chain included, the way Fern's `getAllProperties` reads a parent: Zulip's
         // `JsonSuccessBase` declares `result` and `msg` inside an `allOf` member,
         // and every response restating them flattens.
+        let schemas = self.schemas;
+        let raw_bases: Vec<&Schema> = schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter_map(|member| {
+                let base = resolve_ref_from_schemas(schemas, member.reference.as_deref()?)?;
+                // A referenced *union* is a type alias by the time this model is
+                // emitted, so there is no class to extend: braintrust's
+                // `TopicMapFunctionAutomation.function` composes `SavedFunctionId`
+                // and Fern flattens rather than inheriting.
+                let alias = base.one_of.is_some() || base.any_of.is_some();
+                (!alias && !is_inheritance_union_base(base)).then_some(base)
+            })
+            .collect();
         let base_refs: Vec<(String, Schema)> = schema
             .all_of
             .iter()
             .flatten()
             .filter_map(|member| {
                 let reference = member.reference.as_deref()?;
-                let base = resolve_ref_from_schemas(self.schemas, reference)?;
-                // A referenced *union* is a type alias by the time this model is
-                // emitted, so there is no class to extend: braintrust's
-                // `TopicMapFunctionAutomation.function` composes `SavedFunctionId`
-                // and Fern flattens rather than inheriting.
+                let base = resolve_ref_from_schemas(schemas, reference)?;
                 let alias = base.one_of.is_some() || base.any_of.is_some();
-                (!alias && !is_inheritance_union_base(base)).then(|| {
-                    (
-                        ref_to_class(reference),
-                        all_properties_of(self.schemas, base, 0),
-                    )
-                })
+                (!alias && !is_inheritance_union_base(base))
+                    .then(|| (ref_to_class(reference), all_properties_of(schemas, base, 0)))
             })
             .collect();
         // A base property this model redeclares. Only the bases that have one are
@@ -8514,7 +8670,18 @@ impl Builder<'_> {
                         continue;
                     }
                 }
-                self.collect_fields(name, member, &required, &mut fields);
+                // A property a base declares with a description, redeclared here
+                // without one, keeps the base's: the Vonage Messages API's
+                // `messageStatusViber` narrows `messageStatusBase.status` to a new
+                // enum and Fern documents `MessageStatusViberStatus` with the
+                // base's "The status of the message."
+                let described = described_from_bases(member, &base_refs);
+                self.collect_fields(
+                    name,
+                    described.as_ref().unwrap_or(member),
+                    &required,
+                    &mut fields,
+                );
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
@@ -8539,10 +8706,11 @@ impl Builder<'_> {
         // rather than being coined again for each subtype.
         let mut inherited_by_base: Vec<Vec<Field>> = Vec::new();
         let mut overridden = false;
+        let mut overridden_by_base = vec![false; base_refs.len()];
         let lowered_from = self.types.len();
         if collides {
             let mut restated = std::collections::HashSet::new();
-            for (base_name, base) in &base_refs {
+            for (index, (base_name, base)) in base_refs.iter().enumerate() {
                 let mut inherited = Vec::new();
                 let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
                 self.collect_fields(base_name, base, &base_required, &mut inherited);
@@ -8553,25 +8721,11 @@ impl Builder<'_> {
                     else {
                         continue;
                     };
-                    // Fern compares the child's property, wrapped optional unless
-                    // required and nullable where declared so, against the base's
-                    // unwrapped one, so only a property the child requires and
-                    // does not make nullable can restate it, whatever the base
-                    // requires: Groupe PSA's `RemoteAction` restates `RemoteRef`'s
-                    // optional `remoteActionId` and `status` unchanged, and Fern
-                    // flattens it; Zulip's `BasicChannel` requires `stream_id`,
-                    // which `BasicChannelBase` leaves optional, and Fern keeps the
-                    // base's field.
-                    if local.type_ref == field.type_ref
-                        && local.spec_required
-                        && !local.optional
-                        && !local.nullable
-                        && !field.nullable
-                        && local.docstring == field.docstring
-                    {
+                    if restates_without_conflict(local, field) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
+                        overridden_by_base[index] = true;
                     }
                 }
                 inherited_by_base.push(inherited);
@@ -8583,7 +8737,47 @@ impl Builder<'_> {
         if !overridden {
             bases.extend(base_refs.iter().map(|(base_name, _)| base_name.clone()));
         } else {
-            for mut inherited in inherited_by_base {
+            // Only a base the model overrides is inlined, and only down to the
+            // parents it overrides too; every other base stays a parent. The
+            // Vonage Messages API's SMS channel is `allOf: [$ref Text, {text},
+            // $ref channelOptionsSms]`, and Fern generates `class
+            // SendMessageRequestZero(ChannelOptionsSms, BaseMessageType)`: `Text`
+            // is inlined for its restated `text`, its own untouched parent
+            // `baseMessageType` is extended in its place after the untouched
+            // `channelOptionsSms`, and `baseMessageType`'s `required` list, which
+            // names `message_type`, does not make `Text`'s `message_type`
+            // required. Zulip's `JsonSuccess` restates `result`, which both
+            // `JsonSuccessBase` and its parent `JsonResponseBase` declare, so
+            // both are inlined and the model extends nothing.
+            //
+            // A nullability-only member is the exception: the model is a flat
+            // copy of every base, each read with its whole `allOf` chain, and
+            // extends nothing (see [`is_nullable_annotation`]).
+            let inlined_by_base = if nullable_annotation {
+                inherited_by_base
+            } else {
+                let mut extended = Vec::new();
+                let mut inlined_by_base = Vec::new();
+                for (index, (base_name, _)) in base_refs.iter().enumerate() {
+                    if !overridden_by_base[index] {
+                        bases.push(base_name.clone());
+                        continue;
+                    }
+                    let inline = self.inlined_part(raw_bases[index], &fields, &mut extended, 0);
+                    let inline_required: Vec<&str> =
+                        inline.required.iter().map(String::as_str).collect();
+                    let mut inherited = Vec::new();
+                    self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
+                    inlined_by_base.push(inherited);
+                }
+                for parent in extended {
+                    if !bases.contains(&parent) {
+                        bases.push(parent);
+                    }
+                }
+                inlined_by_base
+            };
+            for mut inherited in inlined_by_base {
                 inherited.retain(|field| {
                     if let Some(existing) = fields
                         .iter_mut()
@@ -8631,6 +8825,78 @@ impl Builder<'_> {
             docstring,
         }));
         self.building_types.remove(name);
+    }
+
+    /// The part of an overridden base a model inlines: `schema`'s own properties
+    /// and `required`, and those of each `allOf` parent the model overrides too,
+    /// merged the way [`all_properties_of`] merges them. A parent the model leaves
+    /// alone is not merged; its class is pushed to `extended` for the model to
+    /// extend in the base's place.
+    fn inlined_part(
+        &mut self,
+        schema: &Schema,
+        local: &[Field],
+        extended: &mut Vec<String>,
+        depth: usize,
+    ) -> Schema {
+        let schemas = self.schemas;
+        let Some(members) = schema.all_of.as_deref() else {
+            return schema.clone();
+        };
+        if depth > 8 {
+            return all_properties_of(schemas, schema, depth);
+        }
+        let mut merged = schema.clone();
+        merged.all_of = None;
+        let mut properties = crate::openapi::SchemaProperties::default();
+        let mut required = Vec::new();
+        for member in members {
+            let part = match member.reference.as_deref() {
+                Some(reference) => {
+                    let Some(parent) = resolve_ref_from_schemas(schemas, reference) else {
+                        continue;
+                    };
+                    let alias = parent.one_of.is_some() || parent.any_of.is_some();
+                    if !alias
+                        && !is_inheritance_union_base(parent)
+                        && !self.overrides_parent(&ref_to_class(reference), parent, local)
+                    {
+                        extended.push(ref_to_class(reference));
+                        continue;
+                    }
+                    self.inlined_part(parent, local, extended, depth + 1)
+                }
+                None => self.inlined_part(member, local, extended, depth + 1),
+            };
+            for (key, property) in part.properties.iter() {
+                properties.insert(key.clone(), property.clone());
+            }
+            required.extend(part.required.iter().cloned());
+        }
+        for (key, property) in schema.properties.iter() {
+            properties.insert(key.clone(), property.clone());
+        }
+        required.extend(schema.required.iter().cloned());
+        required.dedup();
+        merged.properties = properties;
+        merged.required = required.into();
+        merged
+    }
+
+    /// Whether a model whose own fields are `local` overrides a property
+    /// `parent` (read with its whole `allOf` chain) declares, by the same test
+    /// the model's direct bases are held to in [`Builder::add_object`].
+    fn overrides_parent(&mut self, parent_name: &str, parent: &Schema, local: &[Field]) -> bool {
+        let parent = all_properties_of(self.schemas, parent, 0);
+        let required: Vec<&str> = parent.required.iter().map(String::as_str).collect();
+        let mut lowered = Vec::new();
+        self.collect_fields(parent_name, &parent, &required, &mut lowered);
+        lowered.iter().any(|field| {
+            local
+                .iter()
+                .find(|own| own.wire_name == field.wire_name)
+                .is_some_and(|own| !restates_without_conflict(own, field))
+        })
     }
 
     /// Append `schema`'s properties to `fields`, hoisting inline property types.
@@ -9741,6 +10007,47 @@ impl Builder<'_> {
                             return TypeRef::Primitive(Prim::Any);
                         }
                         if is_map(member) {
+                            // A map whose value is an inline union hoists that value to
+                            // `{Owner}{Prop}Value`, as a non-nullable map does: Deep
+                            // Search's `ProjectDataIndexWithStatus.record_properties` is
+                            // `anyOf` [a map of `anyOf` two `$ref`s, `null`] and generates
+                            // `Dict[str, Optional[ProjectDataIndexWithStatusRecordPropertiesValue]]`.
+                            if let Some(AdditionalProperties::Schema(value)) =
+                                &member.additional_properties
+                            {
+                                if let (None, Some(value_members)) = (
+                                    value.reference.as_ref(),
+                                    value.one_of.as_ref().or(value.any_of.as_ref()),
+                                ) {
+                                    let value_name =
+                                        format!("{owner}{}Value", naming::class_name(prop));
+                                    let variants = value_members
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(_, variant)| !is_null_variant(variant))
+                                        .map(|(index, variant)| {
+                                            self.variant_ref(
+                                                &value_name,
+                                                index,
+                                                variant,
+                                                value_members,
+                                            )
+                                        })
+                                        .collect();
+                                    self.push_alias(
+                                        &value_name,
+                                        naming::module_name(&value_name),
+                                        TypeRef::Union(dedupe_union_members(variants)),
+                                        clean_doc(value.description.as_deref()),
+                                    );
+                                    return TypeRef::Dict(
+                                        Box::new(TypeRef::Primitive(Prim::Str)),
+                                        Box::new(TypeRef::Optional(Box::new(TypeRef::Named(
+                                            value_name,
+                                        )))),
+                                    );
+                                }
+                            }
                             return nullable_map_value_type_ref(member);
                         }
                         if matches!(
@@ -9787,7 +10094,10 @@ impl Builder<'_> {
                             member.ty.as_ref().and_then(TypeField::primary) != Some("null")
                         })
                         .map(|(index, m)| {
-                            if is_inline_object(m) || is_declared_empty_object(m) {
+                            if is_inline_object(m)
+                                || is_map_of_inline_structure(m)
+                                || is_declared_empty_object(m)
+                            {
                                 return self.variant_ref(&name, index, m, members);
                             }
                             if string_enum_values(m).is_some() {
@@ -9895,9 +10205,23 @@ impl Builder<'_> {
                     // alias (Fern's `processSubtypes`): CloudPDF's `docMdp` offers
                     // `{type: number, enum: [1]}`, `[2]` and `[3]` and is
                     // `Optional[float]`, and its `calloutLine` offers two tuple
-                    // arrays and is `Optional[List[Any]]`.
-                    if variants.len() == 1 && variants[0] != TypeRef::Primitive(Prim::Any) {
-                        return variants.remove(0);
+                    // arrays and is `Optional[List[Any]]`. Alternatives that are
+                    // one schema written twice are that schema, not a union of it:
+                    // OpenCodeUI's `Command.template` is `anyOf: [string, string]`
+                    // and Fern types it `str`. Members that merely *render* alike
+                    // as `Any` stay a union — Sigstore Rekor's
+                    // `AlpinePackageSchema.package` is two different
+                    // constraint-only members and Fern's alias is
+                    // `typing.Union[typing.Any]`.
+                    if let [only] = variants.as_slice() {
+                        let identical = members
+                            .windows(2)
+                            .all(|pair| format!("{:?}", pair[0]) == format!("{:?}", pair[1]));
+                        let written_twice =
+                            members.len() > 1 && identical && !matches!(only, TypeRef::Named(_));
+                        if written_twice || *only != TypeRef::Primitive(Prim::Any) {
+                            return variants.remove(0);
+                        }
                     }
                     let module = naming::module_name(&name);
                     self.push_alias(
@@ -10031,6 +10355,62 @@ impl Builder<'_> {
             let name = variant_class_name(parent, index, variant, siblings);
             if let Some(type_ref) = self.annotated_ref_type(&name, variant) {
                 return type_ref;
+            }
+        }
+        // A member that is a map of an inline union or object names its value
+        // `{Variant}Value`, as a property's map does: OpenCodeUI's `Config.lsp` is
+        // `anyOf: [false, {additionalProperties: {anyOf: [two objects]}}]` and Fern
+        // generates `Union[bool, Dict[str, ConfigLspOneValue]]` over a
+        // `ConfigLspOneValue` alias, and `Config.formatter`'s object value is the
+        // model `ConfigFormatterOneValue`. A value that is one schema beside
+        // `null` is no inline union but an optional value: Ramu Shogi's
+        // `JsonValue` offers `{additionalProperties: {oneOf: [$ref JsonValue,
+        // null]}}` and Fern types it `Dict[str, Optional["JsonValue"]]`.
+        if is_map(variant) {
+            if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
+                if value.reference.is_none() && simple_nullable_member(value).is_none() {
+                    let value_name = format!(
+                        "{}Value",
+                        variant_class_name(parent, index, variant, siblings)
+                    );
+                    let value_module = naming::module_name(&value_name);
+                    let docstring = clean_doc(value.description.as_deref());
+                    let map_of = |named: String| {
+                        TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(named)),
+                        )
+                    };
+                    if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                        if let Some(decl) = self.discriminated_union(
+                            &value_name,
+                            &value_module,
+                            value,
+                            docstring.clone(),
+                        ) {
+                            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                        } else {
+                            let nested = members
+                                .iter()
+                                .enumerate()
+                                .map(|(nested_index, member)| {
+                                    self.variant_ref(&value_name, nested_index, member, members)
+                                })
+                                .collect();
+                            self.push_alias(
+                                &value_name,
+                                value_module,
+                                TypeRef::Union(dedupe_union_members(nested)),
+                                docstring,
+                            );
+                        }
+                        return map_of(value_name);
+                    }
+                    if is_inline_struct(value) {
+                        self.add_object(&value_name, value_module, value, docstring);
+                        return map_of(value_name);
+                    }
+                }
             }
         }
         // An object declaring `properties: {}` is an empty model, not a map:
@@ -10263,6 +10643,18 @@ fn extensible_enum(values: Vec<String>) -> TypeRef {
     ])
 }
 
+/// A map whose value is an inline union or object, which a union member names
+/// `{Variant}Value` (see [`Builder::variant_ref`]).
+fn is_map_of_inline_structure(schema: &Schema) -> bool {
+    is_map(schema)
+        && matches!(
+            &schema.additional_properties,
+            Some(AdditionalProperties::Schema(value))
+                if value.reference.is_none()
+                    && (value.one_of.is_some() || value.any_of.is_some() || is_inline_struct(value))
+        )
+}
+
 /// An object with `additionalProperties` but no declared properties — a map.
 fn is_map(schema: &Schema) -> bool {
     is_object_type(schema)
@@ -10271,6 +10663,42 @@ fn is_map(schema: &Schema) -> bool {
             schema.additional_properties,
             Some(AdditionalProperties::Schema(_) | AdditionalProperties::Bool(true))
         )
+}
+
+/// `member` with each undescribed `enum` property a base describes given that
+/// base's description, or `None` when no property needs one. Only a redeclared
+/// enum is measured to take it — the description documents the enum type it
+/// hoists — so a plain restatement keeps deciding override-versus-restatement on
+/// what it declares itself.
+fn described_from_bases(member: &Schema, bases: &[(String, Schema)]) -> Option<Schema> {
+    let mut described = member.clone();
+    let mut changed = false;
+    for (property, schema) in described.properties.iter_mut() {
+        if schema.description.is_some() || string_enum_values(schema).is_none() {
+            continue;
+        }
+        let inherited = bases.iter().find_map(|(_, base)| {
+            base.properties
+                .get(property)
+                .and_then(|declared| declared.description.clone())
+        });
+        if inherited.is_some() {
+            schema.description = inherited;
+            changed = true;
+        }
+    }
+    changed.then_some(described)
+}
+
+/// An inline `oneOf`/`anyOf` of more than one member — a union written in place
+/// rather than referenced.
+fn is_inline_union(schema: &Schema) -> bool {
+    schema.reference.is_none()
+        && schema
+            .one_of
+            .as_ref()
+            .or(schema.any_of.as_ref())
+            .is_some_and(|members| members.len() > 1)
 }
 
 /// An inline (not `$ref`) object-shaped schema that Fern hoists into its own
@@ -10305,6 +10733,23 @@ fn restates_a_base_property(schemas: &IndexMap<String, Schema>, schema: &Schema)
                 .iter()
                 .any(|key| base.properties.contains_key(*key))
         })
+}
+
+/// Whether a model's own field `own` merely restates a base's `field`. Fern
+/// compares the child's property, wrapped optional unless required and nullable
+/// where declared so, against the base's unwrapped one, so only a property the
+/// child requires and does not make nullable can restate it, whatever the base
+/// requires: Groupe PSA's `RemoteAction` restates `RemoteRef`'s optional
+/// `remoteActionId` and `status` unchanged, and Fern flattens it; Zulip's
+/// `BasicChannel` requires `stream_id`, which `BasicChannelBase` leaves
+/// optional, and Fern keeps the base's field.
+fn restates_without_conflict(own: &Field, field: &Field) -> bool {
+    own.type_ref == field.type_ref
+        && own.spec_required
+        && !own.optional
+        && !own.nullable
+        && !field.nullable
+        && own.docstring == field.docstring
 }
 
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
@@ -13020,6 +13465,16 @@ mod tests {
         let none = operation(serde_json::json!({ "responses": { "404": {} } }));
         assert!(success_response_entry(&none).is_none());
         assert!(!super::has_bodyless_success(&none));
+
+        // A range key is no success code, bodyless or not: OpenLink OSDB's
+        // `executeAction` returns its `default` body, not an optional one.
+        let ranged = operation(serde_json::json!({
+            "responses": {
+                "2XX": { "content": { "*/*": { "example": { "description": "varies" } } } },
+                "default": { "content": { "application/json": { "schema": { "type": "string" } } } }
+            }
+        }));
+        assert!(!super::has_bodyless_success(&ranged));
     }
 
     #[test]
@@ -15644,6 +16099,8 @@ mod tests {
             ),
             "groupv2"
         );
+        // An untagged dotted id names no sub-client: the method hangs off the root
+        // client (OpenCodeUI's `global.config.get` is the root `global_config_get`).
         assert_eq!(
             endpoint_module(
                 &operation(serde_json::json!({
@@ -15652,7 +16109,7 @@ mod tests {
                 })),
                 "/users"
             ),
-            "admin_users"
+            ""
         );
         assert_eq!(
             endpoint_module(
