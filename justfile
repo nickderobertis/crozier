@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -490,12 +490,17 @@ lint-llm *paths:
 lint-llm-validate *args:
     PATH="$HOME/.local/bin:$PATH" llmlint validate {{args}}
 
-# `--diff` self-discovers the changed files (a three-dot compare against the base
-# that skips files main also touched) and honors llmlint.yml's excludes, so no
-# wrapper script is needed — it lints only what this branch introduced.
+# `--diff` lints only what this branch introduced against the merge base, and
+# honors llmlint.yml's excludes. llmlint hands one rule batch every changed file,
+# so scripts/llmlint-diff.py splits a diff too large for the judge into file
+# batches it can hold, and runs the one plain invocation otherwise.
 # Blocking `llmlint` PR check; run before pushing. BASE defaults to origin/main.
 lint-llm-diff base="origin/main" *args:
-    llmlint --diff git --diff-base {{base}} {{args}}
+    python3 scripts/llmlint-diff.py {{base}} {{args}}
+
+# Offline tests of the batching wrapper, against a stub llmlint.
+test-llmlint-diff:
+    python3 tests/llmlint_diff_test.py
 
 # --- Terminal screenshots (informational; never part of `check`) --------------
 # Deterministic SVGs of the real CLI output, rendered by `freeze` from a vendored
