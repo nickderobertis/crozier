@@ -3126,15 +3126,12 @@ fn build_endpoint(
         && op
             .request_body
             .as_ref()
-            .is_some_and(|rb| rb.description.is_none())
-        && op
-            .request_body
-            .as_ref()
-            .and_then(selected_json_request_media)
-            .is_some_and(|(media_type, media)| {
+            .and_then(|rb| Some((rb, selected_json_request_media(rb)?)))
+            .is_some_and(|(rb, (media_type, media))| {
                 media_type == "application/json"
                     && media.schema.as_ref().is_some_and(|schema| {
-                        schema.reference.is_none()
+                        rb.description.is_none()
+                            && schema.reference.is_none()
                             && schema.title.is_none()
                             && schema.description.is_none()
                             && (schema.one_of.is_some() || schema.any_of.is_some())
@@ -3143,7 +3140,10 @@ fn build_endpoint(
                             // marimo-plugins' map, nullable-scalar and `type:
                             // "null"` bodies send no `content-type`, where
                             // exhaustive's titled `typesMapOfDocumentedUnknownType`
-                            // keeps it.
+                            // keeps it. The request body's own description is no
+                            // bar here — Fern's importer never carries it into the
+                            // JSON request — so Otoroshi's described `$ref: Empty`
+                            // bodies collapse all the same.
                             || matches!(request_body, Some(RequestBody::Single(_)))
                                 && schema.description.is_none()
                                 && schema
@@ -3262,7 +3262,7 @@ fn build_endpoint(
             .as_ref()
             .and_then(selected_json_request_media)
             .and_then(|(media_type, _)| {
-                (media_type.ends_with("/ndjson")
+                (media_type.ends_with("ndjson")
                     || media_type != "application/json"
                         && media_type != "*/*"
                         && media_type.contains(';'))
@@ -5193,8 +5193,15 @@ pub(crate) fn is_json_like_media_type(media_type: &str) -> bool {
     // Fern types the response from it. Where a document spells both — the
     // OpenBanking component responses carry plain `application/json` beside the
     // parameterised one — the plain key is still selected first by the callers.
+    // Past that, Fern's `MediaType.isJSON` is any `application/*` whose subtype
+    // mentions `json`: Otoroshi's bulk bodies are `application/x-ndjson`.
     let base = media_type.split(';').next().unwrap_or(media_type).trim();
-    base == "application/json" || base.ends_with("+json") || base.ends_with("/ndjson")
+    base == "application/json"
+        || base.ends_with("+json")
+        || base.ends_with("/ndjson")
+        || base
+            .strip_prefix("application/")
+            .is_some_and(|subtype| subtype.contains("json"))
 }
 
 fn selected_json_request_media(
@@ -11487,10 +11494,14 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
     // A pointer Fern cannot name is its unknown type, and a description beside
     // it goes with it: the Auto Agent Protocol's `Facets.bodies` is `$ref:
     // …/$defs/term_facet` beside a description, and its golden field has none.
+    // So does a `$ref` naming a component the document never declares: Otoroshi's
+    // `Team.tenant` is `$ref: …/otoroshi.models.TenantId` beside a description,
+    // and its golden field has none.
     if schema
         .reference
         .as_deref()
         .is_some_and(pointer_has_unnamed_segment)
+        || schema.unresolved_reference
     {
         return None;
     }
