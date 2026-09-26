@@ -3357,6 +3357,7 @@ const CORPORA: &[&Corpus] = &[
     &DOCU_GOAPISERVER,
     &ONEVOICE,
     &XFSC_OIDC_IDENTITY_RESOLVER,
+    &ADYEN_ACS_NOTIFICATION,
 ];
 
 #[test]
@@ -6122,6 +6123,19 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `adyen-acs-notification`: corpus row 229, Adyen's Authentication webhooks v1
+/// from Adyen/adyen-openapi, whose enum members lead with a digit
+const ADYEN_ACS_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-acs-notification",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12033,6 +12047,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn adyen_acs_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_ACS_NOTIFICATION);
 }
 
 #[test]
