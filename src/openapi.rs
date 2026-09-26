@@ -65,7 +65,7 @@ pub struct OpenApi {
     #[serde(default)]
     pub security: Option<Vec<SecurityRequirement>>,
     /// Declared API servers; the first drives the generated environment enum.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_servers")]
     pub servers: Vec<Server>,
     /// Declared operation tags. Fern sometimes preserves the declared tag spelling
     /// in generated docs rather than title-casing an operation-only tag.
@@ -1140,6 +1140,18 @@ where
     D: serde::Deserializer<'de>,
 {
     Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// Deserialize the document's `servers`, tolerating an explicit `null`.
+///
+/// Palo Alto's `code/Technologies.json` writes `"servers": null`, and Fern
+/// generates it as a document declaring no servers, so `null` reads as the
+/// absent key does.
+fn de_servers<'de, D>(deserializer: D) -> std::result::Result<Vec<Server>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Option::<Vec<Server>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 /// Deserialize an object's `properties` map, tolerating a value that is not a
