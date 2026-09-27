@@ -7476,6 +7476,21 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether the type is, after alias resolution, a union whose every member
+    /// is unknown (`Union[typing.Any]`).
+    fn resolves_to_unknown_union(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Union(variants) => {
+                !variants.is_empty() && variants.iter().all(|variant| self.resolves_to_any(variant))
+            }
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_union(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     /// Whether the type is, after alias resolution, a map whose value slot is
     /// *directly* free-form (`Dict[str, Any]`) — the shape [`Self::value`]
     /// renders as Fern's `{"key": "value"}` placeholder.
@@ -9137,8 +9152,12 @@ fn build_example_inner(
         // `attributes={"key": "value"},` flat, where a map-typed one (bunq's
         // `AttachmentPublic`) is wrapped by `compact_documentation_values`.
         let mut untyped_arguments = std::mem::take(&mut ctx.untyped_arguments);
+        // So is a body naming a union of nothing but unknowns: People Data
+        // Labs' search bodies are `Union[typing.Any]` aliases, and its README
+        // writes `request={"key": "value"},` on one line.
         if matches!(&ep.request_body, Some(RequestBody::Single(single))
-            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any))
+                || ctx.resolves_to_unknown_union(&single.type_ref))
         {
             untyped_arguments.insert("request".to_string());
         }
@@ -9613,6 +9632,12 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             || file.path == generated_conftest;
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
         if is_py && !is_vendored && !is_vendored_scaffolding && has_code {
+            // Fern's code writer replaces every tab it writes with four spaces
+            // (`WriterImpl.write`, `TAB_LENGTH = 4`): People Data Labs' field
+            // description `HQ country\tunited states` is four spaces apart.
+            if file.contents.contains('\t') {
+                file.contents = file.contents.replace('\t', "    ");
+            }
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;

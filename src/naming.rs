@@ -442,11 +442,28 @@ fn enum_words(value: &str) -> String {
                 && word.starts_with('0')
                 && word.bytes().all(|byte| byte.is_ascii_digit())
         });
+    // Fern spells the value's own leading digit run (`VFt`): `parseFloat` reads
+    // its leading zeros away, and past 9,999 its speller returns `undefined`,
+    // which the template `${words}_${rest}` writes literally — People Data Labs'
+    // `10001+` is the member `UNDEFINED`.
+    let value_leads_with_digit = value.starts_with(|c: char| c.is_ascii_digit());
     if let Some(first) = words.first_mut() {
         let digits = first.bytes().take_while(u8::is_ascii_digit).count();
         if digits > 0 {
             let suffix = first[digits..].to_string();
-            if let Some(number) = numeric_enum_identifier(&first[..digits]) {
+            let run = &first[..digits];
+            let number = if value_leads_with_digit {
+                let significant = run.trim_start_matches('0');
+                numeric_enum_identifier(if significant.is_empty() {
+                    "0"
+                } else {
+                    significant
+                })
+                .or_else(|| (value.len() > digits).then(|| "undefined".to_string()))
+            } else {
+                numeric_enum_identifier(run)
+            };
+            if let Some(number) = number {
                 *first = if suffix.is_empty() {
                     number
                 } else {
@@ -455,21 +472,17 @@ fn enum_words(value: &str) -> String {
             }
         }
     }
-    // Fern joins letter-only connector runs in hardware-style values, but keeps
-    // ordinary lowercase words separated (`a-b` remains `A_B`). Digits are the
-    // signal for the former; all-uppercase wire values take the same path for
-    // connector spellings such as `P+N+E` and `E/F`.
-    let join_single_letters = value.bytes().any(|byte| byte.is_ascii_digit())
-        || value
-            .bytes()
-            .filter(|byte| byte.is_ascii_alphabetic())
-            .all(|byte| byte.is_ascii_uppercase());
+    // Consecutive single letters join: Fern names a member
+    // `upperFirst(camelCase(value))` (`WJe`) and the IR re-splits that name with
+    // lodash's `words`, which reads a run of capitals as one word — People Data
+    // Labs' `u.s. virgin islands` is `USVirginIslands`, so `US_VIRGIN_ISLANDS`,
+    // as `P+N+E` and `E/F` already were.
     let mut merged_words: Vec<String> = Vec::with_capacity(words.len());
     let mut single_letter_run = false;
     for word in words {
         let is_single_letter =
             word.len() == 1 && word.bytes().all(|byte| byte.is_ascii_alphabetic());
-        if join_single_letters && is_single_letter && single_letter_run {
+        if is_single_letter && single_letter_run {
             merged_words
                 .last_mut()
                 .expect("a single-letter run has a previous word")
@@ -1209,6 +1222,12 @@ mod tests {
         assert_eq!(enum_member_name("01"), "ONE");
         assert_eq!(enum_visit_param("09"), "nine");
         assert_eq!(enum_member_name("00"), "ZERO");
+        // Past Fern's speller's range the leading run is the literal
+        // `undefined` (People Data Labs' company sizes, corpus row 230).
+        assert_eq!(enum_member_name("10001+"), "UNDEFINED");
+        assert_eq!(enum_visit_param("10001+"), "undefined");
+        // Consecutive single letters join into one word.
+        assert_eq!(enum_member_name("u.s. virgin islands"), "US_VIRGIN_ISLANDS");
     }
 
     #[test]

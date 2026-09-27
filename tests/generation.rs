@@ -11512,6 +11512,33 @@ components:
     );
 }
 
+/// Fragments of the People Data Labs API 5.0 (corpus row 230), each assertion a
+/// line of its Fern 5.20.0 golden: a tab in a description is four spaces, as
+/// Fern's code writer writes every tab; a body union of `required`-only
+/// fragments is `Union[typing.Any]` once its identical members collapse; and the
+/// README passes that body's placeholder on one line.
+#[test]
+fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
+    let files = render(
+        "openapi: 3.0.3\ninfo: { title: api.peopledatalabs.com, version: '5.0' }\npaths:\n  /v5/company/search:\n    post:\n      tags: [Company Endpoints]\n      operationId: company_search\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query: { type: string }\n                sql: { type: string }\n              oneOf: [{ required: [query] }, { required: [sql] }]\n      responses:\n        '200':\n          description: ok\n          content: { application/json: { schema: { $ref: '#/components/schemas/CompanyLocation' } } }\ncomponents:\n  schemas:\n    CompanyLocation:\n      type: object\n      properties:\n        country: { type: string, description: \"The company's current HQ country\\tunited states\" }\n",
+    );
+    let location = &files["src/acme/types/company_location.py"];
+    assert!(
+        location.contains("The company's current HQ country    united states"),
+        "{location}"
+    );
+    let request = &files["src/acme/company_endpoints/types/company_search_request.py"];
+    assert!(
+        request.contains("CompanySearchRequest = typing.Union[typing.Any]"),
+        "{request}"
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    request={\"key\": \"value\"},\n"),
+        "{readme}"
+    );
+}
+
 /// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
 /// line of its Fern 5.20.0 golden:
 /// - an `anyOf` variant that is one member beside `null` is that member made

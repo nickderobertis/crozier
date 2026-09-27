@@ -4900,7 +4900,10 @@ fn resolve_request_body(
                 .as_ref()
                 .or(schema.any_of.as_ref())
                 .expect("union branch checked above");
-            let target = TypeRef::Union(
+            // Identical members collapse, as in every other union: People Data
+            // Labs' search bodies are a `oneOf` of two `required`-only fragments,
+            // each unknown, and the golden declares `Union[typing.Any]`.
+            let target = TypeRef::Union(dedupe_union_members(
                 variants
                     .iter()
                     .enumerate()
@@ -4908,7 +4911,7 @@ fn resolve_request_body(
                         hoister.hoist_union_variant(&request_body_name, index, variant, variants)
                     })
                     .collect(),
-            );
+            ));
             hoister.out.push(TypeDecl::Alias(AliasType {
                 name: request_body_name.clone(),
                 module: naming::module_name(&request_body_name),
@@ -12673,10 +12676,11 @@ mod tests {
             ],
             None,
         );
+        // Single letters join as Fern's `upperFirst(camelCase(…))` name does.
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
-        assert_eq!(members, ["A_B"]);
+        assert_eq!(members, ["AB"]);
         let params: Vec<&str> = e.members.iter().map(|m| m.visit_param.as_str()).collect();
-        assert_eq!(params, ["a_b"]);
+        assert_eq!(params, ["ab"]);
         // The first value keeps the name; the wire value is preserved untouched.
         let values: Vec<&str> = e.members.iter().map(|m| m.value.as_str()).collect();
         assert_eq!(values, ["a-b"]);
