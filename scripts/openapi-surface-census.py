@@ -547,8 +547,14 @@ class _YamlReader:
             if end is None:
                 self.fail(index, "a quoted scalar in a flow collection is never closed")
             return self.unquote(self.line_at(index), text[cursor:end]), end
+        # A plain scalar runs to a flow indicator, or to a `:` that a space, the
+        # end of the text or a flow indicator follows: YAML 1.2 keeps any other
+        # `:` in the scalar, so `[urn:ietf:params:oauth:client-assertion-type:jwt-bearer]`
+        # is one URN and not a key and value.
         end = cursor
-        while end < len(text) and text[end] not in ",]}:":
+        while end < len(text) and text[end] not in ",]}":
+            if text[end] == ":" and (end + 1 == len(text) or text[end + 1] in " \t,[]{}"):
+                break
             end += 1
         raw = text[cursor:end].strip()
         if raw.startswith("*"):
@@ -572,6 +578,11 @@ class _YamlReader:
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
             if cursor < len(text) and text[cursor] == ":":
+                if closer == "]":
+                    # `[x: y]` is a sequence of one single-pair mapping, which
+                    # this reader does not build; it refuses it rather than
+                    # dropping the pair.
+                    self.fail(index, "a single-pair mapping inside a flow sequence is not supported")
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 mapping[value] = entry
             else:

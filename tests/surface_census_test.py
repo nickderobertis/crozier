@@ -6029,6 +6029,51 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
 
+    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_refused(self) -> None:
+        """YAML 1.2's rule: a `:` no space follows stays in a plain scalar.
+
+        The loader used to stop every plain scalar at a `:` and then drop the
+        "pair" a flow sequence cannot hold, so OpenBanking Project's
+        `enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]` read as
+        an empty list. A `: ` inside a flow sequence is an implicit single-pair
+        mapping, which this reader refuses by name rather than dropping.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                "enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]\n"
+                "pairs: [a:b, c]\n"
+                "urls: {url: http://example.test/x, key: v}\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {
+                    "enum": ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+                    "pairs": ["a:b", "c"],
+                    "urls": {"url": "http://example.test/x", "key": "v"},
+                },
+                census.load_document(path),
+            )
+            path.write_text("pairs: [x: y]\n", encoding="utf-8")
+            with self.assertRaises(census.DocumentError) as raised:
+                census.load_document(path)
+        self.assertIn("a single-pair mapping inside a flow sequence is not supported", str(raised.exception))
+
+    def test_the_openbanking_client_assertion_enum_reads_as_its_one_urn(self) -> None:
+        """The registered document the misread cost a `schema.enum:string-valued` site."""
+        path = REPO / ".local" / "corpus" / "openbankingproject-ch-kundenbeziehung" / "openapi.yaml"
+        if not path.is_file():
+            if os.environ.get("CROZIER_REQUIRE_CORPUS"):
+                self.fail(f"{path} is unfetched; run scripts/fetch-corpus.sh")
+            self.skipTest("the link-ok corpus is unfetched; run scripts/fetch-corpus.sh")
+        document = census.load_document(path)
+        form = document["paths"]["/token"]["post"]["requestBody"]["content"]["application/x-www-form-urlencoded"]
+        self.assertEqual(["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+                         form["schema"]["properties"]["client_assertion_type"]["enum"])
+        counted = rows(run("--fixture", "openbankingproject-ch-kundenbeziehung",
+                           "--selector", "schema.enum:string-valued"))
+        self.assertEqual({("schema.enum:string-valued", "openbankingproject-ch-kundenbeziehung"): 95}, counted)
+
     def test_a_flow_collection_that_cannot_advance_is_a_parse_error_not_a_hang(self) -> None:
         """The guard that makes the failure mode a message instead of an OOM.
 
