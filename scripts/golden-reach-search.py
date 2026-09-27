@@ -917,20 +917,20 @@ def probe(args: argparse.Namespace) -> int:
             return None
 
     by_digest: dict[str, Path] = {}
-    unread: dict[str, str] = {}
+    digest_or_reason: dict[str, str] = {}
     for _arms, _earlier, pending in plans.values():
         for _candidate, path in pending:
             key_path = str(path)
-            if key_path in unread:
+            if key_path in digest_or_reason:
                 continue
             digest = digest_of(path)
             if digest is None:
                 try:
                     path.read_bytes()
                 except OSError as error:
-                    unread[key_path] = f"unreadable: {error.strerror}"
+                    digest_or_reason[key_path] = f"unreadable: {error.strerror}"
                 continue
-            unread[key_path] = digest
+            digest_or_reason[key_path] = digest
             by_digest.setdefault(digest, path)
     todo = [digest for digest in by_digest if digest not in cache]
 
@@ -938,7 +938,7 @@ def probe(args: argparse.Namespace) -> int:
         arms, earlier, pending = plans[key]
         rows = list(earlier)
         for candidate, path in pending:
-            digest = unread.get(str(path), "")
+            digest = digest_or_reason.get(str(path), "")
             if digest.startswith("unreadable: "):
                 rows.append({"key": key, "candidate": candidate, "status": digest, "reached": []})
             elif digest in cache:
