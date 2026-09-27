@@ -56,6 +56,13 @@ files it here.
   current build's rows. Rows with no `build` predate that rule; some ran while
   `src/` had moved on, read another arm's regions, and are counted nowhere.
 - `<source>/screens.jsonl` — each screen as it was filed, with its evidence.
+  The `github-code-search` licence screens rest on each repository's licence at
+  the pinned commit; 40 of those REST lookups first went out on 2026-09-26
+  without a credential, which `rate-limit-calls.jsonl` shows against GitHub's
+  unauthenticated limit of 60. All 108 repositories were looked up again on
+  2026-09-27 with the request and the guard reading the same `GH_TOKEN` (108
+  calls against the 5,000 limit), and each came back identical — status, SPDX
+  identifier, licence path and blob — so no screen moves.
 - `<source>/queries.jsonl`, `candidates.jsonl` and the guard's logs — the
   text-query sources' calls, as `scripts/witness-search-github.py`'s acquirer
   writes them. Raw downloads at an exact commit sit outside the REST guard by

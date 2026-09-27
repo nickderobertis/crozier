@@ -1,6 +1,6 @@
 key	kind	subject	result	file
 *	wait	github-code-search guard log index-pacing-waits.jsonl	25 entries	index-pacing-waits.jsonl
-*	wait	github-code-search guard log rate-limit-calls.jsonl	9996 entries	rate-limit-calls.jsonl
+*	wait	github-code-search guard log rate-limit-calls.jsonl	10104 entries	rate-limit-calls.jsonl
 *	wait	github-code-search guard log rate-limit-waits.jsonl	1 entries	rate-limit-waits.jsonl
 *	wait	github-code-search guard log raw-github-calls.jsonl	321 entries	raw-github-calls.jsonl
 *	wait	github-code-search guard log raw-github-waits.jsonl	320 entries	raw-github-waits.jsonl
