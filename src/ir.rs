@@ -3125,7 +3125,10 @@ fn build_endpoint(
             if parameter_names.contains(field.py_name.as_str()) {
                 if let Some(prefix) = &field.collision_prefix {
                     field.py_name = format!("{prefix}_{}", field.py_name);
-                    if doc.openapi.starts_with("3.1") || field.inline_object {
+                    if doc.openapi.starts_with("3.1") {
+                        field.collision_prefix = None;
+                    }
+                    if field.inline_object {
                         field.collision_prefix = None;
                     }
                 }
