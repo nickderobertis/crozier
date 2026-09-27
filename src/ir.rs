@@ -11983,11 +11983,6 @@ fn is_explicitly_nullable(schema: &Schema) -> bool {
     schema.explicitly_nullable()
 }
 
-/// A schema that carries nothing to determine a type — Fern treats it as an
-/// unknown value (`Any`). A bare `const` is not that: Fern reads it as the
-/// single-member enum `string_enum_values` already lowers it to, which is how
-/// `mosip-esignet`'s type-less `grant_type: {const: authorization_code}` becomes
-/// `PostTokenRequestGrantType` rather than `typing.Any`.
 /// A schema that is `type: "null"` and nothing else. The scalar spelling only:
 /// marimo-plugins' `marimo-chatbot.cancel_prompt.output` is Fern's
 /// `Optional[Any]`, where 3.1's one-member list `type: ['null']` is its bare
@@ -12000,6 +11995,11 @@ fn is_null_component(schema: &Schema) -> bool {
         })
 }
 
+/// A schema that carries nothing to determine a type — Fern treats it as an
+/// unknown value (`Any`). A bare `const` is not that: Fern reads it as the
+/// single-member enum `string_enum_values` already lowers it to, which is how
+/// `mosip-esignet`'s type-less `grant_type: {const: authorization_code}` becomes
+/// `PostTokenRequestGrantType` rather than `typing.Any`.
 fn is_unknown(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.ty.as_ref().is_none_or(|ty| ty.primary().is_none())
