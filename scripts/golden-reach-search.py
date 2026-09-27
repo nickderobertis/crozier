@@ -1644,7 +1644,7 @@ def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = Fal
     refusals, each at the cached copy `candidates.jsonl` names. With `fetch`, a
     query-source copy this checkout's cache lacks is fetched at its commit
     through the acquirer's exact-commit raw route, and kept only if it is the
-    candidate's blob. With `every`, a query source's every fetched document is
+    candidate's blob (or, where the candidate names no blob, its digest). With `every`, a query source's every fetched document is
     returned, read or not, so a census can be taken over each again.
     """
     unread: dict[str, tuple[Path, str]] = {}
@@ -1681,14 +1681,16 @@ def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = Fal
             unread[record["subject"]] = (CACHE / source / "missing", "")
             continue
         local = CACHE / source / "documents" / row["document"]
-        if fetch and not local.is_file() and row.get("blob"):
+        if fetch and not local.is_file() and (row.get("blob") or row.get("sha256")):
             if acquirer is None:
                 github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
                 acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
             repository = row["repository"].removeprefix("github.com/")
             url = f"{acquirer.raw_github_url}/{repository}/{row['commit']}/{urllib.parse.quote(row['path'])}"
             status, data = acquirer.raw_github_get(url, "*", f"{repository}:{row['path']}")
-            if status == 200 and git_blob(data) == row["blob"]:
+            # Sourcegraph names no blob; its candidate's recorded digest pins the bytes instead.
+            pinned = git_blob(data) == row["blob"] if row.get("blob") else hashlib.sha256(data).hexdigest() == row["sha256"]
+            if status == 200 and pinned:
                 local.parent.mkdir(parents=True, exist_ok=True)
                 local.write_bytes(data)
         if local.is_file():
@@ -1767,8 +1769,9 @@ def recensus(args: argparse.Namespace) -> int:
         walked = sorted({r["key"] for r in records if r["kind"] == "walk"})
         repeated = repeated_documents(pinned_listing(source))
         enumeration = source_dir(source) / "enumeration.tsv.gz"
+        # Read in the dialect `walk` writes, so a status the walk quoted round-trips.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+            rows = list(csv.DictReader(handle, delimiter="\t"))
         added: list[dict[str, str]] = []
         for row in rows:
             if row["document"] not in readings:
