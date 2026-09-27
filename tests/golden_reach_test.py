@@ -114,7 +114,7 @@ class SiteResolutionTests(unittest.TestCase):
         self.assertIn("return TypeRef::Named(name);", self.line_of(site.file, site.end - 1))
 
     def test_a_line_only_arm_holds_regions_from_its_match_onward(self) -> None:
-        site = self.resolve(r"src/ir.rs::auth_model[=_ => Auth::Bearer \{ required: false \}]")
+        site = self.resolve(r"src/ir.rs::auth_model[=_ => Auth::None,]")
         self.assertEqual(site.start, site.end)
         self.assertTrue(site.holds((site.start, site.start_col, site.start, site.start_col + 5)))
         self.assertFalse(site.holds((site.start, 1, site.start, 2)))
