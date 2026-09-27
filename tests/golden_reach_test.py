@@ -948,7 +948,7 @@ class ArmSearchStageTests(_StageScratch):
             # Without a YAML 1.2 parser `refuse` cannot read `c.yaml` and says how to get one.
             with self.assertRaises(SystemExit) as refused:
                 golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)])
-            self.assertIn("uv run --with ruamel.yaml", str(refused.exception))
+            self.assertIn("uv run scripts/golden-reach-search.py", str(refused.exception))
             (self.root / "c.yaml").unlink()
         with contextlib.redirect_stdout(io.StringIO()) as printed:
             self.assertEqual(0, golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)]))
@@ -974,6 +974,47 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.read_refused("jentic")
         self.assertIn("re-run `refuse --source jentic`", str(refused.exception))
+
+    def test_recensus_counts_what_only_the_full_parser_reads_and_names_its_loader(self) -> None:
+        """A declarer written with an explicit `? ` key leaves the unread list once counted."""
+        explicit = self.root / "d.yaml"
+        explicit.write_text(textwrap.dedent("""\
+            openapi: 3.0.3
+            info: {title: explicit, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                ? Pet
+                : anyOf:
+                    - oneOf: [{type: string}, {type: integer}]
+                    - type: boolean
+            """), encoding="utf-8")
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        digest = hashlib.sha256(explicit.read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"jentic-public-apis\td.yaml\t{self.REVISION}\t{digest}\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            golden_reach_search.main(["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
+                                      "--jobs", "1"])
+        self.assertIn(("d.yaml", ), [(d,) for d, _reason in golden_reach_search._unreadable(self.KEY, "jentic")])
+        if importlib.util.find_spec("ruamel") is None:
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)])
+            self.assertIn("uv run scripts/golden-reach-search.py", str(refused.exception))
+            self.skipTest("ruamel.yaml, the YAML 1.2 parser `recensus` reads with, is not installed")
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)]))
+        # `d.yaml` through the fallback; `c.yaml`'s explicit key reads too, and declares nothing.
+        self.assertIn("2 of 2 documents counted, 2 through ruamel.yaml", printed.getvalue())
+        with gzip.open(golden_reach_search.EVIDENCE / "jentic" / "enumeration.tsv.gz", "rt", encoding="utf-8") as h:
+            enumeration = {row["document"]: row for row in csv.DictReader(h, delimiter="\t")}
+        self.assertEqual(("readable", self.KEY), (enumeration["d.yaml"]["status"], enumeration["d.yaml"]["matched_keys"]))
+        records = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("jentic")}
+        self.assertEqual("census 1", records[("document", "d.yaml")])
+        fallback = golden_reach_search.read_fallback("jentic")
+        self.assertEqual({"c.yaml", "d.yaml"}, set(fallback))
+        self.assertEqual((digest, golden_reach_search.YAML_LOADER), (fallback["d.yaml"]["sha256"], fallback["d.yaml"]["loader"]))
+        self.assertEqual([], golden_reach_search._unreadable(self.KEY, "jentic"))
 
     def test_a_full_parser_settles_what_the_census_could_not_read(self) -> None:
         verdict = golden_reach_search.parse_verdict

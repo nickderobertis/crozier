@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["ruamel.yaml==0.19.1"]
+# ///
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this arm-search script sits in scripts/ beside golden-reach.py, whose ledger it reads, and the witness-search scripts whose acquirer it drives.
 """Search the six declared sources for a real-world witness of a golden row's unreached arm.
 
@@ -112,6 +116,14 @@ WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status
 REFUSED_FIELDS = ("document", "sha256", "parser", "verdict", "evidence")
 REFUSED_FILE = "census-refused.tsv"
 REFUSED_VERDICTS = ("syntax", "not-openapi")
+# The full YAML 1.2 parser the search reads YAML with where the census's stdlib
+# loader cannot: `refuse` to settle a syntax rejection, `recensus` to count what
+# a readable document declares. Pinned here and in the inline script metadata
+# above, which `uv run scripts/golden-reach-search.py` installs.
+RUAMEL_YAML_PIN = "0.19.1"
+# A document the census read through that parser, named with its loader.
+FALLBACK_FIELDS = ("document", "sha256", "loader")
+FALLBACK_FILE = "census-fallback.tsv"
 FIRST_PAGE = 100
 # Keyword arguments every acquirer this script builds is given. A real search
 # leaves them empty; the offline tests point them at a loopback server.
@@ -1519,6 +1531,72 @@ def outstanding(args: argparse.Namespace) -> int:
     return 0
 
 
+YAML_LOADER = f"ruamel.yaml {RUAMEL_YAML_PIN} (YAML 1.2)"
+
+
+def _ruamel_yaml() -> ModuleType:
+    """ruamel.yaml at the pinned version, or a refusal naming how to run with it."""
+    try:
+        import ruamel.yaml
+    except ModuleNotFoundError:
+        fail(f"this stage reads YAML with ruamel.yaml {RUAMEL_YAML_PIN}, a full YAML 1.2 parser; run it as "
+             "`uv run scripts/golden-reach-search.py ...`, whose inline metadata pins it")
+    if ruamel.yaml.__version__ != RUAMEL_YAML_PIN:
+        fail(f"ruamel.yaml {ruamel.yaml.__version__} is installed, not the pinned {RUAMEL_YAML_PIN}; "
+             "run through `uv run scripts/golden-reach-search.py ...`")
+    return ruamel.yaml
+
+
+def yaml_stream(data: bytes) -> list[Any]:
+    """Every document of a YAML stream as the pinned ruamel.yaml reads it.
+
+    A timestamp stays the text it is written as, which is how the census's own
+    loader reads one, so a census over this reading counts the same example
+    shapes the stdlib loader's would.
+    """
+    ruamel_yaml = _ruamel_yaml()
+
+    class TextTimestamps(ruamel_yaml.constructor.SafeConstructor):
+        pass
+
+    TextTimestamps.add_constructor("tag:yaml.org,2002:timestamp", ruamel_yaml.constructor.SafeConstructor.construct_yaml_str)
+    reader = ruamel_yaml.YAML(typ="safe", pure=True)
+    reader.Constructor = TextTimestamps
+    return list(reader.load_all(data))
+
+
+def _names_a_version(document: Any) -> bool:
+    return isinstance(document, dict) and ("openapi" in document or "swagger" in document)
+
+
+def fallback_reading(path: Path, data: bytes) -> tuple[Any, str] | None:
+    """The description the pinned YAML parser reads where the census's stdlib loader cannot.
+
+    Only for a YAML document the stdlib loader refuses: `(document, loader)`
+    when the stream holds exactly one document naming an OpenAPI or Swagger
+    version (a Jekyll page's front matter ahead of it included), `None` when the
+    stdlib loader reads it or the full parser finds no one description in it.
+    """
+    if path.suffix == ".json":
+        return None
+    try:
+        CENSUS.load_document(path)
+        return None
+    except Exception:  # the census's own refusal, whatever its type
+        pass
+    try:
+        stream = yaml_stream(data)
+    except Exception:  # a syntax rejection: `refuse`'s to file, not a reading
+        return None
+    described = [(index, document) for index, document in enumerate(stream, start=1)
+                 if _names_a_version(document)]
+    if len(described) != 1:
+        return None
+    index, document = described[0]
+    where = "" if len(stream) == 1 else f", document {index} of {len(stream)}"
+    return document, YAML_LOADER + where
+
+
 def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
     """A full standard parser's reading of a document the census could not read.
 
@@ -1534,24 +1612,19 @@ def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
         except (UnicodeDecodeError, json.JSONDecodeError) as error:
             return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
     else:
-        try:
-            import ruamel.yaml
-        except ModuleNotFoundError:
-            fail("`refuse` reads YAML with ruamel.yaml, a full YAML 1.2 parser; run it as "
-                 "`uv run --with ruamel.yaml python3 scripts/golden-reach-search.py refuse ...`")
-        parser = f"ruamel.yaml {ruamel.yaml.__version__} (YAML 1.2)"
+        parser = YAML_LOADER
         try:
             # A stream of several documents is YAML all the same; read it whole.
-            stream = list(ruamel.yaml.YAML(typ="safe", pure=True).load_all(data))
+            stream = yaml_stream(data)
         except Exception as error:  # ruamel's parse errors share no base class it exports
             return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
         if len(stream) != 1:
-            if any(isinstance(d, dict) and ("openapi" in d or "swagger" in d) for d in stream):
+            if any(_names_a_version(d) for d in stream):
                 return None
             return parser, "not-openapi", (f"parses as a stream of {len(stream)} YAML documents, none naming an "
                                            "`openapi` or `swagger` version")
         parsed = stream[0]
-    if isinstance(parsed, dict) and ("openapi" in parsed or "swagger" in parsed):
+    if _names_a_version(parsed):
         return None
     shape = (f"top-level keys {sorted(str(k) for k in parsed)[:12]}" if isinstance(parsed, dict)
              else f"top level is a {type(parsed).__name__}")
@@ -1561,6 +1634,173 @@ def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
 def _one_line(text: str) -> str:
     """A parser's message as one TSV cell: whitespace runs, newlines and tabs included, are one space."""
     return " ".join(text.split())
+
+
+def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = False) -> dict[str, tuple[Path, str]]:
+    """Each document of one source the census could not read: its local copy and pinned digest.
+
+    A walk's are its unreadable enumeration rows (a census cut off by time is
+    not a reading to settle); a query source's are its parse failures and census
+    refusals, each at the cached copy `candidates.jsonl` names. With `fetch`, a
+    query-source copy this checkout's cache lacks is fetched at its commit
+    through the acquirer's exact-commit raw route, and kept only if it is the
+    candidate's blob. With `every`, a query source's every fetched document is
+    returned, read or not, so a census can be taken over each again.
+    """
+    unread: dict[str, tuple[Path, str]] = {}
+    if source in WALKS:
+        if root is None:
+            fail(f"{source} is a walk; pass --root with its local copy")
+        by_digest: dict[str, Path] = {}
+        if source == "github-publisher-trees":
+            for path in root.rglob("*"):
+                if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
+                    by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
+        enumeration = source_dir(source) / "enumeration.tsv.gz"
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+                if row["status"] != "readable" and not row["status"].startswith("unreadable: census exceeded"):
+                    unread[row["document"]] = (locate(source, root, row, by_digest), row["sha256"])
+        return unread
+    fetched: dict[str, dict[str, Any]] = {}
+    ledger = source_dir(source) / "candidates.jsonl"
+    if ledger.is_file():
+        for row in read_jsonl(ledger, ("repository", "path", "commit"), "restore it from git"):
+            if row.get("document"):
+                fetched.setdefault(f"{row['repository']}:{row['path']}@{row['commit']}", row)
+    acquirer = None
+    index = candidate_index(source)
+    for record in read_records(source):
+        if record["kind"] != "document":
+            continue
+        if not (every and record["result"].startswith("census ")) and not record["result"].startswith(
+                ("acquisition-failure: parse-failure", "unreadable: ")):
+            continue
+        row = fetched.get(record["subject"])
+        if row is None:
+            unread[record["subject"]] = (CACHE / source / "missing", "")
+            continue
+        local = CACHE / source / "documents" / row["document"]
+        if fetch and not local.is_file() and row.get("blob"):
+            if acquirer is None:
+                github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+                acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
+            repository = row["repository"].removeprefix("github.com/")
+            url = f"{acquirer.raw_github_url}/{repository}/{row['commit']}/{urllib.parse.quote(row['path'])}"
+            status, data = acquirer.raw_github_get(url, "*", f"{repository}:{row['path']}")
+            if status == 200 and git_blob(data) == row["blob"]:
+                local.parent.mkdir(parents=True, exist_ok=True)
+                local.write_bytes(data)
+        if local.is_file():
+            index[record["subject"]] = row["document"]
+        unread[record["subject"]] = (local, row.get("sha256") or Path(row["document"]).stem.split(".")[0])
+    if fetch:
+        path = CACHE / source / "candidate-documents.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        if acquirer is not None:
+            record_guard_logs(source)
+    return unread
+
+
+def read_fallback(source: str) -> dict[str, dict[str, str]]:
+    """One source's documents the census read through the pinned YAML parser, by name."""
+    path = source_dir(source) / FALLBACK_FILE
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != FALLBACK_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(FALLBACK_FIELDS)}; restore it from git "
+                 f"or re-run `recensus --source {source}`")
+        return {row["document"]: row for row in reader}
+
+
+def recensus(args: argparse.Namespace) -> int:
+    """Count again each unread document, through the pinned YAML parser where the stdlib census refuses it.
+
+    A walk's unread documents, and a query source's every fetched one, are read
+    with the census's stdlib loader first; only a YAML document it refuses and
+    ruamel.yaml reads as one description is read through ruamel.yaml. The
+    census's own object-model walk counts either reading, and a document it
+    reads leaves the unread list as any read one would — a walk's enumeration
+    row reads `readable` with the keys it declares, and a query source's record
+    its `census N`. Each document read through ruamel.yaml is named with that
+    loader in the source's `census-fallback.tsv`. A document the full parser
+    also refuses is `refuse`'s to file.
+    """
+    source = args.source
+    # A query source's census was taken when each document was fetched, so a
+    # loader repair since reaches it only by counting every cached copy again.
+    unread = unread_locals(source, args.root, fetch=True, every=source not in WALKS)
+    refused = read_refused(source)
+    readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
+    for document, (local, sha256) in sorted(unread.items()):
+        if document in refused or not local.is_file():
+            continue
+        data = local.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if sha256 and digest != sha256:
+            continue
+        try:
+            parsed, loader = CENSUS.load_document(local), ""
+        except Exception:  # the census's own refusal, whatever its type
+            reading = fallback_reading(local, data)
+            if reading is None:
+                continue
+            parsed, loader = reading
+        if not isinstance(parsed, dict):
+            continue
+        try:
+            counts = CENSUS.census_document(parsed, root_path=local) if str(parsed.get("openapi", "")).startswith("3") else {}
+        except Exception:  # the census's walk refused this reading too: it stays outstanding
+            continue
+        readings[document] = (counts, parsed, loader, digest)
+
+    def count(key: str, counts: dict[str, int], parsed: Any) -> int:
+        if key in PREDICATE_ROWS:
+            return PREDICATE_ROWS[key][1](parsed) if str(parsed.get("openapi", "")).startswith("3") else 0
+        return declared(counts, selectors_of(key))
+
+    records = read_records(source)
+    if source in WALKS:
+        walked = sorted({r["key"] for r in records if r["kind"] == "walk"})
+        repeated = repeated_documents(pinned_listing(source))
+        enumeration = source_dir(source) / "enumeration.tsv.gz"
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        added: list[dict[str, str]] = []
+        for row in rows:
+            if row["document"] not in readings:
+                continue
+            counts, parsed, _loader, _digest = readings[row["document"]]
+            found = {key: n for key in walked for n in [count(key, counts, parsed)] if n}
+            row["status"], row["matched_keys"] = "readable", ",".join(found)
+            added += [{"key": key, "kind": "document", "subject": document_subject(row, repeated),
+                       "result": f"census {n}", "file": enumeration.name} for key, n in found.items()]
+        with gzip.open(enumeration, "wt", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, WALK_FIELDS, delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+        replace_records(source, records + added)
+    else:
+        for record in records:
+            if record["kind"] == "document" and record["subject"] in readings:
+                counts, parsed, _loader, _digest = readings[record["subject"]]
+                record["result"] = f"census {count(record['key'], counts, parsed)}"
+        replace_records(source, records)
+    filed = {document: row for document, row in read_fallback(source).items() if document not in readings}
+    filed.update({document: {"document": document, "sha256": digest, "loader": loader}
+                  for document, (_counts, _parsed, loader, digest) in readings.items() if loader})
+    with (source_dir(source) / FALLBACK_FILE).open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, FALLBACK_FIELDS, delimiter="\t", lineterminator="\n",
+                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer.writeheader()
+        writer.writerows(filed[document] for document in sorted(filed))
+    fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
+    print(f"golden-reach-search: {source}: {len(readings)} of {len(unread)} documents counted, "
+          f"{fallback} through {YAML_LOADER}")
+    return 0
 
 
 def refuse(args: argparse.Namespace) -> int:
@@ -1573,31 +1813,7 @@ def refuse(args: argparse.Namespace) -> int:
     out: the census alone failed on it, and it stays outstanding.
     """
     source = args.source
-    unread: dict[str, tuple[Path, str]] = {}
-    if source in WALKS:
-        if args.root is None:
-            fail(f"{source} is a walk; pass --root with its local copy")
-        by_digest: dict[str, Path] = {}
-        if source == "github-publisher-trees":
-            for path in args.root.rglob("*"):
-                if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
-                    by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
-        enumeration = source_dir(source) / "enumeration.tsv.gz"
-        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-                if row["status"] != "readable" and not row["status"].startswith("unreadable: census exceeded"):
-                    unread[row["document"]] = (locate(source, args.root, row, by_digest), row["sha256"])
-    else:
-        index = candidate_index(source)
-        for record in read_records(source):
-            if record["kind"] != "document" or record["result"].startswith("census "):
-                continue
-            if not record["result"].startswith(("acquisition-failure: parse-failure", "unreadable: ")):
-                continue
-            name = index.get(record["subject"])
-            if name:
-                local = CACHE / source / "documents" / name
-                unread[record["subject"]] = (local, Path(name).stem.split(".")[0])
+    unread = unread_locals(source, args.root, fetch=False)
     rows, kept = [], 0
     for document, (local, sha256) in sorted(unread.items()):
         if not local.is_file():
@@ -1662,12 +1878,13 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
     sub.add_parser("outstanding")
-    x = sub.add_parser("refuse")
-    x.add_argument("--source", required=True)
-    x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
+    for name in ("refuse", "recensus"):
+        x = sub.add_parser(name)
+        x.add_argument("--source", required=True)
+        x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
     return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render,
-            "outstanding": outstanding, "refuse": refuse}[args.command](args)
+            "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
 
 
 if __name__ == "__main__":

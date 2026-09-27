@@ -44,9 +44,19 @@ files it here.
   parser's error, or `not-openapi` when the document parses but names no
   `openapi` or `swagger` version. A refused document is no description a
   witness could be, so it is not outstanding; one only the census fails on
-  stays outstanding as the census's own bug. `refuse` writes it (run under
-  `uv run --with ruamel.yaml`), and a refusal never makes a search `exhausted`
-  on its own.
+  stays outstanding as the census's own bug until `recensus` reads it.
+  `refuse` writes it (run as `uv run scripts/golden-reach-search.py refuse`,
+  whose inline metadata pins ruamel.yaml), and a refusal never makes a search
+  `exhausted` on its own.
+- `<source>/census-fallback.tsv` — the documents the census's stdlib loader
+  refuses that ruamel.yaml reads as one description, each with its digest and
+  the loader that read it. `recensus` counts them with the census's own
+  object-model walk over that reading, so each leaves the unread list as a
+  read document does; it also counts a query source's every fetched document
+  again, so a loader repair reaches them. The fallback is the search's alone:
+  the registered-corpus census and `just check` read with the stdlib loader,
+  and `just test-census-fallback` holds the two readings to identical counts
+  on every registered YAML source.
 - `<source>/probe.jsonl` — every declarer's instrumented `crozier generate`: the
   unreached sites it executed, or how the run ended (a timeout or a crozier
   failure leaves the declarer outstanding). Each row carries the `build` it ran:

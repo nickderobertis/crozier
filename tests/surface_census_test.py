@@ -7827,7 +7827,7 @@ class RankedBacklogTests(unittest.TestCase):
                         key, lines, self.ARM_SEARCHES, capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
-                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv"),
+                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv"),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
