@@ -6037,8 +6037,7 @@ const NPQ_REGISTRATION: Corpus = Corpus {
 };
 
 /// `sim-logs`: corpus row 216, Sim API v2 — Logs. It declares
-/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
-/// disposition left it for the golden-reach continuation.
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
 const SIM_LOGS: Corpus = Corpus {
     api: "sim-logs",
     package_name: "fern",
@@ -6051,8 +6050,7 @@ const SIM_LOGS: Corpus = Corpus {
 };
 
 /// `sim-tables`: corpus row 217, Sim Tables API v2. It declares
-/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
-/// disposition left it for the golden-reach continuation.
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
 const SIM_TABLES: Corpus = Corpus {
     api: "sim-tables",
     package_name: "fern",
@@ -6065,8 +6063,7 @@ const SIM_TABLES: Corpus = Corpus {
 };
 
 /// `vellum-gateway`: corpus row 218, the Vellum Gateway API. It declares
-/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
-/// disposition left it for the golden-reach continuation.
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
 const VELLUM_GATEWAY: Corpus = Corpus {
     api: "vellum-gateway",
     package_name: "fern",
@@ -6079,8 +6076,7 @@ const VELLUM_GATEWAY: Corpus = Corpus {
 };
 
 /// `dot-ai`: corpus row 219, the DevOps AI Toolkit REST API. It declares
-/// `anyof-array-variant-closed-object-item`, a row already `golden`; its ledger
-/// disposition left it for the golden-reach continuation.
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
 const DOT_AI: Corpus = Corpus {
     api: "dot-ai",
     package_name: "fern",
@@ -6093,8 +6089,7 @@ const DOT_AI: Corpus = Corpus {
 };
 
 /// `paloalto-code-technologies`: corpus row 220, the Prisma Cloud Technologies
-/// API. It declares `anyof-array-variant-struct-item`, a row already `golden`;
-/// its ledger disposition left it for the golden-reach continuation.
+/// API. It declares `anyof-array-variant-struct-item`, a row already `golden`.
 const PALOALTO_CODE_TECHNOLOGIES: Corpus = Corpus {
     api: "paloalto-code-technologies",
     package_name: "fern",
@@ -6107,8 +6102,7 @@ const PALOALTO_CODE_TECHNOLOGIES: Corpus = Corpus {
 };
 
 /// `marimo-plugins`: corpus row 221, marimo's plugin contracts. It declares
-/// `anyof-array-variant-struct-item`, a row already `golden`; its ledger
-/// disposition left it for the golden-reach continuation.
+/// `anyof-array-variant-struct-item`, a row already `golden`.
 const MARIMO_PLUGINS: Corpus = Corpus {
     api: "marimo-plugins",
     package_name: "fern",
@@ -6122,7 +6116,7 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 
 /// `otoroshi`: corpus row 222, the Otoroshi Admin API as its repository pins
 /// it. It declares `ref-pointer-undeclared-component-head`, a row already
-/// `golden`; its ledger disposition left it for the golden-reach continuation.
+/// `golden`.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
     package_name: "fern",
