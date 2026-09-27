@@ -1636,7 +1636,9 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
-def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = False) -> dict[str, tuple[Path, str]]:
+def unread_locals(
+    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False
+) -> dict[str, tuple[Path, str]]:
     """Each document of one source the census could not read: its local copy and pinned digest.
 
     A walk's are its unreadable enumeration rows (a census cut off by time is
@@ -1645,7 +1647,8 @@ def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = Fal
     query-source copy this checkout's cache lacks is fetched at its commit
     through the acquirer's exact-commit raw route, and kept only if it is the
     candidate's blob (or, where the candidate names no blob, its digest). With `every`, a query source's every fetched document is
-    returned, read or not, so a census can be taken over each again.
+    returned, read or not, so a census can be taken over each again; with
+    `timed_out`, a walked document whose census was cut off by time is too.
     """
     unread: dict[str, tuple[Path, str]] = {}
     if source in WALKS:
@@ -1659,7 +1662,8 @@ def unread_locals(source: str, root: Path | None, fetch: bool, every: bool = Fal
         enumeration = source_dir(source) / "enumeration.tsv.gz"
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
             for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-                if row["status"] != "readable" and not row["status"].startswith("unreadable: census exceeded"):
+                cut_off = row["status"].startswith("unreadable: census exceeded")
+                if row["status"] != "readable" and (timed_out or not cut_off):
                     unread[row["document"]] = (locate(source, root, row, by_digest), row["sha256"])
         return unread
     fetched: dict[str, dict[str, Any]] = {}
@@ -1734,7 +1738,7 @@ def recensus(args: argparse.Namespace) -> int:
     source = args.source
     # A query source's census was taken when each document was fetched, so a
     # loader repair since reaches it only by counting every cached copy again.
-    unread = unread_locals(source, args.root, fetch=True, every=source not in WALKS)
+    unread = unread_locals(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
     refused = read_refused(source)
     readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
     for document, (local, sha256) in sorted(unread.items()):

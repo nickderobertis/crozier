@@ -830,6 +830,17 @@ class ArmSearchStageTests(_StageScratch):
             enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
         self.assertEqual("unreadable: census exceeded 1s", enumeration["b.yaml"]["status"])
         self.assertEqual(self.KEY, enumeration["a.yaml"]["matched_keys"])
+        # `recensus` takes a census cut off by time again, whole, as MongoDB's
+        # `v1-deprecated/v1.yaml` needed once the loader stopped being quadratic.
+        # `c.yaml` goes, so no fallback parser is needed to walk past it.
+        golden_reach_search.CENSUS.census_document = census
+        (self.root / "c.yaml").unlink()
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)]))
+        self.assertIn("1 of 2 documents counted, 0 through", printed.getvalue())
+        with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+            enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+        self.assertEqual(("readable", ""), (enumeration["b.yaml"]["status"], enumeration["b.yaml"]["matched_keys"]))
 
     def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
         """The publisher trees pin `openapi.yaml` at the root of several repositories.
