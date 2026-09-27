@@ -503,35 +503,50 @@ class _YamlReader:
         return "".join(out)
 
     def flow(self, rest: str, index: int) -> Any:
-        """A flow collection, gathered across lines until its brackets balance."""
-        buffer = rest
+        """A flow collection, gathered across lines until its brackets balance.
+
+        The depth is counted over each gathered line alone, carrying a quoted
+        scalar still open at a line's end into the next, and the lines are
+        joined once: counting the whole buffer again at every line made a
+        document written as one JSON collection in a `.yaml` file (MongoDB's
+        `v1-deprecated/v1.yaml`, 65,880 lines) quadratic, past two hours.
+        """
+        parts = [rest]
+        depth, open_quote = self.flow_depth_open(rest)
         cursor = index + 1
-        while self.flow_depth(buffer) > 0 and cursor < len(self.lines):
-            buffer = f"{buffer} {self.strip_comment(self.lines[cursor]).strip()}"
+        while depth > 0 and cursor < len(self.lines):
+            piece = self.strip_comment(self.lines[cursor]).strip()
+            parts.append(piece)
+            more, open_quote = self.flow_depth_open(f"{open_quote} {piece}" if open_quote else piece)
+            depth += more
             cursor += 1
-        if self.flow_depth(buffer) != 0:
+        if depth != 0:
             self.fail(index, "a flow collection is never closed")
+        buffer = " ".join(parts)
         self.pos = cursor
         value, end = self.flow_node(buffer, 0, index)
         if buffer[end:].strip():
             self.fail(index, f"unexpected text after a flow collection: {buffer[end:].strip()!r}")
         return value
 
-    def flow_depth(self, text: str) -> int:
+    def flow_depth_open(self, text: str) -> tuple[int, str]:
+        """The bracket depth `text` adds, and the quoted scalar it leaves open (from its quote)."""
         depth = 0
         cursor = 0
         while cursor < len(text):
             char = text[cursor]
             if char in "\"'":
                 end = self.scan_quoted(text, cursor)
-                cursor = end if end is not None else len(text)
+                if end is None:
+                    return depth, text[cursor:]
+                cursor = end
                 continue
             if char in "[{":
                 depth += 1
             elif char in "]}":
                 depth -= 1
             cursor += 1
-        return depth
+        return depth, ""
 
     def flow_node(self, text: str, start: int, index: int) -> tuple[Any, int]:
         cursor = self.skip_space(text, start)

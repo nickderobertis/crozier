@@ -33,6 +33,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import textwrap
 import unittest
 import unicodedata
@@ -6073,6 +6074,35 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         counted = rows(run("--fixture", "openbankingproject-ch-kundenbeziehung",
                            "--selector", "schema.enum:string-valued"))
         self.assertEqual({("schema.enum:string-valued", "openbankingproject-ch-kundenbeziehung"): 95}, counted)
+
+    def test_a_flow_collection_across_lines_reads_its_quoted_scalars_and_brackets(self) -> None:
+        """A quoted scalar spanning lines keeps the brackets inside it out of the count."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                'info: {\n  "title": "a [bracket\n  and ] more",\n  "version": "1" }\nopenapi: 3.0.0\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {"info": {"title": "a [bracket and ] more", "version": "1"}, "openapi": "3.0.0"},
+                census.load_document(path),
+            )
+
+    def test_a_json_document_in_a_yaml_file_loads_in_linear_time(self) -> None:
+        """MongoDB's `v1-deprecated/v1.yaml` is one JSON collection across 65,880 lines.
+
+        Counting the whole gathered buffer again at every line made it quadratic
+        (past two hours); counted line by line it is a second's work. Forty
+        thousand lines here take a fraction of that bound, and minutes the old way.
+        """
+        paths = {f"/items/{index}": {"get": {"summary": f"item {index}"}} for index in range(10_000)}
+        document = {"openapi": "3.0.0", "info": {"title": "T", "version": "1"}, "paths": paths}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yaml"
+            path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+            started = time.monotonic()
+            self.assertEqual(document, census.load_document(path))
+        self.assertLess(time.monotonic() - started, 30)
 
     def test_a_flow_collection_that_cannot_advance_is_a_parse_error_not_a_hang(self) -> None:
         """The guard that makes the failure mode a message instead of an OOM.
