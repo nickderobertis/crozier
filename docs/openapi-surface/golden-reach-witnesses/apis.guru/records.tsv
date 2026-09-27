@@ -485,12 +485,40 @@ array-item-pointer-walk-properties	document	APIs/codat.io/accounting/2.1.0/opena
 array-item-pointer-walk-properties	document	APIs/dnd5eapi.co/0.1/openapi.yaml	census 1	enumeration.tsv.gz
 array-item-pointer-walk-properties	document	APIs/linode.com/4.151.1/openapi.yaml	census 1	enumeration.tsv.gz
 array-item-pointer-walk-properties	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+enum-empty-identifier-member	candidate	APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml	census 1	probe.jsonl
+enum-empty-identifier-member	candidate	APIs/exoapi.dev/1.0.0/openapi.yaml	census 4	probe.jsonl
+enum-empty-identifier-member	candidate	APIs/telegram.org/5.0.0/openapi.yaml	census 3	probe.jsonl
+enum-empty-identifier-member	candidate	APIs/useapi.net/1.0/openapi.yaml	census 5	probe.jsonl
+enum-empty-identifier-member	candidate	APIs/zoom.us/2.0.0/openapi.yaml	census 12	probe.jsonl
 enum-empty-identifier-member	document	APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml	census 1	enumeration.tsv.gz
 enum-empty-identifier-member	document	APIs/exoapi.dev/1.0.0/openapi.yaml	census 4	enumeration.tsv.gz
 enum-empty-identifier-member	document	APIs/telegram.org/5.0.0/openapi.yaml	census 3	enumeration.tsv.gz
 enum-empty-identifier-member	document	APIs/useapi.net/1.0/openapi.yaml	census 5	enumeration.tsv.gz
 enum-empty-identifier-member	document	APIs/zoom.us/2.0.0/openapi.yaml	census 12	enumeration.tsv.gz
+enum-empty-identifier-member	screen	APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to decon	screens.jsonl
+enum-empty-identifier-member	screen	APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml licence	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/atlassian.com/jira/1001.0.0-SNAPSHOT/openapi.yaml ref	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/exoapi.dev/1.0.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 4 errors, e.g. Enum name for value ' is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
+enum-empty-identifier-member	screen	APIs/exoapi.dev/1.0.0/openapi.yaml licence	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/exoapi.dev/1.0.0/openapi.yaml ref	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/telegram.org/5.0.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum value 🎲 is not suitable for code generation.	screens.jsonl
+enum-empty-identifier-member	screen	APIs/telegram.org/5.0.0/openapi.yaml licence	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/telegram.org/5.0.0/openapi.yaml ref	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/useapi.net/1.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 25 errors, e.g. Enum value ⬅️ is not suitable for code generation.	screens.jsonl
+enum-empty-identifier-member	screen	APIs/useapi.net/1.0/openapi.yaml licence	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/useapi.net/1.0/openapi.yaml ref	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/zoom.us/2.0.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 10 errors, e.g. Expected example to be a date. Example is: "string [date]"	screens.jsonl
+enum-empty-identifier-member	screen	APIs/zoom.us/2.0.0/openapi.yaml licence	passed	screens.jsonl
+enum-empty-identifier-member	screen	APIs/zoom.us/2.0.0/openapi.yaml ref	passed	screens.jsonl
 enum-empty-identifier-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+enum-leading-digit-identifier	candidate	APIs/climate.com/4.0.11/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml	census 8	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/formapi.io/v1/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/just-eat.co.uk/1.0.0/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/openbanking.org.uk/v1.3/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/rebilly.com/2.1/openapi.yaml	census 3	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/storecove.com/2.0.1/openapi.yaml	census 2	probe.jsonl
 enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService-v71/71/openapi.yaml	census 20	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/37/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/40/openapi.yaml	census 1	enumeration.tsv.gz
@@ -546,7 +574,34 @@ enum-leading-digit-identifier	document	APIs/just-eat.co.uk/1.0.0/openapi.yaml	ce
 enum-leading-digit-identifier	document	APIs/openbanking.org.uk/v1.3/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/rebilly.com/2.1/openapi.yaml	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/storecove.com/2.0.1/openapi.yaml	census 2	enumeration.tsv.gz
+enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Enum name 307Af7 for value #307af7 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 54 errors, e.g. Enum value 449868002 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum name 10003 for value &#10003; is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 19 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 162 errors, e.g. Unexpected property "errors"	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/openbanking.org.uk/v1.3/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 10 errors, e.g. Enum name 5 for value £5 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/openbanking.org.uk/v1.3/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/openbanking.org.uk/v1.3/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/rebilly.com/2.1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Example is missing required property "response.body.discount.value"	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/rebilly.com/2.1/openapi.yaml licence	failed: the document's info.license names Rebilly's own API licence (https://www.rebilly.com/api-license/), which overrides the aggregation's CC0 for the description and is no grant the corpus admits	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/rebilly.com/2.1/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name legal_entity_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in Open	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+enum-leading-zero-member	candidate	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml	census 1	probe.jsonl
+enum-leading-zero-member	candidate	APIs/googleapis.com/dfareporting/v4/openapi.yaml	census 1	probe.jsonl
+enum-leading-zero-member	candidate	APIs/googleapis.com/monitoring/v1/openapi.yaml	census 2	probe.jsonl
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService-v71/71/openapi.yaml	census 20	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService/37/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService/40/openapi.yaml	census 1	enumeration.tsv.gz
@@ -643,6 +698,15 @@ enum-leading-zero-member	document	APIs/superset.apache.local/superset/v1/openapi
 enum-leading-zero-member	document	APIs/telnyx.com/2.0.0/openapi.yaml	census 3	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/vercel.com/0.0.1/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/zuora.com/2021-08-20/openapi.yaml	census 3	enumeration.tsv.gz
+enum-leading-zero-member	screen	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 47 errors, e.g. BatchDeleteRequest is already declared in this file	screens.jsonl
+enum-leading-zero-member	screen	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml licence	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml ref	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/dfareporting/v4/openapi.yaml fern	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/dfareporting/v4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/dfareporting/v4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/monitoring/v1/openapi.yaml fern	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/monitoring/v1/openapi.yaml licence	passed	screens.jsonl
+enum-leading-zero-member	screen	APIs/googleapis.com/monitoring/v1/openapi.yaml ref	passed	screens.jsonl
 enum-leading-zero-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 example	document	APIs/1password.com/events/1.2.0/openapi.yaml	census 23	enumeration.tsv.gz
 example	document	APIs/1password.local/connect/1.5.7/openapi.yaml	census 15	enumeration.tsv.gz
@@ -5478,7 +5542,11 @@ oneof-discriminated-union	document	APIs/webflow.com/2023-03-23T154040Z/openapi.y
 oneof-discriminated-union	document	APIs/wiremock.org/admin/2.35.0/openapi.yaml	census 16	enumeration.tsv.gz
 oneof-discriminated-union	document	APIs/zoom.us/2.0.0/openapi.yaml	census 2	enumeration.tsv.gz
 oneof-discriminated-union	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+oneof-string-const-variant	candidate	APIs/vercel.com/0.0.1/openapi.yaml	census 1	probe.jsonl
 oneof-string-const-variant	document	APIs/vercel.com/0.0.1/openapi.yaml	census 1	enumeration.tsv.gz
+oneof-string-const-variant	screen	APIs/vercel.com/0.0.1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to dec	screens.jsonl
+oneof-string-const-variant	screen	APIs/vercel.com/0.0.1/openapi.yaml licence	passed	screens.jsonl
+oneof-string-const-variant	screen	APIs/vercel.com/0.0.1/openapi.yaml ref	passed	screens.jsonl
 oneof-string-const-variant	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 property-anyof-discriminated-union	candidate	APIs/stripe.com/2022-11-15/openapi.yaml	census 14	probe.jsonl
 property-anyof-discriminated-union	document	APIs/stripe.com/2022-11-15/openapi.yaml	census 14	enumeration.tsv.gz
@@ -7289,16 +7357,29 @@ recursive-graph	document	APIs/zeit.co/v2019-01-07/openapi.yaml	census 13	enumera
 recursive-graph	document	APIs/zeno.fm/0.6-99cfdac/openapi.yaml	census 28	enumeration.tsv.gz
 recursive-graph	document	APIs/zuora.com/2021-08-20/openapi.yaml	census 1877	enumeration.tsv.gz
 recursive-graph	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+ref-pointer-composition-index	candidate	APIs/codat.io/assess/1.0/openapi.yaml	census 1	probe.jsonl
+ref-pointer-composition-index	candidate	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 19	probe.jsonl
+ref-pointer-composition-index	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5	probe.jsonl
 ref-pointer-composition-index	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 25	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/codat.io/assess/1.0/openapi.yaml	census 1	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 19	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/dnd5eapi.co/0.1/openapi.yaml	census 2	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5	enumeration.tsv.gz
+ref-pointer-composition-index	screen	APIs/codat.io/assess/1.0/openapi.yaml fern	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/codat.io/assess/1.0/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/codat.io/assess/1.0/openapi.yaml ref	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: PhoneNumber/definitions/phoneNumberType)	screens.jsonl
+ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/codat.io/commerce/2.1.0/openapi.yaml ref	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml fern	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml ref	passed	screens.jsonl
 ref-pointer-composition-index	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 ref-pointer-nested-items	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 17	enumeration.tsv.gz
 ref-pointer-nested-items	document	APIs/dnd5eapi.co/0.1/openapi.yaml	census 2	enumeration.tsv.gz
 ref-pointer-nested-items	document	APIs/linode.com/4.151.1/openapi.yaml	census 1	enumeration.tsv.gz
 ref-pointer-nested-items	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+ref-pointer-nested-properties	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5	probe.jsonl
 ref-pointer-nested-properties	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 75	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/codat.io/assess/1.0/openapi.yaml	census 16	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 9	enumeration.tsv.gz
@@ -7312,6 +7393,9 @@ ref-pointer-nested-properties	document	APIs/nexmo.com/conversation/2.0.1/openapi
 ref-pointer-nested-properties	document	APIs/openai.com/1.2.0/openapi.yaml	census 24	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/twinehealth.com/v7.78.1/openapi.yaml	census 11	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/vtex.local/Profile-System/1.0/openapi.yaml	census 14	enumeration.tsv.gz
+ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml licence	passed	screens.jsonl
+ref-pointer-nested-properties	screen	APIs/nexmo.com/conversation/2.0.1/openapi.yaml ref	passed	screens.jsonl
 ref-pointer-nested-properties	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 ref-pointer-undeclared-component-head	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 securityscheme-type-openidconnect	document	APIs/apache.org/airflow/2.5.3/openapi.yaml	census 1	enumeration.tsv.gz
