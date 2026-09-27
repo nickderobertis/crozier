@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_blend_shapes_item_interpolation_four import (
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationFour,
+)
+from .modeling_operation_action_deformer_create_deformer_blend_shapes_item_interpolation_one import (
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationOne,
+)
+from .modeling_operation_action_deformer_create_deformer_blend_shapes_item_interpolation_three import (
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationThree,
+)
+from .modeling_operation_action_deformer_create_deformer_blend_shapes_item_interpolation_two import (
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationTwo,
+)
+from .modeling_operation_action_deformer_create_deformer_blend_shapes_item_interpolation_zero import (
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolation = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationZero,
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationOne,
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationTwo,
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationThree,
+    ModelingOperationActionDeformerCreateDeformerBlendShapesItemInterpolationFour,
+]

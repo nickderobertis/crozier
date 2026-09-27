@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_api_playback_motion_request_clip_clip_tracks_item_keys_item_segment_control1 import (
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentControl1,
+)
+from .post_api_playback_motion_request_clip_clip_tracks_item_keys_item_segment_zero import (
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZero,
+)
+
+PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegment = typing.Union[
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZero,
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentControl1,
+]

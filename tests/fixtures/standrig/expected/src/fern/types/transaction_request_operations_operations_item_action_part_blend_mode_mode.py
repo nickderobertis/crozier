@@ -1,0 +1,23 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_part_blend_mode_mode_one import (
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeOne,
+)
+from .transaction_request_operations_operations_item_action_part_blend_mode_mode_three import (
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeThree,
+)
+from .transaction_request_operations_operations_item_action_part_blend_mode_mode_two import (
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeTwo,
+)
+from .transaction_request_operations_operations_item_action_part_blend_mode_mode_zero import (
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeZero,
+)
+
+TransactionRequestOperationsOperationsItemActionPartBlendModeMode = typing.Union[
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeZero,
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeOne,
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeTwo,
+    TransactionRequestOperationsOperationsItemActionPartBlendModeModeThree,
+]

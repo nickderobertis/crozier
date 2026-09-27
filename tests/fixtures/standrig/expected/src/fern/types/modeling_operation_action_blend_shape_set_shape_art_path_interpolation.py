@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_blend_shape_set_shape_art_path_interpolation_four import (
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationFour,
+)
+from .modeling_operation_action_blend_shape_set_shape_art_path_interpolation_one import (
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationOne,
+)
+from .modeling_operation_action_blend_shape_set_shape_art_path_interpolation_three import (
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationThree,
+)
+from .modeling_operation_action_blend_shape_set_shape_art_path_interpolation_two import (
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationTwo,
+)
+from .modeling_operation_action_blend_shape_set_shape_art_path_interpolation_zero import (
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationZero,
+)
+
+ModelingOperationActionBlendShapeSetShapeArtPathInterpolation = typing.Union[
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationZero,
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationOne,
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationTwo,
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationThree,
+    ModelingOperationActionBlendShapeSetShapeArtPathInterpolationFour,
+]

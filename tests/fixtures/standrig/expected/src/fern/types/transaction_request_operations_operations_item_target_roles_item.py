@@ -1,0 +1,79 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_target_roles_item_eight import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemEight,
+)
+from .transaction_request_operations_operations_item_target_roles_item_eleven import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemEleven,
+)
+from .transaction_request_operations_operations_item_target_roles_item_fifteen import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemFifteen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_five import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemFive,
+)
+from .transaction_request_operations_operations_item_target_roles_item_four import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemFour,
+)
+from .transaction_request_operations_operations_item_target_roles_item_fourteen import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemFourteen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_nine import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemNine,
+)
+from .transaction_request_operations_operations_item_target_roles_item_one import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemOne,
+)
+from .transaction_request_operations_operations_item_target_roles_item_seven import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemSeven,
+)
+from .transaction_request_operations_operations_item_target_roles_item_seventeen import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemSeventeen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_six import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemSix,
+)
+from .transaction_request_operations_operations_item_target_roles_item_sixteen import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemSixteen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_ten import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemTen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_thirteen import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemThirteen,
+)
+from .transaction_request_operations_operations_item_target_roles_item_three import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemThree,
+)
+from .transaction_request_operations_operations_item_target_roles_item_twelve import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemTwelve,
+)
+from .transaction_request_operations_operations_item_target_roles_item_two import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemTwo,
+)
+from .transaction_request_operations_operations_item_target_roles_item_zero import (
+    TransactionRequestOperationsOperationsItemTargetRolesItemZero,
+)
+
+TransactionRequestOperationsOperationsItemTargetRolesItem = typing.Union[
+    TransactionRequestOperationsOperationsItemTargetRolesItemZero,
+    TransactionRequestOperationsOperationsItemTargetRolesItemOne,
+    TransactionRequestOperationsOperationsItemTargetRolesItemTwo,
+    TransactionRequestOperationsOperationsItemTargetRolesItemThree,
+    TransactionRequestOperationsOperationsItemTargetRolesItemFour,
+    TransactionRequestOperationsOperationsItemTargetRolesItemFive,
+    TransactionRequestOperationsOperationsItemTargetRolesItemSix,
+    TransactionRequestOperationsOperationsItemTargetRolesItemSeven,
+    TransactionRequestOperationsOperationsItemTargetRolesItemEight,
+    TransactionRequestOperationsOperationsItemTargetRolesItemNine,
+    TransactionRequestOperationsOperationsItemTargetRolesItemTen,
+    TransactionRequestOperationsOperationsItemTargetRolesItemEleven,
+    TransactionRequestOperationsOperationsItemTargetRolesItemTwelve,
+    TransactionRequestOperationsOperationsItemTargetRolesItemThirteen,
+    TransactionRequestOperationsOperationsItemTargetRolesItemFourteen,
+    TransactionRequestOperationsOperationsItemTargetRolesItemFifteen,
+    TransactionRequestOperationsOperationsItemTargetRolesItemSixteen,
+    TransactionRequestOperationsOperationsItemTargetRolesItemSeventeen,
+]

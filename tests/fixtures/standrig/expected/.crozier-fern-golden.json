@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "standrig",
+  "corpus_spec_ref": "33e15309c44f8122a88e01ed7e71efc9989cb652",
+  "corpus_spec_url": "https://raw.githubusercontent.com/sayaka-aiart/StandRig/33e15309c44f8122a88e01ed7e71efc9989cb652/docs/openapi.json"
+}

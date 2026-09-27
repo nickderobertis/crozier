@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deformer_kind_set_warp_pin_blend_mode_one import (
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetWarpPinBlendModeOne,
+)
+from .transaction_request_operations_operations_item_action_deformer_kind_set_warp_pin_blend_mode_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetWarpPinBlendModeZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformerKindSetWarpPinBlendMode = typing.Union[
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetWarpPinBlendModeZero,
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetWarpPinBlendModeOne,
+]

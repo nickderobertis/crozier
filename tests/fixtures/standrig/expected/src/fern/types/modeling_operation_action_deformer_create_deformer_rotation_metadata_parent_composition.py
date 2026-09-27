@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_parent_composition_one import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataParentCompositionOne,
+)
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_parent_composition_zero import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataParentCompositionZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerRotationMetadataParentComposition = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataParentCompositionZero,
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataParentCompositionOne,
+]

@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .modeling_operation_action_transform_operator_one import ModelingOperationActionTransformOperatorOne
+from .modeling_operation_action_transform_operator_two import ModelingOperationActionTransformOperatorTwo
+from .modeling_operation_action_transform_operator_zero import ModelingOperationActionTransformOperatorZero
+
+ModelingOperationActionTransformOperator = typing.Union[
+    ModelingOperationActionTransformOperatorZero,
+    ModelingOperationActionTransformOperatorOne,
+    ModelingOperationActionTransformOperatorTwo,
+]

@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deform_brush_brush_falloff_one import (
+    TransactionRequestOperationsOperationsItemActionDeformBrushBrushFalloffOne,
+)
+from .transaction_request_operations_operations_item_action_deform_brush_brush_falloff_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformBrushBrushFalloffZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformBrushBrushFalloff = typing.Union[
+    TransactionRequestOperationsOperationsItemActionDeformBrushBrushFalloffZero,
+    TransactionRequestOperationsOperationsItemActionDeformBrushBrushFalloffOne,
+]

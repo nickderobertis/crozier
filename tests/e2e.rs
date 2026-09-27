@@ -3359,6 +3359,7 @@ const CORPORA: &[&Corpus] = &[
     &XFSC_OIDC_IDENTITY_RESOLVER,
     &ADYEN_ACS_NOTIFICATION,
     &PEOPLEDATALABS,
+    &STANDRIG,
 ];
 
 #[test]
@@ -6124,6 +6125,19 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `standrig`: corpus row 231, the StandRig Modeling Tools core API from
+/// sayaka-aiart/StandRig, whose `anyOf` alternatives include a string `const`
+const STANDRIG: Corpus = Corpus {
+    api: "standrig",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12061,6 +12075,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn standrig_matches_fern_output() {
+    assert_link_ok_corpus_matches(&STANDRIG);
 }
 
 #[test]

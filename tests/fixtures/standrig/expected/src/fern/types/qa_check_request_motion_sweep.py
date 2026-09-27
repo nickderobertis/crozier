@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .qa_check_request_motion_sweep_check_monotonic import QaCheckRequestMotionSweepCheckMonotonic
+
+QaCheckRequestMotionSweep = typing.Union[bool, QaCheckRequestMotionSweepCheckMonotonic]

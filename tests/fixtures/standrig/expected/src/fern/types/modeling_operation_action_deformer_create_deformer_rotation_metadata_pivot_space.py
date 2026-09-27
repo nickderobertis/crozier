@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_pivot_space_one import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataPivotSpaceOne,
+)
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_pivot_space_zero import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataPivotSpaceZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerRotationMetadataPivotSpace = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataPivotSpaceZero,
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataPivotSpaceOne,
+]

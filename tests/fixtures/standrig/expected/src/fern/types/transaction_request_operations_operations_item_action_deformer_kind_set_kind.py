@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deformer_kind_set_kind_one import (
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindOne,
+)
+from .transaction_request_operations_operations_item_action_deformer_kind_set_kind_two import (
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindTwo,
+)
+from .transaction_request_operations_operations_item_action_deformer_kind_set_kind_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformerKindSetKind = typing.Union[
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindZero,
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindOne,
+    TransactionRequestOperationsOperationsItemActionDeformerKindSetKindTwo,
+]

@@ -1,0 +1,43 @@
+
+
+import typing
+
+from .modeling_operation_target_roles_item_eight import ModelingOperationTargetRolesItemEight
+from .modeling_operation_target_roles_item_eleven import ModelingOperationTargetRolesItemEleven
+from .modeling_operation_target_roles_item_fifteen import ModelingOperationTargetRolesItemFifteen
+from .modeling_operation_target_roles_item_five import ModelingOperationTargetRolesItemFive
+from .modeling_operation_target_roles_item_four import ModelingOperationTargetRolesItemFour
+from .modeling_operation_target_roles_item_fourteen import ModelingOperationTargetRolesItemFourteen
+from .modeling_operation_target_roles_item_nine import ModelingOperationTargetRolesItemNine
+from .modeling_operation_target_roles_item_one import ModelingOperationTargetRolesItemOne
+from .modeling_operation_target_roles_item_seven import ModelingOperationTargetRolesItemSeven
+from .modeling_operation_target_roles_item_seventeen import ModelingOperationTargetRolesItemSeventeen
+from .modeling_operation_target_roles_item_six import ModelingOperationTargetRolesItemSix
+from .modeling_operation_target_roles_item_sixteen import ModelingOperationTargetRolesItemSixteen
+from .modeling_operation_target_roles_item_ten import ModelingOperationTargetRolesItemTen
+from .modeling_operation_target_roles_item_thirteen import ModelingOperationTargetRolesItemThirteen
+from .modeling_operation_target_roles_item_three import ModelingOperationTargetRolesItemThree
+from .modeling_operation_target_roles_item_twelve import ModelingOperationTargetRolesItemTwelve
+from .modeling_operation_target_roles_item_two import ModelingOperationTargetRolesItemTwo
+from .modeling_operation_target_roles_item_zero import ModelingOperationTargetRolesItemZero
+
+ModelingOperationTargetRolesItem = typing.Union[
+    ModelingOperationTargetRolesItemZero,
+    ModelingOperationTargetRolesItemOne,
+    ModelingOperationTargetRolesItemTwo,
+    ModelingOperationTargetRolesItemThree,
+    ModelingOperationTargetRolesItemFour,
+    ModelingOperationTargetRolesItemFive,
+    ModelingOperationTargetRolesItemSix,
+    ModelingOperationTargetRolesItemSeven,
+    ModelingOperationTargetRolesItemEight,
+    ModelingOperationTargetRolesItemNine,
+    ModelingOperationTargetRolesItemTen,
+    ModelingOperationTargetRolesItemEleven,
+    ModelingOperationTargetRolesItemTwelve,
+    ModelingOperationTargetRolesItemThirteen,
+    ModelingOperationTargetRolesItemFourteen,
+    ModelingOperationTargetRolesItemFifteen,
+    ModelingOperationTargetRolesItemSixteen,
+    ModelingOperationTargetRolesItemSeventeen,
+]

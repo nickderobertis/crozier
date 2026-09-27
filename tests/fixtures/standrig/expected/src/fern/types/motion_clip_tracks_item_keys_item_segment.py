@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .motion_clip_tracks_item_keys_item_segment_control1 import MotionClipTracksItemKeysItemSegmentControl1
+from .motion_clip_tracks_item_keys_item_segment_zero import MotionClipTracksItemKeysItemSegmentZero
+
+MotionClipTracksItemKeysItemSegment = typing.Union[
+    MotionClipTracksItemKeysItemSegmentZero, MotionClipTracksItemKeysItemSegmentControl1
+]

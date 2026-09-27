@@ -1,0 +1,47 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_binding_remove_property_eight import (
+    ModelingOperationActionDeformerBindingRemovePropertyEight,
+)
+from .modeling_operation_action_deformer_binding_remove_property_five import (
+    ModelingOperationActionDeformerBindingRemovePropertyFive,
+)
+from .modeling_operation_action_deformer_binding_remove_property_four import (
+    ModelingOperationActionDeformerBindingRemovePropertyFour,
+)
+from .modeling_operation_action_deformer_binding_remove_property_nine import (
+    ModelingOperationActionDeformerBindingRemovePropertyNine,
+)
+from .modeling_operation_action_deformer_binding_remove_property_one import (
+    ModelingOperationActionDeformerBindingRemovePropertyOne,
+)
+from .modeling_operation_action_deformer_binding_remove_property_seven import (
+    ModelingOperationActionDeformerBindingRemovePropertySeven,
+)
+from .modeling_operation_action_deformer_binding_remove_property_six import (
+    ModelingOperationActionDeformerBindingRemovePropertySix,
+)
+from .modeling_operation_action_deformer_binding_remove_property_three import (
+    ModelingOperationActionDeformerBindingRemovePropertyThree,
+)
+from .modeling_operation_action_deformer_binding_remove_property_two import (
+    ModelingOperationActionDeformerBindingRemovePropertyTwo,
+)
+from .modeling_operation_action_deformer_binding_remove_property_zero import (
+    ModelingOperationActionDeformerBindingRemovePropertyZero,
+)
+
+ModelingOperationActionDeformerBindingRemoveProperty = typing.Union[
+    ModelingOperationActionDeformerBindingRemovePropertyZero,
+    ModelingOperationActionDeformerBindingRemovePropertyOne,
+    ModelingOperationActionDeformerBindingRemovePropertyTwo,
+    ModelingOperationActionDeformerBindingRemovePropertyThree,
+    ModelingOperationActionDeformerBindingRemovePropertyFour,
+    ModelingOperationActionDeformerBindingRemovePropertyFive,
+    ModelingOperationActionDeformerBindingRemovePropertySix,
+    ModelingOperationActionDeformerBindingRemovePropertySeven,
+    ModelingOperationActionDeformerBindingRemovePropertyEight,
+    ModelingOperationActionDeformerBindingRemovePropertyNine,
+]

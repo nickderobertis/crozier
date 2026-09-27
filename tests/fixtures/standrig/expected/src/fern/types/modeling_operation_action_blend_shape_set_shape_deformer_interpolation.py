@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_blend_shape_set_shape_deformer_interpolation_four import (
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationFour,
+)
+from .modeling_operation_action_blend_shape_set_shape_deformer_interpolation_one import (
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationOne,
+)
+from .modeling_operation_action_blend_shape_set_shape_deformer_interpolation_three import (
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationThree,
+)
+from .modeling_operation_action_blend_shape_set_shape_deformer_interpolation_two import (
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationTwo,
+)
+from .modeling_operation_action_blend_shape_set_shape_deformer_interpolation_zero import (
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationZero,
+)
+
+ModelingOperationActionBlendShapeSetShapeDeformerInterpolation = typing.Union[
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationZero,
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationOne,
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationTwo,
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationThree,
+    ModelingOperationActionBlendShapeSetShapeDeformerInterpolationFour,
+]

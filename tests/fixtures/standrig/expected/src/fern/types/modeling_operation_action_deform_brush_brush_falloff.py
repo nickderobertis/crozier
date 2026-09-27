@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .modeling_operation_action_deform_brush_brush_falloff_one import ModelingOperationActionDeformBrushBrushFalloffOne
+from .modeling_operation_action_deform_brush_brush_falloff_zero import (
+    ModelingOperationActionDeformBrushBrushFalloffZero,
+)
+
+ModelingOperationActionDeformBrushBrushFalloff = typing.Union[
+    ModelingOperationActionDeformBrushBrushFalloffZero, ModelingOperationActionDeformBrushBrushFalloffOne
+]

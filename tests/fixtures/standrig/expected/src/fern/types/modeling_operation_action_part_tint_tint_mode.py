@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .modeling_operation_action_part_tint_tint_mode_one import ModelingOperationActionPartTintTintModeOne
+from .modeling_operation_action_part_tint_tint_mode_zero import ModelingOperationActionPartTintTintModeZero
+
+ModelingOperationActionPartTintTintMode = typing.Union[
+    ModelingOperationActionPartTintTintModeZero, ModelingOperationActionPartTintTintModeOne
+]

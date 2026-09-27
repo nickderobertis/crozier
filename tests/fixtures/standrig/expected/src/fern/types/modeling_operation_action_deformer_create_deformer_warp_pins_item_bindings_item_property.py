@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_warp_pins_item_bindings_item_property_one import (
+    ModelingOperationActionDeformerCreateDeformerWarpPinsItemBindingsItemPropertyOne,
+)
+from .modeling_operation_action_deformer_create_deformer_warp_pins_item_bindings_item_property_zero import (
+    ModelingOperationActionDeformerCreateDeformerWarpPinsItemBindingsItemPropertyZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerWarpPinsItemBindingsItemProperty = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerWarpPinsItemBindingsItemPropertyZero,
+    ModelingOperationActionDeformerCreateDeformerWarpPinsItemBindingsItemPropertyOne,
+]

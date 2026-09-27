@@ -1,0 +1,31 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_five import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetFive,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_four import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetFour,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_one import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetOne,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_three import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetThree,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_two import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetTwo,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_preset_zero import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetZero,
+)
+
+TransactionRequestOperationsOperationsItemActionArtmeshRebuildPreset = typing.Union[
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetZero,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetOne,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetTwo,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetThree,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetFour,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildPresetFive,
+]

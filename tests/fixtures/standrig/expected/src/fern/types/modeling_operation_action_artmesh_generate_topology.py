@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .modeling_operation_action_artmesh_generate_topology_one import ModelingOperationActionArtmeshGenerateTopologyOne
+from .modeling_operation_action_artmesh_generate_topology_zero import ModelingOperationActionArtmeshGenerateTopologyZero
+
+ModelingOperationActionArtmeshGenerateTopology = typing.Union[
+    ModelingOperationActionArtmeshGenerateTopologyZero, ModelingOperationActionArtmeshGenerateTopologyOne
+]
