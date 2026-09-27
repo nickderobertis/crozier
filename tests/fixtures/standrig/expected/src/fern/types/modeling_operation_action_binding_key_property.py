@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .modeling_operation_action_binding_key_property_five import ModelingOperationActionBindingKeyPropertyFive
+from .modeling_operation_action_binding_key_property_four import ModelingOperationActionBindingKeyPropertyFour
+from .modeling_operation_action_binding_key_property_one import ModelingOperationActionBindingKeyPropertyOne
+from .modeling_operation_action_binding_key_property_three import ModelingOperationActionBindingKeyPropertyThree
+from .modeling_operation_action_binding_key_property_two import ModelingOperationActionBindingKeyPropertyTwo
+from .modeling_operation_action_binding_key_property_zero import ModelingOperationActionBindingKeyPropertyZero
+
+ModelingOperationActionBindingKeyProperty = typing.Union[
+    ModelingOperationActionBindingKeyPropertyZero,
+    ModelingOperationActionBindingKeyPropertyOne,
+    ModelingOperationActionBindingKeyPropertyTwo,
+    ModelingOperationActionBindingKeyPropertyThree,
+    ModelingOperationActionBindingKeyPropertyFour,
+    ModelingOperationActionBindingKeyPropertyFive,
+]

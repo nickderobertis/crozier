@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .motion_request_one_action_one import MotionRequestOneActionOne
+from .motion_request_one_action_three import MotionRequestOneActionThree
+from .motion_request_one_action_two import MotionRequestOneActionTwo
+from .motion_request_one_action_zero import MotionRequestOneActionZero
+
+MotionRequestOneAction = typing.Union[
+    MotionRequestOneActionZero, MotionRequestOneActionOne, MotionRequestOneActionTwo, MotionRequestOneActionThree
+]

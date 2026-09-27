@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_part_clip_clip_mask_opacity_one import (
+    TransactionRequestOperationsOperationsItemActionPartClipClipMaskOpacityOne,
+)
+from .transaction_request_operations_operations_item_action_part_clip_clip_mask_opacity_zero import (
+    TransactionRequestOperationsOperationsItemActionPartClipClipMaskOpacityZero,
+)
+
+TransactionRequestOperationsOperationsItemActionPartClipClipMaskOpacity = typing.Union[
+    TransactionRequestOperationsOperationsItemActionPartClipClipMaskOpacityZero,
+    TransactionRequestOperationsOperationsItemActionPartClipClipMaskOpacityOne,
+]

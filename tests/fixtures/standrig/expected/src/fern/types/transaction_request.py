@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .transaction_request_checkpoint_id import TransactionRequestCheckpointId
+from .transaction_request_operations import TransactionRequestOperations
+from .transaction_request_rig import TransactionRequestRig
+
+TransactionRequest = typing.Union[TransactionRequestOperations, TransactionRequestRig, TransactionRequestCheckpointId]

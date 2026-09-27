@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .update_lead_stages_request_stage_inquiry_call_completed import UpdateLeadStagesRequestStageInquiryCallCompleted
+from .update_lead_stages_request_stage_no_response import UpdateLeadStagesRequestStageNoResponse
+from .update_lead_stages_request_stage_no_response_timed_out import UpdateLeadStagesRequestStageNoResponseTimedOut
+from .update_lead_stages_request_stage_not_interested import UpdateLeadStagesRequestStageNotInterested
+from .update_lead_stages_request_stage_not_viable import UpdateLeadStagesRequestStageNotViable
+from .update_lead_stages_request_stage_tour_completed import UpdateLeadStagesRequestStageTourCompleted
+
+UpdateLeadStagesRequest = typing.Union[
+    UpdateLeadStagesRequestStageInquiryCallCompleted,
+    UpdateLeadStagesRequestStageTourCompleted,
+    UpdateLeadStagesRequestStageNotInterested,
+    UpdateLeadStagesRequestStageNotViable,
+    UpdateLeadStagesRequestStageNoResponse,
+    UpdateLeadStagesRequestStageNoResponseTimedOut,
+]

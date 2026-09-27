@@ -659,11 +659,13 @@ fn auth_model(doc: &OpenApi) -> Auth {
                     Some(HttpAuthScheme::Bearer | HttpAuthScheme::Basic)
                 ))
             || scheme.ty == SecuritySchemeType::OAuth2
+            || scheme.ty == SecuritySchemeType::OpenIdConnect
     });
     if !requirement_declared
         && selected.is_none_or(|scheme| {
             scheme.ty != SecuritySchemeType::ApiKey
                 && scheme.ty != SecuritySchemeType::OAuth2
+                && scheme.ty != SecuritySchemeType::OpenIdConnect
                 && !(scheme.ty == SecuritySchemeType::Http
                     && scheme.scheme == Some(HttpAuthScheme::Bearer))
         })
@@ -698,8 +700,19 @@ fn auth_model(doc: &OpenApi) -> Auth {
         Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
             required: all_operations_authenticated(doc),
         },
-        // Unknown scheme → Fern's default optional bearer token.
-        _ => Auth::Bearer { required: false },
+        // An `openIdConnect` scheme is a bearer token to Fern, required on the
+        // same terms as OAuth2's: the Virtual Cell's `openId` scheme leaves
+        // `token` optional, and a book manager requiring its `bearerAuth` OIDC
+        // scheme on every operation makes it required.
+        Some(s) if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer {
+            required: all_operations_authenticated(doc),
+        },
+        // No scheme Fern supports: it defines no auth at all. OneVoice's
+        // requirement names a cookie `apiKey` and its other scheme is
+        // `mutualTLS`, and its golden's client takes no credential; documents
+        // whose operations require such a scheme are refused outright (*Endpoint
+        // requires auth, but no auth is defined*).
+        _ => Auth::None,
     }
 }
 
@@ -4755,8 +4768,15 @@ fn resolve_request_body(
         }
         // A `$ref` to a union goes through the convert wrapper (its object
         // variants carry field aliases that must be respected on write).
+        // Its worked example is the media type's own: Primula Tracker's
+        // `UpdateStudentRequest` is `Union[Any]` and the golden passes the
+        // declared `{"transition_date": …}`.
         if target.one_of.is_some() || target.any_of.is_some() {
-            return Some(single(TypeRef::Named(class), required, true, true));
+            let mut body = single(TypeRef::Named(class), required, true, true);
+            if let RequestBody::Single(single) = &mut body {
+                single.example = media_example(doc, media).map(serde_json::Value::to_string);
+            }
+            return Some(body);
         }
         // A `$ref` to a map (object with `additionalProperties`, no declared
         // properties) is passed straight through as `json=request`.
@@ -4880,7 +4900,10 @@ fn resolve_request_body(
                 .as_ref()
                 .or(schema.any_of.as_ref())
                 .expect("union branch checked above");
-            let target = TypeRef::Union(
+            // Identical members collapse, as in every other union: People Data
+            // Labs' search bodies are a `oneOf` of two `required`-only fragments,
+            // each unknown, and the golden declares `Union[typing.Any]`.
+            let target = TypeRef::Union(dedupe_union_members(
                 variants
                     .iter()
                     .enumerate()
@@ -4888,7 +4911,7 @@ fn resolve_request_body(
                         hoister.hoist_union_variant(&request_body_name, index, variant, variants)
                     })
                     .collect(),
-            );
+            ));
             hoister.out.push(TypeDecl::Alias(AliasType {
                 name: request_body_name.clone(),
                 module: naming::module_name(&request_body_name),
@@ -4910,11 +4933,7 @@ fn resolve_request_body(
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
-        && (schema.properties.declared()
-            || matches!(
-                schema.additional_properties,
-                Some(AdditionalProperties::Bool(false))
-            ))
+        && schema.properties.declared()
     {
         if is_optional(schema) {
             let name = format!("{request_ctx}Body");
@@ -5024,21 +5043,43 @@ fn resolve_request_body(
             base_type_ref(items)
         };
         let convert = hoister.needs_convert(&item);
-        return Some(single(
+        let mut body = single(
             TypeRef::List(Box::new(item)),
             required,
             convert,
             doc.openapi.starts_with("3.1") && items.reference.is_some(),
-        ));
+        );
+        // So is an array body's: Primula Tracker's bulk lead-stage update
+        // declares one item, and the golden constructs it.
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(doc, media).map(serde_json::Value::to_string);
+        }
+        return Some(body);
     }
     // An inline bare object (`type: object` with no declared structure) is a
     // free-form `Dict` argument. Unlike the `$ref` form above it carries the
     // content-type header only when the schema is documented: blackadi-oauth2
     // declares both, and Fern emits the header for its described SSF and
     // federation-registration bodies and not for its bare `client/dcr/*` ones.
-    if is_bare_object(schema) {
+    // So is one closed with `additionalProperties: false` but declaring no
+    // `properties` at all: StandRig's `exports/bundle` and `playback/reload`
+    // bodies are that shape, and Fern's methods take
+    // `request: typing.Dict[str, typing.Any]`.
+    let closed_without_properties = schema.reference.is_none()
+        && schema.properties.is_empty()
+        && !schema.properties.declared()
+        && schema.all_of.is_none()
+        && matches!(
+            schema.additional_properties,
+            Some(AdditionalProperties::Bool(false))
+        )
+        && is_object_type(schema);
+    if is_bare_object(schema) || closed_without_properties {
         return Some(single_with_override(
-            base_type_ref(schema),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            ),
             required,
             false,
             clean_doc(schema.description.as_deref()).is_some(),
@@ -5699,6 +5740,14 @@ impl InlineHoister<'_> {
                 if let [member] = members.as_slice() {
                     return self.hoist_union_variant(parent, index, member, siblings);
                 }
+                // One member beside `type: null` is that member made optional,
+                // not a union of its own: Primula Tracker's pre-registration
+                // fallout answers `anyOf: [anyOf: [$ref Report, null], array]`,
+                // and its golden's alias is `Union[Optional[Report], List[…]]`.
+                if let Some(member) = simple_nullable_member(variant) {
+                    let inner = self.hoist_union_variant(parent, index, member, siblings);
+                    return optional_type_ref(inner);
+                }
                 let name = variant_class_name(parent, index, variant, siblings);
                 let docstring = clean_doc(variant.description.as_deref());
                 let discriminated =
@@ -5940,6 +5989,18 @@ impl InlineHoister<'_> {
                     .filter(|member| !is_null_variant(member))
                     .cloned()
                     .collect();
+                // Alternatives that are all booleans — `const: false` and
+                // `const: true` alike — are one `bool` to Fern, not a named
+                // union: StandRig's motion `loop` is typed `Optional[bool]`.
+                if !members.is_empty()
+                    && members.iter().all(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) == Some("boolean")
+                            && member.one_of.is_none()
+                            && member.any_of.is_none()
+                    })
+                {
+                    return TypeRef::Primitive(Prim::Bool);
+                }
                 let variants: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
@@ -7610,6 +7671,12 @@ struct Builder<'a> {
     /// Names currently being expanded, preventing recursive inline schemas from
     /// recursively rebuilding the same declaration before it is pushed.
     building_types: std::collections::HashSet<String>,
+}
+
+/// The class Fern's importer names a schema after the reference it was converted
+/// from: every segment of the pointer, `#/components/schemas/` included.
+fn reference_path_class_name(reference: &str) -> String {
+    naming::class_name(&reference.replace(|c: char| !c.is_ascii_alphanumeric(), " "))
 }
 
 /// A wire discriminant can be prose; punctuation separates its class-name words.
@@ -9290,13 +9357,23 @@ impl Builder<'_> {
                     .properties
                     .get(&property_name)
                     .and_then(discriminant_value)?;
-                let variant_name = format!("{name}{}", discriminant_class_name(&value));
+                // A variant the loader copied from a reference naming `properties`
+                // is declared under that reference, tag and all, as Fern converts
+                // a reference variant with the reference as its breadcrumbs: the
+                // Vonage Conversation API's `to` members are
+                // `ComponentsSchemasChannelPropertiesFromOneOf0` and on.
+                let origin_name = variant.ref_origin.as_deref().map(reference_path_class_name);
+                let variant_name = origin_name
+                    .clone()
+                    .unwrap_or_else(|| format!("{name}{}", discriminant_class_name(&value)));
                 let mut lowered_fields = None;
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
                     let mut standalone = variant.clone();
-                    standalone.properties.shift_remove(&property_name);
+                    if origin_name.is_none() {
+                        standalone.properties.shift_remove(&property_name);
+                    }
                     self.add_object(
                         &variant_name,
                         naming::module_name(&variant_name),
@@ -9315,6 +9392,7 @@ impl Builder<'_> {
                                 object
                                     .fields
                                     .iter()
+                                    .filter(|field| field.wire_name != property_name)
                                     .cloned()
                                     .map(|field| Field {
                                         docstring: None,
@@ -11392,6 +11470,16 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         {
             TypeRef::Primitive(Prim::Str)
         }
+        // So is one with no `type` but a `const`, whatever the value's kind:
+        // StandRig's playback responses declare `ok: {const: true}` and
+        // `version: {const: 1}`, and its golden types both `str`.
+        None if schema
+            .const_value
+            .as_ref()
+            .is_some_and(|value| !value.is_null()) =>
+        {
+            TypeRef::Primitive(Prim::Str)
+        }
         _ => TypeRef::Primitive(Prim::Any),
     }
 }
@@ -12622,10 +12710,11 @@ mod tests {
             ],
             None,
         );
+        // Single letters join as Fern's `upperFirst(camelCase(…))` name does.
         let members: Vec<&str> = e.members.iter().map(|m| m.name.as_str()).collect();
-        assert_eq!(members, ["A_B"]);
+        assert_eq!(members, ["AB"]);
         let params: Vec<&str> = e.members.iter().map(|m| m.visit_param.as_str()).collect();
-        assert_eq!(params, ["a_b"]);
+        assert_eq!(params, ["ab"]);
         // The first value keeps the name; the wire value is preserved untouched.
         let values: Vec<&str> = e.members.iter().map(|m| m.value.as_str()).collect();
         assert_eq!(values, ["a-b"]);
@@ -17145,9 +17234,11 @@ mod tests {
             property(serde_json::json!({ "const": "alpha" })),
             hoisted_enum
         );
+        // A typeless non-string `const` is a `str` to Fern (StandRig's
+        // `version: {const: 1}`, corpus row 231).
         assert_eq!(
             property(serde_json::json!({ "const": 1 })),
-            (TypeRef::Primitive(Prim::Any), vec![])
+            (TypeRef::Primitive(Prim::Str), vec![])
         );
 
         // Case 8a, `schema.properties>schema.properties:non-empty`.

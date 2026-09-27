@@ -1,0 +1,23 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .hitl_batch_resolving_error_error import HitlBatchResolvingErrorError
+from .hitl_batch_resolving_error_reason import HitlBatchResolvingErrorReason
+
+
+class HitlBatchResolvingError(UniversalBaseModel):
+    error: HitlBatchResolvingErrorError
+    retry_after_ms: int
+    reason: HitlBatchResolvingErrorReason
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

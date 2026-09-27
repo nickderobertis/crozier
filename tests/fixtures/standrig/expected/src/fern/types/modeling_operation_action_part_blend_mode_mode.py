@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_part_blend_mode_mode_one import ModelingOperationActionPartBlendModeModeOne
+from .modeling_operation_action_part_blend_mode_mode_three import ModelingOperationActionPartBlendModeModeThree
+from .modeling_operation_action_part_blend_mode_mode_two import ModelingOperationActionPartBlendModeModeTwo
+from .modeling_operation_action_part_blend_mode_mode_zero import ModelingOperationActionPartBlendModeModeZero
+
+ModelingOperationActionPartBlendModeMode = typing.Union[
+    ModelingOperationActionPartBlendModeModeZero,
+    ModelingOperationActionPartBlendModeModeOne,
+    ModelingOperationActionPartBlendModeModeTwo,
+    ModelingOperationActionPartBlendModeModeThree,
+]

@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_topology_one import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildTopologyOne,
+)
+from .transaction_request_operations_operations_item_action_artmesh_rebuild_topology_zero import (
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildTopologyZero,
+)
+
+TransactionRequestOperationsOperationsItemActionArtmeshRebuildTopology = typing.Union[
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildTopologyZero,
+    TransactionRequestOperationsOperationsItemActionArtmeshRebuildTopologyOne,
+]

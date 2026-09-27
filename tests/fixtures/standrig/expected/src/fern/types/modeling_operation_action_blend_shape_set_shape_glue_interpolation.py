@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_blend_shape_set_shape_glue_interpolation_four import (
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationFour,
+)
+from .modeling_operation_action_blend_shape_set_shape_glue_interpolation_one import (
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationOne,
+)
+from .modeling_operation_action_blend_shape_set_shape_glue_interpolation_three import (
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationThree,
+)
+from .modeling_operation_action_blend_shape_set_shape_glue_interpolation_two import (
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationTwo,
+)
+from .modeling_operation_action_blend_shape_set_shape_glue_interpolation_zero import (
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationZero,
+)
+
+ModelingOperationActionBlendShapeSetShapeGlueInterpolation = typing.Union[
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationZero,
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationOne,
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationTwo,
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationThree,
+    ModelingOperationActionBlendShapeSetShapeGlueInterpolationFour,
+]

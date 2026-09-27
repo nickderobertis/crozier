@@ -333,7 +333,7 @@ property-sole-oneof-closed-object-member	schema.properties>schema.oneOf:sole-mem
 property-sole-anyof-closed-object-member	schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	
 property-array-type	schema.properties>schema.type:primary=array	src/ir.rs::InlineHoister::prop_type_ref[if prop_schema.ty.as_ref\(\)],src/ir.rs::InlineHoister::hoist_array_item_type	
 ref-pointer-cross-document	schema.$ref:cross-document	src/refs.rs::split_external,src/refs.rs::split_remote,src/refs.rs::Resolver::resolve_schema,src/refs.rs::Resolver::resolve_reference,src/refs.rs::Resolver::import_named_schema	`src/ir.rs::ref_to_class`'s cross-document arm: `src/refs.rs` rewrites every cross-document `$ref` to a local one before `ir.rs` reads it
-ref-pointer-same-document-foreign	schema.$ref:same-document-foreign-pointer	src/openapi.rs::normalize_response_schema_refs,src/openapi.rs::resolve_response_schema_refs,src/ir.rs::ref_to_class[let Some\(pointer\) = reference.strip_prefix],src/ir.rs::base_type_ref[if let Some\(reference\) = &schema.reference \{]	
+ref-pointer-same-document-foreign	schema.$ref:same-document-foreign-pointer	src/openapi.rs::normalize_response_schema_refs,src/openapi.rs::normalize_parameter_schema_refs,src/openapi.rs::resolve_indexed_schema_refs,src/ir.rs::ref_to_class[let Some\(pointer\) = reference.strip_prefix],src/ir.rs::base_type_ref[if let Some\(reference\) = &schema.reference \{]	
 ref-pointer-nested-properties	schema.$ref:nested-properties	src/ir.rs::ref_to_class["properties" if index],src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	
 ref-pointer-nested-items	schema.$ref:nested-items	src/ir.rs::ref_to_class["items" => \{],src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	
 ref-pointer-composition-index	schema.$ref:composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{],src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	
@@ -387,7 +387,7 @@ enum-digit-word-member	schema.enum:digit-word-member	src/naming.rs::digit_word,s
 enum-empty-identifier-member	schema.enum:empty-identifier-member	src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]	
 enum-empty-member	schema.enum:empty-member	src/naming.rs::enum_words[if value.is_empty\(\) \{]	
 enum-leading-digit-identifier	schema.enum:leading-digit-identifier	src/naming.rs::finalize_enum_ident[if name.starts_with]	
-enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if has_leading_zero_identifier_segment \{]	
+enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if leads_with_zero_led_digits \{]	
 enum-normalized-collision	schema.enum:normalized-collision	src/ir.rs::dedupe	
 enum-numeric-member	schema.enum:numeric-member	src/ir.rs::string_enum_values[if !is_string_type\(schema\) \{],src/ir.rs::string_enum_values[if strings.is_empty\(\) \{],src/ir.rs::is_int_enum	
 enum-numeric-prefix-member	schema.enum:numeric-prefix-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if digits > 0 \{]	
@@ -402,17 +402,17 @@ schema-example-string	schema.example=string	src/ir.rs::schema_example,src/ir.rs:
 securityscheme-type-apikey	securityScheme.type=apiKey	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 securityscheme-type-http	securityScheme.type=http	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::operation_uses_basic_auth,src/ir.rs::is_auth_managed_header,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 securityscheme-type-oauth2	securityScheme.type=oauth2	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[SecuritySchemeType::OAuth2 => Auth::Bearer \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::oauth_scope_enum,src/ir.rs::build[if let Some\(oauth_scope\) = oauth_scope_enum\(doc\) \{],src/ir.rs::body_response_same_ref,src/ir.rs::is_auth_managed_header	
-securityscheme-type-openidconnect	securityScheme.type=openIdConnect	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
-mutualTLS	securityScheme.type=mutualTLS	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+securityscheme-type-openidconnect	securityScheme.type=openIdConnect	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer \{]	
+mutualTLS	securityScheme.type=mutualTLS	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::None,]	
 securityscheme-description	securityScheme.description	none	
 securityscheme-name	securityScheme.name	src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{]	
 apikey-header	securityScheme.in=header	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[^\s*Auth::ApiKey \{$],src/ir.rs::additional_api_key_global_headers,src/ir.rs::is_auth_managed_header	
 apiKey-cookie	securityScheme.in=cookie	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers	
 http-basic	securityScheme.scheme=basic	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Basic\) => \{],src/ir.rs::operation_uses_basic_auth,src/emit.rs::client_wrapper_file[if basic_auth \{],src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
 http-bearer	securityScheme.scheme=bearer	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[HttpAuthScheme::Bearer\) => \{],src/ir.rs::auth_model[selected\.is_none_or\(\x7cscheme\x7c \{],src/ir.rs::is_auth_managed_header,src/emit.rs::auth_wrapper_parts,src/emit.rs::auth_client_parts,src/emit.rs::auth_example_args,src/emit.rs::documentation_auth_example_args	
-http-negotiate	securityScheme.scheme=negotiate	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
-http-dpop	securityScheme.scheme=dpop,securityScheme.scheme=DPoP	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
-http-mutual	securityScheme.scheme=mutual	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::Bearer \{]	
+http-negotiate	securityScheme.scheme=negotiate	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::None,]	
+http-dpop	securityScheme.scheme=dpop,securityScheme.scheme=DPoP	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::None,]	
+http-mutual	securityScheme.scheme=mutual	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::auth_model[_ => Auth::None,]	
 securityscheme-bearerformat	securityScheme.bearerFormat	none	
 securityscheme-openidconnecturl	securityScheme.openIdConnectUrl	none	
 securityscheme-flows	securityScheme.flows	src/ir.rs::oauth_scope_enum	

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "xfsc-oidc-identity-resolver",
+  "corpus_spec_ref": "4851a2be805d16c866ce04da7998ddc5056dc1a1",
+  "corpus_spec_url": "https://raw.githubusercontent.com/eclipse-xfsc/notarization-service/4851a2be805d16c866ce04da7998ddc5056dc1a1/services/oidc-identity-resolver/deploy/openapi/openapi.yaml"
+}

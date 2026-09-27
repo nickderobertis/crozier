@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_shape_preservation_one import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationOne,
+)
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_shape_preservation_two import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationTwo,
+)
+from .modeling_operation_action_deformer_create_deformer_rotation_metadata_shape_preservation_zero import (
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservation = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationZero,
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationOne,
+    ModelingOperationActionDeformerCreateDeformerRotationMetadataShapePreservationTwo,
+]

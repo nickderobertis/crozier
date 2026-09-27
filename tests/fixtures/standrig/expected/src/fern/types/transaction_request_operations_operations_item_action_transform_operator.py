@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_transform_operator_one import (
+    TransactionRequestOperationsOperationsItemActionTransformOperatorOne,
+)
+from .transaction_request_operations_operations_item_action_transform_operator_two import (
+    TransactionRequestOperationsOperationsItemActionTransformOperatorTwo,
+)
+from .transaction_request_operations_operations_item_action_transform_operator_zero import (
+    TransactionRequestOperationsOperationsItemActionTransformOperatorZero,
+)
+
+TransactionRequestOperationsOperationsItemActionTransformOperator = typing.Union[
+    TransactionRequestOperationsOperationsItemActionTransformOperatorZero,
+    TransactionRequestOperationsOperationsItemActionTransformOperatorOne,
+    TransactionRequestOperationsOperationsItemActionTransformOperatorTwo,
+]

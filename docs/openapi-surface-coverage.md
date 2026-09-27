@@ -92,7 +92,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 189 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 198 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1102,8 +1102,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **221** registered sources, of which
-  **204** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **230** registered sources, of which
+  **213** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1216,7 +1216,12 @@ re-derivation added, is `golden` here. Corpus rows 216 to 222, the seven
 pending witnesses the golden-reach continuation registered (`sim-logs`,
 `sim-tables`, `vellum-gateway`, `dot-ai`, `paloalto-code-technologies`,
 `marimo-plugins` and `otoroshi`), bring the walk to 221 sources (32 vendored
-plus 189 `link-ok`); they declare no `gap` selector and move no category.
+plus 189 `link-ok`); they declare no `gap` selector and move no category. Corpus
+rows 223 to 231, the witnesses the arm searches found (`nexmo-conversation`,
+`codat-assess`, `googleapis-monitoring-v1`, `docu-goapiserver`, `onevoice`,
+`xfsc-oidc-identity-resolver`, `adyen-acs-notification`, `peopledatalabs` and
+`standrig`), bring it to 230 (32 vendored plus 198 `link-ok`); they declare no
+`gap` selector and move no category either.
 
 **What the `golden` count means, and what it does not.** 441 of those 542
 features carry byte-match evidence: a registered source declares the feature and
@@ -2823,7 +2828,7 @@ composition, so the gate below fires — which is the chain overlap
 | 7f | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf` |
 | 7g | the same arm on an item writing an explicitly empty `properties: {}` beside no `additionalProperties`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 7h | the same, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
-| 13a | `variant.reference.is_none() && variant.all_of.is_none()` over `variant.one_of.as_ref().or(variant.any_of.as_ref())` — a variant that is itself an inline composition becomes a named union, as a component union's does in `Builder::variant_ref`: a sole member is that member, recursed with the parent's own name and index, and two or more are `hoist_discriminated_union` or else a `TypeDecl::Alias` union of recursed members. The variant's `oneOf` spelling, `oneOf` head. Numbered after the table was published and listed where the body reads it, so the numbers of cases 8 to 12 hold. A variant declaring `allOf` beside the composition is claimed by case 9 instead, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two listed cases | `schema.oneOf>schema.oneOf` |
+| 13a | `variant.reference.is_none() && variant.all_of.is_none()` over `variant.one_of.as_ref().or(variant.any_of.as_ref())` — a variant that is itself an inline composition becomes a named union, as a component union's does in `Builder::variant_ref`: a sole member is that member, recursed with the parent's own name and index; one member beside `type: null` (`simple_nullable_member`) is that member recursed the same way and made optional — Primula Tracker's `anyOf: [anyOf: [$ref Report, null], array]`, corpus row 226, is `Union[Optional[Report], List[…]]` — and two or more are `hoist_discriminated_union` or else a `TypeDecl::Alias` union of recursed members. The variant's `oneOf` spelling, `oneOf` head. Numbered after the table was published and listed where the body reads it, so the numbers of cases 8 to 12 hold. A variant declaring `allOf` beside the composition is claimed by case 9 instead, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two listed cases | `schema.oneOf>schema.oneOf` |
 | 13b | the variant's `anyOf` spelling, `oneOf` head; the `or` reads `oneOf` first, so a variant declaring both is counted by 13a and 13b alike and takes 13a | `schema.oneOf>schema.anyOf` |
 | 13c | the variant's `oneOf` spelling, `anyOf` head | `schema.anyOf>schema.oneOf` |
 | 13d | the variant's `anyOf` spelling, `anyOf` head | `schema.anyOf>schema.anyOf` |
@@ -2895,7 +2900,7 @@ both count it and the earlier arm runs — the chain overlap
 | 12h | the same, `anyOf` spelling | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 13a | inside it, `if let Some(union) = self.hoist_discriminated_union(&name, prop_schema, …)`; the property's `oneOf` spelling. The composition gate above it is what puts the arm inside, so this counts no node cases 9 and 10 do not | `schema.properties>schema.oneOf:discriminated-union` |
 | 13b | the same arm, the property's `anyOf` spelling, which only the inferred reading reaches for the reason case 2b states | `schema.properties>schema.anyOf:discriminated-union` |
-| 14a | inside it, the closing alias over the members left after `is_null_variant` filtering — the residual of the **composition block alone**, so the gate is its one positive member and the complement is of cases 11 and 13 within that gate rather than of everything above it; `oneOf` spelling. Case 12's four rows each state a property of the sole member and take two members apiece, so they are not negatable and the nodes they claim are counted here | `schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf` |
+| 14a | inside it, the closing alias over the members left after `is_null_variant` filtering — unless every one of them is a `boolean` with no composition of its own, which is one `bool` (StandRig's motion `loop`, `anyOf` of `const: false` and `const: true`, corpus row 231) rather than an alias; the residual of the **composition block alone**, so the gate is its one positive member and the complement is of cases 11 and 13 within that gate rather than of everything above it; `oneOf` spelling. Case 12's four rows each state a property of the sole member and take two members apiece, so they are not negatable and the nodes they claim are counted here | `schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf` |
 | 14b | the same, `anyOf` spelling | `schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf` |
 | 15 | `prop_schema.ty…primary() == Some("array")` → `hoist_array_item_type` | `schema.properties>schema.type:primary=array` |
 | 16 | the closing `base_type_ref(prop_schema)` — the function's own residual, composed from its own arms and not from the two blocks inside them: negating cases 9 and 10 already excludes every case of the composition block. **Case 1 is deliberately not negated**, and that is the one place this composition reads something a string comparison could not: its gate *falls through* when the annotated `$ref` resolves to nothing, so a property taking it can still reach this arm, and negating it would make the residual narrower than its own arm | `schema.properties>!schema.additionalProperties=false&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array` |

@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .modeling_operation_action_transform_property_five import ModelingOperationActionTransformPropertyFive
+from .modeling_operation_action_transform_property_four import ModelingOperationActionTransformPropertyFour
+from .modeling_operation_action_transform_property_one import ModelingOperationActionTransformPropertyOne
+from .modeling_operation_action_transform_property_three import ModelingOperationActionTransformPropertyThree
+from .modeling_operation_action_transform_property_two import ModelingOperationActionTransformPropertyTwo
+from .modeling_operation_action_transform_property_zero import ModelingOperationActionTransformPropertyZero
+
+ModelingOperationActionTransformProperty = typing.Union[
+    ModelingOperationActionTransformPropertyZero,
+    ModelingOperationActionTransformPropertyOne,
+    ModelingOperationActionTransformPropertyTwo,
+    ModelingOperationActionTransformPropertyThree,
+    ModelingOperationActionTransformPropertyFour,
+    ModelingOperationActionTransformPropertyFive,
+]

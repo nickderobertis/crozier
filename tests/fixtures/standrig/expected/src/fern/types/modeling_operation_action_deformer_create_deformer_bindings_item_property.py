@@ -1,0 +1,47 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_eight import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyEight,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_five import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyFive,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_four import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyFour,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_nine import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyNine,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_one import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyOne,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_seven import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertySeven,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_six import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertySix,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_three import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyThree,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_two import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyTwo,
+)
+from .modeling_operation_action_deformer_create_deformer_bindings_item_property_zero import (
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerBindingsItemProperty = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyZero,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyOne,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyTwo,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyThree,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyFour,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyFive,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertySix,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertySeven,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyEight,
+    ModelingOperationActionDeformerCreateDeformerBindingsItemPropertyNine,
+]

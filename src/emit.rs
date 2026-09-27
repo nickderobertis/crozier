@@ -5135,7 +5135,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
                         // and its discriminated `createTemplateNoProject` keep it.
                         && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
-                        && (!ep.body_component_ref || ep.body_schema_dropped)
+                        // …and so does one whose schema the `requestBodies` entry
+                        // writes inline, which names no type at all: the Vonage
+                        // Conversation API's `Conversation` body.
+                        && (!ep.body_component_ref
+                            || ep.body_schema_dropped
+                            || ep.body_schema_shape != BodySchemaShape::Ref)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
                         // (a response, another body) needs it — is a documented
@@ -7195,7 +7200,13 @@ impl<'a> ExampleCtx<'a> {
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            let value = serde_json::from_str(example).ok()?;
+            let mut value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // A `null` member is no argument: Primula Tracker's student update
+            // declares `{transition_date: …, transition_room_override_id: null}`
+            // for its `Union[Any]` body, and the golden passes only the date.
+            if let serde_json::Value::Object(fields) = &mut value {
+                fields.retain(|_, field| !field.is_null());
+            }
             let rendered = example_from_json(value);
             return Some(if self.reference {
                 Example::Atom(rendered.flat())
@@ -7375,6 +7386,12 @@ impl<'a> ExampleCtx<'a> {
                         })
                 }),
                 Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
+                // An enum takes only its own values: Primula Tracker's
+                // `intended_start_date` is `Union[<TBD enum>, datetime.date]`, and
+                // the golden constructs its `2030-09-01` example as the date.
+                Some(TypeDecl::Enum(decl)) => value
+                    .as_str()
+                    .is_some_and(|text| decl.members.iter().any(|member| member.value == text)),
                 _ => true,
             },
             TypeRef::Union(variants) => variants
@@ -7453,6 +7470,21 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Optional(inner) => self.resolves_to_any(inner),
             TypeRef::Named(n) => match self.find(n) {
                 Some(TypeDecl::Alias(a)) => self.resolves_to_any(&a.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Whether the type is, after alias resolution, a union whose every member
+    /// is unknown (`Union[typing.Any]`).
+    fn resolves_to_unknown_union(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Union(variants) => {
+                !variants.is_empty() && variants.iter().all(|variant| self.resolves_to_any(variant))
+            }
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_union(&alias.target),
                 _ => false,
             },
             _ => false,
@@ -8490,6 +8522,22 @@ fn build_example_inner(
             continue;
         }
         let example = qp.example.as_deref().unwrap_or_default();
+        // A YAML timestamp is a date to Fern's parser, so it is no example for a
+        // parameter that is not temporal, and an optional one then goes
+        // unshown: the Vonage Conversation API's `date_start` writes
+        // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
+        if let Ok(serde_json::Value::String(value)) =
+            serde_json::from_str::<serde_json::Value>(example)
+        {
+            if ctx
+                .yaml_unquoted_timestamps
+                .is_some_and(|unquoted| unquoted.contains(&value))
+                && !ctx.example_is_temporal(&qp.type_ref)
+                && yaml_resolves_as_timestamp(&value)
+            {
+                continue;
+            }
+        }
         args.push((
             Some(qp.py_name.clone()),
             ctx.value_from_example(&qp.type_ref, example)
@@ -9104,8 +9152,12 @@ fn build_example_inner(
         // `attributes={"key": "value"},` flat, where a map-typed one (bunq's
         // `AttachmentPublic`) is wrapped by `compact_documentation_values`.
         let mut untyped_arguments = std::mem::take(&mut ctx.untyped_arguments);
+        // So is a body naming a union of nothing but unknowns: People Data
+        // Labs' search bodies are `Union[typing.Any]` aliases, and its README
+        // writes `request={"key": "value"},` on one line.
         if matches!(&ep.request_body, Some(RequestBody::Single(single))
-            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any))
+                || ctx.resolves_to_unknown_union(&single.type_ref))
         {
             untyped_arguments.insert("request".to_string());
         }
@@ -9365,7 +9417,15 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
+    // A binary download the importer declines has only Fern's IR-generated
+    // examples, and the success one fails (*File download unsupported*): what
+    // the docstring shows is the first *error* example, so a download declaring
+    // no error response shows none. Codat Assess's `get_excel_report` answers a
+    // lone `200` of `application/octet-stream` and its golden has no example.
+    let binary_download_without_errors =
+        ep.binary_response && ep.importer_example_missing && ep.errors.is_empty();
     !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
+        || binary_download_without_errors
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -9572,6 +9632,12 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             || file.path == generated_conftest;
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
         if is_py && !is_vendored && !is_vendored_scaffolding && has_code {
+            // Fern's code writer replaces every tab it writes with four spaces
+            // (`WriterImpl.write`, `TAB_LENGTH = 4`): People Data Labs' field
+            // description `HQ country\tunited states` is four spaces apart.
+            if file.contents.contains('\t') {
+                file.contents = file.contents.replace('\t', "    ");
+            }
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
@@ -11628,10 +11694,11 @@ mod tests {
             &TypeRef::Named("PayloadAlias".to_string()),
             &serde_json::json!({ "id": 1 }),
         ));
-        assert!(ctx.example_matches_type(
-            &TypeRef::Named("Color".to_string()),
-            &serde_json::json!(false),
-        ));
+        // An enum matches only one of its own values.
+        let color = TypeRef::Named("Color".to_string());
+        assert!(ctx.example_matches_type(&color, &serde_json::json!("red")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!("2030-09-01")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!(false)));
         assert!(ctx.example_matches_type(
             &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
             &serde_json::Value::Null,

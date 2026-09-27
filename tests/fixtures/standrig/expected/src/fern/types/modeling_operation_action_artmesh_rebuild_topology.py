@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .modeling_operation_action_artmesh_rebuild_topology_one import ModelingOperationActionArtmeshRebuildTopologyOne
+from .modeling_operation_action_artmesh_rebuild_topology_zero import ModelingOperationActionArtmeshRebuildTopologyZero
+
+ModelingOperationActionArtmeshRebuildTopology = typing.Union[
+    ModelingOperationActionArtmeshRebuildTopologyZero, ModelingOperationActionArtmeshRebuildTopologyOne
+]

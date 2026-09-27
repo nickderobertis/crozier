@@ -1,0 +1,8 @@
+
+
+import datetime as dt
+import typing
+
+from .intended_start_date_update_intended_start_date_zero import IntendedStartDateUpdateIntendedStartDateZero
+
+IntendedStartDateUpdateIntendedStartDate = typing.Union[IntendedStartDateUpdateIntendedStartDateZero, dt.date]

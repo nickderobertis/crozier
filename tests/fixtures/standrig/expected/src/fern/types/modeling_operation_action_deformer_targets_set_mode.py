@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_targets_set_mode_one import ModelingOperationActionDeformerTargetsSetModeOne
+from .modeling_operation_action_deformer_targets_set_mode_zero import ModelingOperationActionDeformerTargetsSetModeZero
+
+ModelingOperationActionDeformerTargetsSetMode = typing.Union[
+    ModelingOperationActionDeformerTargetsSetModeZero, ModelingOperationActionDeformerTargetsSetModeOne
+]

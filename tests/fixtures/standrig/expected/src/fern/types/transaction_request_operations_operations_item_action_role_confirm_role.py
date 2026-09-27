@@ -1,0 +1,79 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_role_confirm_role_eight import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleEight,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_eleven import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleEleven,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_fifteen import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFifteen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_five import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFive,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_four import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFour,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_fourteen import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFourteen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_nine import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleNine,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_one import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleOne,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_seven import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSeven,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_seventeen import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSeventeen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_six import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSix,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_sixteen import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSixteen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_ten import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_thirteen import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleThirteen,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_three import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleThree,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_twelve import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTwelve,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_two import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTwo,
+)
+from .transaction_request_operations_operations_item_action_role_confirm_role_zero import (
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleZero,
+)
+
+TransactionRequestOperationsOperationsItemActionRoleConfirmRole = typing.Union[
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleZero,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleOne,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTwo,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleThree,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFour,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFive,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSix,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSeven,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleEight,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleNine,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTen,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleEleven,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleTwelve,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleThirteen,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFourteen,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleFifteen,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSixteen,
+    TransactionRequestOperationsOperationsItemActionRoleConfirmRoleSeventeen,
+]

@@ -65,6 +65,7 @@ paths:
         '200':
           description: file
           content: { application/octet-stream: { schema: { type: string } } }
+        '404': { description: Invalid byte length in virtual file request }
   /chat:
     post:
       parameters:
@@ -718,7 +719,7 @@ fn wide_string_enum_wraps_like_ruff() {
     let big = render(&spec)["src/acme/types/big.py"].clone();
     assert!(big.contains("class Big(enum.StrEnum):"), "{big}");
     assert!(
-        big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
+        big.contains("    VALUE_NUMBER00WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
     );
     // ruff explodes the wide `visit` signature: `def visit(` then `self,` and each
@@ -728,11 +729,11 @@ fn wide_string_enum_wraps_like_ruff() {
         "exploded visit: {big}"
     );
     assert!(
-        big.contains("        value_number_00_with_padding: typing.Callable[[], T_Result],\n"),
+        big.contains("        value_number00with_padding: typing.Callable[[], T_Result],\n"),
         "{big}"
     );
     assert!(
-        big.contains("        if self is Big.VALUE_NUMBER_00_WITH_PADDING:\n"),
+        big.contains("        if self is Big.VALUE_NUMBER00WITH_PADDING:\n"),
         "{big}"
     );
 }
@@ -11408,4 +11409,402 @@ fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
     );
     let snowmonkey = &files["src/acme/snowmonkey/raw_client.py"];
     assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
+}
+
+/// Fragments of Codat Assess 1.0 as APIs.guru pins it (corpus row 224), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a schema `$ref` into a component parameter's schema is that schema, copied
+///   at the reference with its description;
+/// - a binary download that declares no error response has no worked example,
+///   where one declaring an error keeps it.
+#[test]
+fn codat_assess_parameter_schema_refs_and_errorless_downloads() {
+    let files = render(
+        r##"{"openapi": "3.0.3", "info": {"title": "Assess API", "version": "1.0"},
+"paths": {
+  "/companies/{companyId}/excel/download": {
+    "parameters": [{"$ref": "#/components/parameters/companyId"}],
+    "get": {"tags": ["Excel reports"], "operationId": "get-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}}}},
+    "post": {"tags": ["Excel reports"], "operationId": "download-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}},
+        "404": {"description": "Not found"}}}},
+  "/webhooks/categories": {"get": {"tags": ["Webhooks"], "operationId": "categories-updated",
+    "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CategoriesWebhook"}}}}}}}},
+"components": {
+  "parameters": {"companyId": {"in": "path", "name": "companyId", "required": true,
+    "schema": {"description": "Unique identifier for your SMB in Codat.", "format": "uuid", "type": "string"}}},
+  "schemas": {"CategoriesWebhook": {"type": "object", "properties": {
+    "companyId": {"$ref": "#/components/parameters/companyId/schema"}}}}}}"##,
+    );
+    let webhook = &files["src/acme/types/categories_webhook.py"];
+    assert!(
+        webhook.contains("typing.Optional[str],")
+            && webhook.contains("description=\"Unique identifier for your SMB in Codat.\""),
+        "{webhook}"
+    );
+    let excel = &files["src/acme/excel_reports/client.py"];
+    let get = &excel[excel.find("def get_excel_report").unwrap()..];
+    let get = &get[..get.find("def download_excel_report").unwrap()];
+    assert!(!get.contains("Examples"), "{excel}");
+    let download = &excel[excel.find("def download_excel_report").unwrap()..];
+    let download = &download[..download.find("class ").unwrap()];
+    assert!(download.contains("Examples"), "{excel}");
+}
+
+/// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
+/// support — a cookie `apiKey` beside `mutualTLS` — leaves the client with no
+/// credential at all, as its Fern 5.20.0 golden's client does.
+#[test]
+fn onevoice_unsupported_schemes_define_no_auth() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: OneVoice API, version: 1.0.0 }
+security:
+  - cookieAuth: []
+paths:
+  /health:
+    get:
+      tags: [health]
+      operationId: getHealth
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    cookieAuth: { type: apiKey, in: cookie, name: access_token }
+    mtls: { type: mutualTLS }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(!client.contains("token"), "{client}");
+}
+
+/// The Eclipse XFSC OIDC identity resolver (corpus row 228): an `openIdConnect`
+/// scheme is a bearer token to Fern, optional unless every operation requires
+/// it, as its Fern 5.20.0 golden's client takes an optional `token`.
+#[test]
+fn openid_connect_schemes_are_bearer_tokens() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: oidc-identity-resolver API, version: 1.0.0-SNAPSHOT }
+paths:
+  /resolve:
+    get:
+      tags: [resolver]
+      operationId: resolve
+      security: [{ oidc: [] }]
+      responses: { '200': { description: ok } }
+  /health:
+    get:
+      tags: [resolver]
+      operationId: health
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    oidc: { type: openIdConnect, openIdConnectUrl: 'https://example.com/.well-known/openid-configuration' }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"
+        ),
+        "{client}"
+    );
+}
+
+/// Fragments of the People Data Labs API 5.0 (corpus row 230), each assertion a
+/// line of its Fern 5.20.0 golden: a tab in a description is four spaces, as
+/// Fern's code writer writes every tab; a body union of `required`-only
+/// fragments is `Union[typing.Any]` once its identical members collapse; and the
+/// README passes that body's placeholder on one line.
+#[test]
+fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
+    let files = render(
+        "openapi: 3.0.3\ninfo: { title: api.peopledatalabs.com, version: '5.0' }\npaths:\n  /v5/company/search:\n    post:\n      tags: [Company Endpoints]\n      operationId: company_search\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query: { type: string }\n                sql: { type: string }\n              oneOf: [{ required: [query] }, { required: [sql] }]\n      responses:\n        '200':\n          description: ok\n          content: { application/json: { schema: { $ref: '#/components/schemas/CompanyLocation' } } }\ncomponents:\n  schemas:\n    CompanyLocation:\n      type: object\n      properties:\n        country: { type: string, description: \"The company's current HQ country\\tunited states\" }\n",
+    );
+    let location = &files["src/acme/types/company_location.py"];
+    assert!(
+        location.contains("The company's current HQ country    united states"),
+        "{location}"
+    );
+    let request = &files["src/acme/company_endpoints/types/company_search_request.py"];
+    assert!(
+        request.contains("CompanySearchRequest = typing.Union[typing.Any]"),
+        "{request}"
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    request={\"key\": \"value\"},\n"),
+        "{readme}"
+    );
+}
+
+/// Fragments of the StandRig Modeling Tools core API (corpus row 231), each
+/// assertion a line of its Fern 5.20.0 golden: a typeless `const` of any kind is
+/// `str`; an inline object's property whose alternatives are all booleans is one
+/// `bool`; and a body closed with `additionalProperties: false` but declaring no
+/// `properties` is a `Dict[str, Any]` request.
+#[test]
+fn standrig_typeless_consts_boolean_unions_and_closed_bodies() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: StandRig Modeling Tools - core API, version: 0.2.0 }
+paths:
+  /api/playback:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version]
+                properties:
+                  ok: { const: true }
+                  version: { const: 1 }
+  /api/playback/motion:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    action: { type: string, const: configure }
+                    loop:
+                      anyOf: [{ type: boolean, const: false }, { type: boolean, const: true }]
+                - type: object
+                  properties:
+                    action: { type: string, const: stop }
+      responses: { '200': { description: ok } }
+  /api/playback/reload:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses: { '200': { description: ok } }
+"##,
+    );
+    let playback = &files["src/acme/types/get_api_playback_response.py"];
+    assert!(
+        playback.contains("    ok: str\n") && playback.contains("    version: str\n"),
+        "{playback}"
+    );
+    let motion = files
+        .iter()
+        .find(|(path, contents)| path.ends_with(".py") && contents.contains("loop:"))
+        .map(|(_, contents)| contents)
+        .expect("a variant declares loop");
+    assert!(
+        motion.contains("loop: typing.Optional[bool] = None"),
+        "{motion}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def post_api_playback_reload(\n        self, *, request: typing.Dict[str, typing.Any],"),
+        "{client}"
+    );
+}
+
+/// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
+/// line of its Fern 5.20.0 golden:
+/// - an `anyOf` variant that is one member beside `null` is that member made
+///   optional, not a union of its own;
+/// - an array body and a `$ref` to a union body take the media type's example,
+///   an enum variant takes only its own values, and an unknown body's example
+///   drops its `null` members.
+#[test]
+fn primula_nullable_nested_variants_and_single_body_examples() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Primula Tracker API V3, version: 3.0.0 }
+paths:
+  /fallout:
+    get:
+      tags: [fallout]
+      operationId: GetFallout
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - anyOf:
+                      - $ref: '#/components/schemas/Report'
+                      - type: 'null'
+                  - type: array
+                    items: { $ref: '#/components/schemas/Report' }
+  /leads/start-date:
+    patch:
+      tags: [leads]
+      operationId: PatchStartDates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/StartDateUpdate' }
+            example:
+              - lead_id: 44444444-4444-4444-8444-444444444444
+                start: '2030-09-01'
+      responses: { '204': { description: done } }
+  /students/{id}:
+    patch:
+      tags: [students]
+      operationId: PatchStudent
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateStudentRequest' }
+            example:
+              transition_date: '2030-09-01'
+              room_id: null
+      responses: { '204': { description: done } }
+components:
+  schemas:
+    Report:
+      type: object
+      properties: { total: { type: integer } }
+    StartDateUpdate:
+      type: object
+      required: [lead_id, start]
+      properties:
+        lead_id: { type: string, format: uuid }
+        start:
+          anyOf:
+            - { type: string, enum: [TBD] }
+            - { type: string, format: date }
+    UpdateStudentRequest:
+      type: object
+      properties:
+        transition_date: { type: [string, 'null'] }
+        room_id: { type: [string, 'null'] }
+      anyOf:
+        - required: [transition_date]
+        - required: [room_id]
+"##,
+    );
+    let fallout = &files["src/acme/fallout/types/get_fallout_response.py"];
+    assert!(
+        fallout.contains("typing.Optional[Report], typing.List[Report]"),
+        "{fallout}"
+    );
+    let leads = &files["src/acme/leads/client.py"];
+    assert!(
+        leads.contains("lead_id=\"44444444-4444-4444-8444-444444444444\"")
+            && leads.contains("start=datetime.date.fromisoformat("),
+        "{leads}"
+    );
+    let students = &files["src/acme/students/client.py"];
+    assert!(
+        students.contains("request={\"transition_date\": \"2030-09-01\"},"),
+        "{students}"
+    );
+}
+
+/// Fragments of the Vonage Conversation API 2.0.1 as APIs.guru pins it (corpus
+/// row 223), each assertion a line of its Fern 5.20.0 golden:
+/// - Fern's importer converts any reference whose text names `properties` as a
+///   copy at the reference — a plain `conversation_properties` component
+///   included — and names a discriminated-union variant so copied after the
+///   reference itself (`ComponentsSchemasChannelPropertiesFromOneOf0`);
+/// - a `components.requestBodies` body writing its schema inline keeps its
+///   `content-type`;
+/// - an unquoted YAML timestamp is no example for an optional string query
+///   parameter, which then goes unshown.
+#[test]
+fn vonage_conversation_properties_references_and_yaml_timestamps() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Conversation API, version: 2.0.1 }
+paths:
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [conversation]
+      parameters:
+        - in: query
+          name: date_start
+          required: false
+          schema: { example: 2018-01-01 10:00:00, format: dateTime, type: string }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/channel" } } } }
+    post:
+      operationId: createConversation
+      tags: [conversation]
+      requestBody: { $ref: "#/components/requestBodies/Conversation" }
+      responses: { "200": { description: ok } }
+components:
+  requestBodies:
+    Conversation:
+      description: Conversation Request Payload Object
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              properties: { $ref: "#/components/schemas/conversation_properties" }
+  schemas:
+    conversation_properties:
+      description: Conversation properties
+      type: object
+      properties: { ttl: { type: number } }
+    channel:
+      type: object
+      properties:
+        from:
+          oneOf:
+            - { description: Connect to an App User, type: object, required: [type, user], properties: { type: { type: string, example: app }, user: { type: string } } }
+            - { type: object, required: [type, number], properties: { type: { type: string, example: phone }, number: { type: string } } }
+        to:
+          oneOf:
+            - $ref: "#/components/schemas/channel/properties/from/oneOf/0"
+            - type: object
+              required: [type, number]
+              properties:
+                type: { type: string, example: phone }
+                number: { $ref: "#/components/schemas/channel/properties/from/oneOf/1/properties/number" }
+"##,
+    );
+    let client = &files["src/acme/conversation/client.py"];
+    assert!(
+        client.contains("properties: typing.Optional[CreateConversationRequestProperties] = OMIT,"),
+        "{client}"
+    );
+    assert!(!client.contains("date_start=\"2018"), "{client}");
+    let raw = &files["src/acme/conversation/raw_client.py"];
+    assert!(
+        raw.contains("\"content-type\": \"application/json\","),
+        "{raw}"
+    );
+    let variant = &files["src/acme/types/components_schemas_channel_properties_from_one_of0.py"];
+    assert!(
+        variant.contains("class ComponentsSchemasChannelPropertiesFromOneOf0(UniversalBaseModel):"),
+        "{variant}"
+    );
+    assert!(
+        variant.contains("    type: str\n    user: str\n"),
+        "{variant}"
+    );
+    let to = &files["src/acme/types/channel_to.py"];
+    assert!(
+        to.contains("pydantic.Field(discriminator=\"type\")"),
+        "{to}"
+    );
+    assert!(
+        to.contains("class ChannelTo_App(UniversalBaseModel):"),
+        "{to}"
+    );
+    assert!(files.contains_key("src/acme/types/channel_to_phone.py"));
 }

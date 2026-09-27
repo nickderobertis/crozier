@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 189 of the 221 registered sources are `link-ok` (a split
+  and 198 of the 230 registered sources are `link-ok` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-unfetched` to downgrade that to a warning, or `--vendored-only` to
   census the offline half on purpose.
@@ -1521,8 +1521,8 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "7613c1076e2847f9",
-    "prop_type_ref": "419ef2232aa8fb5a",
+    "hoist_union_variant": "1d2743e55beb2361",
+    "prop_type_ref": "1d91c14cc34d187d",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -2092,7 +2092,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(zip(
 NAMING_PORT_DIGESTS = {
     "sanitize_identifier": "9da64b4ddcfd04c9",
     "digit_word": "4d705bf2bae3d676",
-    "enum_words": "67bfc6430bc02e52",
+    "enum_words": "e4d20db244630b00",
     "whole_value_enum_words": "baffe48e924ec4a3",
     "numeric_enum_identifier": "34ad46d37aed1b81",
     "finalize_enum_ident": "2c40bdccda3bcf5f",
@@ -2156,31 +2156,43 @@ def enum_identifier(value: str) -> str:
         whole = "not_applicable"
     if whole is not None:
         return whole
+    # A zero-led value that is a number whole is spelled as that number.
+    if len(folded) > 1 and folded[0] == "0" and folded.isascii() and folded.isdigit():
+        number = int(folded)
+        if number <= 9999:
+            return numeric_enum_name(number)
     spaced = "".join(
         "" if char in "'\u2019" else
         char if char.isascii() and char.isalnum() else " "
         for char in folded
     )
     words = split_words(spaced)
-    leading_zero = "_" in folded and any(
-        len(word) > 1 and word[0] == "0" and word.isascii() and word.isdigit()
-        for word in words
+    # Only a *first* word that is a zero-led digit run keeps the legal fallback.
+    leading_zero = "_" in folded and bool(words) and (
+        len(words[0]) > 1 and words[0][0] == "0" and words[0].isascii() and words[0].isdigit()
     )
+    value_leads_with_digit = bool(folded) and folded[0].isascii() and folded[0].isdigit()
     if words:
         first = words[0]
         digits = len(first) - len(first.lstrip("0123456789"))
         if digits:
             number = first[:digits]
-            if len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
-                words[0] = numeric_enum_name(int(number)) + ("_" + first[digits:] if first[digits:] else "")
-    join_letters = any(char.isascii() and char.isdigit() for char in folded) or all(
-        not char.isascii() or not char.isalpha() or char.isupper() for char in folded
-    )
+            spelled = None
+            if value_leads_with_digit:
+                significant = number.lstrip("0") or "0"
+                if int(significant) <= 9999:
+                    spelled = numeric_enum_name(int(significant))
+                elif len(folded.encode()) > digits:
+                    spelled = "undefined"
+            elif len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
+                spelled = numeric_enum_name(int(number))
+            if spelled is not None:
+                words[0] = spelled + ("_" + first[digits:] if first[digits:] else "")
     merged: list[str] = []
     previous_single = False
     for word in words:
         single = len(word) == 1 and word.isascii() and word.isalpha()
-        if join_letters and single and previous_single:
+        if single and previous_single:
             merged[-1] += word
         else:
             merged.append(word)
