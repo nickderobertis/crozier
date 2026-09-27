@@ -3709,7 +3709,10 @@ enum-leading-zero-member	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52
 enum-leading-zero-member	walk	roryqueue/cowards-game@1e368dd81d96dcb458ff78975a107c2d9b260ef9	528	pins.tsv
 enum-leading-zero-member	walk	truefoundry/trueforge@5adde289683b642203b06b39ca687e9d977ca7a5	69	pins.tsv
 enum-leading-zero-member	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
+example	document	OpenBanking-Brasil/specs-directory:openapi.yaml	census 11	enumeration.tsv.gz
+example	document	WithSecureOpenSource/gdpr-subject-rights-api:openapi.yaml	census 15	enumeration.tsv.gz
 example	document	backend/doc/openapi.json	census 1	enumeration.tsv.gz
+example	document	cnorlander/BuildRelay:openapi.json	census 2	enumeration.tsv.gz
 example	document	crate/server/documentation/openapi.yaml	census 3	enumeration.tsv.gz
 example	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 21	enumeration.tsv.gz
 example	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 21	enumeration.tsv.gz
@@ -4322,9 +4325,6 @@ example	document	openapi-specs/sdwan/legacy/open_api_legacy.json	census 3	enumer
 example	document	openapi-specs/sdwan/unified/open_api_unified.json	census 3	enumeration.tsv.gz
 example	document	openapi-specs/threat-vault/AdvancedThreatPrevention.yaml	census 122	enumeration.tsv.gz
 example	document	openapi-specs/threat-vault/ThreatPrevention.yaml	census 171	enumeration.tsv.gz
-example	document	openapi.json	census 2	enumeration.tsv.gz
-example	document	openapi.yaml	census 11	enumeration.tsv.gz
-example	document	openapi.yaml	census 15	enumeration.tsv.gz
 example	document	openapi.yml	census 37	enumeration.tsv.gz
 example	document	openapi/.raw/v2.json	census 1217	enumeration.tsv.gz
 example	document	openapi/v1-deprecated/v1.json	census 869	enumeration.tsv.gz
@@ -5614,6 +5614,8 @@ format-time	walk	roryqueue/cowards-game@1e368dd81d96dcb458ff78975a107c2d9b260ef9
 format-time	walk	truefoundry/trueforge@5adde289683b642203b06b39ca687e9d977ca7a5	69	pins.tsv
 format-time	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
 format-uri	document	.github/fern/openapi/openapi.json	census 20	enumeration.tsv.gz
+format-uri	document	Alia5/steaminputdb.com:openapi.yaml	census 12	enumeration.tsv.gz
+format-uri	document	OpenBanking-Brasil/specs-directory:openapi.yaml	census 25	enumeration.tsv.gz
 format-uri	document	contracts/http/openapi.yaml	census 1	enumeration.tsv.gz
 format-uri	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 6859	enumeration.tsv.gz
 format-uri	document	descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 6859	enumeration.tsv.gz
@@ -6014,8 +6016,6 @@ format-uri	document	openapi-specs/scm/config/posture-management/compliance-frame
 format-uri	document	openapi-specs/scm/config/posture-management/config-cleanup/config-cleanup_v1.yaml	census 1	enumeration.tsv.gz
 format-uri	document	openapi-specs/scm/config/posture-management/policy-optimizer/policy-optimizer.yaml	census 1	enumeration.tsv.gz
 format-uri	document	openapi-specs/scm/config/sase/identity/identity-services_R3.yaml	census 3	enumeration.tsv.gz
-format-uri	document	openapi.yaml	census 12	enumeration.tsv.gz
-format-uri	document	openapi.yaml	census 25	enumeration.tsv.gz
 format-uri	document	openapi/.raw/v2.json	census 3	enumeration.tsv.gz
 format-uri	document	openapi/teslatlas-v1.openapi.json	census 9	enumeration.tsv.gz
 format-uri	document	openapi/v2.json	census 1	enumeration.tsv.gz
@@ -7434,6 +7434,9 @@ mutualTLS	walk	roryqueue/cowards-game@1e368dd81d96dcb458ff78975a107c2d9b260ef9	5
 mutualTLS	walk	truefoundry/trueforge@5adde289683b642203b06b39ca687e9d977ca7a5	69	pins.tsv
 mutualTLS	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
 mutually-recursive-graph	document	.github/fern/openapi/openapi.json	census 549	enumeration.tsv.gz
+mutually-recursive-graph	document	Alia5/steaminputdb.com:openapi.yaml	census 130	enumeration.tsv.gz
+mutually-recursive-graph	document	OpenBanking-Brasil/specs-directory:openapi.yaml	census 422	enumeration.tsv.gz
+mutually-recursive-graph	document	WithSecureOpenSource/gdpr-subject-rights-api:openapi.yaml	census 29	enumeration.tsv.gz
 mutually-recursive-graph	document	api/openapi-spec/v3/api__v1_openapi.json	census 2045	enumeration.tsv.gz
 mutually-recursive-graph	document	api/openapi-spec/v3/api_openapi.json	census 5	enumeration.tsv.gz
 mutually-recursive-graph	document	api/openapi-spec/v3/apis__admissionregistration.k8s.io__v1_openapi.json	census 550	enumeration.tsv.gz
@@ -7497,6 +7500,7 @@ mutually-recursive-graph	document	api/openapi-spec/v3/apis__storagemigration.k8s
 mutually-recursive-graph	document	api/openapi-spec/v3/apis_openapi.json	census 8	enumeration.tsv.gz
 mutually-recursive-graph	document	api/openapi-spec/v3/version_openapi.json	census 1	enumeration.tsv.gz
 mutually-recursive-graph	document	backend/doc/openapi.json	census 6	enumeration.tsv.gz
+mutually-recursive-graph	document	cnorlander/BuildRelay:openapi.json	census 5	enumeration.tsv.gz
 mutually-recursive-graph	document	contracts/http/openapi.yaml	census 50	enumeration.tsv.gz
 mutually-recursive-graph	document	contracts/v1/openapi.json	census 83	enumeration.tsv.gz
 mutually-recursive-graph	document	crate/server/documentation/openapi.yaml	census 113	enumeration.tsv.gz
@@ -7698,6 +7702,7 @@ mutually-recursive-graph	document	docs/openapi.yaml	census 96	enumeration.tsv.gz
 mutually-recursive-graph	document	docs/public/apostrophecms-openapi.yaml	census 315	enumeration.tsv.gz
 mutually-recursive-graph	document	docs/reference/api/openapi.json	census 186	enumeration.tsv.gz
 mutually-recursive-graph	document	docs/swagger.json	census 991	enumeration.tsv.gz
+mutually-recursive-graph	document	emergentmethods/flowdapt:openapi.json	census 186	enumeration.tsv.gz
 mutually-recursive-graph	document	gateway.openapi.yaml	census 74	enumeration.tsv.gz
 mutually-recursive-graph	document	identity/cpapi/openapi.yaml	census 44	enumeration.tsv.gz
 mutually-recursive-graph	document	integrations/erp/api/openapi.json	census 157	enumeration.tsv.gz
@@ -7831,6 +7836,7 @@ mutually-recursive-graph	document	json/TransferService-v2.json	census 40	enumera
 mutually-recursive-graph	document	json/TransferService-v3.json	census 141	enumeration.tsv.gz
 mutually-recursive-graph	document	json/TransferService-v4.json	census 214	enumeration.tsv.gz
 mutually-recursive-graph	document	json/Webhooks-v1.json	census 181	enumeration.tsv.gz
+mutually-recursive-graph	document	livepeer/ai-runner:openapi.yaml	census 79	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi-buddy.yaml	census 27	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi-specs/access/adem/New-ADEM-Spec.yaml	census 168	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi-specs/access/insights/1.0/DataResource.yaml	census 33	enumeration.tsv.gz
@@ -8167,12 +8173,6 @@ mutually-recursive-graph	document	openapi-specs/sdwan/legacy/open_api_legacy.jso
 mutually-recursive-graph	document	openapi-specs/sdwan/unified/open_api_unified.json	census 6163	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi-specs/threat-vault/AdvancedThreatPrevention.yaml	census 9	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi-specs/threat-vault/ThreatPrevention.yaml	census 24	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.json	census 186	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.json	census 5	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.yaml	census 130	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.yaml	census 29	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.yaml	census 422	enumeration.tsv.gz
-mutually-recursive-graph	document	openapi.yaml	census 79	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi/.raw/v2.json	census 2646	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi/teslatlas-v1.openapi.json	census 281	enumeration.tsv.gz
 mutually-recursive-graph	document	openapi/v1-deprecated/v1.json	census 1670	enumeration.tsv.gz
@@ -8637,6 +8637,7 @@ non-identifier-operation-id	document	api/openapi-spec/v3/logs_openapi.json	censu
 non-identifier-operation-id	document	api/openapi-spec/v3/openid__v1__jwks_openapi.json	census 1	enumeration.tsv.gz
 non-identifier-operation-id	document	api/openapi-spec/v3/version_openapi.json	census 1	enumeration.tsv.gz
 non-identifier-operation-id	document	backend/doc/openapi.json	census 1	enumeration.tsv.gz
+non-identifier-operation-id	document	cnorlander/BuildRelay:openapi.json	census 1	enumeration.tsv.gz
 non-identifier-operation-id	document	contracts/v1/openapi.json	census 31	enumeration.tsv.gz
 non-identifier-operation-id	document	crate/server/documentation/openapi.yaml	census 86	enumeration.tsv.gz
 non-identifier-operation-id	document	descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1495	enumeration.tsv.gz
@@ -9028,6 +9029,7 @@ non-identifier-operation-id	document	docs/openapi.yaml	census 18	enumeration.tsv
 non-identifier-operation-id	document	docs/public/apostrophecms-openapi.yaml	census 176	enumeration.tsv.gz
 non-identifier-operation-id	document	docs/reference/api/openapi.json	census 26	enumeration.tsv.gz
 non-identifier-operation-id	document	docs/swagger.json	census 204	enumeration.tsv.gz
+non-identifier-operation-id	document	emergentmethods/flowdapt:openapi.json	census 26	enumeration.tsv.gz
 non-identifier-operation-id	document	gateway.openapi.yaml	census 10	enumeration.tsv.gz
 non-identifier-operation-id	document	identity/cpapi/openapi.yaml	census 29	enumeration.tsv.gz
 non-identifier-operation-id	document	integrations/erp/api/openapi.json	census 8	enumeration.tsv.gz
@@ -9160,6 +9162,7 @@ non-identifier-operation-id	document	json/TransferService-v2.json	census 3	enume
 non-identifier-operation-id	document	json/TransferService-v3.json	census 10	enumeration.tsv.gz
 non-identifier-operation-id	document	json/TransferService-v4.json	census 12	enumeration.tsv.gz
 non-identifier-operation-id	document	json/Webhooks-v1.json	census 48	enumeration.tsv.gz
+non-identifier-operation-id	document	livepeer/ai-runner:openapi.yaml	census 13	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi-specs/access/adem/New-ADEM-Spec.yaml	census 13	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi-specs/access/insights/1.0/DataResource.yaml	census 2	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi-specs/access/insights/1.0/DataResourceCustom.yaml	census 2	enumeration.tsv.gz
@@ -9496,9 +9499,6 @@ non-identifier-operation-id	document	openapi-specs/sdwan/legacy/open_api_legacy.
 non-identifier-operation-id	document	openapi-specs/sdwan/unified/open_api_unified.json	census 1551	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi-specs/threat-vault/AdvancedThreatPrevention.yaml	census 2	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi-specs/threat-vault/ThreatPrevention.yaml	census 8	enumeration.tsv.gz
-non-identifier-operation-id	document	openapi.json	census 1	enumeration.tsv.gz
-non-identifier-operation-id	document	openapi.json	census 26	enumeration.tsv.gz
-non-identifier-operation-id	document	openapi.yaml	census 13	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi/.raw/v2.json	census 580	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi/teslatlas-v1.openapi.json	census 20	enumeration.tsv.gz
 non-identifier-operation-id	document	openapi/v1-deprecated/v1.json	census 299	enumeration.tsv.gz
@@ -10529,6 +10529,9 @@ property-sole-anyof-struct-member	walk	roryqueue/cowards-game@1e368dd81d96dcb458
 property-sole-anyof-struct-member	walk	truefoundry/trueforge@5adde289683b642203b06b39ca687e9d977ca7a5	69	pins.tsv
 property-sole-anyof-struct-member	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
 recursive-graph	document	.github/fern/openapi/openapi.json	census 549	enumeration.tsv.gz
+recursive-graph	document	Alia5/steaminputdb.com:openapi.yaml	census 130	enumeration.tsv.gz
+recursive-graph	document	OpenBanking-Brasil/specs-directory:openapi.yaml	census 422	enumeration.tsv.gz
+recursive-graph	document	WithSecureOpenSource/gdpr-subject-rights-api:openapi.yaml	census 29	enumeration.tsv.gz
 recursive-graph	document	api/openapi-spec/v3/api__v1_openapi.json	census 2045	enumeration.tsv.gz
 recursive-graph	document	api/openapi-spec/v3/api_openapi.json	census 5	enumeration.tsv.gz
 recursive-graph	document	api/openapi-spec/v3/apis__admissionregistration.k8s.io__v1_openapi.json	census 550	enumeration.tsv.gz
@@ -10592,6 +10595,7 @@ recursive-graph	document	api/openapi-spec/v3/apis__storagemigration.k8s.io_opena
 recursive-graph	document	api/openapi-spec/v3/apis_openapi.json	census 8	enumeration.tsv.gz
 recursive-graph	document	api/openapi-spec/v3/version_openapi.json	census 1	enumeration.tsv.gz
 recursive-graph	document	backend/doc/openapi.json	census 6	enumeration.tsv.gz
+recursive-graph	document	cnorlander/BuildRelay:openapi.json	census 5	enumeration.tsv.gz
 recursive-graph	document	contracts/http/openapi.yaml	census 50	enumeration.tsv.gz
 recursive-graph	document	contracts/v1/openapi.json	census 83	enumeration.tsv.gz
 recursive-graph	document	crate/server/documentation/openapi.yaml	census 113	enumeration.tsv.gz
@@ -10793,6 +10797,7 @@ recursive-graph	document	docs/openapi.yaml	census 96	enumeration.tsv.gz
 recursive-graph	document	docs/public/apostrophecms-openapi.yaml	census 315	enumeration.tsv.gz
 recursive-graph	document	docs/reference/api/openapi.json	census 186	enumeration.tsv.gz
 recursive-graph	document	docs/swagger.json	census 991	enumeration.tsv.gz
+recursive-graph	document	emergentmethods/flowdapt:openapi.json	census 186	enumeration.tsv.gz
 recursive-graph	document	gateway.openapi.yaml	census 74	enumeration.tsv.gz
 recursive-graph	document	identity/cpapi/openapi.yaml	census 44	enumeration.tsv.gz
 recursive-graph	document	integrations/erp/api/openapi.json	census 157	enumeration.tsv.gz
@@ -10926,6 +10931,7 @@ recursive-graph	document	json/TransferService-v2.json	census 40	enumeration.tsv.
 recursive-graph	document	json/TransferService-v3.json	census 141	enumeration.tsv.gz
 recursive-graph	document	json/TransferService-v4.json	census 214	enumeration.tsv.gz
 recursive-graph	document	json/Webhooks-v1.json	census 181	enumeration.tsv.gz
+recursive-graph	document	livepeer/ai-runner:openapi.yaml	census 79	enumeration.tsv.gz
 recursive-graph	document	openapi-buddy.yaml	census 27	enumeration.tsv.gz
 recursive-graph	document	openapi-specs/access/adem/New-ADEM-Spec.yaml	census 168	enumeration.tsv.gz
 recursive-graph	document	openapi-specs/access/insights/1.0/DataResource.yaml	census 33	enumeration.tsv.gz
@@ -11262,12 +11268,6 @@ recursive-graph	document	openapi-specs/sdwan/legacy/open_api_legacy.json	census 
 recursive-graph	document	openapi-specs/sdwan/unified/open_api_unified.json	census 6163	enumeration.tsv.gz
 recursive-graph	document	openapi-specs/threat-vault/AdvancedThreatPrevention.yaml	census 9	enumeration.tsv.gz
 recursive-graph	document	openapi-specs/threat-vault/ThreatPrevention.yaml	census 24	enumeration.tsv.gz
-recursive-graph	document	openapi.json	census 186	enumeration.tsv.gz
-recursive-graph	document	openapi.json	census 5	enumeration.tsv.gz
-recursive-graph	document	openapi.yaml	census 130	enumeration.tsv.gz
-recursive-graph	document	openapi.yaml	census 29	enumeration.tsv.gz
-recursive-graph	document	openapi.yaml	census 422	enumeration.tsv.gz
-recursive-graph	document	openapi.yaml	census 79	enumeration.tsv.gz
 recursive-graph	document	openapi/.raw/v2.json	census 2646	enumeration.tsv.gz
 recursive-graph	document	openapi/teslatlas-v1.openapi.json	census 281	enumeration.tsv.gz
 recursive-graph	document	openapi/v1-deprecated/v1.json	census 1670	enumeration.tsv.gz
@@ -11726,7 +11726,7 @@ ref-pointer-nested-items	walk	mongodb/openapi@1e4aeea7d2d63f749bcae619cf836fbe52
 ref-pointer-nested-items	walk	roryqueue/cowards-game@1e368dd81d96dcb458ff78975a107c2d9b260ef9	528	pins.tsv
 ref-pointer-nested-items	walk	truefoundry/trueforge@5adde289683b642203b06b39ca687e9d977ca7a5	69	pins.tsv
 ref-pointer-nested-items	walk	twilio/twilio-oai@5aa7f31977ce5812f7b7bc1f46a38555ebaa2888	120	pins.tsv
-ref-pointer-nested-properties	document	openapi.yaml	census 1	enumeration.tsv.gz
+ref-pointer-nested-properties	document	OpenBanking-Brasil/specs-directory:openapi.yaml	census 1	enumeration.tsv.gz
 ref-pointer-nested-properties	document	src/account.yaml	census 3	enumeration.tsv.gz
 ref-pointer-nested-properties	document	src/addressbook.yaml	census 9	enumeration.tsv.gz
 ref-pointer-nested-properties	document	src/bookings.yaml	census 5	enumeration.tsv.gz

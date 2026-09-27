@@ -38,7 +38,7 @@ outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
 and the unreadable.
 
-When this record was rendered, `src/` had moved since that build (`1c686d7c`, `14f68996`, `f6ee5559`, `c5bec596`, `499515fa`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`, `68b15e33`, `736651c9`, `784d69ea`, `2978a39b`, `6f4c62bd`, `dafdfe9d`, `9b85a327`, `f5920e1e`, `c2297f00`, `78d6d54a`, `3ed1814c`, `c8aa3951`, `7b139245`, `3f1f12ee`, `99c185c5`, `499515fa`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
@@ -46,9 +46,9 @@ re-taken on a fresh `just golden-reach` measurement before it is reused.
 | `apis.guru` | 6 | 0 | 6 | 0 | 0 | 2 | 0 | 0 | 0 |
 | `jentic` | 196 | 0 | 196 | 0 | 5 | 40 | 0 | 0 | 5 |
 | `github-code-search` | 3 | 8 | 3 | 0 | 0 | 0 | 0 | 0 | 8 |
-| `github-publisher-trees` | 108 | 57 | 0 | 108 | 0 | 0 | 0 | 0 | 165 |
+| `github-publisher-trees` | 108 | 58 | 0 | 108 | 0 | 0 | 0 | 0 | 166 |
 | `sourcegraph` | 16 | 3 | 16 | 0 | 0 | 4 | 2 | 2 | 3 |
-| `vendor-portals` | 118 | 58 | 0 | 118 | 0 | 0 | 0 | 0 | 176 |
+| `vendor-portals` | 118 | 174 | 0 | 118 | 0 | 0 | 0 | 0 | 292 |
 
 #### Candidates passing every screen
 

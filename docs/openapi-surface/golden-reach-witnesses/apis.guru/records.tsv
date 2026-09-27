@@ -580,7 +580,7 @@ enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml ref	pa
 enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 54 errors, e.g. Enum value 449868002 is not suitable for code generation.	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml ref	passed	screens.jsonl
-enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum name 10003 for value &#10003; is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum name 10003 for value &#10003 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 19 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl

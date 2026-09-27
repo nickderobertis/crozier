@@ -394,7 +394,6 @@
 {"build": "1131cbbcb0e3", "candidate": "web/lib/clients/jawnTypes/public.json", "key": "anyof-discriminated-union", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": ".github/fern/openapi/openapi.json", "key": "x-fern-or-crozier-ignore", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "docs/openapi.json", "key": "x-fern-or-crozier-ignore", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "ref-pointer-nested-properties", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "src/account.yaml", "key": "ref-pointer-nested-properties", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "src/addressbook.yaml", "key": "ref-pointer-nested-properties", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "src/bookings.yaml", "key": "ref-pointer-nested-properties", "reached": [], "status": "generated"}
@@ -1606,9 +1605,6 @@
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/sdwan/unified/open_api_unified.json", "key": "example", "reached": [], "status": "exit 1: c/fern/types/tenant_v2n11.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/types/tenant_v2n11.py:42:5: Expected a statement"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/AdvancedThreatPrevention.yaml", "key": "example", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/ThreatPrevention.yaml", "key": "example", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "example", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "example", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "example", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi.yml", "key": "example", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/.raw/v2.json", "key": "example", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/v1-deprecated/v1.json", "key": "example", "reached": [], "status": "generated"}
@@ -3880,9 +3876,6 @@
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/sdwan/unified/open_api_unified.json", "key": "non-identifier-operation-id", "reached": [], "status": "exit 1: c/fern/types/tenant_v2n11.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/types/tenant_v2n11.py:42:5: Expected a statement"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/AdvancedThreatPrevention.yaml", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/ThreatPrevention.yaml", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/.raw/v2.json", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/teslatlas-v1.openapi.json", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/v1-deprecated/v1.json", "key": "non-identifier-operation-id", "reached": [], "status": "generated"}
@@ -5437,12 +5430,6 @@
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/sdwan/unified/open_api_unified.json", "key": "mutually-recursive-graph", "reached": [], "status": "exit 1: c/fern/types/tenant_v2n11.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/types/tenant_v2n11.py:42:5: Expected a statement"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/AdvancedThreatPrevention.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/ThreatPrevention.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/.raw/v2.json", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/teslatlas-v1.openapi.json", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/v1-deprecated/v1.json", "key": "mutually-recursive-graph", "reached": [], "status": "generated"}
@@ -6545,12 +6532,6 @@
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/sdwan/unified/open_api_unified.json", "key": "recursive-graph", "reached": [], "status": "exit 1: c/fern/types/tenant_v2n11.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/types/tenant_v2n11.py:42:5: Expected a statement"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/AdvancedThreatPrevention.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/threat-vault/ThreatPrevention.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.json", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/.raw/v2.json", "key": "recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/teslatlas-v1.openapi.json", "key": "recursive-graph", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/v1-deprecated/v1.json", "key": "recursive-graph", "reached": [], "status": "generated"}
@@ -8556,8 +8537,6 @@
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/scm/config/posture-management/config-cleanup/config-cleanup_v1.yaml", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/scm/config/posture-management/policy-optimizer/policy-optimizer.yaml", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi-specs/scm/config/sase/identity/identity-services_R3.yaml", "key": "format-uri", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "format-uri", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "openapi.yaml", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/.raw/v2.json", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/teslatlas-v1.openapi.json", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "1131cbbcb0e3", "candidate": "openapi/v2.json", "key": "format-uri", "reached": [], "status": "generated"}

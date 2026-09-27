@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `8a9454cb74d0`, the one the reach ledger was measured on when these probes ran,
+build of commit `1131cbbcb0e3`, the one the reach ledger was measured on when these probes ran,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -28,13 +28,13 @@ final reconciliation decides whether the arm's search reads `exhausted`.
 #### Declarers, and how the instrumented run fared on each
 
 Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
-build `8a9454cb74d0` only. A declarer not probed on it, one whose run
+build `1131cbbcb0e3` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
 and the unreadable.
 
-When this record was rendered, `src/` had moved since that build (`1c686d7c`, `14f68996`, `f6ee5559`, `c5bec596`, `499515fa`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
@@ -42,6 +42,6 @@ re-taken on a fresh `just golden-reach` measurement before it is reused.
 | `apis.guru` | 20 | 0 | 20 | 0 | 0 | 15 | 0 | 0 | 0 |
 | `jentic` | 30 | 0 | 30 | 0 | 5 | 15 | 0 | 0 | 20 |
 | `github-code-search` | 25 | 1 | 25 | 0 | 0 | 0 | 0 | 0 | 1 |
-| `github-publisher-trees` | 384 | 57 | 0 | 384 | 0 | 0 | 0 | 0 | 441 |
+| `github-publisher-trees` | 384 | 58 | 384 | 0 | 124 | 180 | 0 | 0 | 310 |
 | `sourcegraph` | 18 | 2 | 18 | 0 | 0 | 0 | 0 | 0 | 2 |
-| `vendor-portals` | 386 | 58 | 0 | 386 | 0 | 0 | 0 | 0 | 444 |
+| `vendor-portals` | 386 | 174 | 386 | 0 | 114 | 180 | 0 | 0 | 416 |
