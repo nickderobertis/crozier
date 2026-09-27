@@ -5992,13 +5992,13 @@ impl InlineHoister<'_> {
                 // Alternatives that are all booleans — `const: false` and
                 // `const: true` alike — are one `bool` to Fern, not a named
                 // union: StandRig's motion `loop` is typed `Optional[bool]`.
-                if !members.is_empty()
+                let all_boolean = !members.is_empty()
                     && members.iter().all(|member| {
                         member.ty.as_ref().and_then(TypeField::primary) == Some("boolean")
                             && member.one_of.is_none()
                             && member.any_of.is_none()
-                    })
-                {
+                    });
+                if all_boolean {
                     return TypeRef::Primitive(Prim::Bool);
                 }
                 let variants: Vec<TypeRef> = members

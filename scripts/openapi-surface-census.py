@@ -1522,7 +1522,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "1d2743e55beb2361",
-    "prop_type_ref": "1d91c14cc34d187d",
+    "prop_type_ref": "64ee3efbe52e4195",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
