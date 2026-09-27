@@ -2515,6 +2515,7 @@ fn build_endpoint(
     // Inline (non-`$ref`) request/response objects hoist into this tag's own
     // `types/` package; the hoister accumulates them, keyed to the tag below.
     let mut hoister = InlineHoister {
+        copying_refs: Vec::new(),
         root_types: types,
         schemas: Some(&doc.components.schemas),
         out: Vec::new(),
@@ -5415,6 +5416,11 @@ struct InlineHoister<'a> {
     schemas: Option<&'a IndexMap<String, Schema>>,
     /// The hoisted object types accumulated for the current operation's tag.
     out: Vec<TypeDecl>,
+    /// The annotated references being copied on the current path, as
+    /// [`Builder::copying_refs`] tracks them: a copy whose fields annotate a
+    /// reference back to one of them names that component instead of copying
+    /// it again, so a self-referencing request model terminates.
+    copying_refs: Vec<String>,
 }
 
 impl InlineHoister<'_> {
@@ -5944,6 +5950,13 @@ impl InlineHoister<'_> {
             // this block. The disagreement is noted beside case 1 in
             // `docs/openapi-surface-coverage.md`.
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
+                // A copy of a component already being copied on this path is a
+                // cycle, not a new shape: AWS Lex V2 Runtime's request
+                // `Condition` annotates a reference back to itself, and copying
+                // it again would name a deeper class without end.
+                if self.copying_refs.iter().any(|copying| copying == reference) {
+                    return TypeRef::Named(ref_to_class(reference));
+                }
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
                     observed_arm!("prop_type_ref:2");
@@ -5957,7 +5970,10 @@ impl InlineHoister<'_> {
                 }
                 if target.one_of.is_some() || target.any_of.is_some() {
                     observed_arm!("prop_type_ref:3");
-                    if let Some(copy) = self.hoist_named_copy(&name, &target) {
+                    self.copying_refs.push(reference.to_string());
+                    let copy = self.hoist_named_copy(&name, &target);
+                    self.copying_refs.pop();
+                    if let Some(copy) = copy {
                         return copy;
                     }
                 }
@@ -5968,7 +5984,9 @@ impl InlineHoister<'_> {
                         || is_object_type(&target))
                 {
                     observed_arm!("prop_type_ref:4");
+                    self.copying_refs.push(reference.to_string());
                     self.hoist_object_with_doc(&name, &target, clean_doc(description));
+                    self.copying_refs.pop();
                     return TypeRef::Named(name);
                 }
                 observed_arm!("prop_type_ref:5");
@@ -14987,6 +15005,7 @@ mod tests {
     #[test]
     fn inline_hoister_handles_enum_array_shapes_and_defensive_inputs() {
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: None,
             out: Vec::new(),
@@ -15174,6 +15193,7 @@ mod tests {
         }))
         .expect("request body deserializes");
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(&doc.components.schemas),
             out: Vec::new(),
@@ -15268,6 +15288,7 @@ mod tests {
             }
         }));
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(&doc.components.schemas),
             out: Vec::new(),
@@ -15294,6 +15315,7 @@ mod tests {
             }
         }));
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: None,
             out: Vec::new(),
@@ -15352,6 +15374,7 @@ mod tests {
         }))
         .expect("request body deserializes");
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(&doc.components.schemas),
             out: Vec::new(),
@@ -15462,6 +15485,7 @@ mod tests {
         }))
         .expect("request body deserializes");
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(&document.components.schemas),
             out: Vec::new(),
@@ -15629,6 +15653,7 @@ mod tests {
             }))
             .expect("request body deserializes");
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &types,
             schemas: None,
             out: Vec::new(),
@@ -15729,6 +15754,7 @@ mod tests {
     #[test]
     fn inline_hoister_builds_response_items_allof_objects_and_union_variants() {
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: None,
             out: Vec::new(),
@@ -15878,6 +15904,7 @@ mod tests {
     fn inline_hoister_infers_discriminated_request_array_items() {
         let schemas = indexmap::IndexMap::new();
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(&schemas),
             out: Vec::new(),
@@ -16427,6 +16454,7 @@ mod tests {
         )));
 
         let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
             root_types: &[],
             schemas: Some(schemas),
             out: Vec::new(),
@@ -17192,6 +17220,7 @@ mod tests {
         let variant_ref = |value: serde_json::Value| {
             let schemas = indexmap::IndexMap::new();
             let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
                 root_types: &[],
                 schemas: Some(&schemas),
                 out: Vec::new(),
@@ -17341,6 +17370,7 @@ mod tests {
         let spelled = |field: &str| {
             let schemas = indexmap::IndexMap::new();
             let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
                 root_types: &[],
                 schemas: Some(&schemas),
                 out: Vec::new(),
@@ -17384,6 +17414,7 @@ mod tests {
         let property = |value: serde_json::Value| {
             let schemas = indexmap::IndexMap::new();
             let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
                 root_types: &[],
                 schemas: Some(&schemas),
                 out: Vec::new(),

@@ -12414,3 +12414,123 @@ paths:
         .expect("a method named from the whole operationId");
     assert!(method.contains("de_monta"), "{client}");
 }
+
+/// AWS Lex V2 Runtime's inline request bodies annotate a reference to a model
+/// whose own field annotates a reference back to it. Copying that model at the
+/// body's use site copies it once and names the component for the cycle, where
+/// every level used to copy it again under a longer name until the stack gave
+/// out.
+#[test]
+fn an_annotated_reference_cycle_in_an_inline_request_body_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Lex Runtime V2, version: '2020-08-07' }
+paths:
+  /sessions:
+    post:
+      operationId: PutSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                condition:
+                  allOf:
+                    - $ref: '#/components/schemas/Condition'
+                    - description: The condition the session starts in.
+      responses:
+        '200': { description: stored }
+components:
+  schemas:
+    Condition:
+      type: object
+      properties:
+        name: { type: string }
+        next:
+          allOf:
+            - $ref: '#/components/schemas/Condition'
+            - description: The condition after this one.
+"##,
+    );
+    let copy = files
+        .iter()
+        .find(|(path, _)| path.ends_with("put_session_request_condition.py"))
+        .map(|(_, contents)| contents)
+        .expect("the body's copy of the condition");
+    assert!(copy.contains("class PutSessionRequestCondition("), "{copy}");
+    assert!(
+        copy.contains("    next: typing.Optional[\"Condition\"] = pydantic.Field(default=None)"),
+        "{copy}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("condition_next_next")),
+        "{:?}",
+        files.keys()
+    );
+}
+
+/// A STAC-style search filter lists GeoJSON geometries inline, and its
+/// `GeometryCollection` member's `geometries` point back at the property holding
+/// the union (`#/components/schemas/intersectsFilter/properties/intersects`).
+/// The pointer is copied where it is first met; met again inside that copy, it
+/// is the unknown type, so the copy's own geometries are `List[Any]` instead of
+/// a union copied without end.
+#[test]
+fn a_pointer_back_into_its_own_expansion_is_the_unknown_type() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: STAC Search, version: 1.0.0 }
+paths:
+  /search:
+    post:
+      operationId: search
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/intersectsFilter' }
+      responses:
+        '200': { description: found }
+components:
+  schemas:
+    intersectsFilter:
+      type: object
+      properties:
+        intersects:
+          oneOf:
+            - type: object
+              required: [type, coordinates]
+              properties:
+                type: { type: string, enum: [Point] }
+                coordinates: { type: array, items: { type: number } }
+            - type: object
+              required: [type, geometries]
+              properties:
+                type: { type: string, enum: [GeometryCollection] }
+                geometries:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/intersectsFilter/properties/intersects'
+"##,
+    );
+    let member = &files["src/acme/types/intersects_filter_intersects_geometry_collection.py"];
+    assert!(
+        member.contains("    geometries: typing.List[IntersectsFilterIntersectsGeometryCollectionGeometriesItem]\n"),
+        "{member}"
+    );
+    let copy = &files["src/acme/types/intersects_filter_intersects_geometry_collection_geometries_item_geometry_collection.py"];
+    assert!(
+        copy.contains("    geometries: typing.List[typing.Any]\n"),
+        "{copy}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("geometries_item_geometry_collection_geometries")),
+        "{:?}",
+        files.keys()
+    );
+}

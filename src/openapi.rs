@@ -1816,6 +1816,22 @@ fn inline_schema_pointers(
         }
     }
     if let Some(reference) = schema.reference.clone() {
+        // A pointer met again inside its own expansion names the node it is
+        // being copied from, and copying it once more would never end: the
+        // STAC-style `intersectsFilter` geometry union lists a
+        // `GeometryCollection` whose `geometries` point back at
+        // `#/components/schemas/intersectsFilter/properties/intersects`. Left a
+        // reference, it was expanded again wherever it was used; it is the
+        // unknown type instead, as an unresolvable reference is. A plain
+        // component reference stays one: it names a class and terminates.
+        if expanding.contains(&reference) && schema_pointer_target(components, &reference).is_some()
+        {
+            *schema = Schema {
+                description: schema.description.take(),
+                ..Schema::default()
+            };
+            return;
+        }
         if !expanding.contains(&reference) {
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
