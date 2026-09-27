@@ -11841,3 +11841,314 @@ components:
     );
     assert!(files.contains_key("src/acme/types/channel_to_phone.py"));
 }
+
+/// A loopback server answering every request with `body`, so a remote `$ref`
+/// resolves through the real `curl` fetch without leaving the machine.
+fn serve_document(path: &str, body: &'static str) -> String {
+    use std::io::{BufRead, BufReader, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind a loopback port");
+    let url = format!("http://{}{path}", listener.local_addr().expect("address"));
+    std::thread::spawn(move || {
+        for stream in listener.incoming() {
+            let Ok(mut stream) = stream else {
+                return;
+            };
+            let mut reader = BufReader::new(stream.try_clone().expect("clone the socket"));
+            let mut line = String::new();
+            while reader.read_line(&mut line).is_ok() {
+                if line.trim().is_empty() {
+                    break;
+                }
+                line.clear();
+            }
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
+            let _ = stream.write_all(response.as_bytes());
+        }
+    });
+    url
+}
+
+/// MockServer (corpus row 232) names the draft-04 meta-schema as a whole
+/// document. Fern imports it as one component named after its file, `Schema`,
+/// with `#` meaning that component and each `#/definitions/<name>` a component
+/// of its own, so the map of `Schema`-or-`StringArray` is `SchemaDependenciesValue`
+/// — not a class with an empty name hoisted under the referring property.
+#[test]
+fn a_whole_remote_document_is_one_component_named_after_its_file() {
+    let url = serve_document(
+        "/draft-04/schema",
+        r##"{
+  "id": "http://json-schema.org/draft-04/schema#",
+  "description": "Core schema meta-schema",
+  "definitions": {
+    "schemaArray": { "type": "array", "minItems": 1, "items": { "$ref": "#" } },
+    "stringArray": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  },
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "not": { "$ref": "#" },
+    "allOf": { "$ref": "#/definitions/schemaArray" },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/stringArray" }]
+      }
+    }
+  }
+}"##,
+    );
+    let files = render(&format!(
+        r"openapi: 3.0.0
+info: {{ title: MockServer, version: 5.15.x }}
+paths: {{}}
+components:
+  schemas:
+    StringOrJsonSchemaNot:
+      type: object
+      properties:
+        optional: {{ type: boolean }}
+        schema: {{ $ref: '{url}' }}
+"
+    ));
+    let dependencies = &files["src/acme/types/schema_dependencies_value.py"];
+    assert!(
+        dependencies.contains("SchemaDependenciesValue = typing.Union[\"Schema\", StringArray]"),
+        "{dependencies}"
+    );
+    let array = &files["src/acme/types/schema_array.py"];
+    assert!(array.contains("from .schema import Schema\n"), "{array}");
+    assert!(
+        array.contains("SchemaArray = typing.List[Schema]"),
+        "{array}"
+    );
+    let schema = &files["src/acme/types/schema.py"];
+    assert!(
+        schema.contains("class Schema(UniversalBaseModel):"),
+        "{schema}"
+    );
+    assert!(
+        schema.contains("typing.Dict[str, \"SchemaDependenciesValue\"]"),
+        "{schema}"
+    );
+    let referrer = &files["src/acme/types/string_or_json_schema_not.py"];
+    assert!(
+        referrer.contains("typing.Optional[\"Schema\"]"),
+        "{referrer}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("string_or_json_schema_not_schema")),
+        "{:?}",
+        files.keys()
+    );
+    for (path, contents) in &files {
+        assert!(!contents.contains("from . import\n"), "{path}: {contents}");
+    }
+}
+
+/// Fragments of MockServer (corpus row 232), each assertion a line of its Fern
+/// 5.20.0 golden:
+/// - the lazy sub-client imports sort case-insensitively (`AsyncapiClient`
+///   first), and a summary's one-letter words join as camel-casing joins them;
+/// - a string example holding `"` is spelled single-quoted, and a binary
+///   download's inline body drops its media example for Fern's placeholder;
+/// - an inline body field renamed for a query-parameter collision is sent under
+///   its renamed argument;
+/// - a later error body leaves an earlier enum property behind as a type;
+/// - `allOf` of a scalar reference plus a default is that scalar, `json` is a
+///   reserved field name, and a model holding a type whose declared properties
+///   reach a cycle repairs its forward references.
+#[test]
+fn mockserver_sort_quoting_collision_and_forward_reference_shapes() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info: { title: MockServer, version: 5.15.x }
+servers:
+  - url: 'http://localhost:1080/'
+paths:
+  /asyncapi:
+    put:
+      tags: [asyncapi]
+      summary: load an AsyncAPI spec
+      responses: { '201': { description: loaded } }
+  /grpc/descriptors:
+    put:
+      tags: [grpc]
+      summary: load a gRPC proto descriptor set
+      responses: { '200': { description: loaded } }
+  /files/store:
+    put:
+      tags: [files]
+      summary: store a file in the file store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FileStoreRequest' }
+            example: { name: template.json, content: '{"status":"ok"}' }
+      responses: { '201': { description: stored } }
+  /files/retrieve:
+    put:
+      tags: [files]
+      summary: retrieve a file from the file store
+      description: returns the raw bytes of a previously stored file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties: { name: { type: string } }
+              required: [name]
+            example: { name: template.json }
+      responses:
+        '200':
+          description: file
+          content: { application/octet-stream: { schema: { type: string, format: binary } } }
+        '404': { description: file not found }
+  /cassettes:
+    delete:
+      tags: [control]
+      summary: remove a registered cassette
+      parameters:
+        - { in: query, name: path, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties: { path: { type: string } }
+      responses: { '200': { description: removed } }
+  /retrieve:
+    put:
+      tags: [control]
+      summary: retrieve the last response
+      responses:
+        '200':
+          description: the response
+          content: { application/json: { schema: { $ref: '#/components/schemas/HttpResponse' } } }
+        '503':
+          description: not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { status: { type: string, enum: [NOT_READY] } }
+  /stop:
+    put:
+      tags: [control]
+      summary: stop the server
+      responses:
+        '200': { description: stopped }
+        '503':
+          description: stopping failed
+          content:
+            application/json:
+              schema: { type: object, properties: { error: { type: string } } }
+  /generateExpectation:
+    put:
+      tags: [expectation]
+      summary: generate an expectation
+      responses:
+        '200':
+          description: suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  suggestions: { type: array, items: { $ref: '#/components/schemas/Expectation' } }
+components:
+  schemas:
+    FileStoreRequest:
+      type: object
+      properties:
+        name: { type: string }
+        content: { type: string }
+    PositiveInteger: { type: integer, minimum: 0 }
+    PositiveIntegerDefault0:
+      allOf:
+        - $ref: '#/components/schemas/PositiveInteger'
+        - default: 0
+    Body:
+      type: object
+      properties:
+        json: { type: string }
+        minLength: { $ref: '#/components/schemas/PositiveIntegerDefault0' }
+    HttpResponse:
+      type: object
+      properties:
+        statusCode: { type: integer }
+        next: { $ref: '#/components/schemas/HttpResponse' }
+    Expectation:
+      type: object
+      properties:
+        id: { type: string }
+        httpResponse: { $ref: '#/components/schemas/HttpResponse' }
+      oneOf:
+        - required: [httpResponse]
+        - required: [id]
+"##,
+    );
+    let root = &files["src/acme/client.py"];
+    assert!(
+        root.contains("    from .asyncapi.client import AsyncapiClient, AsyncAsyncapiClient\n"),
+        "{root}"
+    );
+    let grpc = &files["src/acme/grpc/client.py"];
+    assert!(
+        grpc.contains("def load_ag_rpc_proto_descriptor_set("),
+        "{grpc}"
+    );
+    let file_store = &files["src/acme/files/client.py"];
+    assert!(
+        file_store.contains("            content='{\"status\":\"ok\"}',\n"),
+        "{file_store}"
+    );
+    assert!(
+        file_store.contains(
+            "client.files.retrieve_a_file_from_the_file_store(\n            name=\"name\",\n"
+        ),
+        "{file_store}"
+    );
+    let control = &files["src/acme/control/raw_client.py"];
+    assert!(
+        control.contains("                \"path\": delete_cassettes_request_path,\n"),
+        "{control}"
+    );
+    assert!(
+        control.contains(
+            "from ..core.http_response import AsyncHttpResponse\n\
+             from ..core.http_response import HttpResponse as core_http_response_HttpResponse\n"
+        ),
+        "{control}"
+    );
+    let unavailable = &files["src/acme/types/service_unavailable_error_body.py"];
+    assert!(
+        unavailable.contains("    error: typing.Optional[str] = None\n"),
+        "{unavailable}"
+    );
+    assert!(!unavailable.contains("status"), "{unavailable}");
+    assert!(files.contains_key("src/acme/types/service_unavailable_error_body_status.py"));
+    assert!(files["src/acme/types/positive_integer_default0.py"]
+        .contains("PositiveIntegerDefault0 = int\n"));
+    let body = &files["src/acme/types/body.py"];
+    assert!(
+        body.contains("    json_: typing_extensions.Annotated["),
+        "{body}"
+    );
+    let suggestions = &files["src/acme/expectation/types/put_generate_expectation_response.py"];
+    assert!(
+        suggestions.contains("\nupdate_forward_refs(PutGenerateExpectationResponse)\n"),
+        "{suggestions}"
+    );
+}

@@ -111,9 +111,26 @@ pub fn prose_identifier(input: &str) -> String {
 /// back to when there is no summary keeps the full stop as a boundary
 /// (`/_proxy/openapi.json` → `get_proxy_openapi_json`), which is why this is a
 /// separate transform rather than a change to [`prose_identifier`].
+///
+/// Fern camel-cases the summary before snake-casing it, so consecutive
+/// one-letter words after the first join as one capital run: MockServer's
+/// `load a gRPC proto descriptor set` is `loadAGRpc…`, re-split as
+/// `load_ag_rpc_…`, while `retrieve gRPC …` keeps `retrieve_g_rpc_…`.
 #[must_use]
 pub fn summary_identifier(input: &str) -> String {
-    prose_identifier(&input.replace('.', ""))
+    let snake = prose_identifier(&input.replace('.', ""));
+    let is_letter = |word: &str| word.len() == 1 && word.chars().all(|c| c.is_ascii_alphabetic());
+    let mut words: Vec<String> = Vec::new();
+    let mut previous_letter = false;
+    for (index, word) in snake.split('_').enumerate() {
+        let letter = is_letter(word);
+        match words.last_mut() {
+            Some(last) if index > 1 && letter && previous_letter => last.push_str(word),
+            _ => words.push(word.to_string()),
+        }
+        previous_letter = letter;
+    }
+    words.join("_")
 }
 
 /// `PascalCase` of an identifier.
@@ -959,7 +976,8 @@ pub fn is_reserved(name: &str) -> bool {
 /// `copy` among them, which is `BaseModel.copy()`: SFTPGo's
 /// `EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"` in its
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
-/// is `validate_`. The protection is *model-scoped*, so an enum visitor's `copy` argument
+/// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
+/// `json_`. The protection is *model-scoped*, so an enum visitor's `copy` argument
 /// (otoroshi's `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its
 /// spelling.
 #[must_use]
@@ -967,7 +985,7 @@ pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
     if matches!(
         name.as_str(),
-        "copy" | "kwargs" | "schema" | "self" | "validate"
+        "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
     ) {
         format!("{name}_")
     } else {
@@ -1415,6 +1433,19 @@ mod tests {
             sanitize_identifier("endpoints_container"),
             "endpoints_container"
         );
+    }
+
+    #[test]
+    fn summary_identifier_joins_one_letter_words_the_way_camel_casing_does() {
+        assert_eq!(
+            summary_identifier("load a gRPC proto descriptor set"),
+            "load_ag_rpc_proto_descriptor_set"
+        );
+        assert_eq!(
+            summary_identifier("retrieve gRPC health serving statuses"),
+            "retrieve_g_rpc_health_serving_statuses"
+        );
+        assert_eq!(summary_identifier("a b c"), "a_bc");
     }
 
     #[test]

@@ -415,6 +415,13 @@ impl Imports {
             .unwrap_or_else(|| name.to_string())
     }
 
+    /// The name a `core` helper is written as, without importing it: the raw
+    /// clients import the response wrappers file by file (see
+    /// `raw_client_file`), so a method naming one only reads its alias.
+    fn core_local(&self, submodule: &str, name: &str) -> String {
+        self.local(&format!("{}.{submodule}", self.core_prefix()), name)
+    }
+
     /// Register a `core` helper and return the name to write for it.
     fn add_core_local(&mut self, submodule: &str, name: &str) -> String {
         self.add_core(submodule, name);
@@ -532,21 +539,33 @@ impl Imports {
         let mut from: Vec<_> = self.from.iter().collect();
         from.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
         for (module, names) in from {
-            let joined = names
-                .iter()
-                .map(
-                    |name| match self.aliases.get(&(module.clone(), name.clone())) {
-                        Some(alias) => format!("{name} as {alias}"),
-                        None => name.clone(),
-                    },
-                )
-                .collect::<Vec<_>>()
-                .join(", ");
-            let line = format!("from {module} import {joined}");
-            if Self::is_stdlib(module) {
-                g1.push(line);
-            } else {
-                g2.push(line);
+            // An aliased name takes a line of its own after the module's plain
+            // names, as ruff's isort writes it (`combine-as-imports` off):
+            // MockServer's raw clients import `AsyncHttpResponse`, then
+            // `HttpResponse as core_http_response_HttpResponse`.
+            let (aliased, plain): (Vec<&String>, Vec<&String>) = names.iter().partition(|name| {
+                self.aliases
+                    .contains_key(&((*module).clone(), (*name).clone()))
+            });
+            let mut lines = Vec::new();
+            if !plain.is_empty() {
+                let joined = plain
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                lines.push(format!("from {module} import {joined}"));
+            }
+            for name in aliased {
+                let alias = &self.aliases[&(module.clone(), name.clone())];
+                lines.push(format!("from {module} import {name} as {alias}"));
+            }
+            for line in lines {
+                if Self::is_stdlib(module) {
+                    g1.push(line);
+                } else {
+                    g2.push(line);
+                }
             }
         }
 
@@ -878,7 +897,12 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
                 collect_named_refs(&f.type_ref, &mut out);
             }
         }
-        TypeDecl::Alias(a) => collect_named_refs(&a.target, &mut out),
+        TypeDecl::Alias(a) => {
+            collect_named_refs(&a.target, &mut out);
+            for reach in &a.reach_refs {
+                collect_named_refs(reach, &mut out);
+            }
+        }
         TypeDecl::DiscriminatedUnion(u) => {
             // A union can be any of its mapped variant schemas — that edge is what
             // exposes a variant that recurses back through the union (issue #84).
@@ -988,14 +1012,6 @@ fn forward_ref_map(
     };
 
     let mut map: HashMap<String, HashSet<String>> = HashMap::new();
-    let discriminated_unions: HashSet<&str> = types
-        .iter()
-        .chain(tag_types.iter().map(|tag| &tag.decl))
-        .filter_map(|decl| match decl {
-            TypeDecl::DiscriminatedUnion(union) => Some(union.name.as_str()),
-            _ => None,
-        })
-        .collect();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
         let defer_recursive_target =
@@ -1007,11 +1023,13 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            // An alias that merely *wraps* a discriminated union
-            // (`ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`)
-            // imports it eagerly even though the union's wrappers point back at
-            // the alias — Fern emits such an alias with no forward-reference
-            // machinery at all, not even `from __future__ import annotations`. An
+            // An alias that merely *wraps* its target imports it eagerly even when
+            // the target points back at the alias — Fern emits such an alias with
+            // no forward-reference machinery at all, not even
+            // `from __future__ import annotations`: Apideck Accounting's
+            // `ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`
+            // over a discriminated union, and MockServer's
+            // `SchemaArray = List[Schema]` over the draft-04 `Schema` model. An
             // alias whose target is itself a `Union[..]` is a declaration in its
             // own right and defers into the cycle like any other member, which is
             // how EN 18222's `MultiValuedDataElementValueItem` quotes
@@ -1020,11 +1038,7 @@ fn forward_ref_map(
                 TypeDecl::Alias(alias) => !is_union_target(&alias.target),
                 _ => false,
             };
-            let eager_discriminated_member = matches!(decl, TypeDecl::Alias(_))
-                && discriminated_unions.contains(r.as_str())
-                && wrapper_alias;
-            if !eager_discriminated_member
-                && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
+            if !wrapper_alias && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
             {
                 forward.insert(r);
             }
@@ -4389,9 +4403,9 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     }
 
     let wrapper = if is_async {
-        "AsyncHttpResponse"
+        imports.core_local("http_response", "AsyncHttpResponse")
     } else {
-        "HttpResponse"
+        imports.core_local("http_response", "HttpResponse")
     };
     let mp = method_params(ep, imports);
     let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
@@ -4664,9 +4678,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 
     let await_ = if is_async { "await " } else { "" };
     let wrapper = if is_async {
-        "AsyncHttpResponse"
+        imports.core_local("http_response", "AsyncHttpResponse")
     } else {
-        "HttpResponse"
+        imports.core_local("http_response", "HttpResponse")
     };
     let mut lines: Vec<String> = vec![format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
@@ -5675,11 +5689,12 @@ fn root_client_file(
     import_modules.sort();
     for m in import_modules {
         let pascal = naming::to_pascal_case(m);
-        // The two imported names are ordered alphabetically, so `Async{X}Client`
-        // usually comes first — but not when the tag itself starts with a letter
-        // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
+        // The two imported names are ordered the way ruff's isort orders
+        // members — case-insensitively — so `Async{X}Client` usually comes
+        // first, but not when the tag sorts `{X}Client` ahead
+        // (`ApikeyauthClient`, and MockServer's `AsyncapiClient`).
         let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
-        names.sort();
+        names.sort_by_key(|name| name.to_lowercase());
         type_checking.push_str(&format!(
             "    from .{m}.client import {}, {}\n",
             names[0], names[1]
@@ -6234,7 +6249,7 @@ fn client_file(
         for child in sorted {
             let attr = module_stem(child);
             let mut names = [tag_client_name(child, true), tag_client_name(child, false)];
-            names.sort();
+            names.sort_by_key(|name| name.to_lowercase());
             type_checking.push_str(&format!(
                 "\n    from .{attr}.client import {}, {}",
                 names[0], names[1]
@@ -7194,6 +7209,22 @@ impl<'a> ExampleCtx<'a> {
                     if self.documentation && example.starts_with('"') =>
                 {
                     example.replace('\'', "\\'")
+                }
+                // A string holding `"` but no `'` is spelled single-quoted, as
+                // Python's `repr` spells it: MockServer's file-store `content`
+                // example is `'{"status":"ok"}'` in the golden.
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if !self.documentation && example.starts_with('"') =>
+                {
+                    serde_json::from_str::<serde_json::Value>(example)
+                        .ok()
+                        .filter(|value| {
+                            value
+                                .as_str()
+                                .is_some_and(|s| s.contains('"') && !s.contains('\''))
+                        })
+                        .and_then(|value| crate::ir::example_literal(&value))
+                        .unwrap_or_else(|| example.to_string())
                 }
                 _ => example.to_string(),
             };
@@ -8745,6 +8776,9 @@ fn build_example_inner(
                     .example
                     .as_deref()
                     .filter(|_| reference_fields.is_none())
+                    // A binary download's inline body drops its media example:
+                    // MockServer's file retrieval shows Fern's `name="name"`.
+                    .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))
                     .map(str::to_string)
                     .or_else(|| {
                         reference_fields
@@ -10157,6 +10191,7 @@ mod tests {
             form_json: false,
             form_content_type: None,
             collision_prefix: None,
+            inline_object: false,
             example: None,
             media_example: false,
             schema_body_example: false,
@@ -10806,6 +10841,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10825,6 +10861,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10845,6 +10882,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10921,6 +10959,7 @@ mod tests {
             form_json: false,
             form_content_type: None,
             collision_prefix: None,
+            inline_object: false,
             example: None,
             media_example: false,
             schema_body_example: false,
@@ -10956,6 +10995,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
@@ -10974,6 +11014,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
@@ -11361,12 +11402,14 @@ mod tests {
     fn example_context_resolves_literals_aliases_temporals_and_json_values() {
         let types = vec![
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "ScalarAlias".to_string(),
                 module: "scalar_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "AnyAlias".to_string(),
                 module: "any_alias".to_string(),
                 target: TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
@@ -11476,12 +11519,14 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "PayloadAlias".to_string(),
                 module: "payload_alias".to_string(),
                 target: TypeRef::Named("Payload".to_string()),
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "CompositeAlias".to_string(),
                 module: "composite_alias".to_string(),
                 target: TypeRef::Dict(
@@ -11491,6 +11536,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "BoolAlias".to_string(),
                 module: "bool_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Bool),
@@ -11794,6 +11840,7 @@ mod tests {
             docstring: None,
         });
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "Label".to_string(),
             module: "label".to_string(),
             target: TypeRef::Primitive(Prim::Str),
@@ -12217,6 +12264,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
@@ -12235,6 +12283,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
                 schema_body_example: false,
@@ -12291,6 +12340,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -12352,6 +12402,7 @@ mod tests {
     #[test]
     fn referenced_request_examples_preserve_fern_importer_names() {
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "EpsBearerContainer".to_string(),
             module: "eps_bearer_container".to_string(),
             target: TypeRef::Primitive(Prim::Str),
@@ -12379,6 +12430,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("[null,null]".to_string()),
                 media_example: true,
                 schema_body_example: true,
@@ -12397,6 +12449,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("0".to_string()),
                 media_example: true,
                 schema_body_example: true,
@@ -12445,6 +12498,7 @@ mod tests {
                 form_json: false,
                 form_content_type: Some("application/vnd.3gpp.5gnas".to_string()),
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -12497,6 +12551,7 @@ mod tests {
         ir.tag_types = vec![TagTypeDecl {
             module: "_".to_string(),
             decl: TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "EmptyResult".to_string(),
                 module: "empty_result".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
@@ -12627,6 +12682,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("\"open\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
@@ -12689,6 +12745,7 @@ mod tests {
     #[test]
     fn recursive_alias_enum_docs_and_render_failures_keep_context() {
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "NodeList".to_string(),
             module: "node_list".to_string(),
             target: TypeRef::List(Box::new(TypeRef::Named("Node".to_string()))),

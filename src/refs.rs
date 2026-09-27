@@ -143,10 +143,22 @@ pub fn resolve(
             }
         }
     });
-    match failure {
-        Some(error) => Err(error),
-        None => Ok(remote_origin),
+    if let Some(error) = failure {
+        return Err(error);
     }
+    // A component schema can name a whole remote document too (MockServer's
+    // `jsonSchema` properties), which imports it during the pass above; import
+    // those as well, resolving what each of them brought in.
+    while !resolver.imported.is_empty() {
+        let mut imported = std::mem::take(&mut resolver.imported);
+        for schema in imported.values_mut() {
+            resolver.resolve_schema(schema, &root_spec)?;
+        }
+        for (name, schema) in imported {
+            doc.components.schemas.entry(name).or_insert(schema);
+        }
+    }
+    Ok(remote_origin)
 }
 
 /// Register the component schemas a remote `$ref` names — under the *pointer's*
@@ -411,6 +423,10 @@ impl Resolver<'_> {
                     schema.reference = Some(format!("#/components/schemas/{name}"));
                     return Ok(());
                 }
+                if let Some(name) = self.import_remote_document(&reference, source)? {
+                    schema.reference = Some(format!("#/components/schemas/{name}"));
+                    return Ok(());
+                }
                 *schema = self.resolve_reference(&reference, source)?;
                 return Ok(());
             }
@@ -463,8 +479,48 @@ impl Resolver<'_> {
         name: &str,
         reference: &str,
     ) -> Result<Option<String>> {
-        let fragment = format!("/{name}");
-        let Some(node) = pointer(self.document(path, reference)?, &fragment).cloned() else {
+        self.import_pointer_at_path(path, name, &format!("/{name}"), None, reference)
+    }
+
+    /// A reference naming a whole remote JSON Schema document — MockServer's
+    /// `$ref: http://json-schema.org/draft-04/schema` — is that document imported
+    /// as one component named after its file (`schema`), as Fern names it, with
+    /// each `#/definitions/<name>` it points at imported beside it and `#` read as
+    /// the document itself. A reference into a fragment keeps Helios's
+    /// root-document pointer semantics instead.
+    fn import_remote_document(
+        &mut self,
+        reference: &str,
+        source: &DocumentLocation,
+    ) -> Result<Option<String>> {
+        let Some((address, fragment)) = split_remote(reference) else {
+            return Ok(None);
+        };
+        if !(fragment.is_empty() || fragment == "/") {
+            return Ok(None);
+        }
+        let file = address.rsplit('/').next().unwrap_or_default();
+        let name = file.split('.').next().unwrap_or_default();
+        if name.is_empty() {
+            return Ok(None);
+        }
+        let path = DocumentLocation::from_reference(reference, source);
+        self.import_pointer_at_path(&path, name, "", Some(name), reference)
+    }
+
+    /// Import the schema at `fragment` of the document at `path` as the component
+    /// `name`, importing each local definition it points at beside it. Where the
+    /// document is imported whole (`document` names its component), `#` is that
+    /// component and `#/definitions/<name>` a definition.
+    fn import_pointer_at_path(
+        &mut self,
+        path: &DocumentLocation,
+        name: &str,
+        fragment: &str,
+        document: Option<&str>,
+        reference: &str,
+    ) -> Result<Option<String>> {
+        let Some(node) = pointer(self.document(path, reference)?, fragment).cloned() else {
             return Ok(None);
         };
         let identity = (path.key(), name.to_string());
@@ -473,23 +529,35 @@ impl Resolver<'_> {
         }
         let mut schema: Schema = serde_yaml_ng::from_value(node)
             .map_err(|error| self.error(reference, &format!("not a schema: {error}")))?;
-        let mut local_names = Vec::new();
+        let mut locals: Vec<(String, String)> = Vec::new();
         for_each_schema_in(&mut schema, &mut |node| {
-            if let Some(local) = node
-                .reference
-                .as_deref()
-                .and_then(|value| value.strip_prefix("#/"))
-            {
+            let Some(value) = node.reference.as_deref() else {
+                return;
+            };
+            if let Some(document) = document {
+                if value == "#" || value == "#/" {
+                    node.reference = Some(format!("#/components/schemas/{document}"));
+                    return;
+                }
+                if let Some(local) = value.strip_prefix("#/definitions/") {
+                    if !local.is_empty() && !local.contains('/') {
+                        locals.push((local.to_string(), format!("/definitions/{local}")));
+                        node.reference = Some(format!("#/components/schemas/{local}"));
+                    }
+                    return;
+                }
+            }
+            if let Some(local) = value.strip_prefix("#/") {
                 if !local.is_empty() && !local.contains('/') {
-                    local_names.push(local.to_string());
+                    locals.push((local.to_string(), format!("/{local}")));
                     node.reference = Some(format!("#/components/schemas/{local}"));
                 }
             }
         });
-        for local in local_names {
+        for (local, local_fragment) in locals {
             // Keep the document location as a path. Turning it into a `$ref`
             // would put a Windows drive prefix in the reference string.
-            self.import_named_schema_at_path(path, &local, reference)?;
+            self.import_pointer_at_path(path, &local, &local_fragment, document, reference)?;
         }
         self.resolve_schema(&mut schema, path)?;
         self.imported.insert(name.to_string(), schema);

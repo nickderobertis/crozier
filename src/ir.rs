@@ -1473,6 +1473,12 @@ pub struct BodyField {
     /// Prefix Fern applies when this field's argument name collides with another
     /// method parameter (e.g. query `tags` plus DAG body `tags` -> `dag_tags`).
     pub collision_prefix: Option<String>,
+    /// Whether the field was declared on an inline object body rather than
+    /// reached through a `$ref`. Fern serializes such a field from its
+    /// collision-prefixed argument even in a 3.0 document: MockServer's inline
+    /// cassette-removal body sends `"path": delete_mockserver_cassettes_request_path`,
+    /// where Airflow's `$ref` `DAG` body sends the unprefixed name.
+    pub inline_object: bool,
     /// The field's `example` as a Python literal, shown in a worked snippet instead
     /// of a synthesized placeholder (`example_literal`).
     pub example: Option<String>,
@@ -1670,6 +1676,12 @@ pub struct AliasType {
     pub target: TypeRef,
     /// Optional docstring.
     pub docstring: Option<String>,
+    /// Types the alias's source schema declares that its `target` no longer
+    /// shows. They are edges of Fern's reference graph all the same: MockServer's
+    /// `Expectation` is `Union[Any]` over `required`-only alternatives, yet its
+    /// sibling properties name the recursive `HttpResponse`, so a model holding a
+    /// `List[Expectation]` gets Fern's `update_forward_refs` call.
+    pub reach_refs: Vec<TypeRef>,
 }
 
 /// A named string enum rendered as a real `enum.Enum` class (Fern's
@@ -2869,6 +2881,7 @@ fn build_endpoint(
                         .collect(),
                 );
                 hoister.out.push(TypeDecl::Alias(AliasType {
+                    reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
                     target,
@@ -2912,6 +2925,7 @@ fn build_endpoint(
                             .collect(),
                     );
                     hoister.out.push(TypeDecl::Alias(AliasType {
+                        reach_refs: Vec::new(),
                         name: name.clone(),
                         module: naming::module_name(&name),
                         target,
@@ -3111,7 +3125,7 @@ fn build_endpoint(
             if parameter_names.contains(field.py_name.as_str()) {
                 if let Some(prefix) = &field.collision_prefix {
                     field.py_name = format!("{prefix}_{}", field.py_name);
-                    if doc.openapi.starts_with("3.1") {
+                    if doc.openapi.starts_with("3.1") || field.inline_object {
                         field.collision_prefix = None;
                     }
                 }
@@ -4399,9 +4413,41 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                                     );
                                 }
                             }
+                            if string_enum_values(property_schema).is_some() {
+                                // Declared again as an enum, the property hoists its
+                                // own type once more, so nothing is left behind:
+                                // letta's `errorCode` returns in its later `404`s.
+                                superseded_enums.shift_remove(&format!(
+                                    "{name}{}",
+                                    naming::class_name(property)
+                                ));
+                            }
                             existing
                                 .properties
                                 .insert(property.clone(), property_schema.clone());
+                        }
+                        // An earlier declaration's enum property the later one does
+                        // not declare leaves the body and stays behind as a type of
+                        // its own: MockServer's first `503` declares `status: {enum:
+                        // [NOT_READY]}` and its second `error`, and the golden's
+                        // `ServiceUnavailableErrorBody` holds `error` alone beside a
+                        // stray `ServiceUnavailableErrorBodyStatus`.
+                        let dropped: Vec<String> = existing
+                            .properties
+                            .iter()
+                            .filter(|(property, previous)| {
+                                string_enum_values(previous).is_some()
+                                    && !schema.properties.contains_key(property.as_str())
+                            })
+                            .map(|(property, _)| property.clone())
+                            .collect();
+                        for property in dropped {
+                            if let Some(previous) = existing.properties.shift_remove(&property) {
+                                superseded_enums.insert(
+                                    format!("{name}{}", naming::class_name(&property)),
+                                    previous,
+                                );
+                            }
                         }
                         for required in &schema.required {
                             if !existing.required.contains(required) {
@@ -4655,6 +4701,7 @@ fn resolve_request_body(
                         })
                         .collect();
                     hoister.out.push(TypeDecl::Alias(AliasType {
+                        reach_refs: Vec::new(),
                         name: name.clone(),
                         module: naming::module_name(&name),
                         target: TypeRef::Union(dedupe_union_members(variants)),
@@ -4914,6 +4961,7 @@ fn resolve_request_body(
                     .collect(),
             ));
             hoister.out.push(TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: request_body_name.clone(),
                 module: naming::module_name(&request_body_name),
                 target,
@@ -5076,7 +5124,7 @@ fn resolve_request_body(
         )
         && is_object_type(schema);
     if is_bare_object(schema) || closed_without_properties {
-        return Some(single_with_override(
+        let mut body = single_with_override(
             TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
                 Box::new(TypeRef::Primitive(Prim::Any)),
@@ -5085,7 +5133,14 @@ fn resolve_request_body(
             false,
             clean_doc(schema.description.as_deref()).is_some(),
             content_type_override,
-        ));
+        );
+        // Its worked example is the media type's own: MockServer's `tcpChaos`
+        // body is a described bare object whose declared example the golden
+        // passes whole.
+        if let RequestBody::Single(single) = &mut body {
+            single.example = media_example(doc, media).map(serde_json::Value::to_string);
+        }
+        return Some(body);
     }
     // An unknown (empty `{}`) body keeps the request wrapper's requiredness and
     // renders as `typing.Any`, with a plain `json=request` and no content-type.
@@ -5324,6 +5379,7 @@ fn hoist_inline_object(
             form_json: false,
             form_content_type: None,
             collision_prefix: Some(naming::field_name(ctx)),
+            inline_object: true,
             reference_order,
         });
     }
@@ -5446,6 +5502,7 @@ impl InlineHoister<'_> {
                 .collect(),
         );
         self.out.push(TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: item_name.to_string(),
             module: naming::module_name(item_name),
             target,
@@ -5697,6 +5754,7 @@ impl InlineHoister<'_> {
                         })
                         .collect();
                     self.out.push(TypeDecl::Alias(AliasType {
+                        reach_refs: Vec::new(),
                         name: item_name.clone(),
                         module: naming::module_name(&item_name),
                         target: TypeRef::Union(variants),
@@ -5767,6 +5825,7 @@ impl InlineHoister<'_> {
                     })
                     .collect();
                 self.out.push(TypeDecl::Alias(AliasType {
+                    reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
                     target: TypeRef::Union(nested),
@@ -6012,6 +6071,7 @@ impl InlineHoister<'_> {
                     .collect();
                 let variants = dedupe_union_members(variants);
                 self.out.push(TypeDecl::Alias(AliasType {
+                    reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
                     target: TypeRef::Union(variants),
@@ -6109,6 +6169,7 @@ impl InlineHoister<'_> {
                 .collect();
             let variants = dedupe_union_members(variants);
             self.out.push(TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: item_name.clone(),
                 module: naming::module_name(&item_name),
                 target: TypeRef::Union(variants),
@@ -6252,6 +6313,7 @@ impl InlineHoister<'_> {
                     return wrap(variants.pop().expect("length checked above"));
                 }
                 self.out.push(TypeDecl::Alias(AliasType {
+                    reach_refs: Vec::new(),
                     name: name.clone(),
                     module: naming::module_name(&name),
                     target: TypeRef::Union(variants),
@@ -6397,6 +6459,7 @@ fn hoist_form_object(
                     .filter(|_| multipart)
                     .and_then(|part| part.content_type.clone()),
                 collision_prefix: None,
+                inline_object: false,
                 // A field's worked value is its own example, else an annotated
                 // `$ref`'s annotation example, else the referenced schema's: Zulip's
                 // `anchor` annotates `Anchor` with `example: "43"`, and its
@@ -6571,6 +6634,7 @@ fn append_request_fields(
         form_json: false,
         form_content_type: None,
         collision_prefix: Some(naming::field_name(request_class)),
+        inline_object: false,
         example: f.example.clone(),
         media_example: false,
         schema_body_example: false,
@@ -8383,6 +8447,16 @@ impl Builder<'_> {
         let module = naming::module_name(name);
         let docstring = operation_doc(schema.description.as_deref());
 
+        // An `allOf` of one `$ref` to a scalar component beside members that only
+        // annotate it is that scalar, not a model inheriting it: the draft-04
+        // meta-schema's `positiveIntegerDefault0` is `allOf: [$ref
+        // positiveInteger, {default: 0}]`, and MockServer's golden declares
+        // `PositiveIntegerDefault0 = int`.
+        if let Some(scalar) = self.annotated_scalar_all_of(schema) {
+            self.push_alias(name, module, scalar, docstring);
+            return;
+        }
+
         // A discriminated `oneOf`/`anyOf` (with an explicit `mapping`) becomes a
         // set of per-variant wrapper models plus a union alias.
         if let Some(decl) = self.discriminated_union(name, &module, schema, docstring.clone()) {
@@ -8401,13 +8475,14 @@ impl Builder<'_> {
                 // is an object whose `anyOf` only restates `required`, its golden
                 // is `Union[Any]`, and `CustomerPreferredContact` is declared all
                 // the same.
+                let mut reach_refs = Vec::new();
                 if variants.iter().all(|variant| {
                     variant.reference.is_none()
                         && variant.properties.is_empty()
                         && !variant.required.is_empty()
                 }) {
                     for (prop, prop_schema) in &schema.properties {
-                        self.field_type_ref(name, prop, prop_schema);
+                        reach_refs.push(self.field_type_ref(name, prop, prop_schema));
                     }
                 }
                 if variants.len() == 1 && is_inline_object(&variants[0]) {
@@ -8479,7 +8554,13 @@ impl Builder<'_> {
                         }
                     }
                 };
-                self.push_alias(name, module, target, docstring);
+                self.types.push(TypeDecl::Alias(AliasType {
+                    reach_refs,
+                    name: name.to_string(),
+                    module,
+                    target,
+                    docstring,
+                }));
                 return;
             }
         }
@@ -10838,6 +10919,47 @@ impl Builder<'_> {
         }
     }
 
+    /// The scalar type an `allOf` names when it holds exactly one `$ref` to a
+    /// non-enum scalar component and every other member only annotates (no type,
+    /// structure or reference of its own).
+    fn annotated_scalar_all_of(&self, schema: &Schema) -> Option<TypeRef> {
+        if schema.ty.is_some() || !schema.properties.is_empty() || schema.reference.is_some() {
+            return None;
+        }
+        let members = schema.all_of.as_deref()?;
+        let mut references = members.iter().filter(|member| member.reference.is_some());
+        let reference = references.next()?.reference.as_deref()?;
+        if references.next().is_some() {
+            return None;
+        }
+        let annotates_only = |member: &Schema| {
+            member.reference.is_none()
+                && member.ty.is_none()
+                && member.properties.is_empty()
+                && member.items.is_none()
+                && member.all_of.is_none()
+                && member.one_of.is_none()
+                && member.any_of.is_none()
+                && member.enum_values.is_none()
+                && member.const_value.is_none()
+                && member.additional_properties.is_none()
+        };
+        if !members
+            .iter()
+            .filter(|member| member.reference.is_none())
+            .all(annotates_only)
+        {
+            return None;
+        }
+        let target = resolve_ref_from_schemas(self.schemas, reference)?;
+        let scalar = matches!(
+            target.ty.as_ref().and_then(TypeField::primary),
+            Some("string" | "integer" | "number" | "boolean")
+        );
+        (scalar && target.enum_values.is_none() && target.reference.is_none())
+            .then(|| base_type_ref(target))
+    }
+
     fn push_alias(
         &mut self,
         name: &str,
@@ -10846,6 +10968,7 @@ impl Builder<'_> {
         docstring: Option<String>,
     ) {
         self.types.push(TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: name.to_string(),
             module,
             target,
@@ -12294,7 +12417,7 @@ fn declared_doc(desc: Option<&str>) -> Option<String> {
 /// Render an OpenAPI `example` scalar as the Python literal Fern shows in a worked
 /// snippet (`"SpaceX"`, `10`, `True`). Returns `None` for a value Fern does not
 /// inline as a leaf — null, or a composite object/array.
-fn example_literal(value: &serde_json::Value) -> Option<String> {
+pub(crate) fn example_literal(value: &serde_json::Value) -> Option<String> {
     match value {
         serde_json::Value::String(s) if s.contains('"') && !s.contains('\'') => Some(format!(
             "'{}'",
@@ -14993,6 +15116,7 @@ mod tests {
         ));
         assert!(hoister.is_scalar(&TypeRef::Named("FeedsListFeedsRequestOffset".to_string())));
         let unknown_union = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "UnknownUnion".to_string(),
             module: "unknown_union".to_string(),
             target: TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)]),

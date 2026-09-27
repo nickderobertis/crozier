@@ -5335,7 +5335,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/sites/types/site_publish_payload.py",
         "src/fern/sites/types/site_publish_payload_payload.py",
         "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
-        "src/fern/sites/well_known/client.py",
         "src/fern/sites/well_known/raw_client.py",
         "src/fern/token/raw_client.py",
         "src/fern/types/__init__.py",
