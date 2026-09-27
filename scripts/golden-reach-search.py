@@ -105,6 +105,13 @@ WALKS = ("apis.guru", "jentic", "vendor-portals", "github-publisher-trees")
 QUERY_SOURCES = ("github-code-search", "sourcegraph")
 RECORD_FIELDS = ("key", "kind", "subject", "result", "file")
 WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
+# A document the census could not read, settled by a full standard parser: one it
+# rejects on syntax, or one it reads that names no OpenAPI or Swagger version, is
+# no description a witness could be. Each source's `census-refused.tsv` lists them
+# with the parser, its version and the document's digest; `refuse` writes it.
+REFUSED_FIELDS = ("document", "sha256", "parser", "verdict", "evidence")
+REFUSED_FILE = "census-refused.tsv"
+REFUSED_VERDICTS = ("syntax", "not-openapi")
 FIRST_PAGE = 100
 # Keyword arguments every acquirer this script builds is given. A real search
 # leaves them empty; the offline tests point them at a loopback server.
@@ -1195,18 +1202,63 @@ def _dispositions(key: str) -> list[str]:
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
-def _unreadable(key: str, source: str) -> list[tuple[str, str]]:
-    """Documents of one source the census could not read, each with the reason it gave."""
+def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
+    """Documents of one source the census could not read: name, reason, and digest where known."""
     enumeration = source_dir(source) / "enumeration.tsv.gz"
     if source in WALKS and enumeration.is_file():
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            return [(row["document"], row["status"])
+            return [(row["document"], row["status"], row["sha256"])
                     for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
                     if row["status"] != "readable"]
-    return [(r["subject"], r["result"]) for r in read_records(source)
+    return [(r["subject"], r["result"], "") for r in read_records(source)
             if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
+
+
+def read_refused(source: str) -> dict[str, dict[str, str]]:
+    """One source's census-refused documents by name, as `refuse` filed them."""
+    path = source_dir(source) / REFUSED_FILE
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != REFUSED_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(REFUSED_FIELDS)}; restore it from git "
+                 f"or re-run `refuse --source {source}`")
+        rows = list(reader)
+    for row in rows:
+        if row["verdict"] not in REFUSED_VERDICTS or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
+                 f"re-run `refuse --source {source}`")
+    return {row["document"]: row for row in rows}
+
+
+def _refused_split(key: str, source: str) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    """One source's unread documents, split into the census-refused and the still unreadable.
+
+    A walked document is refused only at the digest its parser read; a query
+    source's names its commit, so its name is the identity.
+    """
+    refused_rows = read_refused(source)
+    refused, unreadable = [], []
+    for document, reason, sha256 in _unread(key, source):
+        row = refused_rows.get(document)
+        if row is not None and (not sha256 or row["sha256"] == sha256):
+            refused.append((document, f"census-refused: {row['verdict']}"))
+        else:
+            unreadable.append((document, reason))
+    return refused, unreadable
+
+
+def _unreadable(key: str, source: str) -> list[tuple[str, str]]:
+    """Documents of one source the census could not read and no full parser refused."""
+    return _refused_split(key, source)[1]
+
+
+def _refused(key: str, source: str) -> list[tuple[str, str]]:
+    """Documents of one source a full standard parser refused; none of them is outstanding."""
+    return _refused_split(key, source)[0]
 
 
 def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]]:
@@ -1214,7 +1266,7 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
 
     Exactly the items [`_outstanding`] counts: a declarer with no probe of
     `build`, one whose probe timed out or left no profile, and every document
-    the census could not read.
+    the census could not read that no full standard parser refused.
     """
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
@@ -1232,7 +1284,7 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
                  and r["result"] != "census 0"}
-    unread = len(_unreadable(key, source))
+    refused, unreadable = _refused_split(key, source)
     # Only a probe of the measured build counts; one run while `src/` differed from
     # it read another arm's regions (see [`measured_build`]) and says nothing.
     probes = {row["candidate"]: row for row in read_probes(source)
@@ -1246,7 +1298,8 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     }
     return {
         "declarers": len(declarers),
-        "unreadable": unread,
+        "unreadable": len(unreadable),
+        "refused": len(refused),
         "probed": len(declarers & set(probes)),
         "timeouts": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("timeout")),
         "failed": sum(1 for c in declarers if probes.get(c, {}).get("status", "generated") not in ("generated",)
@@ -1393,7 +1446,12 @@ def render(args: argparse.Namespace) -> int:
             "did not finish (a timeout), and one crozier failed on without a profile are",
             "outstanding: the arm may be in them, and nothing here says otherwise.",
             "`outstanding` sums the unprobed, the timed out, the failed without a profile",
-            "and the unreadable.",
+            "and the unreadable. A document the census could not read that a full",
+            "standard parser rejects on syntax, or reads as no OpenAPI or Swagger",
+            "description, is `census-refused` instead: listed with that parser's",
+            "error, its version and the document's digest in the source's",
+            f"`{REFUSED_FILE}`, it is not outstanding, and it never settles a",
+            "search on its own.",
         ]
         if moved:
             lines += [
@@ -1404,10 +1462,12 @@ def render(args: argparse.Namespace) -> int:
             ]
         lines += [
             "",
-            "| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "| source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed "
+            "| reach an arm | screened | outstanding |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ] + [
-            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['declarers'] - t['probed']} "
+            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['refused']} | {t['probed']} "
+            f"| {t['declarers'] - t['probed']} "
             f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} | {_outstanding(t)} |"
             for source, t in tallies.items()
         ]
@@ -1459,6 +1519,109 @@ def outstanding(args: argparse.Namespace) -> int:
     return 0
 
 
+def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
+    """A full standard parser's reading of a document the census could not read.
+
+    `(parser, verdict, evidence)` when the parser rejects it on syntax, or reads it
+    as no OpenAPI or Swagger description; `None` when it reads a description, so
+    the census alone failed on it and it stays outstanding. JSON is read with
+    Python's `json` module and YAML with ruamel.yaml, a full YAML 1.2 parser.
+    """
+    if path.suffix == ".json":
+        parser = f"python json {sys.version.split()[0]}"
+        try:
+            parsed = json.loads(data)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
+    else:
+        try:
+            import ruamel.yaml
+        except ModuleNotFoundError:
+            fail("`refuse` reads YAML with ruamel.yaml, a full YAML 1.2 parser; run it as "
+                 "`uv run --with ruamel.yaml python3 scripts/golden-reach-search.py refuse ...`")
+        parser = f"ruamel.yaml {ruamel.yaml.__version__} (YAML 1.2)"
+        try:
+            # A stream of several documents is YAML all the same; read it whole.
+            stream = list(ruamel.yaml.YAML(typ="safe", pure=True).load_all(data))
+        except Exception as error:  # ruamel's parse errors share no base class it exports
+            return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
+        if len(stream) != 1:
+            if any(isinstance(d, dict) and ("openapi" in d or "swagger" in d) for d in stream):
+                return None
+            return parser, "not-openapi", (f"parses as a stream of {len(stream)} YAML documents, none naming an "
+                                           "`openapi` or `swagger` version")
+        parsed = stream[0]
+    if isinstance(parsed, dict) and ("openapi" in parsed or "swagger" in parsed):
+        return None
+    shape = (f"top-level keys {sorted(str(k) for k in parsed)[:12]}" if isinstance(parsed, dict)
+             else f"top level is a {type(parsed).__name__}")
+    return parser, "not-openapi", f"parses, but names no `openapi` or `swagger` version: {shape}"
+
+
+def _one_line(text: str) -> str:
+    """A parser's message as one TSV cell: whitespace runs, newlines and tabs included, are one space."""
+    return " ".join(text.split())
+
+
+def refuse(args: argparse.Namespace) -> int:
+    """File which of a source's unread documents a full standard parser refuses.
+
+    Reads every document the census could not read — a walk's unreadable
+    enumeration rows, a query source's parse failures and census refusals — at
+    its pinned digest and writes the refused ones to the source's
+    `census-refused.tsv`. A document the parser reads as a description is left
+    out: the census alone failed on it, and it stays outstanding.
+    """
+    source = args.source
+    unread: dict[str, tuple[Path, str]] = {}
+    if source in WALKS:
+        if args.root is None:
+            fail(f"{source} is a walk; pass --root with its local copy")
+        by_digest: dict[str, Path] = {}
+        if source == "github-publisher-trees":
+            for path in args.root.rglob("*"):
+                if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
+                    by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
+        enumeration = source_dir(source) / "enumeration.tsv.gz"
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+                if row["status"] != "readable" and not row["status"].startswith("unreadable: census exceeded"):
+                    unread[row["document"]] = (locate(source, args.root, row, by_digest), row["sha256"])
+    else:
+        index = candidate_index(source)
+        for record in read_records(source):
+            if record["kind"] != "document" or record["result"].startswith("census "):
+                continue
+            if not record["result"].startswith(("acquisition-failure: parse-failure", "unreadable: ")):
+                continue
+            name = index.get(record["subject"])
+            if name:
+                local = CACHE / source / "documents" / name
+                unread[record["subject"]] = (local, Path(name).stem.split(".")[0])
+    rows, kept = [], 0
+    for document, (local, sha256) in sorted(unread.items()):
+        if not local.is_file():
+            continue
+        data = local.read_bytes()
+        if hashlib.sha256(data).hexdigest() != sha256:
+            continue
+        verdict = parse_verdict(local, data)
+        if verdict is None:
+            kept += 1
+            continue
+        parser, kind, evidence = verdict
+        rows.append({"document": document, "sha256": sha256, "parser": parser, "verdict": kind,
+                     "evidence": evidence})
+    with (source_dir(source) / REFUSED_FILE).open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, REFUSED_FIELDS, delimiter="\t", lineterminator="\n",
+                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
+          f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1499,9 +1662,12 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
     sub.add_parser("outstanding")
+    x = sub.add_parser("refuse")
+    x.add_argument("--source", required=True)
+    x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
     return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render,
-            "outstanding": outstanding}[args.command](args)
+            "outstanding": outstanding, "refuse": refuse}[args.command](args)
 
 
 if __name__ == "__main__":

@@ -32,19 +32,24 @@ build `1131cbbcb0e3` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
-and the unreadable.
+and the unreadable. A document the census could not read that a full
+standard parser rejects on syntax, or reads as no OpenAPI or Swagger
+description, is `census-refused` instead: listed with that parser's
+error, its version and the document's digest in the source's
+`census-refused.tsv`, it is not outstanding, and it never settles a
+search on its own.
 
-When this record was rendered, `src/` had moved since that build (`a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
-| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `apis.guru` | 55 | 0 | 55 | 0 | 0 | 44 | 26 | 8 | 0 |
-| `jentic` | 401 | 0 | 401 | 0 | 0 | 30 | 376 | 376 | 15 |
-| `github-code-search` | 0 | 10 | 0 | 0 | 0 | 0 | 0 | 0 | 10 |
-| `github-publisher-trees` | 449 | 58 | 449 | 0 | 124 | 181 | 183 | 183 | 310 |
-| `sourcegraph` | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 |
-| `vendor-portals` | 458 | 174 | 458 | 0 | 115 | 180 | 203 | 203 | 417 |
+| source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `apis.guru` | 55 | 0 | 0 | 55 | 0 | 0 | 44 | 26 | 8 | 0 |
+| `jentic` | 401 | 0 | 0 | 401 | 0 | 0 | 30 | 376 | 376 | 15 |
+| `github-code-search` | 0 | 2 | 8 | 0 | 0 | 0 | 0 | 0 | 0 | 2 |
+| `github-publisher-trees` | 449 | 12 | 46 | 449 | 0 | 124 | 181 | 183 | 183 | 264 |
+| `sourcegraph` | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 0 |
+| `vendor-portals` | 458 | 13 | 161 | 458 | 0 | 115 | 180 | 203 | 203 | 256 |
 
 #### Candidates passing every screen
 

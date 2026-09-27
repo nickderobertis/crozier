@@ -7708,7 +7708,7 @@ class RankedBacklogTests(unittest.TestCase):
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
                 owed = {
                     source: int(cells.split("|")[-2])
-                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M)
+                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M)
                 }
                 self.assertEqual(set(DECLARED_SOURCES), set(owed), "a record tallies each declared source")
                 owing = {source: n for source, n in owed.items() if n}
@@ -7742,7 +7742,7 @@ class RankedBacklogTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
             self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
-            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M):
+            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M):
                 if int(cells.split("|")[-2]):
                     owed[(path.stem, source)] = int(cells.split("|")[-2])
         self.assertTrue(owed, "no record owes an item; the check reads nothing")
@@ -7782,12 +7782,41 @@ class RankedBacklogTests(unittest.TestCase):
                         key, lines, self.ARM_SEARCHES, capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
-                        layout_files=("probe.jsonl", "pins.tsv"),
+                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv"),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
         written = {path.stem for path in records.glob("*.md")} if records.is_dir() else set()
         self.assertEqual(set(), written - linked, "an arm search no reach cell links")
+
+    def test_census_refused_documents_are_counted_by_name_apart_from_outstanding_items(self) -> None:
+        """Each source's census refusals, named, none of them an outstanding item.
+
+        A document a full standard parser refuses is no description a witness
+        could be; `census-refused.tsv` names it with that parser's verdict, and
+        it leaves the outstanding list without settling any search on its own.
+        """
+        with (self.ARM_SEARCHES / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
+            outstanding = {(row["source"], row["item"])
+                           for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+        counted = {}
+        for source in DECLARED_SOURCES:
+            path = self.ARM_SEARCHES / source / "census-refused.tsv"
+            if not path.is_file():
+                continue
+            with path.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+            with self.subTest(source=source):
+                names = [row["document"] for row in rows]
+                self.assertEqual(len(names), len(set(names)), "a document refused twice")
+                for row in rows:
+                    self.assertIn(row["verdict"], ("syntax", "not-openapi"), row["document"])
+                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$", row["document"])
+                    self.assertRegex(row["parser"], r"^(python json|ruamel\.yaml) \d", row["document"])
+                self.assertEqual(set(), {(source, name) for name in names} & outstanding,
+                                 "a census-refused document is still an outstanding item")
+                counted[source] = len(names)
+        self.assertTrue(counted, "no source files a census refusal")
 
     def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
         """The thin end, as a list: every single-witness and no-witness golden row."""

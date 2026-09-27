@@ -37,6 +37,16 @@ files it here.
 - `<source>/enumeration.tsv.gz` — a walk's census over every pinned document of
   the source, with the keys each declares or the reason it could not be read.
   `github-publisher-trees/pins.tsv` resolves that source's shared pins to bytes.
+- `<source>/census-refused.tsv` — the documents the census could not read that
+  a full standard parser refuses too: Python's `json` module for a `.json`
+  document, ruamel.yaml (YAML 1.2) for YAML. Each line names the document, its
+  digest, the parser and its version, and the verdict — `syntax` with the
+  parser's error, or `not-openapi` when the document parses but names no
+  `openapi` or `swagger` version. A refused document is no description a
+  witness could be, so it is not outstanding; one only the census fails on
+  stays outstanding as the census's own bug. `refuse` writes it (run under
+  `uv run --with ruamel.yaml`), and a refusal never makes a search `exhausted`
+  on its own.
 - `<source>/probe.jsonl` — every declarer's instrumented `crozier generate`: the
   unreached sites it executed, or how the run ended (a timeout or a crozier
   failure leaves the declarer outstanding). Each row carries the `build` it ran:
@@ -54,7 +64,7 @@ files it here.
 - `outstanding.tsv` — every item a record's `outstanding` column counts, one
   line each: the row, the source, the document, what blocks it (unprobed on the
   record's build, a probe that timed out or left no profile, or the census's
-  reason it could not read the document), the build, and the `src/` commits since
+  reason it could not read a document no full parser refused), the build, and the `src/` commits since
   that build that make every probe of it owe a fresh `just golden-reach`. It is
   the continuation node `thin-goldens-continue`'s work list. `outstanding`
   regenerates it from the records and probes; `RankedBacklogTests` holds each
