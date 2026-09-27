@@ -1156,9 +1156,9 @@ reference, and `scripts/fetch-corpus.sh` refuses it with *absolute `$ref`
 raw.githubusercontent.com*. Its disposition follows its instrumented probe: see
 the golden-reach search record for `oneof-array-variant-closed-object-item`.
 
-### Rows 223–230: witnesses the arm searches found
+### Rows 223–231: witnesses the arm searches found
 
-The instrumented probes of build `1131cbbcb0e3` found eight Fern-accepted,
+The instrumented probes of build `1131cbbcb0e3` found nine Fern-accepted,
 licensed documents that execute a handling site no earlier golden reached. Each
 is registered here with its Fern 5.20.0 golden and byte-matches with
 `unmatched: &[]`:
@@ -1173,6 +1173,7 @@ is registered here with its Fern 5.20.0 golden and byte-matches with
 | 228 | `xfsc-oidc-identity-resolver` | `securityscheme-type-openidconnect` | ✅ byte-matched after one repair |
 | 229 | `adyen-acs-notification` | `enum-leading-digit-identifier` | ✅ byte-matched after one repair |
 | 230 | `peopledatalabs` | `enum-leading-digit-identifier` | ✅ byte-matched after five repairs |
+| 231 | `standrig` | `anyof-string-const-variant` | ✅ byte-matched after three repairs |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Pointers: Fern's importer converts any reference whose text names `properties`
@@ -1196,6 +1197,10 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   and the README passes that body's placeholder on one line (People Data Labs).
 - Types: an `anyOf` variant that is one member beside `null` is that member made
   optional (Primula Tracker).
+- Typeless shapes: a schema with no `type` but a `const` is `str`, an inline
+  object's property whose alternatives are all booleans is one `bool`, and a
+  body closed with `additionalProperties: false` but declaring no `properties`
+  is a `Dict[str, Any]` request (StandRig).
 - Auth: an `openIdConnect` scheme is a bearer token, required on OAuth2's terms
   (XFSC); a requirement naming only schemes Fern does not support — a cookie
   `apiKey`, `mutualTLS` — defines no auth at all (OneVoice).
