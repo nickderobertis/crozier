@@ -5364,7 +5364,7 @@ fn hoist_inline_object(
     for (reference_order, (prop, prop_schema)) in schema.properties.iter().enumerate() {
         let spec_required = required.contains(&prop.as_str());
         let optional = is_optional(prop_schema) || !spec_required;
-        let type_ref = hoister.prop_type_ref(ctx, prop, prop_schema);
+        let type_ref = hoister.copied_prop_type_ref(ctx, prop, prop_schema);
         fields.push(BodyField {
             wire_name: prop.clone(),
             py_name: naming::request_field_name(prop),
@@ -5930,7 +5930,31 @@ impl InlineHoister<'_> {
                 }
             }
         }
-        self.prop_type_ref(owner, prop, prop_schema)
+        self.copied_prop_type_ref(owner, prop, prop_schema)
+    }
+
+    /// [`Self::prop_type_ref`], minding the annotated references being copied.
+    ///
+    /// An annotated reference is copied where it is used, and a copy whose
+    /// fields annotate a reference back to one being copied on this path is a
+    /// cycle, not a new shape: AWS Lex V2 Runtime's request `Condition`
+    /// annotates a reference to itself, and copying it again would name a
+    /// deeper class without end. The cycle names the component instead.
+    fn copied_prop_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        let annotated = self
+            .schemas
+            .and(described_all_of_ref(prop_schema))
+            .map(|(reference, _)| reference.to_string());
+        let Some(reference) = annotated else {
+            return self.prop_type_ref(owner, prop, prop_schema);
+        };
+        if self.copying_refs.contains(&reference) {
+            return TypeRef::Named(ref_to_class(&reference));
+        }
+        self.copying_refs.push(reference);
+        let type_ref = self.prop_type_ref(owner, prop, prop_schema);
+        self.copying_refs.pop();
+        type_ref
     }
 
     /// The type of a property, hoisting an inline object (directly or as an array
@@ -5950,13 +5974,6 @@ impl InlineHoister<'_> {
             // this block. The disagreement is noted beside case 1 in
             // `docs/openapi-surface-coverage.md`.
             if let Some(target) = resolve_ref_from_schemas(schemas, reference).cloned() {
-                // A copy of a component already being copied on this path is a
-                // cycle, not a new shape: AWS Lex V2 Runtime's request
-                // `Condition` annotates a reference back to itself, and copying
-                // it again would name a deeper class without end.
-                if self.copying_refs.iter().any(|copying| copying == reference) {
-                    return TypeRef::Named(ref_to_class(reference));
-                }
                 let name = naming::child_class_name(parent, prop);
                 if let Some(values) = string_enum_values(&target) {
                     observed_arm!("prop_type_ref:2");
@@ -5970,10 +5987,7 @@ impl InlineHoister<'_> {
                 }
                 if target.one_of.is_some() || target.any_of.is_some() {
                     observed_arm!("prop_type_ref:3");
-                    self.copying_refs.push(reference.to_string());
-                    let copy = self.hoist_named_copy(&name, &target);
-                    self.copying_refs.pop();
-                    if let Some(copy) = copy {
+                    if let Some(copy) = self.hoist_named_copy(&name, &target) {
                         return copy;
                     }
                 }
@@ -5984,9 +5998,7 @@ impl InlineHoister<'_> {
                         || is_object_type(&target))
                 {
                     observed_arm!("prop_type_ref:4");
-                    self.copying_refs.push(reference.to_string());
                     self.hoist_object_with_doc(&name, &target, clean_doc(description));
-                    self.copying_refs.pop();
                     return TypeRef::Named(name);
                 }
                 observed_arm!("prop_type_ref:5");
@@ -6464,7 +6476,7 @@ fn hoist_form_object(
             } else if is_file {
                 base_type_ref(prop_schema)
             } else {
-                hoister.prop_type_ref(request_ctx, prop, prop_schema)
+                hoister.copied_prop_type_ref(request_ctx, prop, prop_schema)
             };
             let convert = !is_file && hoister.needs_convert(&type_ref);
             BodyField {
