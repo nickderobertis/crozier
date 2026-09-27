@@ -1639,51 +1639,53 @@ a `gap` selector, or cannot yet be generated — handed off in
 written to exercise a generator or linter is declined as an authored probe, not
 a real specification. Whether each search reads `exhausted` is final
 reconciliation's to decide; the outcome a record states is its own reading.
-Every record here reads `search-incomplete`, and each cell below whose row still
-has an unreached site leads with its outstanding items — declarers unprobed, timed
-out or failed without a profile, and documents the census could not read — per
-source; each such item is one line of
-[`outstanding.tsv`](openapi-surface/golden-reach-witnesses/outstanding.tsv), with
-its blocker. A document the census could not read that a full standard parser
-refuses too — Python's `json` on syntax, ruamel.yaml 0.19.1 (YAML 1.2) on
-syntax, or either reading it as no OpenAPI or Swagger description — is
-`census-refused` instead, listed in its source's `census-refused.tsv` with the
-parser's verdict and the document's digest, and is not outstanding: 161 in
-`vendor-portals`, 46 in `github-publisher-trees`, 55 in `github-code-search` and
-20 in `sourcegraph`. The rest the full parser reads, and `recensus` counts them
-through it, as the census's own object-model walk over ruamel.yaml's reading,
-named in each source's `census-fallback.tsv`: 12 in `vendor-portals`, 11 in
-`github-publisher-trees`, 72 in `github-code-search` and 45 in `sourcegraph`
-(`just test-census-fallback` holds that reading to the stdlib loader's counts on
-every registered YAML source). `thin-goldens-continue` walked or queried all six sources again for
-every row with an unreached site, probed every declarer on the instrumented build
-`1131cbbcb0e3` with `src/` at that commit, screened every declarer that reached an
-arm, and re-rendered each record with `render --build 1131cbbcb0e3`; the
-registrations those screens produced (corpus rows 223 to 231) and their repairs
-then moved `src/`, so each probe must be re-taken on a fresh `just golden-reach`
-measurement before it is reused. Six walked declarers share a path (`openapi.yaml`
-or `openapi.json`) with another publisher tree's document; each copy is its own
-declarer, named `<walk>:<path>`, and none of the six is probed on that build.
+No record of a row with an unreached site owes anything now: `outstanding.tsv`
+lists items only for the six records whose arms a registered witness has since
+reached, each rendered as of the build it was searched on. A document the census
+could not read that a full standard parser refuses too — Python's `json` on
+syntax, ruamel.yaml 0.19.1 (YAML 1.2) on syntax, or either reading it as no
+OpenAPI or Swagger description — is `census-refused`, listed in its source's
+`census-refused.tsv` with the parser's verdict and the document's digest, and is
+not outstanding: 161 in `vendor-portals`, 46 in `github-publisher-trees`, 55 in
+`github-code-search` and 20 in `sourcegraph`. The rest the full parser reads, and
+`recensus` counts them through it, as the census's own object-model walk over
+ruamel.yaml's reading, named in each source's `census-fallback.tsv`: 12 in
+`vendor-portals`, 11 in `github-publisher-trees`, 72 in `github-code-search` and
+45 in `sourcegraph` (`just test-census-fallback` holds that reading to the stdlib
+loader's counts on every registered YAML source). `thin-goldens-continue` walked
+the four walked sources again with the repaired loader and the current enum
+naming, counted every query-source copy again, probed every declarer of the 51
+rows with an unreached site on the instrumented build `8e8c81bc` with `src/` at
+that commit and an 1800 s limit — none timed out and none aborted, once the
+crash repairs the first pass exposed had landed — and screened every declarer
+that reached an arm: Fern 5.20.0 refuses every new one, and each copy of
+AssemblyAI's description fails the licence screen on the publisher's
+revenue-ceiling terms. So 42 records read `exhausted`, and nine read
+`search-incomplete` only for screened candidates they decline (synthetic
+fixtures, copies of registered rows, or the arm a registered row settles); what
+the index makes of each is final reconciliation's to decide. Six walked
+declarers share a path (`openapi.yaml` or `openapi.json`) with another publisher
+tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 | boundary rank | key | outcome |
 |---:|---|---|
-| 1 | `property-anyof-discriminated-union` | witness registered for both arms — corpus row 194 (`deepsearch-ds-v2`) executes `hoist_discriminated_union`, and corpus row 196 (`opencodeui`) reaches the `prop_type_ref` arm, so every handling site is reached; the arm search the reach cell links is the record from before row 196, which now counts 219 items outstanding over the publisher trees' extended pin |
-| 2 | `ref-pointer-composition-index` | search incomplete, 2 items outstanding (github-publisher-trees 1, vendor-portals 1); witness registered for one arm — corpus row 224 (`codat-assess`) reaches `ref_to_class`'s pointer walk; the three `resolve_schema_pointer` composition arms stay unreached, since the loader copies every resolvable pointer where it is used, and the declarers the probes found reaching them — Cvent and Sellsy (handed off, then rejected: Fern's exit 0 was over an unparsed document) and Codat Commerce (the same) — are not Fern-accepted; corpus row 223 (`nexmo-conversation`) reached the pointer walk on the probe build and no longer does once its `properties` pointers are copied; [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md) |
+| 1 | `property-anyof-discriminated-union` | witness registered for both arms — corpus row 194 (`deepsearch-ds-v2`) executes `hoist_discriminated_union`, and corpus row 196 (`opencodeui`) reaches the `prop_type_ref` arm, so every handling site is reached; the arm search the reach cell links is the record from before row 196, which now counts 107 items outstanding over the publisher trees' extended pin |
+| 2 | `ref-pointer-composition-index` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `search-incomplete` for the screened candidates it declines; witness registered for one arm — corpus row 224 (`codat-assess`) reaches `ref_to_class`'s pointer walk; the three `resolve_schema_pointer` composition arms stay unreached, since the loader copies every resolvable pointer where it is used, and the declarers the probes found reaching them — Cvent and Sellsy (handed off, then rejected: Fern's exit 0 was over an unparsed document) and Codat Commerce (the same) — are not Fern-accepted; corpus row 223 (`nexmo-conversation`) reached the pointer walk on the probe build and no longer does once its `properties` pointers are copied; [arm search](openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md) |
 | 3 | `media-type-key-parameters` | no arm to buy — its witness list named one fixture; the predicate finds `vtex-pricing` and `sftpgo` declaring the shape too, and their goldens reach both sites |
-| 4 | `anyof-discriminated-union` | search incomplete, 273 items outstanding (github-publisher-trees 129, vendor-portals 129, jentic 15); no witness yet — every declarer reaching the arm is Fern-refused (Kibana, gcore, ogx) or an authored probe (Monite's Spectral test document); [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md) |
-| 5 | `x-fern-or-crozier-ignore` | search incomplete, 14 items outstanding (jentic 5, sourcegraph 5, github-code-search 2, github-publisher-trees 1, vendor-portals 1); no witness yet — Cloudflare's `api-schemas` reaches both schema arms but declares `gap` selectors and Fern refuses it; Fern's own fixtures reach them and are declined as authored probes; [arm search](openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md) |
-| 6 | `format-uri-template` | search incomplete, 273 items outstanding (github-publisher-trees 129, vendor-portals 129, jentic 15); witness registered for one arm — corpus row 191 (`openlinksw-osdb`) reaches `base_type_ref`'s string fallback; no probed declarer reaches the `scalar_body` fallback; [arm search](openapi-surface/golden-reach-witnesses/searches/format-uri-template.md) |
+| 4 | `anyof-discriminated-union` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `search-incomplete` for the screened candidates it declines; no witness yet — every declarer reaching the arm is Fern-refused (Kibana, gcore, ogx) or an authored probe (Monite's Spectral test document); [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md) |
+| 5 | `x-fern-or-crozier-ignore` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `search-incomplete` for the screened candidates it declines; no witness yet — Cloudflare's `api-schemas` reaches both schema arms but declares `gap` selectors and Fern refuses it; Fern's own fixtures reach them and are declined as authored probes; copies of AssemblyAI's description (jentic's, and `atacan/AssemblyAI`'s) reach them and pass Fern, and fail the licence screen on AssemblyAI's own revenue-ceiling terms (CORPUS.md's REJECTED `assemblyai-autosdk`); [arm search](openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md) |
+| 6 | `format-uri-template` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; witness registered for one arm — corpus row 191 (`openlinksw-osdb`) reaches `base_type_ref`'s string fallback; no probed declarer reaches the `scalar_body` fallback; [arm search](openapi-surface/golden-reach-witnesses/searches/format-uri-template.md) |
 | 7 | `anyof-sole-member` | witness registered — corpus row 196 (`opencodeui`) reaches the arm, so every handling site is reached. It was handed off while it declared the then-`gap` row `anyof-anyof-variant`, and was registered once the merge of crozier main made that row `golden`. The arm search the reach cell links is the record from before row 196, which now counts 357 items outstanding over the publisher trees' extended pin |
-| 8 | `annotated-ref-shape` | search incomplete, 8 items outstanding (jentic 5, apis.guru 1, github-publisher-trees 1, vendor-portals 1); no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md) |
-| 9 | `items-oneof-element` | search incomplete, 273 items outstanding (github-publisher-trees 129, vendor-portals 129, jentic 15); no witness yet — none of the 1,051 declarers probed on the stamped build reaches the arm; `mindee-ocr` (row 195), registered for it on a misaligned probe, reaches no site of it; [arm search](openapi-surface/golden-reach-witnesses/searches/items-oneof-element.md) |
-| 10 | `anyof-array-variant-annotated-ref-item` | search incomplete, 2 items outstanding (github-publisher-trees 1, vendor-portals 1); no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-annotated-ref-item.md) |
-| 11 | `anyof-array-variant-composed-item` | search incomplete, 2 items outstanding (github-publisher-trees 1, vendor-portals 1); no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-composed-item.md) |
-| 12 | `oneof-discriminated-union` | search incomplete, 273 items outstanding (github-publisher-trees 129, vendor-portals 129, jentic 15); no witness yet — none of the 1,216 declarers probed reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-discriminated-union.md) |
+| 8 | `annotated-ref-shape` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md) |
+| 9 | `items-oneof-element` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — none of the 1,051 declarers probed on the stamped build reaches the arm; `mindee-ocr` (row 195), registered for it on a misaligned probe, reaches no site of it; [arm search](openapi-surface/golden-reach-witnesses/searches/items-oneof-element.md) |
+| 10 | `anyof-array-variant-annotated-ref-item` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-annotated-ref-item.md) |
+| 11 | `anyof-array-variant-composed-item` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — no probed declarer reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-composed-item.md) |
+| 12 | `oneof-discriminated-union` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — none of the 1,216 declarers probed reaches the arm; [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-discriminated-union.md) |
 | 13 | `all-of-nested-composition` | witness registered — corpus row 193 (`nexmo-messages`), whose `sendMessage` body's single-`allOf` SMS channel reaches `hoist_union_variant`'s inline-object arm through the nested-composition arm's sole-member recursion |
-| 14 | `anyof-allof-variant` | search incomplete, 50 items outstanding (github-publisher-trees 25, vendor-portals 25); no witness yet — DigitalOcean reaches the arm, and its hand-off was rejected: Fern's 35 files are its generation over an unparsed document; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-allof-variant.md) |
+| 14 | `anyof-allof-variant` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — DigitalOcean reaches the arm, and its hand-off was rejected: Fern's 35 files are its generation over an unparsed document; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-allof-variant.md) |
 | 214 | `audience-dual-header-policy` | witness registered — corpus row 192 (`ziptax-node`), the row's first real-world witness, generated for audience `v60` so the filter removes 7 of 34 operations |
 | 311 | `media-type-range` | no arm to buy — every range-handling site is reached by the five witnesses rows 124, 127, 130, 134 and 136 registered |
-| 7 (new) | `anyof-oneof-variant` | search incomplete, 2 items outstanding (github-publisher-trees 1, vendor-portals 1); no witness yet — Mistral and Cloudflare reach the nested-composition arm and Fern refuses both; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-oneof-variant.md) |
+| 7 (new) | `anyof-oneof-variant` | searched on build `8e8c81bc`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — Mistral and Cloudflare reach the nested-composition arm and Fern refuses both; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-oneof-variant.md) |
 
 #### Rows resting on one document
 

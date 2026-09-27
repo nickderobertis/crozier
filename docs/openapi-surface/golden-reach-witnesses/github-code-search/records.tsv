@@ -1,6 +1,6 @@
 key	kind	subject	result	file
 *	wait	github-code-search guard log index-pacing-waits.jsonl	25 entries	index-pacing-waits.jsonl
-*	wait	github-code-search guard log rate-limit-calls.jsonl	10104 entries	rate-limit-calls.jsonl
+*	wait	github-code-search guard log rate-limit-calls.jsonl	10105 entries	rate-limit-calls.jsonl
 *	wait	github-code-search guard log rate-limit-waits.jsonl	1 entries	rate-limit-waits.jsonl
 *	wait	github-code-search guard log raw-github-calls.jsonl	464 entries	raw-github-calls.jsonl
 *	wait	github-code-search guard log raw-github-waits.jsonl	461 entries	raw-github-waits.jsonl
@@ -9678,6 +9678,8 @@ securityscheme-type-openidconnect	screen	wmnjuguna/daraja-integration-ui:openapi
 securityscheme-type-openidconnect	screen	yumaitau/BlakWorkspace:deploy/sites/openapi.yaml@ef2fb25905b445be420ddc593009daf768314d53 fern	passed	screens.jsonl
 securityscheme-type-openidconnect	screen	yumaitau/BlakWorkspace:deploy/sites/openapi.yaml@ef2fb25905b445be420ddc593009daf768314d53 licence	passed	screens.jsonl
 securityscheme-type-openidconnect	screen	yumaitau/BlakWorkspace:deploy/sites/openapi.yaml@ef2fb25905b445be420ddc593009daf768314d53 ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	candidate	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718	census 1	probe.jsonl
 x-fern-or-crozier-ignore	document	Postman-Devrel/booth-demos:content/short-talks/mcp-docs-best-friend/openapi/appointment-slots.openapi.yaml@1216d2d716c0cb870be5870af24d56ef6f0183af	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	document	Postman-Devrel/booth-demos:content/short-talks/mcp-docs-best-friend/openapi/appointments.openapi.yaml@1216d2d716c0cb870be5870af24d56ef6f0183af	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	document	Postman-Devrel/booth-demos:content/short-talks/mcp-docs-best-friend/openapi/prescriptions.openapi.yaml@1216d2d716c0cb870be5870af24d56ef6f0183af	census 1	candidates.jsonl
@@ -9690,3 +9692,9 @@ x-fern-or-crozier-ignore	document	healthcare-org-app/healthcare-appointments:ope
 x-fern-or-crozier-ignore	document	healthcare-org-app/healthcare-prescriptions:openapi.yaml@ba9c26afe85c2a889c0d9ffdd4786e8edbef7ada	census 1	candidates.jsonl
 x-fern-or-crozier-ignore	query	\x-fern-ignore\": true" "\"components\"" filename:openapi.json	0	queries.jsonl
 x-fern-or-crozier-ignore	query	x-fern-ignore: true "components:" filename:openapi.yaml	10	queries.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718 ref	passed	screens.jsonl

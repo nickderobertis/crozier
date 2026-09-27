@@ -3949,6 +3949,11 @@ enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68
 enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-bundled.json	census 16	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-entry.json	census 16	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/openapi.json	census 16	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/output-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/openapi.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/app.clio.com/main/v4/meta/import/input-bundle.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/app.clio.com/main/v4/meta/import/input-entry.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/app.clio.com/main/v4/meta/import/output-bundle.json	census 19	probe.jsonl
@@ -4019,6 +4024,16 @@ enum-leading-digit-identifier	candidate	apis/openapi/formapi.io/main/v1/meta/imp
 enum-leading-digit-identifier	candidate	apis/openapi/formapi.io/main/v1/meta/import/output-bundled.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/formapi.io/main/v1/meta/import/output-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/formapi.io/main/v1/openapi.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-bundled.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-bundled.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/api.github.com/1.1.4/openapi.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/input-bundled.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/input-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/openapi.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json	census 6	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-entry.json	census 6	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-bundle.json	census 6	probe.jsonl
@@ -4725,6 +4740,21 @@ enum-leading-digit-identifier	screen	apis/openapi/adyen.com/PaymentService/68/me
 enum-leading-digit-identifier	screen	apis/openapi/adyen.com/PaymentService/68/openapi.json fern	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/adyen.com/PaymentService/68/openapi.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/adyen.com/PaymentService/68/openapi.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/meta/import/output-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 40 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/openapi.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/api.github.com/main/1.1.4/openapi.json ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/app.clio.com/main/v4/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 134 errors, e.g. Parameters query parameter 'id', path parameter 'id' all normalize to 'id' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, du	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/app.clio.com/main/v4/meta/import/input-bundle.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/app.clio.com/main/v4/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -4935,6 +4965,36 @@ enum-leading-digit-identifier	screen	apis/openapi/formapi.io/main/v1/meta/import
 enum-leading-digit-identifier	screen	apis/openapi/formapi.io/main/v1/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum name 10003 for value &#10003 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/formapi.io/main/v1/openapi.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/formapi.io/main/v1/openapi.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 49 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-bundled.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-bundled.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 49 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/input-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 49 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-bundled.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-bundled.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 49 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/meta/import/output-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 49 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/openapi.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/api.github.com/1.1.4/openapi.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 50 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-bundled.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-bundled.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 50 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/input-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 50 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 50 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 50 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/openapi.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	apis/openapi/github.com/ghec/1.1.4/openapi.json ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 10 errors, e.g. InternalServerError is already declared in this file	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -119562,6 +119622,11 @@ securityscheme-type-openidconnect	screen	apis/openapi/squidex.io/main/7.0.0.0/op
 securityscheme-type-openidconnect	screen	apis/openapi/squidex.io/main/7.0.0.0/openapi.json licence	passed	screens.jsonl
 securityscheme-type-openidconnect	screen	apis/openapi/squidex.io/main/7.0.0.0/openapi.json ref	passed	screens.jsonl
 securityscheme-type-openidconnect	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+x-fern-or-crozier-ignore	candidate	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json	census 1	probe.jsonl
+x-fern-or-crozier-ignore	candidate	apis/openapi/assemblyai.com/main/1.3.4/openapi.json	census 1	probe.jsonl
 x-fern-or-crozier-ignore	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -119572,4 +119637,19 @@ x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/imp
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 5	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 5	enumeration.tsv.gz
 x-fern-or-crozier-ignore	document	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 5	enumeration.tsv.gz
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json ref	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json fern	passed	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json licence	failed: a copy of AssemblyAI's own API description, whose source licence caps redistribution at a revenue ceiling this repository cannot undertake to honour (CORPUS.md's REJECTED assemblyai-autosdk row) — a redistributor's or an aggregation's licence cannot grant more than the publisher's	screens.jsonl
+x-fern-or-crozier-ignore	screen	apis/openapi/assemblyai.com/main/1.3.4/openapi.json ref	passed	screens.jsonl
 x-fern-or-crozier-ignore	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz

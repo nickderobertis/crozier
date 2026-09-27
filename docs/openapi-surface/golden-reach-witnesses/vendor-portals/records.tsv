@@ -106,6 +106,12 @@ annotated-ref-target-anyof	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd30467
 annotated-ref-target-anyof	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	enumeration.tsv.gz
 anyof-allof-variant	candidate	cloudflare--api-schemas/openapi.json	census 4	probe.jsonl
 anyof-allof-variant	candidate	cloudflare--api-schemas/openapi.yaml	census 4	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml	census 1	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 6	probe.jsonl
@@ -118,6 +124,18 @@ anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghe
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 6	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions-next/ghec/ghec.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml	census 1	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 6	probe.jsonl
@@ -130,6 +148,12 @@ anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/der
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.json	census 6	probe.jsonl
 anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml	census 6	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.json	census 1	probe.jsonl
+anyof-allof-variant	candidate	github--rest-api-description/descriptions/ghec/ghec.yaml	census 1	probe.jsonl
 anyof-allof-variant	document	cloudflare--api-schemas/openapi.json	census 4	enumeration.tsv.gz
 anyof-allof-variant	document	cloudflare--api-schemas/openapi.yaml	census 4	enumeration.tsv.gz
 anyof-allof-variant	document	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	enumeration.tsv.gz
@@ -188,6 +212,24 @@ anyof-allof-variant	screen	cloudflare--api-schemas/openapi.json ref	passed	scree
 anyof-allof-variant	screen	cloudflare--api-schemas/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 234 errors, e.g. SDK method images.v1.list already exists (x-fern-sdk-group-name: images.v1, x-fern-sdk-method-name: list)	screens.jsonl
 anyof-allof-variant	screen	cloudflare--api-schemas/openapi.yaml licence	passed	screens.jsonl
 anyof-allof-variant	screen	cloudflare--api-schemas/openapi.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml ref	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json licence	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -224,6 +266,42 @@ anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/d
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml licence	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml ref	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json licence	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -260,6 +338,24 @@ anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/derefe
 anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml licence	passed	screens.jsonl
 anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.yaml licence	passed	screens.jsonl
+anyof-allof-variant	screen	github--rest-api-description/descriptions/ghec/ghec.yaml ref	passed	screens.jsonl
 anyof-allof-variant	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	enumeration.tsv.gz
 anyof-allof-variant	walk	Redocly/museum-openapi-example@2770b2b2e59832d245c7b0eb0badf6568d7efb53	6	enumeration.tsv.gz
 anyof-allof-variant	walk	advplyr/audiobookshelf@0a797ab8bee15dc3ca92d1d76155259c46dbec62	95	enumeration.tsv.gz
@@ -794,6 +890,7 @@ anyof-discriminated-union	document	github--rest-api-description/descriptions/ghe
 anyof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.json	census 1	enumeration.tsv.gz
 anyof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.yaml	census 1	enumeration.tsv.gz
 anyof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+anyof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
 anyof-discriminated-union	document	mongodb--openapi/openapi/v2.json	census 1	enumeration.tsv.gz
 anyof-discriminated-union	document	mongodb--openapi/openapi/v2.yaml	census 1	enumeration.tsv.gz
 anyof-discriminated-union	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
@@ -2197,6 +2294,7 @@ array-item-anyof-discriminated-union	document	github--rest-api-description/descr
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.json	census 1	enumeration.tsv.gz
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.yaml	census 1	enumeration.tsv.gz
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/v2.json	census 1	enumeration.tsv.gz
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/v2.yaml	census 1	enumeration.tsv.gz
 array-item-anyof-discriminated-union	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
@@ -2552,6 +2650,7 @@ array-item-oneof-discriminated-union	document	github--rest-api-description/descr
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.json	census 1	enumeration.tsv.gz
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.yaml	census 1	enumeration.tsv.gz
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/v2.json	census 1	enumeration.tsv.gz
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/v2.yaml	census 1	enumeration.tsv.gz
 array-item-oneof-discriminated-union	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
@@ -3027,6 +3126,12 @@ enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService
 enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v64.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v67.yaml	census 3	probe.jsonl
 enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml	census 16	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 1	probe.jsonl
@@ -3039,6 +3144,12 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghec/ghec.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.0/ghes-3.0.json	census 1	probe.jsonl
@@ -3059,38 +3170,74 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.2/dereferenced/ghes-3.2.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.2/dereferenced/ghes-3.2.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.2/ghes-3.2.json	census 1	probe.jsonl
@@ -3099,18 +3246,34 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2026-03-10.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2026-03-10.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.6/dereferenced/ghes-3.6.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.6/dereferenced/ghes-3.6.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/ghes-3.6/ghes-3.6.json	census 1	probe.jsonl
@@ -3135,6 +3298,12 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/github.ae/dereferenced/github.ae.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/github.ae/github.ae.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/github.ae/github.ae.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2026-03-10.deref.json	census 1	probe.jsonl
@@ -3147,6 +3316,12 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghec/ghec.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-2.18/dereferenced/ghes-2.18.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-2.18/dereferenced/ghes-2.18.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-2.18/ghes-2.18.json	census 1	probe.jsonl
@@ -3187,38 +3362,74 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.2/dereferenced/ghes-3.2.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.2/dereferenced/ghes-3.2.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.2/ghes-3.2.json	census 1	probe.jsonl
@@ -3227,18 +3438,34 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2026-03-10.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2026-03-10.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2026-03-10.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.deref.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.3/dereferenced/ghes-3.3.deref.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.3/dereferenced/ghes-3.3.deref.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.3/ghes-3.3.json	census 1	probe.jsonl
@@ -3848,6 +4075,24 @@ enum-leading-digit-identifier	screen	Adyen--adyen-openapi/yaml/PaymentService-v6
 enum-leading-digit-identifier	screen	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml fern	passed	screens.jsonl
 enum-leading-digit-identifier	screen	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/api.github.com.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -3884,6 +4129,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/dereferenced/ghec.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghec/ghec.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.0/dereferenced/ghes-3.0.deref.json ref	passed	screens.jsonl
@@ -3944,6 +4207,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/dereferenced/ghes-3.11.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.11/ghes-3.11.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -3956,6 +4231,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/dereferenced/ghes-3.12.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.12/ghes-3.12.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -3968,6 +4255,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/dereferenced/ghes-3.13.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.13/ghes-3.13.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -3980,6 +4279,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/dereferenced/ghes-3.14.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.14/ghes-3.14.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -3992,6 +4303,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/dereferenced/ghes-3.15.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.15/ghes-3.15.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4004,6 +4327,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/dereferenced/ghes-3.16.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.16/ghes-3.16.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4016,6 +4351,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/dereferenced/ghes-3.17.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.17/ghes-3.17.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4028,6 +4375,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/dereferenced/ghes-3.18.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.18/ghes-3.18.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4040,6 +4399,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/dereferenced/ghes-3.19.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.19/ghes-3.19.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.2/dereferenced/ghes-3.2.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.2/dereferenced/ghes-3.2.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.2/dereferenced/ghes-3.2.deref.json ref	passed	screens.jsonl
@@ -4064,6 +4435,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/dereferenced/ghes-3.20.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.20/ghes-3.20.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4082,6 +4465,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/dereferenced/ghes-3.21.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.21/ghes-3.21.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4100,6 +4501,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/dereferenced/ghes-3.22.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.22/ghes-3.22.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.6/dereferenced/ghes-3.6.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.6/dereferenced/ghes-3.6.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/ghes-3.6/dereferenced/ghes-3.6.deref.json ref	passed	screens.jsonl
@@ -4172,6 +4591,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-n
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/github.ae/github.ae.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 22 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/github.ae/github.ae.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions-next/github.ae/github.ae.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/api.github.com.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/api.github.com/dereferenced/api.github.com.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4208,6 +4645,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 39 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/dereferenced/ghec.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghec/ghec.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-2.18/dereferenced/ghes-2.18.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-2.18/dereferenced/ghes-2.18.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-2.18/dereferenced/ghes-2.18.deref.json ref	passed	screens.jsonl
@@ -4328,6 +4783,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/dereferenced/ghes-3.11.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.11/ghes-3.11.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4340,6 +4807,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/dereferenced/ghes-3.12.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 43 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.12/ghes-3.12.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4352,6 +4831,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 46 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/dereferenced/ghes-3.13.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.13/ghes-3.13.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4364,6 +4855,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/dereferenced/ghes-3.14.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.14/ghes-3.14.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4376,6 +4879,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/dereferenced/ghes-3.15.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.15/ghes-3.15.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4388,6 +4903,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 30 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/dereferenced/ghes-3.16.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.16/ghes-3.16.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4400,6 +4927,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/dereferenced/ghes-3.17.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.17/ghes-3.17.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4412,6 +4951,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/dereferenced/ghes-3.18.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.18/ghes-3.18.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4424,6 +4975,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/dereferenced/ghes-3.19.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.19/ghes-3.19.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.2/dereferenced/ghes-3.2.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.2/dereferenced/ghes-3.2.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.2/dereferenced/ghes-3.2.deref.json ref	passed	screens.jsonl
@@ -4448,6 +5011,18 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/dereferenced/ghes-3.20.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.20/ghes-3.20.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4466,6 +5041,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/dereferenced/ghes-3.21.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.21/ghes-3.21.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.2022-11-28.deref.json ref	passed	screens.jsonl
@@ -4484,6 +5077,24 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.deref.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 37 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.deref.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/dereferenced/ghes-3.22.deref.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2022-11-28.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.2026-03-10.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.json licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.json ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 34 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.22/ghes-3.22.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.3/dereferenced/ghes-3.3.deref.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 42 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.3/dereferenced/ghes-3.3.deref.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/ghes-3.3/dereferenced/ghes-3.3.deref.json ref	passed	screens.jsonl
@@ -5674,6 +6285,7 @@ example	document	intercom--Intercom-OpenAPI/descriptions/2.9/api.intercom.io.yam
 example	document	mongodb--openapi/openapi/.raw/v2.json	census 1215	enumeration.tsv.gz
 example	document	mongodb--openapi/openapi/.raw/v2.yaml	census 1215	enumeration.tsv.gz
 example	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 869	enumeration.tsv.gz
+example	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 869	enumeration.tsv.gz
 example	document	mongodb--openapi/openapi/v2.json	census 1176	enumeration.tsv.gz
 example	document	mongodb--openapi/openapi/v2.yaml	census 1176	enumeration.tsv.gz
 example	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 894	enumeration.tsv.gz
@@ -6446,6 +7058,7 @@ format-email	document	intercom--Intercom-OpenAPI/descriptions/2.9/api.intercom.i
 format-email	document	mongodb--openapi/openapi/.raw/v2.json	census 80	enumeration.tsv.gz
 format-email	document	mongodb--openapi/openapi/.raw/v2.yaml	census 80	enumeration.tsv.gz
 format-email	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 69	enumeration.tsv.gz
+format-email	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 69	enumeration.tsv.gz
 format-email	document	mongodb--openapi/openapi/v2.json	census 79	enumeration.tsv.gz
 format-email	document	mongodb--openapi/openapi/v2.yaml	census 79	enumeration.tsv.gz
 format-email	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 71	enumeration.tsv.gz
@@ -6977,6 +7590,7 @@ format-password	document	drakkan--sftpgo/openapi/openapi.yaml	census 3	enumerati
 format-password	document	mongodb--openapi/openapi/.raw/v2.json	census 18	enumeration.tsv.gz
 format-password	document	mongodb--openapi/openapi/.raw/v2.yaml	census 18	enumeration.tsv.gz
 format-password	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 7	enumeration.tsv.gz
+format-password	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 7	enumeration.tsv.gz
 format-password	document	mongodb--openapi/openapi/v2.json	census 18	enumeration.tsv.gz
 format-password	document	mongodb--openapi/openapi/v2.yaml	census 18	enumeration.tsv.gz
 format-password	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 7	enumeration.tsv.gz
@@ -8422,6 +9036,7 @@ inheritance-discriminated-union	document	Adyen--adyen-openapi/yaml/SessionAuthen
 inheritance-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.json	census 18	enumeration.tsv.gz
 inheritance-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.yaml	census 18	enumeration.tsv.gz
 inheritance-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 14	enumeration.tsv.gz
+inheritance-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 14	enumeration.tsv.gz
 inheritance-discriminated-union	document	mongodb--openapi/openapi/v2.json	census 18	enumeration.tsv.gz
 inheritance-discriminated-union	document	mongodb--openapi/openapi/v2.yaml	census 18	enumeration.tsv.gz
 inheritance-discriminated-union	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 15	enumeration.tsv.gz
@@ -9016,6 +9631,7 @@ items-oneof-element	document	intercom--Intercom-OpenAPI/descriptions/2.9/api.int
 items-oneof-element	document	mongodb--openapi/openapi/.raw/v2.json	census 1	enumeration.tsv.gz
 items-oneof-element	document	mongodb--openapi/openapi/.raw/v2.yaml	census 1	enumeration.tsv.gz
 items-oneof-element	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1	enumeration.tsv.gz
+items-oneof-element	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1	enumeration.tsv.gz
 items-oneof-element	document	mongodb--openapi/openapi/v2.json	census 1	enumeration.tsv.gz
 items-oneof-element	document	mongodb--openapi/openapi/v2.yaml	census 1	enumeration.tsv.gz
 items-oneof-element	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1	enumeration.tsv.gz
@@ -9895,6 +10511,7 @@ mutually-recursive-graph	document	kubernetes--kubernetes/staging/src/k8s.io/kube
 mutually-recursive-graph	document	mongodb--openapi/openapi/.raw/v2.json	census 2628	enumeration.tsv.gz
 mutually-recursive-graph	document	mongodb--openapi/openapi/.raw/v2.yaml	census 2628	enumeration.tsv.gz
 mutually-recursive-graph	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1671	enumeration.tsv.gz
+mutually-recursive-graph	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1671	enumeration.tsv.gz
 mutually-recursive-graph	document	mongodb--openapi/openapi/v2.json	census 2469	enumeration.tsv.gz
 mutually-recursive-graph	document	mongodb--openapi/openapi/v2.yaml	census 2469	enumeration.tsv.gz
 mutually-recursive-graph	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1634	enumeration.tsv.gz
@@ -11034,6 +11651,7 @@ non-identifier-operation-id	document	kubernetes--kubernetes/staging/src/k8s.io/k
 non-identifier-operation-id	document	mongodb--openapi/openapi/.raw/v2.json	census 578	enumeration.tsv.gz
 non-identifier-operation-id	document	mongodb--openapi/openapi/.raw/v2.yaml	census 578	enumeration.tsv.gz
 non-identifier-operation-id	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 299	enumeration.tsv.gz
+non-identifier-operation-id	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 299	enumeration.tsv.gz
 non-identifier-operation-id	document	mongodb--openapi/openapi/v2.json	census 541	enumeration.tsv.gz
 non-identifier-operation-id	document	mongodb--openapi/openapi/v2.yaml	census 541	enumeration.tsv.gz
 non-identifier-operation-id	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 312	enumeration.tsv.gz
@@ -11782,6 +12400,7 @@ oneof-discriminated-union	document	intercom--Intercom-OpenAPI/descriptions/2.9/a
 oneof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.json	census 37	enumeration.tsv.gz
 oneof-discriminated-union	document	mongodb--openapi/openapi/.raw/v2.yaml	census 37	enumeration.tsv.gz
 oneof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 20	enumeration.tsv.gz
+oneof-discriminated-union	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 20	enumeration.tsv.gz
 oneof-discriminated-union	document	mongodb--openapi/openapi/v2.json	census 32	enumeration.tsv.gz
 oneof-discriminated-union	document	mongodb--openapi/openapi/v2.yaml	census 32	enumeration.tsv.gz
 oneof-discriminated-union	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 19	enumeration.tsv.gz
@@ -12713,6 +13332,7 @@ recursive-graph	document	kubernetes--kubernetes/staging/src/k8s.io/kubectl/testd
 recursive-graph	document	mongodb--openapi/openapi/.raw/v2.json	census 2628	enumeration.tsv.gz
 recursive-graph	document	mongodb--openapi/openapi/.raw/v2.yaml	census 2628	enumeration.tsv.gz
 recursive-graph	document	mongodb--openapi/openapi/v1-deprecated/v1.json	census 1671	enumeration.tsv.gz
+recursive-graph	document	mongodb--openapi/openapi/v1-deprecated/v1.yaml	census 1671	enumeration.tsv.gz
 recursive-graph	document	mongodb--openapi/openapi/v2.json	census 2469	enumeration.tsv.gz
 recursive-graph	document	mongodb--openapi/openapi/v2.yaml	census 2469	enumeration.tsv.gz
 recursive-graph	document	mongodb--openapi/openapi/v2/openapi-2023-01-01.json	census 1634	enumeration.tsv.gz

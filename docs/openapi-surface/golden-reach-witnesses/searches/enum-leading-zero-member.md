@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `7af7b03704f8`, the one the reach ledger was measured on when these probes ran,
+build of commit `8e8c81bc2efd`, the one the reach ledger is measured on,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -28,7 +28,7 @@ final reconciliation decides whether the arm's search reads `exhausted`.
 #### Declarers, and how the instrumented run fared on each
 
 Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
-build `7af7b03704f8` only. A declarer not probed on it, one whose run
+build `8e8c81bc2efd` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
@@ -39,17 +39,14 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-When this record was rendered, `src/` had moved since that build (`db527e61`), so every probe counted here must be
-re-taken on a fresh `just golden-reach` measurement before it is reused.
-
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 96 | 0 | 0 | 96 | 0 | 0 | 49 | 0 | 0 | 0 |
-| `jentic` | 726 | 0 | 0 | 726 | 0 | 0 | 83 | 0 | 0 | 15 |
+| `jentic` | 726 | 0 | 0 | 726 | 0 | 0 | 68 | 0 | 0 | 0 |
 | `github-code-search` | 1 | 0 | 8 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `github-publisher-trees` | 450 | 1 | 46 | 450 | 0 | 0 | 181 | 0 | 0 | 129 |
+| `github-publisher-trees` | 450 | 0 | 46 | 450 | 0 | 0 | 53 | 0 | 0 | 0 |
 | `sourcegraph` | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `vendor-portals` | 465 | 1 | 161 | 465 | 0 | 0 | 182 | 0 | 0 | 129 |
+| `vendor-portals` | 465 | 0 | 161 | 465 | 0 | 0 | 54 | 0 | 0 | 0 |
 
 #### Candidates passing every screen
 
