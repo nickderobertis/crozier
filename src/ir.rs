@@ -1869,6 +1869,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         schemas: &doc.components.schemas,
         strip_discriminant: document_discriminant_strips(doc),
         building_types: Default::default(),
+        copying_refs: Vec::new(),
     };
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
@@ -5359,6 +5360,7 @@ impl InlineHoister<'_> {
             schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let union =
             builder.discriminated_union(name, &naming::module_name(name), schema, docstring)?;
@@ -5379,6 +5381,7 @@ impl InlineHoister<'_> {
             schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         builder.add_named(name, target);
         if builder.types.is_empty() {
@@ -5495,6 +5498,7 @@ impl InlineHoister<'_> {
                     schemas,
                     strip_discriminant: std::collections::HashMap::new(),
                     building_types: std::collections::HashSet::new(),
+                    copying_refs: Vec::new(),
                 };
                 builder.add_object(name, naming::module_name(name), schema, docstring);
                 // Lowering the base's fields re-declares the base's own inline
@@ -7236,7 +7240,13 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
     let Some(tag) = tag else {
         return false;
     };
-    if id.len() <= tag.len() || !id[..tag.len()].eq_ignore_ascii_case(tag) {
+    // `get` rather than an index: a tag's byte length can land inside a
+    // multi-byte character of the operationId (AEMET's Spanish ids hold `ñ`).
+    if id.len() <= tag.len()
+        || !id
+            .get(..tag.len())
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case(tag))
+    {
         return false;
     }
     id.as_bytes()[tag.len()..]
@@ -7671,6 +7681,9 @@ struct Builder<'a> {
     /// Names currently being expanded, preventing recursive inline schemas from
     /// recursively rebuilding the same declaration before it is pushed.
     building_types: std::collections::HashSet<String>,
+    /// Annotated `$ref`s whose use-site copy is being built, so a target that
+    /// reaches itself through another annotated reference terminates.
+    copying_refs: Vec<String>,
 }
 
 /// The class Fern's importer names a schema after the reference it was converted
@@ -9613,7 +9626,16 @@ impl Builder<'_> {
     fn annotated_ref_type(&mut self, ctx: &str, schema: &Schema) -> Option<TypeRef> {
         let (reference, description) = described_all_of_ref(schema)?;
         let target = resolve_ref_from_schemas(self.schemas, reference).cloned()?;
-        Some(self.use_site_copy(ctx, &target, description))
+        // A target that reaches itself through another annotated reference would
+        // be copied without end (AWS Amplify UI Builder's `ComponentChild`
+        // annotates a list of itself), so inside its own copy it is the component.
+        if self.copying_refs.iter().any(|copying| copying == reference) {
+            return Some(TypeRef::Named(ref_to_class(reference)));
+        }
+        self.copying_refs.push(reference.to_string());
+        let copy = self.use_site_copy(ctx, &target, description);
+        self.copying_refs.pop();
+        Some(copy)
     }
 
     /// One use-site copy of an annotated `$ref`'s target under the name `ctx`. An
@@ -12643,6 +12665,7 @@ mod tests {
             schemas: &doc.components.schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         super::hoist_error_body_types(&doc, &mut builder);
         assert!(builder.types.iter().any(|decl| matches!(
@@ -12693,6 +12716,20 @@ mod tests {
         assert_eq!(int_prim(&schema("int64")), Prim::Long);
         assert_eq!(int_prim(&schema("uint32")), Prim::Int);
         assert_eq!(int_prim(&schema("int32")), Prim::Int);
+    }
+
+    #[test]
+    fn a_tag_prefix_ending_inside_a_multibyte_character_is_no_prefix() {
+        // AEMET's operationIds carry `ñ`; a tag whose byte length stops inside it
+        // is simply not a prefix, rather than a slice across a char boundary.
+        assert!(!super::stripped_suffix_has_acronym(
+            "predicciónDeMontaña",
+            Some("prediccio")
+        ));
+        assert!(super::stripped_suffix_has_acronym(
+            "widgetsGetHTML",
+            Some("widgets")
+        ));
     }
 
     #[test]
@@ -13591,6 +13628,7 @@ mod tests {
             schemas: &indexmap::IndexMap::new(),
             strip_discriminant: std::collections::HashMap::new(),
             building_types: Default::default(),
+            copying_refs: Vec::new(),
         };
         let schema: Schema = serde_json::from_value(serde_json::json!({
             "type": "object",
@@ -14077,6 +14115,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let referenced = schema(serde_json::json!({ "$ref": "#/components/schemas/Pet" }));
         assert_eq!(
@@ -14198,6 +14237,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let map = schema(serde_json::json!({
             "type": "object",
@@ -14278,6 +14318,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let array = schema(serde_json::json!({
             "type": "array",
@@ -14346,6 +14387,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let inferred = schema(serde_json::json!({
             "oneOf": [
@@ -14422,6 +14464,7 @@ mod tests {
             schemas: &components.components.schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let mapped = schema(serde_json::json!({
             "oneOf": [
@@ -14559,6 +14602,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let array_union = schema(serde_json::json!({
             "type": "array",
@@ -15407,6 +15451,7 @@ mod tests {
             schemas: &doc.components.schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         builder.add_named("Lookup", &doc.components.schemas["Lookup"]);
         let Some(TypeDecl::Object(lookup)) =
@@ -15878,6 +15923,7 @@ mod tests {
             schemas: &schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         let events = schema(serde_json::json!({
             "type": ["array", "null"],
@@ -15945,6 +15991,7 @@ mod tests {
             schemas: &doc.components.schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         flattening.add_named("Child", &doc.components.schemas["Child"]);
         let child = flattening
@@ -16005,6 +16052,7 @@ mod tests {
             schemas: &doc.components.schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         assert_eq!(
             builder.field_type_ref("Record", "metadata", &Schema::default()),
@@ -16177,6 +16225,7 @@ mod tests {
             schemas,
             strip_discriminant: std::collections::HashMap::new(),
             building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
         };
         builder.add_named("Envelope", &schemas["Envelope"]);
 
@@ -16604,6 +16653,7 @@ mod tests {
                 schemas: &schemas,
                 strip_discriminant: std::collections::HashMap::new(),
                 building_types: std::collections::HashSet::new(),
+                copying_refs: Vec::new(),
             };
             let produced = builder.nested_array_element("Root", &schema(value));
             (

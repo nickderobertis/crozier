@@ -11611,6 +11611,39 @@ paths:
     );
 }
 
+/// A component that reaches itself through an annotated `$ref` — the
+/// `allOf: [$ref, {description}]` form AWS Amplify UI Builder's `ComponentChild`
+/// uses for its own `children` — is copied once at its use site and refers to
+/// the component inside that copy, rather than copying itself without end.
+#[test]
+fn an_annotated_reference_cycle_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Amplify, version: '2021-08-11' }
+paths: {}
+components:
+  schemas:
+    ComponentChild:
+      type: object
+      properties:
+        name: { type: string }
+        children:
+          allOf:
+            - $ref: '#/components/schemas/ComponentChild'
+            - description: The child's own children.
+"##,
+    );
+    let child = &files["src/acme/types/component_child.py"];
+    assert!(child.contains("class ComponentChild("), "{child}");
+    assert!(
+        files
+            .keys()
+            .any(|path| path.ends_with("component_child_children.py")),
+        "{:?}",
+        files.keys()
+    );
+}
+
 /// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
 /// line of its Fern 5.20.0 golden:
 /// - an `anyOf` variant that is one member beside `null` is that member made
