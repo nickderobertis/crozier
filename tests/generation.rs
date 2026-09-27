@@ -12534,3 +12534,92 @@ components:
         files.keys()
     );
 }
+
+/// GitHub's REST description declares unions that reach themselves through a
+/// one-member alias. Exampling one used to follow the alias back into the union
+/// without consuming any of the example — in the union's scoring, in the
+/// member match and in the value itself — until the stack gave out; each now
+/// stops at the alias it is already expanding, and the example is the union's
+/// other member.
+#[test]
+fn a_union_that_reaches_itself_through_an_alias_examples_and_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Hooks, version: 1.0.0 }
+servers:
+  - url: https://api.example.test
+paths:
+  /hooks:
+    post:
+      operationId: createHook
+      description: creates a hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [insecure_ssl]
+              properties:
+                insecure_ssl: { $ref: '#/components/schemas/insecure-ssl' }
+            example: { insecure_ssl: 1 }
+      responses:
+        '201': { description: created }
+        '422': { description: invalid }
+components:
+  schemas:
+    insecure-ssl:
+      oneOf:
+        - $ref: '#/components/schemas/insecure-ssl-flag'
+        - type: integer
+    insecure-ssl-flag:
+      oneOf:
+        - $ref: '#/components/schemas/insecure-ssl'
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("client.create_hook(\n            insecure_ssl=1,\n"),
+        "{client}"
+    );
+}
+
+/// Clarra's and Revel Digital's request models hold a field typed by an array
+/// that names itself (`Nested = List["Nested"]`). Deciding whether that field
+/// serializes through the annotation converter used to follow the alias back
+/// into itself; the alias met again adds nothing to convert, so the field is
+/// written as it is.
+#[test]
+fn a_request_field_typed_by_an_array_that_names_itself_generates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Folders, version: 1.0.0 }
+paths:
+  /folders:
+    post:
+      operationId: createFolder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Folder' }
+      responses:
+        '201': { description: created }
+components:
+  schemas:
+    Folder:
+      type: object
+      properties:
+        name: { type: string }
+        children: { $ref: '#/components/schemas/Nested' }
+    Nested:
+      type: array
+      items: { $ref: '#/components/schemas/Nested' }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(
+        raw.contains("                \"children\": children,\n"),
+        "{raw}"
+    );
+}

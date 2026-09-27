@@ -3249,9 +3249,12 @@ components:
         assert_eq!(again.any_of.as_ref().map(Vec::len), Some(2));
         assert_eq!(again.nullable, Some(true));
         assert_eq!(again.description.as_deref(), Some("the reply"));
-        // A pointer met again while its own copy expands terminates.
+        // A pointer met again while its own copy expands terminates, as the
+        // unknown type: left a reference, the IR expanded it again wherever
+        // it was used.
         let next = &doc.components.schemas["Loop"].properties["next"];
-        assert!(next.reference.is_some());
+        assert!(next.reference.is_none());
+        assert!(next.ty.is_none() && next.properties.is_empty() && next.one_of.is_none());
     }
 
     #[test]

@@ -2169,6 +2169,7 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -2378,6 +2379,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,
@@ -2410,6 +2412,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,
@@ -2643,6 +2646,7 @@ fn reference_entry(
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6487,6 +6491,7 @@ fn client_stream_docstring(
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6616,6 +6621,7 @@ fn client_binary_stream_docstring(
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6713,6 +6719,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -7084,6 +7091,11 @@ struct ExampleCtx<'a> {
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
     /// Fern's `children=[]`.
     building: std::collections::HashSet<String>,
+    /// The aliases whose target is being exampled with an example still
+    /// unconsumed, each with that example: a union alias whose matching member
+    /// is the alias itself (GitHub's REST description declares one) would
+    /// otherwise expand forever.
+    expanding_aliases: Vec<(String, String)>,
     /// Whether values are being rendered for README/reference snippets rather
     /// than executable method docstrings.
     documentation: bool,
@@ -7162,8 +7174,15 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Alias(alias)) = self.find(name) {
+                let expanding = (name.clone(), example.to_string());
+                if self.expanding_aliases.contains(&expanding) {
+                    return None;
+                }
                 let target = alias.target.clone();
-                return self.value_from_example(&target, example);
+                self.expanding_aliases.push(expanding);
+                let value = self.value_from_example(&target, example);
+                self.expanding_aliases.pop();
+                return value;
             }
         }
         if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
@@ -7289,7 +7308,7 @@ impl<'a> ExampleCtx<'a> {
             // `{method, path}` scores best as `OpenAPIDefinition`, which declares
             // neither, so the golden renders the empty result as `HttpRequest()`.
             let projected = self
-                .fern_union_example(variants, &value)
+                .fern_union_example(variants, &value, &mut Vec::new())
                 .filter(|projected| *projected != value);
             let (value, example) = match projected {
                 Some(projected) => {
@@ -7299,6 +7318,9 @@ impl<'a> ExampleCtx<'a> {
                 None => (value, std::borrow::Cow::Borrowed(example)),
             };
             for variant in variants {
+                if self.expands_back(variant, &example) {
+                    continue;
+                }
                 if self.example_matches_type(variant, &value) {
                     return self.value_from_example(variant, &example);
                 }
@@ -7462,33 +7484,67 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether `t` leads, through aliases alone, back into an alias this example
+    /// is already being expanded under: a union member that is the union itself
+    /// again, which could only repeat the expansion it sits in.
+    fn expands_back(&self, t: &TypeRef, example: &str) -> bool {
+        let mut followed: Vec<&str> = Vec::new();
+        let mut current = t;
+        while let TypeRef::Named(name) = current {
+            if followed.contains(&name.as_str()) {
+                return false;
+            }
+            if self
+                .expanding_aliases
+                .iter()
+                .any(|(alias, text)| alias == name && text == example)
+            {
+                return true;
+            }
+            let Some(TypeDecl::Alias(alias)) = self.find(name) else {
+                return false;
+            };
+            followed.push(name);
+            current = &alias.target;
+        }
+        false
+    }
+
     /// The example Fern's importer keeps for an undiscriminated union: the
     /// alternative [`Self::fern_example_score`] ranks highest (the first, on a
     /// tie), with `value` narrowed to what that alternative declares. `None`
     /// where the narrowing is not modelled, leaving `value` as it is.
+    ///
+    /// `visiting` holds the named types entered at this level of `value`: a
+    /// union reaching itself again through its aliases before consuming any of
+    /// the value is a cycle (GitHub's REST description declares such unions),
+    /// which scores nothing and narrows nothing rather than recursing forever.
     fn fern_union_example(
         &self,
         variants: &[TypeRef],
         value: &serde_json::Value,
+        visiting: &mut Vec<String>,
     ) -> Option<serde_json::Value> {
         let mut best: Option<(&TypeRef, i64)> = None;
         for variant in variants {
-            let score = self.fern_example_score(variant, value, 0);
+            let score = self.fern_example_score(variant, value, visiting);
             if best.is_none_or(|(_, top)| score > top) {
                 best = Some((variant, score));
             }
         }
-        self.fern_example_projection(best?.0, value, 0)
+        self.fern_example_projection(best?.0, value, visiting)
     }
 
     /// Fern's `calcExampleHeuristic`: how well `value` fits `t`, counting each
     /// declared property the value supplies up and each it omits down.
-    fn fern_example_score(&self, t: &TypeRef, value: &serde_json::Value, depth: usize) -> i64 {
-        if depth > 32 {
-            return 0;
-        }
+    fn fern_example_score(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> i64 {
         match t {
-            TypeRef::Optional(inner) => self.fern_example_score(inner, value, depth + 1),
+            TypeRef::Optional(inner) => self.fern_example_score(inner, value, visiting),
             TypeRef::Literal(literals) => {
                 i64::from(
                     value
@@ -7496,8 +7552,10 @@ impl<'a> ExampleCtx<'a> {
                         .is_some_and(|text| literals.iter().any(|literal| literal == text)),
                 ) * 5
             }
+            TypeRef::Named(name) if visiting.contains(name) => 0,
             TypeRef::Named(name) => {
-                match self.find(name) {
+                visiting.push(name.clone());
+                let score = match self.find(name) {
                     Some(TypeDecl::Enum(decl)) => {
                         i64::from(value.as_str().is_some_and(|text| {
                             decl.members.iter().any(|member| member.value == text)
@@ -7512,7 +7570,11 @@ impl<'a> ExampleCtx<'a> {
                             .map(|(_, wire_name, type_ref, _, _, _)| {
                                 match values.get(wire_name).filter(|field| !field.is_null()) {
                                     Some(field) => {
-                                        1 + self.fern_example_score(type_ref, field, depth + 1)
+                                        1 + self.fern_example_score(
+                                            type_ref,
+                                            field,
+                                            &mut Vec::new(),
+                                        )
                                     }
                                     None => -1,
                                 }
@@ -7520,26 +7582,28 @@ impl<'a> ExampleCtx<'a> {
                             .sum()
                     }
                     Some(TypeDecl::Alias(alias)) => {
-                        self.fern_example_score(&alias.target, value, depth + 1)
+                        self.fern_example_score(&alias.target, value, visiting)
                     }
                     _ => 0,
-                }
+                };
+                visiting.pop();
+                score
             }
             TypeRef::Union(variants) => variants
                 .iter()
-                .map(|variant| self.fern_example_score(variant, value, depth + 1))
+                .map(|variant| self.fern_example_score(variant, value, visiting))
                 .max()
                 .unwrap_or(0),
             TypeRef::List(inner) | TypeRef::Set(inner) => value.as_array().map_or(0, |items| {
                 items
                     .iter()
-                    .map(|item| self.fern_example_score(inner, item, depth + 1))
+                    .map(|item| self.fern_example_score(inner, item, &mut Vec::new()))
                     .sum()
             }),
             TypeRef::Dict(_, inner) => value.as_object().map_or(0, |values| {
                 values
                     .values()
-                    .map(|item| self.fern_example_score(inner, item, depth + 1))
+                    .map(|item| self.fern_example_score(inner, item, &mut Vec::new()))
                     .sum()
             }),
             TypeRef::Primitive(Prim::Any) => 0,
@@ -7562,60 +7626,31 @@ impl<'a> ExampleCtx<'a> {
         &self,
         t: &TypeRef,
         value: &serde_json::Value,
-        depth: usize,
+        visiting: &mut Vec<String>,
     ) -> Option<serde_json::Value> {
-        if depth > 32 {
-            return None;
-        }
         match t {
             TypeRef::Optional(inner) if !value.is_null() => {
-                self.fern_example_projection(inner, value, depth + 1)
+                self.fern_example_projection(inner, value, visiting)
             }
-            TypeRef::Named(name) => match self.find(name) {
-                Some(TypeDecl::Object(object)) => {
-                    let fields = self.object_fields(object);
-                    let empty = serde_json::Map::new();
-                    let values = value.as_object().unwrap_or(&empty);
-                    let mut kept = serde_json::Map::new();
-                    for (_, wire_name, type_ref, required, _, _) in fields {
-                        match values.get(&wire_name).filter(|field| !field.is_null()) {
-                            Some(field) => {
-                                let field =
-                                    self.fern_example_projection(&type_ref, field, depth + 1)?;
-                                kept.insert(wire_name, field);
-                            }
-                            // A required property the example omits is built
-                            // with no example — a string is its own name, as
-                            // MockServer's `ExpectationId(id="id")` shows.
-                            None if required && self.resolves_to_string(&type_ref) => {
-                                kept.insert(
-                                    wire_name.clone(),
-                                    serde_json::Value::String(wire_name),
-                                );
-                            }
-                            None if required => return None,
-                            None => {}
-                        }
-                    }
-                    Some(serde_json::Value::Object(kept))
-                }
-                Some(TypeDecl::Alias(alias)) => {
-                    self.fern_example_projection(&alias.target, value, depth + 1)
-                }
-                _ => Some(value.clone()),
-            },
-            TypeRef::Union(variants) => self.fern_union_example(variants, value),
+            TypeRef::Named(name) if visiting.contains(name) => None,
+            TypeRef::Named(name) => {
+                visiting.push(name.clone());
+                let projected = self.fern_named_projection(name, value, visiting);
+                visiting.pop();
+                projected
+            }
+            TypeRef::Union(variants) => self.fern_union_example(variants, value, visiting),
             TypeRef::List(inner) | TypeRef::Set(inner) => match value.as_array() {
                 Some(items) => items
                     .iter()
-                    .map(|item| self.fern_example_projection(inner, item, depth + 1))
+                    .map(|item| self.fern_example_projection(inner, item, &mut Vec::new()))
                     .collect::<Option<Vec<_>>>()
                     .map(serde_json::Value::Array),
                 None if self.resolves_to_object(inner) => {
                     let item = self.fern_example_projection(
                         inner,
                         &serde_json::Value::Object(serde_json::Map::new()),
-                        depth + 1,
+                        &mut Vec::new(),
                     )?;
                     Some(serde_json::Value::Array(vec![item]))
                 }
@@ -7626,7 +7661,7 @@ impl<'a> ExampleCtx<'a> {
                 values
                     .iter()
                     .map(|(key, item)| {
-                        self.fern_example_projection(inner, item, depth + 1)
+                        self.fern_example_projection(inner, item, &mut Vec::new())
                             .map(|item| (key.clone(), item))
                     })
                     .collect::<Option<serde_json::Map<_, _>>>()
@@ -7636,9 +7671,63 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// [`Self::fern_example_projection`] of the named type `name`.
+    fn fern_named_projection(
+        &self,
+        name: &str,
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> Option<serde_json::Value> {
+        match self.find(name) {
+            Some(TypeDecl::Object(object)) => {
+                let fields = self.object_fields(object);
+                let empty = serde_json::Map::new();
+                let values = value.as_object().unwrap_or(&empty);
+                let mut kept = serde_json::Map::new();
+                for (_, wire_name, type_ref, required, _, _) in fields {
+                    match values.get(&wire_name).filter(|field| !field.is_null()) {
+                        Some(field) => {
+                            let field =
+                                self.fern_example_projection(&type_ref, field, &mut Vec::new())?;
+                            kept.insert(wire_name, field);
+                        }
+                        // A required property the example omits is built
+                        // with no example — a string is its own name, as
+                        // MockServer's `ExpectationId(id="id")` shows.
+                        None if required && self.resolves_to_string(&type_ref) => {
+                            kept.insert(wire_name.clone(), serde_json::Value::String(wire_name));
+                        }
+                        None if required => return None,
+                        None => {}
+                    }
+                }
+                Some(serde_json::Value::Object(kept))
+            }
+            Some(TypeDecl::Alias(alias)) => {
+                self.fern_example_projection(&alias.target, value, visiting)
+            }
+            _ => Some(value.clone()),
+        }
+    }
+
     fn example_matches_type(&self, t: &TypeRef, value: &serde_json::Value) -> bool {
+        self.example_matches_type_through(t, value, &mut Vec::new())
+    }
+
+    /// [`Self::example_matches_type`], with the aliases already followed: none
+    /// of its arms reads into `value`, so an alias met again is a union that
+    /// names itself (GitHub's REST description declares such unions) and takes
+    /// nothing more than its other members do.
+    fn example_matches_type_through(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        aliases: &mut Vec<String>,
+    ) -> bool {
         match t {
-            TypeRef::Optional(inner) => value.is_null() || self.example_matches_type(inner, value),
+            TypeRef::Optional(inner) => {
+                value.is_null() || self.example_matches_type_through(inner, value, aliases)
+            }
             TypeRef::Named(name) => match self.find(name) {
                 // A model with no fields takes any example: Milvus's `upsert`
                 // example sends `data` as a list, and Fern still renders the
@@ -7656,7 +7745,13 @@ impl<'a> ExampleCtx<'a> {
                                 .any(|(_, wire_name, _, _, _, _)| wire_name == key)
                         })
                 }),
-                Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
+                Some(TypeDecl::Alias(_)) if aliases.contains(name) => false,
+                Some(TypeDecl::Alias(alias)) => {
+                    aliases.push(name.clone());
+                    let matches = self.example_matches_type_through(&alias.target, value, aliases);
+                    aliases.pop();
+                    matches
+                }
                 // An enum takes only its own values: Primula Tracker's
                 // `intended_start_date` is `Union[<TBD enum>, datetime.date]`, and
                 // the golden constructs its `2030-09-01` example as the date.
@@ -7667,7 +7762,7 @@ impl<'a> ExampleCtx<'a> {
             },
             TypeRef::Union(variants) => variants
                 .iter()
-                .any(|variant| self.example_matches_type(variant, value)),
+                .any(|variant| self.example_matches_type_through(variant, value, aliases)),
             TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
             TypeRef::Dict(_, _) => value.is_object(),
             TypeRef::Primitive(Prim::Str | Prim::Bytes | Prim::Datetime | Prim::Date)
@@ -11548,6 +11643,7 @@ mod tests {
             has_environment: false,
             global_headers: &[],
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,

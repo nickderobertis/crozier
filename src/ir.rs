@@ -6686,9 +6686,18 @@ fn append_request_fields(
 /// true when it references (through collections/optionals) a generated object or a
 /// union alias, whose members carry field aliases that must be respected on write.
 fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
+    type_needs_convert_through(t, types, &mut Vec::new())
+}
+
+/// [`type_needs_convert`], with the aliases already followed: an alias met again
+/// names itself through a collection (Clarra's and Revel Digital's request
+/// models declare one), which adds nothing to convert.
+fn type_needs_convert_through(t: &TypeRef, types: &[TypeDecl], seen: &mut Vec<String>) -> bool {
     match t {
+        TypeRef::Named(name) if seen.contains(name) => false,
         TypeRef::Named(name) => {
-            types.iter().any(|d| match d {
+            seen.push(name.clone());
+            let converts = types.iter().any(|d| match d {
                 TypeDecl::Object(o) => o.name == *name,
                 // A union alias always converts: its annotation is what Fern
                 // serializes the selected member against, so oSPARC's
@@ -6700,22 +6709,24 @@ fn type_needs_convert(t: &TypeRef, types: &[TypeDecl]) -> bool {
                     a.name == *name
                         && match &a.target {
                             TypeRef::Union(_) => true,
-                            target => type_needs_convert(target, types),
+                            target => type_needs_convert_through(target, types, seen),
                         }
                 }
                 // A discriminated union's wrapper models carry field aliases too.
                 TypeDecl::DiscriminatedUnion(u) => u.name == *name,
                 // An enum is a plain `str` value — no field aliases to respect.
                 TypeDecl::Enum(_) => false,
-            })
+            });
+            seen.pop();
+            converts
         }
         TypeRef::Optional(inner) | TypeRef::List(inner) | TypeRef::Set(inner) => {
-            type_needs_convert(inner, types)
+            type_needs_convert_through(inner, types, seen)
         }
-        TypeRef::Dict(_, value) => type_needs_convert(value, types),
+        TypeRef::Dict(_, value) => type_needs_convert_through(value, types, seen),
         TypeRef::Union(variants) => variants
             .iter()
-            .any(|variant| type_needs_convert(variant, types)),
+            .any(|variant| type_needs_convert_through(variant, types, seen)),
         _ => false,
     }
 }
