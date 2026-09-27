@@ -6997,7 +6997,9 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
-                let last_comma = !matches!(self, Example::DocDict(_));
+                // Like a list, a wrapped dict of one entry takes no trailing
+                // comma: MockServer's `{"spec": "asyncapi: …"}` wraps bare.
+                let last_comma = !matches!(self, Example::DocDict(_)) && pairs.len() > 1;
                 let body = pairs
                     .iter()
                     .enumerate()
@@ -7231,14 +7233,12 @@ impl<'a> ExampleCtx<'a> {
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            let mut value: serde_json::Value = serde_json::from_str(example).ok()?;
+            let value: serde_json::Value = serde_json::from_str(example).ok()?;
             // A `null` member is no argument: Primula Tracker's student update
             // declares `{transition_date: …, transition_room_override_id: null}`
             // for its `Union[Any]` body, and the golden passes only the date.
-            if let serde_json::Value::Object(fields) = &mut value {
-                fields.retain(|_, field| !field.is_null());
-            }
-            let rendered = example_from_json(value);
+            let value = fern_unknown_example(value)?;
+            let rendered = example_from_json_as(value, !self.documentation);
             return Some(if self.reference {
                 Example::Atom(rendered.flat())
             } else {
@@ -7262,7 +7262,7 @@ impl<'a> ExampleCtx<'a> {
                     }
                     let literal = value.to_string();
                     self.value_from_example(inner, &literal)
-                        .unwrap_or_else(|| example_from_json(value))
+                        .unwrap_or_else(|| example_from_json_as(value, !self.documentation))
                 })
                 .collect();
             return Some(if self.documentation {
@@ -7282,9 +7282,25 @@ impl<'a> ExampleCtx<'a> {
                     .find(|variant| matches!(variant, TypeRef::List(_) | TypeRef::Set(_)))
                     .map(|variant| self.value(variant, Slot::Plain));
             }
+            // Fern's importer builds the example for the alternative its
+            // heuristic scores highest, keeping only what that alternative
+            // declares; the SDK generator then renders the result with the first
+            // alternative that accepts it. MockServer's `debugMismatch` body
+            // `{method, path}` scores best as `OpenAPIDefinition`, which declares
+            // neither, so the golden renders the empty result as `HttpRequest()`.
+            let projected = self
+                .fern_union_example(variants, &value)
+                .filter(|projected| *projected != value);
+            let (value, example) = match projected {
+                Some(projected) => {
+                    let text = projected.to_string();
+                    (projected, std::borrow::Cow::Owned(text))
+                }
+                None => (value, std::borrow::Cow::Borrowed(example)),
+            };
             for variant in variants {
                 if self.example_matches_type(variant, &value) {
-                    return self.value_from_example(variant, example);
+                    return self.value_from_example(variant, &example);
                 }
             }
             return None;
@@ -7340,7 +7356,9 @@ impl<'a> ExampleCtx<'a> {
                             Some(value) => {
                                 let literal = value.to_string();
                                 self.value_from_example(&type_ref, &literal)
-                                    .unwrap_or_else(|| example_from_json(value.clone()))
+                                    .unwrap_or_else(|| {
+                                        example_from_json_as(value.clone(), !self.documentation)
+                                    })
                             }
                             _ => self.value(&type_ref, Slot::Named(&wire_name)),
                         };
@@ -7351,7 +7369,19 @@ impl<'a> ExampleCtx<'a> {
             }
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            let mut value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // A free-form map's values are unknowns, pruned the way Fern prunes
+            // one: MockServer's Pact import `body: {orders: []}` is `{}`.
+            if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &mut value) {
+                if self.resolves_to_any(inner) {
+                    *fields = std::mem::take(fields)
+                        .into_iter()
+                        .filter_map(|(key, field)| {
+                            fern_unknown_example(field).map(|field| (key, field))
+                        })
+                        .collect();
+                }
+            }
             // An empty map carries no example value, so Fern synthesizes one as it
             // does for an empty array (`dot-ai`'s `metadata: {}` is exampled
             // `{"key": "value"}`).
@@ -7360,18 +7390,54 @@ impl<'a> ExampleCtx<'a> {
             {
                 return None;
             }
-            if self.reference && matches!(t, TypeRef::Dict(_, _)) {
+            // A map of models constructs each value: MockServer's chaos stage
+            // `profiles: {api.example.com: {errorStatus: 500, …}}` is
+            // `{"api.example.com": HttpChaosProfile(error_status=500, …)}`.
+            if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &value) {
+                if self.resolves_to_object(inner) {
+                    let pairs = fields
+                        .iter()
+                        .map(|(key, field)| {
+                            let rendered = self
+                                .value_from_example(inner, &field.to_string())
+                                .unwrap_or_else(|| {
+                                    example_from_json_as(field.clone(), !self.documentation)
+                                });
+                            (key.clone(), rendered)
+                        })
+                        .collect();
+                    return Some(if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    });
+                }
+            }
+            if let (true, TypeRef::Dict(_, inner)) = (self.reference, t) {
                 let serde_json::Value::Object(fields) = value else {
                     return None;
                 };
+                // `reference.md` writes a free-form value on one line and a
+                // typed one by its type: MockServer's HAR `log` is one line,
+                // while its WASM test's `Dict[str, List[str]]` headers wrap
+                // `["acme"]` as a list.
+                let unknown = self.resolves_to_any(inner);
                 return Some(Example::ReferenceDict(
                     fields
                         .into_iter()
-                        .map(|(key, value)| (key, example_from_json(value)))
+                        .map(|(key, value)| {
+                            let rendered = if unknown {
+                                Example::Atom(example_from_json_as(value, false).flat())
+                            } else {
+                                self.value_from_example(inner, &value.to_string())
+                                    .unwrap_or_else(|| example_from_json_as(value, false))
+                            };
+                            (key, rendered)
+                        })
                         .collect(),
                 ));
             }
-            return Some(example_from_json(value));
+            return Some(example_from_json_as(value, !self.documentation));
         }
         let TypeRef::Named(name) = t else {
             return None;
@@ -7393,6 +7459,180 @@ impl<'a> ExampleCtx<'a> {
                 Some(Example::Atom(format!("{name}.{member_name}")))
             }
             TypeDecl::DiscriminatedUnion(_) => None,
+        }
+    }
+
+    /// The example Fern's importer keeps for an undiscriminated union: the
+    /// alternative [`Self::fern_example_score`] ranks highest (the first, on a
+    /// tie), with `value` narrowed to what that alternative declares. `None`
+    /// where the narrowing is not modelled, leaving `value` as it is.
+    fn fern_union_example(
+        &self,
+        variants: &[TypeRef],
+        value: &serde_json::Value,
+    ) -> Option<serde_json::Value> {
+        let mut best: Option<(&TypeRef, i64)> = None;
+        for variant in variants {
+            let score = self.fern_example_score(variant, value, 0);
+            if best.is_none_or(|(_, top)| score > top) {
+                best = Some((variant, score));
+            }
+        }
+        self.fern_example_projection(best?.0, value, 0)
+    }
+
+    /// Fern's `calcExampleHeuristic`: how well `value` fits `t`, counting each
+    /// declared property the value supplies up and each it omits down.
+    fn fern_example_score(&self, t: &TypeRef, value: &serde_json::Value, depth: usize) -> i64 {
+        if depth > 32 {
+            return 0;
+        }
+        match t {
+            TypeRef::Optional(inner) => self.fern_example_score(inner, value, depth + 1),
+            TypeRef::Literal(literals) => {
+                i64::from(
+                    value
+                        .as_str()
+                        .is_some_and(|text| literals.iter().any(|literal| literal == text)),
+                ) * 5
+            }
+            TypeRef::Named(name) => {
+                match self.find(name) {
+                    Some(TypeDecl::Enum(decl)) => {
+                        i64::from(value.as_str().is_some_and(|text| {
+                            decl.members.iter().any(|member| member.value == text)
+                        })) * 5
+                    }
+                    Some(TypeDecl::Object(object)) => {
+                        let Some(values) = value.as_object() else {
+                            return 0;
+                        };
+                        self.object_fields(object)
+                            .iter()
+                            .map(|(_, wire_name, type_ref, _, _, _)| {
+                                match values.get(wire_name).filter(|field| !field.is_null()) {
+                                    Some(field) => {
+                                        1 + self.fern_example_score(type_ref, field, depth + 1)
+                                    }
+                                    None => -1,
+                                }
+                            })
+                            .sum()
+                    }
+                    Some(TypeDecl::Alias(alias)) => {
+                        self.fern_example_score(&alias.target, value, depth + 1)
+                    }
+                    _ => 0,
+                }
+            }
+            TypeRef::Union(variants) => variants
+                .iter()
+                .map(|variant| self.fern_example_score(variant, value, depth + 1))
+                .max()
+                .unwrap_or(0),
+            TypeRef::List(inner) | TypeRef::Set(inner) => value.as_array().map_or(0, |items| {
+                items
+                    .iter()
+                    .map(|item| self.fern_example_score(inner, item, depth + 1))
+                    .sum()
+            }),
+            TypeRef::Dict(_, inner) => value.as_object().map_or(0, |values| {
+                values
+                    .values()
+                    .map(|item| self.fern_example_score(inner, item, depth + 1))
+                    .sum()
+            }),
+            TypeRef::Primitive(Prim::Any) => 0,
+            TypeRef::Primitive(_) if value.is_null() => 0,
+            TypeRef::Primitive(_) => {
+                if self.example_matches_type(t, value) {
+                    1
+                } else {
+                    -1
+                }
+            }
+        }
+    }
+
+    /// `value` as Fern's importer builds it for `t`: an object keeps only the
+    /// properties it declares, and an array handed a non-array builds one item
+    /// with no example — MockServer's `headers: {Host: [...]}` against
+    /// `List[KeyToMultiValueZeroItem]` is `[KeyToMultiValueZeroItem()]`.
+    fn fern_example_projection(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        depth: usize,
+    ) -> Option<serde_json::Value> {
+        if depth > 32 {
+            return None;
+        }
+        match t {
+            TypeRef::Optional(inner) if !value.is_null() => {
+                self.fern_example_projection(inner, value, depth + 1)
+            }
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Object(object)) => {
+                    let fields = self.object_fields(object);
+                    let empty = serde_json::Map::new();
+                    let values = value.as_object().unwrap_or(&empty);
+                    let mut kept = serde_json::Map::new();
+                    for (_, wire_name, type_ref, required, _, _) in fields {
+                        match values.get(&wire_name).filter(|field| !field.is_null()) {
+                            Some(field) => {
+                                let field =
+                                    self.fern_example_projection(&type_ref, field, depth + 1)?;
+                                kept.insert(wire_name, field);
+                            }
+                            // A required property the example omits is built
+                            // with no example — a string is its own name, as
+                            // MockServer's `ExpectationId(id="id")` shows.
+                            None if required && self.resolves_to_string(&type_ref) => {
+                                kept.insert(
+                                    wire_name.clone(),
+                                    serde_json::Value::String(wire_name),
+                                );
+                            }
+                            None if required => return None,
+                            None => {}
+                        }
+                    }
+                    Some(serde_json::Value::Object(kept))
+                }
+                Some(TypeDecl::Alias(alias)) => {
+                    self.fern_example_projection(&alias.target, value, depth + 1)
+                }
+                _ => Some(value.clone()),
+            },
+            TypeRef::Union(variants) => self.fern_union_example(variants, value),
+            TypeRef::List(inner) | TypeRef::Set(inner) => match value.as_array() {
+                Some(items) => items
+                    .iter()
+                    .map(|item| self.fern_example_projection(inner, item, depth + 1))
+                    .collect::<Option<Vec<_>>>()
+                    .map(serde_json::Value::Array),
+                None if self.resolves_to_object(inner) => {
+                    let item = self.fern_example_projection(
+                        inner,
+                        &serde_json::Value::Object(serde_json::Map::new()),
+                        depth + 1,
+                    )?;
+                    Some(serde_json::Value::Array(vec![item]))
+                }
+                None => None,
+            },
+            TypeRef::Dict(_, inner) => {
+                let values = value.as_object()?;
+                values
+                    .iter()
+                    .map(|(key, item)| {
+                        self.fern_example_projection(inner, item, depth + 1)
+                            .map(|item| (key.clone(), item))
+                    })
+                    .collect::<Option<serde_json::Map<_, _>>>()
+                    .map(serde_json::Value::Object)
+            }
+            _ => Some(value.clone()),
         }
     }
 
@@ -7489,6 +7729,19 @@ impl<'a> ExampleCtx<'a> {
             }
             TypeRef::Optional(inner) => self.resolves_to_building(inner),
             TypeRef::Union(variants) => variants.iter().any(|v| self.resolves_to_building(v)),
+            _ => false,
+        }
+    }
+
+    /// Whether a type resolves (through aliases/optionals) to a generated model.
+    fn resolves_to_object(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.resolves_to_object(inner),
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::Object(_)) => true,
+                Some(TypeDecl::Alias(a)) => self.resolves_to_object(&a.target),
+                _ => false,
+            },
             _ => false,
         }
     }
@@ -8155,17 +8408,52 @@ fn is_unknown_map(t: &TypeRef) -> bool {
         || matches!(value.as_ref(), TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)))
 }
 
-fn example_from_json(value: serde_json::Value) -> Example {
+/// A free-form (`Any`) example as Fern's importer keeps it: a `null` and an
+/// empty array carry no value, so they leave the map or list holding them, at
+/// any depth — MockServer's HAR import drops each entry's `"headers": []`.
+fn fern_unknown_example(value: serde_json::Value) -> Option<serde_json::Value> {
     match value {
-        serde_json::Value::Array(items) => {
-            Example::ExplicitList(items.into_iter().map(example_from_json).collect())
-        }
+        serde_json::Value::Null => None,
+        serde_json::Value::Array(items) if items.is_empty() => None,
+        serde_json::Value::Array(items) => Some(serde_json::Value::Array(
+            items.into_iter().filter_map(fern_unknown_example).collect(),
+        )),
+        serde_json::Value::Object(fields) => Some(serde_json::Value::Object(
+            fields
+                .into_iter()
+                .filter_map(|(key, field)| fern_unknown_example(field).map(|field| (key, field)))
+                .collect(),
+        )),
+        scalar => Some(scalar),
+    }
+}
+
+/// A JSON example value as an [`Example`], spelling a string that holds `"`
+/// but no `'` the way Python's `repr` does when `python_repr` is set — a method docstring's
+/// example does (MockServer's nested `"body": '{"orders":[]}'`), while
+/// `reference.md` keeps the escaped JSON spelling.
+fn example_from_json_as(value: serde_json::Value, python_repr: bool) -> Example {
+    match value {
+        serde_json::Value::Array(items) => Example::ExplicitList(
+            items
+                .into_iter()
+                .map(|item| example_from_json_as(item, python_repr))
+                .collect(),
+        ),
         serde_json::Value::Object(fields) => Example::Dict(
             fields
                 .into_iter()
-                .map(|(key, value)| (key, example_from_json(value)))
+                .map(|(key, value)| (key, example_from_json_as(value, python_repr)))
                 .collect(),
         ),
+        serde_json::Value::String(value)
+            if python_repr && value.contains('"') && !value.contains('\'') =>
+        {
+            Example::Atom(
+                crate::ir::example_literal(&serde_json::Value::String(value.clone()))
+                    .unwrap_or_else(|| format!("{value:?}")),
+            )
+        }
         serde_json::Value::String(value) => Example::Atom(format!("{value:?}")),
         serde_json::Value::Number(value) => Example::Atom(value.to_string()),
         serde_json::Value::Bool(value) => {
@@ -9740,7 +10028,7 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, environment, escape_py_str,
-        example_from_json, example_import_cmp, field_decl, generate, natural_cmp,
+        example_from_json_as, example_import_cmp, field_decl, generate, natural_cmp,
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
         render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
@@ -11486,10 +11774,22 @@ mod tests {
             .value_from_example(&TypeRef::Primitive(Prim::Datetime), "not-json")
             .is_none());
 
-        let json = example_from_json(serde_json::json!({
-            "items": ["x", 2, false, null]
-        }));
+        let json = example_from_json_as(
+            serde_json::json!({
+                "items": ["x", 2, false, null]
+            }),
+            false,
+        );
         assert_eq!(json.flat(), r#"{"items": ["x", 2, False, None]}"#);
+        let quoted = serde_json::json!({"body": "{\"orders\":[]}", "note": "it's \"x\""});
+        assert_eq!(
+            example_from_json_as(quoted.clone(), true).flat(),
+            r#"{"body": '{"orders":[]}', "note": "it's \"x\""}"#
+        );
+        assert_eq!(
+            example_from_json_as(quoted, false).flat(),
+            r#"{"body": "{\"orders\":[]}", "note": "it's \"x\""}"#
+        );
     }
 
     #[test]

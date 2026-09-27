@@ -4774,12 +4774,19 @@ fn resolve_request_body(
     // …and so does a referenced map, whose component Fern passes whole as the
     // body: CloudPDF's `doc.pages.flatten` declares `required: false` over
     // `$ref DocPagesFlattenRequest` (`additionalProperties: {}`), and its method
-    // takes a required `request: DocPagesFlattenRequest`.
+    // takes a required `request: DocPagesFlattenRequest`. A referenced
+    // composition is passed whole the same way: MockServer's recording
+    // promotion declares `required: false` over `$ref RequestDefinition`, a
+    // `oneOf`, and takes a required `request: RequestDefinition`.
     let referenced_map = schema
         .reference
         .as_deref()
         .and_then(|reference| resolve_ref(doc, reference))
-        .is_some_and(is_map);
+        .is_some_and(|target| {
+            is_map(target)
+                || (target.properties.is_empty()
+                    && (target.one_of.is_some() || target.any_of.is_some()))
+        });
     let required = (media_type == "*/*" || rb.required != Some(false) || referenced_map)
         && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
@@ -5257,10 +5264,14 @@ fn reference_body_example<'a>(
             .find(|(media_type, _)| is_json_like_media_type(media_type))
             .map(|(_, media)| media)
     })?;
-    media
+    // A singular `example` beside the named ones is the one documented:
+    // MockServer's scenario update declares both, and `reference.md` shows the
+    // `example`'s timed transition where the docstring shows `setState`.
+    let named = media
         .examples
         .values()
-        .find_map(|example| component_example_value(doc, example))
+        .find_map(|example| component_example_value(doc, example))?;
+    Some(media.example.as_ref().unwrap_or(named))
 }
 
 /// A media type Fern sends as raw bytes (its `MediaType.isBinary`): any image,

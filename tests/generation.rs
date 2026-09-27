@@ -7104,7 +7104,7 @@ components:
     // A `null` in a list whose items are a string alias is filled from the field
     // name; the same `null` in a list of an enum is not — it takes the enum's own
     // synthesized member. A map example whose value is a JSON array keeps that
-    // array.
+    // array, wrapped as a list the way Fern 5.20.0 wraps it for this fragment.
     let reference = &files["reference.md"];
     assert!(
         reference.contains(concat!(
@@ -7118,7 +7118,9 @@ components:
             "        Role.ADMIN\n",
             "    ],\n",
             "    labels={\n",
-            "        \"roles\": [\"admin\"]\n",
+            "        \"roles\": [\n",
+            "            \"admin\"\n",
+            "        ]\n",
             "    },\n",
             ")\n",
         )),
@@ -12150,5 +12152,229 @@ components:
     assert!(
         suggestions.contains("\nupdate_forward_refs(PutGenerateExpectationResponse)\n"),
         "{suggestions}"
+    );
+}
+
+/// MockServer's worked examples (corpus row 232), each assertion a line of its
+/// Fern 5.20.0 golden:
+/// - an undiscriminated union's example is built for the alternative Fern's
+///   heuristic ranks highest, narrowed to what it declares, then rendered with
+///   the first alternative that takes it — so `{path}` against
+///   `Union[RequestDefinition, ExpectationId]` is `ExpectationId(id="id")`, and a
+///   map against `List[…ZeroItem]` builds one empty item;
+/// - an optional `$ref` to a composition is still a required argument;
+/// - a free-form value drops its empty arrays, and `reference.md` writes it on
+///   one line while wrapping a typed list;
+/// - a map of models constructs each value, and a wrapped one-entry map takes
+///   no trailing comma;
+/// - `reference.md` documents the singular `example` beside named ones.
+#[test]
+fn mockserver_union_projection_and_free_form_examples() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info: { title: MockServer, version: 5.15.x }
+servers:
+  - url: 'http://localhost:1080/'
+paths:
+  /clear:
+    put:
+      tags: [control]
+      summary: clear matching expectations
+      description: clears expectations matching the request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/RequestDefinition'
+                - $ref: '#/components/schemas/ExpectationId'
+            example: { path: /api/users }
+      responses:
+        '200': { description: cleared }
+        '400': { description: invalid }
+  /promote:
+    put:
+      tags: [control]
+      summary: promote recorded traffic
+      description: promotes recorded exchanges
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestDefinition' }
+            example: { method: GET, path: /api/unknown-endpoint }
+      responses:
+        '200': { description: promoted }
+        '400': { description: invalid }
+  /import:
+    put:
+      tags: [control]
+      summary: import a HAR
+      description: imports recorded traffic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, description: a HAR export }
+            example:
+              log:
+                version: '1.2'
+                entries:
+                  - request: { method: GET, url: 'http://example.com/api/users', headers: [] }
+                    response: { status: 200, content: { text: '{"users":[]}' } }
+      responses:
+        '200': { description: imported }
+        '400': { description: invalid }
+  /stages:
+    put:
+      tags: [chaos]
+      summary: save a chaos stage
+      description: saves a stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChaosStage' }
+            example:
+              profiles: { payments.svc: { errorStatus: 503, errorProbability: 0.5 } }
+              headers: { x-tenant: [acme] }
+              matcher: { headers: { Host: [target.svc] } }
+      responses:
+        '200': { description: saved }
+        '400': { description: invalid }
+  /scenario:
+    put:
+      tags: [scenario]
+      summary: set a scenario state
+      description: sets the state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { type: string }
+                nextState: { type: string }
+            examples:
+              setState: { value: { state: Deploying } }
+            example: { state: Pending, nextState: Completed }
+      responses:
+        '200': { description: set }
+        '400': { description: invalid }
+components:
+  schemas:
+    HttpRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        method: { type: string }
+        path: { type: string }
+        headers: { $ref: '#/components/schemas/KeyToMultiValue' }
+        body: { type: string }
+        cookies: { type: object, additionalProperties: { type: string } }
+        keepAlive: { type: boolean }
+        secure: { type: boolean }
+        socketAddress: { type: string }
+        queryStringParameters: { $ref: '#/components/schemas/KeyToMultiValue' }
+    OpenAPIDefinition:
+      type: object
+      additionalProperties: false
+      properties:
+        specUrlOrPayload: { type: string }
+        operationId: { type: string }
+    RequestDefinition:
+      oneOf:
+        - $ref: '#/components/schemas/HttpRequest'
+        - $ref: '#/components/schemas/OpenAPIDefinition'
+    ExpectationId:
+      type: object
+      additionalProperties: false
+      properties: { id: { type: string } }
+      required: [id]
+    KeyToMultiValue:
+      oneOf:
+        - type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              values: { type: array, items: { type: string } }
+        - type: object
+          properties:
+            keyMatchStyle: { type: string, enum: [MATCHING_KEY, SUB_SET] }
+    HttpChaosProfile:
+      type: object
+      properties:
+        errorStatus: { type: integer }
+        errorProbability: { type: number }
+    ChaosStage:
+      type: object
+      properties:
+        profiles:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/HttpChaosProfile' }
+        headers:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }
+        matcher: { $ref: '#/components/schemas/HttpRequest' }
+"##,
+    );
+    let control = &files["src/acme/control/client.py"];
+    assert!(
+        control.contains(
+            "            request=ExpectationId(\n                id=\"id\",\n            ),\n"
+        ),
+        "{control}"
+    );
+    assert!(
+        control.contains("            request=HttpRequest(),\n"),
+        "{control}"
+    );
+    assert!(!control.contains("\"headers\": []"), "{control}");
+    assert!(
+        control.contains("                    ],\n                }\n            },\n        )\n"),
+        "{control}"
+    );
+    assert!(
+        control.contains(
+            "                                \"content\": {\"text\": '{\"users\":[]}'},\n"
+        ),
+        "{control}"
+    );
+    let raw = &files["src/acme/control/raw_client.py"];
+    assert!(
+        raw.contains("self, *, request: RequestDefinition, request_options"),
+        "{raw}"
+    );
+    let chaos = &files["src/acme/chaos/client.py"];
+    assert!(
+        chaos.contains(
+            "            profiles={\n                \"payments.svc\": HttpChaosProfile(\n                    error_status=503,\n                    error_probability=0.5,\n                )\n            },\n"
+        ),
+        "{chaos}"
+    );
+    assert!(
+        chaos.contains("            matcher=HttpRequest(\n                headers=[KeyToMultiValueZeroItem()],\n"),
+        "{chaos}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains(
+            "        \"log\": {\"version\": \"1.2\", \"entries\": [{\"request\": {\"method\": \"GET\", \"url\": \"http://example.com/api/users\"}, \"response\": {\"status\": 200, \"content\": {\"text\": \"{\\\"users\\\":[]}\"}}}]}\n"
+        ),
+        "{reference}"
+    );
+    assert!(
+        reference.contains(
+            "    headers={\n        \"x-tenant\": [\n            \"acme\"\n        ]\n    },\n"
+        ),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("client.scenario.set_a_scenario_state(\n    state=\"Pending\",\n"),
+        "{reference}"
     );
 }
