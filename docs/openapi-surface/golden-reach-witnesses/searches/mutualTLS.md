@@ -38,7 +38,7 @@ outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
 and the unreadable.
 
-When this record was rendered, `src/` had moved since that build (`0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
