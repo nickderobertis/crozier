@@ -4933,11 +4933,7 @@ fn resolve_request_body(
     }
     if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
         && schema.properties.is_empty()
-        && (schema.properties.declared()
-            || matches!(
-                schema.additional_properties,
-                Some(AdditionalProperties::Bool(false))
-            ))
+        && schema.properties.declared()
     {
         if is_optional(schema) {
             let name = format!("{request_ctx}Body");
@@ -5065,9 +5061,25 @@ fn resolve_request_body(
     // content-type header only when the schema is documented: blackadi-oauth2
     // declares both, and Fern emits the header for its described SSF and
     // federation-registration bodies and not for its bare `client/dcr/*` ones.
-    if is_bare_object(schema) {
+    // So is one closed with `additionalProperties: false` but declaring no
+    // `properties` at all: StandRig's `exports/bundle` and `playback/reload`
+    // bodies are that shape, and Fern's methods take
+    // `request: typing.Dict[str, typing.Any]`.
+    let closed_without_properties = schema.reference.is_none()
+        && schema.properties.is_empty()
+        && !schema.properties.declared()
+        && schema.all_of.is_none()
+        && matches!(
+            schema.additional_properties,
+            Some(AdditionalProperties::Bool(false))
+        )
+        && is_object_type(schema);
+    if is_bare_object(schema) || closed_without_properties {
         return Some(single_with_override(
-            base_type_ref(schema),
+            TypeRef::Dict(
+                Box::new(TypeRef::Primitive(Prim::Str)),
+                Box::new(TypeRef::Primitive(Prim::Any)),
+            ),
             required,
             false,
             clean_doc(schema.description.as_deref()).is_some(),
@@ -5977,6 +5989,18 @@ impl InlineHoister<'_> {
                     .filter(|member| !is_null_variant(member))
                     .cloned()
                     .collect();
+                // Alternatives that are all booleans — `const: false` and
+                // `const: true` alike — are one `bool` to Fern, not a named
+                // union: StandRig's motion `loop` is typed `Optional[bool]`.
+                if !members.is_empty()
+                    && members.iter().all(|member| {
+                        member.ty.as_ref().and_then(TypeField::primary) == Some("boolean")
+                            && member.one_of.is_none()
+                            && member.any_of.is_none()
+                    })
+                {
+                    return TypeRef::Primitive(Prim::Bool);
+                }
                 let variants: Vec<TypeRef> = members
                     .iter()
                     .enumerate()
@@ -11443,6 +11467,16 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             .enum_values
             .as_ref()
             .is_some_and(|values| !values.is_empty()) =>
+        {
+            TypeRef::Primitive(Prim::Str)
+        }
+        // So is one with no `type` but a `const`, whatever the value's kind:
+        // StandRig's playback responses declare `ok: {const: true}` and
+        // `version: {const: 1}`, and its golden types both `str`.
+        None if schema
+            .const_value
+            .as_ref()
+            .is_some_and(|value| !value.is_null()) =>
         {
             TypeRef::Primitive(Prim::Str)
         }
@@ -17200,9 +17234,11 @@ mod tests {
             property(serde_json::json!({ "const": "alpha" })),
             hoisted_enum
         );
+        // A typeless non-string `const` is a `str` to Fern (StandRig's
+        // `version: {const: 1}`, corpus row 231).
         assert_eq!(
             property(serde_json::json!({ "const": 1 })),
-            (TypeRef::Primitive(Prim::Any), vec![])
+            (TypeRef::Primitive(Prim::Str), vec![])
         );
 
         // Case 8a, `schema.properties>schema.properties:non-empty`.

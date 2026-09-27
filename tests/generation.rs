@@ -11539,6 +11539,78 @@ fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
     );
 }
 
+/// Fragments of the StandRig Modeling Tools core API (corpus row 231), each
+/// assertion a line of its Fern 5.20.0 golden: a typeless `const` of any kind is
+/// `str`; an inline object's property whose alternatives are all booleans is one
+/// `bool`; and a body closed with `additionalProperties: false` but declaring no
+/// `properties` is a `Dict[str, Any]` request.
+#[test]
+fn standrig_typeless_consts_boolean_unions_and_closed_bodies() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: StandRig Modeling Tools - core API, version: 0.2.0 }
+paths:
+  /api/playback:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version]
+                properties:
+                  ok: { const: true }
+                  version: { const: 1 }
+  /api/playback/motion:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    action: { type: string, const: configure }
+                    loop:
+                      anyOf: [{ type: boolean, const: false }, { type: boolean, const: true }]
+                - type: object
+                  properties:
+                    action: { type: string, const: stop }
+      responses: { '200': { description: ok } }
+  /api/playback/reload:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses: { '200': { description: ok } }
+"##,
+    );
+    let playback = &files["src/acme/types/get_api_playback_response.py"];
+    assert!(
+        playback.contains("    ok: str\n") && playback.contains("    version: str\n"),
+        "{playback}"
+    );
+    let motion = files
+        .iter()
+        .find(|(path, contents)| path.ends_with(".py") && contents.contains("loop:"))
+        .map(|(_, contents)| contents)
+        .expect("a variant declares loop");
+    assert!(
+        motion.contains("loop: typing.Optional[bool] = None"),
+        "{motion}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def post_api_playback_reload(\n        self, *, request: typing.Dict[str, typing.Any],"),
+        "{client}"
+    );
+}
+
 /// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
 /// line of its Fern 5.20.0 golden:
 /// - an `anyOf` variant that is one member beside `null` is that member made
