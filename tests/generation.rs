@@ -12378,3 +12378,39 @@ components:
         "{reference}"
     );
 }
+
+/// AEMET's OpenData operationIds are Spanish and carry `ó`/`ñ`. A tag whose byte
+/// length stops inside one of those characters — `Prediccio`'s nine bytes end in
+/// the middle of `predicciónDeMontaña`'s `ó` — is no prefix of the id, so the
+/// method keeps the whole id rather than generation panicking on a slice across
+/// a character boundary.
+#[test]
+fn a_tag_ending_inside_a_multibyte_operation_id_character_generates() {
+    let files = render(
+        r"openapi: 3.0.0
+info: { title: AEMET OpenData, version: 2.0.0 }
+servers:
+  - url: https://opendata.aemet.es/opendata
+paths:
+  /api/prediccion/especifica/montaña/pasada/area/{area}:
+    get:
+      tags: [Prediccio]
+      operationId: predicciónDeMontaña
+      parameters:
+        - { in: path, name: area, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+",
+    );
+    let client = files
+        .iter()
+        .find(|(path, _)| path.ends_with("prediccio/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the tag's client");
+    // The whole id names the method: nothing of it was stripped as the tag.
+    let method = client
+        .lines()
+        .find_map(|line| line.trim().strip_prefix("def predicci"))
+        .expect("a method named from the whole operationId");
+    assert!(method.contains("de_monta"), "{client}");
+}
