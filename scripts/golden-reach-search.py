@@ -66,6 +66,7 @@ import json
 import os
 import re
 import signal
+import types
 import subprocess
 import sys
 import tempfile
@@ -414,7 +415,7 @@ class CensusTimeout(BaseException):
     """
 
 
-def _alarm(_signum: int, _frame: Any) -> None:
+def _alarm(_signum: int, _frame: types.FrameType | None) -> None:
     raise CensusTimeout
 
 
@@ -422,8 +423,8 @@ def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ..
     """One document's walk census, bounded by `timeout` seconds where the platform can.
 
     A document whose census runs past the limit is recorded as unreadable with that
-    reason rather than holding up the walk: one Kubernetes document held a worker for
-    hours. Windows has no `SIGALRM`, so there the census is unbounded.
+    reason rather than holding up the walk: MongoDB's `v1-deprecated/v1.yaml` held
+    a vendor-portals worker for over two hours. Windows has no `SIGALRM`, so there the census is unbounded.
     """
     path, sha256, document, keys, timeout = args
     alarm = getattr(signal, "SIGALRM", None)

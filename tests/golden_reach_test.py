@@ -791,6 +791,46 @@ class ArmSearchStageTests(_StageScratch):
             sorted(((r["kind"], r["subject"], r["result"]) for r in records), reverse=True),
         )
 
+    @unittest.skipUnless(
+        hasattr(__import__("signal"), "SIGALRM")
+        and "fork" in __import__("multiprocessing").get_all_start_methods(),
+        "no SIGALRM or fork start method on this platform",
+    )
+    def test_a_walk_cuts_off_a_census_past_its_census_timeout(self) -> None:
+        """`walk --census-timeout` bounds each document, and names the one it cut off.
+
+        The walk's census runs in worker processes, so the slow census is patched
+        in before they fork; the other documents are walked as ever.
+        """
+        import multiprocessing
+        import time
+
+        previous = multiprocessing.get_start_method(allow_none=True)
+        multiprocessing.set_start_method("fork", force=True)
+        self.addCleanup(multiprocessing.set_start_method, previous, force=True)
+        census = golden_reach_search.CENSUS.census_document
+
+        def slow_on_b(parsed, root_path=None):
+            if root_path is not None and root_path.name == "b.yaml":
+                time.sleep(30)
+            return census(parsed, root_path=root_path)
+
+        golden_reach_search.CENSUS.census_document = slow_on_b
+        self.addCleanup(setattr, golden_reach_search.CENSUS, "census_document", census)
+        started = time.monotonic()
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
+                 "--jobs", "1", "--census-timeout", "1"]
+            )
+        self.assertEqual(0, code)
+        self.assertLess(time.monotonic() - started, 25)
+        evidence = golden_reach_search.EVIDENCE / "jentic"
+        with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+            enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+        self.assertEqual("unreadable: census exceeded 1s", enumeration["b.yaml"]["status"])
+        self.assertEqual(self.KEY, enumeration["a.yaml"]["matched_keys"])
+
     def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
         """The publisher trees pin `openapi.yaml` at the root of several repositories.
 
