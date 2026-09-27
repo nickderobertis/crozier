@@ -6,9 +6,9 @@
 //! Raybot and FOLIO corpus trees pin the relative-file forms, while Helios pins
 //! the absolute-URL schema form.
 //!
-//! Four rules follow from what Fern was measured to do (see the
+//! Five rules follow from what Fern was measured to do (see the
 //! `helios-verifiable-api` corpus row, whose 27 component schemas are all remote
-//! references into `ethereum/execution-apis`):
+//! references into `ethereum/execution-apis`, and the `mockserver` row):
 //!
 //! - **Resolution is transitive.** A fetched schema may itself carry a remote
 //!   `$ref`, which is fetched in turn.
@@ -23,6 +23,9 @@
 //!   to the unknown type rather than failing generation.
 //! - **A fetch that fails is a hard error.** A silently dropped schema would
 //!   generate a plausible SDK with the wrong types in it.
+//! - **A reference naming a whole document is one component named after its
+//!   file** (MockServer's draft-04 meta-schema is `Schema`), with `#` inside it
+//!   meaning that component and `#/definitions/<name>` a component of its own.
 //!
 //! Fetching is a *generation-time* capability, exercised only by a document that
 //! actually carries a remote `$ref`; a self-contained spec never opens a socket.
