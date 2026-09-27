@@ -3565,7 +3565,7 @@ enum-leading-digit-identifier	screen	github--rest-api-description/descriptions/g
 enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 24 errors, e.g. Expected example to be an object. Example is: "schedule"	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.json ref	passed	screens.jsonl
-enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.sdk.json fern	passed	screens.jsonl
+enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.sdk.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document (Failed to parse openapi document)	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.sdk.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/latest/openapi.spec3.sdk.json ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/openapi/spec3.beta.sdk.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 36 errors, e.g. Expected example to be an object. Example is: "schedule"	screens.jsonl
@@ -3592,7 +3592,7 @@ enum-leading-digit-identifier	screen	stripe--openapi/openapi/spec3.sdk.yaml ref	
 enum-leading-digit-identifier	screen	stripe--openapi/openapi/spec3.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 24 errors, e.g. Expected example to be an object. Example is: "schedule"	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/openapi/spec3.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/openapi/spec3.yaml ref	passed	screens.jsonl
-enum-leading-digit-identifier	screen	stripe--openapi/preview/openapi.spec3.sdk.json fern	passed	screens.jsonl
+enum-leading-digit-identifier	screen	stripe--openapi/preview/openapi.spec3.sdk.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document (Failed to parse openapi document)	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/preview/openapi.spec3.sdk.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	stripe--openapi/preview/openapi.spec3.sdk.json ref	passed	screens.jsonl
 enum-leading-digit-identifier	walk	Adyen/adyen-openapi@f82d1fe674e536cc2c6b0d7946e0e827873a4fbf	259	enumeration.tsv.gz
