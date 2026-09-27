@@ -3358,6 +3358,7 @@ const CORPORA: &[&Corpus] = &[
     &ONEVOICE,
     &XFSC_OIDC_IDENTITY_RESOLVER,
     &ADYEN_ACS_NOTIFICATION,
+    &PEOPLEDATALABS,
 ];
 
 #[test]
@@ -6123,6 +6124,19 @@ const MARIMO_PLUGINS: Corpus = Corpus {
 /// `golden`; its ledger disposition left it for the golden-reach continuation.
 const OTOROSHI: Corpus = Corpus {
     api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `peopledatalabs`: corpus row 230, People Data Labs API 5.0 from
+/// jentic/jentic-public-apis, whose company-size enums hold `10001+`
+const PEOPLEDATALABS: Corpus = Corpus {
+    api: "peopledatalabs",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12047,6 +12061,11 @@ fn marimo_plugins_matches_fern_output() {
 #[test]
 fn otoroshi_matches_fern_output() {
     assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn peopledatalabs_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PEOPLEDATALABS);
 }
 
 #[test]
