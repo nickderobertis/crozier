@@ -71,7 +71,7 @@ import sys
 import tempfile
 import time
 import urllib.parse
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -357,6 +357,19 @@ def committed_bytes(path: Path) -> bytes:
     return subprocess.run([*git, "cat-file", "blob", fields[1]], capture_output=True, check=True).stdout
 
 
+def repeated_documents(listing: list[dict[str, str]]) -> set[str]:
+    """Document paths more than one walked tree pins: the publisher trees'
+    `openapi.yaml`, which three repositories each hold at their root."""
+    seen: Counter[str] = Counter(row["document"] for row in listing)
+    return {document for document, count in seen.items() if count > 1}
+
+
+def document_subject(row: dict[str, str], repeated: set[str]) -> str:
+    """A walked document's name in `records.tsv` and `probe.jsonl`: its path, or,
+    where another tree pins the same path, `<walk>:<path>` so each is one declarer."""
+    return f"{row['walk']}:{row['document']}" if row["document"] in repeated else row["document"]
+
+
 def pinned_listing(source: str) -> list[dict[str, str]]:
     """The source's committed pinned document listing: walk, document, revision, sha256.
 
@@ -517,6 +530,7 @@ def walk(args: argparse.Namespace) -> int:
         fail(f"{source} is not enumerable; `query` it instead")
     keys = tuple((key, selectors_of(key)) for key in args.key)
     listing = pinned_listing(source)
+    repeated = repeated_documents(listing)
     by_digest: dict[str, Path] = {}
     if source == "github-publisher-trees":
         for path in args.root.rglob("*"):
@@ -560,7 +574,7 @@ def walk(args: argparse.Namespace) -> int:
                              "matched_keys": result["matched_keys"], "status": result["status"]})
             counts = json.loads(result.get("counts") or "{}")
             for key, count in counts.items():
-                records.append({"key": key, "kind": "document", "subject": row["document"],
+                records.append({"key": key, "kind": "document", "subject": document_subject(row, repeated),
                                 "result": f"census {count}", "file": out.name})
     listing_file = "pins.tsv" if source == "github-publisher-trees" else out.name
     for key, _selectors in keys:
@@ -812,8 +826,10 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
             for path in root.rglob("*")
             if path.is_file() and path.suffix in (".json", ".yaml", ".yml")
         }
+        listing = pinned_listing(source)
+        repeated = repeated_documents(listing)
         by_document = {
-            row["document"]: by_digest.get(row["sha256"], root / "missing") for row in pinned_listing(source)
+            document_subject(row, repeated): by_digest.get(row["sha256"], root / "missing") for row in listing
         }
     for row in read_records(source):
         if row["key"] != key or row["kind"] != "document":

@@ -974,8 +974,18 @@ def enumeration_census_failures(
                 failures.append(f"{key}: `{source}` {row['document']} has wrong revision")
     if {row["walk"] for row in census} - {tree for tree, _ref, _count in walks}:
         failures.append(f"{key}: `{source}` enumeration has a document outside the named walks")
+    # A path more than one walked tree pins is named `<walk>:<path>` in the
+    # records, so each copy is its own declarer (`document_subject`).
+    repeated = {
+        document for document, count in Counter(row["document"] for row in census).items()
+        if count > 1
+    }
+
+    def subject(row: dict[str, str]) -> str:
+        return f"{row['walk']}:{row['document']}" if row["document"] in repeated else row["document"]
+
     for row in census:
-        document = row["document"]
+        document = subject(row)
         if not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
             failures.append(f"{key}: `{source}` {document} has no SHA-256 digest")
         matched = set(filter(None, row["matched_keys"].split(",")))
@@ -999,7 +1009,7 @@ def enumeration_census_failures(
                 f"{key}: `{source}` records.tsv claims {document} without an "
                 "enumeration.tsv match"
             )
-    census_documents = {row["document"] for row in census}
+    census_documents = {subject(row) for row in census}
     for document in document_records:
         if document not in census_documents:
             failures.append(
@@ -1043,6 +1053,14 @@ def evidence_directory_failures(
     records = evidence_records(directory)
     failures = []
     named = {record.get("file", "") for record in records}
+    # A row naming a ledger names every part the ledger was sharded into
+    # (`ledger_parts`), as `records.tsv`'s own parts are exempt below.
+    named |= {
+        part.name
+        for file in list(named)
+        if file
+        for part in _index_module.ledger_parts(directory / file)
+    }
     for record in records:
         if record.get("kind") not in EVIDENCE_KINDS:
             failures.append(
@@ -8957,6 +8975,19 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8")
         self.refused("witness-search-sourcegraph/stray.json is evidence the table accounts for nowhere")
 
+    def test_a_named_ledgers_shards_are_accounted_for_and_a_strays_are_not(self) -> None:
+        """A ledger past its shard size continues in numbered siblings (`ledger_parts`).
+
+        A row naming the ledger names every part of it, as `records.tsv`'s own
+        parts are exempt; a part of a file no row names is still a stray.
+        """
+        directory = self.root / "witness-search-sourcegraph"
+        (directory / "acquisition.001.json").write_text("{}\n", encoding="utf-8")
+        self.assertEqual([], self.failures())
+        (directory / "stray.json").write_text("{}\n", encoding="utf-8")
+        (directory / "stray.001.json").write_text("{}\n", encoding="utf-8")
+        self.refused("witness-search-sourcegraph/stray.001.json is evidence the table accounts for nowhere")
+
     def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
         self.table["swaggerhub"] = ["`x-sample` → 0; `sample extension` → 0", "—", "—", "—"]
         self.refused("counts `swaggerhub`, which is not a declared source")
@@ -9507,7 +9538,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                               ["98777886-76d0-44c8-865e-bb40e669e934"]),
         "numeric-prefix-member": (["10bps"], ["2bps"]),
         "leading-zero-member": (["01"], ["10"]),
-        "leading-digit-identifier": (["01"], ["1"]),
+        "leading-digit-identifier": (["10001"], ["1"]),
         "uuid-member": (["00000000-0000-0000-0000-000000000001"], ["widget"]),
         "reserved-member": (["global"], ["widget"]),
         "normalized-collision": (["foo-bar", "foo_bar"], ["foo", "bar"]),

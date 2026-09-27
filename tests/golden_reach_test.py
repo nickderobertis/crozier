@@ -791,6 +791,31 @@ class ArmSearchStageTests(_StageScratch):
             sorted(((r["kind"], r["subject"], r["result"]) for r in records), reverse=True),
         )
 
+    def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
+        """The publisher trees pin `openapi.yaml` at the root of several repositories.
+
+        Named by path alone, the copies would be one records row and one probe;
+        each is its own declarer, named `<walk>:<path>`, and the declarers a probe
+        reads resolve each name to its own copy.
+        """
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        digest = hashlib.sha256((self.root / "a.yaml").read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"other-tree\ta.yaml\t{self.REVISION}\t{digest}\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]
+            )
+        self.assertEqual(0, code)
+        documents = sorted(
+            r["subject"] for r in golden_reach_search.read_records("jentic") if r["kind"] == "document"
+        )
+        self.assertEqual(["jentic-public-apis:a.yaml", "other-tree:a.yaml"], documents)
+        self.assertEqual(
+            {"jentic-public-apis:a.yaml", "other-tree:a.yaml"},
+            {candidate for candidate, _path in golden_reach_search.declarers("jentic", self.KEY, self.root)},
+        )
+
     def test_a_walk_reads_a_precomputed_census_and_refuses_one_of_another_shape(self) -> None:
         census = self.scratch / "census.jsonl.gz"
         lines = [
