@@ -3360,6 +3360,7 @@ const CORPORA: &[&Corpus] = &[
     &ADYEN_ACS_NOTIFICATION,
     &PEOPLEDATALABS,
     &STANDRIG,
+    &MOCKSERVER,
 ];
 
 #[test]
@@ -6131,6 +6132,20 @@ const OTOROSHI: Corpus = Corpus {
 /// sayaka-aiart/StandRig, whose `anyOf` alternatives include a string `const`
 const STANDRIG: Corpus = Corpus {
     api: "standrig",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `mockserver`: corpus row 232, MockServer's own control-plane API description
+/// from mock-server/mockserver-monorepo, whose draft-04 meta-schema `$ref` is
+/// pinned
+const MOCKSERVER: Corpus = Corpus {
+    api: "mockserver",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12073,6 +12088,11 @@ fn otoroshi_matches_fern_output() {
 #[test]
 fn standrig_matches_fern_output() {
     assert_link_ok_corpus_matches(&STANDRIG);
+}
+
+#[test]
+fn mockserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MOCKSERVER);
 }
 
 #[test]

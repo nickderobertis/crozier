@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .http_override_forwarded_request_http_request import HttpOverrideForwardedRequestHttpRequest
+from .http_override_forwarded_request_request_modifier import HttpOverrideForwardedRequestRequestModifier
+
+HttpOverrideForwardedRequest = typing.Union[
+    HttpOverrideForwardedRequestRequestModifier, HttpOverrideForwardedRequestHttpRequest
+]

@@ -1,0 +1,27 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ...core.serialization import FieldMetadata
+from .get_mockserver_mode_response_mode import GetMockserverModeResponseMode
+
+
+class GetMockserverModeResponse(UniversalBaseModel):
+    mode: typing.Optional[GetMockserverModeResponseMode] = None
+    proxy_unmatched_requests: typing_extensions.Annotated[
+        typing.Optional[bool],
+        FieldMetadata(alias="proxyUnmatchedRequests"),
+        pydantic.Field(alias="proxyUnmatchedRequests"),
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -92,7 +92,7 @@ just surface-census --fixture apideck.com-crm --json
 ```
 
 The registered sources are both halves of the corpus: the 32 vendored
-`tests/fixtures/<name>/openapi.*` documents, and the 198 `link-ok` documents
+`tests/fixtures/<name>/openapi.*` documents, and the 199 `link-ok` documents
 `scripts/fetch-corpus.sh` fetches into `.local/corpus/<name>/` from
 [`../tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). An unfetched source
 is a hard failure rather than a silent zero, because a source that reports nothing
@@ -1102,8 +1102,8 @@ The six region files, read as one body of work. Two measurements feed it:
   [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
   rather than restated here, and that pin is now the current walk, so the check it
   guards runs to completion rather than halting on it.
-  It reads **230** registered sources, of which
-  **213** carry a committed golden. `document-paths`'s own evidence cells are
+  It reads **231** registered sources, of which
+  **214** carry a committed golden. `document-paths`'s own evidence cells are
   transcribed from that walk; the other five region files' cells are still dated
   to the earlier walks each was taken on, except that `schemas`, `bodies-media`
   and `parameters` have had the twenty-eight cells the free-map-key walk repair
@@ -1221,7 +1221,9 @@ rows 223 to 231, the witnesses the arm searches found (`nexmo-conversation`,
 `codat-assess`, `googleapis-monitoring-v1`, `docu-goapiserver`, `onevoice`,
 `xfsc-oidc-identity-resolver`, `adyen-acs-notification`, `peopledatalabs` and
 `standrig`), bring it to 230 (32 vendored plus 198 `link-ok`); they declare no
-`gap` selector and move no category either.
+`gap` selector and move no category either. Corpus row 232, MockServer's own
+description (`mockserver`), brings it to 231 (32 vendored plus 199 `link-ok`),
+and declares no `gap` selector either.
 
 **What the `golden` count means, and what it does not.** 441 of those 542
 features carry byte-match evidence: a registered source declares the feature and

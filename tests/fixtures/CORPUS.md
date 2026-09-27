@@ -221,6 +221,7 @@ re-measure with `just fixtures-gaps`.
 | 229 | `adyen-acs-notification` | github-raw | https://raw.githubusercontent.com/Adyen/adyen-openapi/f82d1fe674e536cc2c6b0d7946e0e827873a4fbf/json/BalancePlatformAcsNotification-v1.json | `f82d1fe674e536cc2c6b0d7946e0e827873a4fbf` | MIT (the repository's `LICENSE` at the pinned commit, recorded in `witness-search-vendor-portals/publisher-grants.tsv`; the document declares no `info.license`) | link-ok | Adyen Authentication webhooks v1 (OpenAPI 3.1); enum members whose names lead with a digit |
 | 230 | `peopledatalabs` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/peopledatalabs.com/main/5.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | People Data Labs API 5.0; an enum value led by a number past Fern's number-to-words range (`10001+`) |
 | 231 | `standrig` | github-raw | https://raw.githubusercontent.com/sayaka-aiart/StandRig/33e15309c44f8122a88e01ed7e71efc9989cb652/docs/openapi.json | `33e15309c44f8122a88e01ed7e71efc9989cb652` | Apache-2.0 (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | StandRig Modeling Tools core API 0.2.0 (OpenAPI 3.1); an `anyOf` alternative that is a string `const` |
+| 232 | `mockserver` | github-raw | https://raw.githubusercontent.com/mock-server/mockserver-monorepo/ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037/jekyll-www.mock-server.com/mockserver-openapi.yaml | `ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037` | Apache-2.0 (the repository's `LICENSE.md` at the pinned commit; the document's `info.license` is Apache 2.0) | link-ok | MockServer's own control-plane API description; its draft-04 meta-schema `$ref` is pinned in `corpus-remote-ref-pins.tsv` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1150,22 +1151,22 @@ of its document:
 
 The eighth, MockServer's own description
 (`mock-server/mockserver-monorepo@ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037`,
-`jekyll-www.mock-server.com/mockserver-openapi.yaml`, Apache-2.0), is not
-registered: it `$ref`s `http://json-schema.org/draft-04/schema`, a mutable
-absolute reference, and `scripts/fetch-corpus.sh` refuses it with *absolute
-`$ref` 'http://json-schema.org/draft-04/schema' is not a plain https URL on
-raw.githubusercontent.com*. A remote-ref pin would buy nothing: its instrumented
-probe on build `1131cbbcb0e3` reaches no unreached handling site of the five
-golden-reach keys it declares. Its ledger disposition is `demoted: mutable
-absolute $ref`, and the three closures that named it as their witness now say
-`oneof-array-variant-closed-object-item` stands golden through the registered
-Zulip rows.
+`jekyll-www.mock-server.com/mockserver-openapi.yaml`, Apache-2.0), `$ref`s
+`http://json-schema.org/draft-04/schema`, a mutable absolute reference that
+`scripts/fetch-corpus.sh` refuses unpinned. It is registered below as row 232:
+`corpus-remote-ref-pins.tsv` pins that reference to `json-schema-org/json-schema-spec`
+at `d4c5b3a2…`, the commit the json-schema.org site's `_includes/draft-04`
+submodule pins, with its digest. Its first probe crashed crozier (an
+annotated-reference cycle, and a class with an empty name hoisted for the
+meta-schema), so it is a golden for the bugs it exposed whatever its reach
+measures; the three closures that named it as their witness name row 232 again.
 
-### Rows 223–231: witnesses the arm searches found
+### Rows 223–232: witnesses the arm searches found
 
 The instrumented probes of build `1131cbbcb0e3` found nine Fern-accepted,
-licensed documents that execute a handling site no earlier golden reached. Each
-is registered here with its Fern 5.20.0 golden and byte-matches with
+licensed documents that execute a handling site no earlier golden reached, and
+MockServer (row 232) is the witness the batch above set aside. Each is
+registered here with its Fern 5.20.0 golden and byte-matches with
 `unmatched: &[]`:
 
 | # | name | the row whose unreached site it reached | status |
@@ -1179,6 +1180,7 @@ is registered here with its Fern 5.20.0 golden and byte-matches with
 | 229 | `adyen-acs-notification` | `enum-leading-digit-identifier` | ✅ byte-matched after one repair |
 | 230 | `peopledatalabs` | `enum-leading-digit-identifier` | ✅ byte-matched after five repairs |
 | 231 | `standrig` | `anyof-string-const-variant` | ✅ byte-matched after three repairs |
+| 232 | `mockserver` | `oneof-array-variant-closed-object-item` | ✅ byte-matched after the repairs listed under MockServer below |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Pointers: Fern's importer converts any reference whose text names `properties`
@@ -1214,6 +1216,22 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   body and a `$ref`-to-union body take the media type's example, an enum variant
   matches only its own values, and an unknown body's example drops its `null`
   members (Primula Tracker).
+- MockServer: a `$ref` naming a whole remote document is one component named
+  after its file, with `#` meaning it and `#/definitions/<name>` a component of
+  its own; an annotated reference that cycles back terminates; a degraded
+  `Union[Any]` keeps its declared properties as reference edges, so a model
+  holding it repairs its forward references; `allOf` of a scalar reference plus
+  annotations is that scalar; `json` is a reserved field name; a later error
+  body leaves an earlier enum property behind as a type; an optional `$ref` to a
+  composition is a required argument, and an inline body field renamed for a
+  parameter collision is sent under its renamed argument. Its examples: a union
+  is exampled as Fern's heuristic picks and narrows it; a free-form value drops
+  nulls and empty arrays; a map of models constructs each value; a string
+  holding `"` is single-quoted; a binary download's inline body drops its media
+  example; and `reference.md` documents the singular `example`, writing a
+  free-form map value on one line. Its names: sub-client imports sort
+  case-insensitively, and a summary's one-letter words join as camel-casing
+  joins them (`load_ag_rpc_…`).
 
 OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
 unresolved without a diagnostic, so its golden is the document's types and
