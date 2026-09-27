@@ -1,6 +1,6 @@
 key	kind	subject	result	file
 *	wait	sourcegraph guard log index-pacing-waits.jsonl	7 entries	index-pacing-waits.jsonl
-*	wait	sourcegraph guard log rate-limit-calls.jsonl	131 entries	rate-limit-calls.jsonl
+*	wait	sourcegraph guard log rate-limit-calls.jsonl	168 entries	rate-limit-calls.jsonl
 *	wait	sourcegraph guard log raw-github-calls.jsonl	10685 entries	raw-github-calls.jsonl
 *	wait	sourcegraph guard log raw-github-waits.jsonl	10141 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
@@ -609,6 +609,12 @@ anyof-allof-variant	document	github.com/webhookx-io/webhookx:openapi.yml@83fa1c6
 anyof-allof-variant	document	github.com/wxpusher/wxpusher-docs:docs/openapi.yaml@9315920511645d7fbc9b6b31923294063460779c	census 0	candidates.jsonl
 anyof-allof-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"allOf:" content:"requestBody:" count:all type:file	819	queries.jsonl
 anyof-allof-variant	query	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"allOf\"" content:"\"responses\"" count:all type:file	1956	queries.jsonl
+anyof-anyof-variant	candidate	github.com/PierreBeucher/cloudypad:src/providers/paperspace/client/openapi/openapi.json@24f6a4ae35e796a0578036823cc0551d3bab18f7	census 6	probe.jsonl
+anyof-anyof-variant	candidate	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e	census 13	probe.jsonl
+anyof-anyof-variant	candidate	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-latest-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271	census 54	probe.jsonl
+anyof-anyof-variant	candidate	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.2.0-dev.1-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271	census 11	probe.jsonl
+anyof-anyof-variant	candidate	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.3.8-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271	census 54	probe.jsonl
+anyof-anyof-variant	candidate	github.com/msgbyte/tianji:website/static/openapi.json@20124bb953eae609b8b5c003cae48633af3e4207	census 3	probe.jsonl
 anyof-anyof-variant	document	github.com/Aivis-Project/AivisSpeech:openapi.json@77a3675f7b76865cfa0253ac30f41ef1dd822e27	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/Alex-Lekov/yolov8-fastapi:openapi.json@67e5f5d9a3d1cd85765200cff98230b83e74fd87	census 0	candidates.jsonl
 anyof-anyof-variant	document	github.com/BuntingLabs/mundi.ai:docs/src/schema/openapi.json@7cb0205326c96f46067b1123beabbc102fff8af6	census 0	candidates.jsonl
@@ -811,6 +817,24 @@ anyof-anyof-variant	document	github.com/zenstackhq/zenstack:packages/server/test
 anyof-anyof-variant	document	github.com/zk1tty/rebrowse-app:ui/src/lib/api/openapi.json@708bda967ff3421ff013ca93b59898412e74266f	census 0	candidates.jsonl
 anyof-anyof-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"- anyOf:" count:all type:file	155	queries.jsonl
 anyof-anyof-variant	query	file:(openapi|swagger).*\.json$ content:"{\"anyOf\":" count:all type:file	152	queries.jsonl
+anyof-anyof-variant	screen	github.com/PierreBeucher/cloudypad:src/providers/paperspace/client/openapi/openapi.json@24f6a4ae35e796a0578036823cc0551d3bab18f7 fern	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/PierreBeucher/cloudypad:src/providers/paperspace/client/openapi/openapi.json@24f6a4ae35e796a0578036823cc0551d3bab18f7 licence	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/PierreBeucher/cloudypad:src/providers/paperspace/client/openapi/openapi.json@24f6a4ae35e796a0578036823cc0551d3bab18f7 ref	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: KeyError: 'type_:AgentBatchRequestNotionVersion'	screens.jsonl
+anyof-anyof-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e licence	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e ref	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-latest-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Path parameter is unreferenced in endpoint: libraryId.	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-latest-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-latest-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 ref	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.2.0-dev.1-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Path parameter is unreferenced in endpoint: libraryId.	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.2.0-dev.1-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.2.0-dev.1-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 ref	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.3.8-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Path parameter is unreferenced in endpoint: libraryId.	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.3.8-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+anyof-anyof-variant	screen	github.com/chrisbenincasa/tunarr:docs/generated/tunarr-v1.3.8-openapi.json@db873bdb82c6b433a4a5110812594d8cc5967271 ref	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/msgbyte/tianji:website/static/openapi.json@20124bb953eae609b8b5c003cae48633af3e4207 fern	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/msgbyte/tianji:website/static/openapi.json@20124bb953eae609b8b5c003cae48633af3e4207 licence	passed	screens.jsonl
+anyof-anyof-variant	screen	github.com/msgbyte/tianji:website/static/openapi.json@20124bb953eae609b8b5c003cae48633af3e4207 ref	passed	screens.jsonl
 anyof-array-variant-annotated-ref-item	document	github.com/Anxcye/anx-reader:third_party/googleai_dart/openapi.json@2b2df997839ebf3fc6f90f76783b83485d6840d7	census 0	candidates.jsonl
 anyof-array-variant-annotated-ref-item	document	github.com/Apipie/apipie-rails:spec/lib/swagger/openapi_2_0_schema.json@5d1d7ef302ce986eb5b26770e2a9408ec579c304	census 0	candidates.jsonl
 anyof-array-variant-annotated-ref-item	document	github.com/AugustoMarcelo/mcuapi:src/config/swagger.json@09295d3f8be7b24b90d46d5d6b8a87a5086ec3c9	census 0	candidates.jsonl
@@ -2025,7 +2049,7 @@ anyof-discriminated-union	document	github.com/zalando/intellij-swagger:src/main/
 anyof-discriminated-union	document	github.com/zalando/zally:server/zally-core/src/main/resources/schemas/openapi3-schema.json@a160164f53fbd87ea1bcc99d50cabd904e31997e	census 0	candidates.jsonl
 anyof-discriminated-union	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"discriminator:" content:"mapping:" count:all type:file	263	queries.jsonl
 anyof-discriminated-union	query	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"discriminator\"" content:"\"mapping\"" count:all type:file	491	queries.jsonl
-anyof-discriminated-union	screen	github.com/ogx-ai/ogx:client-sdks/spec/openapi.yml@39c623847bf6cd46f46558d16926b6eee1626970 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 18 errors, e.g. getModel's response example 'model' is not a value of its enum	screens.jsonl
+anyof-discriminated-union	screen	github.com/ogx-ai/ogx:client-sdks/spec/openapi.yml@39c623847bf6cd46f46558d16926b6eee1626970 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 18 errors, e.g. "model" is not a valid example for this enum. Enum values are:	screens.jsonl
 anyof-discriminated-union	screen	github.com/ogx-ai/ogx:client-sdks/spec/openapi.yml@39c623847bf6cd46f46558d16926b6eee1626970 licence	passed	screens.jsonl
 anyof-discriminated-union	screen	github.com/ogx-ai/ogx:client-sdks/spec/openapi.yml@39c623847bf6cd46f46558d16926b6eee1626970 ref	passed	screens.jsonl
 anyof-discriminated-union	screen	github.com/team-monite/api-style-guide:spectral/test-openapi.yaml@6b3d64c03345a46a5bd643a7e93d15b49716332f fern	passed	screens.jsonl
@@ -2348,6 +2372,8 @@ anyof-sole-member	screen	github.com/lehhair/OpenCodeUI:openapi_doc.json@8a6d4eae
 anyof-sole-member	screen	github.com/lehhair/OpenCodeUI:openapi_formatted.json@8a6d4eae9424317f01e88f3819b14b24e57bab10 fern	passed	screens.jsonl
 anyof-sole-member	screen	github.com/lehhair/OpenCodeUI:openapi_formatted.json@8a6d4eae9424317f01e88f3819b14b24e57bab10 licence	passed	screens.jsonl
 anyof-sole-member	screen	github.com/lehhair/OpenCodeUI:openapi_formatted.json@8a6d4eae9424317f01e88f3819b14b24e57bab10 ref	passed	screens.jsonl
+anyof-string-const-variant	candidate	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e	census 2	probe.jsonl
+anyof-string-const-variant	candidate	github.com/sayaka-aiart/StandRig:docs/openapi.json@33e15309c44f8122a88e01ed7e71efc9989cb652	census 129	probe.jsonl
 anyof-string-const-variant	document	github.com/AQ-MedAI/MedMemoryBench:methods/memOS/MemOS/docs/openapi.json@7227bc105b84a1a9f7a75861eb9e1be3ea502882	census 0	candidates.jsonl
 anyof-string-const-variant	document	github.com/Aivis-Project/AivisSpeech-Engine:test/e2e/__snapshots__/test_openapi/test_OpenAPIの形が変わっていないことを確認.json@0cf0635d5f74de4cf07e5fb87b25c4c1d0c8a331	census 0	candidates.jsonl
 anyof-string-const-variant	document	github.com/Azure-Samples/ai-hub-gateway-solution-accelerator:bicep/infra/modules/apim/openai-api/OpenAI-Import.openapi.yaml@6b9a9ef558d2990df630de9ca4949429f07e68f2	census 0	candidates.jsonl
@@ -2550,6 +2576,12 @@ anyof-string-const-variant	document	github.com/zk1tty/rebrowse-app:ui/src/lib/ap
 anyof-string-const-variant	document	github.com/zylon-ai/private-gpt:fern/openapi/openapi.json@01ac43d72bc4c0b7565994197fe23476539059a7	census 0	candidates.jsonl
 anyof-string-const-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"anyOf:" content:"const:" count:all type:file	383	queries.jsonl
 anyof-string-const-variant	query	file:(openapi|swagger).*\.json$ content:"\"anyOf\"" content:"\"const\"" count:all type:file	561	queries.jsonl
+anyof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: KeyError: 'type_:AgentBatchRequestNotionVersion'	screens.jsonl
+anyof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e licence	passed	screens.jsonl
+anyof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e ref	passed	screens.jsonl
+anyof-string-const-variant	screen	github.com/sayaka-aiart/StandRig:docs/openapi.json@33e15309c44f8122a88e01ed7e71efc9989cb652 fern	passed	screens.jsonl
+anyof-string-const-variant	screen	github.com/sayaka-aiart/StandRig:docs/openapi.json@33e15309c44f8122a88e01ed7e71efc9989cb652 licence	passed	screens.jsonl
+anyof-string-const-variant	screen	github.com/sayaka-aiart/StandRig:docs/openapi.json@33e15309c44f8122a88e01ed7e71efc9989cb652 ref	passed	screens.jsonl
 array-item-anyof-discriminated-union	document	github.com/Apipie/apipie-rails:spec/lib/swagger/openapi_2_0_schema.json@5d1d7ef302ce986eb5b26770e2a9408ec579c304	census 0	candidates.jsonl
 array-item-anyof-discriminated-union	document	github.com/Azure-Samples/ai-hub-gateway-solution-accelerator:bicep/infra/modules/apim/openai-api/OpenAI-Import.openapi.yaml@6b9a9ef558d2990df630de9ca4949429f07e68f2	census 0	candidates.jsonl
 array-item-anyof-discriminated-union	document	github.com/Azure-Samples/ai-hub-gateway-solution-accelerator:bicep/infra/modules/apim/universal-llm-api/Universal-LLM-API.openapi.yaml@6b9a9ef558d2990df630de9ca4949429f07e68f2	census 0	candidates.jsonl
@@ -4166,6 +4198,7 @@ enum-empty-identifier-member	document	github.com/tournesol-app/tournesol:fronten
 enum-empty-identifier-member	document	github.com/treflehq/documentation:static/swagger.yaml@1367505670812c8648e9c7093c5e8196aa54d42a	census 0	candidates.jsonl
 enum-empty-identifier-member	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file	23818	queries.jsonl
 enum-empty-identifier-member	query	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file	34467	queries.jsonl
+enum-leading-digit-identifier	candidate	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea	census 1	probe.jsonl
 enum-leading-digit-identifier	document	github.com/Aivis-Project/AivisSpeech-Engine:test/e2e/__snapshots__/test_openapi/test_OpenAPIの形が変わっていないことを確認.json@0cf0635d5f74de4cf07e5fb87b25c4c1d0c8a331	census 0	candidates.jsonl
 enum-leading-digit-identifier	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/agent_model_hub.http.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
 enum-leading-digit-identifier	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/swagger.json@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
@@ -4368,6 +4401,9 @@ enum-leading-digit-identifier	document	github.com/trpc/trpc:packages/openapi/tes
 enum-leading-digit-identifier	document	github.com/trpc/trpc:packages/openapi/test/routers/superjsonRouter.openapi.json@8b649ad874a8fe97c73962d4617912231b975736	census 0	candidates.jsonl
 enum-leading-digit-identifier	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file	23818	queries.jsonl
 enum-leading-digit-identifier	query	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file	34467	queries.jsonl
+enum-leading-digit-identifier	screen	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Path parameter is unreferenced in endpoint: company_id.	screens.jsonl
+enum-leading-digit-identifier	screen	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+enum-leading-digit-identifier	screen	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea ref	passed	screens.jsonl
 enum-leading-zero-member	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/agent_model_hub.http.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
 enum-leading-zero-member	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/swagger.json@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
 enum-leading-zero-member	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/swagger.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
@@ -4772,6 +4808,7 @@ example	document	github.com/tazo90/next-openapi-gen:apps/next-app-zod/public/ope
 example	document	github.com/wisemapping/wisemapping-open-source:doc/api-documentation/backend/openapi-specs/openapi.yaml@300884298a9e2b607bff1423eb4b3f7f0cb5ee0c	census 0	candidates.jsonl
 example	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"example:" content:"type: object" content:"properties:" count:all type:file	17787	queries.jsonl
 example	query	file:(openapi|swagger).*\.json$ content:"\"example\": {" content:"\"type\": \"object\"" count:all type:file	7734	queries.jsonl
+format-duration	candidate	github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe	census 13	probe.jsonl
 format-duration	document	github.com/APIs-guru/openapi-directory:APIs/microsoft.com/cognitiveservices-Training/1.2/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1	candidates.jsonl
 format-duration	document	github.com/APIs-guru/openapi-directory:APIs/osisoft.com/1.11.1.5383/swagger.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 format-duration	document	github.com/Akkudoktor-EOS/EOS:openapi.json@fca07a0c6237ad179cd963f3c9187d2fea8c476a	census 4	candidates.jsonl
@@ -4974,6 +5011,9 @@ format-duration	document	github.com/yusing/godoxy:internal/api/v1/docs/swagger.y
 format-duration	document	github.com/zaproxy/zap-extensions:addOns/openapi/src/test/resources/org/zaproxy/zap/extension/openapi/v3/openapi_formats.yaml@6caa0e0e08e8d730bda73e32f7495fae427b94a8	census 1	candidates.jsonl
 format-duration	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: duration" count:all type:file	395	queries.jsonl
 format-duration	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"duration\"" count:all type:file	364	queries.jsonl
+format-duration	screen	github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe fern	passed	screens.jsonl
+format-duration	screen	github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+format-duration	screen	github.com/marinasundstrom/YourBrand:src/CustomerRelations/Ticketing/Ticketing.Client/OpenAPIs/swagger.yaml@6ef617804cb34ceba4b847c62ab122042d86abbe ref	passed	screens.jsonl
 format-email	document	github.com/Apipie/apipie-rails:spec/lib/swagger/openapi_2_0_schema.json@5d1d7ef302ce986eb5b26770e2a9408ec579c304	census 0	candidates.jsonl
 format-email	document	github.com/ArtisanCloud/PowerX:specs/011-knowledge-space/contracts/http-openapi.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 1	candidates.jsonl
 format-email	document	github.com/ArtisanCloud/PowerX:specs/026-iam/contracts/http-openapi.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 2	candidates.jsonl
@@ -7180,6 +7220,21 @@ media-type-key-parameters	document	github.com/zatosource/zato:code/zato-common/s
 media-type-key-parameters	document	github.com/zxcloli666/SoundCloud-Desktop:_refs/openapi-soundcloud-com.json@50a71b2da5549510f2e7b6faa5acd4875010849e	census 23	candidates.jsonl
 media-type-key-parameters	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"application/json; charset=utf-8:" count:all type:file	1308	queries.jsonl
 media-type-key-parameters	query	file:(openapi|swagger).*\.json$ content:"\"application/json; charset=utf-8\"" count:all type:file	676	queries.jsonl
+mutualTLS	candidate	github.com/Redocly/redocly-cli:tests/e2e/lint/oas3.1/openapi.yaml@3174630994e1b88bfe73072383be7d2a084ccb8b	census 1	probe.jsonl
+mutualTLS	candidate	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+mutualTLS	candidate	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+mutualTLS	candidate	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+mutualTLS	candidate	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+mutualTLS	candidate	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+mutualTLS	candidate	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/version/3.1_mutualTLS.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/examples/simple-example.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab	census 1	probe.jsonl
+mutualTLS	candidate	github.com/readmeio/oas:packages/oas-normalize/test/__fixtures__/invalid/openapi-3.1.json@6344460da0304a888b73a64b618dd78da5c78466	census 1	probe.jsonl
 mutualTLS	document	github.com/Cosmian/kms:crate/server/documentation/openapi.yaml@a6d7056389762fa3353239f1bcb85bf6515c1e76	census 1	candidates.jsonl
 mutualTLS	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/all_security_schemes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 2	candidates.jsonl
 mutualTLS	document	github.com/Redocly/redocly-cli:tests/e2e/lint/oas3.1/openapi.yaml@3174630994e1b88bfe73072383be7d2a084ccb8b	census 1	candidates.jsonl
@@ -7224,6 +7279,51 @@ mutualTLS	document	github.com/zaproxy/zap-extensions:addOns/openapi/src/test/res
 mutualTLS	document	github.com/zatosource/zato:code/zato-common/src/zato/common/util/openapi_/samples/docusign-v2.yaml@09f43c3eb3fa112777e16d7340b9197485f3dfc8	census 1	candidates.jsonl
 mutualTLS	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"type: mutualTLS" count:all type:file	26	queries.jsonl
 mutualTLS	query	file:(openapi|swagger).*\.json$ content:"\"type\": \"mutualTLS\"" count:all type:file	16	queries.jsonl
+mutualTLS	screen	github.com/Redocly/redocly-cli:tests/e2e/lint/oas3.1/openapi.yaml@3174630994e1b88bfe73072383be7d2a084ccb8b fern	passed	screens.jsonl
+mutualTLS	screen	github.com/Redocly/redocly-cli:tests/e2e/lint/oas3.1/openapi.yaml@3174630994e1b88bfe73072383be7d2a084ccb8b licence	passed	screens.jsonl
+mutualTLS	screen	github.com/Redocly/redocly-cli:tests/e2e/lint/oas3.1/openapi.yaml@3174630994e1b88bfe73072383be7d2a084ccb8b ref	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 7 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 7 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 7 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 7 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 7 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/jentic/jentic-public-apis:apis/openapi/puppet.com/main/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/version/3.1_mutualTLS.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Endpoint requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/version/3.1_mutualTLS.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 licence	passed	screens.jsonl
+mutualTLS	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/version/3.1_mutualTLS.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/examples/simple-example.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/examples/simple-example.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/examples/simple-example.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly-flag/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/a.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/b.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab fern	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab licence	passed	screens.jsonl
+mutualTLS	screen	github.com/openapi-ts/openapi-typescript:packages/openapi-typescript/test/fixtures/redocly/openapi/c.yaml@d46a319ae2efab30e135ba9b223a3cffd1a67eab ref	passed	screens.jsonl
+mutualTLS	screen	github.com/readmeio/oas:packages/oas-normalize/test/__fixtures__/invalid/openapi-3.1.json@6344460da0304a888b73a64b618dd78da5c78466 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Endpoint requires auth, but no auth is defined.	screens.jsonl
+mutualTLS	screen	github.com/readmeio/oas:packages/oas-normalize/test/__fixtures__/invalid/openapi-3.1.json@6344460da0304a888b73a64b618dd78da5c78466 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
+mutualTLS	screen	github.com/readmeio/oas:packages/oas-normalize/test/__fixtures__/invalid/openapi-3.1.json@6344460da0304a888b73a64b618dd78da5c78466 ref	passed	screens.jsonl
 mutually-recursive-graph	document	github.com/5e-bits/5e-srd-api:apps/docs/openapi-2024.json@f71af08a6b3ae0e25f03a3c43b164fe04636c1f8	census 421	candidates.jsonl
 mutually-recursive-graph	document	github.com/5e-bits/5e-srd-api:apps/docs/openapi.json@f71af08a6b3ae0e25f03a3c43b164fe04636c1f8	census 233	candidates.jsonl
 mutually-recursive-graph	document	github.com/APIs-guru/openapi-directory:APIs/amazonaws.com/clouddirectory/2017-01-11/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1259	candidates.jsonl
@@ -7830,6 +7930,7 @@ oneof-array-variant-anyof-item	document	github.com/zalando/intellij-swagger:src/
 oneof-array-variant-anyof-item	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/extensions-v3-registry.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 oneof-array-variant-anyof-item	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"type:" content:"items:" content:"anyOf:" content:"type: array" count:all type:file	1224	queries.jsonl
 oneof-array-variant-anyof-item	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"type\"" content:"\"items\"" content:"\"anyOf\"" content:"array" count:all type:file	2120	queries.jsonl
+oneof-array-variant-closed-object-item	candidate	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e	census 6	probe.jsonl
 oneof-array-variant-closed-object-item	document	github.com/AliyunContainerService/kube-eventer:vendor/github.com/googleapis/gnostic/OpenAPIv2/openapi-2.0.json@0974bcac0ffd4dc7b5a4327e8ebec5ef78afccb9	census 0	candidates.jsonl
 oneof-array-variant-closed-object-item	document	github.com/ArtisanCloud/PowerX:specs/006-workflow-and-agent/contracts/http-openapi.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
 oneof-array-variant-closed-object-item	document	github.com/BAKAOLC/STS2-RitsuLib:schemas/telemetry/v1/openapi.yaml@1bebdb0365c34f8dc9066ded81ac4587df145449	census 0	candidates.jsonl
@@ -8032,6 +8133,9 @@ oneof-array-variant-closed-object-item	document	github.com/xlang-ai/OpenAgents:r
 oneof-array-variant-closed-object-item	document	github.com/zulip/zulip:zerver/openapi/testing.yaml@e9ffac376e68c54850138b7aff4a3f73a79fa7fe	census 0	candidates.jsonl
 oneof-array-variant-closed-object-item	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"type:" content:"items:" content:"additionalProperties:" content:"type: array" count:all type:file	2211	queries.jsonl
 oneof-array-variant-closed-object-item	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"type\"" content:"\"items\"" content:"\"additionalProperties\"" content:"array" count:all type:file	2051	queries.jsonl
+oneof-array-variant-closed-object-item	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: KeyError: 'type_:AgentBatchRequestNotionVersion'	screens.jsonl
+oneof-array-variant-closed-object-item	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e licence	passed	screens.jsonl
+oneof-array-variant-closed-object-item	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e ref	passed	screens.jsonl
 oneof-discriminated-union	document	github.com/Aethena-Lab/Z3r0:web/openapi.json@659be6359c821db0953eab0da8a7c5168c48f421	census 5	candidates.jsonl
 oneof-discriminated-union	document	github.com/Anxcye/anx-reader:third_party/googleai_dart/openapi-interactions.json@2b2df997839ebf3fc6f90f76783b83485d6840d7	census 8	candidates.jsonl
 oneof-discriminated-union	document	github.com/Apipie/apipie-rails:spec/lib/swagger/openapi_2_0_schema.json@5d1d7ef302ce986eb5b26770e2a9408ec579c304	census 0	candidates.jsonl
@@ -8234,6 +8338,11 @@ oneof-discriminated-union	document	github.com/trpc/trpc:packages/openapi/test/ro
 oneof-discriminated-union	document	github.com/webhookx-io/webhookx:openapi.yml@83fa1c649ebda6d94f82aebf582470ddd6d6abb7	census 1	candidates.jsonl
 oneof-discriminated-union	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"discriminator:" content:"type: array" count:all type:file	516	queries.jsonl
 oneof-discriminated-union	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"discriminator\"" content:"\"array\"" count:all type:file	1692	queries.jsonl
+oneof-string-const-variant	candidate	github.com/Lap-Platform/LAP:examples/verbose/openapi/vercel.yaml@28649a16232be198447487a7e421cca242c1cdd7	census 1	probe.jsonl
+oneof-string-const-variant	candidate	github.com/ballerina-platform/openapi-tools:openapi-cli/src/test/resources/generators/diagnostic_files/3.1.0_openapis/vercel.yaml@ec1eec54e9404ce1e5fbe709b76187c588b512ab	census 1	probe.jsonl
+oneof-string-const-variant	candidate	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e	census 26	probe.jsonl
+oneof-string-const-variant	candidate	github.com/trpc/trpc:packages/openapi/test/routers/appRouter.openapi.json@8b649ad874a8fe97c73962d4617912231b975736	census 1	probe.jsonl
+oneof-string-const-variant	candidate	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e	census 1	probe.jsonl
 oneof-string-const-variant	document	github.com/ASCOMInitiative/ASCOMRemote:Swagger/AlpacaDeviceAPI_v1.yaml@619946880f5be17b39efda4fb116b925300846f6	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/ASCOMInitiative/ASCOMRemote:Swagger/AlpacaDeviceAPI_v1P7.yaml@619946880f5be17b39efda4fb116b925300846f6	census 0	candidates.jsonl
 oneof-string-const-variant	document	github.com/Anxcye/anx-reader:third_party/googleai_dart/openapi-interactions.json@2b2df997839ebf3fc6f90f76783b83485d6840d7	census 0	candidates.jsonl
@@ -8436,6 +8545,21 @@ oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/opena
 oneof-string-const-variant	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/identity.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 oneof-string-const-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"const:" count:all type:file	483	queries.jsonl
 oneof-string-const-variant	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\"" content:"\"const\"" count:all type:file	482	queries.jsonl
+oneof-string-const-variant	screen	github.com/Lap-Platform/LAP:examples/verbose/openapi/vercel.yaml@28649a16232be198447487a7e421cca242c1cdd7 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to dec	screens.jsonl
+oneof-string-const-variant	screen	github.com/Lap-Platform/LAP:examples/verbose/openapi/vercel.yaml@28649a16232be198447487a7e421cca242c1cdd7 licence	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/Lap-Platform/LAP:examples/verbose/openapi/vercel.yaml@28649a16232be198447487a7e421cca242c1cdd7 ref	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/ballerina-platform/openapi-tools:openapi-cli/src/test/resources/generators/diagnostic_files/3.1.0_openapis/vercel.yaml@ec1eec54e9404ce1e5fbe709b76187c588b512ab fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to dec	screens.jsonl
+oneof-string-const-variant	screen	github.com/ballerina-platform/openapi-tools:openapi-cli/src/test/resources/generators/diagnostic_files/3.1.0_openapis/vercel.yaml@ec1eec54e9404ce1e5fbe709b76187c588b512ab licence	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/ballerina-platform/openapi-tools:openapi-cli/src/test/resources/generators/diagnostic_files/3.1.0_openapis/vercel.yaml@ec1eec54e9404ce1e5fbe709b76187c588b512ab ref	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: KeyError: 'type_:AgentBatchRequestNotionVersion'	screens.jsonl
+oneof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e licence	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/ben-ic/worldfixture:emulators/emulate/contracts/notion/public-api-2026-03-11.openapi.json@c62e13e70569824108a3de768a54e4760b30520e ref	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/trpc/trpc:packages/openapi/test/routers/appRouter.openapi.json@8b649ad874a8fe97c73962d4617912231b975736 fern	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/trpc/trpc:packages/openapi/test/routers/appRouter.openapi.json@8b649ad874a8fe97c73962d4617912231b975736 licence	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/trpc/trpc:packages/openapi/test/routers/appRouter.openapi.json@8b649ad874a8fe97c73962d4617912231b975736 ref	passed	screens.jsonl
+oneof-string-const-variant	screen	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to dec	screens.jsonl
+oneof-string-const-variant	screen	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit and the document declares no info.license, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
+oneof-string-const-variant	screen	github.com/useVenice/venice:connectors/connector-vercel/vercel.openapi.gen.yaml@6e94d3a04bc98bf1a02a484852751d6f2c46776e ref	passed	screens.jsonl
 property-anyof-discriminated-union	candidate	github.com/DS4SD/deepsearch-toolkit:tools/swagger-client-generator/openapi-ds-v2.json@be22375ecea319b495a11e27cd0308fdcda81ba1	census 1	probe.jsonl
 property-anyof-discriminated-union	document	github.com/Anxcye/anx-reader:third_party/googleai_dart/openapi-interactions.json@2b2df997839ebf3fc6f90f76783b83485d6840d7	census 0	candidates.jsonl
 property-anyof-discriminated-union	document	github.com/Azure-Samples/ai-hub-gateway-solution-accelerator:bicep/infra/modules/apim/openai-api/OpenAI-Import.openapi.yaml@6b9a9ef558d2990df630de9ca4949429f07e68f2	census 0	candidates.jsonl
@@ -9248,6 +9372,8 @@ recursive-graph	document	github.com/ydcloud-dy/cmdb-server:docs/swagger.yaml@beb
 recursive-graph	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/forum.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 recursive-graph	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"children:" content:"$ref:" count:all type:file	632	queries.jsonl
 recursive-graph	query	file:(openapi|swagger).*\.json$ content:"\"children\"" content:"\"$ref\"" count:all type:file	1125	queries.jsonl
+ref-pointer-composition-index	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
+ref-pointer-composition-index	candidate	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17	census 5	probe.jsonl
 ref-pointer-composition-index	candidate	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444	census 1046	probe.jsonl
 ref-pointer-composition-index	document	github.com/APIs-guru/openapi-directory:APIs/fulfillment.com/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-composition-index	document	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	candidates.jsonl
@@ -9272,9 +9398,22 @@ ref-pointer-composition-index	document	github.com/konfig-dev/konfig:sdks/db/inte
 ref-pointer-composition-index	document	github.com/konfig-dev/konfig:sdks/db/intermediate-fixed-specs/gladly/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
 ref-pointer-composition-index	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"/oneOf/0" count:all type:file	6	queries.jsonl
 ref-pointer-composition-index	query	file:(openapi|swagger).*\.json$ content:"/anyOf/0" count:all type:file	15	queries.jsonl
+ref-pointer-composition-index	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 fern	passed	screens.jsonl
+ref-pointer-composition-index	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 ref	passed	screens.jsonl
+ref-pointer-composition-index	screen	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17 fern	passed	screens.jsonl
+ref-pointer-composition-index	screen	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17 licence	passed	screens.jsonl
+ref-pointer-composition-index	screen	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17 ref	passed	screens.jsonl
 ref-pointer-composition-index	screen	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444 fern	passed	screens.jsonl
 ref-pointer-composition-index	screen	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444 licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
 ref-pointer-composition-index	screen	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444 ref	passed	screens.jsonl
+ref-pointer-nested-items	candidate	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506	census 1	probe.jsonl
+ref-pointer-nested-items	candidate	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3	census 1	probe.jsonl
 ref-pointer-nested-items	document	github.com/Backbase/backbase-openapi-tools:boat-engine/src/test/resources/openapi/decomposer-test-api/openapi.yaml@f1d54b0bc36ebd7391f1e26fd0dc23bab3b46617	census 1	candidates.jsonl
 ref-pointer-nested-items	document	github.com/DataFire/Integrations:integrations/generated/azure_network_applicationgateway/openapi.json@56332a12c8011cb27be25e3173a0f3b3729c08da	census 0	candidates.jsonl
 ref-pointer-nested-items	document	github.com/DataFire/Integrations:integrations/generated/linode/openapi.json@56332a12c8011cb27be25e3173a0f3b3729c08da	census 0	candidates.jsonl
@@ -9386,6 +9525,34 @@ ref-pointer-nested-items	document	github.com/seriousme/fastify-openapi-glue:test
 ref-pointer-nested-items	document	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3	census 1	candidates.jsonl
 ref-pointer-nested-items	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"/properties/" content:"/items'" count:all type:file	9	queries.jsonl
 ref-pointer-nested-items	query	file:(openapi|swagger).*\.json$ content:"/properties/" content:"/items\"" count:all type:file	111	queries.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 fern	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 ref	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 fern	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 licence	passed	screens.jsonl
+ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 ref	passed	screens.jsonl
+ref-pointer-nested-properties	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/scalar/scalar:packages/openapi-validator/tests/openapi3-examples/3.0/pass/fiendish/ref-encoding3.yaml@0d38e1f77b00238d5ffa6f84fd5d0b7c2586e6cb	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506	census 1	probe.jsonl
 ref-pointer-nested-properties	document	github.com/APIs-guru/openapi-directory:APIs/amazonaws.com/iotsitewise/2019-12-02/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/APIs-guru/openapi-directory:APIs/apicurio.local/registry/2.4.x/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	github.com/APIs-guru/openapi-directory:APIs/bitbucket.org/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
@@ -9588,6 +9755,27 @@ ref-pointer-nested-properties	document	github.com/xlang-ai/OpenAgents:real_agent
 ref-pointer-nested-properties	document	github.com/xlang-ai/OpenAgents:real_agents/plugins_agent/plugins/got2go_plugin_v1/openapi.yaml@ff2e46440699af1324eb25655b622c4a131265bb	census 0	candidates.jsonl
 ref-pointer-nested-properties	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"#/components/schemas/" content:"/properties/" count:all type:file	319	queries.jsonl
 ref-pointer-nested-properties	query	file:(openapi|swagger).*\.json$ content:"#/components/schemas/" content:"/properties/" count:all type:file	560	queries.jsonl
+ref-pointer-nested-properties	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 licence	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49 ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 licence	failed: the document's info.license names 'OGC License', which is no redistribution grant the corpus admits	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 licence	failed: the document's info.license names 'OGC License', which is no redistribution grant the corpus admits	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4 ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Path parameter is unreferenced in endpoint: tileMatrixSetId.	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e licence	failed: the document's info.license names 'CC-BY 4.0 license', which is no redistribution grant the corpus admits	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 22 errors, e.g. Error is not defined.	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe licence	failed: the document's info.license names 'OGC License', which is no redistribution grant the corpus admits	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/scalar/scalar:packages/openapi-validator/tests/openapi3-examples/3.0/pass/fiendish/ref-encoding3.yaml@0d38e1f77b00238d5ffa6f84fd5d0b7c2586e6cb fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/scalar/scalar:packages/openapi-validator/tests/openapi3-examples/3.0/pass/fiendish/ref-encoding3.yaml@0d38e1f77b00238d5ffa6f84fd5d0b7c2586e6cb licence	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/scalar/scalar:packages/openapi-validator/tests/openapi3-examples/3.0/pass/fiendish/ref-encoding3.yaml@0d38e1f77b00238d5ffa6f84fd5d0b7c2586e6cb ref	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 fern	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 licence	passed	screens.jsonl
+ref-pointer-nested-properties	screen	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506 ref	passed	screens.jsonl
 ref-pointer-undeclared-component-head	document	github.com/APIs-guru/openapi-directory:APIs/adyen.com/LegalEntityService/2/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-undeclared-component-head	document	github.com/APIs-guru/openapi-directory:APIs/adyen.com/LegalEntityService/3/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-undeclared-component-head	document	github.com/AltimateAI/altimate-code:packages/sdk/openapi.json@7ed6e1685fe73dc594034342a531931330d22577	census 0	candidates.jsonl
@@ -9691,6 +9879,29 @@ ref-pointer-undeclared-component-head	document	github.com/sure-scale/doc-haus:pa
 ref-pointer-undeclared-component-head	document	github.com/swagger-api/apidom:packages/apidom-ls/test/fixtures/openapi-3-2-discriminator-defaultmapping.json@8fbcbbf9da41cc01f7fc15c45c9a4cdf5dd9daeb	census 0	candidates.jsonl
 ref-pointer-undeclared-component-head	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"$ref:" content:"#/components/schemas/undefined" count:all type:file	2	queries.jsonl
 ref-pointer-undeclared-component-head	query	file:(openapi|swagger).*\.json$ content:"\"$ref\"" content:"#/components/schemas/Unknown" count:all type:file	99	queries.jsonl
+securityscheme-type-openidconnect	candidate	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/issue_17376.json@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-no-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-with-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_20662.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_21245.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/RonasIT/laravel-swagger:tests/fixtures/SwaggerServiceTest/documentation/invalid_format__security_definition__openIdConnect_missing_fields.json@c7097aef76f6381589281cb04522b066aae487ec	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/apiture/openapi-down-convert:test/data/openapi.yaml@4a748264ee4b8ef6abdc49525978f143282e1b03	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/cassproject/CASS:src/main/swagger.json@97fc0939ca3960504ce8b2f51749881543a4038c	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/maxkemal/RayTrophi:docs/remote_ipc_gateway_openapi.yaml@30ef25fbb838f24b8d609a905119a0485f4f9c7a	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/membrane/api-gateway:core/src/test/resources/openapi/specs/security/openid.yml@1db3107ea113e6ce1105ba6d0bc1de03a2450ee3	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/securityScheme/invalid_openIdConnect_url.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/openiap/opencore:public.template/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/openiap/opencore:src/public/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/auth-provider/src/main/openapi/token-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/security/src/main/openapi/token-propagation-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/issue_17376.json@1f8e1d8a3264d697c3aca8db7db01148d878115a	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas31/issue_20662.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a	census 1	probe.jsonl
+securityscheme-type-openidconnect	candidate	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca	census 1	probe.jsonl
 securityscheme-type-openidconnect	document	github.com/APIs-guru/openapi-directory:APIs/apache.org/airflow/2.5.3/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1	candidates.jsonl
 securityscheme-type-openidconnect	document	github.com/APIs-guru/openapi-directory:APIs/just-eat.co.uk/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1	candidates.jsonl
 securityscheme-type-openidconnect	document	github.com/APIs-guru/openapi-directory:APIs/surevoip.co.uk/9dcb0dc8/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 1	candidates.jsonl
@@ -9892,6 +10103,75 @@ securityscheme-type-openidconnect	document	github.com/xataio/xata:openapi/gen/op
 securityscheme-type-openidconnect	document	github.com/xataio/xata:openapi/gen/public.yaml@98ced3cc9d5038c78c7f3a00ab7d22da847a4fdd	census 1	candidates.jsonl
 securityscheme-type-openidconnect	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"type: openIdConnect" count:all type:file	407	queries.jsonl
 securityscheme-type-openidconnect	query	file:(openapi|swagger).*\.json$ content:"\"type\": \"openIdConnect\"" count:all type:file	99	queries.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/issue_17376.json@10e6c21c97abb098cc67f14dfdd02171ce56b115 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/issue_17376.json@10e6c21c97abb098cc67f14dfdd02171ce56b115 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/issue_17376.json@10e6c21c97abb098cc67f14dfdd02171ce56b115 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-no-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-no-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-no-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-with-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-with-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/jaxrs-spec/quarkus-openidconnect-with-scopes.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_20662.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_20662.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_20662.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_21245.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_21245.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_1/issue_21245.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/RonasIT/laravel-swagger:tests/fixtures/SwaggerServiceTest/documentation/invalid_format__security_definition__openIdConnect_missing_fields.json@c7097aef76f6381589281cb04522b066aae487ec fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Error is not defined.	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/RonasIT/laravel-swagger:tests/fixtures/SwaggerServiceTest/documentation/invalid_format__security_definition__openIdConnect_missing_fields.json@c7097aef76f6381589281cb04522b066aae487ec licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/RonasIT/laravel-swagger:tests/fixtures/SwaggerServiceTest/documentation/invalid_format__security_definition__openIdConnect_missing_fields.json@c7097aef76f6381589281cb04522b066aae487ec ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/apiture/openapi-down-convert:test/data/openapi.yaml@4a748264ee4b8ef6abdc49525978f143282e1b03 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/apiture/openapi-down-convert:test/data/openapi.yaml@4a748264ee4b8ef6abdc49525978f143282e1b03 licence	failed: the document's info.license names 'API License', which is no redistribution grant the corpus admits	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/apiture/openapi-down-convert:test/data/openapi.yaml@4a748264ee4b8ef6abdc49525978f143282e1b03 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/cassproject/CASS:src/main/swagger.json@97fc0939ca3960504ce8b2f51749881543a4038c fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/cassproject/CASS:src/main/swagger.json@97fc0939ca3960504ce8b2f51749881543a4038c licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit and the document declares no info.license, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/cassproject/CASS:src/main/swagger.json@97fc0939ca3960504ce8b2f51749881543a4038c ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/input-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-bundle.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/meta/import/output-entry.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/jentic/jentic-public-apis:apis/openapi/squidex.io/main/7.0.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/maxkemal/RayTrophi:docs/remote_ipc_gateway_openapi.yaml@30ef25fbb838f24b8d609a905119a0485f4f9c7a fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/maxkemal/RayTrophi:docs/remote_ipc_gateway_openapi.yaml@30ef25fbb838f24b8d609a905119a0485f4f9c7a licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit and the document declares no info.license, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/maxkemal/RayTrophi:docs/remote_ipc_gateway_openapi.yaml@30ef25fbb838f24b8d609a905119a0485f4f9c7a ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/membrane/api-gateway:core/src/test/resources/openapi/specs/security/openid.yml@1db3107ea113e6ce1105ba6d0bc1de03a2450ee3 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/membrane/api-gateway:core/src/test/resources/openapi/specs/security/openid.yml@1db3107ea113e6ce1105ba6d0bc1de03a2450ee3 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/membrane/api-gateway:core/src/test/resources/openapi/specs/security/openid.yml@1db3107ea113e6ce1105ba6d0bc1de03a2450ee3 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/securityScheme/invalid_openIdConnect_url.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/securityScheme/invalid_openIdConnect_url.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/ogen-go/ogen:openapi/parser/_testdata/negative/securityScheme/invalid_openIdConnect_url.json@2569478736aed33cf1fe9d2a5b6e2d659bea0e69 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:public.template/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:public.template/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:public.template/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:src/public/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:src/public/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/openiap/opencore:src/public/swagger.json@c9e560b656cb14c7f82fc9ed1c44820acce43ea3 ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/auth-provider/src/main/openapi/token-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/auth-provider/src/main/openapi/token-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/auth-provider/src/main/openapi/token-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/security/src/main/openapi/token-propagation-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/security/src/main/openapi/token-propagation-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/quarkiverse/quarkus-openapi-generator:client/integration-tests/security/src/main/openapi/token-propagation-external-service6.yaml@01cfc4a30b917ac298c82218cfca91c0445cacbe ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/issue_17376.json@1f8e1d8a3264d697c3aca8db7db01148d878115a fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/issue_17376.json@1f8e1d8a3264d697c3aca8db7db01148d878115a licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit and the document declares no info.license, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/issue_17376.json@1f8e1d8a3264d697c3aca8db7db01148d878115a ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas31/issue_20662.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas31/issue_20662.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a licence	failed: GitHub reports the repository licence as NOASSERTION at the pinned commit and the document declares no info.license, which grants nothing (docs/corpus-licensing.md)	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas31/issue_20662.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a ref	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca fern	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca licence	passed	screens.jsonl
+securityscheme-type-openidconnect	screen	github.com/vert-x3/vertx-web:vertx-web-openapi-router/src/test/resources/security/security_optional_callbackaware.yaml@477021fa680b8fe0183063dc7ba91623e662f0ca ref	passed	screens.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/fern-api/fern:packages/cli/api-importers/openapi/openapi-ir-to-fern-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 4	probe.jsonl
 x-fern-or-crozier-ignore	candidate	github.com/fern-api/fern:packages/cli/api-importers/v3-importer-tests/src/__test__/fixtures/x-fern-ignore/openapi.yml@7afb6e0db4ba7455ea0bc83229153f8368c54181	census 2	probe.jsonl
 x-fern-or-crozier-ignore	document	github.com/Skyvern-AI/skyvern:fern/openapi/overrides.yml@61dd1acd9f2f207a1b9f86936867008af22148f1	census 0	candidates.jsonl
