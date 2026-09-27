@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `1131cbbcb0e3`, the one the reach ledger was measured on when these probes ran,
+build of commit `7af7b03704f8`, the one the reach ledger was measured on when these probes ran,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -28,7 +28,7 @@ final reconciliation decides whether the arm's search reads `exhausted`.
 #### Declarers, and how the instrumented run fared on each
 
 Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
-build `1131cbbcb0e3` only. A declarer not probed on it, one whose run
+build `7af7b03704f8` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
@@ -39,14 +39,14 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-When this record was rendered, `src/` had moved since that build (`539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`db527e61`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `apis.guru` | 1798 | 0 | 0 | 1798 | 0 | 2 | 137 | 0 | 0 | 9 |
-| `jentic` | 29917 | 0 | 0 | 29917 | 0 | 5 | 1169 | 0 | 0 | 55 |
-| `github-code-search` | 185 | 1 | 10 | 185 | 0 | 0 | 10 | 0 | 0 | 1 |
-| `github-publisher-trees` | 1295 | 12 | 46 | 1292 | 3 | 124 | 239 | 0 | 0 | 270 |
+| `apis.guru` | 1798 | 0 | 0 | 1798 | 0 | 0 | 132 | 0 | 0 | 1 |
+| `jentic` | 29917 | 0 | 0 | 29917 | 0 | 0 | 1149 | 0 | 0 | 35 |
+| `github-code-search` | 186 | 0 | 10 | 186 | 0 | 0 | 11 | 0 | 0 | 0 |
+| `github-publisher-trees` | 1306 | 1 | 46 | 1306 | 0 | 0 | 237 | 0 | 0 | 129 |
 | `sourcegraph` | 104 | 0 | 0 | 104 | 0 | 0 | 32 | 0 | 0 | 0 |
-| `vendor-portals` | 1104 | 13 | 161 | 1104 | 0 | 115 | 187 | 0 | 0 | 256 |
+| `vendor-portals` | 1116 | 1 | 161 | 1116 | 0 | 0 | 188 | 0 | 0 | 129 |

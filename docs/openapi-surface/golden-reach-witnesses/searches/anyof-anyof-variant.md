@@ -43,7 +43,7 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-When this record was rendered, `src/` had moved since that build (`539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`db527e61`, `539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
@@ -51,9 +51,9 @@ re-taken on a fresh `just golden-reach` measurement before it is reused.
 | `apis.guru` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `jentic` | 50 | 0 | 0 | 50 | 0 | 0 | 5 | 10 | 10 | 0 |
 | `github-code-search` | 20 | 0 | 1 | 20 | 0 | 0 | 0 | 2 | 2 | 0 |
-| `github-publisher-trees` | 2 | 12 | 46 | 2 | 0 | 0 | 0 | 1 | 1 | 12 |
-| `sourcegraph` | 27 | 2 | 0 | 27 | 0 | 0 | 0 | 6 | 6 | 2 |
-| `vendor-portals` | 2 | 13 | 161 | 2 | 0 | 0 | 2 | 0 | 0 | 13 |
+| `github-publisher-trees` | 2 | 1 | 46 | 2 | 0 | 0 | 0 | 1 | 1 | 1 |
+| `sourcegraph` | 29 | 0 | 0 | 27 | 2 | 0 | 0 | 6 | 6 | 2 |
+| `vendor-portals` | 2 | 1 | 161 | 2 | 0 | 0 | 2 | 0 | 0 | 1 |
 
 #### Candidates passing every screen
 

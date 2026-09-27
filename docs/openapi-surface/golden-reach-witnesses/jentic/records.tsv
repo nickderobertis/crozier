@@ -1208,6 +1208,11 @@ annotated-ref-target-anyof	document	apis/openapi/pandascore.co/pandascore-rest-a
 annotated-ref-target-anyof	document	apis/openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/meta/import/output-entry.json	census 15	enumeration.tsv.gz
 annotated-ref-target-anyof	document	apis/openapi/pandascore.co/pandascore-rest-api-for-all-videogames/2.23.1/openapi.json	census 15	enumeration.tsv.gz
 annotated-ref-target-anyof	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+anyof-allof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 3	probe.jsonl
+anyof-allof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 3	probe.jsonl
+anyof-allof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 3	probe.jsonl
+anyof-allof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 3	probe.jsonl
+anyof-allof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 3	probe.jsonl
 anyof-allof-variant	candidate	apis/openapi/digitalocean.com/main/2.0/meta/import/input-bundle.json	census 9	probe.jsonl
 anyof-allof-variant	candidate	apis/openapi/digitalocean.com/main/2.0/meta/import/input-entry.json	census 9	probe.jsonl
 anyof-allof-variant	candidate	apis/openapi/digitalocean.com/main/2.0/meta/import/output-bundle.json	census 9	probe.jsonl
@@ -1283,6 +1288,21 @@ anyof-allof-variant	document	apis/openapi/sellsy.com/main/2.128.0/meta/import/in
 anyof-allof-variant	document	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 8	enumeration.tsv.gz
 anyof-allof-variant	document	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 8	enumeration.tsv.gz
 anyof-allof-variant	document	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 8	enumeration.tsv.gz
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+anyof-allof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 anyof-allof-variant	screen	apis/openapi/digitalocean.com/main/2.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Failed to resolve #/paths/~1v2~11-clicks/get/responses/401)	screens.jsonl
 anyof-allof-variant	screen	apis/openapi/digitalocean.com/main/2.0/meta/import/input-bundle.json licence	passed	screens.jsonl
 anyof-allof-variant	screen	apis/openapi/digitalocean.com/main/2.0/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -1855,6 +1875,10 @@ anyof-discriminated-union	screen	apis/openapi/gcore.com/main/1.0.0/openapi.json 
 anyof-discriminated-union	screen	apis/openapi/gcore.com/main/1.0.0/openapi.json licence	passed	screens.jsonl
 anyof-discriminated-union	screen	apis/openapi/gcore.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
 anyof-discriminated-union	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+anyof-oneof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 5	probe.jsonl
+anyof-oneof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 5	probe.jsonl
+anyof-oneof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 5	probe.jsonl
+anyof-oneof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 5	probe.jsonl
 anyof-oneof-variant	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 5	probe.jsonl
 anyof-oneof-variant	candidate	apis/openapi/mistral.ai/main/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
 anyof-oneof-variant	candidate	apis/openapi/mistral.ai/main/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
@@ -1906,6 +1930,18 @@ anyof-oneof-variant	document	apis/openapi/smith.langchain.com/langsmith-api/0.1.
 anyof-oneof-variant	document	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
 anyof-oneof-variant	document	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-entry.json	census 2	enumeration.tsv.gz
 anyof-oneof-variant	document	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/openapi.json	census 2	enumeration.tsv.gz
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
 anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
 anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
 anyof-oneof-variant	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
@@ -4144,151 +4180,6 @@ enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/
 enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-bundle.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-entry.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	document	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/4dem.it/main/1.0/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/4dem.it/main/1.0/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/4dem.it/main/1.0/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/4dem.it/main/1.0/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService-v71/71/openapi.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/37/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/40/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/41/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/46/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/49/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/50/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/51/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/52/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/53/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/64/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/65/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/66/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-bundled.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-entry.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-bundled.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-entry.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/67/openapi.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-bundled.json	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-entry.json	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-bundled.json	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-entry.json	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/68/openapi.json	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/69/openapi.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-bundled.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-entry.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/CheckoutService/70/openapi.json	census 21	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/25/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/25/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/25/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/25/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/25/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/30/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/30/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/30/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/30/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/30/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/40/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/40/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/40/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/40/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/40/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/46/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/46/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/46/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/46/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/46/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/49/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/49/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/49/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/49/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/49/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/50/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/50/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/50/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/50/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/50/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/51/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/51/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/51/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/51/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/51/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/52/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/52/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/52/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/52/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/52/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/64/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/64/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/64/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/64/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/64/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/67/meta/import/input-bundled.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/67/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/67/meta/import/output-bundled.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/67/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/67/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/68/meta/import/input-bundled.json	census 16	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/68/meta/import/input-entry.json	census 16	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/68/meta/import/output-bundled.json	census 16	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/68/meta/import/output-entry.json	census 16	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/adyen.com/PaymentService/68/openapi.json	census 16	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -4304,46 +4195,21 @@ enum-leading-digit-identifier	document	apis/openapi/au.app.clio.com/main/v4/meta
 enum-leading-digit-identifier	document	apis/openapi/au.app.clio.com/main/v4/meta/import/output-bundle.json	census 19	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/au.app.clio.com/main/v4/meta/import/output-entry.json	census 19	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/au.app.clio.com/main/v4/openapi.json	census 19	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/beds24.com/main/3.0.0/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/beds24.com/main/3.0.0/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/beds24.com/main/3.0.0/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/beds24.com/main/3.0.0/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/beds24.com/main/3.0.0/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-bundle.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-bundle.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/blitz-api.ai/main/2.0.0/openapi.json	census 8	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/bungie.net/main/2.20.1/meta/import/input-bundled.json	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/bungie.net/main/2.20.1/meta/import/input-entry.json	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/bungie.net/main/2.20.1/meta/import/output-bundled.json	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/bungie.net/main/2.20.1/meta/import/output-entry.json	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/bungie.net/main/2.20.1/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/capital-flow.de/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/climate.com/main/4.0.11/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/climate.com/main/4.0.11/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/climate.com/main/4.0.11/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/climate.com/main/4.0.11/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/climate.com/main/4.0.11/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/input-bundled.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/input-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-bundled.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/openapi.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/ducky.eco/ducky/3.0.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/epa.gov/main/2019.10.15/openapi.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/input-bundled.json	census 3	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/input-entry.json	census 3	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-bundled.json	census 3	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-entry.json	census 3	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/drchrono.com/main/v4 - Hunt Valley/openapi.json	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/input-bundle.json	census 19	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/input-entry.json	census 19	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/output-bundle.json	census 19	enumeration.tsv.gz
@@ -4379,21 +4245,11 @@ enum-leading-digit-identifier	document	apis/openapi/github.com/ghec/1.1.4/meta/i
 enum-leading-digit-identifier	document	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/github.com/ghec/1.1.4/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json	census 6	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-entry.json	census 6	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-bundle.json	census 6	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-entry.json	census 6	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/globalgetnet.com/main/1.0.4/openapi.json	census 6	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/hyperswitch.io/main/0.1.0/openapi.json	census 2	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/goshippo.com/main/2018-02-08/openapi.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -4404,132 +4260,26 @@ enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/main/1.0.0/me
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/just-eat.co.uk/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/merchantsafeunipay.com/main/2.0.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/na.worldline-solutions.com/main/1.0.5/openapi.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/openbanking.org.uk/main/v1.3/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-bundle.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-entry.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-bundle.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-entry.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/partner-api.payfit.com/main/1.0.0/openapi.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/payfit.io/main/1.0/meta/import/input-bundle.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/payfit.io/main/1.0/meta/import/input-entry.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/payfit.io/main/1.0/meta/import/output-bundle.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/payfit.io/main/1.0/meta/import/output-entry.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/payfit.io/main/1.0/openapi.json	census 12	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/paypal.com/paypal-payments/2.8/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-bundle.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-entry.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-bundle.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-entry.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/peopledatalabs.com/main/5.0/openapi.json	census 4	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/realcube.com/main/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/realcube.com/main/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/realcube.com/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/realcube.com/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/realcube.com/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/openapi.json	census 3	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/main/2.1/openapi.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+enum-leading-digit-identifier	document	apis/openapi/rebilly.com/rebilly-rest-api/2.1/openapi.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/reviewstudio.com/main/2.1/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/reviewstudio.com/main/2.1/meta/import/input-entry.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/reviewstudio.com/main/2.1/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/reviewstudio.com/main/2.1/meta/import/output-entry.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/reviewstudio.com/main/2.1/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-bundle.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-entry.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-bundle.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-entry.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/openapi.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/setu.co/main/1.0.0/meta/import/input-bundle.json	census 10	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/setu.co/main/1.0.0/meta/import/input-entry.json	census 10	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/setu.co/main/1.0.0/meta/import/output-bundle.json	census 10	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/setu.co/main/1.0.0/meta/import/output-entry.json	census 10	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/setu.co/main/1.0.0/openapi.json	census 10	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-entry.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-core-api/2023-08-01/openapi.json	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-bundle.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-entry.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-bundle.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-entry.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/openapi.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-bundle.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-entry.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-bundle.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-entry.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/openapi.json	census 28	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-bundle.json	census 7	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-entry.json	census 7	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-bundle.json	census 7	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-entry.json	census 7	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/openapi.json	census 7	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/storecove.com/main/2.0.1/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/storecove.com/main/2.0.1/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/storecove.com/main/2.0.1/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/storecove.com/main/2.0.1/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/storecove.com/main/2.0.1/openapi.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-bundled.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-bundled.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-entry.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/main/2025-03-31.basil/openapi.json	census 8	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/stripe.com/stripe/2026-03-25.dahlia/openapi.json	census 9	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sumup.com/main/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sumup.com/main/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sumup.com/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sumup.com/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/sumup.com/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-entry.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-bundle.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-entry.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-bundle.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-entry.json	census 11	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/openapi.json	census 11	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -4540,11 +4290,6 @@ enum-leading-digit-identifier	document	apis/openapi/theteller.net/main/1.1.0/met
 enum-leading-digit-identifier	document	apis/openapi/theteller.net/main/1.1.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/theteller.net/main/1.1.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/theteller.net/main/1.1.0/openapi.json	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/wallester.com/main/v1/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/wallester.com/main/v1/meta/import/input-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/wallester.com/main/v1/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/wallester.com/main/v1/meta/import/output-entry.json	census 2	enumeration.tsv.gz
-enum-leading-digit-identifier	document	apis/openapi/wallester.com/main/v1/openapi.json	census 2	enumeration.tsv.gz
 enum-leading-digit-identifier	screen	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 20 errors, e.g. Path parameter is unreferenced in endpoint: id.	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json ref	passed	screens.jsonl
@@ -17153,6 +16898,11 @@ format-email	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-en
 format-email	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json	census 4	probe.jsonl
 format-email	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json	census 4	probe.jsonl
 format-email	candidate	apis/openapi/appveyor.com/main/1.0.0/openapi.json	census 4	probe.jsonl
+format-email	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 16	probe.jsonl
+format-email	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 16	probe.jsonl
+format-email	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 16	probe.jsonl
+format-email	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 16	probe.jsonl
+format-email	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 16	probe.jsonl
 format-email	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-bundle.json	census 15	enumeration.tsv.gz
 format-email	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-entry.json	census 15	enumeration.tsv.gz
 format-email	document	apis/openapi/100hires.com/main/2.0.0/meta/import/output-bundle.json	census 15	enumeration.tsv.gz
@@ -21726,7 +21476,27 @@ format-email	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entr
 format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
 format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
 format-email	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-email	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-email	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-hostname	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 14	probe.jsonl
+format-hostname	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 14	probe.jsonl
+format-hostname	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 14	probe.jsonl
+format-hostname	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 14	probe.jsonl
+format-hostname	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 14	probe.jsonl
 format-hostname	document	apis/openapi/ahasend.com/main/2.0.0/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
 format-hostname	document	apis/openapi/ahasend.com/main/2.0.0/meta/import/input-entry.json	census 2	enumeration.tsv.gz
 format-hostname	document	apis/openapi/ahasend.com/main/2.0.0/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
@@ -21822,7 +21592,27 @@ format-hostname	document	apis/openapi/vercel.com/main/0.0.1/meta/import/input-en
 format-hostname	document	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
 format-hostname	document	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 format-hostname	document	apis/openapi/vercel.com/main/0.0.1/openapi.json	census 1	enumeration.tsv.gz
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-hostname	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 6	probe.jsonl
+format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 6	probe.jsonl
+format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 6	probe.jsonl
+format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 6	probe.jsonl
+format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 6	probe.jsonl
 format-ipv4	document	apis/openapi/algolia.com/algolia-search-api/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 format-ipv4	document	apis/openapi/algolia.com/algolia-search-api/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 format-ipv4	document	apis/openapi/algolia.com/algolia-search-api/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -21985,6 +21775,21 @@ format-ipv4	document	apis/openapi/zoom.us/contact-center/2/meta/import/output-en
 format-ipv4	document	apis/openapi/zoom.us/contact-center/2/openapi.json	census 2	enumeration.tsv.gz
 format-ipv4	document	apis/openapi/zoom.us~contactcenter/main/2/openapi.json	census 2	enumeration.tsv.gz
 format-ipv4	document	apis/openapi/zoom.us~contactcenter/main/2/orig/zoom.us~contactcenter.yaml	census 2	enumeration.tsv.gz
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-ipv4	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-entry.json	census 1	enumeration.tsv.gz
@@ -22002,6 +21807,11 @@ format-password	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/input
 format-password	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json	census 2	probe.jsonl
 format-password	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json	census 2	probe.jsonl
 format-password	candidate	apis/openapi/appveyor.com/main/1.0.0/openapi.json	census 2	probe.jsonl
+format-password	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 2	probe.jsonl
+format-password	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 2	probe.jsonl
+format-password	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 2	probe.jsonl
+format-password	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 2	probe.jsonl
+format-password	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 2	probe.jsonl
 format-password	document	apis/openapi/airbrake.io/main/4.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 format-password	document	apis/openapi/airbrake.io/main/4.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 format-password	document	apis/openapi/airbrake.io/main/4.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -22642,6 +22452,21 @@ format-password	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-e
 format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
 format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
 format-password	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-password	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-password	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-regex	document	apis/openapi/cloze.com/main/2026.2/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
 format-regex	document	apis/openapi/cloze.com/main/2026.2/meta/import/input-entry.json	census 3	enumeration.tsv.gz
@@ -22875,6 +22700,11 @@ format-uri	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/input-entr
 format-uri	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-bundled.json	census 4	probe.jsonl
 format-uri	candidate	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.json	census 4	probe.jsonl
 format-uri	candidate	apis/openapi/appveyor.com/main/1.0.0/openapi.json	census 4	probe.jsonl
+format-uri	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 285	probe.jsonl
+format-uri	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 285	probe.jsonl
+format-uri	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 285	probe.jsonl
+format-uri	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 285	probe.jsonl
+format-uri	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 285	probe.jsonl
 format-uri	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-bundle.json	census 12	enumeration.tsv.gz
 format-uri	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-entry.json	census 12	enumeration.tsv.gz
 format-uri	document	apis/openapi/100hires.com/main/2.0.0/meta/import/output-bundle.json	census 12	enumeration.tsv.gz
@@ -27983,7 +27813,27 @@ format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/meta/import/output-entry.
 format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json fern	passed	screens.jsonl
 format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json licence	failed: the document's info.license names 'AppVeyor End User License Agreement (EULA)', which is no redistribution grant the corpus admits and governs the description over the aggregation's CC0	screens.jsonl
 format-uri	screen	apis/openapi/appveyor.com/main/1.0.0/openapi.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-uri	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-uri	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-uri-reference	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
+format-uri-reference	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 1	probe.jsonl
+format-uri-reference	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
+format-uri-reference	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 1	probe.jsonl
+format-uri-reference	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 1	probe.jsonl
 format-uri-reference	document	apis/openapi/akoya.com/main/2.1/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 format-uri-reference	document	apis/openapi/akoya.com/main/2.1/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 format-uri-reference	document	apis/openapi/akoya.com/main/2.1/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -28095,7 +27945,27 @@ format-uri-reference	document	apis/openapi/{subdomain}.pinpointhq.com/main/1.0.2
 format-uri-reference	document	apis/openapi/{subdomain}.pinpointhq.com/main/1.0.23/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
 format-uri-reference	document	apis/openapi/{subdomain}.pinpointhq.com/main/1.0.23/meta/import/output-entry.json	census 2	enumeration.tsv.gz
 format-uri-reference	document	apis/openapi/{subdomain}.pinpointhq.com/main/1.0.23/openapi.json	census 2	enumeration.tsv.gz
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-uri-reference	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-uri-reference	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-uri-template	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
+format-uri-template	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 1	probe.jsonl
+format-uri-template	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
+format-uri-template	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 1	probe.jsonl
+format-uri-template	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 1	probe.jsonl
 format-uri-template	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json	census 3653	enumeration.tsv.gz
 format-uri-template	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json	census 3653	enumeration.tsv.gz
 format-uri-template	document	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json	census 3653	enumeration.tsv.gz
@@ -28126,6 +27996,21 @@ format-uri-template	document	apis/openapi/openlinksw.com/osdb/1.0.0/meta/import/
 format-uri-template	document	apis/openapi/openlinksw.com/osdb/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
 format-uri-template	document	apis/openapi/openlinksw.com/osdb/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
 format-uri-template	document	apis/openapi/openlinksw.com/osdb/1.0.0/openapi.json	census 1	enumeration.tsv.gz
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+format-uri-template	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-uri-template	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 http-dpop	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 http-mutual	document	apis/openapi/cyberark.com/conjur-api/5.3.2/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
@@ -89827,6 +89712,11 @@ property-anyof-discriminated-union	document	apis/openapi/stripe.com/main/2025-03
 property-anyof-discriminated-union	document	apis/openapi/stripe.com/stripe/2026-03-25.dahlia/openapi.json	census 14	enumeration.tsv.gz
 property-anyof-discriminated-union	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 property-sole-anyof-closed-object-member	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+property-sole-anyof-struct-member	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 6	probe.jsonl
+property-sole-anyof-struct-member	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 6	probe.jsonl
+property-sole-anyof-struct-member	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 6	probe.jsonl
+property-sole-anyof-struct-member	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json	census 6	probe.jsonl
+property-sole-anyof-struct-member	candidate	apis/openapi/cloudflare.com/main/4.0.0/openapi.json	census 6	probe.jsonl
 property-sole-anyof-struct-member	candidate	apis/openapi/cpy.re/peertube/7.1.0/meta/import/input-bundled.json	census 1	probe.jsonl
 property-sole-anyof-struct-member	candidate	apis/openapi/cpy.re/peertube/7.1.0/meta/import/input-entry.json	census 1	probe.jsonl
 property-sole-anyof-struct-member	candidate	apis/openapi/cpy.re/peertube/7.1.0/meta/import/output-bundled.json	census 1	probe.jsonl
@@ -89857,6 +89747,21 @@ property-sole-anyof-struct-member	document	apis/openapi/griffin.com/main/1.0/met
 property-sole-anyof-struct-member	document	apis/openapi/griffin.com/main/1.0/meta/import/output-bundle.json	census 3	enumeration.tsv.gz
 property-sole-anyof-struct-member	document	apis/openapi/griffin.com/main/1.0/meta/import/output-entry.json	census 3	enumeration.tsv.gz
 property-sole-anyof-struct-member	document	apis/openapi/griffin.com/main/1.0/openapi.json	census 3	enumeration.tsv.gz
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json licence	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json ref	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json licence	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json ref	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json licence	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json ref	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property "response.body.messages"	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json licence	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-entry.json ref	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 150 errors, e.g. Example is missing required property 'response.body.messages'	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
+property-sole-anyof-struct-member	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 property-sole-anyof-struct-member	screen	apis/openapi/cpy.re/peertube/7.1.0/meta/import/input-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 9 errors, e.g. Expected example to be an object. Example is: 2	screens.jsonl
 property-sole-anyof-struct-member	screen	apis/openapi/cpy.re/peertube/7.1.0/meta/import/input-bundled.json licence	passed	screens.jsonl
 property-sole-anyof-struct-member	screen	apis/openapi/cpy.re/peertube/7.1.0/meta/import/input-bundled.json ref	passed	screens.jsonl

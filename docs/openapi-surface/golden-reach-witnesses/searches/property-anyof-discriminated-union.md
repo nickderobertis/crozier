@@ -43,14 +43,14 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
-When this record was rendered, `src/` had moved since that build (`539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`, `68b15e33`, `736651c9`, `784d69ea`, `2978a39b`, `6f4c62bd`, `dafdfe9d`, `9b85a327`, `f5920e1e`, `c2297f00`, `78d6d54a`, `3ed1814c`, `c8aa3951`, `7b139245`, `3f1f12ee`, `99c185c5`, `499515fa`), so every probe counted here must be
+When this record was rendered, `src/` had moved since that build (`db527e61`, `539ee6ee`, `7c88a109`, `fe9905ae`, `dc8301fb`, `02a7a2cc`, `a38dd7cb`, `0f907e1e`, `642c450c`, `4e85ee55`, `d74c6e3b`, `59b2b480`, `c589eee1`, `3ca2dd5e`, `4083af2f`, `bd06b8a7`, `fe291f33`, `68b15e33`, `736651c9`, `784d69ea`, `2978a39b`, `6f4c62bd`, `dafdfe9d`, `9b85a327`, `f5920e1e`, `c2297f00`, `78d6d54a`, `3ed1814c`, `c8aa3951`, `7b139245`, `3f1f12ee`, `99c185c5`, `499515fa`), so every probe counted here must be
 re-taken on a fresh `just golden-reach` measurement before it is reused.
 
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1 |
 | `jentic` | 79 | 0 | 0 | 0 | 79 | 0 | 0 | 0 | 0 | 79 |
-| `github-code-search` | 0 | 3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 |
-| `github-publisher-trees` | 5 | 12 | 46 | 0 | 5 | 0 | 0 | 0 | 0 | 17 |
-| `sourcegraph` | 4 | 3 | 0 | 0 | 4 | 0 | 0 | 0 | 0 | 7 |
-| `vendor-portals` | 14 | 13 | 161 | 0 | 14 | 0 | 0 | 0 | 0 | 27 |
+| `github-code-search` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `github-publisher-trees` | 5 | 1 | 46 | 0 | 5 | 0 | 0 | 0 | 0 | 6 |
+| `sourcegraph` | 4 | 0 | 1 | 0 | 4 | 0 | 0 | 0 | 0 | 4 |
+| `vendor-portals` | 18 | 1 | 161 | 0 | 18 | 0 | 0 | 0 | 0 | 19 |

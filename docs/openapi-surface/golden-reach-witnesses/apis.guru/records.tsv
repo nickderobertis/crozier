@@ -514,42 +514,32 @@ enum-empty-identifier-member	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1c
 enum-leading-digit-identifier	candidate	APIs/climate.com/4.0.11/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml	census 8	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/formapi.io/v1/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/api.github.com/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghec/1.1.4/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.19/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.20/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.21/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-2.22/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.0/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.1/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.2/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.3/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.4/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.5/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.6/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.7/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/ghes-3.8/1.1.4/openapi.yaml	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/github.com/github.ae/1.1.4/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/just-eat.co.uk/1.0.0/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/openbanking.org.uk/v1.3/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/rebilly.com/2.1/openapi.yaml	census 3	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/storecove.com/2.0.1/openapi.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService-v71/71/openapi.yaml	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/37/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/40/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/41/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/46/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/49/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/50/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/51/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/52/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/53/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/64/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/65/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/66/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/67/openapi.yaml	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/68/openapi.yaml	census 19	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/69/openapi.yaml	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/CheckoutService/70/openapi.yaml	census 20	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/25/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/30/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/40/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/46/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/49/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/50/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/51/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/52/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/64/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/67/openapi.yaml	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/adyen.com/PaymentService/68/openapi.yaml	census 16	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/bungie.net/2.18.0/openapi.yaml	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/climate.com/4.0.11/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml	census 8	enumeration.tsv.gz
+enum-leading-digit-identifier	document	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/formapi.io/v1/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/github.com/api.github.com/1.1.4/openapi.yaml	census 1	enumeration.tsv.gz
@@ -572,8 +562,7 @@ enum-leading-digit-identifier	document	APIs/github.com/ghes-3.8/1.1.4/openapi.ya
 enum-leading-digit-identifier	document	APIs/github.com/github.ae/1.1.4/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/just-eat.co.uk/1.0.0/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/openbanking.org.uk/v1.3/openapi.yaml	census 1	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/rebilly.com/2.1/openapi.yaml	census 3	enumeration.tsv.gz
-enum-leading-digit-identifier	document	APIs/storecove.com/2.0.1/openapi.yaml	census 2	enumeration.tsv.gz
+enum-leading-digit-identifier	document	APIs/rebilly.com/2.1/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 3 errors, e.g. Enum name 307Af7 for value #307af7 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/climate.com/4.0.11/openapi.yaml ref	passed	screens.jsonl
@@ -583,9 +572,63 @@ enum-leading-digit-identifier	screen	APIs/drchrono.com/v4 (Hunt Valley)/openapi.
 enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 5 errors, e.g. Enum name 10003 for value &#10003 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/formapi.io/v1/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com.2022-11-28/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/api.github.com/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec.2022-11-28/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghec/1.1.4/openapi.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 19 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.18/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.19/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 19 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.19/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.19/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.20/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 19 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.20/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.20/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.21/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 23 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.21/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.21/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.22/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 23 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.22/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-2.22/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.0/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 23 errors, e.g. Enum value 100644 is not suitable for code generation.	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.0/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.0/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.1/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 24 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.1/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.1/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.2/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.2/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.2/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.3/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.3/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.3/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.4/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.4/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.4/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.5/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.5/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.5/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.6/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.6/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.6/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.7/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 26 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.7/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.7/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.8/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 29 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.8/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/ghes-3.8/1.1.4/openapi.yaml ref	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/github.ae/1.1.4/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 22 errors, e.g. Expected example to be an object. Example is: undefined	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/github.ae/1.1.4/openapi.yaml licence	passed	screens.jsonl
+enum-leading-digit-identifier	screen	APIs/github.com/github.ae/1.1.4/openapi.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 162 errors, e.g. Unexpected property "errors"	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/just-eat.co.uk/1.0.0/openapi.yaml ref	passed	screens.jsonl
