@@ -8168,6 +8168,41 @@ class RankedBacklogTests(unittest.TestCase):
         reaching = sum(1 for _rank, reach in ledger if not reach.unreached_sites)
         self.assertIn(f"**{reaching}** golden rows reach every handling site", flat)
 
+    REACH_ARMS = "#### Every unreached arm, and its search verdict"
+
+    def test_every_unreached_arm_is_named_with_its_search_verdict(self) -> None:
+        """The report splits golden rows by reach and names every unreached arm.
+
+        Each row of the arm table is one handling site the ledger records no
+        golden-only witness executing, with the verdict its linked arm-search
+        record states; the two counts before it are the ledger's own.
+        """
+        ledger = self.reach_ledger()
+        expected = []
+        for rank, reach in ledger:
+            if not reach.unreached_sites:
+                continue
+            record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
+            self.assertTrue(record.is_file(), f"{reach.key} has an unreached arm and no arm search")
+            outcomes = {
+                line[2].strip("`")
+                for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
+            }
+            self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
+            verdict = outcomes.pop()
+            self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE), reach.key)
+            expected.extend(
+                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), f"`{verdict}`"]
+                for spec, hit, total in reach.sites
+                if not hit
+            )
+        self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 5))
+        flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
+        partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
+        self.assertIn(f"**{len(ledger) - partial}** reach every handling site", flat)
+        self.assertIn(f"**{partial}** carry at least one handling site", flat)
+        self.assertIn(f"{len(expected)} unreached arms in all", flat)
+
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
         """Six declared sources, both capabilities each, each one cited."""
         capabilities = source_capabilities(self.doc)

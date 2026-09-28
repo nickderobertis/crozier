@@ -1708,6 +1708,99 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 | 311 | `media-type-range` | no arm to buy — every range-handling site is reached by the five witnesses rows 124, 127, 130, 134 and 136 registered |
 | 7 (new) | `anyof-oneof-variant` | searched on build `4828cc2b`, nothing outstanding — every declarer in the six sources probed and every one reaching an arm screened; the record reads `exhausted`; no witness yet — Mistral and Cloudflare reach the nested-composition arm and Fern refuses both; [arm search](openapi-surface/golden-reach-witnesses/searches/anyof-oneof-variant.md) |
 
+#### Every unreached arm, and its search verdict
+
+The golden rows split in two. **390** reach every handling site their
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **51** carry
+at least one handling site no golden-only witness executes: 57 unreached arms
+in all. Every one is named below with the verdict its linked arm-search record
+states under Contract B's six declared sources. All 57 read `exhausted`: each
+arm's six-source search owes nothing and found no registrable real-world
+document that executes it. So each stays an unreached arm of a `golden` row,
+not a settled one. `RankedBacklogTests` rebuilds this table from
+[`golden-reach.tsv`](openapi-surface/golden-reach.tsv) and the records, so a
+re-measured ledger or a re-rendered record that moves an arm fails the gate
+until the table follows.
+
+| rank | key | unreached arm | regions | search verdict |
+|---:|---|---|---:|---|
+| 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` |
+| 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` |
+| 1 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` |
+| 2 | `anyof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]` | 1 | `exhausted` |
+| 2 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
+| 3 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]` | 10 | `exhausted` |
+| 3 | `x-fern-or-crozier-ignore` | `src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]` | 1 | `exhausted` |
+| 4 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` |
+| 4 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` |
+| 5 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` |
+| 5 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` |
+| 6 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `exhausted` |
+| 7 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]` | 50 | `exhausted` |
+| 8 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 41 | `exhausted` |
+| 9 | `items-oneof-element` | `src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]` | 21 | `exhausted` |
+| 10 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 15 | `exhausted` |
+| 11 | `example` | `src/ir.rs::example_is_schema_definition` | 20 | `exhausted` |
+| 12 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 14 | `exhausted` |
+| 13 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
+| 14 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 14 | `exhausted` |
+| 15 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` |
+| 16 | `oneof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` |
+| 17 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
+| 18 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
+| 19 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` |
+| 20 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 11 | `exhausted` |
+| 21 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` |
+| 22 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` |
+| 23 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` |
+| 24 | `annotated-ref-target-anyof` | `src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]` | 6 | `exhausted` |
+| 25 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` |
+| 26 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` |
+| 27 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
+| 28 | `non-identifier-operation-id` | `src/ir.rs::endpoint_module[if !id.is_empty\(\) \{]` | 2 | `exhausted` |
+| 29 | `property-sole-anyof-closed-object-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` |
+| 30 | `property-sole-anyof-struct-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` |
+| 31 | `array-item-pointer-walk-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` |
+| 32 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` |
+| 33 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` |
+| 34 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` |
+| 35 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` |
+| 36 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` |
+| 37 | `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` |
+| 38 | `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | 1 | `exhausted` |
+| 39 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` |
+| 40 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` |
+| 41 | `format-duration` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 42 | `format-email` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 43 | `format-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 44 | `format-ipv4` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 45 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 46 | `format-password` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 47 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 48 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 49 | `format-uri` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 50 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+| 51 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => return None]` | 1 | `exhausted` |
+
+**One reached arm rests on a disputed grant.** `ref-pointer-composition-index`'s
+`ref_to_class` pointer-walk site is reached only through corpus row 224,
+`codat-assess`. That row's bytes are Codat's `assess/1.0` description at
+`APIs-guru/openapi-directory` `f04b8d0b`, which
+[`witness-search-blocked-artifacts.tsv`](openapi-surface/witness-search-blocked-artifacts.tsv)
+lists as grant-blocked: no evidenced publisher grant, the aggregator's CC0
+admitted. Row 224 registered the same bytes under that aggregator grant, so the
+two records disagree. This arm's match is therefore recorded as resting on a
+witness whose redistribution grant is disputed, not as settled. The licensing
+decision is the user's. At the feature level nothing rests on row 224 alone.
+The 2026-09-28 walk finds every selector a region row cites that `codat-assess`
+declares declared by another golden-bearing source too, and the ledger lists
+three other witnesses for `ref-pointer-composition-index` and four for
+`ref-pointer-nested-properties`. Seven selectors are declared by
+`codat-assess` alone: `schema.definitions`, `schema.format=ISO4217` and five
+vendor extensions. No row rests on any of them. The first two back no row. The
+extension rows classify by the object an extension hangs off, and each of those
+five objects' extensions is declared by another golden-bearing source too.
+
 #### Rows resting on one document
 
 **44** golden rows rest on one document: a single golden-only witness declares
