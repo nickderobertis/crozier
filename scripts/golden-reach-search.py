@@ -1964,29 +1964,62 @@ def refuse(args: argparse.Namespace) -> int:
           f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
     return 0
 
-# The Fern pins every screen is taken at: the corpus's own (tests/fixtures/AGENTS.md).
-FERN_CLI_PIN = "5.67.1"
-FERN_GENERATOR_PIN = "5.20.0"
 RESCREEN_FILE = "fern-rescreen.jsonl"
 RESCREEN_CACHE = "fern-rescreen-cache.jsonl"
-FERN_LABEL = f"Fern CLI {FERN_CLI_PIN} / python-sdk {FERN_GENERATOR_PIN}"
-# The workspace `scripts/generate-fern-fixture.sh` scaffolds, minus its install
-# into `tests/fixtures/`: a screen reads Fern's verdict and never writes a golden.
-FERN_GENERATORS_YML = f"""\
-api:
-  path: openapi/openapi.yml
-groups:
-  python-sdk:
-    generators:
-      - name: fernapi/fern-python-sdk
-        version: {FERN_GENERATOR_PIN}
-        config:
-          pydantic_config:
-            enum_type: python_enums
-        output:
-          location: local-file-system
-          path: ../generated/python
-"""
+
+
+def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
+    """The Fern CLI, generator, generator version and config the registered goldens were generated at.
+
+    Read off each golden's own `.fern/metadata.json`, the corpus's provenance, so
+    a screen is taken at the corpus's pins without restating them; the pair most
+    goldens record is the pin (a synthetic fixture may record another).
+    """
+    counts: Counter[str] = Counter()
+    for path in sorted((REPO / "tests" / "fixtures").glob("*/expected/.fern/metadata.json")):
+        meta = json.loads(path.read_text(encoding="utf-8"))
+        counts[json.dumps([meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion"),
+                           meta.get("generatorConfig")], sort_keys=True)] += 1
+    if not counts:
+        fail("no golden records its Fern pins in tests/fixtures/*/expected/.fern/metadata.json; "
+             "restore the corpus goldens from git")
+    cli, name, version, config = json.loads(counts.most_common(1)[0][0])
+    return cli, name, version, config
+
+
+def _yaml_block(value: Any, indent: int) -> list[str]:
+    """A generator config mapping as the block YAML generate-fern-fixture.sh writes."""
+    lines = []
+    for key, item in value.items():
+        if isinstance(item, dict):
+            lines += [" " * indent + f"{key}:"] + _yaml_block(item, indent + 2)
+        else:
+            lines.append(" " * indent + f"{key}: {item}")
+    return lines
+
+
+def fern_workspace_files() -> tuple[str, str]:
+    """`fern.config.json` and `generators.yml` as generate-fern-fixture.sh scaffolds them for a document.
+
+    Its install into `tests/fixtures/` is left out: a screen reads Fern's verdict
+    and never writes a golden. `tests/golden_reach_test.py` holds the YAML to
+    that script's own heredoc.
+    """
+    cli, name, version, config = corpus_fern_pins()
+    generators = [
+        "api:", "  path: openapi/openapi.yml", "groups:", "  python-sdk:", "    generators:",
+        f"      - name: {name}", f"        version: {version}", "        config:",
+        *_yaml_block(config, 10),
+        "        output:", "          location: local-file-system", "          path: ../generated/python",
+    ]
+    return json.dumps({"organization": "fern", "version": cli}) + "\n", "\n".join(generators) + "\n"
+
+
+def fern_label() -> str:
+    cli, _name, version, _config = corpus_fern_pins()
+    return f"Fern CLI {cli} / python-sdk {version}"
+
+
 UNPARSED = re.compile(r"Unexpected error|Failed to (resolve|parse)", re.I)
 
 
@@ -2023,10 +2056,11 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
     workspace = scratch / digest / "fern"
     (workspace / "openapi").mkdir(parents=True, exist_ok=True)
     (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
-    (workspace / "fern.config.json").write_text(
-        json.dumps({"organization": "fern", "version": FERN_CLI_PIN}) + "\n", encoding="utf-8")
-    (workspace / "generators.yml").write_text(FERN_GENERATORS_YML, encoding="utf-8")
-    row: dict[str, Any] = {"sha256": digest, "fern_cli": FERN_CLI_PIN, "generator": FERN_GENERATOR_PIN}
+    config, generators = fern_workspace_files()
+    (workspace / "fern.config.json").write_text(config, encoding="utf-8")
+    (workspace / "generators.yml").write_text(generators, encoding="utf-8")
+    cli, _name, version, _config = corpus_fern_pins()
+    row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
     status, output = _fern_run(["fern", "check"], workspace, timeout)
     row.update(check_exit=status, check_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
                check_diagnostic=fern_diagnostic(output))
@@ -2049,13 +2083,13 @@ def fern_verdict(row: dict[str, Any]) -> str | None:
     if check == "timeout" or row.get("generate_exit") == "timeout":
         return None
     if check != "0":
-        return f"failed: {FERN_LABEL} fern check exit {check}: {row['check_diagnostic']}"
+        return f"failed: {fern_label()} fern check exit {check}: {row['check_diagnostic']}"
     generated = row["generate_exit"]
     if generated != "0":
-        return f"failed: {FERN_LABEL} fern generate exit {generated} after fern check exit 0: " \
+        return f"failed: {fern_label()} fern generate exit {generated} after fern check exit 0: " \
                f"{row['generate_diagnostic']}"
     if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
-        return (f"failed: {FERN_LABEL} fern generate exit 0 over an unparsed document, "
+        return (f"failed: {fern_label()} fern generate exit 0 over an unparsed document, "
                 f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
     return "passed"
 
@@ -2104,9 +2138,8 @@ def retire(args: argparse.Namespace) -> int:
                 changed += 1
         if changed:
             replace_records(source, records)
-            print(f"golden-reach-search: {source}: {changed} candidate(s) marked on build {build}")
         marked += changed
-    print(f"golden-reach-search: {marked} candidate(s) marked")
+    print(f"golden-reach-search: {marked} candidate(s) marked on build {build}")
     return 0
 
 
@@ -2140,7 +2173,7 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             row = latest.get(candidate)
             # A refusal already measured here stands; only one filed without
             # Fern's exit status is taken again.
-            if not row or row["fern"] == "passed" or row["fern"].startswith(f"failed: {FERN_LABEL} fern "):
+            if not row or row["fern"] == "passed" or row["fern"].startswith(f"failed: {fern_label()} fern "):
                 continue
             path = located.get(candidate)
             if path is None or not path.is_file():
@@ -2159,14 +2192,12 @@ def fern_rescreen(args: argparse.Namespace) -> int:
             ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = {digest: pool.submit(fern_screen_document, paths[digest], Path(scratch), args.timeout)
                    for digest in todo}
-        for number, (digest, future) in enumerate(futures.items(), 1):
+        for digest, future in futures.items():
             result = future.result()
             cache[digest] = result
             CACHE.mkdir(parents=True, exist_ok=True)
             with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
                 handle.write(json.dumps(result, sort_keys=True) + "\n")
-            print(f"golden-reach-search: {args.source}: fern {number}/{len(todo)} "
-                  f"check {result['check_exit']} generate {result.get('generate_exit', '-')}", flush=True)
     evidence = source_dir(args.source) / RESCREEN_FILE
     kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
             if row["sha256"] not in wanted] if evidence.is_file() else []

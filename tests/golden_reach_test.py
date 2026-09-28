@@ -702,7 +702,7 @@ class FernRescreenVerdictTests(unittest.TestCase):
         self.assertEqual("Found 54 errors and 0 warnings. First: Enum value 449868002 is not suitable for "
                          'code generation, add a "name" property', diagnostic)
         verdict = golden_reach_search.fern_verdict(self.row(check_diagnostic=diagnostic))
-        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} fern check exit 1: {diagnostic}", verdict)
+        self.assertEqual(f"failed: {golden_reach_search.fern_label()} fern check exit 1: {diagnostic}", verdict)
         # A screen cell quotes each result in backticks and joins them with `; `.
         self.assertNotIn("; ", verdict)
         self.assertNotIn("`", verdict)
@@ -715,11 +715,33 @@ class FernRescreenVerdictTests(unittest.TestCase):
         unparsed = dict(clean, generate_python_files=35, generate_diagnostic=(
             "[api]: python-sdk Unexpected error: Failed to resolve schema reference: PhoneNumber"))
         self.assertTrue(golden_reach_search.fern_verdict(unparsed).startswith(
-            f"failed: {golden_reach_search.FERN_LABEL} fern generate exit 0 over an unparsed document, "
+            f"failed: {golden_reach_search.fern_label()} fern generate exit 0 over an unparsed document, "
             "35 Python files: [api]: python-sdk Unexpected error"))
         crashed = dict(clean, generate_exit="1", generate_diagnostic="ParseError: bad input")
-        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} fern generate exit 1 after fern check "
+        self.assertEqual(f"failed: {golden_reach_search.fern_label()} fern generate exit 1 after fern check "
                          "exit 0: ParseError: bad input", golden_reach_search.fern_verdict(crashed))
+
+    def test_the_screen_workspace_is_generate_fern_fixtures_at_the_corpus_pins(self) -> None:
+        """The pins come from the goldens' provenance; the workspace is the fixture script's own."""
+        script = (REPO / "scripts" / "generate-fern-fixture.sh").read_text(encoding="utf-8")
+        cli, name, version, _config = golden_reach_search.corpus_fern_pins()
+        self.assertEqual(("5.67.1", "fernapi/fern-python-sdk", "5.20.0"), (cli, name, version))
+        self.assertEqual("Fern CLI 5.67.1 / python-sdk 5.20.0", golden_reach_search.fern_label())
+        default = re.search(r'FERN_CLI_VERSION="\$\{FERN_CLI_VERSION:-([^}]+)\}"', script)
+        self.assertIsNotNone(default, "generate-fern-fixture.sh no longer defaults its Fern CLI version")
+        self.assertEqual(cli, default.group(1))
+        heredoc = re.search(r'cat > "\$workdir/fern/generators\.yml" <<YAML\n(.*?)\nYAML\n', script, re.S)
+        self.assertIsNotNone(heredoc, "generate-fern-fixture.sh no longer writes generators.yml from a heredoc")
+        body = heredoc.group(1)
+        for variable, value in (("api_path", "openapi/openapi.yml"), ("FERN_PYTHON_VERSION", version),
+                                ("audiences_block", ""), ("client_class_name_block", ""),
+                                ("extra_fields_block", "")):
+            body = body.replace("${" + variable + "}", value)
+        self.assertNotIn("${", body, "a heredoc variable this check does not fill")
+        expected = [line for line in body.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+        config, generators = golden_reach_search.fern_workspace_files()
+        self.assertEqual(expected, generators.splitlines())
+        self.assertEqual({"organization": "fern", "version": cli}, json.loads(config))
 
     def test_a_run_that_timed_out_settles_nothing(self) -> None:
         self.assertIsNone(golden_reach_search.fern_verdict(self.row(check_exit="timeout")))

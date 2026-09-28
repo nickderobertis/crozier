@@ -86,9 +86,10 @@ files it here.
   `thin-goldens-continue-2`, which the gate names).
 - `<source>/fern-rescreen.jsonl` — Fern's screen taken again, measured, for each
   reaching declarer whose licence and ref pass and whose earlier Fern screen
-  recorded no exit status: `fern-rescreen` runs `fern check` at CLI 5.67.1 in
-  the workspace `scripts/generate-fern-fixture.sh` scaffolds, and where that
-  exits 0, `fern generate` at python-sdk 5.20.0. Each line names the document
+  recorded no exit status: `fern-rescreen` runs `fern check` in the workspace
+  `scripts/generate-fern-fixture.sh` scaffolds, and where that exits 0, `fern
+  generate`, at the Fern CLI and python-sdk versions the goldens'
+  `.fern/metadata.json` record. Each line names the document
   and its digest, each command's exit status, the first diagnostic Fern
   printed and the digest of its full output, and the screen is re-filed from it.
 - `<source>/screens.jsonl` — each screen as it was filed, with its evidence.
