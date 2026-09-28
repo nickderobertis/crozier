@@ -2013,7 +2013,8 @@ def fern_diagnostic(output: str) -> str:
         first = next((line for line in lines if UNPARSED.search(line) or re.search(r"\berror\b", line, re.I)
                       and "deprecated" not in line), lines[-1] if lines else "no output")
     text = f"{summary} First: {first}" if summary else first
-    return text.replace("; ", ", ")[:400]
+    # A screen cell quotes each result in backticks and joins them with `; `.
+    return text.replace("; ", ", ").replace("`", "'")[:400]
 
 
 def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
@@ -2038,7 +2039,7 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
         unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
         row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
                    generate_python_files=files,
-                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ")[:400])
+                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ").replace("`", "'")[:400])
     return row
 
 
@@ -2048,13 +2049,13 @@ def fern_verdict(row: dict[str, Any]) -> str | None:
     if check == "timeout" or row.get("generate_exit") == "timeout":
         return None
     if check != "0":
-        return f"failed: {FERN_LABEL} `fern check` exit {check}: {row['check_diagnostic']}"
+        return f"failed: {FERN_LABEL} fern check exit {check}: {row['check_diagnostic']}"
     generated = row["generate_exit"]
     if generated != "0":
-        return f"failed: {FERN_LABEL} `fern generate` exit {generated} after `fern check` exit 0: " \
+        return f"failed: {FERN_LABEL} fern generate exit {generated} after fern check exit 0: " \
                f"{row['generate_diagnostic']}"
     if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
-        return (f"failed: {FERN_LABEL} `fern generate` exit 0 over an unparsed document, "
+        return (f"failed: {FERN_LABEL} fern generate exit 0 over an unparsed document, "
                 f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
     return "passed"
 
@@ -2113,7 +2114,8 @@ def fern_rescreen(args: argparse.Namespace) -> int:
     """Take Fern's screen again, measured, for every reaching declarer its last screen refused.
 
     Only a declarer this build's probe finds reaching the arm is a candidate, and
-    only one whose licence and ref screens pass rests on Fern's verdict. Each
+    only a Fern refusal filed without an exit status is taken again, whatever
+    the candidate's other screens read: a refusal is quoted with its status. Each
     distinct document runs once: `fern check` at the pinned CLI, and where that
     exits 0, the generation `generate-fern-fixture.sh` runs, since only a
     generation settles it. The screen is re-filed with the exit status and the
@@ -2136,7 +2138,9 @@ def fern_rescreen(args: argparse.Namespace) -> int:
         located = dict(declarers(args.source, key, args.root)) if reaching else {}
         for candidate in sorted(reaching):
             row = latest.get(candidate)
-            if not row or row["licence"] != "passed" or row["ref"] != "passed" or row["fern"] == "passed":
+            # A refusal already measured here stands; only one filed without
+            # Fern's exit status is taken again.
+            if not row or row["fern"] == "passed" or row["fern"].startswith(f"failed: {FERN_LABEL} fern "):
                 continue
             path = located.get(candidate)
             if path is None or not path.is_file():

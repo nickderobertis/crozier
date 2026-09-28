@@ -7882,14 +7882,21 @@ class RankedBacklogTests(unittest.TestCase):
             self.assertTrue(row["item"] and row["blocker"], f"an item without its blocker: {row}")
             listed[(row["key"], row["source"])] = listed.get((row["key"], row["source"]), 0) + 1
         owed: dict[tuple[str, str], int] = {}
-        for path in sorted((self.ARM_SEARCHES / "searches").glob("*.md")):
+        records = sorted((self.ARM_SEARCHES / "searches").glob("*.md"))
+        counted = 0
+        for path in records:
             text = path.read_text(encoding="utf-8")
             build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
             self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
             for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M):
+                counted += 1
                 if int(cells.split("|")[-2]):
                     owed[(path.stem, source)] = int(cells.split("|")[-2])
-        self.assertTrue(owed, "no record owes an item; the check reads nothing")
+        # Every record's six source counts are read, so a list and a set of
+        # records that both owe nothing is a reading, not a vacuous pass.
+        self.assertTrue(records, "no arm-search record; the check reads nothing")
+        self.assertEqual(len(DECLARED_SOURCES) * len(records), counted,
+                         "an arm-search record whose declarer table this check cannot read")
         self.assertEqual(owed, listed)
 
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
@@ -7926,7 +7933,8 @@ class RankedBacklogTests(unittest.TestCase):
                         key, lines, self.ARM_SEARCHES, capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
-                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv"),
+                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
+                                      "fern-rescreen.jsonl"),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"

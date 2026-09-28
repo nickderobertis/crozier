@@ -680,7 +680,7 @@ class MeasurementInputTests(unittest.TestCase):
 class FernRescreenVerdictTests(unittest.TestCase):
     """A re-screen's row read as Fern's verdict: its exit status and the first thing Fern printed."""
 
-    # `fern check` (CLI 5.67.1) over APIs.guru's drchrono.com v4 (Hunt Valley), as printed.
+    # fern check (CLI 5.67.1) over APIs.guru's drchrono.com v4 (Hunt Valley), as printed.
     CHECK = (
         "Warnings for generators.yml:\n"
         "::warning::Warnings for generators.yml:\n"
@@ -702,8 +702,11 @@ class FernRescreenVerdictTests(unittest.TestCase):
         self.assertEqual("Found 54 errors and 0 warnings. First: Enum value 449868002 is not suitable for "
                          'code generation, add a "name" property', diagnostic)
         verdict = golden_reach_search.fern_verdict(self.row(check_diagnostic=diagnostic))
-        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} `fern check` exit 1: {diagnostic}", verdict)
+        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} fern check exit 1: {diagnostic}", verdict)
+        # A screen cell quotes each result in backticks and joins them with `; `.
         self.assertNotIn("; ", verdict)
+        self.assertNotIn("`", verdict)
+        self.assertNotIn("`", golden_reach_search.fern_diagnostic("issue: the `x-fern-enum` extension"))
 
     def test_only_a_generation_settles_a_document_fern_check_accepts(self) -> None:
         clean = self.row(check_exit="0", generate_exit="0", generate_python_files=95,
@@ -712,10 +715,10 @@ class FernRescreenVerdictTests(unittest.TestCase):
         unparsed = dict(clean, generate_python_files=35, generate_diagnostic=(
             "[api]: python-sdk Unexpected error: Failed to resolve schema reference: PhoneNumber"))
         self.assertTrue(golden_reach_search.fern_verdict(unparsed).startswith(
-            f"failed: {golden_reach_search.FERN_LABEL} `fern generate` exit 0 over an unparsed document, "
+            f"failed: {golden_reach_search.FERN_LABEL} fern generate exit 0 over an unparsed document, "
             "35 Python files: [api]: python-sdk Unexpected error"))
         crashed = dict(clean, generate_exit="1", generate_diagnostic="ParseError: bad input")
-        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} `fern generate` exit 1 after `fern check` "
+        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} fern generate exit 1 after fern check "
                          "exit 0: ParseError: bad input", golden_reach_search.fern_verdict(crashed))
 
     def test_a_run_that_timed_out_settles_nothing(self) -> None:
