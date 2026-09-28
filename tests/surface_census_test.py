@@ -739,6 +739,33 @@ def compact_search_lines(text: str) -> dict[str, list[str]]:
     return found
 
 
+def compact_ledger(path: Path) -> tuple[tuple[str, ...], dict[str, list[tuple[int, dict[str, str]]]]]:
+    """(header, key -> [(line number, row)]) of one sharded candidate ledger.
+
+    Parsed once per state of its shards on disk: the per-source ledgers run to a hundred
+    thousand rows, and every compact record reads each of the six, so parsing
+    them again per key would cost minutes the gate spends on nothing.
+    """
+    state = tuple(
+        (str(part), stat.st_ino, stat.st_mtime_ns, stat.st_size)
+        for part in _index_module.ledger_parts(path)
+        for stat in (part.stat(),)
+    )
+    return _compact_ledger(path, state)
+
+
+@functools.lru_cache(maxsize=None)
+def _compact_ledger(
+    path: Path, _state: tuple[tuple[str, int, int, int], ...]
+) -> tuple[tuple[str, ...], dict[str, list[tuple[int, dict[str, str]]]]]:
+    with io.StringIO(_index_module.read_ledger(path), newline="") as stream:
+        reader = csv.DictReader(stream, delimiter="\t")
+        by_key: dict[str, list[tuple[int, dict[str, str]]]] = {}
+        for number, row in enumerate(reader, 2):
+            by_key.setdefault(row.get("key") or "", []).append((number, row))
+        return tuple(reader.fieldnames or ()), by_key
+
+
 def compact_record_failures(
     key: str,
     line: list[str],
@@ -758,19 +785,19 @@ def compact_record_failures(
         failures.append(
             f"{key}: compact search sources {sources} differ from declared {declared}"
         )
+    # The consolidated index is built over the sources its script declares; the
+    # catalogue and portal ledgers are indexed by their own acquisitions, so their
+    # rows reconcile with their own records.tsv alone.
+    indexed_sources = set(_index_module.SOURCES)
     central_path = evidence_root / "witness-search-github/candidates.tsv"
     if not central_path.is_file():
         failures.append(f"{key}: missing consolidated candidates.tsv")
         central = []
     else:
-        with io.StringIO(_index_module.read_ledger(central_path), newline="") as stream:
-            reader = csv.DictReader(stream, delimiter="\t")
-            if tuple(reader.fieldnames or ()) != (
-                *COMPACT_RECORD_FIELDS[:-1],
-                "record",
-            ):
-                failures.append(f"{key}: candidates.tsv has the wrong header")
-            central = [row for row in reader if row.get("key") == key]
+        header, by_key = compact_ledger(central_path)
+        if header != (*COMPACT_RECORD_FIELDS[:-1], "record"):
+            failures.append(f"{key}: candidates.tsv has the wrong header")
+        central = [row for _number, row in by_key.get(key, [])]
     central_by_identity = {
         (row.get("source"), row.get("candidate"), row.get("revision")): row
         for row in central
@@ -787,15 +814,10 @@ def compact_record_failures(
         if not path.is_file():
             failures.append(f"{key}: `{source}` records.tsv is missing")
             continue
-        with io.StringIO(_index_module.read_ledger(path), newline="") as stream:
-            reader = csv.DictReader(stream, delimiter="\t")
-            if tuple(reader.fieldnames or ()) != COMPACT_RECORD_FIELDS:
-                failures.append(f"{key}: `{source}` records.tsv has the wrong header")
-            rows = [
-                (number, row)
-                for number, row in enumerate(reader, 2)
-                if row.get("key") == key
-            ]
+        header, by_key = compact_ledger(path)
+        if header != COMPACT_RECORD_FIELDS:
+            failures.append(f"{key}: `{source}` records.tsv has the wrong header")
+        rows = by_key.get(key, [])
         counts = Counter(row["disposition"] for _, row in rows)
         expected = {
             "witness-found": int(segment["witness_found"]),
@@ -841,6 +863,8 @@ def compact_record_failures(
                 failures.append(
                     f"{key}: `{source}` candidate `{candidate}` is not a screened witness"
                 )
+            if source not in indexed_sources:
+                continue
             indexed = central_by_identity.get(identity)
             if (
                 indexed is None
@@ -872,10 +896,131 @@ def compact_record_failures(
                 failures.append(
                     f"{key}: `{source}` omits its witness candidate and revision"
                 )
-    if set(central_by_identity) != encountered:
+    if set(central_by_identity) != {
+        identity for identity in encountered if identity[0] in indexed_sources
+    }:
         failures.append(
             f"{key}: candidates.tsv and per-source records.tsv disagree on candidates"
         )
+    return failures
+
+
+# Contract A's completeness tier: every region row that is not `golden` rests on
+# a committed Fern measurement crozier is byte-compared against, or is a `gap`
+# carrying Contract B's compact search record. Nothing else passes.
+NON_GENERATION_VERDICTS = ("discards", "ignores", "refuses", "crashes", "coincidence")
+SEARCH_OUTCOMES = (
+    "witness-found",
+    "witness-blocked",
+    "fern-rejected",
+    "none-found",
+    SEARCH_INCOMPLETE,
+    EXHAUSTED,
+)
+EXCLUDED_SOURCES = re.compile(r"(?i)postman|swaggerhub")
+OUTSTANDING_NOTE = re.compile(r"\boutstanding: (?P<sources>`[\w.-]+`(?:(?:, |,? and )`[\w.-]+`)*)")
+
+
+def manifest_rows(text: str) -> dict[str, list[str]]:
+    """key -> its six `MANIFEST.tsv` fields."""
+    return {
+        fields[0]: fields
+        for line in text.splitlines()[1:]
+        if len(fields := line.split("\t")) == 6
+    }
+
+
+def proof_citation(key: str, row: list[str]) -> str:
+    """The line a row settled by `row`'s proof carries in its evidence cell."""
+    suffix = "" if row[1] == "refusal" else "/"
+    return (
+        f"**Committed Fern measurement:** [`{key}`]"
+        f"({row[3].removeprefix('docs/openapi-surface/')}{suffix})"
+    )
+
+
+def compact_search_outcome_failures(key: str, line: list[str]) -> list[str]:
+    """A compact record's outcome, read against its own segments and note.
+
+    `exhausted` owes no outstanding candidate at any declared source, and
+    `search-incomplete` names, after `outstanding:`, every declared source still
+    owing one. No record names a source Contract B excludes.
+    """
+    failures = []
+    outcome = line[1].strip("`")
+    if outcome not in SEARCH_OUTCOMES:
+        failures.append(f"{key}: search outcome `{outcome}` is not Contract B's vocabulary")
+    if EXCLUDED_SOURCES.search(" ".join(line)):
+        failures.append(f"{key}: its search record cites a source Contract B excludes")
+    segments = [COMPACT_SEGMENT.fullmatch(piece.strip()) for piece in line[2].split("; ")]
+    owing = [
+        segment["source"]
+        for segment in segments
+        if segment and int(segment["outstanding"])
+    ]
+    note = OUTSTANDING_NOTE.search(line[3])
+    named = re.findall(r"`([\w.-]+)`", note["sources"]) if note else []
+    if outcome == EXHAUSTED and owing:
+        failures.append(
+            f"{key}: reads `{EXHAUSTED}` while {owing} still owe outstanding candidates"
+        )
+    if outcome == SEARCH_INCOMPLETE:
+        if not named:
+            failures.append(
+                f"{key}: reads `{SEARCH_INCOMPLETE}` and its note names no outstanding source"
+            )
+        undeclared = [name for name in named if name not in DECLARED_SOURCES]
+        if undeclared:
+            failures.append(f"{key}: names {undeclared} outstanding, none a declared source")
+        unnamed = [source for source in owing if source not in named]
+        if unnamed:
+            failures.append(f"{key}: its note does not name {unnamed}, which owe candidates")
+    return failures
+
+
+def completeness_failures(
+    entries: dict[str, tuple[str, list[str]]],
+    region_texts: dict[str, str],
+    manifest: dict[str, list[str]],
+) -> list[str]:
+    """Every non-`golden` row: a committed proof, or a searched `gap`.
+
+    A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
+    row's own evidence cell; a `measured` row is a byte comparison over a
+    generated shape and settles nothing. A searched `gap` carries one line in its
+    own region file's `### Witness search (exhaustive)` compact table.
+    """
+    failures = []
+    searched = {
+        region: compact_search_lines(text) for region, text in region_texts.items()
+    }
+    for key, (region, cells) in sorted(entries.items()):
+        category = cells[3].strip("`")
+        if category == "golden":
+            continue
+        row = manifest.get(key)
+        proof = row is not None and row[2] in NON_GENERATION_VERDICTS
+        record = searched.get(region, {}).get(key)
+        if proof and proof_citation(key, row) not in cells[4]:
+            failures.append(
+                f"{key} ({region}.md, `{category}`): its MANIFEST.tsv proof is not cited "
+                f"as `{proof_citation(key, row)}` in its evidence cell"
+            )
+        if proof:
+            continue
+        if category != "gap":
+            failures.append(
+                f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
+                f"non-generation verdict, the only thing that settles a `{category}` row"
+            )
+        elif record is None:
+            failures.append(
+                f"{key} ({region}.md, `gap`): lacks both halves — no MANIFEST.tsv row "
+                f"carrying a non-generation verdict, and no Contract B search record under "
+                f"`{EXHAUSTIVE_SEARCH_HEADING}` in {region}.md"
+            )
+        else:
+            failures.extend(compact_search_outcome_failures(key, record))
     return failures
 
 
@@ -7801,23 +7946,27 @@ class RankedBacklogTests(unittest.TestCase):
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
         return [row for row in rows if row["walk"] in named]
 
-    def test_a_gap_row_the_frozen_contract_does_not_own_records_its_own_search(self) -> None:
+    def test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly(self) -> None:
         """A `gap` row admitted after the witness-search-redo contract froze.
 
-        The legacy reader skips such a row rather than refusing it, so this is
-        what holds its search to account: every declared source named with what
-        it returned, and `search-incomplete` — never `exhausted` — while any did
-        not answer.
+        Its search is recorded once, as its line of the compact grammar under
+        `### Witness search (exhaustive)`, and never on its own evidence cell: a
+        second copy there is a record the compact reconciliation never reads. An
+        entry cell the frozen contract does not own carries no `search outcome`.
         """
         frozen = frozen_search_keys(FROZEN_SEARCH_CONTRACT.read_text(encoding="utf-8"))
         checked = []
-        for key, (_region, cells) in sorted(self.entries.items()):
+        for key, (region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") != "gap" or key in frozen:
                 continue
-            if "search outcome" not in cells[4]:
+            record = compact_search_lines(
+                (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
+            ).get(key)
+            if record is None:
                 continue
             checked.append(key)
             with self.subTest(key=key):
+                self.assertNotIn("search outcome", cells[4], "a second, inline search record")
                 self.assertEqual([], entry_search_failures(key, cells[4]))
         self.assertTrue(checked, "no post-freeze gap row records a search; the check reads nothing")
 
@@ -8048,6 +8197,29 @@ class RankedBacklogTests(unittest.TestCase):
                         [],
                         compact_record_failures(key, line, self.REGIONS, capabilities),
                     )
+
+    def test_every_non_golden_row_carries_a_proof_or_a_searched_gap(self) -> None:
+        """Contract A's completeness tier, over the six region files as they stand.
+
+        A row that is not `golden` has no byte-match against a registered real
+        specification, so it must rest on one of exactly two things: a committed
+        Fern measurement of non-generation that crozier is byte-compared against
+        (a `MANIFEST.tsv` row, cited from the row), or a `gap` classification with
+        Contract B's compact search record in its own region file. A row with
+        neither fails here, naming the row and the half it lacks.
+        """
+        manifest = manifest_rows(
+            (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
+        )
+        region_texts = {
+            path.stem: path.read_text(encoding="utf-8")
+            for path in sorted(self.REGIONS.glob("*.md"))
+        }
+        self.assertTrue(
+            any(cells[3].strip("`") != "golden" for _region, cells in self.entries.values()),
+            "no row is outside `golden`; the tier reads nothing",
+        )
+        self.assertEqual([], completeness_failures(self.entries, region_texts, manifest))
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
         """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
@@ -8658,6 +8830,114 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
 
 
 
+class CompletenessTierTests(unittest.TestCase):
+    """Contract A's completeness tier over a real region file and manifest on disk.
+
+    Each case writes one entry row, and where it needs one a compact search
+    record, then reads them back with the parsers the gate itself uses, so what
+    is refused is region-file content rather than a hand-built cell list.
+    """
+
+    SEGMENTS = "; ".join(
+        f"{source}: {{n}} candidates (0 witness-found, 0 rejected, {{n}} outstanding, "
+        f"0 not-owed) [records](witness-search-{source}/records.tsv)"
+        for source in DECLARED_SOURCES
+    )
+
+    def failures(
+        self,
+        category: str,
+        evidence: str,
+        manifest: str = "",
+        search: str | None = None,
+    ) -> list[str]:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        record = (
+            ""
+            if search is None
+            else f"\n{EXHAUSTIVE_SEARCH_HEADING}\n\n| key | outcome | search | note |\n"
+            f"|---|---|---|---|\n{search}\n"
+        )
+        settlement = "`FIXTURE` — pending" if category == "gap" else "—"
+        (root / "sample.md").write_text(
+            "## Entries\n\n"
+            "| key | oas | spec location | category | evidence | crozier sites | why | settlement |\n"
+            "|---|---|---|---|---|---|---|---|\n"
+            f"| sample-shape | both | Schema Object.sample | {category} | {evidence} | none | — | {settlement} |\n"
+            f"{record}",
+            encoding="utf-8",
+        )
+        (root / "MANIFEST.tsv").write_text(
+            "key\tform\tverdict\tartifact\tcontrol\tdigest\n" + manifest, encoding="utf-8"
+        )
+        text = (root / "sample.md").read_text(encoding="utf-8")
+        rows = RankedBacklogTests.region_rows(text)
+        self.assertEqual(1, len(rows))
+        return completeness_failures(
+            {"sample-shape": ("sample", rows[0])},
+            {"sample": text},
+            manifest_rows((root / "MANIFEST.tsv").read_text(encoding="utf-8")),
+        )
+
+    def record(self, outcome: str, note: str, outstanding: int = 1) -> str:
+        return f"| `sample-shape` | `{outcome}` | {self.SEGMENTS.format(n=outstanding)} | {note} |"
+
+    PROOF = (
+        "sample-shape\tabsent-tree\tdiscards\t"
+        "docs/openapi-surface/probe-expected/sample-shape\t—\t" + "0" * 64 + "\n"
+    )
+    CITED = "**Committed Fern measurement:** [`sample-shape`](probe-expected/sample-shape/)"
+    OWING = "outstanding: " + ", ".join(f"`{source}`" for source in DECLARED_SOURCES) + " — parse failures"
+
+    def test_a_cited_proof_settles_a_limitations_row(self) -> None:
+        self.assertEqual([], self.failures("limitations", f"verdict discards; {self.CITED}", self.PROOF))
+
+    def test_a_limitations_row_with_no_proof_is_refused_naming_the_missing_half(self) -> None:
+        found = " ".join(self.failures("limitations", "verdict discards"))
+        self.assertIn("sample-shape (sample.md, `limitations`): lacks a MANIFEST.tsv row", found)
+
+    def test_a_proof_its_row_does_not_cite_is_refused(self) -> None:
+        found = " ".join(self.failures("limitations", "verdict discards", self.PROOF))
+        self.assertIn("is not cited", found)
+
+    def test_a_gap_row_with_neither_half_is_refused_naming_both(self) -> None:
+        found = " ".join(self.failures("gap", "census 0"))
+        self.assertIn("lacks both halves", found)
+        self.assertIn(EXHAUSTIVE_SEARCH_HEADING, found)
+
+    def test_a_measured_byte_comparison_is_not_a_proof_of_non_generation(self) -> None:
+        measured = self.PROOF.replace("\tdiscards\t", "\tmeasured\t")
+        found = " ".join(self.failures("gap", "census 0", measured))
+        self.assertIn("lacks both halves", found)
+
+    def test_a_gap_row_with_its_compact_search_record_passes(self) -> None:
+        search = self.record(SEARCH_INCOMPLETE, self.OWING)
+        self.assertEqual([], self.failures("gap", "census 0", search=search))
+
+    def test_an_exhausted_record_still_owing_candidates_is_refused(self) -> None:
+        search = self.record(EXHAUSTED, "every source answered")
+        self.assertIn("still owe outstanding candidates", " ".join(self.failures("gap", "c", search=search)))
+        settled = self.record(EXHAUSTED, "every source answered", outstanding=0)
+        self.assertEqual([], self.failures("gap", "c", search=settled))
+
+    def test_an_incomplete_record_must_name_every_owing_source(self) -> None:
+        silent = self.record(SEARCH_INCOMPLETE, "pending")
+        self.assertIn("names no outstanding source", " ".join(self.failures("gap", "c", search=silent)))
+        partial = self.record(SEARCH_INCOMPLETE, "outstanding: `sourcegraph` — parse failures")
+        self.assertIn("does not name", " ".join(self.failures("gap", "c", search=partial)))
+
+    def test_an_excluded_or_undeclared_source_is_refused(self) -> None:
+        postman = self.record(SEARCH_INCOMPLETE, self.OWING + "; postman unanswered")
+        self.assertIn("Contract B excludes", " ".join(self.failures("gap", "c", search=postman)))
+        foreign = self.record(SEARCH_INCOMPLETE, self.OWING.replace("`jentic`", "`gitlab`"))
+        self.assertIn("none a declared source", " ".join(self.failures("gap", "c", search=foreign)))
+
+    def test_an_outcome_outside_the_vocabulary_is_refused(self) -> None:
+        search = self.record("searched", self.OWING)
+        self.assertIn("not Contract B's vocabulary", " ".join(self.failures("gap", "c", search=search)))
+
+
 class CompactWitnessRecordTests(unittest.TestCase):
     """Drive the amended region grammar through real TSV evidence files."""
 
@@ -8703,6 +8983,8 @@ class CompactWitnessRecordTests(unittest.TestCase):
                 )
                 writer.writeheader()
                 writer.writerow(row)
+            if source not in _index_module.SOURCES:
+                continue
             central.append(
                 {
                     **{
