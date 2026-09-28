@@ -3396,7 +3396,7 @@ the recipe, a stale table fails the gate.
 So refreshing is: run the recipe, then bring the table to what it printed.
 
 **The cells in the join table now come from one run**: `just fixtures-coverage`
-on 2026-09-27 over the `src/` of commit `8e8c81bc`, the tree that holds the
+on 2026-09-28 over the `src/` of commit `25888bdf`, the tree that holds the
 golden-reach continuation's registrations (corpus rows 223 to 232) and their
 repairs, and the crash repairs the arm searches' probes needed, beside every
 earlier batch — 214 golden-only tests, 378 all-e2e, 514 non-e2e. The printed
