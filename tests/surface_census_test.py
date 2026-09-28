@@ -7600,7 +7600,7 @@ class RankedBacklogTests(unittest.TestCase):
             if (FIXTURES / aliases.get(source.fixture, source.fixture) / "expected").is_dir()
         )
         stated = re.search(
-            r"It reads \*\*(\d+)\*\* registered sources, of which\n\s*\*\*(\d+)\*\* carry a committed golden",
+            r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\* carry a committed golden",
             self.doc,
         )
         self.assertIsNotNone(stated, "the section no longer states the source counts")
