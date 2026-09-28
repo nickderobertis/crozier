@@ -1237,6 +1237,28 @@ class ArmSearchStageTests(_StageScratch):
             self.assertEqual(0, golden_reach_search.main(["retire"]))
         self.assertIn(("candidate", "a.yaml", "census 0"), rows())
 
+    def test_a_row_a_witness_has_since_reached_is_probed_for_its_searched_arm_and_reads_witness_found(self) -> None:
+        # `anyof-sole-member` reaches every handling site in the committed ledger.
+        key = "anyof-sole-member"
+        self.assertEqual((), golden_reach_search.ledger_unreached(key))
+        arm = "src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"
+        gone = "src/ir.rs::auth_model[_ => Auth::Bearer \\{]"
+        searches = golden_reach_search.EVIDENCE / "searches"
+        searches.mkdir(parents=True)
+        (searches / f"{key}.md").write_text(
+            f"# Arm search: `{key}`\n\n{golden_reach_search.SEARCHED_FOR}`{arm}`, `{gone}`.\n", encoding="utf-8")
+        # The arm still resolves in src/; the site a repair restructured away does not.
+        self.assertEqual((arm,), golden_reach_search.searched_arm(key))
+        self.assertEqual((arm,), golden_reach_search.probe_arms(key))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", key]))
+        record = (searches / f"{key}.md").read_text(encoding="utf-8")
+        self.assertIn(f"{golden_reach_search.SEARCHED_FOR}`{arm}`, `{gone}`.", record, "the searched arm is kept")
+        self.assertIn(f"| `{key}` | `jentic` | `witness-found` |", record)
+        self.assertIn("so the search reads\n`witness-found`", record)
+        self.assertIn(f"resolves nowhere: `{gone}`. The declarers are probed against the arm's remaining sites.",
+                      record)
+        self.assertIn(f"build `{self.head[:12]}` only", record)
+
     def test_a_screened_candidate_filed_as_registered_renders_as_its_disposition(self) -> None:
         self.walk()
         screen = ["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",

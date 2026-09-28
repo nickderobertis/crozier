@@ -270,6 +270,43 @@ def ledger_unreached(key: str) -> tuple[str, ...]:
     raise AssertionError
 
 
+def searched_arm(key: str) -> tuple[str, ...]:
+    """The sites a row's committed record searched for, where each still resolves in today's `src/`.
+
+    A row a registered witness has since taken off the ledger's unreached list
+    still owes its record's declarers a probe on the counted build; this is the
+    arm they are probed against. A site a later repair restructured out of `src/`
+    resolves nowhere, and a declarer cannot be probed for it.
+    """
+    arms = []
+    for spec in re.findall(r"`((?:[^`\\]|\\.)+)`", searched_for(key)[len(SEARCHED_FOR):]):
+        spec = spec.replace("\\|", "|")
+        try:
+            REACH.resolve_site(spec)
+        except SystemExit:
+            continue
+        arms.append(spec)
+    return tuple(arms)
+
+
+def ledger_sites(key: str) -> tuple[str, ...]:
+    """Every handling site the committed ledger names for the row, reached or not."""
+    for _rank, reach in REACH.read_ledger():
+        if reach.key == key:
+            return tuple(spec for spec, _hit, _total in reach.sites)
+    fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv")
+    raise AssertionError
+
+
+def probe_arms(key: str) -> tuple[str, ...]:
+    """What a probe of `key` reads: the ledger's unreached sites, else the arm its record searched for.
+
+    Where a repair restructured that whole arm out of `src/`, the row's handling
+    sites as the ledger names them today stand in for it.
+    """
+    return ledger_unreached(key) or searched_arm(key) or ledger_sites(key)
+
+
 def unreached_sites(key: str) -> tuple[str, ...]:
     """The row's unreached handling sites in the committed ledger — the arm searched for."""
     sites = ledger_unreached(key)
@@ -909,13 +946,18 @@ def probe(args: argparse.Namespace) -> int:
     # run answers any key's arm and not only the keys this invocation asked for.
     all_sites = sorted({spec for _rank, reach in REACH.read_ledger()
                         for spec, hit, _total in reach.sites if not hit})
+    # A reached row's searched arm is read too; its profiles are cached apart,
+    # since a cached run of the ledger's sites alone never read those regions.
+    extra = sorted({spec for key in args.key for spec in probe_arms(key)} - set(all_sites))
+    tag = "." + hashlib.sha256("\n".join(extra).encode()).hexdigest()[:12] if extra else ""
+    all_sites += extra
     regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
                for spec in all_sites for site in [REACH.resolve_site(spec)]}
     sources = sorted({str(REPO / file) for file, _found in regions.values()})
-    cache = load_probe_cache(build)
+    cache = load_probe_cache(build + tag)
     plans: dict[str, tuple[tuple[str, ...], list[dict[str, Any]], list[tuple[str, Path]]]] = {}
     for key in args.key:
-        arms = unreached_sites(key)
+        arms = probe_arms(key)
         pending = declarers(args.source, key, args.root)
         earlier: list[dict[str, Any]] = []
         if args.resume:
@@ -974,7 +1016,7 @@ def probe(args: argparse.Namespace) -> int:
             batch = [(digest, str(by_digest[digest]), tools, regions) for digest in todo[start:start + PROBE_BATCH]]
             for digest, result in pool.map(_probe_one, batch):
                 cache[digest] = result
-                append_probe_cache(build, digest, result)
+                append_probe_cache(build + tag, digest, result)
             file_probes_many(args.source, {key: rows_for(key) for key in plans})
     file_probes_many(args.source, {key: rows_for(key) for key in plans})
     reaching = sum(1 for key in plans for row in rows_for(key) if row["reached"])
@@ -1435,11 +1477,13 @@ def render(args: argparse.Namespace) -> int:
     build = probed_build(args.build) if args.build else _current_build()
     ledger = "was measured on when these probes ran" if args.build else "is measured on"
     for key in args.key:
-        header = searched_for(key) if args.build else (
+        reached = not ledger_unreached(key)
+        header = searched_for(key) if args.build or reached else (
             SEARCHED_FOR + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".")
         tallies = {source: _tally(key, source, build) for source in DECLARED_SOURCES}
         moved = src_commits_since(build)
-        outcome = _outcome(tallies, bool(moved)) if args.outcome == "auto" else args.outcome
+        outcome = args.outcome if args.outcome != "auto" else (
+            "witness-found" if reached and not args.build else _outcome(tallies, bool(moved)))
         lines = [
             f"# Arm search: `{key}`",
             "",
@@ -1464,12 +1508,31 @@ def render(args: argparse.Namespace) -> int:
             "| key | source | outcome | queries | walk | candidates | screens |",
             "|---|---|---|---|---|---|---|",
         ]
-        if args.build and not ledger_unreached(key):
+        if reached and args.build:
             table = lines.index("### Witness search (exhaustive)")
             lines[table:table] = [
                 "The arm this search looked for is now reached: a witness registered since",
                 "reaches every handling site the ledger names for the row. The tables",
                 "below record the search as it stood when the arm was still open.",
+                "",
+            ]
+        elif reached:
+            arms = probe_arms(key)
+            gone = [s for s in searched_for(key)[len(SEARCHED_FOR):].split("`, `") if s.strip("`.")
+                    and s.strip("`.").replace("\\|", "|") not in arms]
+            table = lines.index("### Witness search (exhaustive)")
+            lines[table:table] = [
+                "The arm this search looked for is now reached, so the search reads",
+                "`witness-found`: a witness registered since reaches every handling site the",
+                "ledger names for the row. Its declarers are still probed on the counted build,",
+                "against the arm as it resolves in today's `src/`, so none is left unprobed."
+                + (" A site a later repair restructured out of `src/` resolves nowhere: "
+                   + ", ".join(f"`{s.strip('`.')}`" for s in gone) + (
+                       ". The declarers are probed against the arm's remaining sites."
+                       if len(gone) < len(searched_for(key)[len(SEARCHED_FOR):].split("`, `")) else
+                       ". The declarers are probed against the row's handling sites as the ledger "
+                       "names them today: " + ", ".join(f"`{_cell(a)}`" for a in arms) + ".")
+                   if gone else ""),
                 "",
             ]
         for source in DECLARED_SOURCES:
