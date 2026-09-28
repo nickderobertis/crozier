@@ -18,7 +18,8 @@ these cases drive instead is everything that decides what a cell *says*:
   `fixture=` row is searched with, the git blob a publisher-tree pin is checked
   against, and a result URL's quoting — over real bytes, and its `walk`, `screen`
   and `render` stages through `main` over real documents. Its `query` and
-  `fetch-pins` stages run the real guarded acquirer against a loopback server.
+  `fetch-pins` stages run the real guarded acquirer against a loopback server,
+  and its `fern-rescreen` stage runs against an executable `fern` on PATH.
   Its `probe` stage runs the instrumented build `measure` makes, so it stays
   outside `just check` as `measure` does; only its refusal of a stale build is
   driven here. What the stages commit is checked by `RankedBacklogTests`'
@@ -1261,6 +1262,118 @@ class ArmSearchStageTests(_StageScratch):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["retire"]))
         self.assertIn(("candidate", "a.yaml", "census 0"), rows())
+
+    # Fern's own CLI resolves its pinned version over the network and generates in
+    # Docker, so an offline test runs `fern-rescreen` against an executable `fern`
+    # on PATH: FERN_STUB picks what it does, and each call is logged.
+    FERN = """\
+        import json, os, pathlib, sys, time
+        with open(os.environ["FERN_STUB_LOG"], "a", encoding="utf-8") as log:
+            log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(pathlib.Path("fern.config.json").read_text()),
+                                  "document": pathlib.Path("openapi/openapi.yml").read_text()}) + "\\n")
+        mode = os.environ["FERN_STUB"]
+        if mode == "hang":
+            time.sleep(30)
+        if mode == "refuse":
+            print("::group::check")
+            print("Found 1 error in 0.42 seconds.")
+            print("issue: the `x-fern-enum` extension is missing; add it")
+            sys.exit(1)
+        if sys.argv[1] == "generate":
+            package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
+            package.mkdir(parents=True)
+            (package / "client.py").write_text("class Client: ...\\n")
+        """
+
+    def test_fern_rescreen_measures_a_reaching_declarers_unmeasured_refusal_once_and_refiles_it(self) -> None:
+        if os.name == "nt":
+            self.skipTest("Windows resolves a bare `fern` only as fern.exe, which a script cannot stand in for")
+        fake_bin = self.scratch / "fake-bin"
+        fake_bin.mkdir()
+        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(self.FERN), encoding="utf-8")
+        os.chmod(fake_bin / "fern", 0o755)
+        log = self.scratch / "fern.log"
+        log.touch()
+
+        def rescreen(mode: str, *extra: str) -> str:
+            with mock.patch.dict(os.environ, {"PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+                                              "FERN_STUB": mode, "FERN_STUB_LOG": str(log)}), \
+                    contextlib.redirect_stdout(io.StringIO()) as printed:
+                self.assertEqual(0, golden_reach_search.main(
+                    ["fern-rescreen", "--source", "jentic", "--key", self.KEY, "--root", str(self.root),
+                     "--jobs", "1", *extra]))
+            return printed.getvalue()
+
+        def fern_screen() -> str:
+            latest = [json.loads(line) for line in
+                      (golden_reach_search.EVIDENCE / "jentic" / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
+            return latest[-1]["fern"]
+
+        def evidence() -> list[dict[str, str]]:
+            path = golden_reach_search.EVIDENCE / "jentic" / golden_reach_search.RESCREEN_FILE
+            return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+        def calls() -> list[dict[str, str]]:
+            return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+
+        self.walk()
+        unmeasured = "failed: Fern check reports 1 error"
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", unmeasured, "--evidence", "screened by hand",
+        ]))
+        summary = "golden-reach-search: jentic: {} documents re-screened, {} screens re-filed, {} left on their " \
+                  "earlier screen by a timeout\n"
+        # No probe of this build reaches the arm, so no declarer is a candidate.
+        self.assertEqual(summary.format(0, 0, 0), rescreen("refuse"))
+        self.assertEqual([], calls())
+
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": self.head[:12],
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        document = (self.root / "a.yaml").read_text(encoding="utf-8")
+        digest = hashlib.sha256(document.encode()).hexdigest()
+        # A run cut off by its timeout is recorded and settles nothing.
+        self.assertEqual(summary.format(1, 0, 1), rescreen("hang", "--timeout", "1"))
+        self.assertEqual(unmeasured, fern_screen())
+        self.assertEqual([("a.yaml", digest, "timeout")],
+                         [(r["candidate"], r["sha256"], r["check_exit"]) for r in evidence()])
+
+        # A timed-out run is taken again; the refusal is filed with its exit status and first issue.
+        self.assertEqual(summary.format(1, 1, 0), rescreen("refuse"))
+        label = golden_reach_search.fern_label()
+        refused = f"failed: {label} fern check exit 1: Found 1 error. First: the 'x-fern-enum' extension is missing, add it"
+        self.assertEqual(refused, fern_screen())
+        self.assertIn(("screen", "a.yaml fern", refused),
+                      [(r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")])
+        latest = json.loads((golden_reach_search.EVIDENCE / "jentic" / "screens.jsonl")
+                            .read_text(encoding="utf-8").splitlines()[-1])
+        self.assertEqual(("passed", "passed"), (latest["licence"], latest["ref"]))
+        self.assertEqual(f"screened by hand — re-screened: fern-rescreen.jsonl sha256 {digest[:12]}", latest["evidence"])
+        self.assertEqual([("a.yaml", digest, "1")], [(r["candidate"], r["sha256"], r["check_exit"]) for r in evidence()])
+        cli, _name, _version, _config = golden_reach_search.corpus_fern_pins()
+        self.assertEqual([["check"], ["check"]], [c["argv"] for c in calls()])
+        self.assertEqual({"organization": "fern", "version": cli}, calls()[-1]["config"])
+        self.assertEqual(document, calls()[-1]["document"])
+
+        # A refusal already measured stands: nothing runs again.
+        self.assertEqual(summary.format(0, 0, 0), rescreen("pass"))
+        self.assertEqual(2, len(calls()))
+
+        # Other bytes are another document: Fern checks it, and only a generation passes it.
+        (self.root / "a.yaml").write_text(document + "# re-pinned\n", encoding="utf-8")
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", unmeasured,
+        ]))
+        self.assertEqual(summary.format(1, 1, 0), rescreen("pass"))
+        self.assertEqual("passed", fern_screen())
+        self.assertEqual(["check", "generate"], [c["argv"][0] for c in calls()[2:]])
+        rescreened = {r["sha256"]: r for r in evidence()}
+        self.assertEqual({digest, hashlib.sha256((document + "# re-pinned\n").encode()).hexdigest()}, set(rescreened))
+        passed = rescreened[hashlib.sha256((document + "# re-pinned\n").encode()).hexdigest()]
+        self.assertEqual(("0", "0", 1), (passed["check_exit"], passed["generate_exit"], passed["generate_python_files"]))
 
     def test_a_row_a_witness_has_since_reached_is_probed_for_its_searched_arm_and_reads_witness_found(self) -> None:
         # `anyof-sole-member` reaches every handling site in the committed ledger.
