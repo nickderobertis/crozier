@@ -1017,8 +1017,10 @@ Every other usable candidate in the two ledgers is now disposed of:
   Vellum's gateway, `vfarcic/dot-ai`, Palo Alto's `code/Technologies.json`,
   marimo's `plugins.openapi.yaml`, MockServer's own description and Otoroshi's
   schema bundle. Batch 20 registers seven of them as rows 216 to 222, and their
-  dispositions now name those rows; MockServer's is demoted for its mutable
-  absolute `$ref`.
+  dispositions now name those rows. MockServer's mutable absolute `$ref` to the
+  draft-04 meta-schema kept it out of that batch; once
+  `corpus-remote-ref-pins.tsv` pinned that `$ref` to an immutable commit copy,
+  it was registered as row 232.
 - **The three jentic documents** the `golden-reach-witnesses` handoff proposed —
   DigitalOcean, Cvent and Sellsy — are Fern refusals, recorded in
   [`AGENTS.md`](AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
