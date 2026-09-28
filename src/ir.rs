@@ -4782,7 +4782,7 @@ fn resolve_request_body(
     // composition is passed whole the same way: MockServer's recording
     // promotion declares `required: false` over `$ref RequestDefinition`, a
     // `oneOf`, and takes a required `request: RequestDefinition`.
-    let referenced_map = schema
+    let passed_whole = schema
         .reference
         .as_deref()
         .and_then(|reference| resolve_ref(doc, reference))
@@ -4791,8 +4791,8 @@ fn resolve_request_body(
                 || (target.properties.is_empty()
                     && (target.one_of.is_some() || target.any_of.is_some()))
         });
-    let required = (media_type == "*/*" || rb.required != Some(false) || referenced_map)
-        && !is_optional(schema);
+    let required =
+        (media_type == "*/*" || rb.required != Some(false) || passed_whole) && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
