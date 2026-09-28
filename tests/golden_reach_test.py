@@ -677,6 +677,52 @@ class MeasurementInputTests(unittest.TestCase):
                     self.assertIn(rendered[0] + "\n", record)
 
 
+class FernRescreenVerdictTests(unittest.TestCase):
+    """A re-screen's row read as Fern's verdict: its exit status and the first thing Fern printed."""
+
+    # `fern check` (CLI 5.67.1) over APIs.guru's drchrono.com v4 (Hunt Valley), as printed.
+    CHECK = (
+        "Warnings for generators.yml:\n"
+        "::warning::Warnings for generators.yml:\n"
+        '\tUsing "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.\n'
+        "[sdk] 54 errors\n"
+        "    [error]\n"
+        "        path: __package__.yml -> types -> AppointmentVitalsSmokingStatus\n"
+        "        issue: Enum value 449868002 is not suitable for code generation; add a \"name\" property\n"
+        "\n"
+        "Found 54 errors and 0 warnings in 0.008 seconds.\n"
+        "::error::Found 54 errors and 0 warnings in 0.008 seconds.\n"
+    )
+
+    def row(self, **fields: object) -> dict[str, object]:
+        return {"sha256": "0" * 64, "check_exit": "1", "check_diagnostic": "", **fields}
+
+    def test_a_check_refusal_quotes_its_count_and_first_issue_without_timing_or_a_semicolon(self) -> None:
+        diagnostic = golden_reach_search.fern_diagnostic(self.CHECK)
+        self.assertEqual("Found 54 errors and 0 warnings. First: Enum value 449868002 is not suitable for "
+                         'code generation, add a "name" property', diagnostic)
+        verdict = golden_reach_search.fern_verdict(self.row(check_diagnostic=diagnostic))
+        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} `fern check` exit 1: {diagnostic}", verdict)
+        self.assertNotIn("; ", verdict)
+
+    def test_only_a_generation_settles_a_document_fern_check_accepts(self) -> None:
+        clean = self.row(check_exit="0", generate_exit="0", generate_python_files=95,
+                         generate_diagnostic="Found 0 errors")
+        self.assertEqual("passed", golden_reach_search.fern_verdict(clean))
+        unparsed = dict(clean, generate_python_files=35, generate_diagnostic=(
+            "[api]: python-sdk Unexpected error: Failed to resolve schema reference: PhoneNumber"))
+        self.assertTrue(golden_reach_search.fern_verdict(unparsed).startswith(
+            f"failed: {golden_reach_search.FERN_LABEL} `fern generate` exit 0 over an unparsed document, "
+            "35 Python files: [api]: python-sdk Unexpected error"))
+        crashed = dict(clean, generate_exit="1", generate_diagnostic="ParseError: bad input")
+        self.assertEqual(f"failed: {golden_reach_search.FERN_LABEL} `fern generate` exit 1 after `fern check` "
+                         "exit 0: ParseError: bad input", golden_reach_search.fern_verdict(crashed))
+
+    def test_a_run_that_timed_out_settles_nothing(self) -> None:
+        self.assertIsNone(golden_reach_search.fern_verdict(self.row(check_exit="timeout")))
+        self.assertIsNone(golden_reach_search.fern_verdict(self.row(check_exit="0", generate_exit="timeout")))
+
+
 class ArmSearchOutcomeTests(unittest.TestCase):
     """A search reads `exhausted` only when nothing is outstanding on a build `src/` still matches."""
 

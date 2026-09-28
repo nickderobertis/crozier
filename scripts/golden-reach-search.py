@@ -78,7 +78,7 @@ import time
 import urllib.parse
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterator
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -1901,6 +1901,101 @@ def refuse(args: argparse.Namespace) -> int:
           f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
     return 0
 
+# The Fern pins every screen is taken at: the corpus's own (tests/fixtures/AGENTS.md).
+FERN_CLI_PIN = "5.67.1"
+FERN_GENERATOR_PIN = "5.20.0"
+RESCREEN_FILE = "fern-rescreen.jsonl"
+RESCREEN_CACHE = "fern-rescreen-cache.jsonl"
+FERN_LABEL = f"Fern CLI {FERN_CLI_PIN} / python-sdk {FERN_GENERATOR_PIN}"
+# The workspace `scripts/generate-fern-fixture.sh` scaffolds, minus its install
+# into `tests/fixtures/`: a screen reads Fern's verdict and never writes a golden.
+FERN_GENERATORS_YML = f"""\
+api:
+  path: openapi/openapi.yml
+groups:
+  python-sdk:
+    generators:
+      - name: fernapi/fern-python-sdk
+        version: {FERN_GENERATOR_PIN}
+        config:
+          pydantic_config:
+            enum_type: python_enums
+        output:
+          location: local-file-system
+          path: ../generated/python
+"""
+UNPARSED = re.compile(r"Unexpected error|Failed to (resolve|parse)", re.I)
+
+
+def _fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
+    """One Fern command in a scratch workspace: its exit status (or `timeout`) and its output."""
+    env = dict(os.environ, FERN_TOKEN=os.environ.get("FERN_TOKEN", "preview-only-no-publish"),
+               CI="true", GITHUB_ACTIONS="true")
+    try:
+        run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
+                             errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired as expired:
+        out = expired.stdout or ""
+        return "timeout", out if isinstance(out, str) else out.decode("utf-8", "replace")
+    return str(run.returncode), run.stdout + run.stderr
+
+
+def fern_diagnostic(output: str) -> str:
+    """The first thing Fern said was wrong, as it printed it, on one line and without `; `."""
+    lines = [line.strip() for line in output.splitlines() if line.strip() and not line.startswith("::")]
+    summary = next((re.sub(r" in [\d.]+ seconds\.?$", ".", line)
+                    for line in lines if re.match(r"Found \d+ errors?", line)), "")
+    first = next((line[len("issue: "):] for line in lines if line.startswith("issue: ")), "")
+    if not first:
+        first = next((line for line in lines if UNPARSED.search(line) or re.search(r"\berror\b", line, re.I)
+                      and "deprecated" not in line), lines[-1] if lines else "no output")
+    text = f"{summary} First: {first}" if summary else first
+    return text.replace("; ", ", ")[:400]
+
+
+def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
+    """Fern's measured verdict on one document: `fern check`, then a generation where it passes."""
+    digest = hashlib.sha256(document.read_bytes()).hexdigest()
+    workspace = scratch / digest / "fern"
+    (workspace / "openapi").mkdir(parents=True, exist_ok=True)
+    (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
+    (workspace / "fern.config.json").write_text(
+        json.dumps({"organization": "fern", "version": FERN_CLI_PIN}) + "\n", encoding="utf-8")
+    (workspace / "generators.yml").write_text(FERN_GENERATORS_YML, encoding="utf-8")
+    row: dict[str, Any] = {"sha256": digest, "fern_cli": FERN_CLI_PIN, "generator": FERN_GENERATOR_PIN}
+    status, output = _fern_run(["fern", "check"], workspace, timeout)
+    row.update(check_exit=status, check_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
+               check_diagnostic=fern_diagnostic(output))
+    if status == "0":
+        preview = scratch / digest / "preview"
+        status, output = _fern_run(["fern", "generate", "--group", "python-sdk", "--local", "--preview",
+                                    "--output", str(preview), "--force"], workspace, timeout)
+        package = preview / "fern-python-sdk"
+        files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
+        unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
+        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
+                   generate_python_files=files,
+                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ")[:400])
+    return row
+
+
+def fern_verdict(row: dict[str, Any]) -> str | None:
+    """A screen's `fern` result from a measured re-screen, or None when the run did not finish."""
+    check = row["check_exit"]
+    if check == "timeout" or row.get("generate_exit") == "timeout":
+        return None
+    if check != "0":
+        return f"failed: {FERN_LABEL} `fern check` exit {check}: {row['check_diagnostic']}"
+    generated = row["generate_exit"]
+    if generated != "0":
+        return f"failed: {FERN_LABEL} `fern generate` exit {generated} after `fern check` exit 0: " \
+               f"{row['generate_diagnostic']}"
+    if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
+        return (f"failed: {FERN_LABEL} `fern generate` exit 0 over an unparsed document, "
+                f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
+    return "passed"
+
+
 # What a kept `candidate` row's result says once the counted build's probe of it
 # executes no unreached site: it stays on the record, accounted for, and Contract
 # B's gate reads it as no candidate after checking `probe.jsonl` carries that probe.
@@ -1951,6 +2046,85 @@ def retire(args: argparse.Namespace) -> int:
     return 0
 
 
+def fern_rescreen(args: argparse.Namespace) -> int:
+    """Take Fern's screen again, measured, for every reaching declarer its last screen refused.
+
+    Only a declarer this build's probe finds reaching the arm is a candidate, and
+    only one whose licence and ref screens pass rests on Fern's verdict. Each
+    distinct document runs once: `fern check` at the pinned CLI, and where that
+    exits 0, the generation `generate-fern-fixture.sh` runs, since only a
+    generation settles it. The screen is re-filed with the exit status and the
+    first diagnostic Fern printed. A run that times out is recorded and leaves the
+    old screen in place, so the declarer stays open rather than settled.
+    """
+    build = _current_build()
+    keys = args.key or sorted(p.stem for p in (EVIDENCE / "searches").glob("*.md")
+                              if record_build(p.read_text(encoding="utf-8"), p) == build)
+    wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
+    paths: dict[str, Path] = {}
+    for key in keys:
+        reaching = _reaching(key, args.source, build)
+        latest: dict[str, dict[str, Any]] = {}
+        screens = source_dir(args.source) / "screens.jsonl"
+        if screens.is_file():
+            for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
+                if row["key"] == key:
+                    latest[row["candidate"]] = row
+        located = dict(declarers(args.source, key, args.root)) if reaching else {}
+        for candidate in sorted(reaching):
+            row = latest.get(candidate)
+            if not row or row["licence"] != "passed" or row["ref"] != "passed" or row["fern"] == "passed":
+                continue
+            path = located.get(candidate)
+            if path is None or not path.is_file():
+                fail(f"{args.source}: no local bytes for {candidate}; pass --root with the walk's copy, "
+                     "or `query` the source again to cache it")
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            wanted[digest].append((key, candidate, row))
+            paths.setdefault(digest, path)
+    cache_path = CACHE / RESCREEN_CACHE
+    cache: dict[str, dict[str, Any]] = {}
+    if cache_path.is_file():
+        for row in read_jsonl(cache_path, ("sha256",), "delete it; a re-screen re-runs"):
+            cache[row["sha256"]] = row
+    todo = [digest for digest in wanted if digest not in cache or fern_verdict(cache[digest]) is None]
+    with tempfile.TemporaryDirectory(prefix="golden-reach-fern-") as scratch, \
+            ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        futures = {digest: pool.submit(fern_screen_document, paths[digest], Path(scratch), args.timeout)
+                   for digest in todo}
+        for number, (digest, future) in enumerate(futures.items(), 1):
+            result = future.result()
+            cache[digest] = result
+            CACHE.mkdir(parents=True, exist_ok=True)
+            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(result, sort_keys=True) + "\n")
+            print(f"golden-reach-search: {args.source}: fern {number}/{len(todo)} "
+                  f"check {result['check_exit']} generate {result.get('generate_exit', '-')}", flush=True)
+    evidence = source_dir(args.source) / RESCREEN_FILE
+    kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
+            if row["sha256"] not in wanted] if evidence.is_file() else []
+    filed = unsettled = 0
+    for digest, uses in wanted.items():
+        result = cache[digest]
+        kept += [dict(result, candidate=candidate) for candidate in sorted({c for _k, c, _r in uses})]
+        verdict = fern_verdict(result)
+        if verdict is None:
+            unsettled += len(uses)
+            continue
+        for key, candidate, row in uses:
+            screen(argparse.Namespace(
+                source=args.source, key=key, candidate=candidate, licence=row["licence"], ref=row["ref"],
+                fern=verdict, gap_keys=row.get("gap_keys", ""), declined="", registered="",
+                evidence=f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(" —"),
+            ))
+            filed += 1
+    evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
+                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
+    print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
+          f"{unsettled} left on their earlier screen by a timeout")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1986,6 +2160,12 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
     s.add_argument("--registered", default="", help="the corpus row a candidate passing every screen is registered as")
+    fr = sub.add_parser("fern-rescreen")
+    fr.add_argument("--source", required=True)
+    fr.add_argument("--key", action="append", help="default: every record counted on the measured build")
+    fr.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
+    fr.add_argument("--jobs", type=REACH.positive_int, default=6)
+    fr.add_argument("--timeout", type=REACH.positive_int, default=1800)
     rt = sub.add_parser("retire")
     rt.add_argument("--key", action="append", help="default: every record counted on the measured build")
     r = sub.add_parser("render")
@@ -1998,7 +2178,7 @@ def main(argv: list[str] | None = None) -> int:
         x.add_argument("--source", required=True)
         x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "retire": retire, "render": render,
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "fern-rescreen": fern_rescreen, "retire": retire, "render": render,
             "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
 
 
