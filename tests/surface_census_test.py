@@ -6666,38 +6666,61 @@ class RankedBacklogTests(unittest.TestCase):
         )
 
     def test_the_headline_totals_are_the_region_files_own(self) -> None:
-        """The opening answer cannot retain totals from an earlier settlement."""
+        """The opening answer's three numbers, each taken back from the tree.
+
+        Byte-match evidence against a real specification is a `golden` row with a
+        golden-only witness that is not a hand-authored (vendored) feature target,
+        read off the reach ledger; a committed non-generation proof is a
+        non-`golden` row with a `MANIFEST.tsv` row carrying a non-generation
+        verdict; everything else is unproven. The three sum to the walk's total.
+        """
         rows = list(self.entries.values())
         categories = {
-            category: sum(
-                1 for _region, cells in rows if cells[3].strip("`") == category
-            )
+            category: sum(1 for _region, cells in rows if cells[3].strip("`") == category)
             for category in self.CATEGORIES
         }
-        headline = self.section("**What it says today.**", "**The denominator")
-        stated = re.search(
-            r"enumerates (\d+) features\. (\d+) are `golden`.*?"
-            r"(\d+) are\s+`limitations`.*?(\d+) are `gap`: (\d+) of them\s+"
-            r"`UNREACHABLE`.*?and\s+(\d+) `FIXTURE`.*?"
-            r"evidence covers (\d+) of the (\d+) features.*?"
-            r"(\d+) more carry a\s+Fern verdict.*?that (\d+) have neither",
-            headline,
-            re.S,
+        vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
+        ledger = {reach.key: reach for _rank, reach in self.reach_ledger()}
+        manifest = manifest_rows(
+            (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
         )
-        self.assertIsNotNone(stated, "the headline no longer states its ten totals")
+        byte_match = no_witness = proof = 0
+        for key, (_region, cells) in self.entries.items():
+            category = cells[3].strip("`")
+            if category == "golden":
+                witnesses = set(ledger[key].witnesses)
+                if witnesses - vendored:
+                    byte_match += 1
+                else:
+                    self.assertFalse(witnesses, f"{key} rests on hand-authored targets alone")
+                    no_witness += 1
+            elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
+                proof += 1
+        fixture = len(self.gaps("FIXTURE"))
+        headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
+        stated = re.search(
+            r"enumerates (\d+) features\. By category, (\d+) are `golden`, (\d+) `limitations` "
+            r"and (\d+) `gap`\..*?\*\*(\d+) carry byte-match evidence against a registered "
+            r"real-world specification\.\*\*.*?\*\*(\d+) carry a committed Fern measurement of "
+            r"non-generation that crozier is byte-compared against\.\*\* These are the (\d+) "
+            r"`limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) remain "
+            r"unproven\.\*\* (\d+) are the `FIXTURE` `gap` rows\..*?The other (\d+) are `golden` "
+            r"rows declared only by.*?(\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
+            headline,
+        )
+        self.assertIsNotNone(stated, "the headline no longer states its three numbers")
+        unproven = fixture + no_witness
         expected = [
-            len(rows),
-            categories["golden"],
-            categories["limitations"],
-            categories["gap"],
-            len(self.gaps("UNREACHABLE")),
-            len(self.gaps("FIXTURE")),
-            categories["golden"],
-            len(rows),
-            categories["limitations"],
-            categories["gap"],
+            len(rows), categories["golden"], categories["limitations"], categories["gap"],
+            byte_match, proof, categories["limitations"], len(self.gaps("UNREACHABLE")),
+            unproven, fixture, no_witness, byte_match, proof, unproven, len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
+        self.assertEqual(len(rows), byte_match + proof + unproven, "the three do not partition the walk")
+        self.assertEqual(
+            proof, categories["limitations"] + len(self.gaps("UNREACHABLE")),
+            "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
+        )
 
     def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
         """What `gap` means restates the gap total twice, then its two parts."""
@@ -7782,11 +7805,20 @@ class RankedBacklogTests(unittest.TestCase):
             for label, count in re.findall(r"^\| ([^|*]+) \| (\d+) \|", body, re.M)
         }
 
+    PROMOTED = "**Promoted by the final reconciliation** from `limitations`"
+
     def test_the_classification_table_is_the_region_cells_own(self) -> None:
-        """Five classes, each counted off the cells, adding up to the population
-        that read `limitations` before the amendment."""
+        """Six classes, each counted off the cells, adding up to the population
+        that read `limitations` before the amendment.
+
+        A `gap` row cites a committed differential too when it is `UNREACHABLE`,
+        and it never read `limitations`, so only a `limitations` row's proof puts
+        it in the first two classes. A row the final reconciliation promoted to
+        `golden` keeps the proof it was settled on, and is counted in the sixth.
+        """
         counts = {
             "artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0, "settled": 0,
+            "promoted": 0,
         }
         manifest = {
             fields[0]: fields[1]
@@ -7800,7 +7832,11 @@ class RankedBacklogTests(unittest.TestCase):
             committed = self.PROOF_COMMITTED.search(cells[4])
             demoted = self.DEMOTED.search(cells[4])
             settled = self.SETTLED_AFTER_DEMOTION.search(cells[4])
-            if form or committed:
+            category = cells[3].strip("`")
+            if category == "golden" and self.PROMOTED in cells[4]:
+                self.assertTrue(committed, f"{cells[0]}: promoted without the proof it kept")
+                counts["promoted"] += 1
+            elif category == "limitations" and (form or committed):
                 proof_form = form.group(1) if form else manifest[committed.group(1)]
                 counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
@@ -7816,6 +7852,7 @@ class RankedBacklogTests(unittest.TestCase):
                 "(`implements`)",
                 "`unmeasured`",
                 "since settled `golden`",
+                "promoted to `golden`",
             )
         ]
         self.assertEqual(list(counts.values()), stated)
@@ -8183,16 +8220,20 @@ class RankedBacklogTests(unittest.TestCase):
             if not reach.unreached_sites:
                 continue
             record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
-            self.assertTrue(record.is_file(), f"{reach.key} has an unreached arm and no arm search")
-            outcomes = {
-                line[2].strip("`")
-                for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
-            }
-            self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
-            verdict = outcomes.pop()
-            self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE), reach.key)
+            if record.is_file():
+                outcomes = {
+                    line[2].strip("`")
+                    for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
+                }
+                self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
+                verdict = outcomes.pop()
+                self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE), reach.key)
+                cell = f"`{verdict}`"
+            else:
+                # No record is no search: the arm reads incomplete, and says why.
+                cell = f"`{SEARCH_INCOMPLETE}` — no arm search has run"
             expected.extend(
-                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), f"`{verdict}`"]
+                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), cell]
                 for spec, hit, total in reach.sites
                 if not hit
             )
