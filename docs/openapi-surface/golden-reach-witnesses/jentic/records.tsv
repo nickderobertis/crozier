@@ -3016,16 +3016,16 @@ array-item-pointer-walk-items	document	apis/openapi/sellsy.com/main/2.128.0/meta
 array-item-pointer-walk-items	document	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 24	enumeration.tsv.gz
 array-item-pointer-walk-items	document	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 37	enumeration.tsv.gz
 array-item-pointer-walk-items	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
-array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 3	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 3	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 3	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 3	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 3	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json	census 44	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json	census 31	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 44	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 31	probe.jsonl
-array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 44	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json	census 44 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json	census 31 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 44 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 31 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+array-item-pointer-walk-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 44 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 array-item-pointer-walk-properties	document	apis/openapi/authress.io/main/v1/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
 array-item-pointer-walk-properties	document	apis/openapi/authress.io/main/v1/meta/import/input-entry.json	census 2	enumeration.tsv.gz
 array-item-pointer-walk-properties	document	apis/openapi/authress.io/main/v1/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
@@ -3804,151 +3804,151 @@ enum-empty-identifier-member	screen	apis/openapi/zoom.us/phone/2/openapi.json fe
 enum-empty-identifier-member	screen	apis/openapi/zoom.us/phone/2/openapi.json licence	passed	screens.jsonl
 enum-empty-identifier-member	screen	apis/openapi/zoom.us/phone/2/openapi.json ref	passed	screens.jsonl
 enum-empty-identifier-member	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
-enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/openapi.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-bundled.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-entry.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-bundled.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-entry.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/openapi.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-bundled.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-entry.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-bundled.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-entry.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/openapi.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/openapi.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-bundled.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-entry.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/openapi.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/input-bundled.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/output-bundled.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/openapi.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/input-bundled.json	census 16	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/input-entry.json	census 16	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-bundled.json	census 16	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-entry.json	census 16	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/openapi.json	census 16	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/4dem.it/main/1.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService-v71/71/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/37/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/40/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/41/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/46/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/49/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/50/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/51/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/52/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/53/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/64/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/65/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/66/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/67/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/68/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/69/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/CheckoutService/70/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/25/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/30/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/40/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/46/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/49/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/50/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/51/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/52/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/64/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/67/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/adyen.com/PaymentService/68/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json	census 1	probe.jsonl
@@ -3964,21 +3964,21 @@ enum-leading-digit-identifier	candidate	apis/openapi/au.app.clio.com/main/v4/met
 enum-leading-digit-identifier	candidate	apis/openapi/au.app.clio.com/main/v4/meta/import/output-bundle.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/au.app.clio.com/main/v4/meta/import/output-entry.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/au.app.clio.com/main/v4/openapi.json	census 19	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/input-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/output-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/openapi.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-bundle.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-entry.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-bundle.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-entry.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/openapi.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/openapi.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/beds24.com/main/3.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/blitz-api.ai/main/2.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/capital-flow.de/main/1.0.0/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/climate.com/main/4.0.11/meta/import/input-bundled.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/climate.com/main/4.0.11/meta/import/input-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/climate.com/main/4.0.11/meta/import/output-bundled.json	census 1	probe.jsonl
@@ -3989,16 +3989,16 @@ enum-leading-digit-identifier	candidate	apis/openapi/drchrono.com/main/v4 - Hunt
 enum-leading-digit-identifier	candidate	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-bundled.json	census 8	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/drchrono.com/main/v4 - Hunt Valley/meta/import/output-entry.json	census 8	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/drchrono.com/main/v4 - Hunt Valley/openapi.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/openapi.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/ducky.eco/ducky/3.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/epa.gov/main/2019.10.15/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/input-bundle.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/input-entry.json	census 19	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/eu.app.clio.com/clio-api/v4/meta/import/output-bundle.json	census 19	probe.jsonl
@@ -4034,21 +4034,21 @@ enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/
 enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/output-bundled.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/meta/import/output-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/github.com/ghec/1.1.4/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json	census 6	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-entry.json	census 6	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-bundle.json	census 6	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-entry.json	census 6	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/openapi.json	census 6	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/globalgetnet.com/main/1.0.4/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-bundle.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-entry.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-bundle.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-entry.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/goshippo.com/main/2018-02-08/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/openapi.json	census 2	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/hyperswitch.io/main/0.1.0/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/just-eat-uk/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
@@ -4059,61 +4059,61 @@ enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/main/1.0.0/m
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/main/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/main/1.0.0/meta/import/output-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/just-eat.co.uk/main/1.0.0/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/openapi.json	census 2	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/merchantsafeunipay.com/main/2.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/na.worldline-solutions.com/main/1.0.5/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/input-bundled.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/input-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/output-bundled.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/openbanking.org.uk/main/v1.3/meta/import/output-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/openbanking.org.uk/main/v1.3/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-bundle.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-entry.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-bundle.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-entry.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/openapi.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/input-bundle.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/input-entry.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/output-bundle.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/output-entry.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/openapi.json	census 12	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-bundle.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-entry.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-bundle.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-entry.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/openapi.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/openapi.json	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/partner-api.payfit.com/main/1.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/payfit.io/main/1.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-orders-api-v2/2.25/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments-api-v2/2.8/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/paypal.com/paypal-payments/2.8/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/peopledatalabs.com/main/5.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/realcube.com/main/1.0.0/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/rebilly.com/main/2.1/meta/import/input-bundle.json	census 3	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/rebilly.com/main/2.1/meta/import/input-entry.json	census 3	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/rebilly.com/main/2.1/meta/import/output-bundle.json	census 3	probe.jsonl
@@ -4129,57 +4129,57 @@ enum-leading-digit-identifier	candidate	apis/openapi/reviewstudio.com/main/2.1/m
 enum-leading-digit-identifier	candidate	apis/openapi/reviewstudio.com/main/2.1/meta/import/output-bundle.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/reviewstudio.com/main/2.1/meta/import/output-entry.json	census 2	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/reviewstudio.com/main/2.1/openapi.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-bundle.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-entry.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-bundle.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-entry.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/openapi.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/input-bundle.json	census 10	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/input-entry.json	census 10	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/output-bundle.json	census 10	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/output-entry.json	census 10	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/openapi.json	census 10	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-bundle.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/openapi.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-bundle.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-entry.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-bundle.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-entry.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/openapi.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-bundle.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-entry.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-bundle.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-entry.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/openapi.json	census 28	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-bundle.json	census 7	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-entry.json	census 7	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-bundle.json	census 7	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-entry.json	census 7	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/openapi.json	census 7	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-bundled.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-entry.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-bundled.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-entry.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/openapi.json	census 8	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/stripe/2026-03-25.dahlia/openapi.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-bundle.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-entry.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-bundle.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-entry.json	census 11	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/openapi.json	census 11	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sandbox.moffin.mx/main/0.1.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/setu.co/main/1.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-core-api/2023-08-01/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare-api/2024-04-01/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-healthcare/2024-04-01/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stedi.com/stedi-manager-api/2024-04-01/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-bundled.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/main/2025-03-31.basil/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/stripe.com/stripe/2026-03-25.dahlia/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/sumup.com/main/1.0.0/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.asig/authorize-to-pay/1.0.6/openapi.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.flaviamarco/api-servico-de-movimentacao-beneficiarios/1.0.0/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/swaggerhub.koscom/account-check/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
@@ -4190,11 +4190,11 @@ enum-leading-digit-identifier	candidate	apis/openapi/theteller.net/main/1.1.0/me
 enum-leading-digit-identifier	candidate	apis/openapi/theteller.net/main/1.1.0/meta/import/output-bundle.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/theteller.net/main/1.1.0/meta/import/output-entry.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	apis/openapi/theteller.net/main/1.1.0/openapi.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/openapi.json	census 2	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/input-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/input-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-bundle.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/meta/import/output-entry.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	apis/openapi/wallester.com/main/v1/openapi.json	census 0	probe.jsonl
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	apis/openapi/api.github.com/main/1.1.4/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
@@ -5479,96 +5479,96 @@ enum-leading-digit-identifier	screen	apis/openapi/wallester.com/main/v1/openapi.
 enum-leading-digit-identifier	screen	apis/openapi/wallester.com/main/v1/openapi.json licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	apis/openapi/wallester.com/main/v1/openapi.json ref	passed	screens.jsonl
 enum-leading-digit-identifier	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
-enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/input-bundled.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/output-bundled.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/input-bundled.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/output-bundled.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/input-bundled.json	census 6	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/input-entry.json	census 6	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/output-bundled.json	census 6	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/output-entry.json	census 6	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/openapi.json	census 6	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/input-bundled.json	census 13	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/input-entry.json	census 13	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/output-bundled.json	census 13	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/output-entry.json	census 13	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/openapi.json	census 13	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-bundle.json	census 7	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-entry.json	census 7	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 7	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 7	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 7	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/input-bundle.json	census 10	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/input-entry.json	census 10	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/output-bundle.json	census 10	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/output-entry.json	census 10	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/openapi.json	census 10	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-bundle.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-entry.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/openapi.json	census 2	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/input-bundled.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/output-bundled.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/openapi.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/input-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/input-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/output-bundle.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/output-entry.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/openapi.json	census 1	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/input-bundle.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/input-entry.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/output-bundle.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/output-entry.json	census 3	probe.jsonl
-enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/openapi.json	census 3	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/input-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/output-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/api.skubana.com/main/1.0/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/input-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/output-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/azure.com/storsimplemanagementclient/2016-10-01/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/input-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/output-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/connect.cloudblue.com/main/37.0/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/input-bundled.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/output-bundled.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/devopness.com/main/latest/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/input-bundled.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/output-bundled.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/dfareporting/v4/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/input-bundled.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/output-bundled.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v1/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/input-bundled.json	census 6 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/input-entry.json	census 6 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/output-bundled.json	census 6 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/meta/import/output-entry.json	census 6 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/googleapis.com/monitoring/v3/openapi.json	census 6 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/goshippo.com/main/2018-02-08/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/input-bundled.json	census 13 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/input-entry.json	census 13 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/output-bundled.json	census 13 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/meta/import/output-entry.json	census 13 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openai.com/main/2.3.0/openapi.json	census 13 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-bundle.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/input-entry.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-bundle.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/meta/import/output-entry.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/openrouter.ai/main/1.0.0/openapi.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/input-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/output-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/paychex.com/paychex/1.0/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/input-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/output-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/roblox.com/main/1.0.0/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/input-bundle.json	census 10 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/input-entry.json	census 10 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/output-bundle.json	census 10 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/meta/import/output-entry.json	census 10 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/sandbox.linkcy.cloud/linkcy/1.78.0/openapi.json	census 10 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/input-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-bundle.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/meta/import/output-entry.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/smith.langchain.com/langsmith-api/0.1.0/openapi.json	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/input-bundled.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/input-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/output-bundled.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/meta/import/output-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/storecove.com/main/2.0.1/openapi.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/input-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/input-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/output-bundle.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/meta/import/output-entry.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/tenant_name.mambu.com/mambu-payments/v1.44.15/openapi.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/input-bundle.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/input-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/output-bundle.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/meta/import/output-entry.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	apis/openapi/zuora.com/main/2021-08-20/openapi.json	census 3 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 enum-leading-zero-member	document	apis/openapi/4dem.it/main/1.0/meta/import/input-bundle.json	census 2	enumeration.tsv.gz
 enum-leading-zero-member	document	apis/openapi/4dem.it/main/1.0/meta/import/input-entry.json	census 2	enumeration.tsv.gz
 enum-leading-zero-member	document	apis/openapi/4dem.it/main/1.0/meta/import/output-bundle.json	census 2	enumeration.tsv.gz
@@ -118779,41 +118779,41 @@ recursive-graph	screen	apis/openapi/swaggerhub.bettrdata/bettr-data-io-internal-
 recursive-graph	screen	apis/openapi/swaggerhub.bettrdata/bettr-data-io-internal-api-specification/1.0.0/openapi.json licence	failed: a SwaggerHub-hosted document, which the corpus never cites as a source	screens.jsonl
 recursive-graph	screen	apis/openapi/swaggerhub.bettrdata/bettr-data-io-internal-api-specification/1.0.0/openapi.json ref	passed	screens.jsonl
 recursive-graph	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/input-bundled.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/input-entry.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/output-bundled.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/output-entry.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/openapi.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/input-bundled.json	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/input-entry.json	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/output-bundled.json	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/output-entry.json	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/openapi.json	census 19	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/input-bundled.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/input-entry.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/output-bundled.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/meta/import/output-entry.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/accounting/3.0.0/openapi.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-bundled.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/input-entry.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-bundled.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/meta/import/output-entry.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/input-bundled.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/input-entry.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/output-bundled.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/meta/import/output-entry.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/codat.io/commerce/3.0.0/openapi.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 233	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 230	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 233	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 230	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 233	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-bundle.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-entry.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-bundle.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-entry.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/openapi.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-bundle.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-entry.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-bundle.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-entry.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/openapi.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-bundle.json	census 97	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json	census 97	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-bundle.json	census 97	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-entry.json	census 97	probe.jsonl
-ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json	census 97	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/openapi.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/nexmo.com/conversation/2.0.1/openapi.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-bundle.json	census 97 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json	census 97 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-bundle.json	census 97 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-entry.json	census 97 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json	census 97 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json	census 382	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json	census 309	probe.jsonl
 ref-pointer-composition-index	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 382	probe.jsonl
@@ -119124,31 +119124,31 @@ ref-pointer-nested-properties	candidate	apis/openapi/codat.io/sync-for-commerce/
 ref-pointer-nested-properties	candidate	apis/openapi/codat.io/sync-for-commerce/1.1/meta/import/output-bundled.json	census 25	probe.jsonl
 ref-pointer-nested-properties	candidate	apis/openapi/codat.io/sync-for-commerce/1.1/meta/import/output-entry.json	census 25	probe.jsonl
 ref-pointer-nested-properties	candidate	apis/openapi/codat.io/sync-for-commerce/1.1/openapi.json	census 25	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 45	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-bundle.json	census 45 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/input-entry.json	census 45	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 45	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-bundle.json	census 45 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/meta/import/output-entry.json	census 45	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 45	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-bundle.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-entry.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-bundle.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-entry.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/openapi.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-bundle.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-entry.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-bundle.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-entry.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/openapi.json	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-bundle.json	census 113	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json	census 113	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-bundle.json	census 113	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-entry.json	census 113	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json	census 113	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json	census 492	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json	census 378	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 492	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 378	probe.jsonl
-ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 492	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/cvent.com/main/ea/openapi.json	census 45 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/input-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/meta/import/output-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation-api/2.0.1/openapi.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/input-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-bundle.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/meta/import/output-entry.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/nexmo.com/conversation/2.0.1/openapi.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-bundle.json	census 113 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/input-entry.json	census 113 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-bundle.json	census 113 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/meta/import/output-entry.json	census 113 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/pagerduty.com/pagerduty-api/2.0.0/openapi.json	census 113 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-bundle.json	census 492 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/input-entry.json	census 378 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-bundle.json	census 492 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/meta/import/output-entry.json	census 378 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	apis/openapi/sellsy.com/main/2.128.0/openapi.json	census 492 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	document	apis/openapi/authress.io/main/v1/meta/import/input-bundle.json	census 30	enumeration.tsv.gz
 ref-pointer-nested-properties	document	apis/openapi/authress.io/main/v1/meta/import/input-entry.json	census 30	enumeration.tsv.gz
 ref-pointer-nested-properties	document	apis/openapi/authress.io/main/v1/meta/import/output-bundle.json	census 30	enumeration.tsv.gz

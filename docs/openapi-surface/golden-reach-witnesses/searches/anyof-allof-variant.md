@@ -11,8 +11,10 @@ build of commit `4828cc2b93f0`, the one the reach ledger is measured on,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
-spans and are not counted. The outcome is this search's own reading;
-final reconciliation decides whether the arm's search reads `exhausted`.
+spans and are not counted. The `outcome` column is this arm's search
+verdict: `exhausted` when nothing is outstanding, every declarer reaching
+the arm is screened, and none that passes every screen is left
+unregistered; `search-incomplete` otherwise.
 
 ### Witness search (exhaustive)
 
@@ -47,6 +49,8 @@ search on its own.
 | `github-publisher-trees` | 50 | 0 | 46 | 50 | 0 | 0 | 1 | 50 | 50 | 0 |
 | `sourcegraph` | 3 | 0 | 1 | 3 | 0 | 0 | 1 | 0 | 0 | 0 |
 | `vendor-portals` | 52 | 0 | 161 | 52 | 0 | 0 | 2 | 50 | 50 | 0 |
+
+**Verdict: `exhausted`.** No real-world document in the six declared sources both declares this row and reaches the arm while passing every screen, so the arm has no real witness and stays open.
 
 #### Candidates passing every screen
 

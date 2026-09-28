@@ -8624,15 +8624,15 @@ recursive-graph	document	walinejs/waline:packages/server/openapi.yaml@9a11e5f337
 recursive-graph	document	yoheinakajima/ag-coder:lib/api-spec/openapi.yaml@adef0c557dc40f100010ddb2b64cabbbd07be27a	census 34	candidates.jsonl
 recursive-graph	query	"$ref:" "children:" "items:" filename:openapi.yaml	1592	queries.jsonl
 recursive-graph	query	"\"$ref\"" "\"children\"" "\"items\"" filename:openapi.json	904	queries.jsonl
-ref-pointer-composition-index	candidate	APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	ClintonCao/EvoMaster:core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@1a2336d2e9d2b9441c3b357cb4743c6e9fed429e	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	LoriMarshall/openapidir:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@433a94f3e9e268f2b000b0b497785ede34332a7f	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	WebFuzzing/fuzzing-nosql:wb-mongo/EvoMaster-mongo/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@beab2413018c8ac6fa8c3ee68dac856ffd3cc628	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	adityaghatge/nlp2rest:rule_extractor/APIs-guru/specifications/nexmo.com/conversation/2.0.1/openapi.yaml@23fc8dc5e37f7ef1681c135abfba30e6cfad2a91	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	api-evangelist/cloudguard:openapi/_original/cloudguard-administration-openapi.json@c4b28f4e0b8e2e98cb0b792491be934989001212	census 34	probe.jsonl
-ref-pointer-composition-index	candidate	codingsoo/nlp2rest:rule_extractor/APIs-guru/specifications/nexmo.com/conversation/2.0.1/openapi.yaml@ae3783b7e4475947bd27511ca4dadc4a273d046c	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	suarezrominajulieta/Evo-tesis:EvoMaster-master/EvoMaster-master/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@c11ae92daa273be94a435aadad384306c9b96134	census 5	probe.jsonl
+ref-pointer-composition-index	candidate	APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	ClintonCao/EvoMaster:core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@1a2336d2e9d2b9441c3b357cb4743c6e9fed429e	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	LoriMarshall/openapidir:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@433a94f3e9e268f2b000b0b497785ede34332a7f	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	WebFuzzing/fuzzing-nosql:wb-mongo/EvoMaster-mongo/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@beab2413018c8ac6fa8c3ee68dac856ffd3cc628	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	adityaghatge/nlp2rest:rule_extractor/APIs-guru/specifications/nexmo.com/conversation/2.0.1/openapi.yaml@23fc8dc5e37f7ef1681c135abfba30e6cfad2a91	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	api-evangelist/cloudguard:openapi/_original/cloudguard-administration-openapi.json@c4b28f4e0b8e2e98cb0b792491be934989001212	census 34 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codingsoo/nlp2rest:rule_extractor/APIs-guru/specifications/nexmo.com/conversation/2.0.1/openapi.yaml@ae3783b7e4475947bd27511ca4dadc4a273d046c	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	suarezrominajulieta/Evo-tesis:EvoMaster-master/EvoMaster-master/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@c11ae92daa273be94a435aadad384306c9b96134	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	document	APIs-guru/openapi-directory:APIs/fulfillment.com/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-composition-index	document	APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	candidates.jsonl
 ref-pointer-composition-index	document	Budibase/openapi-rest-templates:ashby/openapi.yaml@cf9397b0c599117184ae2791849ccd5ba3f235c7	census 0	candidates.jsonl
@@ -8694,11 +8694,11 @@ ref-pointer-composition-index	screen	suarezrominajulieta/Evo-tesis:EvoMaster-mas
 ref-pointer-composition-index	screen	suarezrominajulieta/Evo-tesis:EvoMaster-master/EvoMaster-master/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@c11ae92daa273be94a435aadad384306c9b96134 ref	passed	screens.jsonl
 ref-pointer-nested-items	candidate	api-evangelist/codat:openapi/_original/codat-bank-feeds-openapi.json@245b344099b1b4d281c285ab3b22dfd6e238e912	census 6	probe.jsonl
 ref-pointer-nested-items	candidate	api-evangelist/drata:openapi/_original/drata-safebase-trust-api-openapi.json@ca2b27a42eada497e13f7da0be7da4bb4d8413e2	census 1	probe.jsonl
-ref-pointer-nested-items	candidate	danimnunes/thesis:blockchain/lib/ebsi-core-services/apis/authorisation-v4/api/openapi.yaml@04c27d23d8624e63dced66f043b1f35bb18ea457	census 1	probe.jsonl
-ref-pointer-nested-items	candidate	jakemannix/virtual-tools-spec:openapi.yaml@416641e33b62b90ba055104e669754d6b22d56fb	census 43	probe.jsonl
+ref-pointer-nested-items	candidate	danimnunes/thesis:blockchain/lib/ebsi-core-services/apis/authorisation-v4/api/openapi.yaml@04c27d23d8624e63dced66f043b1f35bb18ea457	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-items	candidate	jakemannix/virtual-tools-spec:openapi.yaml@416641e33b62b90ba055104e669754d6b22d56fb	census 43 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-items	candidate	jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8	census 6	probe.jsonl
-ref-pointer-nested-items	candidate	kadirbelen/Estate-Project-API:static/openapi.json@214086f46834fab0e588fa12629fbc8dc21d3322	census 8	probe.jsonl
-ref-pointer-nested-items	candidate	oaripay/ebsi-core-services:apis/authorisation-v4/api/openapi.yaml@3f1039fa9a71fb14253c20806c4747a4af7d9406	census 1	probe.jsonl
+ref-pointer-nested-items	candidate	kadirbelen/Estate-Project-API:static/openapi.json@214086f46834fab0e588fa12629fbc8dc21d3322	census 8 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-items	candidate	oaripay/ebsi-core-services:apis/authorisation-v4/api/openapi.yaml@3f1039fa9a71fb14253c20806c4747a4af7d9406	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-items	document	APIs-guru/openapi-directory:APIs/brex.io/2021.12/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-nested-items	document	APIs-guru/openapi-directory:APIs/dnd5eapi.co/0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 2	candidates.jsonl
 ref-pointer-nested-items	document	APIs-guru/openapi-directory:APIs/exlibrisgroup.com/tasklists/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
@@ -8879,7 +8879,7 @@ ref-pointer-nested-items	screen	kadirbelen/Estate-Project-API:static/openapi.jso
 ref-pointer-nested-items	screen	oaripay/ebsi-core-services:apis/authorisation-v4/api/openapi.yaml@3f1039fa9a71fb14253c20806c4747a4af7d9406 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: OSError: [Errno 36] File name too long	screens.jsonl
 ref-pointer-nested-items	screen	oaripay/ebsi-core-services:apis/authorisation-v4/api/openapi.yaml@3f1039fa9a71fb14253c20806c4747a4af7d9406 licence	passed	screens.jsonl
 ref-pointer-nested-items	screen	oaripay/ebsi-core-services:apis/authorisation-v4/api/openapi.yaml@3f1039fa9a71fb14253c20806c4747a4af7d9406 ref	passed	screens.jsonl
-ref-pointer-nested-properties	candidate	APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
+ref-pointer-nested-properties	candidate	APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	document	ADRIANOPERONDI/HABITAWEB:public/openapi.json@2596419365694aab7b35a18a9be2a3904bf78bb8	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	ANamelessWolf/NamelessNote:backend/src/swagger/openapi.yaml@992cc382abc7876f3bd2ae97874b9109c052fa28	census 0	candidates.jsonl
 ref-pointer-nested-properties	document	APIs-guru/openapi-directory:APIs/apicurio.local/registry/2.4.x/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl

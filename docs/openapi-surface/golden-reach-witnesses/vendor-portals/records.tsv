@@ -1,9 +1,9 @@
 key	kind	subject	result	file
 *	wait	vendor-portals guard log raw-github-calls.jsonl	45 entries	raw-github-calls.jsonl
 *	wait	vendor-portals guard log raw-github-waits.jsonl	44 entries	raw-github-waits.jsonl
-annotated-ref-shape	candidate	box--box-openapi/openapi.json	census 119	probe.jsonl
-annotated-ref-shape	candidate	box--box-openapi/openapi/openapi.json	census 119	probe.jsonl
-annotated-ref-shape	candidate	intercom--Intercom-OpenAPI/descriptions/0/api.intercom.io.yaml	census 2	probe.jsonl
+annotated-ref-shape	candidate	box--box-openapi/openapi.json	census 119 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+annotated-ref-shape	candidate	box--box-openapi/openapi/openapi.json	census 119 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+annotated-ref-shape	candidate	intercom--Intercom-OpenAPI/descriptions/0/api.intercom.io.yaml	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 annotated-ref-shape	document	asana--openapi/defs/asana_oas.yaml	census 18	enumeration.tsv.gz
 annotated-ref-shape	document	box--box-openapi/openapi.json	census 119	enumeration.tsv.gz
 annotated-ref-shape	document	box--box-openapi/openapi/openapi-v2025.0.json	census 100	enumeration.tsv.gz
@@ -533,10 +533,10 @@ anyof-array-variant-oneof-nullable-item	walk	traccar/traccar@b15554cf3f9808dc462
 anyof-array-variant-oneof-nullable-item	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913eedc21aedd6da	133	enumeration.tsv.gz
 anyof-array-variant-oneof-nullable-item	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	enumeration.tsv.gz
 anyof-array-variant-oneof-nullable-item	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	enumeration.tsv.gz
-anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 1	probe.jsonl
-anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 1	probe.jsonl
-anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.json	census 1	probe.jsonl
-anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.yaml	census 1	probe.jsonl
+anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.2022-11-28.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+anyof-discriminated-union	candidate	github--rest-api-description/descriptions-next/ghes-3.10/ghes-3.10.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 anyof-discriminated-union	document	cloudflare--api-schemas/openapi.json	census 5	enumeration.tsv.gz
 anyof-discriminated-union	document	cloudflare--api-schemas/openapi.yaml	census 5	enumeration.tsv.gz
 anyof-discriminated-union	document	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	enumeration.tsv.gz
@@ -3066,66 +3066,66 @@ enum-empty-identifier-member	walk	traccar/traccar@b15554cf3f9808dc462d412834896f
 enum-empty-identifier-member	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913eedc21aedd6da	133	enumeration.tsv.gz
 enum-empty-identifier-member	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	enumeration.tsv.gz
 enum-empty-identifier-member	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	enumeration.tsv.gz
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/BalancePlatformAcsNotification-v1.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v37.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v40.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v41.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v46.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v49.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v50.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v51.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v52.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v53.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v64.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v65.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v66.json	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v67.json	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v68.json	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v69.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v70.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v71.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v72.json	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v25.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v30.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v40.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v46.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v49.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v50.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v51.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v52.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v64.json	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v67.json	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v68.json	census 16	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/BalancePlatformAcsNotification-v1.yaml	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v37.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v40.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v41.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v46.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v49.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v50.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v51.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v52.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v53.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v64.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v65.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v66.yaml	census 2	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v67.yaml	census 4	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v68.yaml	census 20	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v69.yaml	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v70.yaml	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v71.yaml	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v72.yaml	census 21	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v25.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v30.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v40.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v46.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v49.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v50.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v51.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v52.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v64.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v67.yaml	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml	census 16	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/BalancePlatformAcsNotification-v1.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v37.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v40.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v41.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v46.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v49.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v50.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v51.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v52.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v53.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v64.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v65.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v66.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v67.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v68.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v69.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v70.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v71.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/CheckoutService-v72.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v25.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v30.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v40.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v46.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v49.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v50.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v51.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v52.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v64.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v67.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/json/PaymentService-v68.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/BalancePlatformAcsNotification-v1.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v37.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v40.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v41.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v46.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v49.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v50.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v51.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v52.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v53.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v64.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v65.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v66.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v67.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v68.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v69.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v70.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v71.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/CheckoutService-v72.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v25.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v30.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v40.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v46.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v49.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v50.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v51.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v52.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v64.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v67.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	Adyen--adyen-openapi/yaml/PaymentService-v68.yaml	census 0	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2026-03-10.json	census 1	probe.jsonl
@@ -3498,17 +3498,17 @@ enum-leading-digit-identifier	candidate	github--rest-api-description/description
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.9/ghes-3.9.2022-11-28.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.9/ghes-3.9.json	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	github--rest-api-description/descriptions/ghes-3.9/ghes-3.9.yaml	census 1	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/latest/openapi.spec3.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/latest/openapi.spec3.sdk.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.beta.sdk.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.beta.sdk.yaml	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.private_preview.sdk.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.private_preview.sdk.yaml	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.sdk.json	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.sdk.yaml	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.yaml	census 9	probe.jsonl
-enum-leading-digit-identifier	candidate	stripe--openapi/preview/openapi.spec3.sdk.json	census 9	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/latest/openapi.spec3.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/latest/openapi.spec3.sdk.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.beta.sdk.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.beta.sdk.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.private_preview.sdk.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.private_preview.sdk.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.sdk.json	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.sdk.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/openapi/spec3.yaml	census 0	probe.jsonl
+enum-leading-digit-identifier	candidate	stripe--openapi/preview/openapi.spec3.sdk.json	census 0	probe.jsonl
 enum-leading-digit-identifier	document	cloudflare--api-schemas/openapi.json	census 4	enumeration.tsv.gz
 enum-leading-digit-identifier	document	cloudflare--api-schemas/openapi.yaml	census 4	enumeration.tsv.gz
 enum-leading-digit-identifier	document	github--rest-api-description/descriptions-next/api.github.com/api.github.com.2022-11-28.json	census 1	enumeration.tsv.gz
@@ -13679,34 +13679,34 @@ recursive-graph	walk	traccar/traccar@b15554cf3f9808dc462d412834896fe0634a4e0e	7	
 recursive-graph	walk	twilio/twilio-oai@ef1d81e7b6e49e602530601e913eedc21aedd6da	133	enumeration.tsv.gz
 recursive-graph	walk	webflow/openapi-spec@f6db607359a412dd6aa6cd304674731d7f2dbe10	2	enumeration.tsv.gz
 recursive-graph	walk	zulip/zulip@6a82f40579f8adb9149aa0b04ff795c397baae73	2	enumeration.tsv.gz
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Accounting.json	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Bank-Feeds-v2.json	census 17	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Bank-Feeds.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Commerce.json	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Common.json	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Intuit-IDX.json	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Lending.json	census 59	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Platform.json	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Spend-Insights.json	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Commerce-v1.json	census 45	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Expenses.json	census 35	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payables-v1.json	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payables.json	census 7	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payroll.json	census 8	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Accounting.yaml	census 14	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Bank-Feeds-v2.yaml	census 17	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Bank-Feeds.yaml	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Commerce.yaml	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Common.yaml	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Intuit-IDX.yaml	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Lending.yaml	census 59	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Platform.yaml	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Spend-Insights.yaml	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Commerce-v1.yaml	census 45	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Expenses.yaml	census 35	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payables-v1.yaml	census 16	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payables.yaml	census 7	probe.jsonl
-ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payroll.yaml	census 8	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Accounting.json	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Bank-Feeds-v2.json	census 17 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Bank-Feeds.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Commerce.json	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Common.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Intuit-IDX.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Lending.json	census 59 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Platform.json	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Spend-Insights.json	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Commerce-v1.json	census 45 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Expenses.json	census 35 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payables-v1.json	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payables.json	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/json/Codat-Sync-Payroll.json	census 8 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Accounting.yaml	census 14 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Bank-Feeds-v2.yaml	census 17 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Bank-Feeds.yaml	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Commerce.yaml	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Common.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Intuit-IDX.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Lending.yaml	census 59 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Platform.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Spend-Insights.yaml	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Commerce-v1.yaml	census 45 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Expenses.yaml	census 35 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payables-v1.yaml	census 16 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payables.yaml	census 7 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	codatio--oas/yaml/Codat-Sync-Payroll.yaml	census 8 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	document	codatio--oas/json/Codat-Accounting.json	census 14	enumeration.tsv.gz
 ref-pointer-composition-index	document	codatio--oas/json/Codat-Bank-Feeds-v2.json	census 17	enumeration.tsv.gz
 ref-pointer-composition-index	document	codatio--oas/json/Codat-Bank-Feeds.json	census 16	enumeration.tsv.gz

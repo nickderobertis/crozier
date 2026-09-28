@@ -1148,10 +1148,32 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
 
 
 
+# The measured reason a candidate passing every screen is still no witness: a
+# document written to exercise a tool is hand-written, and only a real
+# specification is evidence that Fern generates from a shape (the manager's
+# ruling on thin-goldens-continue-2). What follows it names what makes it one.
+FIXTURE_DECLINE = "not a real-world specification: a test fixture written to exercise a tool"
+
+
+def fixture_declined(key: str, source: str) -> set[str]:
+    """The candidates of one key's search whose latest screen declines them as a test fixture."""
+    screens = source_dir(source) / "screens.jsonl"
+    if not screens.is_file():
+        return set()
+    latest: dict[str, dict[str, Any]] = {}
+    for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
+        if row["key"] == key:
+            latest[row["candidate"]] = row
+    return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(FIXTURE_DECLINE)}
+
+
 def screen(args: argparse.Namespace) -> int:
     """File one candidate's three screens, each with the evidence it rests on."""
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
+    if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE):].startswith(" — "):
+        fail(f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
+             "path at its pinned commit, and the test or fixtures directory it sits in or the test that loads it")
     for outcome in (args.licence, args.ref, args.fern):
         if outcome != "passed" and not outcome.startswith("failed: "):
             fail(f"a screen reads `passed` or `failed: <reason>`, not {outcome!r}")
@@ -1188,8 +1210,12 @@ def _cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def _dispositions(key: str) -> list[str]:
-    """What became of a candidate that passes every screen: registered, handed off, or declined."""
+def _dispositions(key: str, build: str) -> list[str]:
+    """What became of a candidate that passes every screen: registered, handed off, or declined.
+
+    A decline filed while an earlier build's probe reached the arm is kept as it
+    was filed, under the build's own reading: that candidate reaches nothing now.
+    """
     out: list[str] = []
     handoff = EVIDENCE / "handoff.tsv"
     if handoff.is_file():
@@ -1209,7 +1235,10 @@ def _dispositions(key: str) -> list[str]:
         for candidate, row in sorted(latest.items()):
             if row.get("registered"):
                 out.append(f"- **Registered** (`{source}`): `{candidate}` — {row['registered']}")
-            if row.get("declined"):
+            if row.get("declined") and candidate not in _reaching(key, source, build):
+                out.append(f"- **No longer a candidate** (`{source}`): `{candidate}` — its probe of build "
+                           f"`{build}` executes no unreached site; declined when screened: {row['declined']}")
+            elif row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
@@ -1303,8 +1332,11 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
               if row["key"] == key and row.get("build") == build}
     screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
     reaching = {c for c, row in probes.items() if row["reached"]}
+    # A candidate is a declarer this build's probe finds reaching the arm; one
+    # screened after an earlier build's probe that no longer reaches it holds
+    # nothing open, however its screens read.
     passing = {
-        candidate for candidate in screened
+        candidate for candidate in (screened & reaching) - fixture_declined(key, source)
         if all(r["result"] == "passed" for r in records
                if r["kind"] == "screen" and r["subject"].rsplit(" ", 1)[0] == candidate)
     }
@@ -1323,6 +1355,12 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     }
 
 
+def _reaching(key: str, source: str, build: str) -> set[str]:
+    """The declarers of one source whose probe of `build` executes an unreached site."""
+    return {row["candidate"] for row in read_probes(source)
+            if row["key"] == key and row.get("build") == build and row["reached"]}
+
+
 def _outstanding(tally: dict[str, int]) -> int:
     """Declarers the arm may still be in: unprobed, timed out, unprofiled, or unreadable."""
     return (tally["declarers"] - tally["probed"] + tally["timeouts"] + tally["unprofiled"]
@@ -1330,13 +1368,17 @@ def _outstanding(tally: dict[str, int]) -> int:
 
 
 def src_commits_since(build: str) -> list[str]:
-    """Commits touching `src/` after the measured build, newest first."""
-    run = subprocess.run(["git", "log", "--format=%h", f"{build}..HEAD", "--", "src/"],
+    """Commits touching `src/` after the measured build, newest first, each cut to eight characters.
+
+    Not `%h`: git lengthens that abbreviation as the object store grows, so the
+    same history would render differently in a clone that has fetched more.
+    """
+    run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", "src/"],
                          cwd=REPO, capture_output=True, text=True)
     if run.returncode != 0:
         fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
              "fetch that commit, or re-run `just golden-reach` on this checkout")
-    return run.stdout.split()
+    return [commit[:8] for commit in run.stdout.split()]
 
 
 def _outcome(tallies: dict[str, dict[str, int]], src_moved: bool = False) -> str:
@@ -1412,8 +1454,10 @@ def render(args: argparse.Namespace) -> int:
             "with `src/` at that commit; a declarer with no such probe is unprobed and",
             "outstanding, and a re-probe needs `src/` at that commit (or a fresh",
             "`just golden-reach`). Probes run before that rule was enforced read shifted",
-            "spans and are not counted. The outcome is this search's own reading;",
-            "final reconciliation decides whether the arm's search reads `exhausted`.",
+            "spans and are not counted. The `outcome` column is this arm's search",
+            "verdict: `exhausted` when nothing is outstanding, every declarer reaching",
+            "the arm is screened, and none that passes every screen is left",
+            "unregistered; `search-incomplete` otherwise.",
             "",
             "### Witness search (exhaustive)",
             "",
@@ -1483,7 +1527,18 @@ def render(args: argparse.Namespace) -> int:
             f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} | {_outstanding(t)} |"
             for source, t in tallies.items()
         ]
-        lines += _dispositions(key)
+        fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build))
+                       for source in DECLARED_SOURCES)
+        if outcome == "exhausted" and ledger_unreached(key):
+            lines += [
+                "",
+                f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
+                "both declares this row and reaches the arm while passing every screen, so the "
+                "arm has no real witness and stays open."
+                + (f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
+                   "specifications, and settle nothing." if fixtures else ""),
+            ]
+        lines += _dispositions(key, build)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -1846,6 +1901,55 @@ def refuse(args: argparse.Namespace) -> int:
           f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
     return 0
 
+# What a kept `candidate` row's result says once the counted build's probe of it
+# executes no unreached site: it stays on the record, accounted for, and Contract
+# B's gate reads it as no candidate after checking `probe.jsonl` carries that probe.
+NOT_REACHING = "its probe of build {build} in probe.jsonl reaches no unreached site"
+
+
+def retire(args: argparse.Namespace) -> int:
+    """Mark the candidates the counted build no longer finds declaring the row or reaching its arm.
+
+    A candidate is a screened declarer whose probe executes an unreached site. A
+    census repair can find a document no longer declares the row, and a `src/`
+    repair can leave its probe reaching nothing; either way a screen filed
+    earlier vouches for nothing now. Every row stays, so nothing returned goes
+    unaccounted for: a document the census no longer counts reads `census 0`,
+    the census's own reading, and one whose probe of this build reaches no site
+    reads its census count followed by [`NOT_REACHING`]. A declarer with no probe
+    of this build is left as it is: it is outstanding, not settled.
+    """
+    build = _current_build()
+    keys = set(args.key or (p.stem for p in (EVIDENCE / "searches").glob("*.md")
+                            if record_build(p.read_text(encoding="utf-8"), p) == build))
+    note = NOT_REACHING.format(build=build)
+    marked = 0
+    for source in DECLARED_SOURCES:
+        records = read_records(source)
+        declared = {(r["key"], r["subject"]): r["result"] for r in records
+                    if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"}
+        probed = {(row["key"], row["candidate"]): row for row in read_probes(source) if row.get("build") == build}
+        changed = 0
+        for r in records:
+            if r["key"] not in keys or r["kind"] != "candidate":
+                continue
+            pair = (r["key"], r["subject"])
+            if pair not in declared:
+                result = "census 0"
+            elif pair in probed and not probed[pair]["reached"]:
+                result = f"{declared[pair]} — {note}"
+            else:
+                continue
+            if r["result"] != result:
+                r["result"] = result
+                changed += 1
+        if changed:
+            replace_records(source, records)
+            print(f"golden-reach-search: {source}: {changed} candidate(s) marked on build {build}")
+        marked += changed
+    print(f"golden-reach-search: {marked} candidate(s) marked")
+    return 0
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
@@ -1882,6 +1986,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
     s.add_argument("--registered", default="", help="the corpus row a candidate passing every screen is registered as")
+    rt = sub.add_parser("retire")
+    rt.add_argument("--key", action="append", help="default: every record counted on the measured build")
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
@@ -1892,7 +1998,7 @@ def main(argv: list[str] | None = None) -> int:
         x.add_argument("--source", required=True)
         x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render,
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "retire": retire, "render": render,
             "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
 
 

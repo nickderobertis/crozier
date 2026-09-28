@@ -536,7 +536,7 @@ enum-leading-digit-identifier	candidate	APIs/github.com/github.ae/1.1.4/openapi.
 enum-leading-digit-identifier	candidate	APIs/just-eat.co.uk/1.0.0/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/openbanking.org.uk/v1.3/openapi.yaml	census 1	probe.jsonl
 enum-leading-digit-identifier	candidate	APIs/rebilly.com/2.1/openapi.yaml	census 3	probe.jsonl
-enum-leading-digit-identifier	candidate	APIs/storecove.com/2.0.1/openapi.yaml	census 2	probe.jsonl
+enum-leading-digit-identifier	candidate	APIs/storecove.com/2.0.1/openapi.yaml	census 0	probe.jsonl
 enum-leading-digit-identifier	document	APIs/bungie.net/2.18.0/openapi.yaml	census 3	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/climate.com/4.0.11/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-digit-identifier	document	APIs/drchrono.com/v4 (Hunt Valley)/openapi.yaml	census 3	enumeration.tsv.gz
@@ -642,9 +642,9 @@ enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml fern	
 enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml licence	passed	screens.jsonl
 enum-leading-digit-identifier	screen	APIs/storecove.com/2.0.1/openapi.yaml ref	passed	screens.jsonl
 enum-leading-digit-identifier	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
-enum-leading-zero-member	candidate	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml	census 1	probe.jsonl
-enum-leading-zero-member	candidate	APIs/googleapis.com/dfareporting/v4/openapi.yaml	census 1	probe.jsonl
-enum-leading-zero-member	candidate	APIs/googleapis.com/monitoring/v1/openapi.yaml	census 2	probe.jsonl
+enum-leading-zero-member	candidate	APIs/amazonaws.com/medialive/2017-10-14/openapi.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	APIs/googleapis.com/dfareporting/v4/openapi.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+enum-leading-zero-member	candidate	APIs/googleapis.com/monitoring/v1/openapi.yaml	census 2 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService-v71/71/openapi.yaml	census 20	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService/37/openapi.yaml	census 1	enumeration.tsv.gz
 enum-leading-zero-member	document	APIs/adyen.com/CheckoutService/40/openapi.yaml	census 1	enumeration.tsv.gz
@@ -7400,9 +7400,9 @@ recursive-graph	document	APIs/zeit.co/v2019-01-07/openapi.yaml	census 13	enumera
 recursive-graph	document	APIs/zeno.fm/0.6-99cfdac/openapi.yaml	census 28	enumeration.tsv.gz
 recursive-graph	document	APIs/zuora.com/2021-08-20/openapi.yaml	census 1877	enumeration.tsv.gz
 recursive-graph	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
-ref-pointer-composition-index	candidate	APIs/codat.io/assess/1.0/openapi.yaml	census 1	probe.jsonl
-ref-pointer-composition-index	candidate	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 19	probe.jsonl
-ref-pointer-composition-index	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5	probe.jsonl
+ref-pointer-composition-index	candidate	APIs/codat.io/assess/1.0/openapi.yaml	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 19 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 25	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/codat.io/assess/1.0/openapi.yaml	census 1	enumeration.tsv.gz
 ref-pointer-composition-index	document	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 19	enumeration.tsv.gz
@@ -7422,7 +7422,7 @@ ref-pointer-nested-items	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	ce
 ref-pointer-nested-items	document	APIs/dnd5eapi.co/0.1/openapi.yaml	census 2	enumeration.tsv.gz
 ref-pointer-nested-items	document	APIs/linode.com/4.151.1/openapi.yaml	census 1	enumeration.tsv.gz
 ref-pointer-nested-items	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
-ref-pointer-nested-properties	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5	probe.jsonl
+ref-pointer-nested-properties	candidate	APIs/nexmo.com/conversation/2.0.1/openapi.yaml	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	document	APIs/codat.io/accounting/2.1.0/openapi.yaml	census 75	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/codat.io/assess/1.0/openapi.yaml	census 16	enumeration.tsv.gz
 ref-pointer-nested-properties	document	APIs/codat.io/commerce/2.1.0/openapi.yaml	census 9	enumeration.tsv.gz

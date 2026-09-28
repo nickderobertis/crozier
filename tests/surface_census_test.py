@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import csv
+import functools
 import gzip
 import hashlib
 import importlib.util
@@ -40,6 +41,7 @@ import unicodedata
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
+from types import ModuleType
 
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
@@ -1148,6 +1150,65 @@ def exhaustive_search_failures(
     return failures
 
 
+@functools.lru_cache(maxsize=1)
+def golden_reach_search() -> ModuleType:
+    """`scripts/golden-reach-search.py`, whose phrases the two golden-arm readings below match."""
+    spec = importlib.util.spec_from_file_location(
+        "golden_reach_search_phrases", REPO / "scripts" / "golden-reach-search.py"
+    )
+    assert spec and spec.loader
+    search = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(search)
+    return search
+
+
+def fixture_declined(key: str, directory: Path) -> set[str]:
+    """Candidates whose latest screen in `directory/screens.jsonl` declines them as a test fixture.
+
+    A document written to exercise a tool is hand-written, not a specification,
+    so it is no witness however its three screens read. This exemption is the
+    manager's amendment to Contract B — ruling (B) to `thin-goldens-continue-2`:
+    such a candidate is recorded with that measured reason, naming what makes it
+    a fixture, and its arm reads `exhausted` with no real witness. The phrase is
+    the arm search's own, read from `scripts/golden-reach-search.py`.
+    """
+    screens = directory / "screens.jsonl"
+    if not screens.is_file():
+        return set()
+    marker = golden_reach_search().FIXTURE_DECLINE + " — "
+    latest: dict[str, dict[str, object]] = {}
+    for line in screens.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        if row.get("key") == key:
+            latest[str(row.get("candidate"))] = row
+    return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
+
+
+def not_reaching_failures(
+    key: str, candidate: str, census_run: list[str], directory: Path
+) -> list[str] | None:
+    """None unless a candidate row reads `census N — <no reach on build B>`; then that claim's check.
+
+    The claim holds only where `directory/probe.jsonl` carries the probe it
+    cites: this key, this candidate, build B, reaching no site.
+    """
+    template = golden_reach_search().NOT_REACHING
+    pattern = re.escape(template).replace(re.escape("{build}"), "([0-9a-f]+)")
+    marked = [re.fullmatch(rf"census \d+ — {pattern}", result) for result in census_run]
+    if not any(marked):
+        return None
+    if len(census_run) != 1 or not marked[0]:
+        return [f"{key}: candidate `{candidate}` carries {census_run}, not one census reading"]
+    build = marked[0].group(1)
+    probes = directory / "probe.jsonl"
+    rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
+    if any(row.get("key") == key and row.get("candidate") == candidate and row.get("build") == build
+           and not row.get("reached") for row in rows):
+        return []
+    return [f"{key}: candidate `{candidate}` claims {template.format(build=build)!r}, which "
+            f"{directory.name}/probe.jsonl does not carry"]
+
+
 def exhaustive_line_failures(
     key: str,
     source: str,
@@ -1235,6 +1296,13 @@ def exhaustive_line_failures(
                     f"outstanding {outstanding[0]}"
                 )
             continue
+        # A golden-arm candidate the counted build's probe finds reaching nothing
+        # keeps its row, marked with that probe (the manager's ruling to
+        # `thin-goldens-continue-2`): it is accounted for, and no candidate.
+        unreaching = not_reaching_failures(key, candidate, census_run, directory)
+        if unreaching is not None:
+            failures += unreaching
+            continue
         confirmed = [re.fullmatch(r"census (\d+)", result) for result in census_run]
         if not census_run or not all(confirmed):
             failures.append(
@@ -1251,7 +1319,8 @@ def exhaustive_line_failures(
                 f"{sorted(done)}; a declaring candidate is screened on licence, ref "
                 "and fern"
             )
-        elif exhausted and all(done[s] == "passed" for s in SCREENS):
+        elif (exhausted and all(done[s] == "passed" for s in SCREENS)
+              and candidate not in fixture_declined(key, directory)):
             failures.append(
                 f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
                 "three screens — that is a witness, not an absence"
@@ -9057,6 +9126,53 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             "`apis/openapi/c.example/openapi.json` licence `failed: AGPL-3.0` ref `passed`"
         )
         self.refused("screens candidate `apis/openapi/c.example/openapi.json` in `jentic` on ['licence', 'ref']")
+
+    def test_a_candidate_passing_every_screen_is_a_witness_unless_declined_as_a_test_fixture(self) -> None:
+        screens = "`apis/openapi/c.example/openapi.json` licence `passed` ref `passed` fern `passed`"
+        self.table["jentic"][3] = screens
+        path = self.evidence("jentic")
+        # Filed as the arm search files a screen: its records name screens.jsonl.
+        path.write_text(path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
+                        .replace("\tscreens.md", "\tscreens.jsonl"), encoding="utf-8")
+        (self.root / "witness-search-jentic" / "screens.md").unlink()
+        self.refused("keeps `apis/openapi/c.example/openapi.json`, which passes all three screens")
+        spec = importlib.util.spec_from_file_location("search", REPO / "scripts" / "golden-reach-search.py")
+        assert spec and spec.loader
+        search = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(search)
+        filed = self.root / "witness-search-jentic" / "screens.jsonl"
+        row = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "declined": ""}
+        for declined, accepted in (
+            ("a synthetic fixture", False),
+            (search.FIXTURE_DECLINE, False),
+            (f"{search.FIXTURE_DECLINE} — `c/example` at `{self.COMMIT}`, `test/openapi.json`", True),
+        ):
+            with self.subTest(declined=declined):
+                filed.write_text(json.dumps(dict(row, declined=declined)) + "\n", encoding="utf-8")
+                if accepted:
+                    self.assertEqual([], self.failures())
+                else:
+                    self.refused("which passes all three screens")
+
+    def test_a_candidate_marked_unreaching_counts_only_with_the_stamped_probe_it_cites(self) -> None:
+        self.table["jentic"][3] = "`apis/openapi/c.example/openapi.json` licence `passed` ref `passed` fern `passed`"
+        path = self.evidence("jentic")
+        original = path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
+        path.write_text(original, encoding="utf-8")
+        self.refused("which passes all three screens")
+        note = golden_reach_search().NOT_REACHING.format(build="4828cc2b93f0")
+        path.write_text(original.replace("\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3",
+                                         f"\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3 — {note}"),
+                        encoding="utf-8")
+        self.refused("which witness-search-jentic/probe.jsonl does not carry")
+        probes = self.root / "witness-search-jentic" / "probe.jsonl"
+        probe = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "build": "4828cc2b93f0"}
+        probes.write_text(json.dumps(dict(probe, reached=["src/ir.rs::f"])) + "\n", encoding="utf-8")
+        self.refused("which witness-search-jentic/probe.jsonl does not carry")
+        probes.write_text(json.dumps(dict(probe, reached=[])) + "\n", encoding="utf-8")
+        # `probe.jsonl` is a layout file of a golden-arm evidence directory, which
+        # this sample is not; everything said about the candidate itself is settled.
+        self.assertEqual([], [f for f in self.failures() if "c.example" in f])
 
     def test_a_table_cell_its_evidence_does_not_carry_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (

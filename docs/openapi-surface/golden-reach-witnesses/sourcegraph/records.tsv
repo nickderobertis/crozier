@@ -4198,7 +4198,7 @@ enum-empty-identifier-member	document	github.com/tournesol-app/tournesol:fronten
 enum-empty-identifier-member	document	github.com/treflehq/documentation:static/swagger.yaml@1367505670812c8648e9c7093c5e8196aa54d42a	census 0	candidates.jsonl
 enum-empty-identifier-member	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"enum:" count:all type:file	23818	queries.jsonl
 enum-empty-identifier-member	query	file:(openapi|swagger).*\.json$ content:"\"enum\"" count:all type:file	34467	queries.jsonl
-enum-leading-digit-identifier	candidate	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea	census 1	probe.jsonl
+enum-leading-digit-identifier	candidate	github.com/nfe/client-nodejs:openapi/spec/service-invoice-rtc-v1.yaml@e0a705f72f1215676a15afe1880e0895031b6fea	census 0	probe.jsonl
 enum-leading-digit-identifier	document	github.com/Aivis-Project/AivisSpeech-Engine:test/e2e/__snapshots__/test_openapi/test_OpenAPIの形が変わっていないことを確認.json@0cf0635d5f74de4cf07e5fb87b25c4c1d0c8a331	census 0	candidates.jsonl
 enum-leading-digit-identifier	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/agent_model_hub.http.yaml@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
 enum-leading-digit-identifier	document	github.com/ArtisanCloud/PowerX:backend/api/openapi/swagger.json@3f7619d3b6c6b044bc83ae7d2272252a17ce0684	census 0	candidates.jsonl
@@ -9372,9 +9372,9 @@ recursive-graph	document	github.com/ydcloud-dy/cmdb-server:docs/swagger.yaml@beb
 recursive-graph	document	github.com/zhuchunshu/SForum:contracts/openapi/schemas/forum.yaml@7eb2294c9fbe82709833e873ecd6f7314530068c	census 0	candidates.jsonl
 recursive-graph	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"children:" content:"$ref:" count:all type:file	632	queries.jsonl
 recursive-graph	query	file:(openapi|swagger).*\.json$ content:"\"children\"" content:"\"$ref\"" count:all type:file	1125	queries.jsonl
-ref-pointer-composition-index	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17	census 5	probe.jsonl
-ref-pointer-composition-index	candidate	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444	census 1046	probe.jsonl
+ref-pointer-composition-index	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/nexmo.com/conversation/2.0.1/openapi.yaml@50f95203192aab54454d5c3e195ab3698d6b3f17	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-composition-index	candidate	github.com/embedpdf/embed-pdf-viewer:cloudpdf/contract/openapi.json@2516e2786ee894383220ecd436fbd248182ef444	census 1046 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-composition-index	document	github.com/APIs-guru/openapi-directory:APIs/fulfillment.com/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 ref-pointer-composition-index	document	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	candidates.jsonl
 ref-pointer-composition-index	document	github.com/OpenHands/software-agent-sdk:.github/agent-server-openapi-weak-schema-allowlist.json@1612a78efa11b76ff347cbf3be7d6b6aeddbca62	census 0	candidates.jsonl
@@ -9546,11 +9546,11 @@ ref-pointer-nested-items	screen	github.com/seriousme/fastify-openapi-glue:test/t
 ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 fern	passed	screens.jsonl
 ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 licence	passed	screens.jsonl
 ref-pointer-nested-items	screen	github.com/seriousme/openapi-schema-validator:test/validation/openapi-recursive.v3.json@f82779238adae7949aeca6cf74e3d9e42d3a83f3 ref	passed	screens.jsonl
-ref-pointer-nested-properties	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5	probe.jsonl
-ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1	probe.jsonl
-ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1	probe.jsonl
-ref-pointer-nested-properties	candidate	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e	census 1	probe.jsonl
-ref-pointer-nested-properties	candidate	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe	census 1	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/APIs-guru/openapi-directory:APIs/nexmo.com/conversation/2.0.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 5 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-map-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/bbox-services/bbox:bbox-tile-server/src/openapi.yaml@ec8f16ec70cfa9cacc444c883ea3701f9457bde4	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/geoserver/geoserver:src/community/ogcapi/ogcapi-tiles/src/main/resources/org/geoserver/ogcapi/v1/tiles/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
+ref-pointer-nested-properties	candidate	github.com/opengeospatial/ogcapi-maps:openapi/ogcapi-maps-1.bundled.json@e39bdfeb0fdc10a74d2b5c41514babf7c35f9afe	census 1 — its probe of build 4828cc2b93f0 in probe.jsonl reaches no unreached site	probe.jsonl
 ref-pointer-nested-properties	candidate	github.com/scalar/scalar:packages/openapi-validator/tests/openapi3-examples/3.0/pass/fiendish/ref-encoding3.yaml@0d38e1f77b00238d5ffa6f84fd5d0b7c2586e6cb	census 1	probe.jsonl
 ref-pointer-nested-properties	candidate	github.com/seriousme/fastify-openapi-glue:test/test-openapi-v3-recursive.json@1752d8284d520a65a468a65d46481199bf7fd506	census 1	probe.jsonl
 ref-pointer-nested-properties	document	github.com/APIs-guru/openapi-directory:APIs/amazonaws.com/iotsitewise/2019-12-02/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl

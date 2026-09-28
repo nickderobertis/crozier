@@ -667,11 +667,13 @@ class MeasurementInputTests(unittest.TestCase):
             for row in rows:
                 with self.subTest(candidate=row["candidate_url"]):
                     self.assertRegex(row["disposition"], r"^(registered|byte-identical|rejected): \S")
-                    rendered = [line for line in golden_reach_search._dispositions(row["golden_key"])
+                    path = evidence / "searches" / f"{row['golden_key']}.md"
+                    record = path.read_text(encoding="utf-8")
+                    build = golden_reach_search.record_build(record, path)
+                    rendered = [line for line in golden_reach_search._dispositions(row["golden_key"], build)
                                 if row["candidate_url"] in line]
                     self.assertEqual(1, len(rendered))
                     self.assertTrue(rendered[0].endswith(f" — disposition: {row['disposition']}"))
-                    record = (evidence / "searches" / f"{row['golden_key']}.md").read_text(encoding="utf-8")
                     self.assertIn(rendered[0] + "\n", record)
 
 
@@ -1086,6 +1088,108 @@ class ArmSearchStageTests(_StageScratch):
             self.assertEqual(0, golden_reach_search.main(["outstanding"]))
         self.assertEqual(committed.read_bytes(), (self.scratch / "outstanding.tsv").read_bytes(),
                          "re-run `python3 scripts/golden-reach-search.py outstanding` and commit the list")
+
+    def test_a_screened_candidate_only_holds_a_search_open_while_this_builds_probe_reaches_the_arm(self) -> None:
+        self.walk()
+        build = self.head[:12]
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", "passed",
+        ]))
+        # Screened after an earlier build reached the arm; this build's probe no longer does.
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+        ])
+        tally = golden_reach_search._tally(self.KEY, "jentic", build)
+        self.assertEqual((0, 0), (tally["reaching"], tally["passing"]))
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        tally = golden_reach_search._tally(self.KEY, "jentic", build)
+        self.assertEqual((1, 1), (tally["reaching"], tally["passing"]))
+        self.assertEqual("search-incomplete", golden_reach_search._outcome({"jentic": dict(tally, unreadable=0)}))
+
+    def test_a_reaching_test_fixture_declined_by_name_leaves_the_arm_exhausted_and_unwitnessed(self) -> None:
+        # Only the declaring and the plain document are pinned, so nothing is unreadable.
+        (self.root / "c.yaml").unlink()
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        manifest.write_text("".join(line + "\n" for line in manifest.read_text(encoding="utf-8").splitlines()
+                                    if "\tc.yaml\t" not in line), encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
+        build = self.head[:12]
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        screen = ["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+                  "--licence", "passed", "--ref", "passed", "--fern", "passed"]
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(screen + ["--declined", golden_reach_search.FIXTURE_DECLINE])
+        self.assertIn("name the repository, the path at its pinned commit", str(refused.exception))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("| `jentic` | `search-incomplete` |", record, "a reaching candidate passing every screen")
+        declined = f"{golden_reach_search.FIXTURE_DECLINE} — `acme/tool` at `{'e' * 40}`, `test/a.yaml`"
+        self.assertEqual(0, golden_reach_search.main(screen + ["--declined", declined]))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("| `jentic` | `exhausted` |", record)
+        self.assertIn("**Verdict: `exhausted`.**", record)
+        self.assertIn("The 1 test fixture(s) that do reach it are hand-written", record)
+        self.assertIn(f"- **Declined** (`jentic`): `a.yaml` — {declined}", record.splitlines())
+        # Once this build's probe no longer reaches the arm, the decline is kept as history.
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+        ])
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn(f"- **No longer a candidate** (`jentic`): `a.yaml` — its probe of build `{build}` "
+                      f"executes no unreached site; declined when screened: {declined}", record.splitlines())
+        self.assertNotIn("test fixture(s) that do reach it", record)
+
+    def test_retire_marks_a_candidate_this_build_no_longer_finds_reaching_the_arm_and_keeps_its_row(self) -> None:
+        self.walk()
+        build = self.head[:12]
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", "failed: Fern check reports 1 error",
+        ]))
+        (golden_reach_search.EVIDENCE / "searches").mkdir(parents=True, exist_ok=True)
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+
+        def rows() -> list[tuple[str, str, str]]:
+            return sorted((r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")
+                          if r["kind"] in ("candidate", "screen"))
+
+        screened = rows()
+        self.assertEqual(4, len(screened))
+        self.assertIn(("candidate", "a.yaml", "census 1"), screened)
+        with contextlib.redirect_stdout(io.StringIO()):
+            # Unprobed on this build: outstanding, so nothing is marked.
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+            self.assertEqual(screened, rows())
+            golden_reach_search.file_probes("jentic", self.KEY, [
+                {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+                 "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+            ])
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+            self.assertEqual(screened, rows())
+            golden_reach_search.file_probes("jentic", self.KEY, [
+                {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+            ])
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+        note = golden_reach_search.NOT_REACHING.format(build=build)
+        self.assertEqual([row if row[0] != "candidate" else ("candidate", "a.yaml", f"census 1 — {note}")
+                          for row in screened], rows())
+        # A document the census no longer counts reads the census's own `census 0`.
+        records = golden_reach_search.read_records("jentic")
+        golden_reach_search.replace_records("jentic", [r for r in records if r["kind"] != "document"])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+        self.assertIn(("candidate", "a.yaml", "census 0"), rows())
 
     def test_a_screened_candidate_filed_as_registered_renders_as_its_disposition(self) -> None:
         self.walk()

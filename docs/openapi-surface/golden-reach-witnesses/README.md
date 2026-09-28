@@ -65,6 +65,21 @@ files it here.
   the build. `probe` refuses to run otherwise, and a record counts only the
   current build's rows. Rows with no `build` predate that rule; some ran while
   `src/` had moved on, read another arm's regions, and are counted nowhere.
+- `<source>/records.tsv`'s `candidate` rows are the declarers screened because a
+  probe once found them reaching the arm. `retire` keeps every one and marks
+  the ones the counted build no longer supports: a document the census no
+  longer counts reads `census 0`, and one whose probe of the counted build
+  reaches no site reads its census count followed by `its probe of build <B> in
+  probe.jsonl reaches no unreached site`. Contract B's gate accepts that mark
+  only where `probe.jsonl` carries the probe it cites, and then reads the row
+  as no candidate.
+- A candidate reaching the arm and passing every screen that is a test
+  fixture — a document written to exercise a tool — is declined in its screen
+  as `not a real-world specification: a test fixture written to exercise a
+  tool — <repository, path at the pinned commit, and what makes it one>`. It is
+  hand-written, so it is no witness, and an arm whose only such candidates are
+  fixtures reads `exhausted` with no real witness (the manager's ruling to
+  `thin-goldens-continue-2`, which the gate names).
 - `<source>/screens.jsonl` — each screen as it was filed, with its evidence.
   The `github-code-search` licence screens rest on each repository's licence at
   the pinned commit; 40 of those REST lookups first went out on 2026-09-26

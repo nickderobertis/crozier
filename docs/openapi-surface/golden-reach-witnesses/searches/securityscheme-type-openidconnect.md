@@ -11,8 +11,10 @@ build of commit `1131cbbcb0e3`, the one the reach ledger was measured on when th
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
-spans and are not counted. The outcome is this search's own reading;
-final reconciliation decides whether the arm's search reads `exhausted`.
+spans and are not counted. The `outcome` column is this arm's search
+verdict: `exhausted` when nothing is outstanding, every declarer reaching
+the arm is screened, and none that passes every screen is left
+unregistered; `search-incomplete` otherwise.
 
 The arm this search looked for is now reached: a witness registered since
 reaches every handling site the ledger names for the row. The tables
