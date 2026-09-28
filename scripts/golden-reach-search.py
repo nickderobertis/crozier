@@ -1636,19 +1636,21 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
-def unread_locals(
+def local_copies(
     source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False
 ) -> dict[str, tuple[Path, str]]:
-    """Each document of one source the census could not read: its local copy and pinned digest.
+    """Local copies of one source's documents to read again, each with its pinned digest.
 
-    A walk's are its unreadable enumeration rows (a census cut off by time is
-    not a reading to settle); a query source's are its parse failures and census
-    refusals, each at the cached copy `candidates.jsonl` names. With `fetch`, a
-    query-source copy this checkout's cache lacks is fetched at its commit
-    through the acquirer's exact-commit raw route, and kept only if it is the
-    candidate's blob (or, where the candidate names no blob, its digest). With `every`, a query source's every fetched document is
-    returned, read or not, so a census can be taken over each again; with
-    `timed_out`, a walked document whose census was cut off by time is too.
+    By default these are the documents the census could not read: a walk's
+    unreadable enumeration rows (a census cut off by time is not a reading to
+    settle), and a query source's parse failures and census refusals, each at
+    the cached copy `candidates.jsonl` names. With `every`, a query source's
+    every fetched document is returned, read or not, so a census can be taken
+    over each again; with `timed_out`, a walked document whose census was cut
+    off by time is too. With `fetch`, a query-source copy this checkout's cache
+    lacks is fetched at its commit through the acquirer's exact-commit raw
+    route, and kept only if it is the candidate's blob (or, where the candidate
+    names no blob, its digest).
     """
     unread: dict[str, tuple[Path, str]] = {}
     if source in WALKS:
@@ -1738,10 +1740,10 @@ def recensus(args: argparse.Namespace) -> int:
     source = args.source
     # A query source's census was taken when each document was fetched, so a
     # loader repair since reaches it only by counting every cached copy again.
-    unread = unread_locals(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
+    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
     refused = read_refused(source)
     readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
-    for document, (local, sha256) in sorted(unread.items()):
+    for document, (local, sha256) in sorted(copies.items()):
         if document in refused or not local.is_file():
             continue
         data = local.read_bytes()
@@ -1805,7 +1807,7 @@ def recensus(args: argparse.Namespace) -> int:
         writer.writeheader()
         writer.writerows(filed[document] for document in sorted(filed))
     fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
-    print(f"golden-reach-search: {source}: {len(readings)} of {len(unread)} documents counted, "
+    print(f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
           f"{fallback} through {YAML_LOADER}")
     return 0
 
@@ -1820,7 +1822,7 @@ def refuse(args: argparse.Namespace) -> int:
     out: the census alone failed on it, and it stays outstanding.
     """
     source = args.source
-    unread = unread_locals(source, args.root, fetch=False)
+    unread = local_copies(source, args.root, fetch=False)
     rows, kept = [], 0
     for document, (local, sha256) in sorted(unread.items()):
         if not local.is_file():
