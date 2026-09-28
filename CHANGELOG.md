@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.82](https://github.com/nickderobertis/crozier/compare/v0.0.81...v0.0.82) - 2026-09-26
+
+### Added
+
+- *(fixtures)* register ten gap-key witnesses with their Fern 5.20.0 goldens ([#299](https://github.com/nickderobertis/crozier/pull/299))
+
 ## [0.0.81](https://github.com/nickderobertis/crozier/compare/v0.0.80...v0.0.81) - 2026-09-26
 
 ### Added
