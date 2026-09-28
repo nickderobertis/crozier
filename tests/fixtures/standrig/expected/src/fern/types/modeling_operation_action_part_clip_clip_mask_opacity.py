@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .modeling_operation_action_part_clip_clip_mask_opacity_one import ModelingOperationActionPartClipClipMaskOpacityOne
+from .modeling_operation_action_part_clip_clip_mask_opacity_zero import (
+    ModelingOperationActionPartClipClipMaskOpacityZero,
+)
+
+ModelingOperationActionPartClipClipMaskOpacity = typing.Union[
+    ModelingOperationActionPartClipClipMaskOpacityZero, ModelingOperationActionPartClipClipMaskOpacityOne
+]

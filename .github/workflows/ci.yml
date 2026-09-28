@@ -102,6 +102,11 @@ jobs:
       # byte-compares crozier's output against the committed Fern goldens.
       - name: Corpus byte-match
         run: just test-corpus-match
+      # The arm search's YAML fallback, held to the census's stdlib loader over the
+      # same fetched corpus; it needs uv for the search's pinned ruamel.yaml.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] It reads only public raw.githubusercontent.com bytes pinned by commit and digest, as the corpus byte-match step above it does in this same network leg, which exists so the offline `check` gate never fetches; the fallback agreement the search's census rests on would otherwise go unchecked.
+      - name: Census fallback agreement
+        run: just test-census-fallback
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the

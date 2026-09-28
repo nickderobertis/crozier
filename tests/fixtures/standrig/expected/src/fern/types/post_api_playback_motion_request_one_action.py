@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .post_api_playback_motion_request_one_action_one import PostApiPlaybackMotionRequestOneActionOne
+from .post_api_playback_motion_request_one_action_three import PostApiPlaybackMotionRequestOneActionThree
+from .post_api_playback_motion_request_one_action_two import PostApiPlaybackMotionRequestOneActionTwo
+from .post_api_playback_motion_request_one_action_zero import PostApiPlaybackMotionRequestOneActionZero
+
+PostApiPlaybackMotionRequestOneAction = typing.Union[
+    PostApiPlaybackMotionRequestOneActionZero,
+    PostApiPlaybackMotionRequestOneActionOne,
+    PostApiPlaybackMotionRequestOneActionTwo,
+    PostApiPlaybackMotionRequestOneActionThree,
+]

@@ -1,0 +1,25 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class TransactionRequestOperationsOperationsItemActionParameterAddParameter(UniversalBaseModel):
+    id: str
+    label: str
+    min: float
+    max: float
+    default: float
+    step: typing.Optional[float] = None
+    group: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

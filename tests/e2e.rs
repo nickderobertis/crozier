@@ -3344,6 +3344,23 @@ const CORPORA: &[&Corpus] = &[
     &VISKIT_STUDIO,
     &EMBEDPDF_CLOUDPDF,
     &NPQ_REGISTRATION,
+    &SIM_LOGS,
+    &SIM_TABLES,
+    &VELLUM_GATEWAY,
+    &DOT_AI,
+    &PALOALTO_CODE_TECHNOLOGIES,
+    &MARIMO_PLUGINS,
+    &OTOROSHI,
+    &NEXMO_CONVERSATION,
+    &CODAT_ASSESS,
+    &GOOGLEAPIS_MONITORING_V1,
+    &DOCU_GOAPISERVER,
+    &ONEVOICE,
+    &XFSC_OIDC_IDENTITY_RESOLVER,
+    &ADYEN_ACS_NOTIFICATION,
+    &PEOPLEDATALABS,
+    &STANDRIG,
+    &MOCKSERVER,
 ];
 
 #[test]
@@ -4956,7 +4973,6 @@ const KOMGA: Corpus = Corpus {
         "src/fern/readlist_poster/client.py",
         "src/fern/readlist_poster/raw_client.py",
         "src/fern/readlists/raw_client.py",
-        "src/fern/series/raw_client.py",
         "src/fern/series_poster/client.py",
         "src/fern/series_poster/raw_client.py",
         "src/fern/server_settings/raw_client.py",
@@ -5320,7 +5336,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/sites/types/site_publish_payload.py",
         "src/fern/sites/types/site_publish_payload_payload.py",
         "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
-        "src/fern/sites/well_known/client.py",
         "src/fern/sites/well_known/raw_client.py",
         "src/fern/token/raw_client.py",
         "src/fern/types/__init__.py",
@@ -6012,6 +6027,231 @@ const EMBEDPDF_CLOUDPDF: Corpus = Corpus {
 /// NPQ registration API v3 — corpus row 175, the publisher's own description.
 const NPQ_REGISTRATION: Corpus = Corpus {
     api: "npq-registration",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sim-logs`: corpus row 216, Sim API v2 — Logs. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
+const SIM_LOGS: Corpus = Corpus {
+    api: "sim-logs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `sim-tables`: corpus row 217, Sim Tables API v2. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
+const SIM_TABLES: Corpus = Corpus {
+    api: "sim-tables",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `vellum-gateway`: corpus row 218, the Vellum Gateway API. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
+const VELLUM_GATEWAY: Corpus = Corpus {
+    api: "vellum-gateway",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `dot-ai`: corpus row 219, the DevOps AI Toolkit REST API. It declares
+/// `anyof-array-variant-closed-object-item`, a row already `golden`.
+const DOT_AI: Corpus = Corpus {
+    api: "dot-ai",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `paloalto-code-technologies`: corpus row 220, the Prisma Cloud Technologies
+/// API. It declares `anyof-array-variant-struct-item`, a row already `golden`.
+const PALOALTO_CODE_TECHNOLOGIES: Corpus = Corpus {
+    api: "paloalto-code-technologies",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `marimo-plugins`: corpus row 221, marimo's plugin contracts. It declares
+/// `anyof-array-variant-struct-item`, a row already `golden`.
+const MARIMO_PLUGINS: Corpus = Corpus {
+    api: "marimo-plugins",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `otoroshi`: corpus row 222, the Otoroshi Admin API as its repository pins
+/// it. It declares `ref-pointer-undeclared-component-head`, a row already
+/// `golden`.
+const OTOROSHI: Corpus = Corpus {
+    api: "otoroshi",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `standrig`: corpus row 231, the StandRig Modeling Tools core API from
+/// sayaka-aiart/StandRig, whose `anyOf` alternatives include a string `const`
+const STANDRIG: Corpus = Corpus {
+    api: "standrig",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `mockserver`: corpus row 232, MockServer's own control-plane API description
+/// from mock-server/mockserver-monorepo, whose draft-04 meta-schema `$ref` is
+/// pinned
+const MOCKSERVER: Corpus = Corpus {
+    api: "mockserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `peopledatalabs`: corpus row 230, People Data Labs API 5.0 from
+/// jentic/jentic-public-apis, whose company-size enums hold `10001+`
+const PEOPLEDATALABS: Corpus = Corpus {
+    api: "peopledatalabs",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `adyen-acs-notification`: corpus row 229, Adyen's Authentication webhooks v1
+/// from Adyen/adyen-openapi, whose enum members lead with a digit
+const ADYEN_ACS_NOTIFICATION: Corpus = Corpus {
+    api: "adyen-acs-notification",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `nexmo-conversation`: corpus row 223, the Vonage (Nexmo) Conversation API
+/// 2.0.1 as APIs.guru pins it. Its `$ref`s point into a component's `oneOf`
+/// members and nested properties, the pointer arms no earlier golden reached.
+const NEXMO_CONVERSATION: Corpus = Corpus {
+    api: "nexmo-conversation",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `codat-assess`: corpus row 224, Codat's Assess API from APIs.guru, whose
+/// `$ref` pointers index a composition member
+const CODAT_ASSESS: Corpus = Corpus {
+    api: "codat-assess",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `googleapis-monitoring-v1`: corpus row 225, Google's Cloud Monitoring API v1
+/// from APIs.guru, whose enums carry members with leading zeros
+const GOOGLEAPIS_MONITORING_V1: Corpus = Corpus {
+    api: "googleapis-monitoring-v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `docu-goapiserver`: corpus row 226, the Primula Tracker API V3 description
+/// in JuaniGit/docu-goapiserver, whose `anyOf` variants nest an `anyOf`
+const DOCU_GOAPISERVER: Corpus = Corpus {
+    api: "docu-goapiserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `onevoice`: corpus row 227, the OneVoice API description in f1xgun/onevoice,
+/// which declares a `mutualTLS` security scheme
+const ONEVOICE: Corpus = Corpus {
+    api: "onevoice",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `xfsc-oidc-identity-resolver`: corpus row 228, the Eclipse XFSC notarization
+/// service's oidc-identity-resolver description, whose only security schemes
+/// are `openIdConnect`
+const XFSC_OIDC_IDENTITY_RESOLVER: Corpus = Corpus {
+    api: "xfsc-oidc-identity-resolver",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -8901,7 +9141,7 @@ fn referenced_binary_success_responses_stream_bytes() {
 #[test]
 fn binary_response_examples_use_neutral_path_placeholders() {
     let (_dir, out) = generate_ok(
-        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
+        "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/export:\n    get:\n      operationId: exportWidget\n      tags: [widgets]\n      parameters:\n        - { name: id, in: path, required: true, schema: { $ref: '#/components/schemas/WidgetId' } }\n      responses:\n        '200': { description: Export, content: { application/zip: { schema: { $ref: '#/components/schemas/FileContent' } } } }\n        '404': { description: Missing }\ncomponents:\n  schemas:\n    WidgetId: { type: string, example: '\"widget-123\"' }\n    FileContent: { type: string, format: binary }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("widgets client is generated");
@@ -11808,4 +12048,89 @@ fn embedpdf_cloudpdf_matches_fern_output() {
 #[test]
 fn npq_registration_matches_fern_output() {
     assert_link_ok_corpus_matches(&NPQ_REGISTRATION);
+}
+
+#[test]
+fn sim_logs_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIM_LOGS);
+}
+
+#[test]
+fn sim_tables_matches_fern_output() {
+    assert_link_ok_corpus_matches(&SIM_TABLES);
+}
+
+#[test]
+fn vellum_gateway_matches_fern_output() {
+    assert_link_ok_corpus_matches(&VELLUM_GATEWAY);
+}
+
+#[test]
+fn dot_ai_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DOT_AI);
+}
+
+#[test]
+fn paloalto_code_technologies_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PALOALTO_CODE_TECHNOLOGIES);
+}
+
+#[test]
+fn marimo_plugins_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MARIMO_PLUGINS);
+}
+
+#[test]
+fn otoroshi_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OTOROSHI);
+}
+
+#[test]
+fn standrig_matches_fern_output() {
+    assert_link_ok_corpus_matches(&STANDRIG);
+}
+
+#[test]
+fn mockserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&MOCKSERVER);
+}
+
+#[test]
+fn peopledatalabs_matches_fern_output() {
+    assert_link_ok_corpus_matches(&PEOPLEDATALABS);
+}
+
+#[test]
+fn adyen_acs_notification_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ADYEN_ACS_NOTIFICATION);
+}
+
+#[test]
+fn nexmo_conversation_matches_fern_output() {
+    assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
+}
+
+#[test]
+fn codat_assess_matches_fern_output() {
+    assert_link_ok_corpus_matches(&CODAT_ASSESS);
+}
+
+#[test]
+fn googleapis_monitoring_v1_matches_fern_output() {
+    assert_link_ok_corpus_matches(&GOOGLEAPIS_MONITORING_V1);
+}
+
+#[test]
+fn docu_goapiserver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&DOCU_GOAPISERVER);
+}
+
+#[test]
+fn onevoice_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ONEVOICE);
+}
+
+#[test]
+fn xfsc_oidc_identity_resolver_matches_fern_output() {
+    assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
 }

@@ -1,0 +1,13 @@
+document	sha256	loader
+Adyen--adyen-openapi/yaml/BalancePlatformNegativeBalanceCompensationWarningNotification-v1.yaml	1d611b60504549f08872818f859c90783d32be051d475d466069d378077023a7	ruamel.yaml 0.19.1 (YAML 1.2)
+Adyen--adyen-openapi/yaml/ManagementService-v1.yaml	ceb6d28f77c7b4d28f1af9d1d3e2b7d58433f535cacc0b5006487cc85e919489	ruamel.yaml 0.19.1 (YAML 1.2)
+Adyen--adyen-openapi/yaml/ManagementService-v3.yaml	84ba50fc7acd4beef3f21701df18e615b012eb6524d2665a1a537151746b14ad	ruamel.yaml 0.19.1 (YAML 1.2)
+mongodb--openapi/openapi/.raw/v2.yaml	bfd830f32c9cb360bf165bb419c0beab8e16c2b4a370519c94b1fff2f1b3bb02	ruamel.yaml 0.19.1 (YAML 1.2)
+mongodb--openapi/openapi/v2.yaml	b09a6873a22948194ebbc9776fc3605afcef13d25490ce97ba588b33f4ef063e	ruamel.yaml 0.19.1 (YAML 1.2)
+mongodb--openapi/openapi/v2/openapi-2025-03-12.yaml	5493dbbe2106f66051a7e8bff6109a4584779ba3d52f0e7dd6c2ae47584854a5	ruamel.yaml 0.19.1 (YAML 1.2)
+mongodb--openapi/openapi/v2/private/openapi-private-preview-snapshot-namespaces.yaml	6dceba82b5270e90cdd9049a4c4f0403aaf345417e146836441b780da78d2f19	ruamel.yaml 0.19.1 (YAML 1.2)
+stripe--openapi/latest/openapi.spec3.sdk.yaml	3ef9e985df2bed8314903f5d292f82040540815eafe6215964f1a9e8127d249c	ruamel.yaml 0.19.1 (YAML 1.2)
+stripe--openapi/latest/openapi.spec3.yaml	4b23d81eeb8a0d4d789baa362841c0c14f181b579ff3458c3ab002eb6aa1b553	ruamel.yaml 0.19.1 (YAML 1.2)
+stripe--openapi/preview/openapi.private_preview.spec3.sdk.yaml	30dc9b4a8ce901d78efcb9b5c61496fad1249412a9560408d3acfd7bb68ffb10	ruamel.yaml 0.19.1 (YAML 1.2)
+stripe--openapi/preview/openapi.spec3.sdk.yaml	49fae67fae74b22ab1c3a7aaf7ee9af6bdbf2864973e2d87e107fe3a56fa3aa8	ruamel.yaml 0.19.1 (YAML 1.2)
+twilio--twilio-oai/spec/yaml/twilio_api_v2010.yaml	9cdc0e2bdc7d59fe941e7d935e6315d288f1da7ef8c2b6aa12ba0755072edf9a	ruamel.yaml 0.19.1 (YAML 1.2)

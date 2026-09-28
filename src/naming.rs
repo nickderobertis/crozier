@@ -111,9 +111,26 @@ pub fn prose_identifier(input: &str) -> String {
 /// back to when there is no summary keeps the full stop as a boundary
 /// (`/_proxy/openapi.json` → `get_proxy_openapi_json`), which is why this is a
 /// separate transform rather than a change to [`prose_identifier`].
+///
+/// Fern camel-cases the summary before snake-casing it, so consecutive
+/// one-letter words after the first join as one capital run: MockServer's
+/// `load a gRPC proto descriptor set` is `loadAGRpc…`, re-split as
+/// `load_ag_rpc_…`, while `retrieve gRPC …` keeps `retrieve_g_rpc_…`.
 #[must_use]
 pub fn summary_identifier(input: &str) -> String {
-    prose_identifier(&input.replace('.', ""))
+    let snake = prose_identifier(&input.replace('.', ""));
+    let is_letter = |word: &str| word.len() == 1 && word.chars().all(|c| c.is_ascii_alphabetic());
+    let mut words: Vec<String> = Vec::new();
+    let mut previous_letter = false;
+    for (index, word) in snake.split('_').enumerate() {
+        let letter = is_letter(word);
+        match words.last_mut() {
+            Some(last) if index > 1 && letter && previous_letter => last.push_str(word),
+            _ => words.push(word.to_string()),
+        }
+        previous_letter = letter;
+    }
+    words.join("_")
 }
 
 /// `PascalCase` of an identifier.
@@ -409,6 +426,17 @@ fn enum_words(value: &str) -> String {
     if let Some(words) = whole_value_enum_words(value) {
         return words.to_string();
     }
+    // A value that is a number *whole* is spelled as that number, its leading
+    // zeros read away: Adyen's `challengeIndicator` values `01`…`09` are `ONE` …
+    // `NINE` in its golden. A zero-led run that only leads a longer value names a
+    // member Fern refuses (see below).
+    if value.len() > 1 && value.starts_with('0') && value.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        let number = value.trim_start_matches('0');
+        if let Some(words) = numeric_enum_identifier(if number.is_empty() { "0" } else { number }) {
+            return words;
+        }
+    }
     let mut spaced = String::new();
     for c in value.chars() {
         if c == '\'' || c == '\u{2019}' {
@@ -422,17 +450,37 @@ fn enum_words(value: &str) -> String {
         }
     }
     let mut words = split_words(&spaced);
-    let has_leading_zero_identifier_segment = value.contains('_')
-        && words.iter().any(|word| {
+    // A value whose *first* word is a zero-led digit run names a member Fern
+    // refuses (`_01_00_AM` would lead with a digit), so crozier's legal
+    // fallback keeps it as written.
+    let leads_with_zero_led_digits = value.contains('_')
+        && words.first().is_some_and(|word| {
             word.len() > 1
                 && word.starts_with('0')
                 && word.bytes().all(|byte| byte.is_ascii_digit())
         });
+    // Fern spells the value's own leading digit run (`VFt`): `parseFloat` reads
+    // its leading zeros away, and past 9,999 its speller returns `undefined`,
+    // which the template `${words}_${rest}` writes literally — People Data Labs'
+    // `10001+` is the member `UNDEFINED`.
+    let value_leads_with_digit = value.starts_with(|c: char| c.is_ascii_digit());
     if let Some(first) = words.first_mut() {
         let digits = first.bytes().take_while(u8::is_ascii_digit).count();
         if digits > 0 {
             let suffix = first[digits..].to_string();
-            if let Some(number) = numeric_enum_identifier(&first[..digits]) {
+            let run = &first[..digits];
+            let number = if value_leads_with_digit {
+                let significant = run.trim_start_matches('0');
+                numeric_enum_identifier(if significant.is_empty() {
+                    "0"
+                } else {
+                    significant
+                })
+                .or_else(|| (value.len() > digits).then(|| "undefined".to_string()))
+            } else {
+                numeric_enum_identifier(run)
+            };
+            if let Some(number) = number {
                 *first = if suffix.is_empty() {
                     number
                 } else {
@@ -441,21 +489,17 @@ fn enum_words(value: &str) -> String {
             }
         }
     }
-    // Fern joins letter-only connector runs in hardware-style values, but keeps
-    // ordinary lowercase words separated (`a-b` remains `A_B`). Digits are the
-    // signal for the former; all-uppercase wire values take the same path for
-    // connector spellings such as `P+N+E` and `E/F`.
-    let join_single_letters = value.bytes().any(|byte| byte.is_ascii_digit())
-        || value
-            .bytes()
-            .filter(|byte| byte.is_ascii_alphabetic())
-            .all(|byte| byte.is_ascii_uppercase());
+    // Consecutive single letters join: Fern names a member
+    // `upperFirst(camelCase(value))` (`WJe`) and the IR re-splits that name with
+    // lodash's `words`, which reads a run of capitals as one word — People Data
+    // Labs' `u.s. virgin islands` is `USVirginIslands`, so `US_VIRGIN_ISLANDS`,
+    // as `P+N+E` and `E/F` already were.
     let mut merged_words: Vec<String> = Vec::with_capacity(words.len());
     let mut single_letter_run = false;
     for word in words {
         let is_single_letter =
             word.len() == 1 && word.bytes().all(|byte| byte.is_ascii_alphabetic());
-        if join_single_letters && is_single_letter && single_letter_run {
+        if is_single_letter && single_letter_run {
             merged_words
                 .last_mut()
                 .expect("a single-letter run has a previous word")
@@ -502,10 +546,12 @@ fn enum_words(value: &str) -> String {
         }
     }
     let identifier = words.join("_");
-    if has_leading_zero_identifier_segment {
-        // Fern rejects this shape; keep Crozier's existing legal fallback stable.
+    if leads_with_zero_led_digits {
         identifier
     } else {
+        // Anywhere later, a zero-led digit run collapses onto the word before
+        // it like any other: Google Cloud Monitoring's `ALIGN_PERCENTILE_05` is
+        // `ALIGN_PERCENTILE05` in Fern's golden, as `_99` is `ALIGN_PERCENTILE99`.
         collapse_digit_boundaries(&identifier)
     }
 }
@@ -930,7 +976,8 @@ pub fn is_reserved(name: &str) -> bool {
 /// `copy` among them, which is `BaseModel.copy()`: SFTPGo's
 /// `EventActionFilesystemConfig.copy` is `copy_` under an `alias="copy"` in its
 /// golden, and embedpdf-cloudpdf's `PdfFieldActions.validate` (`BaseModel.validate()`)
-/// is `validate_`. The protection is *model-scoped*, so an enum visitor's `copy` argument
+/// is `validate_`, and MockServer's `json` bodies (`BaseModel.json()`) are
+/// `json_`. The protection is *model-scoped*, so an enum visitor's `copy` argument
 /// (otoroshi's `PatchItemOp`, komga's `BookImportBatchDtoCopyMode`) keeps its
 /// spelling.
 #[must_use]
@@ -938,7 +985,7 @@ pub fn model_field_name(wire_name: &str) -> String {
     let name = field_name(wire_name);
     if matches!(
         name.as_str(),
-        "copy" | "kwargs" | "schema" | "self" | "validate"
+        "copy" | "json" | "kwargs" | "schema" | "self" | "validate"
     ) {
         format!("{name}_")
     } else {
@@ -1172,6 +1219,36 @@ mod tests {
     }
 
     #[test]
+    fn zero_led_digit_runs_collapse_unless_they_lead_the_name() {
+        // Google Cloud Monitoring v1's aligners (corpus row 225's golden).
+        assert_eq!(
+            enum_member_name("ALIGN_PERCENTILE_05"),
+            "ALIGN_PERCENTILE05"
+        );
+        assert_eq!(
+            enum_member_name("ALIGN_PERCENTILE_99"),
+            "ALIGN_PERCENTILE99"
+        );
+        assert_eq!(
+            enum_visit_param("ALIGN_PERCENTILE_05"),
+            "align_percentile05"
+        );
+        // Fern refuses a name led by one; crozier keeps it as written.
+        assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
+        // A zero-led value that is a number whole is spelled as that number
+        // (Adyen's challenge indicators, corpus row 229's golden).
+        assert_eq!(enum_member_name("01"), "ONE");
+        assert_eq!(enum_visit_param("09"), "nine");
+        assert_eq!(enum_member_name("00"), "ZERO");
+        // Past Fern's speller's range the leading run is the literal
+        // `undefined` (People Data Labs' company sizes, corpus row 230).
+        assert_eq!(enum_member_name("10001+"), "UNDEFINED");
+        assert_eq!(enum_visit_param("10001+"), "undefined");
+        // Consecutive single letters join into one word.
+        assert_eq!(enum_member_name("u.s. virgin islands"), "US_VIRGIN_ISLANDS");
+    }
+
+    #[test]
     fn enum_names_match_ferns_sanitized_identifiers() {
         // Keyword value: member is safe (upper-cased), the visit param is escaped.
         assert_eq!(enum_member_name("global"), "GLOBAL");
@@ -1356,6 +1433,19 @@ mod tests {
             sanitize_identifier("endpoints_container"),
             "endpoints_container"
         );
+    }
+
+    #[test]
+    fn summary_identifier_joins_one_letter_words_the_way_camel_casing_does() {
+        assert_eq!(
+            summary_identifier("load a gRPC proto descriptor set"),
+            "load_ag_rpc_proto_descriptor_set"
+        );
+        assert_eq!(
+            summary_identifier("retrieve gRPC health serving statuses"),
+            "retrieve_g_rpc_health_serving_statuses"
+        );
+        assert_eq!(summary_identifier("a b c"), "a_bc");
     }
 
     #[test]

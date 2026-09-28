@@ -21,6 +21,7 @@ Two things make this the gate's copy of the recipe rather than a paraphrase of i
 from __future__ import annotations
 
 import csv
+import functools
 import gzip
 import hashlib
 import importlib.util
@@ -33,12 +34,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import textwrap
 import unittest
 import unicodedata
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
+from types import ModuleType
 
 REPO = Path(__file__).resolve().parent.parent
 FIXTURES = REPO / "tests" / "fixtures"
@@ -974,8 +977,18 @@ def enumeration_census_failures(
                 failures.append(f"{key}: `{source}` {row['document']} has wrong revision")
     if {row["walk"] for row in census} - {tree for tree, _ref, _count in walks}:
         failures.append(f"{key}: `{source}` enumeration has a document outside the named walks")
+    # A path more than one walked tree pins is named `<walk>:<path>` in the
+    # records, so each copy is its own declarer (`document_subject`).
+    repeated = {
+        document for document, count in Counter(row["document"] for row in census).items()
+        if count > 1
+    }
+
+    def subject(row: dict[str, str]) -> str:
+        return f"{row['walk']}:{row['document']}" if row["document"] in repeated else row["document"]
+
     for row in census:
-        document = row["document"]
+        document = subject(row)
         if not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
             failures.append(f"{key}: `{source}` {document} has no SHA-256 digest")
         matched = set(filter(None, row["matched_keys"].split(",")))
@@ -999,7 +1012,7 @@ def enumeration_census_failures(
                 f"{key}: `{source}` records.tsv claims {document} without an "
                 "enumeration.tsv match"
             )
-    census_documents = {row["document"] for row in census}
+    census_documents = {subject(row) for row in census}
     for document in document_records:
         if document not in census_documents:
             failures.append(
@@ -1043,6 +1056,14 @@ def evidence_directory_failures(
     records = evidence_records(directory)
     failures = []
     named = {record.get("file", "") for record in records}
+    # A row naming a ledger names every part the ledger was sharded into
+    # (`ledger_parts`), as `records.tsv`'s own parts are exempt below.
+    named |= {
+        part.name
+        for file in list(named)
+        if file
+        for part in _index_module.ledger_parts(directory / file)
+    }
     for record in records:
         if record.get("kind") not in EVIDENCE_KINDS:
             failures.append(
@@ -1127,6 +1148,65 @@ def exhaustive_search_failures(
             pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
         )
     return failures
+
+
+@functools.lru_cache(maxsize=1)
+def golden_reach_search() -> ModuleType:
+    """`scripts/golden-reach-search.py`, whose phrases the two golden-arm readings below match."""
+    spec = importlib.util.spec_from_file_location(
+        "golden_reach_search_phrases", REPO / "scripts" / "golden-reach-search.py"
+    )
+    assert spec and spec.loader
+    search = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(search)
+    return search
+
+
+def fixture_declined(key: str, directory: Path) -> set[str]:
+    """Candidates whose latest screen in `directory/screens.jsonl` declines them as a test fixture.
+
+    A document written to exercise a tool is hand-written, not a specification,
+    so it is no witness however its three screens read. This exemption is the
+    manager's amendment to Contract B — ruling (B) to `thin-goldens-continue-2`:
+    such a candidate is recorded with that measured reason, naming what makes it
+    a fixture, and its arm reads `exhausted` with no real witness. The phrase is
+    the arm search's own, read from `scripts/golden-reach-search.py`.
+    """
+    screens = directory / "screens.jsonl"
+    if not screens.is_file():
+        return set()
+    marker = golden_reach_search().FIXTURE_DECLINE + " — "
+    latest: dict[str, dict[str, object]] = {}
+    for line in screens.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        if row.get("key") == key:
+            latest[str(row.get("candidate"))] = row
+    return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
+
+
+def not_reaching_failures(
+    key: str, candidate: str, census_run: list[str], directory: Path
+) -> list[str] | None:
+    """None unless a candidate row reads `census N — <no reach on build B>`; then that claim's check.
+
+    The claim holds only where `directory/probe.jsonl` carries the probe it
+    cites: this key, this candidate, build B, reaching no site.
+    """
+    template = golden_reach_search().NOT_REACHING
+    pattern = re.escape(template).replace(re.escape("{build}"), "([0-9a-f]+)")
+    marked = [re.fullmatch(rf"census \d+ — {pattern}", result) for result in census_run]
+    if not any(marked):
+        return None
+    if len(census_run) != 1 or not marked[0]:
+        return [f"{key}: candidate `{candidate}` carries {census_run}, not one census reading"]
+    build = marked[0].group(1)
+    probes = directory / "probe.jsonl"
+    rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
+    if any(row.get("key") == key and row.get("candidate") == candidate and row.get("build") == build
+           and not row.get("reached") for row in rows):
+        return []
+    return [f"{key}: candidate `{candidate}` claims {template.format(build=build)!r}, which "
+            f"{directory.name}/probe.jsonl does not carry"]
 
 
 def exhaustive_line_failures(
@@ -1216,6 +1296,13 @@ def exhaustive_line_failures(
                     f"outstanding {outstanding[0]}"
                 )
             continue
+        # A golden-arm candidate the counted build's probe finds reaching nothing
+        # keeps its row, marked with that probe (the manager's ruling to
+        # `thin-goldens-continue-2`): it is accounted for, and no candidate.
+        unreaching = not_reaching_failures(key, candidate, census_run, directory)
+        if unreaching is not None:
+            failures += unreaching
+            continue
         confirmed = [re.fullmatch(r"census (\d+)", result) for result in census_run]
         if not census_run or not all(confirmed):
             failures.append(
@@ -1232,7 +1319,8 @@ def exhaustive_line_failures(
                 f"{sorted(done)}; a declaring candidate is screened on licence, ref "
                 "and fern"
             )
-        elif exhausted and all(done[s] == "passed" for s in SCREENS):
+        elif (exhausted and all(done[s] == "passed" for s in SCREENS)
+              and candidate not in fixture_declined(key, directory)):
             failures.append(
                 f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
                 "three screens — that is a witness, not an absence"
@@ -6011,6 +6099,80 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
 
+    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_refused(self) -> None:
+        """YAML 1.2's rule: a `:` no space follows stays in a plain scalar.
+
+        The loader used to stop every plain scalar at a `:` and then drop the
+        "pair" a flow sequence cannot hold, so OpenBanking Project's
+        `enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]` read as
+        an empty list. A `: ` inside a flow sequence is an implicit single-pair
+        mapping, which this reader refuses by name rather than dropping.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                "enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]\n"
+                "pairs: [a:b, c]\n"
+                "urls: {url: http://example.test/x, key: v}\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {
+                    "enum": ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+                    "pairs": ["a:b", "c"],
+                    "urls": {"url": "http://example.test/x", "key": "v"},
+                },
+                census.load_document(path),
+            )
+            path.write_text("pairs: [x: y]\n", encoding="utf-8")
+            with self.assertRaises(census.DocumentError) as raised:
+                census.load_document(path)
+        self.assertIn("a single-pair mapping inside a flow sequence is not supported", str(raised.exception))
+
+    def test_the_openbanking_client_assertion_enum_reads_as_its_one_urn(self) -> None:
+        """The registered document the misread cost a `schema.enum:string-valued` site."""
+        path = REPO / ".local" / "corpus" / "openbankingproject-ch-kundenbeziehung" / "openapi.yaml"
+        if not path.is_file():
+            if os.environ.get("CROZIER_REQUIRE_CORPUS"):
+                self.fail(f"{path} is unfetched; run scripts/fetch-corpus.sh")
+            self.skipTest("the link-ok corpus is unfetched; run scripts/fetch-corpus.sh")
+        document = census.load_document(path)
+        form = document["paths"]["/token"]["post"]["requestBody"]["content"]["application/x-www-form-urlencoded"]
+        self.assertEqual(["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+                         form["schema"]["properties"]["client_assertion_type"]["enum"])
+        counted = rows(run("--fixture", "openbankingproject-ch-kundenbeziehung",
+                           "--selector", "schema.enum:string-valued"))
+        self.assertEqual({("schema.enum:string-valued", "openbankingproject-ch-kundenbeziehung"): 95}, counted)
+
+    def test_a_flow_collection_across_lines_reads_its_quoted_scalars_and_brackets(self) -> None:
+        """A quoted scalar spanning lines keeps the brackets inside it out of the count."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                'info: {\n  "title": "a [bracket\n  and ] more",\n  "version": "1" }\nopenapi: 3.0.0\n',
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {"info": {"title": "a [bracket and ] more", "version": "1"}, "openapi": "3.0.0"},
+                census.load_document(path),
+            )
+
+    def test_a_json_document_in_a_yaml_file_loads_in_linear_time(self) -> None:
+        """MongoDB's `v1-deprecated/v1.yaml` is one JSON collection across 65,880 lines.
+
+        Counting the whole gathered buffer again at every line made it quadratic
+        (past two hours); counted line by line it is a second's work. Forty
+        thousand lines here take a fraction of that bound, and minutes the old way.
+        """
+        paths = {f"/items/{index}": {"get": {"summary": f"item {index}"}} for index in range(10_000)}
+        document = {"openapi": "3.0.0", "info": {"title": "T", "version": "1"}, "paths": paths}
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yaml"
+            path.write_text(json.dumps(document, indent=2), encoding="utf-8")
+            started = time.monotonic()
+            self.assertEqual(document, census.load_document(path))
+        self.assertLess(time.monotonic() - started, 30)
+
     def test_a_flow_collection_that_cannot_advance_is_a_parse_error_not_a_hang(self) -> None:
         """The guard that makes the failure mode a message instead of an OOM.
 
@@ -7690,7 +7852,7 @@ class RankedBacklogTests(unittest.TestCase):
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
                 owed = {
                     source: int(cells.split("|")[-2])
-                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M)
+                    for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M)
                 }
                 self.assertEqual(set(DECLARED_SOURCES), set(owed), "a record tallies each declared source")
                 owing = {source: n for source, n in owed.items() if n}
@@ -7720,14 +7882,21 @@ class RankedBacklogTests(unittest.TestCase):
             self.assertTrue(row["item"] and row["blocker"], f"an item without its blocker: {row}")
             listed[(row["key"], row["source"])] = listed.get((row["key"], row["source"]), 0) + 1
         owed: dict[tuple[str, str], int] = {}
-        for path in sorted((self.ARM_SEARCHES / "searches").glob("*.md")):
+        records = sorted((self.ARM_SEARCHES / "searches").glob("*.md"))
+        counted = 0
+        for path in records:
             text = path.read_text(encoding="utf-8")
             build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
             self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
-            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){9})$", text, re.M):
+            for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M):
+                counted += 1
                 if int(cells.split("|")[-2]):
                     owed[(path.stem, source)] = int(cells.split("|")[-2])
-        self.assertTrue(owed, "no record owes an item; the check reads nothing")
+        # Every record's six source counts are read, so a list and a set of
+        # records that both owe nothing is a reading, not a vacuous pass.
+        self.assertTrue(records, "no arm-search record; the check reads nothing")
+        self.assertEqual(len(DECLARED_SOURCES) * len(records), counted,
+                         "an arm-search record whose declarer table this check cannot read")
         self.assertEqual(owed, listed)
 
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
@@ -7764,12 +7933,42 @@ class RankedBacklogTests(unittest.TestCase):
                         key, lines, self.ARM_SEARCHES, capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
-                        layout_files=("probe.jsonl", "pins.tsv"),
+                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
+                                      "fern-rescreen.jsonl"),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
         written = {path.stem for path in records.glob("*.md")} if records.is_dir() else set()
         self.assertEqual(set(), written - linked, "an arm search no reach cell links")
+
+    def test_census_refused_documents_are_counted_by_name_apart_from_outstanding_items(self) -> None:
+        """Each source's census refusals, named, none of them an outstanding item.
+
+        A document a full standard parser refuses is no description a witness
+        could be; `census-refused.tsv` names it with that parser's verdict, and
+        it leaves the outstanding list without settling any search on its own.
+        """
+        with (self.ARM_SEARCHES / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
+            outstanding = {(row["source"], row["item"])
+                           for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+        counted = {}
+        for source in DECLARED_SOURCES:
+            path = self.ARM_SEARCHES / source / "census-refused.tsv"
+            if not path.is_file():
+                continue
+            with path.open(encoding="utf-8", newline="") as handle:
+                rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+            with self.subTest(source=source):
+                names = [row["document"] for row in rows]
+                self.assertEqual(len(names), len(set(names)), "a document refused twice")
+                for row in rows:
+                    self.assertIn(row["verdict"], ("syntax", "not-openapi"), row["document"])
+                    self.assertRegex(row["sha256"], r"^[0-9a-f]{64}$", row["document"])
+                    self.assertRegex(row["parser"], r"^(python json|ruamel\.yaml) \d", row["document"])
+                self.assertEqual(set(), {(source, name) for name in names} & outstanding,
+                                 "a census-refused document is still an outstanding item")
+                counted[source] = len(names)
+        self.assertTrue(counted, "no source files a census refusal")
 
     def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
         """The thin end, as a list: every single-witness and no-witness golden row."""
@@ -8936,6 +9135,53 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         )
         self.refused("screens candidate `apis/openapi/c.example/openapi.json` in `jentic` on ['licence', 'ref']")
 
+    def test_a_candidate_passing_every_screen_is_a_witness_unless_declined_as_a_test_fixture(self) -> None:
+        screens = "`apis/openapi/c.example/openapi.json` licence `passed` ref `passed` fern `passed`"
+        self.table["jentic"][3] = screens
+        path = self.evidence("jentic")
+        # Filed as the arm search files a screen: its records name screens.jsonl.
+        path.write_text(path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
+                        .replace("\tscreens.md", "\tscreens.jsonl"), encoding="utf-8")
+        (self.root / "witness-search-jentic" / "screens.md").unlink()
+        self.refused("keeps `apis/openapi/c.example/openapi.json`, which passes all three screens")
+        spec = importlib.util.spec_from_file_location("search", REPO / "scripts" / "golden-reach-search.py")
+        assert spec and spec.loader
+        search = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(search)
+        filed = self.root / "witness-search-jentic" / "screens.jsonl"
+        row = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "declined": ""}
+        for declined, accepted in (
+            ("a synthetic fixture", False),
+            (search.FIXTURE_DECLINE, False),
+            (f"{search.FIXTURE_DECLINE} — `c/example` at `{self.COMMIT}`, `test/openapi.json`", True),
+        ):
+            with self.subTest(declined=declined):
+                filed.write_text(json.dumps(dict(row, declined=declined)) + "\n", encoding="utf-8")
+                if accepted:
+                    self.assertEqual([], self.failures())
+                else:
+                    self.refused("which passes all three screens")
+
+    def test_a_candidate_marked_unreaching_counts_only_with_the_stamped_probe_it_cites(self) -> None:
+        self.table["jentic"][3] = "`apis/openapi/c.example/openapi.json` licence `passed` ref `passed` fern `passed`"
+        path = self.evidence("jentic")
+        original = path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
+        path.write_text(original, encoding="utf-8")
+        self.refused("which passes all three screens")
+        note = golden_reach_search().NOT_REACHING.format(build="4828cc2b93f0")
+        path.write_text(original.replace("\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3",
+                                         f"\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3 — {note}"),
+                        encoding="utf-8")
+        self.refused("which witness-search-jentic/probe.jsonl does not carry")
+        probes = self.root / "witness-search-jentic" / "probe.jsonl"
+        probe = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "build": "4828cc2b93f0"}
+        probes.write_text(json.dumps(dict(probe, reached=["src/ir.rs::f"])) + "\n", encoding="utf-8")
+        self.refused("which witness-search-jentic/probe.jsonl does not carry")
+        probes.write_text(json.dumps(dict(probe, reached=[])) + "\n", encoding="utf-8")
+        # `probe.jsonl` is a layout file of a golden-arm evidence directory, which
+        # this sample is not; everything said about the candidate itself is settled.
+        self.assertEqual([], [f for f in self.failures() if "c.example" in f])
+
     def test_a_table_cell_its_evidence_does_not_carry_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (
             "`file:openapi.yaml content:\"x-sample\"` → 4; `file:openapi.json content:\"x-sample\"` → 0"
@@ -8956,6 +9202,19 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.refused("carries query ``third phrasing`` that the table accounts for nowhere")
         (self.root / "witness-search-sourcegraph" / "stray.json").write_text("{}\n", encoding="utf-8")
         self.refused("witness-search-sourcegraph/stray.json is evidence the table accounts for nowhere")
+
+    def test_a_named_ledgers_shards_are_accounted_for_and_a_strays_are_not(self) -> None:
+        """A ledger past its shard size continues in numbered siblings (`ledger_parts`).
+
+        A row naming the ledger names every part of it, as `records.tsv`'s own
+        parts are exempt; a part of a file no row names is still a stray.
+        """
+        directory = self.root / "witness-search-sourcegraph"
+        (directory / "acquisition.001.json").write_text("{}\n", encoding="utf-8")
+        self.assertEqual([], self.failures())
+        (directory / "stray.json").write_text("{}\n", encoding="utf-8")
+        (directory / "stray.001.json").write_text("{}\n", encoding="utf-8")
+        self.refused("witness-search-sourcegraph/stray.001.json is evidence the table accounts for nowhere")
 
     def test_an_undeclared_source_counted_as_answered_is_refused(self) -> None:
         self.table["swaggerhub"] = ["`x-sample` → 0; `sample extension` → 0", "—", "—", "—"]
@@ -9507,7 +9766,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                               ["98777886-76d0-44c8-865e-bb40e669e934"]),
         "numeric-prefix-member": (["10bps"], ["2bps"]),
         "leading-zero-member": (["01"], ["10"]),
-        "leading-digit-identifier": (["01"], ["1"]),
+        "leading-digit-identifier": (["10001"], ["1"]),
         "uuid-member": (["00000000-0000-0000-0000-000000000001"], ["widget"]),
         "reserved-member": (["global"], ["widget"]),
         "normalized-collision": (["foo-bar", "foo_bar"], ["foo", "bar"]),

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .credential_requests_submit_response_error import CredentialRequestsSubmitResponseError
+from .credential_requests_submit_response_ok import CredentialRequestsSubmitResponseOk
+
+CredentialRequestsSubmitResponse = typing.Union[
+    CredentialRequestsSubmitResponseOk, CredentialRequestsSubmitResponseError
+]

@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .marimo_table_data_show_column_summaries_one import MarimoTableDataShowColumnSummariesOne
+
+MarimoTableDataShowColumnSummaries = typing.Union[bool, MarimoTableDataShowColumnSummariesOne]

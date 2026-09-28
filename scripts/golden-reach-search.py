@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["ruamel.yaml==0.19.1"]
+# ///
 # llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace; this arm-search script sits in scripts/ beside golden-reach.py, whose ledger it reads, and the witness-search scripts whose acquirer it drives.
 """Search the six declared sources for a real-world witness of a golden row's unreached arm.
 
@@ -65,12 +69,14 @@ import itertools
 import json
 import os
 import re
+import signal
+import types
 import subprocess
 import sys
 import tempfile
 import time
 import urllib.parse
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Callable, Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
@@ -103,13 +109,28 @@ WALKS = ("apis.guru", "jentic", "vendor-portals", "github-publisher-trees")
 QUERY_SOURCES = ("github-code-search", "sourcegraph")
 RECORD_FIELDS = ("key", "kind", "subject", "result", "file")
 WALK_FIELDS = ("walk", "document", "revision", "sha256", "matched_keys", "status")
+# A document the census could not read, settled by a full standard parser: one it
+# rejects on syntax, or one it reads that names no OpenAPI or Swagger version, is
+# no description a witness could be. Each source's `census-refused.tsv` lists them
+# with the parser, its version and the document's digest; `refuse` writes it.
+REFUSED_FIELDS = ("document", "sha256", "parser", "verdict", "evidence")
+REFUSED_FILE = "census-refused.tsv"
+REFUSED_VERDICTS = ("syntax", "not-openapi")
+# The full YAML 1.2 parser the search reads YAML with where the census's stdlib
+# loader cannot: `refuse` to settle a syntax rejection, `recensus` to count what
+# a readable document declares. Pinned here and in the inline script metadata
+# above, which `uv run scripts/golden-reach-search.py` installs.
+RUAMEL_YAML_PIN = "0.19.1"
+# A document the census read through that parser, named with its loader.
+FALLBACK_FIELDS = ("document", "sha256", "loader")
+FALLBACK_FILE = "census-fallback.tsv"
 FIRST_PAGE = 100
 # Keyword arguments every acquirer this script builds is given. A real search
 # leaves them empty; the offline tests point them at a loopback server.
 ACQUIRER_OPTIONS: dict[str, Any] = {}
-# Probe results are filed this many declarers at a time, so a stopped run keeps them;
+# Probe results are filed this many documents at a time, so a stopped run keeps them;
 # some catalogue documents take minutes each under an instrumented build.
-PROBE_CHUNK = 8
+PROBE_BATCH = 48
 
 
 def _load(name: str, path: Path) -> ModuleType:
@@ -249,6 +270,43 @@ def ledger_unreached(key: str) -> tuple[str, ...]:
     raise AssertionError
 
 
+def searched_arm(key: str) -> tuple[str, ...]:
+    """The sites a row's committed record searched for, where each still resolves in today's `src/`.
+
+    A row a registered witness has since taken off the ledger's unreached list
+    still owes its record's declarers a probe on the counted build; this is the
+    arm they are probed against. A site a later repair restructured out of `src/`
+    resolves nowhere, and a declarer cannot be probed for it.
+    """
+    arms = []
+    for spec in re.findall(r"`((?:[^`\\]|\\.)+)`", searched_for(key)[len(SEARCHED_FOR):]):
+        spec = spec.replace("\\|", "|")
+        try:
+            REACH.resolve_site(spec)
+        except SystemExit:
+            continue
+        arms.append(spec)
+    return tuple(arms)
+
+
+def ledger_sites(key: str) -> tuple[str, ...]:
+    """Every handling site the committed ledger names for the row, reached or not."""
+    for _rank, reach in REACH.read_ledger():
+        if reach.key == key:
+            return tuple(spec for spec, _hit, _total in reach.sites)
+    fail(f"{key} is not in the ledger; check the key against docs/openapi-surface/golden-reach.tsv")
+    raise AssertionError
+
+
+def probe_arms(key: str) -> tuple[str, ...]:
+    """What a probe of `key` reads: the ledger's unreached sites, else the arm its record searched for.
+
+    Where a repair restructured that whole arm out of `src/`, the row's handling
+    sites as the ledger names them today stand in for it.
+    """
+    return ledger_unreached(key) or searched_arm(key) or ledger_sites(key)
+
+
 def unreached_sites(key: str) -> tuple[str, ...]:
     """The row's unreached handling sites in the committed ledger — the arm searched for."""
     sites = ledger_unreached(key)
@@ -356,6 +414,19 @@ def committed_bytes(path: Path) -> bytes:
     return subprocess.run([*git, "cat-file", "blob", fields[1]], capture_output=True, check=True).stdout
 
 
+def repeated_documents(listing: list[dict[str, str]]) -> set[str]:
+    """Document paths more than one walked tree pins: the publisher trees'
+    `openapi.yaml`, which three repositories each hold at their root."""
+    seen: Counter[str] = Counter(row["document"] for row in listing)
+    return {document for document, count in seen.items() if count > 1}
+
+
+def document_subject(row: dict[str, str], repeated: set[str]) -> str:
+    """A walked document's name in `records.tsv` and `probe.jsonl`: its path, or,
+    where another tree pins the same path, `<walk>:<path>` so each is one declarer."""
+    return f"{row['walk']}:{row['document']}" if row["document"] in repeated else row["document"]
+
+
 def pinned_listing(source: str) -> list[dict[str, str]]:
     """The source's committed pinned document listing: walk, document, revision, sha256.
 
@@ -392,8 +463,41 @@ def unreadable_reason(error: BaseException, document: str) -> str:
     return f"unreadable: {type(error).__name__}: {document}: {message}"
 
 
-def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ...]]) -> dict[str, str]:
-    path, sha256, document, keys = args
+class CensusTimeout(BaseException):
+    """A document the census did not finish within the walk's per-document limit.
+
+    A `BaseException`, so the census's own catch-all for a document it cannot
+    parse does not record the cut-off as a parse refusal.
+    """
+
+
+def _alarm(_signum: int, _frame: types.FrameType | None) -> None:
+    raise CensusTimeout
+
+
+def _census_one(args: tuple[str, str, str, tuple[tuple[str, tuple[str, ...]], ...], int]) -> dict[str, str]:
+    """One document's walk census, bounded by `timeout` seconds where the platform can.
+
+    A document whose census runs past the limit is recorded as unreadable with that
+    reason rather than holding up the walk: MongoDB's `v1-deprecated/v1.yaml` held
+    a vendor-portals worker for over two hours. Windows has no `SIGALRM`, so there the census is unbounded.
+    """
+    path, sha256, document, keys, timeout = args
+    alarm = getattr(signal, "SIGALRM", None)
+    if alarm is None:
+        return _census_body(path, sha256, document, keys)
+    previous = signal.signal(alarm, _alarm)
+    signal.alarm(timeout)
+    try:
+        return _census_body(path, sha256, document, keys)
+    except CensusTimeout:
+        return {"status": f"unreadable: census exceeded {timeout}s", "matched_keys": ""}
+    finally:
+        signal.alarm(0)
+        signal.signal(alarm, previous)
+
+
+def _census_body(path: str, sha256: str, document: str, keys: tuple[tuple[str, tuple[str, ...]], ...]) -> dict[str, str]:
     try:
         data = Path(path).read_bytes()
     except OSError as error:
@@ -483,13 +587,14 @@ def walk(args: argparse.Namespace) -> int:
         fail(f"{source} is not enumerable; `query` it instead")
     keys = tuple((key, selectors_of(key)) for key in args.key)
     listing = pinned_listing(source)
+    repeated = repeated_documents(listing)
     by_digest: dict[str, Path] = {}
     if source == "github-publisher-trees":
         for path in args.root.rglob("*"):
             if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
                 by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
     jobs = [
-        (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys)
+        (str(locate(source, args.root, row, by_digest)), row["sha256"], row["document"], keys, args.census_timeout)
         for row in listing
     ]
     if args.census:
@@ -526,7 +631,7 @@ def walk(args: argparse.Namespace) -> int:
                              "matched_keys": result["matched_keys"], "status": result["status"]})
             counts = json.loads(result.get("counts") or "{}")
             for key, count in counts.items():
-                records.append({"key": key, "kind": "document", "subject": row["document"],
+                records.append({"key": key, "kind": "document", "subject": document_subject(row, repeated),
                                 "result": f"census {count}", "file": out.name})
     listing_file = "pins.tsv" if source == "github-publisher-trees" else out.name
     for key, _selectors in keys:
@@ -778,8 +883,10 @@ def declarers(source: str, key: str, root: Path | None) -> list[tuple[str, Path]
             for path in root.rglob("*")
             if path.is_file() and path.suffix in (".json", ".yaml", ".yml")
         }
+        listing = pinned_listing(source)
+        repeated = repeated_documents(listing)
         by_document = {
-            row["document"]: by_digest.get(row["sha256"], root / "missing") for row in pinned_listing(source)
+            document_subject(row, repeated): by_digest.get(row["sha256"], root / "missing") for row in listing
         }
     for row in read_records(source):
         if row["key"] != key or row["kind"] != "document":
@@ -820,16 +927,37 @@ def measured_build() -> str:
 
 # llmlint: ignore[changed_behavior_has_e2e] A probe runs the instrumented `crozier` that `just golden-reach` builds, with `src/` at the measured commit, so like that measurement it stays outside `just check`; its stale-build refusal is tested, and the probe.jsonl it files is reconciled by `RankedBacklogTests`.
 def probe(args: argparse.Namespace) -> int:
+    """Run every requested key's declarers through the instrumented build, once per document.
+
+    A document is generated once per build however many keys it declares — the
+    catalogue rows declared by nearly every document (`recursive-graph` on any
+    `$ref`, `non-identifier-operation-id` on any `operationId`) would otherwise
+    multiply the run by the keys asked for — and every key reads its own sites off
+    that one profile. The run is cached by document digest per build under
+    `.local/golden-reach-search/probe-cache/`, so the copy of a document another
+    source walked is not generated twice either.
+    """
     build = measured_build()
     e2e, crozier = REACH._instrumented_binaries(REPO)
     del e2e
     profdata, llvm_cov = REACH._llvm_tool("llvm-profdata"), REACH._llvm_tool("llvm-cov")
     universe = REACH.load_regions(REACH.DEFAULT_OUT / "universe.json")
-    results = []
+    # Every unreached site the ledger names is read off each profile, so a cached
+    # run answers any key's arm and not only the keys this invocation asked for.
+    all_sites = sorted({spec for _rank, reach in REACH.read_ledger()
+                        for spec, hit, _total in reach.sites if not hit})
+    # A reached row's searched arm is read too; its profiles are cached apart,
+    # since a cached run of the ledger's sites alone never read those regions.
+    extra = sorted({spec for key in args.key for spec in probe_arms(key)} - set(all_sites))
+    tag = "." + hashlib.sha256("\n".join(extra).encode()).hexdigest()[:12] if extra else ""
+    all_sites += extra
+    regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
+               for spec in all_sites for site in [REACH.resolve_site(spec)]}
+    sources = sorted({str(REPO / file) for file, _found in regions.values()})
+    cache = load_probe_cache(build + tag)
+    plans: dict[str, tuple[tuple[str, ...], list[dict[str, Any]], list[tuple[str, Path]]]] = {}
     for key in args.key:
-        arms = unreached_sites(key)
-        regions = {spec: (site.file, {r for r in universe.get(site.file, ()) if site.holds(r)})
-                   for spec in arms for site in [REACH.resolve_site(spec)]}
+        arms = probe_arms(key)
         pending = declarers(args.source, key, args.root)
         earlier: list[dict[str, Any]] = []
         if args.resume:
@@ -841,62 +969,143 @@ def probe(args: argparse.Namespace) -> int:
             ]
             done = {row["candidate"] for row in earlier}
             pending = [(candidate, path) for candidate, path in pending if candidate not in done]
-            if not pending:
+        plans[key] = (arms, earlier, pending)
+
+    def digest_of(path: Path) -> str | None:
+        try:
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        except OSError:
+            return None
+
+    by_digest: dict[str, Path] = {}
+    digest_or_reason: dict[str, str] = {}
+    for _arms, _earlier, pending in plans.values():
+        for _candidate, path in pending:
+            key_path = str(path)
+            if key_path in digest_or_reason:
                 continue
-        # The export is read for the files the unreached sites sit in, and nothing else.
-        sources = sorted({str(REPO / file) for file, _found in regions.values()})
-        # Byte-identical documents (a catalogue's many copies of one version) run once.
-        seen: dict[str, tuple[str, list[str]]] = {}
-
-        def one(candidate_path: tuple[str, Path]) -> dict[str, Any]:
-            candidate, path = candidate_path
-            try:
-                digest = hashlib.sha256(path.read_bytes()).hexdigest()
-            except OSError as error:
-                return {"key": key, "candidate": candidate, "status": f"unreadable: {error.strerror}", "reached": []}
-            if digest in seen:
-                status, reached = seen[digest]
-                return {"key": key, "candidate": candidate, "status": status, "reached": reached, "build": build}
-            result = run_one(candidate, path)
-            seen[digest] = (result["status"], result["reached"])
-            return {**result, "build": build}
-
-        def run_one(candidate: str, path: Path) -> dict[str, Any]:
-            with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
-                scratch_path = Path(scratch)
-                env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
+            digest = digest_of(path)
+            if digest is None:
                 try:
-                    run = subprocess.run(
-                        [str(crozier), "generate", "--spec", str(path), "--output", str(scratch_path / "out"),
-                         "--package-name", "fern", "--project-name", "default_package_name"],
-                        capture_output=True, text=True, timeout=args.timeout, env=env,
-                    )
-                except subprocess.TimeoutExpired:
-                    return {"key": key, "candidate": candidate, "status": f"timeout after {args.timeout}s", "reached": []}
-                profiles = [str(p) for p in scratch_path.glob("*.profraw")]
-                if not profiles:
-                    return {"key": key, "candidate": candidate, "status": f"no profile (exit {run.returncode})", "reached": []}
-                merged = scratch_path / "merged.profdata"
-                REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
-                export = scratch_path / "export.json"
-                with export.open("w", encoding="utf-8") as sink:
-                    REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier),
-                                    *sources], stdout=sink)
-                tier = {"t": REACH.REPORT.load_tier(export, REPO)}
-                hit = {f: {tuple(r) for r, n in c.items() if n > 0} for f, c in tier["t"].items()}
-            reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
-            status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
-            return {"key": key, "candidate": candidate, "status": status, "reached": reached}
+                    path.read_bytes()
+                except OSError as error:
+                    digest_or_reason[key_path] = f"unreadable: {error.strerror}"
+                continue
+            digest_or_reason[key_path] = digest
+            by_digest.setdefault(digest, path)
+    todo = [digest for digest in by_digest if digest not in cache]
 
-        probed: list[dict[str, Any]] = []
-        with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-            for start in range(0, len(pending), PROBE_CHUNK):
-                probed.extend(pool.map(one, pending[start:start + PROBE_CHUNK]))
-                file_probes(args.source, key, earlier + probed)
-        results.extend(probed)
-    reaching = sum(1 for r in results if r["reached"])
-    print(f"golden-reach-search: {args.source}: probed {len(results)} declarer(s), {reaching} reach an unreached arm")
+    def rows_for(key: str) -> list[dict[str, Any]]:
+        arms, earlier, pending = plans[key]
+        rows = list(earlier)
+        for candidate, path in pending:
+            digest = digest_or_reason.get(str(path), "")
+            if digest.startswith("unreadable: "):
+                rows.append({"key": key, "candidate": candidate, "status": digest, "reached": []})
+            elif digest in cache:
+                result = cache[digest]
+                rows.append({"key": key, "candidate": candidate, "status": result["status"],
+                             "reached": [spec for spec in result["reached"] if spec in arms], "build": build})
+        return rows
+
+    tools = (str(crozier), str(profdata), str(llvm_cov), tuple(sources), args.timeout)
+    # One process per run: reading an export back is seconds of Python per
+    # document, which threads would serialize.
+    with ProcessPoolExecutor(max_workers=args.jobs) as pool:
+        for start in range(0, len(todo), PROBE_BATCH):
+            batch = [(digest, str(by_digest[digest]), tools, regions) for digest in todo[start:start + PROBE_BATCH]]
+            for digest, result in pool.map(_probe_one, batch):
+                cache[digest] = result
+                append_probe_cache(build + tag, digest, result)
+            file_probes_many(args.source, {key: rows_for(key) for key in plans})
+    file_probes_many(args.source, {key: rows_for(key) for key in plans})
+    reaching = sum(1 for key in plans for row in rows_for(key) if row["reached"])
+    print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
+          f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
     return 0
+
+
+def _probe_one(
+    job: tuple[str, str, tuple[str, str, str, tuple[str, ...], int], dict[str, tuple[str, set[tuple[int, ...]]]]],
+) -> tuple[str, dict[str, Any]]:
+    """One document's instrumented `crozier generate`: the unreached sites it executes."""
+    digest, path, (crozier, profdata, llvm_cov, sources, timeout), regions = job
+    with tempfile.TemporaryDirectory(prefix="golden-reach-probe-") as scratch:
+        scratch_path = Path(scratch)
+        env = dict(os.environ, LLVM_PROFILE_FILE=str(scratch_path / "%p-%m.profraw"))
+        try:
+            run = subprocess.run(
+                [crozier, "generate", "--spec", path, "--output", str(scratch_path / "out"),
+                 "--package-name", "fern", "--project-name", "default_package_name"],
+                capture_output=True, text=True, timeout=timeout, env=env,
+            )
+        except subprocess.TimeoutExpired:
+            return digest, {"status": f"timeout after {timeout}s", "reached": []}
+        profiles = [str(p) for p in scratch_path.glob("*.profraw")]
+        if not profiles:
+            return digest, {"status": f"no profile (exit {run.returncode})", "reached": []}
+        merged = scratch_path / "merged.profdata"
+        REACH.run_llvm([profdata, "merge", "-sparse", *profiles, "-o", str(merged)])
+        export = scratch_path / "export.json"
+        with export.open("w", encoding="utf-8") as sink:
+            REACH.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", crozier,
+                            *sources], stdout=sink)
+        hit = executed_regions(export, {file for file, _found in regions.values()})
+    reached = sorted(spec for spec, (file, found) in regions.items() if found & hit.get(file, set()))
+    status = "generated" if run.returncode == 0 else f"exit {run.returncode}: {run.stderr.strip()[-160:]}"
+    return digest, {"status": status, "reached": reached}
+
+
+def executed_regions(export: Path, files: set[str]) -> dict[str, set[tuple[int, int, int, int]]]:
+    """The code regions of `files` a coverage export counts as executed.
+
+    What `load_tier` reads, kept to the files a site sits in and to a positive
+    count: a region is executed when any object file's copy of it ran, so the
+    maximum `load_tier` takes is positive exactly when some copy's count is.
+    """
+    report = REACH.REPORT
+    document = json.loads(export.read_text(encoding="utf-8"))
+    root = str(REPO) + "/"
+    hit: dict[str, set[tuple[int, int, int, int]]] = defaultdict(set)
+    for data in document.get("data", []):
+        for function in data.get("functions", []):
+            names = [name[len(root):] if name.startswith(root) else None
+                     for name in function.get("filenames", [])]
+            for raw in function.get("regions", []):
+                if raw[4] <= 0 or raw[report.REGION_KIND_INDEX] != report.REGION_CODE_KIND:
+                    continue
+                name = names[raw[report.REGION_FILE_INDEX]]
+                if name in files:
+                    hit[name].add((raw[0], raw[1], raw[2], raw[3]))
+    return dict(hit)
+
+
+def probe_cache_path(build: str) -> Path:
+    return CACHE / "probe-cache" / f"{build}.jsonl"
+
+
+def load_probe_cache(build: str) -> dict[str, dict[str, Any]]:
+    """One build's runs so far, by document digest; a torn last line is dropped."""
+    path = probe_cache_path(build)
+    if not path.is_file():
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and isinstance(row.get("digest"), str):
+            out[row["digest"]] = {"status": row.get("status", ""), "reached": list(row.get("reached", []))}
+    return out
+
+
+def append_probe_cache(build: str, digest: str, result: dict[str, Any]) -> None:
+    path = probe_cache_path(build)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with exclusive_lock(CACHE / "probe-cache.lock"):
+        with path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({"digest": digest, **result}, sort_keys=True) + "\n")
 
 
 def read_probes(source: str) -> list[dict[str, Any]]:
@@ -952,6 +1161,16 @@ def exclusive_lock(path: Path) -> Iterator[None]:
         marker.unlink()
 
 
+def file_probes_many(source: str, probed: dict[str, list[dict[str, Any]]]) -> None:
+    """Several keys' probe results into `probe.jsonl` in one write, each replacing its key's rows."""
+    path = source_dir(source) / "probe.jsonl"
+    CACHE.mkdir(parents=True, exist_ok=True)
+    with exclusive_lock(CACHE / f"{source}.probe.lock"):
+        kept = [row for row in read_probes(source) if row["key"] not in probed]
+        rows = kept + [row for key in probed for row in probed[key]]
+        path.write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in rows), encoding="utf-8")
+
+
 def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
     """One key's probe results into `probe.jsonl`.
 
@@ -971,10 +1190,32 @@ def file_probes(source: str, key: str, probed: list[dict[str, Any]]) -> None:
 
 
 
+# The measured reason a candidate passing every screen is still no witness: a
+# document written to exercise a tool is hand-written, and only a real
+# specification is evidence that Fern generates from a shape (the manager's
+# ruling on thin-goldens-continue-2). What follows it names what makes it one.
+FIXTURE_DECLINE = "not a real-world specification: a test fixture written to exercise a tool"
+
+
+def fixture_declined(key: str, source: str) -> set[str]:
+    """The candidates of one key's search whose latest screen declines them as a test fixture."""
+    screens = source_dir(source) / "screens.jsonl"
+    if not screens.is_file():
+        return set()
+    latest: dict[str, dict[str, Any]] = {}
+    for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
+        if row["key"] == key:
+            latest[row["candidate"]] = row
+    return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(FIXTURE_DECLINE)}
+
+
 def screen(args: argparse.Namespace) -> int:
     """File one candidate's three screens, each with the evidence it rests on."""
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
+    if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE):].startswith(" — "):
+        fail(f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
+             "path at its pinned commit, and the test or fixtures directory it sits in or the test that loads it")
     for outcome in (args.licence, args.ref, args.fern):
         if outcome != "passed" and not outcome.startswith("failed: "):
             fail(f"a screen reads `passed` or `failed: <reason>`, not {outcome!r}")
@@ -1011,8 +1252,12 @@ def _cell(text: str) -> str:
     return text.replace("|", "\\|")
 
 
-def _dispositions(key: str) -> list[str]:
-    """What became of a candidate that passes every screen: registered, handed off, or declined."""
+def _dispositions(key: str, build: str) -> list[str]:
+    """What became of a candidate that passes every screen: registered, handed off, or declined.
+
+    A decline filed while an earlier build's probe reached the arm is kept as it
+    was filed, under the build's own reading: that candidate reaches nothing now.
+    """
     out: list[str] = []
     handoff = EVIDENCE / "handoff.tsv"
     if handoff.is_file():
@@ -1032,23 +1277,71 @@ def _dispositions(key: str) -> list[str]:
         for candidate, row in sorted(latest.items()):
             if row.get("registered"):
                 out.append(f"- **Registered** (`{source}`): `{candidate}` — {row['registered']}")
-            if row.get("declined"):
+            if row.get("declined") and candidate not in _reaching(key, source, build):
+                out.append(f"- **No longer a candidate** (`{source}`): `{candidate}` — its probe of build "
+                           f"`{build}` executes no unreached site; declined when screened: {row['declined']}")
+            elif row.get("declined"):
                 out.append(f"- **Declined** (`{source}`): `{candidate}` — {row['declined']}")
     return ["", "#### Candidates passing every screen", ""] + out if out else []
 
 
-def _unreadable(key: str, source: str) -> list[tuple[str, str]]:
-    """Documents of one source the census could not read, each with the reason it gave."""
+def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
+    """Documents of one source the census could not read: name, reason, and digest where known."""
     enumeration = source_dir(source) / "enumeration.tsv.gz"
     if source in WALKS and enumeration.is_file():
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            return [(row["document"], row["status"])
+            return [(row["document"], row["status"], row["sha256"])
                     for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
                     if row["status"] != "readable"]
-    return [(r["subject"], r["result"]) for r in read_records(source)
+    return [(r["subject"], r["result"], "") for r in read_records(source)
             if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
+
+
+def read_refused(source: str) -> dict[str, dict[str, str]]:
+    """One source's census-refused documents by name, as `refuse` filed them."""
+    path = source_dir(source) / REFUSED_FILE
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != REFUSED_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(REFUSED_FIELDS)}; restore it from git "
+                 f"or re-run `refuse --source {source}`")
+        rows = list(reader)
+    for row in rows:
+        if row["verdict"] not in REFUSED_VERDICTS or not re.fullmatch(r"[0-9a-f]{64}", row["sha256"]):
+            fail(f"{path}: `{row['document']}` is not a {'/'.join(REFUSED_VERDICTS)} verdict over a SHA-256; "
+                 f"re-run `refuse --source {source}`")
+    return {row["document"]: row for row in rows}
+
+
+def _refused_split(key: str, source: str) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    """One source's unread documents, split into the census-refused and the still unreadable.
+
+    A walked document is refused only at the digest its parser read; a query
+    source's names its commit, so its name is the identity.
+    """
+    refused_rows = read_refused(source)
+    refused, unreadable = [], []
+    for document, reason, sha256 in _unread(key, source):
+        row = refused_rows.get(document)
+        if row is not None and (not sha256 or row["sha256"] == sha256):
+            refused.append((document, f"census-refused: {row['verdict']}"))
+        else:
+            unreadable.append((document, reason))
+    return refused, unreadable
+
+
+def _unreadable(key: str, source: str) -> list[tuple[str, str]]:
+    """Documents of one source the census could not read and no full parser refused."""
+    return _refused_split(key, source)[1]
+
+
+def _refused(key: str, source: str) -> list[tuple[str, str]]:
+    """Documents of one source a full standard parser refused; none of them is outstanding."""
+    return _refused_split(key, source)[0]
 
 
 def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]]:
@@ -1056,7 +1349,7 @@ def outstanding_items(key: str, source: str, build: str) -> list[tuple[str, str]
 
     Exactly the items [`_outstanding`] counts: a declarer with no probe of
     `build`, one whose probe timed out or left no profile, and every document
-    the census could not read.
+    the census could not read that no full standard parser refused.
     """
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
@@ -1074,21 +1367,25 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     records = [r for r in read_records(source) if r["key"] == key]
     declarers = {r["subject"] for r in records if r["kind"] == "document" and r["result"].startswith("census ")
                  and r["result"] != "census 0"}
-    unread = len(_unreadable(key, source))
+    refused, unreadable = _refused_split(key, source)
     # Only a probe of the measured build counts; one run while `src/` differed from
     # it read another arm's regions (see [`measured_build`]) and says nothing.
     probes = {row["candidate"]: row for row in read_probes(source)
               if row["key"] == key and row.get("build") == build}
     screened = {r["subject"].rsplit(" ", 1)[0] for r in records if r["kind"] == "screen"}
     reaching = {c for c, row in probes.items() if row["reached"]}
+    # A candidate is a declarer this build's probe finds reaching the arm; one
+    # screened after an earlier build's probe that no longer reaches it holds
+    # nothing open, however its screens read.
     passing = {
-        candidate for candidate in screened
+        candidate for candidate in (screened & reaching) - fixture_declined(key, source)
         if all(r["result"] == "passed" for r in records
                if r["kind"] == "screen" and r["subject"].rsplit(" ", 1)[0] == candidate)
     }
     return {
         "declarers": len(declarers),
-        "unreadable": unread,
+        "unreadable": len(unreadable),
+        "refused": len(refused),
         "probed": len(declarers & set(probes)),
         "timeouts": sum(1 for c in declarers if probes.get(c, {}).get("status", "").startswith("timeout")),
         "failed": sum(1 for c in declarers if probes.get(c, {}).get("status", "generated") not in ("generated",)
@@ -1100,6 +1397,12 @@ def _tally(key: str, source: str, build: str) -> dict[str, int]:
     }
 
 
+def _reaching(key: str, source: str, build: str) -> set[str]:
+    """The declarers of one source whose probe of `build` executes an unreached site."""
+    return {row["candidate"] for row in read_probes(source)
+            if row["key"] == key and row.get("build") == build and row["reached"]}
+
+
 def _outstanding(tally: dict[str, int]) -> int:
     """Declarers the arm may still be in: unprobed, timed out, unprofiled, or unreadable."""
     return (tally["declarers"] - tally["probed"] + tally["timeouts"] + tally["unprofiled"]
@@ -1107,13 +1410,17 @@ def _outstanding(tally: dict[str, int]) -> int:
 
 
 def src_commits_since(build: str) -> list[str]:
-    """Commits touching `src/` after the measured build, newest first."""
-    run = subprocess.run(["git", "log", "--format=%h", f"{build}..HEAD", "--", "src/"],
+    """Commits touching `src/` after the measured build, newest first, each cut to eight characters.
+
+    Not `%h`: git lengthens that abbreviation as the object store grows, so the
+    same history would render differently in a clone that has fetched more.
+    """
+    run = subprocess.run(["git", "log", "--format=%H", f"{build}..HEAD", "--", "src/"],
                          cwd=REPO, capture_output=True, text=True)
     if run.returncode != 0:
         fail(f"cannot read src/'s history since {build}: {run.stderr.strip()} — "
              "fetch that commit, or re-run `just golden-reach` on this checkout")
-    return run.stdout.split()
+    return [commit[:8] for commit in run.stdout.split()]
 
 
 def _outcome(tallies: dict[str, dict[str, int]], src_moved: bool = False) -> str:
@@ -1170,11 +1477,13 @@ def render(args: argparse.Namespace) -> int:
     build = probed_build(args.build) if args.build else _current_build()
     ledger = "was measured on when these probes ran" if args.build else "is measured on"
     for key in args.key:
-        header = searched_for(key) if args.build else (
+        reached = not ledger_unreached(key)
+        header = searched_for(key) if args.build or reached else (
             SEARCHED_FOR + ", ".join(f"`{_cell(s)}`" for s in unreached_sites(key)) + ".")
         tallies = {source: _tally(key, source, build) for source in DECLARED_SOURCES}
         moved = src_commits_since(build)
-        outcome = _outcome(tallies, bool(moved)) if args.outcome == "auto" else args.outcome
+        outcome = args.outcome if args.outcome != "auto" else (
+            "witness-found" if reached and not args.build else _outcome(tallies, bool(moved)))
         lines = [
             f"# Arm search: `{key}`",
             "",
@@ -1189,20 +1498,41 @@ def render(args: argparse.Namespace) -> int:
             "with `src/` at that commit; a declarer with no such probe is unprobed and",
             "outstanding, and a re-probe needs `src/` at that commit (or a fresh",
             "`just golden-reach`). Probes run before that rule was enforced read shifted",
-            "spans and are not counted. The outcome is this search's own reading;",
-            "final reconciliation decides whether the arm's search reads `exhausted`.",
+            "spans and are not counted. The `outcome` column is this arm's search",
+            "verdict: `exhausted` when nothing is outstanding, every declarer reaching",
+            "the arm is screened, and none that passes every screen is left",
+            "unregistered; `search-incomplete` otherwise.",
             "",
             "### Witness search (exhaustive)",
             "",
             "| key | source | outcome | queries | walk | candidates | screens |",
             "|---|---|---|---|---|---|---|",
         ]
-        if args.build and not ledger_unreached(key):
+        if reached and args.build:
             table = lines.index("### Witness search (exhaustive)")
             lines[table:table] = [
                 "The arm this search looked for is now reached: a witness registered since",
                 "reaches every handling site the ledger names for the row. The tables",
                 "below record the search as it stood when the arm was still open.",
+                "",
+            ]
+        elif reached:
+            arms = probe_arms(key)
+            gone = [s for s in searched_for(key)[len(SEARCHED_FOR):].split("`, `") if s.strip("`.")
+                    and s.strip("`.").replace("\\|", "|") not in arms]
+            table = lines.index("### Witness search (exhaustive)")
+            lines[table:table] = [
+                "The arm this search looked for is now reached, so the search reads",
+                "`witness-found`: a witness registered since reaches every handling site the",
+                "ledger names for the row. Its declarers are still probed on the counted build,",
+                "against the arm as it resolves in today's `src/`, so none is left unprobed."
+                + (" A site a later repair restructured out of `src/` resolves nowhere: "
+                   + ", ".join(f"`{s.strip('`.')}`" for s in gone) + (
+                       ". The declarers are probed against the arm's remaining sites."
+                       if len(gone) < len(searched_for(key)[len(SEARCHED_FOR):].split("`, `")) else
+                       ". The declarers are probed against the row's handling sites as the ledger "
+                       "names them today: " + ", ".join(f"`{_cell(a)}`" for a in arms) + ".")
+                   if gone else ""),
                 "",
             ]
         for source in DECLARED_SOURCES:
@@ -1235,7 +1565,12 @@ def render(args: argparse.Namespace) -> int:
             "did not finish (a timeout), and one crozier failed on without a profile are",
             "outstanding: the arm may be in them, and nothing here says otherwise.",
             "`outstanding` sums the unprobed, the timed out, the failed without a profile",
-            "and the unreadable.",
+            "and the unreadable. A document the census could not read that a full",
+            "standard parser rejects on syntax, or reads as no OpenAPI or Swagger",
+            "description, is `census-refused` instead: listed with that parser's",
+            "error, its version and the document's digest in the source's",
+            f"`{REFUSED_FILE}`, it is not outstanding, and it never settles a",
+            "search on its own.",
         ]
         if moved:
             lines += [
@@ -1246,14 +1581,27 @@ def render(args: argparse.Namespace) -> int:
             ]
         lines += [
             "",
-            "| source | declarers | unreadable | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |",
-            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
+            "| source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed "
+            "| reach an arm | screened | outstanding |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ] + [
-            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['probed']} | {t['declarers'] - t['probed']} "
+            f"| `{source}` | {t['declarers']} | {t['unreadable']} | {t['refused']} | {t['probed']} "
+            f"| {t['declarers'] - t['probed']} "
             f"| {t['timeouts']} | {t['failed']} | {t['reaching']} | {t['screened']} | {_outstanding(t)} |"
             for source, t in tallies.items()
         ]
-        lines += _dispositions(key)
+        fixtures = sum(len(fixture_declined(key, source) & _reaching(key, source, build))
+                       for source in DECLARED_SOURCES)
+        if outcome == "exhausted" and ledger_unreached(key):
+            lines += [
+                "",
+                f"**Verdict: `exhausted`.** No real-world document in the six declared sources "
+                "both declares this row and reaches the arm while passing every screen, so the "
+                "arm has no real witness and stays open."
+                + (f" The {fixtures} test fixture(s) that do reach it are hand-written, not "
+                   "specifications, and settle nothing." if fixtures else ""),
+            ]
+        lines += _dispositions(key, build)
         path = EVIDENCE / "searches" / f"{key}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -1301,6 +1649,580 @@ def outstanding(args: argparse.Namespace) -> int:
     return 0
 
 
+YAML_LOADER = f"ruamel.yaml {RUAMEL_YAML_PIN} (YAML 1.2)"
+
+
+def _ruamel_yaml() -> ModuleType:
+    """ruamel.yaml at the pinned version, or a refusal naming how to run with it."""
+    try:
+        import ruamel.yaml
+    except ModuleNotFoundError:
+        fail(f"this stage reads YAML with ruamel.yaml {RUAMEL_YAML_PIN}, a full YAML 1.2 parser; run it as "
+             "`uv run scripts/golden-reach-search.py ...`, whose inline metadata pins it")
+    if ruamel.yaml.__version__ != RUAMEL_YAML_PIN:
+        fail(f"ruamel.yaml {ruamel.yaml.__version__} is installed, not the pinned {RUAMEL_YAML_PIN}; "
+             "run through `uv run scripts/golden-reach-search.py ...`")
+    return ruamel.yaml
+
+
+def yaml_stream(data: bytes) -> list[Any]:
+    """Every document of a YAML stream as the pinned ruamel.yaml reads it.
+
+    A timestamp stays the text it is written as, which is how the census's own
+    loader reads one, so a census over this reading counts the same example
+    shapes the stdlib loader's would.
+    """
+    ruamel_yaml = _ruamel_yaml()
+
+    class TextTimestamps(ruamel_yaml.constructor.SafeConstructor):
+        pass
+
+    TextTimestamps.add_constructor("tag:yaml.org,2002:timestamp", ruamel_yaml.constructor.SafeConstructor.construct_yaml_str)
+    reader = ruamel_yaml.YAML(typ="safe", pure=True)
+    reader.Constructor = TextTimestamps
+    return list(reader.load_all(data))
+
+
+def _names_a_version(document: Any) -> bool:
+    return isinstance(document, dict) and ("openapi" in document or "swagger" in document)
+
+
+def fallback_reading(path: Path, data: bytes) -> tuple[Any, str] | None:
+    """The description the pinned YAML parser reads where the census's stdlib loader cannot.
+
+    Only for a YAML document the stdlib loader refuses: `(document, loader)`
+    when the stream holds exactly one document naming an OpenAPI or Swagger
+    version (a Jekyll page's front matter ahead of it included), `None` when the
+    stdlib loader reads it or the full parser finds no one description in it.
+    """
+    if path.suffix == ".json":
+        return None
+    try:
+        CENSUS.load_document(path)
+        return None
+    except Exception:  # the census's own refusal, whatever its type
+        pass
+    try:
+        stream = yaml_stream(data)
+    except Exception:  # a syntax rejection: `refuse`'s to file, not a reading
+        return None
+    described = [(index, document) for index, document in enumerate(stream, start=1)
+                 if _names_a_version(document)]
+    if len(described) != 1:
+        return None
+    index, document = described[0]
+    where = "" if len(stream) == 1 else f", document {index} of {len(stream)}"
+    return document, YAML_LOADER + where
+
+
+def parse_verdict(path: Path, data: bytes) -> tuple[str, str, str] | None:
+    """A full standard parser's reading of a document the census could not read.
+
+    `(parser, verdict, evidence)` when the parser rejects it on syntax, or reads it
+    as no OpenAPI or Swagger description; `None` when it reads a description, so
+    the census alone failed on it and it stays outstanding. JSON is read with
+    Python's `json` module and YAML with ruamel.yaml, a full YAML 1.2 parser.
+    """
+    if path.suffix == ".json":
+        parser = f"python json {sys.version.split()[0]}"
+        try:
+            parsed = json.loads(data)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
+    else:
+        parser = YAML_LOADER
+        try:
+            # A stream of several documents is YAML all the same; read it whole.
+            stream = yaml_stream(data)
+        except Exception as error:  # ruamel's parse errors share no base class it exports
+            return parser, "syntax", _one_line(f"{type(error).__name__}: {error}")
+        if len(stream) != 1:
+            if any(_names_a_version(d) for d in stream):
+                return None
+            return parser, "not-openapi", (f"parses as a stream of {len(stream)} YAML documents, none naming an "
+                                           "`openapi` or `swagger` version")
+        parsed = stream[0]
+    if _names_a_version(parsed):
+        return None
+    shape = (f"top-level keys {sorted(str(k) for k in parsed)[:12]}" if isinstance(parsed, dict)
+             else f"top level is a {type(parsed).__name__}")
+    return parser, "not-openapi", f"parses, but names no `openapi` or `swagger` version: {shape}"
+
+
+def _one_line(text: str) -> str:
+    """A parser's message as one TSV cell: whitespace runs, newlines and tabs included, are one space."""
+    return " ".join(text.split())
+
+
+def local_copies(
+    source: str, root: Path | None, fetch: bool, every: bool = False, timed_out: bool = False
+) -> dict[str, tuple[Path, str]]:
+    """Local copies of one source's documents to read again, each with its pinned digest.
+
+    By default these are the documents the census could not read: a walk's
+    unreadable enumeration rows (a census cut off by time is not a reading to
+    settle), and a query source's parse failures and census refusals, each at
+    the cached copy `candidates.jsonl` names. With `every`, a query source's
+    every fetched document is returned, read or not, so a census can be taken
+    over each again; with `timed_out`, a walked document whose census was cut
+    off by time is too. With `fetch`, a query-source copy this checkout's cache
+    lacks is fetched at its commit through the acquirer's exact-commit raw
+    route, and kept only if it is the candidate's blob (or, where the candidate
+    names no blob, its digest).
+    """
+    unread: dict[str, tuple[Path, str]] = {}
+    if source in WALKS:
+        if root is None:
+            fail(f"{source} is a walk; pass --root with its local copy")
+        by_digest: dict[str, Path] = {}
+        if source == "github-publisher-trees":
+            for path in root.rglob("*"):
+                if path.is_file() and path.suffix in (".json", ".yaml", ".yml"):
+                    by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
+        enumeration = source_dir(source) / "enumeration.tsv.gz"
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
+                cut_off = row["status"].startswith("unreadable: census exceeded")
+                if row["status"] != "readable" and (timed_out or not cut_off):
+                    unread[row["document"]] = (locate(source, root, row, by_digest), row["sha256"])
+        return unread
+    fetched: dict[str, dict[str, Any]] = {}
+    ledger = source_dir(source) / "candidates.jsonl"
+    if ledger.is_file():
+        for row in read_jsonl(ledger, ("repository", "path", "commit"), "restore it from git"):
+            if row.get("document"):
+                fetched.setdefault(f"{row['repository']}:{row['path']}@{row['commit']}", row)
+    acquirer = None
+    index = candidate_index(source)
+    for record in read_records(source):
+        if record["kind"] != "document":
+            continue
+        if not (every and record["result"].startswith("census ")) and not record["result"].startswith(
+                ("acquisition-failure: parse-failure", "unreadable: ")):
+            continue
+        row = fetched.get(record["subject"])
+        if row is None:
+            unread[record["subject"]] = (CACHE / source / "missing", "")
+            continue
+        local = CACHE / source / "documents" / row["document"]
+        if fetch and not local.is_file() and (row.get("blob") or row.get("sha256")):
+            if acquirer is None:
+                github = _load("witness_search_github", REPO / "scripts" / "witness-search-github.py")
+                acquirer = github.Acquirer(source_dir(source), cache=CACHE / source, **ACQUIRER_OPTIONS)
+            repository = row["repository"].removeprefix("github.com/")
+            url = f"{acquirer.raw_github_url}/{repository}/{row['commit']}/{urllib.parse.quote(row['path'])}"
+            status, data = acquirer.raw_github_get(url, "*", f"{repository}:{row['path']}")
+            # Sourcegraph names no blob; its candidate's recorded digest pins the bytes instead.
+            pinned = git_blob(data) == row["blob"] if row.get("blob") else hashlib.sha256(data).hexdigest() == row["sha256"]
+            if status == 200 and pinned:
+                local.parent.mkdir(parents=True, exist_ok=True)
+                local.write_bytes(data)
+        if local.is_file():
+            index[record["subject"]] = row["document"]
+        unread[record["subject"]] = (local, row.get("sha256") or Path(row["document"]).stem.split(".")[0])
+    if fetch:
+        path = CACHE / source / "candidate-documents.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(index, sort_keys=True, indent=0), encoding="utf-8")
+        if acquirer is not None:
+            record_guard_logs(source)
+    return unread
+
+
+def read_fallback(source: str) -> dict[str, dict[str, str]]:
+    """One source's documents the census read through the pinned YAML parser, by name."""
+    path = source_dir(source) / FALLBACK_FILE
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(reader.fieldnames or ()) != FALLBACK_FIELDS:
+            fail(f"{path} has header {reader.fieldnames}, not {list(FALLBACK_FIELDS)}; restore it from git "
+                 f"or re-run `recensus --source {source}`")
+        return {row["document"]: row for row in reader}
+
+
+def recensus(args: argparse.Namespace) -> int:
+    """Count again each unread document, through the pinned YAML parser where the stdlib census refuses it.
+
+    A walk's unread documents, and a query source's every fetched one, are read
+    with the census's stdlib loader first; only a YAML document it refuses and
+    ruamel.yaml reads as one description is read through ruamel.yaml. The
+    census's own object-model walk counts either reading, and a document it
+    reads leaves the unread list as any read one would — a walk's enumeration
+    row reads `readable` with the keys it declares, and a query source's record
+    its `census N`. Each document read through ruamel.yaml is named with that
+    loader in the source's `census-fallback.tsv`. A document the full parser
+    also refuses is `refuse`'s to file.
+    """
+    source = args.source
+    # A query source's census was taken when each document was fetched, so a
+    # loader repair since reaches it only by counting every cached copy again.
+    copies = local_copies(source, args.root, fetch=True, every=source not in WALKS, timed_out=True)
+    refused = read_refused(source)
+    readings: dict[str, tuple[dict[str, int], Any, str, str]] = {}
+    for document, (local, sha256) in sorted(copies.items()):
+        if document in refused or not local.is_file():
+            continue
+        data = local.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if sha256 and digest != sha256:
+            continue
+        try:
+            parsed, loader = CENSUS.load_document(local), ""
+        except Exception:  # the census's own refusal, whatever its type
+            reading = fallback_reading(local, data)
+            if reading is None:
+                continue
+            parsed, loader = reading
+        if not isinstance(parsed, dict):
+            continue
+        try:
+            counts = CENSUS.census_document(parsed, root_path=local) if str(parsed.get("openapi", "")).startswith("3") else {}
+        except Exception:  # the census's walk refused this reading too: it stays outstanding
+            continue
+        readings[document] = (counts, parsed, loader, digest)
+
+    def count(key: str, counts: dict[str, int], parsed: Any) -> int:
+        if key in PREDICATE_ROWS:
+            return PREDICATE_ROWS[key][1](parsed) if str(parsed.get("openapi", "")).startswith("3") else 0
+        return declared(counts, selectors_of(key))
+
+    records = read_records(source)
+    if source in WALKS:
+        walked = sorted({r["key"] for r in records if r["kind"] == "walk"})
+        repeated = repeated_documents(pinned_listing(source))
+        enumeration = source_dir(source) / "enumeration.tsv.gz"
+        # Read in the dialect `walk` writes, so a status the walk quoted round-trips.
+        with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
+            rows = list(csv.DictReader(handle, delimiter="\t"))
+        added: list[dict[str, str]] = []
+        for row in rows:
+            if row["document"] not in readings:
+                continue
+            counts, parsed, _loader, _digest = readings[row["document"]]
+            found = {key: n for key in walked for n in [count(key, counts, parsed)] if n}
+            row["status"], row["matched_keys"] = "readable", ",".join(found)
+            added += [{"key": key, "kind": "document", "subject": document_subject(row, repeated),
+                       "result": f"census {n}", "file": enumeration.name} for key, n in found.items()]
+        with gzip.open(enumeration, "wt", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, WALK_FIELDS, delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+        replace_records(source, records + added)
+    else:
+        for record in records:
+            if record["kind"] == "document" and record["subject"] in readings:
+                counts, parsed, _loader, _digest = readings[record["subject"]]
+                record["result"] = f"census {count(record['key'], counts, parsed)}"
+        replace_records(source, records)
+    filed = {document: row for document, row in read_fallback(source).items() if document not in readings}
+    filed.update({document: {"document": document, "sha256": digest, "loader": loader}
+                  for document, (_counts, _parsed, loader, digest) in readings.items() if loader})
+    with (source_dir(source) / FALLBACK_FILE).open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, FALLBACK_FIELDS, delimiter="\t", lineterminator="\n",
+                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer.writeheader()
+        writer.writerows(filed[document] for document in sorted(filed))
+    fallback = sum(1 for _counts, _parsed, loader, _digest in readings.values() if loader)
+    print(f"golden-reach-search: {source}: {len(readings)} of {len(copies)} documents counted, "
+          f"{fallback} through {YAML_LOADER}")
+    return 0
+
+
+def refuse(args: argparse.Namespace) -> int:
+    """File which of a source's unread documents a full standard parser refuses.
+
+    Reads every document the census could not read — a walk's unreadable
+    enumeration rows, a query source's parse failures and census refusals — at
+    its pinned digest and writes the refused ones to the source's
+    `census-refused.tsv`. A document the parser reads as a description is left
+    out: the census alone failed on it, and it stays outstanding.
+    """
+    source = args.source
+    unread = local_copies(source, args.root, fetch=False)
+    rows, kept = [], 0
+    for document, (local, sha256) in sorted(unread.items()):
+        if not local.is_file():
+            continue
+        data = local.read_bytes()
+        if hashlib.sha256(data).hexdigest() != sha256:
+            continue
+        verdict = parse_verdict(local, data)
+        if verdict is None:
+            kept += 1
+            continue
+        parser, kind, evidence = verdict
+        rows.append({"document": document, "sha256": sha256, "parser": parser, "verdict": kind,
+                     "evidence": evidence})
+    with (source_dir(source) / REFUSED_FILE).open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, REFUSED_FIELDS, delimiter="\t", lineterminator="\n",
+                                quoting=csv.QUOTE_NONE, quotechar=None)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"golden-reach-search: {source}: {len(unread)} unread, {len(rows)} census-refused, "
+          f"{kept} read by the full parser (still outstanding), {len(unread) - len(rows) - kept} without local bytes")
+    return 0
+
+RESCREEN_FILE = "fern-rescreen.jsonl"
+RESCREEN_CACHE = "fern-rescreen-cache.jsonl"
+
+
+def corpus_fern_pins() -> tuple[str, str, str, dict[str, Any]]:
+    """The Fern CLI, generator, generator version and config the registered goldens were generated at.
+
+    Read off each golden's own `.fern/metadata.json`, the corpus's provenance, so
+    a screen is taken at the corpus's pins without restating them; the pair most
+    goldens record is the pin (a synthetic fixture may record another).
+    """
+    counts: Counter[str] = Counter()
+    for path in sorted((REPO / "tests" / "fixtures").glob("*/expected/.fern/metadata.json")):
+        meta = json.loads(path.read_text(encoding="utf-8"))
+        counts[json.dumps([meta.get("cliVersion"), meta.get("generatorName"), meta.get("generatorVersion"),
+                           meta.get("generatorConfig")], sort_keys=True)] += 1
+    if not counts:
+        fail("no golden records its Fern pins in tests/fixtures/*/expected/.fern/metadata.json; "
+             "restore the corpus goldens from git")
+    cli, name, version, config = json.loads(counts.most_common(1)[0][0])
+    return cli, name, version, config
+
+
+def _yaml_block(value: Any, indent: int) -> list[str]:
+    """A generator config mapping as the block YAML generate-fern-fixture.sh writes."""
+    lines = []
+    for key, item in value.items():
+        if isinstance(item, dict):
+            lines += [" " * indent + f"{key}:"] + _yaml_block(item, indent + 2)
+        else:
+            lines.append(" " * indent + f"{key}: {item}")
+    return lines
+
+
+def fern_workspace_files() -> tuple[str, str]:
+    """`fern.config.json` and `generators.yml` as generate-fern-fixture.sh scaffolds them for a document.
+
+    Its install into `tests/fixtures/` is left out: a screen reads Fern's verdict
+    and never writes a golden. `tests/golden_reach_test.py` holds the YAML to
+    that script's own heredoc.
+    """
+    cli, name, version, config = corpus_fern_pins()
+    generators = [
+        "api:", "  path: openapi/openapi.yml", "groups:", "  python-sdk:", "    generators:",
+        f"      - name: {name}", f"        version: {version}", "        config:",
+        *_yaml_block(config, 10),
+        "        output:", "          location: local-file-system", "          path: ../generated/python",
+    ]
+    return json.dumps({"organization": "fern", "version": cli}) + "\n", "\n".join(generators) + "\n"
+
+
+def fern_label() -> str:
+    cli, _name, version, _config = corpus_fern_pins()
+    return f"Fern CLI {cli} / python-sdk {version}"
+
+
+UNPARSED = re.compile(r"Unexpected error|Failed to (resolve|parse)", re.I)
+
+
+def _fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
+    """One Fern command in a scratch workspace: its exit status (or `timeout`) and its output."""
+    env = dict(os.environ, FERN_TOKEN=os.environ.get("FERN_TOKEN", "preview-only-no-publish"),
+               CI="true", GITHUB_ACTIONS="true")
+    try:
+        run = subprocess.run(command, cwd=workspace, env=env, capture_output=True, text=True,
+                             errors="replace", timeout=timeout)
+    except subprocess.TimeoutExpired as expired:
+        out = expired.stdout or ""
+        return "timeout", out if isinstance(out, str) else out.decode("utf-8", "replace")
+    return str(run.returncode), run.stdout + run.stderr
+
+
+def fern_diagnostic(output: str) -> str:
+    """The first thing Fern said was wrong, as it printed it, on one line and without `; `."""
+    lines = [line.strip() for line in output.splitlines() if line.strip() and not line.startswith("::")]
+    summary = next((re.sub(r" in [\d.]+ seconds\.?$", ".", line)
+                    for line in lines if re.match(r"Found \d+ errors?", line)), "")
+    first = next((line[len("issue: "):] for line in lines if line.startswith("issue: ")), "")
+    if not first:
+        first = next((line for line in lines if UNPARSED.search(line) or re.search(r"\berror\b", line, re.I)
+                      and "deprecated" not in line), lines[-1] if lines else "no output")
+    text = f"{summary} First: {first}" if summary else first
+    # A screen cell quotes each result in backticks and joins them with `; `.
+    return text.replace("; ", ", ").replace("`", "'")[:400]
+
+
+def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[str, Any]:
+    """Fern's measured verdict on one document: `fern check`, then a generation where it passes."""
+    digest = hashlib.sha256(document.read_bytes()).hexdigest()
+    workspace = scratch / digest / "fern"
+    (workspace / "openapi").mkdir(parents=True, exist_ok=True)
+    (workspace / "openapi" / "openapi.yml").write_bytes(document.read_bytes())
+    config, generators = fern_workspace_files()
+    (workspace / "fern.config.json").write_text(config, encoding="utf-8")
+    (workspace / "generators.yml").write_text(generators, encoding="utf-8")
+    cli, _name, version, _config = corpus_fern_pins()
+    row: dict[str, Any] = {"sha256": digest, "fern_cli": cli, "generator": version}
+    status, output = _fern_run(["fern", "check"], workspace, timeout)
+    row.update(check_exit=status, check_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
+               check_diagnostic=fern_diagnostic(output))
+    if status == "0":
+        preview = scratch / digest / "preview"
+        status, output = _fern_run(["fern", "generate", "--group", "python-sdk", "--local", "--preview",
+                                    "--output", str(preview), "--force"], workspace, timeout)
+        package = preview / "fern-python-sdk"
+        files = sum(1 for path in package.rglob("*.py")) if package.is_dir() else 0
+        unparsed = next((line.strip() for line in output.splitlines() if UNPARSED.search(line)), "")
+        row.update(generate_exit=status, generate_log_sha256=hashlib.sha256(output.encode()).hexdigest(),
+                   generate_python_files=files,
+                   generate_diagnostic=(unparsed or fern_diagnostic(output)).replace("; ", ", ").replace("`", "'")[:400])
+    return row
+
+
+def fern_verdict(row: dict[str, Any]) -> str | None:
+    """A screen's `fern` result from a measured re-screen, or None when the run did not finish."""
+    check = row["check_exit"]
+    if check == "timeout" or row.get("generate_exit") == "timeout":
+        return None
+    if check != "0":
+        return f"failed: {fern_label()} fern check exit {check}: {row['check_diagnostic']}"
+    generated = row["generate_exit"]
+    if generated != "0":
+        return f"failed: {fern_label()} fern generate exit {generated} after fern check exit 0: " \
+               f"{row['generate_diagnostic']}"
+    if UNPARSED.search(row["generate_diagnostic"]) or not row["generate_python_files"]:
+        return (f"failed: {fern_label()} fern generate exit 0 over an unparsed document, "
+                f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}")
+    return "passed"
+
+
+# What a kept `candidate` row's result says once the counted build's probe of it
+# executes no unreached site: it stays on the record, accounted for, and Contract
+# B's gate reads it as no candidate after checking `probe.jsonl` carries that probe.
+NOT_REACHING = "its probe of build {build} in probe.jsonl reaches no unreached site"
+
+
+def retire(args: argparse.Namespace) -> int:
+    """Mark the candidates the counted build no longer finds declaring the row or reaching its arm.
+
+    A candidate is a screened declarer whose probe executes an unreached site. A
+    census repair can find a document no longer declares the row, and a `src/`
+    repair can leave its probe reaching nothing; either way a screen filed
+    earlier vouches for nothing now. Every row stays, so nothing returned goes
+    unaccounted for: a document the census no longer counts reads `census 0`,
+    the census's own reading, and one whose probe of this build reaches no site
+    reads its census count followed by [`NOT_REACHING`]. A declarer with no probe
+    of this build is left as it is: it is outstanding, not settled.
+    """
+    build = _current_build()
+    keys = set(args.key or (p.stem for p in (EVIDENCE / "searches").glob("*.md")
+                            if record_build(p.read_text(encoding="utf-8"), p) == build))
+    note = NOT_REACHING.format(build=build)
+    marked = 0
+    for source in DECLARED_SOURCES:
+        records = read_records(source)
+        declared = {(r["key"], r["subject"]): r["result"] for r in records
+                    if r["kind"] == "document" and r["result"].startswith("census ") and r["result"] != "census 0"}
+        probed = {(row["key"], row["candidate"]): row for row in read_probes(source) if row.get("build") == build}
+        changed = 0
+        for r in records:
+            if r["key"] not in keys or r["kind"] != "candidate":
+                continue
+            pair = (r["key"], r["subject"])
+            if pair not in declared:
+                result = "census 0"
+            elif pair in probed and not probed[pair]["reached"]:
+                result = f"{declared[pair]} — {note}"
+            else:
+                continue
+            if r["result"] != result:
+                r["result"] = result
+                changed += 1
+        if changed:
+            replace_records(source, records)
+        marked += changed
+    print(f"golden-reach-search: {marked} candidate(s) marked on build {build}")
+    return 0
+
+
+def fern_rescreen(args: argparse.Namespace) -> int:
+    """Take Fern's screen again, measured, for every reaching declarer its last screen refused.
+
+    Only a declarer this build's probe finds reaching the arm is a candidate, and
+    only a Fern refusal filed without an exit status is taken again, whatever
+    the candidate's other screens read: a refusal is quoted with its status. Each
+    distinct document runs once: `fern check` at the pinned CLI, and where that
+    exits 0, the generation `generate-fern-fixture.sh` runs, since only a
+    generation settles it. The screen is re-filed with the exit status and the
+    first diagnostic Fern printed. A run that times out is recorded and leaves the
+    old screen in place, so the declarer stays open rather than settled.
+    """
+    build = _current_build()
+    keys = args.key or sorted(p.stem for p in (EVIDENCE / "searches").glob("*.md")
+                              if record_build(p.read_text(encoding="utf-8"), p) == build)
+    wanted: dict[str, list[tuple[str, str, dict[str, Any]]]] = defaultdict(list)
+    paths: dict[str, Path] = {}
+    for key in keys:
+        reaching = _reaching(key, args.source, build)
+        latest: dict[str, dict[str, Any]] = {}
+        screens = source_dir(args.source) / "screens.jsonl"
+        if screens.is_file():
+            for row in read_jsonl(screens, ("key", "candidate"), "restore it from git; `screen` appends to it"):
+                if row["key"] == key:
+                    latest[row["candidate"]] = row
+        located = dict(declarers(args.source, key, args.root)) if reaching else {}
+        for candidate in sorted(reaching):
+            row = latest.get(candidate)
+            # A refusal already measured here stands; only one filed without
+            # Fern's exit status is taken again.
+            if not row or row["fern"] == "passed" or row["fern"].startswith(f"failed: {fern_label()} fern "):
+                continue
+            path = located.get(candidate)
+            if path is None or not path.is_file():
+                fail(f"{args.source}: no local bytes for {candidate}; pass --root with the walk's copy, "
+                     "or `query` the source again to cache it")
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            wanted[digest].append((key, candidate, row))
+            paths.setdefault(digest, path)
+    cache_path = CACHE / RESCREEN_CACHE
+    cache: dict[str, dict[str, Any]] = {}
+    if cache_path.is_file():
+        for row in read_jsonl(cache_path, ("sha256",), "delete it; a re-screen re-runs"):
+            cache[row["sha256"]] = row
+    todo = [digest for digest in wanted if digest not in cache or fern_verdict(cache[digest]) is None]
+    with tempfile.TemporaryDirectory(prefix="golden-reach-fern-") as scratch, \
+            ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        futures = {digest: pool.submit(fern_screen_document, paths[digest], Path(scratch), args.timeout)
+                   for digest in todo}
+        for digest, future in futures.items():
+            result = future.result()
+            cache[digest] = result
+            CACHE.mkdir(parents=True, exist_ok=True)
+            with exclusive_lock(CACHE / f"{RESCREEN_CACHE}.lock"), cache_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(result, sort_keys=True) + "\n")
+    evidence = source_dir(args.source) / RESCREEN_FILE
+    kept = [row for row in read_jsonl(evidence, ("sha256", "candidate"), "restore it from git")
+            if row["sha256"] not in wanted] if evidence.is_file() else []
+    filed = unsettled = 0
+    for digest, uses in wanted.items():
+        result = cache[digest]
+        kept += [dict(result, candidate=candidate) for candidate in sorted({c for _k, c, _r in uses})]
+        verdict = fern_verdict(result)
+        if verdict is None:
+            unsettled += len(uses)
+            continue
+        for key, candidate, row in uses:
+            screen(argparse.Namespace(
+                source=args.source, key=key, candidate=candidate, licence=row["licence"], ref=row["ref"],
+                fern=verdict, gap_keys=row.get("gap_keys", ""), declined="", registered="",
+                evidence=f"{row.get('evidence', '')} — re-screened: {RESCREEN_FILE} sha256 {digest[:12]}".lstrip(" —"),
+            ))
+            filed += 1
+    evidence.write_text("".join(json.dumps(r, sort_keys=True) + "\n"
+                                for r in sorted(kept, key=lambda r: (r["candidate"], r["sha256"]))), encoding="utf-8")
+    print(f"golden-reach-search: {args.source}: {len(wanted)} documents re-screened, {filed} screens re-filed, "
+          f"{unsettled} left on their earlier screen by a timeout")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1310,6 +2232,8 @@ def main(argv: list[str] | None = None) -> int:
     w.add_argument("--key", action="append", required=True)
     w.add_argument("--jobs", type=REACH.positive_int, default=8)
     w.add_argument("--census", type=Path, help="a census already taken over these pinned bytes (JSONL.gz)")
+    w.add_argument("--census-timeout", type=REACH.positive_int, default=600,
+                   help="seconds one document's census may take before it is recorded unreadable")
     f = sub.add_parser("fetch-pins")
     f.add_argument("--root", type=Path, required=True, help="local copies; fetched pins land in its fetched/")
     q = sub.add_parser("query")
@@ -1334,14 +2258,26 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--evidence", default="")
     s.add_argument("--declined", default="", help="why a candidate passing every screen is not registered")
     s.add_argument("--registered", default="", help="the corpus row a candidate passing every screen is registered as")
+    fr = sub.add_parser("fern-rescreen")
+    fr.add_argument("--source", required=True)
+    fr.add_argument("--key", action="append", help="default: every record counted on the measured build")
+    fr.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
+    fr.add_argument("--jobs", type=REACH.positive_int, default=6)
+    fr.add_argument("--timeout", type=REACH.positive_int, default=1800)
+    rt = sub.add_parser("retire")
+    rt.add_argument("--key", action="append", help="default: every record counted on the measured build")
     r = sub.add_parser("render")
     r.add_argument("--key", action="append", required=True)
     r.add_argument("--outcome", default="auto", choices=("auto", "exhausted", "search-incomplete", "witness-found"))
     r.add_argument("--build", help="re-render a committed record as of the earlier build its probes ran on")
     sub.add_parser("outstanding")
+    for name in ("refuse", "recensus"):
+        x = sub.add_parser(name)
+        x.add_argument("--source", required=True)
+        x.add_argument("--root", type=Path, help="a walk's local copy of the pinned documents")
     args = parser.parse_args(argv)
-    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "render": render,
-            "outstanding": outstanding}[args.command](args)
+    return {"walk": walk, "fetch-pins": fetch_pins, "query": query, "probe": probe, "screen": screen, "fern-rescreen": fern_rescreen, "retire": retire, "render": render,
+            "outstanding": outstanding, "refuse": refuse, "recensus": recensus}[args.command](args)
 
 
 if __name__ == "__main__":

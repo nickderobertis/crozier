@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_table_rows_request_after_row_id import CreateTableRowsRequestAfterRowId
+from .create_table_rows_request_rows import CreateTableRowsRequestRows
+
+CreateTableRowsRequest = typing.Union[CreateTableRowsRequestRows, CreateTableRowsRequestAfterRowId]

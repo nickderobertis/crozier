@@ -1,0 +1,8 @@
+
+
+import datetime as dt
+import typing
+
+from .update_student_request_withdrawal_date_estimated_one import UpdateStudentRequestWithdrawalDateEstimatedOne
+
+UpdateStudentRequestWithdrawalDateEstimated = typing.Union[dt.date, UpdateStudentRequestWithdrawalDateEstimatedOne]

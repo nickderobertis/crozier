@@ -415,6 +415,13 @@ impl Imports {
             .unwrap_or_else(|| name.to_string())
     }
 
+    /// The name a `core` helper is written as, without importing it: the raw
+    /// clients import the response wrappers file by file (see
+    /// `raw_client_file`), so a method naming one only reads its alias.
+    fn core_local(&self, submodule: &str, name: &str) -> String {
+        self.local(&format!("{}.{submodule}", self.core_prefix()), name)
+    }
+
     /// Register a `core` helper and return the name to write for it.
     fn add_core_local(&mut self, submodule: &str, name: &str) -> String {
         self.add_core(submodule, name);
@@ -532,21 +539,33 @@ impl Imports {
         let mut from: Vec<_> = self.from.iter().collect();
         from.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
         for (module, names) in from {
-            let joined = names
-                .iter()
-                .map(
-                    |name| match self.aliases.get(&(module.clone(), name.clone())) {
-                        Some(alias) => format!("{name} as {alias}"),
-                        None => name.clone(),
-                    },
-                )
-                .collect::<Vec<_>>()
-                .join(", ");
-            let line = format!("from {module} import {joined}");
-            if Self::is_stdlib(module) {
-                g1.push(line);
-            } else {
-                g2.push(line);
+            // An aliased name takes a line of its own after the module's plain
+            // names, as ruff's isort writes it (`combine-as-imports` off):
+            // MockServer's raw clients import `AsyncHttpResponse`, then
+            // `HttpResponse as core_http_response_HttpResponse`.
+            let (aliased, plain): (Vec<&String>, Vec<&String>) = names.iter().partition(|name| {
+                self.aliases
+                    .contains_key(&((*module).clone(), (*name).clone()))
+            });
+            let mut lines = Vec::new();
+            if !plain.is_empty() {
+                let joined = plain
+                    .iter()
+                    .map(|name| name.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                lines.push(format!("from {module} import {joined}"));
+            }
+            for name in aliased {
+                let alias = &self.aliases[&(module.clone(), name.clone())];
+                lines.push(format!("from {module} import {name} as {alias}"));
+            }
+            for line in lines {
+                if Self::is_stdlib(module) {
+                    g1.push(line);
+                } else {
+                    g2.push(line);
+                }
             }
         }
 
@@ -878,7 +897,12 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
                 collect_named_refs(&f.type_ref, &mut out);
             }
         }
-        TypeDecl::Alias(a) => collect_named_refs(&a.target, &mut out),
+        TypeDecl::Alias(a) => {
+            collect_named_refs(&a.target, &mut out);
+            for reach in &a.reach_refs {
+                collect_named_refs(reach, &mut out);
+            }
+        }
         TypeDecl::DiscriminatedUnion(u) => {
             // A union can be any of its mapped variant schemas — that edge is what
             // exposes a variant that recurses back through the union (issue #84).
@@ -988,14 +1012,6 @@ fn forward_ref_map(
     };
 
     let mut map: HashMap<String, HashSet<String>> = HashMap::new();
-    let discriminated_unions: HashSet<&str> = types
-        .iter()
-        .chain(tag_types.iter().map(|tag| &tag.decl))
-        .filter_map(|decl| match decl {
-            TypeDecl::DiscriminatedUnion(union) => Some(union.name.as_str()),
-            _ => None,
-        })
-        .collect();
     for decl in types.iter().chain(tag_types.iter().map(|t| &t.decl)) {
         let name = decl.name();
         let defer_recursive_target =
@@ -1007,11 +1023,13 @@ fn forward_ref_map(
             // cycle of its own). Importing a recursive type eagerly can trip its
             // module's own import cycle even from an acyclic referrer, so Fern defers
             // every reference *into* a cycle, not only the back-edges of one.
-            // An alias that merely *wraps* a discriminated union
-            // (`ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`)
-            // imports it eagerly even though the union's wrappers point back at
-            // the alias — Fern emits such an alias with no forward-reference
-            // machinery at all, not even `from __future__ import annotations`. An
+            // An alias that merely *wraps* its target imports it eagerly even when
+            // the target points back at the alias — Fern emits such an alias with
+            // no forward-reference machinery at all, not even
+            // `from __future__ import annotations`: Apideck Accounting's
+            // `ProfitAndLossRecords = Optional[List[ProfitAndLossRecordsItem]]`
+            // over a discriminated union, and MockServer's
+            // `SchemaArray = List[Schema]` over the draft-04 `Schema` model. An
             // alias whose target is itself a `Union[..]` is a declaration in its
             // own right and defers into the cycle like any other member, which is
             // how EN 18222's `MultiValuedDataElementValueItem` quotes
@@ -1020,11 +1038,7 @@ fn forward_ref_map(
                 TypeDecl::Alias(alias) => !is_union_target(&alias.target),
                 _ => false,
             };
-            let eager_discriminated_member = matches!(decl, TypeDecl::Alias(_))
-                && discriminated_unions.contains(r.as_str())
-                && wrapper_alias;
-            if !eager_discriminated_member
-                && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
+            if !wrapper_alias && (reaches(&r, name) || (defer_recursive_target && reaches(&r, &r)))
             {
                 forward.insert(r);
             }
@@ -2155,6 +2169,7 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -2364,6 +2379,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,
@@ -2396,6 +2412,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             has_environment: ir.environment.is_some(),
             global_headers: &ir.global_headers,
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,
@@ -2421,6 +2438,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     if ir.environment.is_none() {
         streaming_args.push_str("    base_url=\"https://yourhost.com/path/to/api\",\n");
     }
+    // A client taking no argument is constructed on one line: `dot-ai` declares
+    // a server and no auth, and its streaming section reads `client = FernApi()`.
+    let client_call = if streaming_args.is_empty() {
+        format!("{}()", ir.client_name)
+    } else {
+        format!("{}(\n{streaming_args})", ir.client_name)
+    };
     let stream_ep = readme_streaming_endpoint(ir);
     let streaming = stream_ep.map_or_else(String::new, |ep| {
         // The call carries its worked arguments here, exactly as the usage example
@@ -2429,8 +2453,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         let call = readme_call_lines(ir, ep, pkg)
             .unwrap_or_else(|| format!("{}()", client_call_prefix(ep)));
         format!(
-            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{call}\n```\n\n",
-            ir.client_name, ir.client_name,
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{call}\n```\n\n",
+            ir.client_name,
         )
     });
     // The pager section, on the first paginated endpoint in client order. Fern
@@ -2441,8 +2465,8 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     let pagination = pager_ep.map_or_else(String::new, |ep| {
         let prefix = client_call_prefix(ep);
         format!(
-            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {}(\n{streaming_args})\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
-            ir.client_name, ir.client_name,
+            "## Pagination\n\nPaginated requests will return a `SyncPager` or `AsyncPager`, which can be used as generators for the underlying object.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{prefix}()\n```\n\n```python\n# You can also iterate through pages and access the typed response per page\npager = {prefix}(...)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)\n```\n\n",
+            ir.client_name,
         )
     });
     let contents = include_str!("../assets/scaffolding/README.md.tmpl")
@@ -2622,6 +2646,7 @@ fn reference_entry(
         has_environment: ir.environment.is_some(),
         global_headers: &ir.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -2672,9 +2697,18 @@ fn reference_entry(
             .map_or_else(
                 || mp.body,
                 |request| {
+                    // An optional `json=request` body is documented optional:
+                    // marimo-plugins' `type: "null"` bodies read
+                    // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
+                    let request = match &ep.request_body {
+                        Some(RequestBody::Single(single)) if !single.required => {
+                            TypeRef::Optional(Box::new(request.clone()))
+                        }
+                        _ => request.clone(),
+                    };
                     vec![DocParam {
                         name: "request".to_string(),
-                        annotation: raw_type_str_ctx(request, &mut imports, true),
+                        annotation: raw_type_str_ctx(&request, &mut imports, true),
                         default: None,
                         description: None,
                     }]
@@ -2832,7 +2866,13 @@ fn reference_entry(
         },
         pkg: pkg.to_string(),
         method: ep.method_name.trim_end_matches('_').to_string(),
-        dots: if has_args { "..." } else { "" },
+        // A documented parameter the method does not take — a propertyless model
+        // documented as `request` — still earns the dots.
+        dots: if has_args || params.len() > 1 {
+            "..."
+        } else {
+            ""
+        },
         return_type: reference_return_type(ep, &mp.inner),
         description: ep
             .docstring
@@ -4367,9 +4407,9 @@ fn raw_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> String {
     }
 
     let wrapper = if is_async {
-        "AsyncHttpResponse"
+        imports.core_local("http_response", "AsyncHttpResponse")
     } else {
-        "HttpResponse"
+        imports.core_local("http_response", "HttpResponse")
     };
     let mp = method_params(ep, imports);
     let return_type = pager_return_type(ep, &mp.inner, is_async, imports)
@@ -4642,9 +4682,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 
     let await_ = if is_async { "await " } else { "" };
     let wrapper = if is_async {
-        "AsyncHttpResponse"
+        imports.core_local("http_response", "AsyncHttpResponse")
     } else {
-        "HttpResponse"
+        imports.core_local("http_response", "HttpResponse")
     };
     let mut lines: Vec<String> = vec![format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
@@ -4656,7 +4696,9 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
     if matches!(ep.response, Some(TypeRef::Optional(_)))
-        || ep.response_may_be_empty && matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+        || ep.response_may_be_empty
+            && (matches!(ep.response, Some(TypeRef::Primitive(Prim::Any)))
+                || ep.response_names_unknown)
     {
         lines.extend([
             "            if _response is None or not _response.text.strip():".to_string(),
@@ -5111,7 +5153,12 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         // httpx, where Letta's titled `anyOf` (`add_mcp_server`)
                         // and its discriminated `createTemplateNoProject` keep it.
                         && ep.body_schema_shape != BodySchemaShape::InlinePlainUnion
-                        && (!ep.body_component_ref || ep.body_schema_dropped)
+                        // …and so does one whose schema the `requestBodies` entry
+                        // writes inline, which names no type at all: the Vonage
+                        // Conversation API's `Conversation` body.
+                        && (!ep.body_component_ref
+                            || ep.body_schema_dropped
+                            || ep.body_schema_shape != BodySchemaShape::Ref)
                         // A referenced request schema that SURVIVES in the public
                         // type layer — Fern kept the model because something else
                         // (a response, another body) needs it — is a documented
@@ -5646,11 +5693,12 @@ fn root_client_file(
     import_modules.sort();
     for m in import_modules {
         let pascal = naming::to_pascal_case(m);
-        // The two imported names are ordered alphabetically, so `Async{X}Client`
-        // usually comes first — but not when the tag itself starts with a letter
-        // that sorts `{X}Client` ahead (e.g. `ApikeyauthClient` < `Async...`).
+        // The two imported names are ordered the way ruff's isort orders
+        // members — case-insensitively — so `Async{X}Client` usually comes
+        // first, but not when the tag sorts `{X}Client` ahead
+        // (`ApikeyauthClient`, and MockServer's `AsyncapiClient`).
         let mut names = [format!("Async{pascal}Client"), format!("{pascal}Client")];
-        names.sort();
+        names.sort_by_key(|name| name.to_lowercase());
         type_checking.push_str(&format!(
             "    from .{m}.client import {}, {}\n",
             names[0], names[1]
@@ -6205,7 +6253,7 @@ fn client_file(
         for child in sorted {
             let attr = module_stem(child);
             let mut names = [tag_client_name(child, true), tag_client_name(child, false)];
-            names.sort();
+            names.sort_by_key(|name| name.to_lowercase());
             type_checking.push_str(&format!(
                 "\n    from .{attr}.client import {}, {}",
                 names[0], names[1]
@@ -6443,6 +6491,7 @@ fn client_stream_docstring(
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6572,6 +6621,7 @@ fn client_binary_stream_docstring(
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6669,6 +6719,7 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
         has_environment: cx.has_environment,
         global_headers: cx.global_headers,
         building: Default::default(),
+        expanding_aliases: Vec::new(),
         documentation: false,
         reference: false,
         field_examples_ignored: false,
@@ -6953,7 +7004,9 @@ impl Example {
                 }
                 let pad = " ".repeat(indent);
                 let inner_pad = " ".repeat(indent + 4);
-                let last_comma = !matches!(self, Example::DocDict(_));
+                // Like a list, a wrapped dict of one entry takes no trailing
+                // comma: MockServer's `{"spec": "asyncapi: …"}` wraps bare.
+                let last_comma = !matches!(self, Example::DocDict(_)) && pairs.len() > 1;
                 let body = pairs
                     .iter()
                     .enumerate()
@@ -7038,6 +7091,11 @@ struct ExampleCtx<'a> {
     /// the stack (issue #84): a list of an ancestor type renders empty, matching
     /// Fern's `children=[]`.
     building: std::collections::HashSet<String>,
+    /// The aliases whose target is being exampled with an example still
+    /// unconsumed, each with that example: a union alias whose matching member
+    /// is the alias itself (GitHub's REST description declares one) would
+    /// otherwise expand forever.
+    expanding_aliases: Vec<(String, String)>,
     /// Whether values are being rendered for README/reference snippets rather
     /// than executable method docstrings.
     documentation: bool,
@@ -7054,9 +7112,12 @@ struct ExampleCtx<'a> {
 
 /// The slot a string value sits in, which decides its placeholder text: a named
 /// field/param uses the name, a map value uses `"value"`, anything else `"string"`.
+/// A path parameter is named too, and differs only in how a union is exampled
+/// (see [`ExampleCtx::union_value`]).
 #[derive(Clone, Copy)]
 enum Slot<'a> {
     Named(&'a str),
+    Path(&'a str),
     Map,
     Plain,
 }
@@ -7113,8 +7174,15 @@ impl<'a> ExampleCtx<'a> {
         }
         if let TypeRef::Named(name) = t {
             if let Some(TypeDecl::Alias(alias)) = self.find(name) {
+                let expanding = (name.clone(), example.to_string());
+                if self.expanding_aliases.contains(&expanding) {
+                    return None;
+                }
                 let target = alias.target.clone();
-                return self.value_from_example(&target, example);
+                self.expanding_aliases.push(expanding);
+                let value = self.value_from_example(&target, example);
+                self.expanding_aliases.pop();
+                return value;
             }
         }
         if matches!(t, TypeRef::Primitive(Prim::Datetime | Prim::Date)) {
@@ -7163,13 +7231,33 @@ impl<'a> ExampleCtx<'a> {
                 {
                     example.replace('\'', "\\'")
                 }
+                // A string holding `"` but no `'` is spelled single-quoted, as
+                // Python's `repr` spells it: MockServer's file-store `content`
+                // example is `'{"status":"ok"}'` in the golden.
+                TypeRef::Primitive(Prim::Str | Prim::Bytes)
+                    if !self.documentation && example.starts_with('"') =>
+                {
+                    serde_json::from_str::<serde_json::Value>(example)
+                        .ok()
+                        .filter(|value| {
+                            value
+                                .as_str()
+                                .is_some_and(|s| s.contains('"') && !s.contains('\''))
+                        })
+                        .and_then(|value| crate::ir::example_literal(&value))
+                        .unwrap_or_else(|| example.to_string())
+                }
                 _ => example.to_string(),
             };
             return Some(Example::Atom(literal));
         }
         if example.starts_with('{') && self.resolves_to_any(t) {
-            let value = serde_json::from_str(example).ok()?;
-            let rendered = example_from_json(value);
+            let value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // A `null` member is no argument: Primula Tracker's student update
+            // declares `{transition_date: …, transition_room_override_id: null}`
+            // for its `Union[Any]` body, and the golden passes only the date.
+            let value = fern_unknown_example(value)?;
+            let rendered = example_from_json_as(value, !self.documentation);
             return Some(if self.reference {
                 Example::Atom(rendered.flat())
             } else {
@@ -7193,7 +7281,7 @@ impl<'a> ExampleCtx<'a> {
                     }
                     let literal = value.to_string();
                     self.value_from_example(inner, &literal)
-                        .unwrap_or_else(|| example_from_json(value))
+                        .unwrap_or_else(|| example_from_json_as(value, !self.documentation))
                 })
                 .collect();
             return Some(if self.documentation {
@@ -7213,9 +7301,28 @@ impl<'a> ExampleCtx<'a> {
                     .find(|variant| matches!(variant, TypeRef::List(_) | TypeRef::Set(_)))
                     .map(|variant| self.value(variant, Slot::Plain));
             }
+            // Fern's importer builds the example for the alternative its
+            // heuristic scores highest, keeping only what that alternative
+            // declares; the SDK generator then renders the result with the first
+            // alternative that accepts it. MockServer's `debugMismatch` body
+            // `{method, path}` scores best as `OpenAPIDefinition`, which declares
+            // neither, so the golden renders the empty result as `HttpRequest()`.
+            let projected = self
+                .fern_union_example(variants, &value, &mut Vec::new())
+                .filter(|projected| *projected != value);
+            let (value, example) = match projected {
+                Some(projected) => {
+                    let text = projected.to_string();
+                    (projected, std::borrow::Cow::Owned(text))
+                }
+                None => (value, std::borrow::Cow::Borrowed(example)),
+            };
             for variant in variants {
+                if self.expands_back(variant, &example) {
+                    continue;
+                }
                 if self.example_matches_type(variant, &value) {
-                    return self.value_from_example(variant, example);
+                    return self.value_from_example(variant, &example);
                 }
             }
             return None;
@@ -7271,7 +7378,9 @@ impl<'a> ExampleCtx<'a> {
                             Some(value) => {
                                 let literal = value.to_string();
                                 self.value_from_example(&type_ref, &literal)
-                                    .unwrap_or_else(|| example_from_json(value.clone()))
+                                    .unwrap_or_else(|| {
+                                        example_from_json_as(value.clone(), !self.documentation)
+                                    })
                             }
                             _ => self.value(&type_ref, Slot::Named(&wire_name)),
                         };
@@ -7282,19 +7391,75 @@ impl<'a> ExampleCtx<'a> {
             }
         }
         if self.example_is_composite(t) && (example.starts_with('[') || example.starts_with('{')) {
-            let value = serde_json::from_str(example).ok()?;
-            if self.reference && matches!(t, TypeRef::Dict(_, _)) {
+            let mut value: serde_json::Value = serde_json::from_str(example).ok()?;
+            // A free-form map's values are unknowns, pruned the way Fern prunes
+            // one: MockServer's Pact import `body: {orders: []}` is `{}`.
+            if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &mut value) {
+                if self.resolves_to_any(inner) {
+                    *fields = std::mem::take(fields)
+                        .into_iter()
+                        .filter_map(|(key, field)| {
+                            fern_unknown_example(field).map(|field| (key, field))
+                        })
+                        .collect();
+                }
+            }
+            // An empty map carries no example value, so Fern synthesizes one as it
+            // does for an empty array (`dot-ai`'s `metadata: {}` is exampled
+            // `{"key": "value"}`).
+            if matches!(t, TypeRef::Dict(_, _))
+                && value.as_object().is_some_and(serde_json::Map::is_empty)
+            {
+                return None;
+            }
+            // A map of models constructs each value: MockServer's chaos stage
+            // `profiles: {api.example.com: {errorStatus: 500, …}}` is
+            // `{"api.example.com": HttpChaosProfile(error_status=500, …)}`.
+            if let (TypeRef::Dict(_, inner), serde_json::Value::Object(fields)) = (t, &value) {
+                if self.resolves_to_object(inner) {
+                    let pairs = fields
+                        .iter()
+                        .map(|(key, field)| {
+                            let rendered = self
+                                .value_from_example(inner, &field.to_string())
+                                .unwrap_or_else(|| {
+                                    example_from_json_as(field.clone(), !self.documentation)
+                                });
+                            (key.clone(), rendered)
+                        })
+                        .collect();
+                    return Some(if self.reference {
+                        Example::ReferenceDict(pairs)
+                    } else {
+                        Example::Dict(pairs)
+                    });
+                }
+            }
+            if let (true, TypeRef::Dict(_, inner)) = (self.reference, t) {
                 let serde_json::Value::Object(fields) = value else {
                     return None;
                 };
+                // `reference.md` writes a free-form value on one line and a
+                // typed one by its type: MockServer's HAR `log` is one line,
+                // while its WASM test's `Dict[str, List[str]]` headers wrap
+                // `["acme"]` as a list.
+                let unknown = self.resolves_to_any(inner);
                 return Some(Example::ReferenceDict(
                     fields
                         .into_iter()
-                        .map(|(key, value)| (key, example_from_json(value)))
+                        .map(|(key, value)| {
+                            let rendered = if unknown {
+                                Example::Atom(example_from_json_as(value, false).flat())
+                            } else {
+                                self.value_from_example(inner, &value.to_string())
+                                    .unwrap_or_else(|| example_from_json_as(value, false))
+                            };
+                            (key, rendered)
+                        })
                         .collect(),
                 ));
             }
-            return Some(example_from_json(value));
+            return Some(example_from_json_as(value, !self.documentation));
         }
         let TypeRef::Named(name) = t else {
             return None;
@@ -7319,9 +7484,250 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
-    fn example_matches_type(&self, t: &TypeRef, value: &serde_json::Value) -> bool {
+    /// Whether `t` leads, through aliases alone, back into an alias this example
+    /// is already being expanded under: a union member that is the union itself
+    /// again, which could only repeat the expansion it sits in.
+    fn expands_back(&self, t: &TypeRef, example: &str) -> bool {
+        let mut followed: Vec<&str> = Vec::new();
+        let mut current = t;
+        while let TypeRef::Named(name) = current {
+            if followed.contains(&name.as_str()) {
+                return false;
+            }
+            if self
+                .expanding_aliases
+                .iter()
+                .any(|(alias, text)| alias == name && text == example)
+            {
+                return true;
+            }
+            let Some(TypeDecl::Alias(alias)) = self.find(name) else {
+                return false;
+            };
+            followed.push(name);
+            current = &alias.target;
+        }
+        false
+    }
+
+    /// The example Fern's importer keeps for an undiscriminated union: the
+    /// alternative [`Self::fern_example_score`] ranks highest (the first, on a
+    /// tie), with `value` narrowed to what that alternative declares. `None`
+    /// where the narrowing is not modelled, leaving `value` as it is.
+    ///
+    /// `visiting` holds the named types entered at this level of `value`: a
+    /// union reaching itself again through its aliases before consuming any of
+    /// the value is a cycle (GitHub's REST description declares such unions),
+    /// which scores nothing and narrows nothing rather than recursing forever.
+    fn fern_union_example(
+        &self,
+        variants: &[TypeRef],
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> Option<serde_json::Value> {
+        let mut best: Option<(&TypeRef, i64)> = None;
+        for variant in variants {
+            let score = self.fern_example_score(variant, value, visiting);
+            if best.is_none_or(|(_, top)| score > top) {
+                best = Some((variant, score));
+            }
+        }
+        self.fern_example_projection(best?.0, value, visiting)
+    }
+
+    /// Fern's `calcExampleHeuristic`: how well `value` fits `t`, counting each
+    /// declared property the value supplies up and each it omits down.
+    fn fern_example_score(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> i64 {
         match t {
-            TypeRef::Optional(inner) => value.is_null() || self.example_matches_type(inner, value),
+            TypeRef::Optional(inner) => self.fern_example_score(inner, value, visiting),
+            TypeRef::Literal(literals) => {
+                i64::from(
+                    value
+                        .as_str()
+                        .is_some_and(|text| literals.iter().any(|literal| literal == text)),
+                ) * 5
+            }
+            TypeRef::Named(name) if visiting.contains(name) => 0,
+            TypeRef::Named(name) => {
+                visiting.push(name.clone());
+                let score = match self.find(name) {
+                    Some(TypeDecl::Enum(decl)) => {
+                        i64::from(value.as_str().is_some_and(|text| {
+                            decl.members.iter().any(|member| member.value == text)
+                        })) * 5
+                    }
+                    Some(TypeDecl::Object(object)) => {
+                        let Some(values) = value.as_object() else {
+                            return 0;
+                        };
+                        self.object_fields(object)
+                            .iter()
+                            .map(|(_, wire_name, type_ref, _, _, _)| {
+                                match values.get(wire_name).filter(|field| !field.is_null()) {
+                                    Some(field) => {
+                                        1 + self.fern_example_score(
+                                            type_ref,
+                                            field,
+                                            &mut Vec::new(),
+                                        )
+                                    }
+                                    None => -1,
+                                }
+                            })
+                            .sum()
+                    }
+                    Some(TypeDecl::Alias(alias)) => {
+                        self.fern_example_score(&alias.target, value, visiting)
+                    }
+                    _ => 0,
+                };
+                visiting.pop();
+                score
+            }
+            TypeRef::Union(variants) => variants
+                .iter()
+                .map(|variant| self.fern_example_score(variant, value, visiting))
+                .max()
+                .unwrap_or(0),
+            TypeRef::List(inner) | TypeRef::Set(inner) => value.as_array().map_or(0, |items| {
+                items
+                    .iter()
+                    .map(|item| self.fern_example_score(inner, item, &mut Vec::new()))
+                    .sum()
+            }),
+            TypeRef::Dict(_, inner) => value.as_object().map_or(0, |values| {
+                values
+                    .values()
+                    .map(|item| self.fern_example_score(inner, item, &mut Vec::new()))
+                    .sum()
+            }),
+            TypeRef::Primitive(Prim::Any) => 0,
+            TypeRef::Primitive(_) if value.is_null() => 0,
+            TypeRef::Primitive(_) => {
+                if self.example_matches_type(t, value) {
+                    1
+                } else {
+                    -1
+                }
+            }
+        }
+    }
+
+    /// `value` as Fern's importer builds it for `t`: an object keeps only the
+    /// properties it declares, and an array handed a non-array builds one item
+    /// with no example — MockServer's `headers: {Host: [...]}` against
+    /// `List[KeyToMultiValueZeroItem]` is `[KeyToMultiValueZeroItem()]`.
+    fn fern_example_projection(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> Option<serde_json::Value> {
+        match t {
+            TypeRef::Optional(inner) if !value.is_null() => {
+                self.fern_example_projection(inner, value, visiting)
+            }
+            TypeRef::Named(name) if visiting.contains(name) => None,
+            TypeRef::Named(name) => {
+                visiting.push(name.clone());
+                let projected = self.fern_named_projection(name, value, visiting);
+                visiting.pop();
+                projected
+            }
+            TypeRef::Union(variants) => self.fern_union_example(variants, value, visiting),
+            TypeRef::List(inner) | TypeRef::Set(inner) => match value.as_array() {
+                Some(items) => items
+                    .iter()
+                    .map(|item| self.fern_example_projection(inner, item, &mut Vec::new()))
+                    .collect::<Option<Vec<_>>>()
+                    .map(serde_json::Value::Array),
+                None if self.resolves_to_object(inner) => {
+                    let item = self.fern_example_projection(
+                        inner,
+                        &serde_json::Value::Object(serde_json::Map::new()),
+                        &mut Vec::new(),
+                    )?;
+                    Some(serde_json::Value::Array(vec![item]))
+                }
+                None => None,
+            },
+            TypeRef::Dict(_, inner) => {
+                let values = value.as_object()?;
+                values
+                    .iter()
+                    .map(|(key, item)| {
+                        self.fern_example_projection(inner, item, &mut Vec::new())
+                            .map(|item| (key.clone(), item))
+                    })
+                    .collect::<Option<serde_json::Map<_, _>>>()
+                    .map(serde_json::Value::Object)
+            }
+            _ => Some(value.clone()),
+        }
+    }
+
+    /// [`Self::fern_example_projection`] of the named type `name`.
+    fn fern_named_projection(
+        &self,
+        name: &str,
+        value: &serde_json::Value,
+        visiting: &mut Vec<String>,
+    ) -> Option<serde_json::Value> {
+        match self.find(name) {
+            Some(TypeDecl::Object(object)) => {
+                let fields = self.object_fields(object);
+                let empty = serde_json::Map::new();
+                let values = value.as_object().unwrap_or(&empty);
+                let mut kept = serde_json::Map::new();
+                for (_, wire_name, type_ref, required, _, _) in fields {
+                    match values.get(&wire_name).filter(|field| !field.is_null()) {
+                        Some(field) => {
+                            let field =
+                                self.fern_example_projection(&type_ref, field, &mut Vec::new())?;
+                            kept.insert(wire_name, field);
+                        }
+                        // A required property the example omits is built
+                        // with no example — a string is its own name, as
+                        // MockServer's `ExpectationId(id="id")` shows.
+                        None if required && self.resolves_to_string(&type_ref) => {
+                            kept.insert(wire_name.clone(), serde_json::Value::String(wire_name));
+                        }
+                        None if required => return None,
+                        None => {}
+                    }
+                }
+                Some(serde_json::Value::Object(kept))
+            }
+            Some(TypeDecl::Alias(alias)) => {
+                self.fern_example_projection(&alias.target, value, visiting)
+            }
+            _ => Some(value.clone()),
+        }
+    }
+
+    fn example_matches_type(&self, t: &TypeRef, value: &serde_json::Value) -> bool {
+        self.example_matches_type_through(t, value, &mut Vec::new())
+    }
+
+    /// [`Self::example_matches_type`], with the aliases already followed: none
+    /// of its arms reads into `value`, so an alias met again is a union that
+    /// names itself (GitHub's REST description declares such unions) and takes
+    /// nothing more than its other members do.
+    fn example_matches_type_through(
+        &self,
+        t: &TypeRef,
+        value: &serde_json::Value,
+        aliases: &mut Vec<String>,
+    ) -> bool {
+        match t {
+            TypeRef::Optional(inner) => {
+                value.is_null() || self.example_matches_type_through(inner, value, aliases)
+            }
             TypeRef::Named(name) => match self.find(name) {
                 // A model with no fields takes any example: Milvus's `upsert`
                 // example sends `data` as a list, and Fern still renders the
@@ -7339,12 +7745,24 @@ impl<'a> ExampleCtx<'a> {
                                 .any(|(_, wire_name, _, _, _, _)| wire_name == key)
                         })
                 }),
-                Some(TypeDecl::Alias(alias)) => self.example_matches_type(&alias.target, value),
+                Some(TypeDecl::Alias(_)) if aliases.contains(name) => false,
+                Some(TypeDecl::Alias(alias)) => {
+                    aliases.push(name.clone());
+                    let matches = self.example_matches_type_through(&alias.target, value, aliases);
+                    aliases.pop();
+                    matches
+                }
+                // An enum takes only its own values: Primula Tracker's
+                // `intended_start_date` is `Union[<TBD enum>, datetime.date]`, and
+                // the golden constructs its `2030-09-01` example as the date.
+                Some(TypeDecl::Enum(decl)) => value
+                    .as_str()
+                    .is_some_and(|text| decl.members.iter().any(|member| member.value == text)),
                 _ => true,
             },
             TypeRef::Union(variants) => variants
                 .iter()
-                .any(|variant| self.example_matches_type(variant, value)),
+                .any(|variant| self.example_matches_type_through(variant, value, aliases)),
             TypeRef::List(_) | TypeRef::Set(_) => value.is_array(),
             TypeRef::Dict(_, _) => value.is_object(),
             TypeRef::Primitive(Prim::Str | Prim::Bytes | Prim::Datetime | Prim::Date)
@@ -7410,6 +7828,19 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether a type resolves (through aliases/optionals) to a generated model.
+    fn resolves_to_object(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Optional(inner) => self.resolves_to_object(inner),
+            TypeRef::Named(n) => match self.find(n) {
+                Some(TypeDecl::Object(_)) => true,
+                Some(TypeDecl::Alias(a)) => self.resolves_to_object(&a.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
     /// Whether a type resolves (through aliases/optionals) to an unknown value —
     /// which Fern cannot example, so a map of it renders `{}`.
     fn resolves_to_any(&self, t: &TypeRef) -> bool {
@@ -7418,6 +7849,21 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Optional(inner) => self.resolves_to_any(inner),
             TypeRef::Named(n) => match self.find(n) {
                 Some(TypeDecl::Alias(a)) => self.resolves_to_any(&a.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Whether the type is, after alias resolution, a union whose every member
+    /// is unknown (`Union[typing.Any]`).
+    fn resolves_to_unknown_union(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Union(variants) => {
+                !variants.is_empty() && variants.iter().all(|variant| self.resolves_to_any(variant))
+            }
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_union(&alias.target),
                 _ => false,
             },
             _ => false,
@@ -7478,7 +7924,7 @@ impl<'a> ExampleCtx<'a> {
         match t {
             TypeRef::Primitive(Prim::Str) => {
                 let s = match slot {
-                    Slot::Named(name) => name,
+                    Slot::Named(name) | Slot::Path(name) => name,
                     Slot::Map => "value",
                     Slot::Plain => "string",
                 };
@@ -7598,12 +8044,27 @@ impl<'a> ExampleCtx<'a> {
     /// The example for a union: the first alternative that names concrete values,
     /// else its first alternative. A free-form scalar can only supply a
     /// placeholder, so Fern reaches past helios' `Union[Uint, BlockTag, Hash32]`
-    /// to `BlockTag`'s `"earliest"` — rendered as the plain string the union's own
-    /// annotation accepts, not the enum member a `BlockTag` argument would take.
+    /// to `BlockTag`'s `"earliest"`. In a path parameter — helios' `block_id` —
+    /// that is the plain string the union's own annotation accepts; anywhere else
+    /// it is the enum member a `BlockTag` argument would take.
     fn union_value(&mut self, variants: &[TypeRef], slot: Slot<'_>) -> Example {
         if let Some(TypeRef::Named(name)) = variants.first() {
             if matches!(self.find(name), Some(TypeDecl::Enum(_))) {
                 let name = name.clone();
+                return self.named_value(&name, slot);
+            }
+        }
+        // A later enum alternative is exampled by its first member (marimo's
+        // `totalRows`, `Union[float, MarimoTableDataTotalRowsOne]`, is
+        // `MarimoTableDataTotalRowsOne.TOO_MANY`), except in a path, where the
+        // value below is its plain string.
+        if !matches!(slot, Slot::Path(_)) {
+            if let Some(name) = variants.iter().skip(1).find_map(|variant| match variant {
+                TypeRef::Named(name) if matches!(self.find(name), Some(TypeDecl::Enum(_))) => {
+                    Some(name.clone())
+                }
+                _ => None,
+            }) {
                 return self.named_value(&name, slot);
             }
         }
@@ -8042,17 +8503,52 @@ fn is_unknown_map(t: &TypeRef) -> bool {
         || matches!(value.as_ref(), TypeRef::Optional(inner) if matches!(inner.as_ref(), TypeRef::Primitive(Prim::Any)))
 }
 
-fn example_from_json(value: serde_json::Value) -> Example {
+/// A free-form (`Any`) example as Fern's importer keeps it: a `null` and an
+/// empty array carry no value, so they leave the map or list holding them, at
+/// any depth — MockServer's HAR import drops each entry's `"headers": []`.
+fn fern_unknown_example(value: serde_json::Value) -> Option<serde_json::Value> {
     match value {
-        serde_json::Value::Array(items) => {
-            Example::ExplicitList(items.into_iter().map(example_from_json).collect())
-        }
+        serde_json::Value::Null => None,
+        serde_json::Value::Array(items) if items.is_empty() => None,
+        serde_json::Value::Array(items) => Some(serde_json::Value::Array(
+            items.into_iter().filter_map(fern_unknown_example).collect(),
+        )),
+        serde_json::Value::Object(fields) => Some(serde_json::Value::Object(
+            fields
+                .into_iter()
+                .filter_map(|(key, field)| fern_unknown_example(field).map(|field| (key, field)))
+                .collect(),
+        )),
+        scalar => Some(scalar),
+    }
+}
+
+/// A JSON example value as an [`Example`], spelling a string that holds `"`
+/// but no `'` the way Python's `repr` does when `python_repr` is set — a method docstring's
+/// example does (MockServer's nested `"body": '{"orders":[]}'`), while
+/// `reference.md` keeps the escaped JSON spelling.
+fn example_from_json_as(value: serde_json::Value, python_repr: bool) -> Example {
+    match value {
+        serde_json::Value::Array(items) => Example::ExplicitList(
+            items
+                .into_iter()
+                .map(|item| example_from_json_as(item, python_repr))
+                .collect(),
+        ),
         serde_json::Value::Object(fields) => Example::Dict(
             fields
                 .into_iter()
-                .map(|(key, value)| (key, example_from_json(value)))
+                .map(|(key, value)| (key, example_from_json_as(value, python_repr)))
                 .collect(),
         ),
+        serde_json::Value::String(value)
+            if python_repr && value.contains('"') && !value.contains('\'') =>
+        {
+            Example::Atom(
+                crate::ir::example_literal(&serde_json::Value::String(value.clone()))
+                    .unwrap_or_else(|| format!("{value:?}")),
+            )
+        }
         serde_json::Value::String(value) => Example::Atom(format!("{value:?}")),
         serde_json::Value::Number(value) => Example::Atom(value.to_string()),
         serde_json::Value::Bool(value) => {
@@ -8284,7 +8780,7 @@ fn build_example_inner(
                             && ctx.example_is_scalar(&pp.type_ref)
                     })
                     .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
-                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Named(&pp.wire_name)))
+                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Path(&pp.wire_name)))
             };
             args.push((Some(pp.py_name.clone()), v));
         }
@@ -8300,6 +8796,7 @@ fn build_example_inner(
         .request_body
         .as_ref()
         .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
+    let parameters_start = args.len();
     for qp in ep
         .query_params
         .iter()
@@ -8439,6 +8936,22 @@ fn build_example_inner(
             continue;
         }
         let example = qp.example.as_deref().unwrap_or_default();
+        // A YAML timestamp is a date to Fern's parser, so it is no example for a
+        // parameter that is not temporal, and an optional one then goes
+        // unshown: the Vonage Conversation API's `date_start` writes
+        // `example: 2018-01-01 10:00:00` unquoted over a `format: dateTime` string.
+        if let Ok(serde_json::Value::String(value)) =
+            serde_json::from_str::<serde_json::Value>(example)
+        {
+            if ctx
+                .yaml_unquoted_timestamps
+                .is_some_and(|unquoted| unquoted.contains(&value))
+                && !ctx.example_is_temporal(&qp.type_ref)
+                && yaml_resolves_as_timestamp(&value)
+            {
+                continue;
+            }
+        }
         args.push((
             Some(qp.py_name.clone()),
             ctx.value_from_example(&qp.type_ref, example)
@@ -8476,6 +8989,21 @@ fn build_example_inner(
                 ctx.value(&hp.type_ref, Slot::Named(&slot))
             });
         args.push((Some(hp.py_name.clone()), value));
+    }
+    // The docstring writer walks an example's headers before its query
+    // parameters, whatever the body (`EndpointFunctionSnippetGenerator`); the
+    // Markdown writers keep the order above. Sim's `create_table_import_part_urls`
+    // documents its `upload-token` header ahead of its `workspaceId` query in
+    // `client.py` and after it in `reference.md`.
+    if !documentation {
+        let (headers, rest): (Vec<_>, Vec<_>) =
+            args.drain(parameters_start..).partition(|(name, _)| {
+                ep.header_params
+                    .iter()
+                    .any(|header| Some(&header.py_name) == name.as_ref())
+            });
+        args.extend(headers);
+        args.extend(rest);
     }
     if documentation && !suppressed {
         for (name, value) in &ep.constant_headers {
@@ -8555,11 +9083,13 @@ fn build_example_inner(
             // An optional body Fern types `Optional[Any]` has nothing to show, in
             // either document version: letta declares the shape in 3.1 and
             // braintrust's proxy endpoints in 3.0.3, and neither golden passes
-            // `request=`.
+            // `request=`. Nor does one naming an alias of it: marimo-plugins'
+            // `write_marimo_chatbot_cancel_prompt_output` takes a `type: "null"`
+            // component and is documented with no argument.
             if s.required
                 || body_example.is_some()
                 || s.example.is_some()
-                || !is_any_type(&s.type_ref)
+                || !(is_any_type(&s.type_ref) || ctx.resolves_to_any(&s.type_ref))
             {
                 args.push((Some("request".to_string()), v));
             }
@@ -8629,6 +9159,9 @@ fn build_example_inner(
                     .example
                     .as_deref()
                     .filter(|_| reference_fields.is_none())
+                    // A binary download's inline body drops its media example:
+                    // MockServer's file retrieval shows Fern's `name="name"`.
+                    .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))
                     .map(str::to_string)
                     .or_else(|| {
                         reference_fields
@@ -9036,8 +9569,12 @@ fn build_example_inner(
         // `attributes={"key": "value"},` flat, where a map-typed one (bunq's
         // `AttachmentPublic`) is wrapped by `compact_documentation_values`.
         let mut untyped_arguments = std::mem::take(&mut ctx.untyped_arguments);
+        // So is a body naming a union of nothing but unknowns: People Data
+        // Labs' search bodies are `Union[typing.Any]` aliases, and its README
+        // writes `request={"key": "value"},` on one line.
         if matches!(&ep.request_body, Some(RequestBody::Single(single))
-            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any)))
+            if matches!(single.type_ref, TypeRef::Primitive(Prim::Any))
+                || ctx.resolves_to_unknown_union(&single.type_ref))
         {
             untyped_arguments.insert("request".to_string());
         }
@@ -9297,7 +9834,15 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
             .path_params
             .iter()
             .any(|param| matches!(param.type_ref, TypeRef::List(_)));
+    // A binary download the importer declines has only Fern's IR-generated
+    // examples, and the success one fails (*File download unsupported*): what
+    // the docstring shows is the first *error* example, so a download declaring
+    // no error response shows none. Codat Assess's `get_excel_report` answers a
+    // lone `200` of `application/octet-stream` and its golden has no example.
+    let binary_download_without_errors =
+        ep.binary_response && ep.importer_example_missing && ep.errors.is_empty();
     !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
+        || binary_download_without_errors
         || opaque_multipart_example
         || list_path_param_with_body)
 }
@@ -9504,6 +10049,12 @@ fn format_python_files(pkg: &str, files: &mut [GeneratedFile]) -> Result<()> {
             || file.path == generated_conftest;
         let has_code = file.contents.chars().any(|c| !c.is_whitespace());
         if is_py && !is_vendored && !is_vendored_scaffolding && has_code {
+            // Fern's code writer replaces every tab it writes with four spaces
+            // (`WriterImpl.write`, `TAB_LENGTH = 4`): People Data Labs' field
+            // description `HQ country\tunited states` is four spaces apart.
+            if file.contents.contains('\t') {
+                file.contents = file.contents.replace('\t', "    ");
+            }
             let name = file.path.to_string_lossy();
             file.contents =
                 crate::pyfmt::format_source(&name, &file.contents, crate::pyfmt::LINE_LENGTH)?;
@@ -9572,7 +10123,7 @@ mod tests {
     use super::{
         abbrev_call, auth_client_parts, auth_example_args, auth_wrapper_parts,
         build_documentation_example, build_example, client_method, environment, escape_py_str,
-        example_from_json, example_import_cmp, field_decl, generate, natural_cmp,
+        example_from_json_as, example_import_cmp, field_decl, generate, natural_cmp,
         path_field_render, path_object_decl, path_object_documented, raw_method, raw_type_str,
         readme_endpoint, readme_endpoint_eligible, reference_entry, reference_param_annotation,
         render, render_class_body, render_enum, render_type_decl, url_arg, BodySchemaShape,
@@ -10023,6 +10574,7 @@ mod tests {
             form_json: false,
             form_content_type: None,
             collision_prefix: None,
+            inline_object: false,
             example: None,
             media_example: false,
             schema_body_example: false,
@@ -10255,6 +10807,7 @@ mod tests {
             body_schema_is_success_response: false,
             response,
             response_may_be_empty: false,
+            response_names_unknown: false,
             response_doc: None,
             errors: Vec::new(),
             docstring: None,
@@ -10671,6 +11224,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10690,6 +11244,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10710,6 +11265,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -10786,6 +11342,7 @@ mod tests {
             form_json: false,
             form_content_type: None,
             collision_prefix: None,
+            inline_object: false,
             example: None,
             media_example: false,
             schema_body_example: false,
@@ -10821,6 +11378,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
@@ -10839,6 +11397,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: true,
@@ -11084,6 +11643,7 @@ mod tests {
             has_environment: false,
             global_headers: &[],
             building: Default::default(),
+            expanding_aliases: Vec::new(),
             documentation: false,
             reference: false,
             field_examples_ignored: false,
@@ -11226,12 +11786,14 @@ mod tests {
     fn example_context_resolves_literals_aliases_temporals_and_json_values() {
         let types = vec![
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "ScalarAlias".to_string(),
                 module: "scalar_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "AnyAlias".to_string(),
                 module: "any_alias".to_string(),
                 target: TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
@@ -11308,10 +11870,22 @@ mod tests {
             .value_from_example(&TypeRef::Primitive(Prim::Datetime), "not-json")
             .is_none());
 
-        let json = example_from_json(serde_json::json!({
-            "items": ["x", 2, false, null]
-        }));
+        let json = example_from_json_as(
+            serde_json::json!({
+                "items": ["x", 2, false, null]
+            }),
+            false,
+        );
         assert_eq!(json.flat(), r#"{"items": ["x", 2, False, None]}"#);
+        let quoted = serde_json::json!({"body": "{\"orders\":[]}", "note": "it's \"x\""});
+        assert_eq!(
+            example_from_json_as(quoted.clone(), true).flat(),
+            r#"{"body": '{"orders":[]}', "note": "it's \"x\""}"#
+        );
+        assert_eq!(
+            example_from_json_as(quoted, false).flat(),
+            r#"{"body": "{\"orders\":[]}", "note": "it's \"x\""}"#
+        );
     }
 
     #[test]
@@ -11341,12 +11915,14 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "PayloadAlias".to_string(),
                 module: "payload_alias".to_string(),
                 target: TypeRef::Named("Payload".to_string()),
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "CompositeAlias".to_string(),
                 module: "composite_alias".to_string(),
                 target: TypeRef::Dict(
@@ -11356,6 +11932,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "BoolAlias".to_string(),
                 module: "bool_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Bool),
@@ -11559,10 +12136,11 @@ mod tests {
             &TypeRef::Named("PayloadAlias".to_string()),
             &serde_json::json!({ "id": 1 }),
         ));
-        assert!(ctx.example_matches_type(
-            &TypeRef::Named("Color".to_string()),
-            &serde_json::json!(false),
-        ));
+        // An enum matches only one of its own values.
+        let color = TypeRef::Named("Color".to_string());
+        assert!(ctx.example_matches_type(&color, &serde_json::json!("red")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!("2030-09-01")));
+        assert!(!ctx.example_matches_type(&color, &serde_json::json!(false)));
         assert!(ctx.example_matches_type(
             &TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
             &serde_json::Value::Null,
@@ -11658,6 +12236,7 @@ mod tests {
             docstring: None,
         });
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "Label".to_string(),
             module: "label".to_string(),
             target: TypeRef::Primitive(Prim::Str),
@@ -12081,6 +12660,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("\"2024-01-15T09:30:00Z\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
@@ -12099,6 +12679,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some(r#"{"source":"test"}"#.to_string()),
                 media_example: true,
                 schema_body_example: false,
@@ -12155,6 +12736,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -12216,6 +12798,7 @@ mod tests {
     #[test]
     fn referenced_request_examples_preserve_fern_importer_names() {
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "EpsBearerContainer".to_string(),
             module: "eps_bearer_container".to_string(),
             target: TypeRef::Primitive(Prim::Str),
@@ -12243,6 +12826,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("[null,null]".to_string()),
                 media_example: true,
                 schema_body_example: true,
@@ -12261,6 +12845,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("0".to_string()),
                 media_example: true,
                 schema_body_example: true,
@@ -12309,6 +12894,7 @@ mod tests {
                 form_json: false,
                 form_content_type: Some("application/vnd.3gpp.5gnas".to_string()),
                 collision_prefix: None,
+                inline_object: false,
                 example: None,
                 media_example: false,
                 schema_body_example: false,
@@ -12361,6 +12947,7 @@ mod tests {
         ir.tag_types = vec![TagTypeDecl {
             module: "_".to_string(),
             decl: TypeDecl::Alias(AliasType {
+                reach_refs: Vec::new(),
                 name: "EmptyResult".to_string(),
                 module: "empty_result".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
@@ -12491,6 +13078,7 @@ mod tests {
                 form_json: false,
                 form_content_type: None,
                 collision_prefix: None,
+                inline_object: false,
                 example: Some("\"open\"".to_string()),
                 media_example: false,
                 schema_body_example: false,
@@ -12553,6 +13141,7 @@ mod tests {
     #[test]
     fn recursive_alias_enum_docs_and_render_failures_keep_context() {
         let alias = TypeDecl::Alias(AliasType {
+            reach_refs: Vec::new(),
             name: "NodeList".to_string(),
             module: "node_list".to_string(),
             target: TypeRef::List(Box::new(TypeRef::Named("Node".to_string()))),

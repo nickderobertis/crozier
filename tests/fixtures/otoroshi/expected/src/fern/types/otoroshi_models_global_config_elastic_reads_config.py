@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .otoroshi_models_elastic_analytics_config import OtoroshiModelsElasticAnalyticsConfig
+
+OtoroshiModelsGlobalConfigElasticReadsConfig = typing.Union[typing.Optional[str], OtoroshiModelsElasticAnalyticsConfig]

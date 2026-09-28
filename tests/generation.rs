@@ -65,6 +65,7 @@ paths:
         '200':
           description: file
           content: { application/octet-stream: { schema: { type: string } } }
+        '404': { description: Invalid byte length in virtual file request }
   /chat:
     post:
       parameters:
@@ -718,7 +719,7 @@ fn wide_string_enum_wraps_like_ruff() {
     let big = render(&spec)["src/acme/types/big.py"].clone();
     assert!(big.contains("class Big(enum.StrEnum):"), "{big}");
     assert!(
-        big.contains("    VALUE_NUMBER_00_WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
+        big.contains("    VALUE_NUMBER00WITH_PADDING = \"VALUE_NUMBER_00_WITH_PADDING\"\n"),
         "{big}"
     );
     // ruff explodes the wide `visit` signature: `def visit(` then `self,` and each
@@ -728,11 +729,11 @@ fn wide_string_enum_wraps_like_ruff() {
         "exploded visit: {big}"
     );
     assert!(
-        big.contains("        value_number_00_with_padding: typing.Callable[[], T_Result],\n"),
+        big.contains("        value_number00with_padding: typing.Callable[[], T_Result],\n"),
         "{big}"
     );
     assert!(
-        big.contains("        if self is Big.VALUE_NUMBER_00_WITH_PADDING:\n"),
+        big.contains("        if self is Big.VALUE_NUMBER00WITH_PADDING:\n"),
         "{big}"
     );
 }
@@ -954,6 +955,7 @@ info:
 components:
   schemas:
     Weather:
+      title: Weather
       type: string
       enum: [SUNNY, RAINING]
     Pet:
@@ -1019,7 +1021,9 @@ fn named_enum_and_uuid_bodies_carry_content_type() {
     let files = render(BODY_SPEC);
 
     // A `$ref` enum body: `request: Weather`, `json=request`, and the
-    // content-type header (named types get it, unlike bare scalars).
+    // content-type header — a titled target keeps it, where an untitled one
+    // riding no parameter collapses to its bare type name and loses it (see
+    // `marimo_plugins_null_unknown_and_propertyless_components`).
     let enum_client = files
         .get("src/acme/enum/raw_client.py")
         .expect("enum raw_client");
@@ -1724,11 +1728,12 @@ fn unauthenticated_operation_makes_the_token_optional() {
 }
 
 /// An integer `enum` becomes a plain `int` alias, and a `$ref` integer-enum
-/// request body is emittable (json=request + content-type header).
+/// request body is emittable (json=request + content-type header, which its
+/// titled target keeps).
 #[test]
 fn integer_enum_alias_and_ref_body_are_emittable() {
     let files = render(
-        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      type: integer\n      enum:\n        - 1\n        - 2\n",
+        "openapi: 3.0.1\ninfo:\n  title: Levels\npaths:\n  /p:\n    post:\n      operationId: levels_set\n      responses:\n        \"200\":\n          content:\n            application/json:\n              schema:\n                type: string\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              $ref: \"#/components/schemas/Level\"\ncomponents:\n  schemas:\n    Level:\n      title: Level\n      type: integer\n      enum:\n        - 1\n        - 2\n",
     );
     assert!(files["src/acme/types/level.py"].contains("Level = int"));
     let raw = &files["src/acme/raw_client.py"];
@@ -7099,7 +7104,7 @@ components:
     // A `null` in a list whose items are a string alias is filled from the field
     // name; the same `null` in a list of an enum is not — it takes the enum's own
     // synthesized member. A map example whose value is a JSON array keeps that
-    // array.
+    // array, wrapped as a list the way Fern 5.20.0 wraps it for this fragment.
     let reference = &files["reference.md"];
     assert!(
         reference.contains(concat!(
@@ -7113,7 +7118,9 @@ components:
             "        Role.ADMIN\n",
             "    ],\n",
             "    labels={\n",
-            "        \"roles\": [\"admin\"]\n",
+            "        \"roles\": [\n",
+            "            \"admin\"\n",
+            "        ]\n",
             "    },\n",
             ")\n",
         )),
@@ -10954,5 +10961,1665 @@ paths:
     assert!(
         !client.contains("typing.Optional[typing.Dict[str, typing.Any]]"),
         "{client}"
+    );
+}
+
+/// Palo Alto's `code/Technologies.json` (corpus row 220) writes `"servers": null`;
+/// Fern generates it as a document declaring no servers, so crozier reads the
+/// `null` as the absent key rather than refusing the document.
+#[test]
+fn a_null_servers_list_reads_as_no_servers() {
+    let files = render(
+        r#"{"openapi": "3.0.0", "info": {"title": "Technologies", "version": "Latest"},
+"servers": null,
+"paths": {"/code/api/v1/ci-inventory": {"get": {"operationId": "getCiInventory",
+  "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"type": "string"}}}}}}}}}"#,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(client.contains("def get_ci_inventory("), "{client}");
+    assert!(client.contains("base_url: str"), "{client}");
+}
+
+/// Fragments of `vfarcic/dot-ai`'s `schema/openapi.json` (corpus row 219), with the
+/// bytes its Fern 5.20.0 golden holds: a `Dict[str, Any]` field whose media example
+/// is `{}` is exampled `{"key": "value"}`, as an empty array is synthesized; and a
+/// client built with neither auth nor a base URL — the document declares a server
+/// — is constructed on one line in the README's streaming section.
+#[test]
+fn dot_ai_empty_map_examples_and_an_argument_free_client() {
+    let files = render(
+        r#"openapi: 3.0.0
+info: { title: DevOps AI Toolkit REST API, version: 2.3.1 }
+servers: [{ url: 'https://example.com' }]
+paths:
+  /api/v1/tools/manageKnowledge:
+    post:
+      tags: [knowledge]
+      operationId: manageKnowledge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/manageKnowledgeRequest' }
+            example: { operation: ingest, metadata: {} }
+      responses: { '200': { description: ok } }
+  /api/v1/events:
+    get:
+      tags: [mcp-protocol]
+      operationId: openMcpSseStream
+      responses:
+        '200':
+          description: stream
+          content: { text/event-stream: { schema: { type: string } } }
+components:
+  schemas:
+    manageKnowledgeRequest:
+      type: object
+      required: [operation]
+      properties:
+        operation: { type: string }
+        metadata:
+          type: object
+          propertyNames: { type: string }
+          additionalProperties: {}
+"#,
+    );
+    let knowledge = &files["src/acme/knowledge/client.py"];
+    assert!(
+        knowledge.contains("metadata={\"key\": \"value\"},"),
+        "{knowledge}"
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("client = AcmeApi()\n\nclient.mcp_protocol.open_mcp_sse_stream()"),
+        "{readme}"
+    );
+}
+
+/// Fragments of Vellum's gateway (corpus row 218): Fern's `getEndpointLocation`
+/// strips a tag's words from an operationId they prefix, so
+/// `credential_requests_peek` under `credential-requests` is `peek`; and a
+/// property that is an inline-object array beside `null` hoists its element as a
+/// bare array property does.
+#[test]
+fn vellum_tag_word_prefixes_and_nullable_array_elements() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: Vellum Gateway API, version: 0.11.8 }
+paths:
+  /v1/credential-requests/peek:
+    post:
+      tags: [credential-requests]
+      operationId: credential_requests_peek
+      responses: { '200': { description: ok } }
+  /v1/trust-rules/suggest:
+    post:
+      tags: [trust-rules]
+      operationId: trust_rule_suggest
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestion:
+                    type: object
+                    properties:
+                      directoryScopeOptions:
+                        anyOf:
+                          - type: array
+                            items:
+                              type: object
+                              properties: { scope: { type: string }, label: { type: string } }
+                              required: [scope, label]
+                              additionalProperties: false
+                          - type: 'null'
+"#,
+    );
+    assert!(
+        files["src/acme/credential_requests/client.py"].contains("    def peek(self, *,"),
+        "{}",
+        files["src/acme/credential_requests/client.py"]
+    );
+    let suggestion = &files["src/acme/trust_rules/types/trust_rule_suggest_response_suggestion.py"];
+    assert!(
+        suggestion.contains(
+            "typing.Optional[typing.List[TrustRuleSuggestResponseSuggestionDirectoryScopeOptionsItem]]"
+        ),
+        "{suggestion}"
+    );
+}
+
+/// Fragments of marimo's `frontend/plugins.openapi.yaml` (corpus row 221), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a `type: "null"` component is `Optional[Any]`; reading it returns it
+///   optionally, and writing it takes an optional request with no example argument
+///   and no `content-type`, documented optional in `reference.md`;
+/// - a `$ref` to a `{}` component is one required request, and a 3.1 response
+///   naming it guards the empty body;
+/// - a propertyless model that is the operation's only input is documented as
+///   `request` although the method takes nothing;
+/// - a response naming a `type: [string, "null"]` component is optional;
+/// - `Union[float, <one-const enum>]` is exampled by the enum's member;
+/// - a union whose members tag `type` with an optional `const` is discriminated;
+/// - a nullable map's nullability reaches a map nested as its value;
+/// - a required `{}` property fails the importer's request example, so the
+///   fallback's two-item lists show.
+#[test]
+fn marimo_plugins_null_unknown_and_propertyless_components() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: marimo plugin contracts, version: 1.0.0 }
+paths:
+  /plugins/cancel/output:
+    get:
+      operationId: read_cancel_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/cancel.output' } } } }
+    put:
+      operationId: write_cancel_output
+      tags: [rpc-output]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/cancel.output' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/send/output:
+    get:
+      operationId: read_send_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/send.output' } } } }
+    put:
+      operationId: write_send_output
+      tags: [rpc-output]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/send.output' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/validate/output:
+    get:
+      operationId: read_validate_output
+      tags: [rpc-output]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/validate.output' } } } }
+  /plugins/tex/data:
+    get:
+      operationId: read_tex_data
+      tags: [plugin-data]
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { $ref: '#/components/schemas/tex.data' } } } }
+    put:
+      operationId: write_tex_data
+      tags: [plugin-data]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/tex.data' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/table/data:
+    put:
+      operationId: write_table_data
+      tags: [plugin-data]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/table.data' } } }
+      responses: { '204': { description: Accepted. } }
+  /plugins/widget/input:
+    put:
+      operationId: write_widget_input
+      tags: [rpc-input]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/widget.input' } } }
+      responses: { '204': { description: Accepted. } }
+components:
+  schemas:
+    cancel.output: { type: 'null' }
+    send.output: {}
+    validate.output: { type: [string, 'null'] }
+    tex.data: { type: object, properties: {} }
+    widget.input:
+      type: object
+      properties:
+        message: {}
+        buffers: { type: array, items: { type: string } }
+      required: [message, buffers]
+    table.data:
+      type: object
+      properties:
+        totalRows:
+          anyOf:
+            - { type: number }
+            - { type: string, const: too_many }
+        filters: { $ref: '#/components/schemas/table.filter' }
+        cellStyles:
+          anyOf:
+            - type: object
+              additionalProperties:
+                type: object
+                additionalProperties: { type: object, properties: {}, additionalProperties: {} }
+            - type: 'null'
+      required: [totalRows]
+    table.filter:
+      type: object
+      properties:
+        type: { default: group, type: string, const: group }
+        children:
+          type: array
+          items:
+            anyOf:
+              - type: object
+                properties:
+                  type: { default: condition, type: string, const: condition }
+                  column_id: { type: string }
+                required: [column_id]
+              - $ref: '#/components/schemas/table.filter'
+"#,
+    );
+    assert!(
+        files["src/acme/types/cancel_output.py"]
+            .contains("CancelOutput = typing.Optional[typing.Any]"),
+        "{}",
+        files["src/acme/types/cancel_output.py"]
+    );
+    let output = &files["src/acme/rpc_output/client.py"];
+    assert!(
+        output.contains(") -> typing.Optional[CancelOutput]:"),
+        "{output}"
+    );
+    assert!(
+        output.contains("request: typing.Optional[CancelOutput] = None,"),
+        "{output}"
+    );
+    assert!(
+        output.contains("client.rpc_output.write_cancel_output()\n"),
+        "{output}"
+    );
+    assert!(
+        output.contains("self, *, request: SendOutput, request_options"),
+        "{output}"
+    );
+    assert!(
+        output.contains(") -> typing.Optional[ValidateOutput]:"),
+        "{output}"
+    );
+    let raw_output = &files["src/acme/rpc_output/raw_client.py"];
+    assert!(!raw_output.contains("\"content-type\""), "{raw_output}");
+    assert!(
+        raw_output.contains(
+            "            if _response is None or not _response.text.strip():\n                return HttpResponse(response=_response, data=None)\n            if 200 <= _response.status_code < 300:\n                _data = typing.cast(\n                    SendOutput,"
+        ),
+        "{raw_output}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains("**request:** `typing.Optional[CancelOutput]`"),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("write_tex_data</a>(...)</code>")
+            && reference.contains("**request:** `TexData`"),
+        "{reference}"
+    );
+    let plugin_data = &files["src/acme/plugin_data/client.py"];
+    assert!(
+        plugin_data.contains("total_rows=TableDataTotalRowsOne.TOO_MANY,"),
+        "{plugin_data}"
+    );
+    let cell_styles = "typing.Dict[str, typing.Optional[typing.Dict[str, typing.Optional[typing.Dict[str, typing.Any]]]]]";
+    assert!(plugin_data.contains(cell_styles), "{plugin_data}");
+    let children = &files["src/acme/types/table_filter_children_item.py"];
+    assert!(
+        children.contains("pydantic.Field(discriminator=\"type\")"),
+        "{children}"
+    );
+    let input = &files["src/acme/rpc_input/client.py"];
+    assert!(
+        input.contains("buffers=[\"buffers\", \"buffers\"],"),
+        "{input}"
+    );
+}
+
+/// Fragments of Sim's `apps/docs/openapi-v2-tables.json` (corpus row 217), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a `$ref` union whose members each require a string `const` `method` is
+///   discriminated on it, so the standalone models drop `method`;
+/// - a body component's 3.1 `examples` array fills its fields, optional ones too;
+/// - a `$ref` to a map declaring only `examples` gives a field no example, since
+///   Fern's importer reads a map's own `example` alone;
+/// - a map property whose value is `anyOf: [string, null]` is
+///   `Dict[str, Optional[str]]`;
+/// - the docstring documents a header before a query parameter, and
+///   `reference.md` the other way round.
+#[test]
+fn sim_tables_examples_arrays_const_tags_and_parameter_order() {
+    let files = render(
+        r##"{"openapi": "3.1.0", "info": {"title": "Sim Tables API v2", "version": "2.0.0"},
+"paths": {
+  "/rows": {"delete": {"tags": ["tables"], "operationId": "deleteTableRows",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DeleteTableRowsRequest"}}}},
+    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Transfer"}}}}}},
+  "patch": {"tags": ["tables"], "operationId": "updateTableRows",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UpdateTableRowsRequest"}}}},
+    "responses": {"200": {"description": "ok"}}}},
+  "/imports/{importId}/complete": {"post": {"tags": ["tables"], "operationId": "completeTableImportUpload",
+    "parameters": [
+      {"name": "importId", "in": "path", "required": true, "schema": {"type": "string"}},
+      {"name": "workspaceId", "in": "query", "required": true, "schema": {"type": "string"}},
+      {"name": "upload-token", "in": "header", "required": true, "schema": {"type": "string"}}],
+    "responses": {"200": {"description": "ok"}}}},
+  "/imports": {"post": {"tags": ["tables"], "operationId": "createTableImport",
+    "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreateTableImportRequest"}}}},
+    "responses": {"200": {"description": "ok"}}}}},
+"components": {"schemas": {
+  "DeleteTableRowsRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "rowIds": {"type": "array", "items": {"type": "string"}}},
+    "required": ["workspaceId"],
+    "examples": [{"workspaceId": "a91c4b2e", "rowIds": ["row_1f3e"]}]},
+  "UpdateTableRowsRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "data": {"$ref": "#/components/schemas/V2TableRowData"}},
+    "required": ["workspaceId", "data"]},
+  "V2TableRowData": {"type": "object", "propertyNames": {"type": "string"},
+    "additionalProperties": {"description": "cell"}, "title": "Table row data",
+    "examples": [{"email": "jane@example.com"}]},
+  "CreateTableImportRequest": {"type": "object", "properties": {
+      "workspaceId": {"type": "string"},
+      "mapping": {"type": "object", "additionalProperties": {"anyOf": [{"type": "string"}, {"type": "null"}]}}},
+    "required": ["workspaceId"]},
+  "Transfer": {"type": "object", "properties": {
+      "transfer": {"oneOf": [{"$ref": "#/components/schemas/V2PutUploadTransfer"}, {"$ref": "#/components/schemas/V2MultipartUploadTransfer"}]}}},
+  "V2PutUploadTransfer": {"type": "object", "properties": {
+      "method": {"type": "string", "const": "put"}, "url": {"type": "string"}},
+    "required": ["method", "url"]},
+  "V2MultipartUploadTransfer": {"type": "object", "properties": {
+      "method": {"type": "string", "const": "multipart"}, "partSize": {"type": "integer"}},
+    "required": ["method", "partSize"]}}}}"##,
+    );
+    let put = &files["src/acme/types/v2put_upload_transfer.py"];
+    assert!(!put.contains("method"), "{put}");
+    let transfer = &files["src/acme/types/transfer_transfer.py"];
+    assert!(
+        transfer.contains("pydantic.Field(discriminator=\"method\")"),
+        "{transfer}"
+    );
+    let tables = &files["src/acme/tables/client.py"];
+    assert!(
+        tables.contains("workspace_id=\"a91c4b2e\",\n            row_ids=[\"row_1f3e\"],"),
+        "{tables}"
+    );
+    assert!(tables.contains("data={\"key\": \"value\"},"), "{tables}");
+    assert!(
+        tables.contains("mapping: typing.Optional[typing.Dict[str, typing.Optional[str]]] = OMIT,"),
+        "{tables}"
+    );
+    assert!(
+        tables.contains(
+            "import_id=\"importId\",\n            upload_token=\"upload-token\",\n            workspace_id=\"workspaceId\","
+        ),
+        "{tables}"
+    );
+    assert!(
+        files["reference.md"]
+            .contains("import_id=\"importId\",\n    workspace_id=\"workspaceId\",\n    upload_token=\"upload-token\","),
+        "{}",
+        files["reference.md"]
+    );
+}
+
+/// Fragments of Otoroshi's own `otoroshi/conf/schemas/openapi.json` (corpus row
+/// 222), each assertion a line of its Fern 5.20.0 golden:
+/// - `application/x-ndjson` is JSON to Fern's `MediaType.isJSON`, so the bulk
+///   bodies are sent `json=` with that content type;
+/// - a `$ref` to an undeclared component is Fern's unknown, with no field docs;
+/// - a `$ref` body collapses to its bare type, with no `content-type`, whatever
+///   the request body's own description says.
+#[test]
+fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
+    let files = render(
+        r##"{"openapi": "3.0.3", "info": {"title": "Otoroshi Admin API", "version": "16.12.0-dev"},
+"paths": {
+  "/api/teams/_bulk": {"post": {"tags": ["teams"], "operationId": "otoroshi.controllers.adminapi.TeamsController.bulkCreateAction",
+    "requestBody": {"description": "nd-json", "required": true, "content": {"application/x-ndjson": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Team"}}}}},
+    "responses": {"200": {"description": "ok", "content": {"application/x-ndjson": {"schema": {"$ref": "#/components/schemas/BulkResponseBody"}}}}}}},
+  "/api/snowmonkey/_start": {"post": {"tags": ["snowmonkey"], "operationId": "otoroshi.controllers.adminapi.SnowMonkeyController.startSnowMonkey",
+    "requestBody": {"description": "the request body", "required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Empty"}}}},
+    "responses": {"200": {"description": "ok"}}}}},
+"components": {"schemas": {
+  "BulkResponseBody": {"type": "object", "description": "BulkResponseBody object"},
+  "Empty": {"type": "object", "description": "an empty body"},
+  "Team": {"type": "object", "properties": {
+      "name": {"type": "string"},
+      "tenant": {"$ref": "#/components/schemas/otoroshi.models.TenantId", "description": "Entity organization"}}}}}}"##,
+    );
+    let teams = &files["src/acme/teams/raw_client.py"];
+    assert!(
+        teams.contains("\"content-type\": \"application/x-ndjson\","),
+        "{teams}"
+    );
+    assert!(
+        teams.contains("-> HttpResponse[BulkResponseBody]:"),
+        "{teams}"
+    );
+    let team = &files["src/acme/types/team.py"];
+    assert!(
+        team.contains("    tenant: typing.Optional[typing.Any] = None\n"),
+        "{team}"
+    );
+    let snowmonkey = &files["src/acme/snowmonkey/raw_client.py"];
+    assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
+}
+
+/// Fragments of Codat Assess 1.0 as APIs.guru pins it (corpus row 224), each
+/// assertion a line of its Fern 5.20.0 golden:
+/// - a schema `$ref` into a component parameter's schema is that schema, copied
+///   at the reference with its description;
+/// - a binary download that declares no error response has no worked example,
+///   where one declaring an error keeps it.
+#[test]
+fn codat_assess_parameter_schema_refs_and_errorless_downloads() {
+    let files = render(
+        r##"{"openapi": "3.0.3", "info": {"title": "Assess API", "version": "1.0"},
+"paths": {
+  "/companies/{companyId}/excel/download": {
+    "parameters": [{"$ref": "#/components/parameters/companyId"}],
+    "get": {"tags": ["Excel reports"], "operationId": "get-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}}}},
+    "post": {"tags": ["Excel reports"], "operationId": "download-excel-report",
+      "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}},
+        "404": {"description": "Not found"}}}},
+  "/webhooks/categories": {"get": {"tags": ["Webhooks"], "operationId": "categories-updated",
+    "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CategoriesWebhook"}}}}}}}},
+"components": {
+  "parameters": {"companyId": {"in": "path", "name": "companyId", "required": true,
+    "schema": {"description": "Unique identifier for your SMB in Codat.", "format": "uuid", "type": "string"}}},
+  "schemas": {"CategoriesWebhook": {"type": "object", "properties": {
+    "companyId": {"$ref": "#/components/parameters/companyId/schema"}}}}}}"##,
+    );
+    let webhook = &files["src/acme/types/categories_webhook.py"];
+    assert!(
+        webhook.contains("typing.Optional[str],")
+            && webhook.contains("description=\"Unique identifier for your SMB in Codat.\""),
+        "{webhook}"
+    );
+    let excel = &files["src/acme/excel_reports/client.py"];
+    let get = &excel[excel.find("def get_excel_report").unwrap()..];
+    let get = &get[..get.find("def download_excel_report").unwrap()];
+    assert!(!get.contains("Examples"), "{excel}");
+    let download = &excel[excel.find("def download_excel_report").unwrap()..];
+    let download = &download[..download.find("class ").unwrap()];
+    assert!(download.contains("Examples"), "{excel}");
+}
+
+/// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
+/// support — a cookie `apiKey` beside `mutualTLS` — leaves the client with no
+/// credential at all, as its Fern 5.20.0 golden's client does.
+#[test]
+fn onevoice_unsupported_schemes_define_no_auth() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: OneVoice API, version: 1.0.0 }
+security:
+  - cookieAuth: []
+paths:
+  /health:
+    get:
+      tags: [health]
+      operationId: getHealth
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    cookieAuth: { type: apiKey, in: cookie, name: access_token }
+    mtls: { type: mutualTLS }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(!client.contains("token"), "{client}");
+}
+
+/// The Eclipse XFSC OIDC identity resolver (corpus row 228): an `openIdConnect`
+/// scheme is a bearer token to Fern, optional unless every operation requires
+/// it, as its Fern 5.20.0 golden's client takes an optional `token`.
+#[test]
+fn openid_connect_schemes_are_bearer_tokens() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: oidc-identity-resolver API, version: 1.0.0-SNAPSHOT }
+paths:
+  /resolve:
+    get:
+      tags: [resolver]
+      operationId: resolve
+      security: [{ oidc: [] }]
+      responses: { '200': { description: ok } }
+  /health:
+    get:
+      tags: [resolver]
+      operationId: health
+      responses: { '200': { description: ok } }
+components:
+  securitySchemes:
+    oidc: { type: openIdConnect, openIdConnectUrl: 'https://example.com/.well-known/openid-configuration' }
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains(
+            "token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,"
+        ),
+        "{client}"
+    );
+}
+
+/// Fragments of the People Data Labs API 5.0 (corpus row 230), each assertion a
+/// line of its Fern 5.20.0 golden: a tab in a description is four spaces, as
+/// Fern's code writer writes every tab; a body union of `required`-only
+/// fragments is `Union[typing.Any]` once its identical members collapse; and the
+/// README passes that body's placeholder on one line.
+#[test]
+fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
+    let files = render(
+        "openapi: 3.0.3\ninfo: { title: api.peopledatalabs.com, version: '5.0' }\npaths:\n  /v5/company/search:\n    post:\n      tags: [Company Endpoints]\n      operationId: company_search\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query: { type: string }\n                sql: { type: string }\n              oneOf: [{ required: [query] }, { required: [sql] }]\n      responses:\n        '200':\n          description: ok\n          content: { application/json: { schema: { $ref: '#/components/schemas/CompanyLocation' } } }\ncomponents:\n  schemas:\n    CompanyLocation:\n      type: object\n      properties:\n        country: { type: string, description: \"The company's current HQ country\\tunited states\" }\n",
+    );
+    let location = &files["src/acme/types/company_location.py"];
+    assert!(
+        location.contains("The company's current HQ country    united states"),
+        "{location}"
+    );
+    let request = &files["src/acme/company_endpoints/types/company_search_request.py"];
+    assert!(
+        request.contains("CompanySearchRequest = typing.Union[typing.Any]"),
+        "{request}"
+    );
+    let readme = &files["README.md"];
+    assert!(
+        readme.contains("    request={\"key\": \"value\"},\n"),
+        "{readme}"
+    );
+}
+
+/// Fragments of the StandRig Modeling Tools core API (corpus row 231), each
+/// assertion a line of its Fern 5.20.0 golden: a typeless `const` of any kind is
+/// `str`; an inline object's property whose alternatives are all booleans is one
+/// `bool`; and a body closed with `additionalProperties: false` but declaring no
+/// `properties` is a `Dict[str, Any]` request.
+#[test]
+fn standrig_typeless_consts_boolean_unions_and_closed_bodies() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: StandRig Modeling Tools - core API, version: 0.2.0 }
+paths:
+  /api/playback:
+    get:
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok, version]
+                properties:
+                  ok: { const: true }
+                  version: { const: 1 }
+  /api/playback/motion:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              anyOf:
+                - type: object
+                  properties:
+                    action: { type: string, const: configure }
+                    loop:
+                      anyOf: [{ type: boolean, const: false }, { type: boolean, const: true }]
+                - type: object
+                  properties:
+                    action: { type: string, const: stop }
+      responses: { '200': { description: ok } }
+  /api/playback/reload:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: false }
+      responses: { '200': { description: ok } }
+"##,
+    );
+    let playback = &files["src/acme/types/get_api_playback_response.py"];
+    assert!(
+        playback.contains("    ok: str\n") && playback.contains("    version: str\n"),
+        "{playback}"
+    );
+    let motion = files
+        .iter()
+        .find(|(path, contents)| path.ends_with(".py") && contents.contains("loop:"))
+        .map(|(_, contents)| contents)
+        .expect("a variant declares loop");
+    assert!(
+        motion.contains("loop: typing.Optional[bool] = None"),
+        "{motion}"
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("def post_api_playback_reload(\n        self, *, request: typing.Dict[str, typing.Any],"),
+        "{client}"
+    );
+}
+
+/// A component that reaches itself through an annotated `$ref` — the
+/// `allOf: [$ref, {description}]` form AWS Amplify UI Builder's `ComponentChild`
+/// uses for its own `children` — is copied once at its use site and refers to
+/// the component inside that copy, rather than copying itself without end.
+#[test]
+fn an_annotated_reference_cycle_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Amplify, version: '2021-08-11' }
+paths: {}
+components:
+  schemas:
+    ComponentChild:
+      type: object
+      properties:
+        name: { type: string }
+        children:
+          allOf:
+            - $ref: '#/components/schemas/ComponentChild'
+            - description: The child's own children.
+"##,
+    );
+    let child = &files["src/acme/types/component_child.py"];
+    assert!(child.contains("class ComponentChild("), "{child}");
+    assert!(
+        files
+            .keys()
+            .any(|path| path.ends_with("component_child_children.py")),
+        "{:?}",
+        files.keys()
+    );
+}
+
+/// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
+/// line of its Fern 5.20.0 golden:
+/// - an `anyOf` variant that is one member beside `null` is that member made
+///   optional, not a union of its own;
+/// - an array body and a `$ref` to a union body take the media type's example,
+///   an enum variant takes only its own values, and an unknown body's example
+///   drops its `null` members.
+#[test]
+fn primula_nullable_nested_variants_and_single_body_examples() {
+    let files = render(
+        r##"openapi: 3.1.0
+info: { title: Primula Tracker API V3, version: 3.0.0 }
+paths:
+  /fallout:
+    get:
+      tags: [fallout]
+      operationId: GetFallout
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - anyOf:
+                      - $ref: '#/components/schemas/Report'
+                      - type: 'null'
+                  - type: array
+                    items: { $ref: '#/components/schemas/Report' }
+  /leads/start-date:
+    patch:
+      tags: [leads]
+      operationId: PatchStartDates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/StartDateUpdate' }
+            example:
+              - lead_id: 44444444-4444-4444-8444-444444444444
+                start: '2030-09-01'
+      responses: { '204': { description: done } }
+  /students/{id}:
+    patch:
+      tags: [students]
+      operationId: PatchStudent
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateStudentRequest' }
+            example:
+              transition_date: '2030-09-01'
+              room_id: null
+      responses: { '204': { description: done } }
+components:
+  schemas:
+    Report:
+      type: object
+      properties: { total: { type: integer } }
+    StartDateUpdate:
+      type: object
+      required: [lead_id, start]
+      properties:
+        lead_id: { type: string, format: uuid }
+        start:
+          anyOf:
+            - { type: string, enum: [TBD] }
+            - { type: string, format: date }
+    UpdateStudentRequest:
+      type: object
+      properties:
+        transition_date: { type: [string, 'null'] }
+        room_id: { type: [string, 'null'] }
+      anyOf:
+        - required: [transition_date]
+        - required: [room_id]
+"##,
+    );
+    let fallout = &files["src/acme/fallout/types/get_fallout_response.py"];
+    assert!(
+        fallout.contains("typing.Optional[Report], typing.List[Report]"),
+        "{fallout}"
+    );
+    let leads = &files["src/acme/leads/client.py"];
+    assert!(
+        leads.contains("lead_id=\"44444444-4444-4444-8444-444444444444\"")
+            && leads.contains("start=datetime.date.fromisoformat("),
+        "{leads}"
+    );
+    let students = &files["src/acme/students/client.py"];
+    assert!(
+        students.contains("request={\"transition_date\": \"2030-09-01\"},"),
+        "{students}"
+    );
+}
+
+/// Fragments of the Vonage Conversation API 2.0.1 as APIs.guru pins it (corpus
+/// row 223), each assertion a line of its Fern 5.20.0 golden:
+/// - Fern's importer converts any reference whose text names `properties` as a
+///   copy at the reference — a plain `conversation_properties` component
+///   included — and names a discriminated-union variant so copied after the
+///   reference itself (`ComponentsSchemasChannelPropertiesFromOneOf0`);
+/// - a `components.requestBodies` body writing its schema inline keeps its
+///   `content-type`;
+/// - an unquoted YAML timestamp is no example for an optional string query
+///   parameter, which then goes unshown.
+#[test]
+fn vonage_conversation_properties_references_and_yaml_timestamps() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Conversation API, version: 2.0.1 }
+paths:
+  /conversations:
+    get:
+      operationId: listConversations
+      tags: [conversation]
+      parameters:
+        - in: query
+          name: date_start
+          required: false
+          schema: { example: 2018-01-01 10:00:00, format: dateTime, type: string }
+      responses:
+        "200": { description: ok, content: { application/json: { schema: { $ref: "#/components/schemas/channel" } } } }
+    post:
+      operationId: createConversation
+      tags: [conversation]
+      requestBody: { $ref: "#/components/requestBodies/Conversation" }
+      responses: { "200": { description: ok } }
+components:
+  requestBodies:
+    Conversation:
+      description: Conversation Request Payload Object
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name: { type: string }
+              properties: { $ref: "#/components/schemas/conversation_properties" }
+  schemas:
+    conversation_properties:
+      description: Conversation properties
+      type: object
+      properties: { ttl: { type: number } }
+    channel:
+      type: object
+      properties:
+        from:
+          oneOf:
+            - { description: Connect to an App User, type: object, required: [type, user], properties: { type: { type: string, example: app }, user: { type: string } } }
+            - { type: object, required: [type, number], properties: { type: { type: string, example: phone }, number: { type: string } } }
+        to:
+          oneOf:
+            - $ref: "#/components/schemas/channel/properties/from/oneOf/0"
+            - type: object
+              required: [type, number]
+              properties:
+                type: { type: string, example: phone }
+                number: { $ref: "#/components/schemas/channel/properties/from/oneOf/1/properties/number" }
+"##,
+    );
+    let client = &files["src/acme/conversation/client.py"];
+    assert!(
+        client.contains("properties: typing.Optional[CreateConversationRequestProperties] = OMIT,"),
+        "{client}"
+    );
+    assert!(!client.contains("date_start=\"2018"), "{client}");
+    let raw = &files["src/acme/conversation/raw_client.py"];
+    assert!(
+        raw.contains("\"content-type\": \"application/json\","),
+        "{raw}"
+    );
+    let variant = &files["src/acme/types/components_schemas_channel_properties_from_one_of0.py"];
+    assert!(
+        variant.contains("class ComponentsSchemasChannelPropertiesFromOneOf0(UniversalBaseModel):"),
+        "{variant}"
+    );
+    assert!(
+        variant.contains("    type: str\n    user: str\n"),
+        "{variant}"
+    );
+    let to = &files["src/acme/types/channel_to.py"];
+    assert!(
+        to.contains("pydantic.Field(discriminator=\"type\")"),
+        "{to}"
+    );
+    assert!(
+        to.contains("class ChannelTo_App(UniversalBaseModel):"),
+        "{to}"
+    );
+    assert!(files.contains_key("src/acme/types/channel_to_phone.py"));
+}
+
+/// A loopback server answering every request with `body`, so a remote `$ref`
+/// resolves through the real `curl` fetch without leaving the machine.
+fn serve_document(path: &str, body: &'static str) -> String {
+    use std::io::{BufRead, BufReader, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("bind a loopback port");
+    let url = format!("http://{}{path}", listener.local_addr().expect("address"));
+    std::thread::spawn(move || {
+        for stream in listener.incoming() {
+            let Ok(mut stream) = stream else {
+                return;
+            };
+            let mut reader = BufReader::new(stream.try_clone().expect("clone the socket"));
+            let mut line = String::new();
+            while reader.read_line(&mut line).is_ok() {
+                if line.trim().is_empty() {
+                    break;
+                }
+                line.clear();
+            }
+            let response = format!(
+                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len()
+            );
+            let _ = stream.write_all(response.as_bytes());
+        }
+    });
+    url
+}
+
+/// MockServer (corpus row 232) names the draft-04 meta-schema as a whole
+/// document. Fern imports it as one component named after its file, `Schema`,
+/// with `#` meaning that component and each `#/definitions/<name>` a component
+/// of its own, so the map of `Schema`-or-`StringArray` is `SchemaDependenciesValue`
+/// — not a class with an empty name hoisted under the referring property.
+#[test]
+fn a_whole_remote_document_is_one_component_named_after_its_file() {
+    let url = serve_document(
+        "/draft-04/schema",
+        r##"{
+  "id": "http://json-schema.org/draft-04/schema#",
+  "description": "Core schema meta-schema",
+  "definitions": {
+    "schemaArray": { "type": "array", "minItems": 1, "items": { "$ref": "#" } },
+    "stringArray": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+  },
+  "type": "object",
+  "properties": {
+    "title": { "type": "string" },
+    "not": { "$ref": "#" },
+    "allOf": { "$ref": "#/definitions/schemaArray" },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/stringArray" }]
+      }
+    }
+  }
+}"##,
+    );
+    let files = render(&format!(
+        r"openapi: 3.0.0
+info: {{ title: MockServer, version: 5.15.x }}
+paths: {{}}
+components:
+  schemas:
+    StringOrJsonSchemaNot:
+      type: object
+      properties:
+        optional: {{ type: boolean }}
+        schema: {{ $ref: '{url}' }}
+"
+    ));
+    let dependencies = &files["src/acme/types/schema_dependencies_value.py"];
+    assert!(
+        dependencies.contains("SchemaDependenciesValue = typing.Union[\"Schema\", StringArray]"),
+        "{dependencies}"
+    );
+    let array = &files["src/acme/types/schema_array.py"];
+    assert!(array.contains("from .schema import Schema\n"), "{array}");
+    assert!(
+        array.contains("SchemaArray = typing.List[Schema]"),
+        "{array}"
+    );
+    let schema = &files["src/acme/types/schema.py"];
+    assert!(
+        schema.contains("class Schema(UniversalBaseModel):"),
+        "{schema}"
+    );
+    assert!(
+        schema.contains("typing.Dict[str, \"SchemaDependenciesValue\"]"),
+        "{schema}"
+    );
+    let referrer = &files["src/acme/types/string_or_json_schema_not.py"];
+    assert!(
+        referrer.contains("typing.Optional[\"Schema\"]"),
+        "{referrer}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("string_or_json_schema_not_schema")),
+        "{:?}",
+        files.keys()
+    );
+    for (path, contents) in &files {
+        assert!(!contents.contains("from . import\n"), "{path}: {contents}");
+    }
+}
+
+/// Fragments of MockServer (corpus row 232), each assertion a line of its Fern
+/// 5.20.0 golden:
+/// - the lazy sub-client imports sort case-insensitively (`AsyncapiClient`
+///   first), and a summary's one-letter words join as camel-casing joins them;
+/// - a string example holding `"` is spelled single-quoted, and a binary
+///   download's inline body drops its media example for Fern's placeholder;
+/// - an inline body field renamed for a query-parameter collision is sent under
+///   its renamed argument;
+/// - a later error body leaves an earlier enum property behind as a type;
+/// - `allOf` of a scalar reference plus a default is that scalar, `json` is a
+///   reserved field name, and a model holding a type whose declared properties
+///   reach a cycle repairs its forward references.
+#[test]
+fn mockserver_sort_quoting_collision_and_forward_reference_shapes() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info: { title: MockServer, version: 5.15.x }
+servers:
+  - url: 'http://localhost:1080/'
+paths:
+  /asyncapi:
+    put:
+      tags: [asyncapi]
+      summary: load an AsyncAPI spec
+      responses: { '201': { description: loaded } }
+  /grpc/descriptors:
+    put:
+      tags: [grpc]
+      summary: load a gRPC proto descriptor set
+      responses: { '200': { description: loaded } }
+  /files/store:
+    put:
+      tags: [files]
+      summary: store a file in the file store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FileStoreRequest' }
+            example: { name: template.json, content: '{"status":"ok"}' }
+      responses: { '201': { description: stored } }
+  /files/retrieve:
+    put:
+      tags: [files]
+      summary: retrieve a file from the file store
+      description: returns the raw bytes of a previously stored file
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties: { name: { type: string } }
+              required: [name]
+            example: { name: template.json }
+      responses:
+        '200':
+          description: file
+          content: { application/octet-stream: { schema: { type: string, format: binary } } }
+        '404': { description: file not found }
+  /cassettes:
+    delete:
+      tags: [control]
+      summary: remove a registered cassette
+      parameters:
+        - { in: query, name: path, schema: { type: string } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties: { path: { type: string } }
+      responses: { '200': { description: removed } }
+  /retrieve:
+    put:
+      tags: [control]
+      summary: retrieve the last response
+      responses:
+        '200':
+          description: the response
+          content: { application/json: { schema: { $ref: '#/components/schemas/HttpResponse' } } }
+        '503':
+          description: not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { status: { type: string, enum: [NOT_READY] } }
+  /stop:
+    put:
+      tags: [control]
+      summary: stop the server
+      responses:
+        '200': { description: stopped }
+        '503':
+          description: stopping failed
+          content:
+            application/json:
+              schema: { type: object, properties: { error: { type: string } } }
+  /generateExpectation:
+    put:
+      tags: [expectation]
+      summary: generate an expectation
+      responses:
+        '200':
+          description: suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  suggestions: { type: array, items: { $ref: '#/components/schemas/Expectation' } }
+components:
+  schemas:
+    FileStoreRequest:
+      type: object
+      properties:
+        name: { type: string }
+        content: { type: string }
+    PositiveInteger: { type: integer, minimum: 0 }
+    PositiveIntegerDefault0:
+      allOf:
+        - $ref: '#/components/schemas/PositiveInteger'
+        - default: 0
+    Body:
+      type: object
+      properties:
+        json: { type: string }
+        minLength: { $ref: '#/components/schemas/PositiveIntegerDefault0' }
+    HttpResponse:
+      type: object
+      properties:
+        statusCode: { type: integer }
+        next: { $ref: '#/components/schemas/HttpResponse' }
+    Expectation:
+      type: object
+      properties:
+        id: { type: string }
+        httpResponse: { $ref: '#/components/schemas/HttpResponse' }
+      oneOf:
+        - required: [httpResponse]
+        - required: [id]
+"##,
+    );
+    let root = &files["src/acme/client.py"];
+    assert!(
+        root.contains("    from .asyncapi.client import AsyncapiClient, AsyncAsyncapiClient\n"),
+        "{root}"
+    );
+    let grpc = &files["src/acme/grpc/client.py"];
+    assert!(
+        grpc.contains("def load_ag_rpc_proto_descriptor_set("),
+        "{grpc}"
+    );
+    let file_store = &files["src/acme/files/client.py"];
+    assert!(
+        file_store.contains("            content='{\"status\":\"ok\"}',\n"),
+        "{file_store}"
+    );
+    assert!(
+        file_store.contains(
+            "client.files.retrieve_a_file_from_the_file_store(\n            name=\"name\",\n"
+        ),
+        "{file_store}"
+    );
+    let control = &files["src/acme/control/raw_client.py"];
+    assert!(
+        control.contains("                \"path\": delete_cassettes_request_path,\n"),
+        "{control}"
+    );
+    assert!(
+        control.contains(
+            "from ..core.http_response import AsyncHttpResponse\n\
+             from ..core.http_response import HttpResponse as core_http_response_HttpResponse\n"
+        ),
+        "{control}"
+    );
+    let unavailable = &files["src/acme/types/service_unavailable_error_body.py"];
+    assert!(
+        unavailable.contains("    error: typing.Optional[str] = None\n"),
+        "{unavailable}"
+    );
+    assert!(!unavailable.contains("status"), "{unavailable}");
+    assert!(files.contains_key("src/acme/types/service_unavailable_error_body_status.py"));
+    assert!(files["src/acme/types/positive_integer_default0.py"]
+        .contains("PositiveIntegerDefault0 = int\n"));
+    let body = &files["src/acme/types/body.py"];
+    assert!(
+        body.contains("    json_: typing_extensions.Annotated["),
+        "{body}"
+    );
+    let suggestions = &files["src/acme/expectation/types/put_generate_expectation_response.py"];
+    assert!(
+        suggestions.contains("\nupdate_forward_refs(PutGenerateExpectationResponse)\n"),
+        "{suggestions}"
+    );
+}
+
+/// MockServer's worked examples (corpus row 232), each assertion a line of its
+/// Fern 5.20.0 golden:
+/// - an undiscriminated union's example is built for the alternative Fern's
+///   heuristic ranks highest, narrowed to what it declares, then rendered with
+///   the first alternative that takes it — so `{path}` against
+///   `Union[RequestDefinition, ExpectationId]` is `ExpectationId(id="id")`, and a
+///   map against `List[…ZeroItem]` builds one empty item;
+/// - an optional `$ref` to a composition is still a required argument;
+/// - a free-form value drops its empty arrays, and `reference.md` writes it on
+///   one line while wrapping a typed list;
+/// - a map of models constructs each value, and a wrapped one-entry map takes
+///   no trailing comma;
+/// - `reference.md` documents the singular `example` beside named ones.
+#[test]
+fn mockserver_union_projection_and_free_form_examples() {
+    let files = render(
+        r##"
+openapi: 3.0.0
+info: { title: MockServer, version: 5.15.x }
+servers:
+  - url: 'http://localhost:1080/'
+paths:
+  /clear:
+    put:
+      tags: [control]
+      summary: clear matching expectations
+      description: clears expectations matching the request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/RequestDefinition'
+                - $ref: '#/components/schemas/ExpectationId'
+            example: { path: /api/users }
+      responses:
+        '200': { description: cleared }
+        '400': { description: invalid }
+  /promote:
+    put:
+      tags: [control]
+      summary: promote recorded traffic
+      description: promotes recorded exchanges
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequestDefinition' }
+            example: { method: GET, path: /api/unknown-endpoint }
+      responses:
+        '200': { description: promoted }
+        '400': { description: invalid }
+  /import:
+    put:
+      tags: [control]
+      summary: import a HAR
+      description: imports recorded traffic
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, description: a HAR export }
+            example:
+              log:
+                version: '1.2'
+                entries:
+                  - request: { method: GET, url: 'http://example.com/api/users', headers: [] }
+                    response: { status: 200, content: { text: '{"users":[]}' } }
+      responses:
+        '200': { description: imported }
+        '400': { description: invalid }
+  /stages:
+    put:
+      tags: [chaos]
+      summary: save a chaos stage
+      description: saves a stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChaosStage' }
+            example:
+              profiles: { payments.svc: { errorStatus: 503, errorProbability: 0.5 } }
+              headers: { x-tenant: [acme] }
+              matcher: { headers: { Host: [target.svc] } }
+      responses:
+        '200': { description: saved }
+        '400': { description: invalid }
+  /scenario:
+    put:
+      tags: [scenario]
+      summary: set a scenario state
+      description: sets the state
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [state]
+              properties:
+                state: { type: string }
+                nextState: { type: string }
+            examples:
+              setState: { value: { state: Deploying } }
+            example: { state: Pending, nextState: Completed }
+      responses:
+        '200': { description: set }
+        '400': { description: invalid }
+components:
+  schemas:
+    HttpRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        method: { type: string }
+        path: { type: string }
+        headers: { $ref: '#/components/schemas/KeyToMultiValue' }
+        body: { type: string }
+        cookies: { type: object, additionalProperties: { type: string } }
+        keepAlive: { type: boolean }
+        secure: { type: boolean }
+        socketAddress: { type: string }
+        queryStringParameters: { $ref: '#/components/schemas/KeyToMultiValue' }
+    OpenAPIDefinition:
+      type: object
+      additionalProperties: false
+      properties:
+        specUrlOrPayload: { type: string }
+        operationId: { type: string }
+    RequestDefinition:
+      oneOf:
+        - $ref: '#/components/schemas/HttpRequest'
+        - $ref: '#/components/schemas/OpenAPIDefinition'
+    ExpectationId:
+      type: object
+      additionalProperties: false
+      properties: { id: { type: string } }
+      required: [id]
+    KeyToMultiValue:
+      oneOf:
+        - type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              values: { type: array, items: { type: string } }
+        - type: object
+          properties:
+            keyMatchStyle: { type: string, enum: [MATCHING_KEY, SUB_SET] }
+    HttpChaosProfile:
+      type: object
+      properties:
+        errorStatus: { type: integer }
+        errorProbability: { type: number }
+    ChaosStage:
+      type: object
+      properties:
+        profiles:
+          type: object
+          additionalProperties: { $ref: '#/components/schemas/HttpChaosProfile' }
+        headers:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }
+        matcher: { $ref: '#/components/schemas/HttpRequest' }
+"##,
+    );
+    let control = &files["src/acme/control/client.py"];
+    assert!(
+        control.contains(
+            "            request=ExpectationId(\n                id=\"id\",\n            ),\n"
+        ),
+        "{control}"
+    );
+    assert!(
+        control.contains("            request=HttpRequest(),\n"),
+        "{control}"
+    );
+    assert!(!control.contains("\"headers\": []"), "{control}");
+    assert!(
+        control.contains("                    ],\n                }\n            },\n        )\n"),
+        "{control}"
+    );
+    assert!(
+        control.contains(
+            "                                \"content\": {\"text\": '{\"users\":[]}'},\n"
+        ),
+        "{control}"
+    );
+    let raw = &files["src/acme/control/raw_client.py"];
+    assert!(
+        raw.contains("self, *, request: RequestDefinition, request_options"),
+        "{raw}"
+    );
+    let chaos = &files["src/acme/chaos/client.py"];
+    assert!(
+        chaos.contains(
+            "            profiles={\n                \"payments.svc\": HttpChaosProfile(\n                    error_status=503,\n                    error_probability=0.5,\n                )\n            },\n"
+        ),
+        "{chaos}"
+    );
+    assert!(
+        chaos.contains("            matcher=HttpRequest(\n                headers=[KeyToMultiValueZeroItem()],\n"),
+        "{chaos}"
+    );
+    let reference = &files["reference.md"];
+    assert!(
+        reference.contains(
+            "        \"log\": {\"version\": \"1.2\", \"entries\": [{\"request\": {\"method\": \"GET\", \"url\": \"http://example.com/api/users\"}, \"response\": {\"status\": 200, \"content\": {\"text\": \"{\\\"users\\\":[]}\"}}}]}\n"
+        ),
+        "{reference}"
+    );
+    assert!(
+        reference.contains(
+            "    headers={\n        \"x-tenant\": [\n            \"acme\"\n        ]\n    },\n"
+        ),
+        "{reference}"
+    );
+    assert!(
+        reference.contains("client.scenario.set_a_scenario_state(\n    state=\"Pending\",\n"),
+        "{reference}"
+    );
+}
+
+/// AEMET's OpenData operationIds are Spanish and carry `ó`/`ñ`. A tag whose byte
+/// length stops inside one of those characters — `Prediccio`'s nine bytes end in
+/// the middle of `predicciónDeMontaña`'s `ó` — is no prefix of the id, so the
+/// method keeps the whole id rather than generation panicking on a slice across
+/// a character boundary.
+#[test]
+fn a_tag_ending_inside_a_multibyte_operation_id_character_generates() {
+    let files = render(
+        r"openapi: 3.0.0
+info: { title: AEMET OpenData, version: 2.0.0 }
+servers:
+  - url: https://opendata.aemet.es/opendata
+paths:
+  /api/prediccion/especifica/montaña/pasada/area/{area}:
+    get:
+      tags: [Prediccio]
+      operationId: predicciónDeMontaña
+      parameters:
+        - { in: path, name: area, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+",
+    );
+    let client = files
+        .iter()
+        .find(|(path, _)| path.ends_with("prediccio/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the tag's client");
+    // The whole id names the method: nothing of it was stripped as the tag.
+    let method = client
+        .lines()
+        .find_map(|line| line.trim().strip_prefix("def predicci"))
+        .expect("a method named from the whole operationId");
+    assert!(method.contains("de_monta"), "{client}");
+}
+
+/// AWS Lex V2 Runtime's inline request bodies annotate a reference to a model
+/// whose own field annotates a reference back to it. Copying that model at the
+/// body's use site copies it once and names the component for the cycle, where
+/// every level used to copy it again under a longer name until the stack gave
+/// out.
+#[test]
+fn an_annotated_reference_cycle_in_an_inline_request_body_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Lex Runtime V2, version: '2020-08-07' }
+paths:
+  /sessions:
+    post:
+      operationId: PutSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                condition:
+                  allOf:
+                    - $ref: '#/components/schemas/Condition'
+                    - description: The condition the session starts in.
+      responses:
+        '200': { description: stored }
+components:
+  schemas:
+    Condition:
+      type: object
+      properties:
+        name: { type: string }
+        next:
+          allOf:
+            - $ref: '#/components/schemas/Condition'
+            - description: The condition after this one.
+"##,
+    );
+    let copy = files
+        .iter()
+        .find(|(path, _)| path.ends_with("put_session_request_condition.py"))
+        .map(|(_, contents)| contents)
+        .expect("the body's copy of the condition");
+    assert!(copy.contains("class PutSessionRequestCondition("), "{copy}");
+    assert!(
+        copy.contains("    next: typing.Optional[\"Condition\"] = pydantic.Field(default=None)"),
+        "{copy}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("condition_next_next")),
+        "{:?}",
+        files.keys()
+    );
+}
+
+/// A STAC-style search filter lists GeoJSON geometries inline, and its
+/// `GeometryCollection` member's `geometries` point back at the property holding
+/// the union (`#/components/schemas/intersectsFilter/properties/intersects`).
+/// The pointer is copied where it is first met; met again inside that copy, it
+/// is the unknown type, so the copy's own geometries are `List[Any]` instead of
+/// a union copied without end.
+#[test]
+fn a_pointer_back_into_its_own_expansion_is_the_unknown_type() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: STAC Search, version: 1.0.0 }
+paths:
+  /search:
+    post:
+      operationId: search
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/intersectsFilter' }
+      responses:
+        '200': { description: found }
+components:
+  schemas:
+    intersectsFilter:
+      type: object
+      properties:
+        intersects:
+          oneOf:
+            - type: object
+              required: [type, coordinates]
+              properties:
+                type: { type: string, enum: [Point] }
+                coordinates: { type: array, items: { type: number } }
+            - type: object
+              required: [type, geometries]
+              properties:
+                type: { type: string, enum: [GeometryCollection] }
+                geometries:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/intersectsFilter/properties/intersects'
+"##,
+    );
+    let member = &files["src/acme/types/intersects_filter_intersects_geometry_collection.py"];
+    assert!(
+        member.contains("    geometries: typing.List[IntersectsFilterIntersectsGeometryCollectionGeometriesItem]\n"),
+        "{member}"
+    );
+    let copy = &files["src/acme/types/intersects_filter_intersects_geometry_collection_geometries_item_geometry_collection.py"];
+    assert!(
+        copy.contains("    geometries: typing.List[typing.Any]\n"),
+        "{copy}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("geometries_item_geometry_collection_geometries")),
+        "{:?}",
+        files.keys()
+    );
+}
+
+/// GitHub's REST description declares unions that reach themselves through a
+/// one-member alias. Exampling one used to follow the alias back into the union
+/// without consuming any of the example — in the union's scoring, in the
+/// member match and in the value itself — until the stack gave out; each now
+/// stops at the alias it is already expanding, and the example is the union's
+/// other member.
+#[test]
+fn a_union_that_reaches_itself_through_an_alias_examples_and_terminates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Hooks, version: 1.0.0 }
+servers:
+  - url: https://api.example.test
+paths:
+  /hooks:
+    post:
+      operationId: createHook
+      description: creates a hook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [insecure_ssl]
+              properties:
+                insecure_ssl: { $ref: '#/components/schemas/insecure-ssl' }
+            example: { insecure_ssl: 1 }
+      responses:
+        '201': { description: created }
+        '422': { description: invalid }
+components:
+  schemas:
+    insecure-ssl:
+      oneOf:
+        - $ref: '#/components/schemas/insecure-ssl-flag'
+        - type: integer
+    insecure-ssl-flag:
+      oneOf:
+        - $ref: '#/components/schemas/insecure-ssl'
+"##,
+    );
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("client.create_hook(\n            insecure_ssl=1,\n"),
+        "{client}"
+    );
+}
+
+/// Clarra's and Revel Digital's request models hold a field typed by an array
+/// that names itself (`Nested = List["Nested"]`). Deciding whether that field
+/// serializes through the annotation converter used to follow the alias back
+/// into itself; the alias met again adds nothing to convert, so the field is
+/// written as it is.
+#[test]
+fn a_request_field_typed_by_an_array_that_names_itself_generates() {
+    let files = render(
+        r##"openapi: 3.0.0
+info: { title: Folders, version: 1.0.0 }
+paths:
+  /folders:
+    post:
+      operationId: createFolder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Folder' }
+      responses:
+        '201': { description: created }
+components:
+  schemas:
+    Folder:
+      type: object
+      properties:
+        name: { type: string }
+        children: { $ref: '#/components/schemas/Nested' }
+    Nested:
+      type: array
+      items: { $ref: '#/components/schemas/Nested' }
+"##,
+    );
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(
+        raw.contains("                \"children\": children,\n"),
+        "{raw}"
     );
 }

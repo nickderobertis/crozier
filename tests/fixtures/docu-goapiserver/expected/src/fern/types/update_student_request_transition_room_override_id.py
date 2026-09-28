@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .update_student_request_transition_room_override_id_one import UpdateStudentRequestTransitionRoomOverrideIdOne
+
+UpdateStudentRequestTransitionRoomOverrideId = typing.Union[str, UpdateStudentRequestTransitionRoomOverrideIdOne]

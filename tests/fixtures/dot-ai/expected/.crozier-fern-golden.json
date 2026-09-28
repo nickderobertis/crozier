@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "dot-ai",
+  "corpus_spec_ref": "056941fc025b64fd9771d79333706eca513566df",
+  "corpus_spec_url": "https://raw.githubusercontent.com/vfarcic/dot-ai/056941fc025b64fd9771d79333706eca513566df/schema/openapi.json"
+}

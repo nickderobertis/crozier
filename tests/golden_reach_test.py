@@ -18,7 +18,8 @@ these cases drive instead is everything that decides what a cell *says*:
   `fixture=` row is searched with, the git blob a publisher-tree pin is checked
   against, and a result URL's quoting — over real bytes, and its `walk`, `screen`
   and `render` stages through `main` over real documents. Its `query` and
-  `fetch-pins` stages run the real guarded acquirer against a loopback server.
+  `fetch-pins` stages run the real guarded acquirer against a loopback server,
+  and its `fern-rescreen` stage runs against an executable `fern` on PATH.
   Its `probe` stage runs the instrumented build `measure` makes, so it stays
   outside `just check` as `measure` does; only its refusal of a stale build is
   driven here. What the stages commit is checked by `RankedBacklogTests`'
@@ -114,7 +115,7 @@ class SiteResolutionTests(unittest.TestCase):
         self.assertIn("return TypeRef::Named(name);", self.line_of(site.file, site.end - 1))
 
     def test_a_line_only_arm_holds_regions_from_its_match_onward(self) -> None:
-        site = self.resolve(r"src/ir.rs::auth_model[=_ => Auth::Bearer \{ required: false \}]")
+        site = self.resolve(r"src/ir.rs::auth_model[=_ => Auth::None,]")
         self.assertEqual(site.start, site.end)
         self.assertTrue(site.holds((site.start, site.start_col, site.start, site.start_col + 5)))
         self.assertFalse(site.holds((site.start, 1, site.start, 2)))
@@ -539,11 +540,32 @@ class UnreadableReasonTests(unittest.TestCase):
             local.write_text("openapi: 3.0.0\ninfo:\n  ? explicit\n  : key\n", encoding="utf-8")
             digest = hashlib.sha256(local.read_bytes()).hexdigest()
             result = golden_reach_search._census_one(
-                (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),)))
+                (str(local), digest, "yaml/Pinned-v1.yaml", (("k", ("schema.oneOf",)),), 60))
         status = result["status"]
         self.assertTrue(status.startswith("unreadable: DocumentError: yaml/Pinned-v1.yaml: line 3: "), status)
         self.assertIn("explicit `? ` mapping keys are not supported", status)
         self.assertNotIn(scratch, status)
+
+    @unittest.skipUnless(hasattr(__import__("signal"), "SIGALRM"), "no SIGALRM on this platform")
+    def test_a_census_past_the_walk_limit_is_recorded_unreadable_with_that_reason(self) -> None:
+        """One document's census cannot hold a walk up: it is cut off and named."""
+        import hashlib
+        import time
+        with tempfile.TemporaryDirectory() as scratch:
+            local = Path(scratch) / "openapi.yaml"
+            local.write_text("openapi: 3.0.0\ninfo: {title: t, version: '1'}\npaths: {}\n", encoding="utf-8")
+            digest = hashlib.sha256(local.read_bytes()).hexdigest()
+            census = golden_reach_search.CENSUS.census_document
+            golden_reach_search.CENSUS.census_document = lambda *_args, **_kwargs: time.sleep(5)
+            try:
+                started = time.monotonic()
+                result = golden_reach_search._census_one(
+                    (str(local), digest, "slow.yaml", (("k", ("schema.oneOf",)),), 1))
+                elapsed = time.monotonic() - started
+            finally:
+                golden_reach_search.CENSUS.census_document = census
+        self.assertEqual({"status": "unreadable: census exceeded 1s", "matched_keys": ""}, result)
+        self.assertLess(elapsed, 4)
 
 
 class MeasurementInputTests(unittest.TestCase):
@@ -646,12 +668,85 @@ class MeasurementInputTests(unittest.TestCase):
             for row in rows:
                 with self.subTest(candidate=row["candidate_url"]):
                     self.assertRegex(row["disposition"], r"^(registered|byte-identical|rejected): \S")
-                    rendered = [line for line in golden_reach_search._dispositions(row["golden_key"])
+                    path = evidence / "searches" / f"{row['golden_key']}.md"
+                    record = path.read_text(encoding="utf-8")
+                    build = golden_reach_search.record_build(record, path)
+                    rendered = [line for line in golden_reach_search._dispositions(row["golden_key"], build)
                                 if row["candidate_url"] in line]
                     self.assertEqual(1, len(rendered))
                     self.assertTrue(rendered[0].endswith(f" — disposition: {row['disposition']}"))
-                    record = (evidence / "searches" / f"{row['golden_key']}.md").read_text(encoding="utf-8")
                     self.assertIn(rendered[0] + "\n", record)
+
+
+class FernRescreenVerdictTests(unittest.TestCase):
+    """A re-screen's row read as Fern's verdict: its exit status and the first thing Fern printed."""
+
+    # fern check (CLI 5.67.1) over APIs.guru's drchrono.com v4 (Hunt Valley), as printed.
+    CHECK = (
+        "Warnings for generators.yml:\n"
+        "::warning::Warnings for generators.yml:\n"
+        '\tUsing "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.\n'
+        "[sdk] 54 errors\n"
+        "    [error]\n"
+        "        path: __package__.yml -> types -> AppointmentVitalsSmokingStatus\n"
+        "        issue: Enum value 449868002 is not suitable for code generation; add a \"name\" property\n"
+        "\n"
+        "Found 54 errors and 0 warnings in 0.008 seconds.\n"
+        "::error::Found 54 errors and 0 warnings in 0.008 seconds.\n"
+    )
+
+    def row(self, **fields: object) -> dict[str, object]:
+        return {"sha256": "0" * 64, "check_exit": "1", "check_diagnostic": "", **fields}
+
+    def test_a_check_refusal_quotes_its_count_and_first_issue_without_timing_or_a_semicolon(self) -> None:
+        diagnostic = golden_reach_search.fern_diagnostic(self.CHECK)
+        self.assertEqual("Found 54 errors and 0 warnings. First: Enum value 449868002 is not suitable for "
+                         'code generation, add a "name" property', diagnostic)
+        verdict = golden_reach_search.fern_verdict(self.row(check_diagnostic=diagnostic))
+        self.assertEqual(f"failed: {golden_reach_search.fern_label()} fern check exit 1: {diagnostic}", verdict)
+        # A screen cell quotes each result in backticks and joins them with `; `.
+        self.assertNotIn("; ", verdict)
+        self.assertNotIn("`", verdict)
+        self.assertNotIn("`", golden_reach_search.fern_diagnostic("issue: the `x-fern-enum` extension"))
+
+    def test_only_a_generation_settles_a_document_fern_check_accepts(self) -> None:
+        clean = self.row(check_exit="0", generate_exit="0", generate_python_files=95,
+                         generate_diagnostic="Found 0 errors")
+        self.assertEqual("passed", golden_reach_search.fern_verdict(clean))
+        unparsed = dict(clean, generate_python_files=35, generate_diagnostic=(
+            "[api]: python-sdk Unexpected error: Failed to resolve schema reference: PhoneNumber"))
+        self.assertTrue(golden_reach_search.fern_verdict(unparsed).startswith(
+            f"failed: {golden_reach_search.fern_label()} fern generate exit 0 over an unparsed document, "
+            "35 Python files: [api]: python-sdk Unexpected error"))
+        crashed = dict(clean, generate_exit="1", generate_diagnostic="ParseError: bad input")
+        self.assertEqual(f"failed: {golden_reach_search.fern_label()} fern generate exit 1 after fern check "
+                         "exit 0: ParseError: bad input", golden_reach_search.fern_verdict(crashed))
+
+    def test_the_screen_workspace_is_generate_fern_fixtures_at_the_corpus_pins(self) -> None:
+        """The pins come from the goldens' provenance; the workspace is the fixture script's own."""
+        script = (REPO / "scripts" / "generate-fern-fixture.sh").read_text(encoding="utf-8")
+        cli, name, version, _config = golden_reach_search.corpus_fern_pins()
+        self.assertEqual(("5.67.1", "fernapi/fern-python-sdk", "5.20.0"), (cli, name, version))
+        self.assertEqual("Fern CLI 5.67.1 / python-sdk 5.20.0", golden_reach_search.fern_label())
+        default = re.search(r'FERN_CLI_VERSION="\$\{FERN_CLI_VERSION:-([^}]+)\}"', script)
+        self.assertIsNotNone(default, "generate-fern-fixture.sh no longer defaults its Fern CLI version")
+        self.assertEqual(cli, default.group(1))
+        heredoc = re.search(r'cat > "\$workdir/fern/generators\.yml" <<YAML\n(.*?)\nYAML\n', script, re.S)
+        self.assertIsNotNone(heredoc, "generate-fern-fixture.sh no longer writes generators.yml from a heredoc")
+        body = heredoc.group(1)
+        for variable, value in (("api_path", "openapi/openapi.yml"), ("FERN_PYTHON_VERSION", version),
+                                ("audiences_block", ""), ("client_class_name_block", ""),
+                                ("extra_fields_block", "")):
+            body = body.replace("${" + variable + "}", value)
+        self.assertNotIn("${", body, "a heredoc variable this check does not fill")
+        expected = [line for line in body.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+        config, generators = golden_reach_search.fern_workspace_files()
+        self.assertEqual(expected, generators.splitlines())
+        self.assertEqual({"organization": "fern", "version": cli}, json.loads(config))
+
+    def test_a_run_that_timed_out_settles_nothing(self) -> None:
+        self.assertIsNone(golden_reach_search.fern_verdict(self.row(check_exit="timeout")))
+        self.assertIsNone(golden_reach_search.fern_verdict(self.row(check_exit="0", generate_exit="timeout")))
 
 
 class ArmSearchOutcomeTests(unittest.TestCase):
@@ -770,6 +865,82 @@ class ArmSearchStageTests(_StageScratch):
             sorted(((r["kind"], r["subject"], r["result"]) for r in records), reverse=True),
         )
 
+    @unittest.skipUnless(
+        hasattr(__import__("signal"), "SIGALRM")
+        and "fork" in __import__("multiprocessing").get_all_start_methods(),
+        "no SIGALRM or fork start method on this platform",
+    )
+    def test_a_walk_cuts_off_a_census_past_its_census_timeout(self) -> None:
+        """`walk --census-timeout` bounds each document, and names the one it cut off.
+
+        The walk's census runs in worker processes, so the slow census is patched
+        in before they fork; the other documents are walked as ever.
+        """
+        import multiprocessing
+        import time
+
+        previous = multiprocessing.get_start_method(allow_none=True)
+        multiprocessing.set_start_method("fork", force=True)
+        self.addCleanup(multiprocessing.set_start_method, previous, force=True)
+        census = golden_reach_search.CENSUS.census_document
+
+        def slow_on_b(parsed, root_path=None):
+            if root_path is not None and root_path.name == "b.yaml":
+                time.sleep(30)
+            return census(parsed, root_path=root_path)
+
+        golden_reach_search.CENSUS.census_document = slow_on_b
+        self.addCleanup(setattr, golden_reach_search.CENSUS, "census_document", census)
+        started = time.monotonic()
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
+                 "--jobs", "1", "--census-timeout", "1"]
+            )
+        self.assertEqual(0, code)
+        self.assertLess(time.monotonic() - started, 25)
+        evidence = golden_reach_search.EVIDENCE / "jentic"
+        with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+            enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+        self.assertEqual("unreadable: census exceeded 1s", enumeration["b.yaml"]["status"])
+        self.assertEqual(self.KEY, enumeration["a.yaml"]["matched_keys"])
+        # `recensus` takes a census cut off by time again, whole, as MongoDB's
+        # `v1-deprecated/v1.yaml` needed once the loader stopped being quadratic.
+        # `c.yaml` goes, so no fallback parser is needed to walk past it.
+        golden_reach_search.CENSUS.census_document = census
+        (self.root / "c.yaml").unlink()
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)]))
+        self.assertIn("1 of 2 documents counted, 0 through", printed.getvalue())
+        with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+            enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+        self.assertEqual(("readable", ""), (enumeration["b.yaml"]["status"], enumeration["b.yaml"]["matched_keys"]))
+
+    def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
+        """The publisher trees pin `openapi.yaml` at the root of several repositories.
+
+        Named by path alone, the copies would be one records row and one probe;
+        each is its own declarer, named `<walk>:<path>`, and the declarers a probe
+        reads resolve each name to its own copy.
+        """
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        digest = hashlib.sha256((self.root / "a.yaml").read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"other-tree\ta.yaml\t{self.REVISION}\t{digest}\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]
+            )
+        self.assertEqual(0, code)
+        documents = sorted(
+            r["subject"] for r in golden_reach_search.read_records("jentic") if r["kind"] == "document"
+        )
+        self.assertEqual(["jentic-public-apis:a.yaml", "other-tree:a.yaml"], documents)
+        self.assertEqual(
+            {"jentic-public-apis:a.yaml", "other-tree:a.yaml"},
+            {candidate for candidate, _path in golden_reach_search.declarers("jentic", self.KEY, self.root)},
+        )
+
     def test_a_walk_reads_a_precomputed_census_and_refuses_one_of_another_shape(self) -> None:
         census = self.scratch / "census.jsonl.gz"
         lines = [
@@ -813,7 +984,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn("`a.yaml` licence `passed` ref `passed` fern `failed: Fern check reports 1 error`", jentic)
         # One declarer, probed and reaching the arm and screened; the unreadable
         # document is the one outstanding item.
-        self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1 |", record)
+        self.assertIn("| `jentic` | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1 | 1 |", record)
         self.assertIn(f"build `{self.head[:12]}` only", record)
         self.assertNotIn("had moved since that build", record)
 
@@ -833,7 +1004,7 @@ class ArmSearchStageTests(_StageScratch):
         )
         self.assertEqual({(self.KEY, build, "")}, {(r["key"], r["build"], r["src_moved_since"]) for r in rows})
         record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
-        self.assertIn("| `jentic` | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |", record)
+        self.assertIn("| `jentic` | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |", record)
         # A probe that timed out stays outstanding, now with its probe's status as the blocker.
         golden_reach_search.file_probes("jentic", self.KEY, [
             {"key": self.KEY, "candidate": "a.yaml", "status": "timeout after 300s", "build": build, "reached": []},
@@ -846,6 +1017,131 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(["outstanding"])
         self.assertIn("names no build its probes were counted on", str(refused.exception))
+
+    def test_a_document_a_full_parser_rejects_is_census_refused_and_not_outstanding(self) -> None:
+        """`refuse` files a syntax rejection with its parser; the record and the list drop it."""
+        broken = self.root / "d.json"
+        broken.write_text('{"openapi": "3.0.0", "info": {', encoding="utf-8")
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        digest = hashlib.sha256(broken.read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"jentic-public-apis\td.json\t{self.REVISION}\t{digest}\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            golden_reach_search.main(["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
+                                      "--jobs", "1"])
+        if importlib.util.find_spec("ruamel") is None:
+            # Without a YAML 1.2 parser `refuse` cannot read `c.yaml` and says how to get one.
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)])
+            self.assertIn("uv run scripts/golden-reach-search.py", str(refused.exception))
+            (self.root / "c.yaml").unlink()
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)]))
+        self.assertIn("1 census-refused", printed.getvalue())
+        rows = list(golden_reach_search.read_refused("jentic").values())
+        self.assertEqual([("d.json", digest, "syntax")], [(r["document"], r["sha256"], r["verdict"]) for r in rows])
+        self.assertTrue(rows[0]["parser"].startswith("python json "), rows[0]["parser"])
+        self.assertIn("JSONDecodeError", rows[0]["evidence"])
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        with contextlib.redirect_stdout(io.StringIO()):
+            golden_reach_search.main(["outstanding"])
+        items = golden_reach_search.OUTSTANDING.read_text(encoding="utf-8")
+        self.assertNotIn("d.json", items)
+        self.assertIn("c.yaml", items)
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        # `c.yaml` stays unreadable and outstanding; `d.json` is refused and is not.
+        self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 2 |", record)
+        # A refusal filed at another digest is not this document's.
+        path = golden_reach_search.source_dir("jentic") / golden_reach_search.REFUSED_FILE
+        path.write_text(path.read_text(encoding="utf-8").replace(digest, "0" * 64), encoding="utf-8")
+        self.assertEqual([], golden_reach_search._refused(self.KEY, "jentic"))
+        path.write_text(path.read_text(encoding="utf-8").replace("\tsyntax\t", "\tbroken\t"), encoding="utf-8")
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.read_refused("jentic")
+        self.assertIn("re-run `refuse --source jentic`", str(refused.exception))
+
+    def test_recensus_counts_what_only_the_full_parser_reads_and_names_its_loader(self) -> None:
+        """A declarer written with an explicit `? ` key leaves the unread list once counted."""
+        explicit = self.root / "d.yaml"
+        explicit.write_text(textwrap.dedent("""\
+            openapi: 3.0.3
+            info: {title: explicit, version: "1"}
+            paths: {}
+            components:
+              schemas:
+                ? Pet
+                : anyOf:
+                    - oneOf: [{type: string}, {type: integer}]
+                    - type: boolean
+            """), encoding="utf-8")
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        digest = hashlib.sha256(explicit.read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"jentic-public-apis\td.yaml\t{self.REVISION}\t{digest}\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            golden_reach_search.main(["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY,
+                                      "--jobs", "1"])
+        self.assertIn(("d.yaml", ), [(d,) for d, _reason in golden_reach_search._unreadable(self.KEY, "jentic")])
+        if importlib.util.find_spec("ruamel") is None:
+            with self.assertRaises(SystemExit) as refused:
+                golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)])
+            self.assertIn("uv run scripts/golden-reach-search.py", str(refused.exception))
+            self.skipTest("ruamel.yaml, the YAML 1.2 parser `recensus` reads with, is not installed")
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(["recensus", "--source", "jentic", "--root", str(self.root)]))
+        # `d.yaml` through the fallback; `c.yaml`'s explicit key reads too, and declares nothing.
+        self.assertIn("2 of 2 documents counted, 2 through ruamel.yaml", printed.getvalue())
+        with gzip.open(golden_reach_search.EVIDENCE / "jentic" / "enumeration.tsv.gz", "rt", encoding="utf-8") as h:
+            enumeration = {row["document"]: row for row in csv.DictReader(h, delimiter="\t")}
+        self.assertEqual(("readable", self.KEY), (enumeration["d.yaml"]["status"], enumeration["d.yaml"]["matched_keys"]))
+        records = {(r["kind"], r["subject"]): r["result"] for r in golden_reach_search.read_records("jentic")}
+        self.assertEqual("census 1", records[("document", "d.yaml")])
+        fallback = golden_reach_search.read_fallback("jentic")
+        self.assertEqual({"c.yaml", "d.yaml"}, set(fallback))
+        self.assertEqual((digest, golden_reach_search.YAML_LOADER), (fallback["d.yaml"]["sha256"], fallback["d.yaml"]["loader"]))
+        self.assertEqual([], golden_reach_search._unreadable(self.KEY, "jentic"))
+
+    def test_a_full_parser_settles_what_the_census_could_not_read(self) -> None:
+        verdict = golden_reach_search.parse_verdict
+        self.assertIsNone(verdict(Path("a.json"), b'{"swagger": "2.0"}'))
+        parser, kind, evidence = verdict(Path("a.json"), b'["not", "a", "description"]')
+        self.assertEqual("not-openapi", kind)
+        self.assertIn("top level is a list", evidence)
+        self.assertEqual("syntax", verdict(Path("a.json"), b"\xff\xfe{")[1])
+        if importlib.util.find_spec("ruamel") is None:
+            self.skipTest("ruamel.yaml, the YAML 1.2 parser `refuse` reads YAML with, is not installed")
+        # The stdlib census refuses an explicit `?` key; a full parser reads it, so
+        # the document stays outstanding as the census's own failure.
+        self.assertIsNone(verdict(Path("c.yaml"), textwrap.dedent(self.UNREADABLE).encode()))
+        parser, kind, evidence = verdict(Path("c.yaml"), b"openapi: 3.0.0\npaths: {a: [\n")
+        self.assertEqual("syntax", kind)
+        self.assertTrue(parser.startswith("ruamel.yaml "), parser)
+        self.assertEqual("not-openapi", verdict(Path("c.yaml"), b"name: x\n")[1])
+        # A stream is YAML, not a syntax error: several documents are no description,
+        # unless one of them names a version, which leaves it the census's to read.
+        self.assertEqual(("not-openapi", "parses as a stream of 2 YAML documents"),
+                         (lambda v: (v[1], v[2][:38]))(verdict(Path("k.yaml"), b"kind: A\n---\nkind: B\n")))
+        self.assertIsNone(verdict(Path("k.yaml"), b"openapi: 3.0.0\n---\nkind: B\n"))
+
+    def test_the_committed_census_refusals_are_unread_documents_and_none_is_outstanding(self) -> None:
+        """Counted by name per source, apart from the outstanding items and the exhausted keys."""
+        committed = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses"
+        for module, name, value in ((golden_reach_search, "SURFACE", committed.parent),
+                                    (golden_reach_search, "EVIDENCE", committed)):
+            setattr(module, name, value)
+        with (committed / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
+            outstanding = {(row["source"], row["item"])
+                           for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+        for source in golden_reach_search.DECLARED_SOURCES:
+            refused = golden_reach_search.read_refused(source)
+            with self.subTest(source=source, census_refused=len(refused)):
+                unread = {document for document, _reason, _sha in golden_reach_search._unread("", source)} \
+                    if source in golden_reach_search.WALKS else {
+                        r["subject"] for r in golden_reach_search.read_records(source)
+                        if r["kind"] == "document" and not r["result"].startswith("census ")}
+                self.assertEqual(set(), set(refused) - unread, "a refusal names no unread document")
+                self.assertEqual(set(), {(source, d) for d in refused} & outstanding,
+                                 "a census-refused document is listed as outstanding")
 
     def test_the_committed_outstanding_list_is_what_the_committed_evidence_gives(self) -> None:
         """`outstanding.tsv` is regenerated from the records and probes beside it, byte for byte."""
@@ -864,6 +1160,242 @@ class ArmSearchStageTests(_StageScratch):
             self.assertEqual(0, golden_reach_search.main(["outstanding"]))
         self.assertEqual(committed.read_bytes(), (self.scratch / "outstanding.tsv").read_bytes(),
                          "re-run `python3 scripts/golden-reach-search.py outstanding` and commit the list")
+
+    def test_a_screened_candidate_only_holds_a_search_open_while_this_builds_probe_reaches_the_arm(self) -> None:
+        self.walk()
+        build = self.head[:12]
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", "passed",
+        ]))
+        # Screened after an earlier build reached the arm; this build's probe no longer does.
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+        ])
+        tally = golden_reach_search._tally(self.KEY, "jentic", build)
+        self.assertEqual((0, 0), (tally["reaching"], tally["passing"]))
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        tally = golden_reach_search._tally(self.KEY, "jentic", build)
+        self.assertEqual((1, 1), (tally["reaching"], tally["passing"]))
+        self.assertEqual("search-incomplete", golden_reach_search._outcome({"jentic": dict(tally, unreadable=0)}))
+
+    def test_a_reaching_test_fixture_declined_by_name_leaves_the_arm_exhausted_and_unwitnessed(self) -> None:
+        # Only the declaring and the plain document are pinned, so nothing is unreadable.
+        (self.root / "c.yaml").unlink()
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        manifest.write_text("".join(line + "\n" for line in manifest.read_text(encoding="utf-8").splitlines()
+                                    if "\tc.yaml\t" not in line), encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
+        build = self.head[:12]
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        screen = ["screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+                  "--licence", "passed", "--ref", "passed", "--fern", "passed"]
+        with self.assertRaises(SystemExit) as refused:
+            golden_reach_search.main(screen + ["--declined", golden_reach_search.FIXTURE_DECLINE])
+        self.assertIn("name the repository, the path at its pinned commit", str(refused.exception))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("| `jentic` | `search-incomplete` |", record, "a reaching candidate passing every screen")
+        declined = f"{golden_reach_search.FIXTURE_DECLINE} — `acme/tool` at `{'e' * 40}`, `test/a.yaml`"
+        self.assertEqual(0, golden_reach_search.main(screen + ["--declined", declined]))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn("| `jentic` | `exhausted` |", record)
+        self.assertIn("**Verdict: `exhausted`.**", record)
+        self.assertIn("The 1 test fixture(s) that do reach it are hand-written", record)
+        self.assertIn(f"- **Declined** (`jentic`): `a.yaml` — {declined}", record.splitlines())
+        # Once this build's probe no longer reaches the arm, the decline is kept as history.
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+        ])
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+        record = (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").read_text(encoding="utf-8")
+        self.assertIn(f"- **No longer a candidate** (`jentic`): `a.yaml` — its probe of build `{build}` "
+                      f"executes no unreached site; declined when screened: {declined}", record.splitlines())
+        self.assertNotIn("test fixture(s) that do reach it", record)
+
+    def test_retire_marks_a_candidate_this_build_no_longer_finds_reaching_the_arm_and_keeps_its_row(self) -> None:
+        self.walk()
+        build = self.head[:12]
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", "failed: Fern check reports 1 error",
+        ]))
+        (golden_reach_search.EVIDENCE / "searches").mkdir(parents=True, exist_ok=True)
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", self.KEY]))
+
+        def rows() -> list[tuple[str, str, str]]:
+            return sorted((r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")
+                          if r["kind"] in ("candidate", "screen"))
+
+        screened = rows()
+        self.assertEqual(4, len(screened))
+        self.assertIn(("candidate", "a.yaml", "census 1"), screened)
+        with contextlib.redirect_stdout(io.StringIO()):
+            # Unprobed on this build: outstanding, so nothing is marked.
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+            self.assertEqual(screened, rows())
+            golden_reach_search.file_probes("jentic", self.KEY, [
+                {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build,
+                 "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+            ])
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+            self.assertEqual(screened, rows())
+            golden_reach_search.file_probes("jentic", self.KEY, [
+                {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": build, "reached": []},
+            ])
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+        note = golden_reach_search.NOT_REACHING.format(build=build)
+        self.assertEqual([row if row[0] != "candidate" else ("candidate", "a.yaml", f"census 1 — {note}")
+                          for row in screened], rows())
+        # A document the census no longer counts reads the census's own `census 0`.
+        records = golden_reach_search.read_records("jentic")
+        golden_reach_search.replace_records("jentic", [r for r in records if r["kind"] != "document"])
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+        self.assertIn(("candidate", "a.yaml", "census 0"), rows())
+
+    # Fern's own CLI resolves its pinned version over the network and generates in
+    # Docker, so an offline test runs `fern-rescreen` against an executable `fern`
+    # on PATH: FERN_STUB picks what it does, and each call is logged.
+    FERN = """\
+        import json, os, pathlib, sys, time
+        with open(os.environ["FERN_STUB_LOG"], "a", encoding="utf-8") as log:
+            log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(pathlib.Path("fern.config.json").read_text()),
+                                  "document": pathlib.Path("openapi/openapi.yml").read_text()}) + "\\n")
+        mode = os.environ["FERN_STUB"]
+        if mode == "hang":
+            time.sleep(30)
+        if mode == "refuse":
+            print("::group::check")
+            print("Found 1 error in 0.42 seconds.")
+            print("issue: the `x-fern-enum` extension is missing; add it")
+            sys.exit(1)
+        if sys.argv[1] == "generate":
+            package = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
+            package.mkdir(parents=True)
+            (package / "client.py").write_text("class Client: ...\\n")
+        """
+
+    def test_fern_rescreen_measures_a_reaching_declarers_unmeasured_refusal_once_and_refiles_it(self) -> None:
+        if os.name == "nt":
+            self.skipTest("Windows resolves a bare `fern` only as fern.exe, which a script cannot stand in for")
+        fake_bin = self.scratch / "fake-bin"
+        fake_bin.mkdir()
+        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(self.FERN), encoding="utf-8")
+        os.chmod(fake_bin / "fern", 0o755)
+        log = self.scratch / "fern.log"
+        log.touch()
+
+        def rescreen(mode: str, *extra: str) -> str:
+            with mock.patch.dict(os.environ, {"PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+                                              "FERN_STUB": mode, "FERN_STUB_LOG": str(log)}), \
+                    contextlib.redirect_stdout(io.StringIO()) as printed:
+                self.assertEqual(0, golden_reach_search.main(
+                    ["fern-rescreen", "--source", "jentic", "--key", self.KEY, "--root", str(self.root),
+                     "--jobs", "1", *extra]))
+            return printed.getvalue()
+
+        def fern_screen() -> str:
+            latest = [json.loads(line) for line in
+                      (golden_reach_search.EVIDENCE / "jentic" / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
+            return latest[-1]["fern"]
+
+        def evidence() -> list[dict[str, str]]:
+            path = golden_reach_search.EVIDENCE / "jentic" / golden_reach_search.RESCREEN_FILE
+            return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+        def calls() -> list[dict[str, str]]:
+            return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+
+        self.walk()
+        unmeasured = "failed: Fern check reports 1 error"
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", unmeasured, "--evidence", "screened by hand",
+        ]))
+        summary = "golden-reach-search: jentic: {} documents re-screened, {} screens re-filed, {} left on their " \
+                  "earlier screen by a timeout\n"
+        # No probe of this build reaches the arm, so no declarer is a candidate.
+        self.assertEqual(summary.format(0, 0, 0), rescreen("refuse"))
+        self.assertEqual([], calls())
+
+        golden_reach_search.file_probes("jentic", self.KEY, [
+            {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": self.head[:12],
+             "reached": list(golden_reach_search.unreached_sites(self.KEY))},
+        ])
+        document = (self.root / "a.yaml").read_text(encoding="utf-8")
+        digest = hashlib.sha256(document.encode()).hexdigest()
+        # A run cut off by its timeout is recorded and settles nothing.
+        self.assertEqual(summary.format(1, 0, 1), rescreen("hang", "--timeout", "1"))
+        self.assertEqual(unmeasured, fern_screen())
+        self.assertEqual([("a.yaml", digest, "timeout")],
+                         [(r["candidate"], r["sha256"], r["check_exit"]) for r in evidence()])
+
+        # A timed-out run is taken again; the refusal is filed with its exit status and first issue.
+        self.assertEqual(summary.format(1, 1, 0), rescreen("refuse"))
+        label = golden_reach_search.fern_label()
+        refused = f"failed: {label} fern check exit 1: Found 1 error. First: the 'x-fern-enum' extension is missing, add it"
+        self.assertEqual(refused, fern_screen())
+        self.assertIn(("screen", "a.yaml fern", refused),
+                      [(r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")])
+        latest = json.loads((golden_reach_search.EVIDENCE / "jentic" / "screens.jsonl")
+                            .read_text(encoding="utf-8").splitlines()[-1])
+        self.assertEqual(("passed", "passed"), (latest["licence"], latest["ref"]))
+        self.assertEqual(f"screened by hand — re-screened: fern-rescreen.jsonl sha256 {digest[:12]}", latest["evidence"])
+        self.assertEqual([("a.yaml", digest, "1")], [(r["candidate"], r["sha256"], r["check_exit"]) for r in evidence()])
+        cli, _name, _version, _config = golden_reach_search.corpus_fern_pins()
+        self.assertEqual([["check"], ["check"]], [c["argv"] for c in calls()])
+        self.assertEqual({"organization": "fern", "version": cli}, calls()[-1]["config"])
+        self.assertEqual(document, calls()[-1]["document"])
+
+        # A refusal already measured stands: nothing runs again.
+        self.assertEqual(summary.format(0, 0, 0), rescreen("pass"))
+        self.assertEqual(2, len(calls()))
+
+        # Other bytes are another document: Fern checks it, and only a generation passes it.
+        (self.root / "a.yaml").write_text(document + "# re-pinned\n", encoding="utf-8")
+        self.assertEqual(0, golden_reach_search.main([
+            "screen", "--source", "jentic", "--key", self.KEY, "--candidate", "a.yaml",
+            "--licence", "passed", "--ref", "passed", "--fern", unmeasured,
+        ]))
+        self.assertEqual(summary.format(1, 1, 0), rescreen("pass"))
+        self.assertEqual("passed", fern_screen())
+        self.assertEqual(["check", "generate"], [c["argv"][0] for c in calls()[2:]])
+        rescreened = {r["sha256"]: r for r in evidence()}
+        self.assertEqual({digest, hashlib.sha256((document + "# re-pinned\n").encode()).hexdigest()}, set(rescreened))
+        passed = rescreened[hashlib.sha256((document + "# re-pinned\n").encode()).hexdigest()]
+        self.assertEqual(("0", "0", 1), (passed["check_exit"], passed["generate_exit"], passed["generate_python_files"]))
+
+    def test_a_row_a_witness_has_since_reached_is_probed_for_its_searched_arm_and_reads_witness_found(self) -> None:
+        # `anyof-sole-member` reaches every handling site in the committed ledger.
+        key = "anyof-sole-member"
+        self.assertEqual((), golden_reach_search.ledger_unreached(key))
+        arm = "src/ir.rs::InlineHoister::hoist_array_item_type[if members.len\\(\\) == 1 && is_inline_struct]"
+        gone = "src/ir.rs::auth_model[_ => Auth::Bearer \\{]"
+        searches = golden_reach_search.EVIDENCE / "searches"
+        searches.mkdir(parents=True)
+        (searches / f"{key}.md").write_text(
+            f"# Arm search: `{key}`\n\n{golden_reach_search.SEARCHED_FOR}`{arm}`, `{gone}`.\n", encoding="utf-8")
+        # The arm still resolves in src/; the site a repair restructured away does not.
+        self.assertEqual((arm,), golden_reach_search.searched_arm(key))
+        self.assertEqual((arm,), golden_reach_search.probe_arms(key))
+        self.assertEqual(0, golden_reach_search.main(["render", "--key", key]))
+        record = (searches / f"{key}.md").read_text(encoding="utf-8")
+        self.assertIn(f"{golden_reach_search.SEARCHED_FOR}`{arm}`, `{gone}`.", record, "the searched arm is kept")
+        self.assertIn(f"| `{key}` | `jentic` | `witness-found` |", record)
+        self.assertIn("so the search reads\n`witness-found`", record)
+        self.assertIn(f"resolves nowhere: `{gone}`. The declarers are probed against the arm's remaining sites.",
+                      record)
+        self.assertIn(f"build `{self.head[:12]}` only", record)
 
     def test_a_screened_candidate_filed_as_registered_renders_as_its_disposition(self) -> None:
         self.walk()
@@ -902,7 +1434,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertIn(f"build of commit `{earlier}`, the one the reach ledger was measured on when these probes ran,",
                       " ".join(record.split()))
         # The earlier build's probe counts; only the unreadable document is outstanding.
-        self.assertIn("| `jentic` | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 1 |", record)
+        self.assertIn("| `jentic` | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 1 |", record)
         self.assertIn("had moved since that build", record)
         self.assertNotIn("The arm this search looked for is now reached", record)
         # A witness registered since reaches every site: the ledger, re-read from a

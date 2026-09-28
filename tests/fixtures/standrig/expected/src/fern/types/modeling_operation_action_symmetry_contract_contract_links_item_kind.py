@@ -1,0 +1,23 @@
+
+
+import typing
+
+from .modeling_operation_action_symmetry_contract_contract_links_item_kind_one import (
+    ModelingOperationActionSymmetryContractContractLinksItemKindOne,
+)
+from .modeling_operation_action_symmetry_contract_contract_links_item_kind_three import (
+    ModelingOperationActionSymmetryContractContractLinksItemKindThree,
+)
+from .modeling_operation_action_symmetry_contract_contract_links_item_kind_two import (
+    ModelingOperationActionSymmetryContractContractLinksItemKindTwo,
+)
+from .modeling_operation_action_symmetry_contract_contract_links_item_kind_zero import (
+    ModelingOperationActionSymmetryContractContractLinksItemKindZero,
+)
+
+ModelingOperationActionSymmetryContractContractLinksItemKind = typing.Union[
+    ModelingOperationActionSymmetryContractContractLinksItemKindZero,
+    ModelingOperationActionSymmetryContractContractLinksItemKindOne,
+    ModelingOperationActionSymmetryContractContractLinksItemKindTwo,
+    ModelingOperationActionSymmetryContractContractLinksItemKindThree,
+]

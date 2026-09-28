@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .modeling_operation_action_binding_key_interpolation_four import ModelingOperationActionBindingKeyInterpolationFour
+from .modeling_operation_action_binding_key_interpolation_one import ModelingOperationActionBindingKeyInterpolationOne
+from .modeling_operation_action_binding_key_interpolation_three import (
+    ModelingOperationActionBindingKeyInterpolationThree,
+)
+from .modeling_operation_action_binding_key_interpolation_two import ModelingOperationActionBindingKeyInterpolationTwo
+from .modeling_operation_action_binding_key_interpolation_zero import ModelingOperationActionBindingKeyInterpolationZero
+
+ModelingOperationActionBindingKeyInterpolation = typing.Union[
+    ModelingOperationActionBindingKeyInterpolationZero,
+    ModelingOperationActionBindingKeyInterpolationOne,
+    ModelingOperationActionBindingKeyInterpolationTwo,
+    ModelingOperationActionBindingKeyInterpolationThree,
+    ModelingOperationActionBindingKeyInterpolationFour,
+]

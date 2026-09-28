@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_warp_pin_binding_key_property_one import (
+    TransactionRequestOperationsOperationsItemActionWarpPinBindingKeyPropertyOne,
+)
+from .transaction_request_operations_operations_item_action_warp_pin_binding_key_property_zero import (
+    TransactionRequestOperationsOperationsItemActionWarpPinBindingKeyPropertyZero,
+)
+
+TransactionRequestOperationsOperationsItemActionWarpPinBindingKeyProperty = typing.Union[
+    TransactionRequestOperationsOperationsItemActionWarpPinBindingKeyPropertyZero,
+    TransactionRequestOperationsOperationsItemActionWarpPinBindingKeyPropertyOne,
+]

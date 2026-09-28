@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deformer_targets_set_mode_one import (
+    TransactionRequestOperationsOperationsItemActionDeformerTargetsSetModeOne,
+)
+from .transaction_request_operations_operations_item_action_deformer_targets_set_mode_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformerTargetsSetModeZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformerTargetsSetMode = typing.Union[
+    TransactionRequestOperationsOperationsItemActionDeformerTargetsSetModeZero,
+    TransactionRequestOperationsOperationsItemActionDeformerTargetsSetModeOne,
+]

@@ -1,0 +1,23 @@
+
+
+import typing
+
+from .modeling_operation_action_symmetry_artmesh_bindings_links_item_kind_one import (
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindOne,
+)
+from .modeling_operation_action_symmetry_artmesh_bindings_links_item_kind_three import (
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindThree,
+)
+from .modeling_operation_action_symmetry_artmesh_bindings_links_item_kind_two import (
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindTwo,
+)
+from .modeling_operation_action_symmetry_artmesh_bindings_links_item_kind_zero import (
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindZero,
+)
+
+ModelingOperationActionSymmetryArtmeshBindingsLinksItemKind = typing.Union[
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindZero,
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindOne,
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindTwo,
+    ModelingOperationActionSymmetryArtmeshBindingsLinksItemKindThree,
+]

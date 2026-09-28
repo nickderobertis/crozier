@@ -1503,6 +1503,15 @@ The Helios golden pins four rules for its absolute-URL schema references:
   union whose alias carries no `Optional` (`FilterTopic = Union[Bytes32,
   List[Bytes32]]`) and whose every *reference* is `Optional[FilterTopic]`.
 
+MockServer (corpus row 232) pins a fifth: **a reference naming a whole document
+is one component named after its file.** Its schemas `$ref`
+`http://json-schema.org/draft-04/schema` (pinned to an immutable copy in
+[`corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)),
+and Fern imports the meta-schema as `Schema`, reading `#` inside it as that
+component and each `#/definitions/<name>` as a component of its own
+(`SchemaArray = typing.List[Schema]`, `StringArray`). crozier had inlined the
+document under the referring property and hoisted a class with an empty name.
+
 Two unrelated rules the same golden forced out, neither of which needs a remote
 reference to reach:
 

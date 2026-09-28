@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .otoroshi_models_simple_otoroshi_admin import OtoroshiModelsSimpleOtoroshiAdmin
+from .otoroshi_models_web_authn_otoroshi_admin import OtoroshiModelsWebAuthnOtoroshiAdmin
+
+OtoroshiModelsOtoroshiAdmin = typing.Union[OtoroshiModelsSimpleOtoroshiAdmin, OtoroshiModelsWebAuthnOtoroshiAdmin]

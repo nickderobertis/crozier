@@ -7,7 +7,7 @@
     "sha256": "db67b21611bcd749d33ffb46fd93ff849d6af24a719906327103924c3855ecc0"
   },
   "key": "oneof-array-variant-closed-object-item",
-  "outcome": "witness-found pending register-witnesses",
+  "outcome": "witness-found: the confirmed witness MockServer is registered as CORPUS row 232 (mockserver), its draft-04 $ref pinned in tests/fixtures/corpus-remote-ref-pins.tsv (see its screen in witness-search-sourcegraph/screens.jsonl:48)",
   "source": "github-publisher-trees",
-  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness registered as CORPUS row 232; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if byte matching fails"
 }

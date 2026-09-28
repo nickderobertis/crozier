@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_binding_key_interpolation_four import (
+    ModelingOperationActionDeformerBindingKeyInterpolationFour,
+)
+from .modeling_operation_action_deformer_binding_key_interpolation_one import (
+    ModelingOperationActionDeformerBindingKeyInterpolationOne,
+)
+from .modeling_operation_action_deformer_binding_key_interpolation_three import (
+    ModelingOperationActionDeformerBindingKeyInterpolationThree,
+)
+from .modeling_operation_action_deformer_binding_key_interpolation_two import (
+    ModelingOperationActionDeformerBindingKeyInterpolationTwo,
+)
+from .modeling_operation_action_deformer_binding_key_interpolation_zero import (
+    ModelingOperationActionDeformerBindingKeyInterpolationZero,
+)
+
+ModelingOperationActionDeformerBindingKeyInterpolation = typing.Union[
+    ModelingOperationActionDeformerBindingKeyInterpolationZero,
+    ModelingOperationActionDeformerBindingKeyInterpolationOne,
+    ModelingOperationActionDeformerBindingKeyInterpolationTwo,
+    ModelingOperationActionDeformerBindingKeyInterpolationThree,
+    ModelingOperationActionDeformerBindingKeyInterpolationFour,
+]

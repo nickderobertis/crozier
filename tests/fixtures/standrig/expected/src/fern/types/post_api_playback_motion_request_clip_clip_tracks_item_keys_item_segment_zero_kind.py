@@ -1,0 +1,19 @@
+
+
+import typing
+
+from .post_api_playback_motion_request_clip_clip_tracks_item_keys_item_segment_zero_kind_one import (
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindOne,
+)
+from .post_api_playback_motion_request_clip_clip_tracks_item_keys_item_segment_zero_kind_two import (
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindTwo,
+)
+from .post_api_playback_motion_request_clip_clip_tracks_item_keys_item_segment_zero_kind_zero import (
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindZero,
+)
+
+PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKind = typing.Union[
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindZero,
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindOne,
+    PostApiPlaybackMotionRequestClipClipTracksItemKeysItemSegmentZeroKindTwo,
+]

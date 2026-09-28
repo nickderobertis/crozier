@@ -1,0 +1,17 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deformer_create_deformer_warp_pins_item_multi_bindings_item_property_one import (
+    TransactionRequestOperationsOperationsItemActionDeformerCreateDeformerWarpPinsItemMultiBindingsItemPropertyOne,
+)
+from .transaction_request_operations_operations_item_action_deformer_create_deformer_warp_pins_item_multi_bindings_item_property_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformerCreateDeformerWarpPinsItemMultiBindingsItemPropertyZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformerCreateDeformerWarpPinsItemMultiBindingsItemProperty = (
+    typing.Union[
+        TransactionRequestOperationsOperationsItemActionDeformerCreateDeformerWarpPinsItemMultiBindingsItemPropertyZero,
+        TransactionRequestOperationsOperationsItemActionDeformerCreateDeformerWarpPinsItemMultiBindingsItemPropertyOne,
+    ]
+)

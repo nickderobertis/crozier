@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_multi_bindings_item_composition_one import (
+    ModelingOperationActionDeformerCreateDeformerMultiBindingsItemCompositionOne,
+)
+from .modeling_operation_action_deformer_create_deformer_multi_bindings_item_composition_zero import (
+    ModelingOperationActionDeformerCreateDeformerMultiBindingsItemCompositionZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerMultiBindingsItemComposition = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerMultiBindingsItemCompositionZero,
+    ModelingOperationActionDeformerCreateDeformerMultiBindingsItemCompositionOne,
+]

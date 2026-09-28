@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_deformer_rotation_metadata_metadata_pivot_space_one import (
+    TransactionRequestOperationsOperationsItemActionDeformerRotationMetadataMetadataPivotSpaceOne,
+)
+from .transaction_request_operations_operations_item_action_deformer_rotation_metadata_metadata_pivot_space_zero import (
+    TransactionRequestOperationsOperationsItemActionDeformerRotationMetadataMetadataPivotSpaceZero,
+)
+
+TransactionRequestOperationsOperationsItemActionDeformerRotationMetadataMetadataPivotSpace = typing.Union[
+    TransactionRequestOperationsOperationsItemActionDeformerRotationMetadataMetadataPivotSpaceZero,
+    TransactionRequestOperationsOperationsItemActionDeformerRotationMetadataMetadataPivotSpaceOne,
+]

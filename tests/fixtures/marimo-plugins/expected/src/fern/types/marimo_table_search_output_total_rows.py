@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .marimo_table_search_output_total_rows_one import MarimoTableSearchOutputTotalRowsOne
+
+MarimoTableSearchOutputTotalRows = typing.Union[float, MarimoTableSearchOutputTotalRowsOne]

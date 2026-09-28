@@ -1,0 +1,7 @@
+{"at": "2026-09-26T18:30:27.720+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 5.644169092178345, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T18:30:22.075835+00:00"}
+{"at": "2026-09-26T22:09:42.767+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 9.50170612335205, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T22:09:33.261303+00:00"}
+{"at": "2026-09-26T22:10:10.038+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 9.517977952957153, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T22:10:00.518027+00:00"}
+{"at": "2026-09-26T22:10:28.502+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 3.0789546966552734, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T22:10:25.418049+00:00"}
+{"at": "2026-09-26T22:10:54.121+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 0.026070833206176758, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T22:10:54.092932+00:00"}
+{"at": "2026-09-26T22:11:35.553+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 0.6142122745513916, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-26T22:11:34.938790+00:00"}
+{"at": "2026-09-27T00:10:32.807+00:00", "bucket": "sourcegraph", "cause": "spacing", "duration_s": 2.6448025703430176, "host": "sourcegraph", "last_status": 200, "started_at": "2026-09-27T00:10:30.162200+00:00"}

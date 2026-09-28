@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_kind_set_kind_one import ModelingOperationActionDeformerKindSetKindOne
+from .modeling_operation_action_deformer_kind_set_kind_two import ModelingOperationActionDeformerKindSetKindTwo
+from .modeling_operation_action_deformer_kind_set_kind_zero import ModelingOperationActionDeformerKindSetKindZero
+
+ModelingOperationActionDeformerKindSetKind = typing.Union[
+    ModelingOperationActionDeformerKindSetKindZero,
+    ModelingOperationActionDeformerKindSetKindOne,
+    ModelingOperationActionDeformerKindSetKindTwo,
+]

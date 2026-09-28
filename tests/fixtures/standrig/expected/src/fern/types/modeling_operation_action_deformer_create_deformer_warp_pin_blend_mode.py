@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .modeling_operation_action_deformer_create_deformer_warp_pin_blend_mode_one import (
+    ModelingOperationActionDeformerCreateDeformerWarpPinBlendModeOne,
+)
+from .modeling_operation_action_deformer_create_deformer_warp_pin_blend_mode_zero import (
+    ModelingOperationActionDeformerCreateDeformerWarpPinBlendModeZero,
+)
+
+ModelingOperationActionDeformerCreateDeformerWarpPinBlendMode = typing.Union[
+    ModelingOperationActionDeformerCreateDeformerWarpPinBlendModeZero,
+    ModelingOperationActionDeformerCreateDeformerWarpPinBlendModeOne,
+]

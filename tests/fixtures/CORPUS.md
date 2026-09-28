@@ -205,6 +205,23 @@ re-measure with `just fixtures-gaps`.
 | 194 | `deepsearch-ds-v2` | github-raw | https://raw.githubusercontent.com/DS4SD/deepsearch-toolkit/be22375ecea319b495a11e27cd0308fdcda81ba1/tools/swagger-client-generator/openapi-ds-v2.json | `be22375ecea319b495a11e27cd0308fdcda81ba1` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | IBM Deep Search (DS) API 3.0.0 as the DS4SD toolkit pins it; properties whose `anyOf` is a discriminated union |
 | 195 | `mindee-ocr` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/mindee.com/main/0.1.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | The Mindee OCR API as its publisher serves it (`info.x-jentic-source-url` is `https://api.mindee.net/openapi.json`); array items declaring `oneOf` |
 | 196 | `opencodeui` | github-raw | https://raw.githubusercontent.com/lehhair/OpenCodeUI/8a6d4eae9424317f01e88f3819b14b24e57bab10/openapi_doc.json | `8a6d4eae9424317f01e88f3819b14b24e57bab10` | GPL-3.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | The opencode server API as the OpenCodeUI web client pins it (a different document from the DROPPED `opencode` row); array items whose `anyOf` is one inline object |
+| 216 | `sim-logs` | github-raw | https://raw.githubusercontent.com/simstudioai/sim/0e477d760ca6e7eb6f347cf876191e01d6ca00d7/apps/docs/openapi-v2-logs.json | `0e477d760ca6e7eb6f347cf876191e01d6ca00d7` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document's `info.license` is Apache 2.0) | link-ok | Sim API v2 — Logs; the publisher's own description, declaring `anyof-array-variant-closed-object-item` |
+| 217 | `sim-tables` | github-raw | https://raw.githubusercontent.com/simstudioai/sim/0e477d760ca6e7eb6f347cf876191e01d6ca00d7/apps/docs/openapi-v2-tables.json | `0e477d760ca6e7eb6f347cf876191e01d6ca00d7` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document's `info.license` is Apache 2.0) | link-ok | Sim Tables API v2; the publisher's own description, declaring `anyof-array-variant-closed-object-item` |
+| 218 | `vellum-gateway` | github-raw | https://raw.githubusercontent.com/vellum-ai/vellum-assistant/74e3c467f7cb65736e0c59bda3bcce152de35783/gateway/openapi.json | `74e3c467f7cb65736e0c59bda3bcce152de35783` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Vellum Gateway API 0.11.8; the publisher's own description, declaring `anyof-array-variant-closed-object-item` |
+| 219 | `dot-ai` | github-raw | https://raw.githubusercontent.com/vfarcic/dot-ai/056941fc025b64fd9771d79333706eca513566df/schema/openapi.json | `056941fc025b64fd9771d79333706eca513566df` | MIT (the publisher repository's pinned `LICENSE`; the document's `info.license` is MIT) | link-ok | DevOps AI Toolkit REST API 2.3.1; the publisher's own description, declaring `anyof-array-variant-closed-object-item` |
+| 220 | `paloalto-code-technologies` | github-raw | https://raw.githubusercontent.com/PaloAltoNetworks/pan.dev/4e989cdd4bbda669dc73c0d3f5db90bb4989bee3/openapi-specs/code/Technologies.json | `4e989cdd4bbda669dc73c0d3f5db90bb4989bee3` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Prisma Cloud Technologies API; the publisher's own description, declaring `anyof-array-variant-struct-item` |
+| 221 | `marimo-plugins` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/433386f4573e4ad77a22439db68276e6196d3307/frontend/plugins.openapi.yaml | `433386f4573e4ad77a22439db68276e6196d3307` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | marimo plugin contracts 1.0.0; the publisher's own description, declaring `anyof-array-variant-struct-item` |
+| 222 | `otoroshi` | github-raw | https://raw.githubusercontent.com/MAIF/otoroshi/e912f12c40eaf6de0cdda2e8c43db5cf226a301d/otoroshi/conf/schemas/openapi.json | `e912f12c40eaf6de0cdda2e8c43db5cf226a301d` | Apache-2.0 (the publisher repository's pinned `LICENCE`; the document's `info.license` is Apache 2.0) | link-ok | Otoroshi Admin API 16.12.0-dev as its repository pins it (a different document from row 59's APIs.guru 1.5.0-dev); declaring `ref-pointer-undeclared-component-head` |
+| 223 | `nexmo-conversation` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/conversation/2.0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | link-ok | The Vonage (Nexmo) Conversation API 2.0.1; `$ref` pointers into a component's composition members and nested properties |
+| 224 | `codat-assess` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/codat.io/assess/1.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the `APIs-guru/openapi-directory` aggregation's own `LICENSE`; the document declares no `info.license`) | link-ok | Codat Assess 1.0; `$ref` pointers into a sibling `definitions` map's composition members |
+| 225 | `googleapis-monitoring-v1` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/monitoring/v1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | link-ok | Google Cloud Monitoring API v1 (dashboards); enum members with leading zeros |
+| 226 | `docu-goapiserver` | github-raw | https://raw.githubusercontent.com/JuaniGit/docu-goapiserver/45632ead37e9915e251896ae62e378ba738f0529/openapi.yaml | `45632ead37e9915e251896ae62e378ba738f0529` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | Primula Tracker API V3 (OpenAPI 3.1); an `anyOf` variant that is itself an `anyOf` |
+| 227 | `onevoice` | github-raw | https://raw.githubusercontent.com/f1xgun/onevoice/5dab014aaf878650bbf19aea528f72a0fe265e35/docs/api/spec/openapi.yaml | `5dab014aaf878650bbf19aea528f72a0fe265e35` | MIT (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | OneVoice API 1.0.0; a `mutualTLS` security scheme beside a supported one |
+| 228 | `xfsc-oidc-identity-resolver` | github-raw | https://raw.githubusercontent.com/eclipse-xfsc/notarization-service/4851a2be805d16c866ce04da7998ddc5056dc1a1/services/oidc-identity-resolver/deploy/openapi/openapi.yaml | `4851a2be805d16c866ce04da7998ddc5056dc1a1` | Apache-2.0 (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | Eclipse XFSC notarization service's OIDC identity resolver API; `openIdConnect` security schemes only |
+| 229 | `adyen-acs-notification` | github-raw | https://raw.githubusercontent.com/Adyen/adyen-openapi/f82d1fe674e536cc2c6b0d7946e0e827873a4fbf/json/BalancePlatformAcsNotification-v1.json | `f82d1fe674e536cc2c6b0d7946e0e827873a4fbf` | MIT (the repository's `LICENSE` at the pinned commit, recorded in `witness-search-vendor-portals/publisher-grants.tsv`; the document declares no `info.license`) | link-ok | Adyen Authentication webhooks v1 (OpenAPI 3.1); enum members whose names lead with a digit |
+| 230 | `peopledatalabs` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/peopledatalabs.com/main/5.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | People Data Labs API 5.0; an enum value led by a number past Fern's number-to-words range (`10001+`) |
+| 231 | `standrig` | github-raw | https://raw.githubusercontent.com/sayaka-aiart/StandRig/33e15309c44f8122a88e01ed7e71efc9989cb652/docs/openapi.json | `33e15309c44f8122a88e01ed7e71efc9989cb652` | Apache-2.0 (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | StandRig Modeling Tools core API 0.2.0 (OpenAPI 3.1); an `anyOf` alternative that is a string `const` |
+| 232 | `mockserver` | github-raw | https://raw.githubusercontent.com/mock-server/mockserver-monorepo/ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037/jekyll-www.mock-server.com/mockserver-openapi.yaml | `ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037` | Apache-2.0 (the repository's `LICENSE.md` at the pinned commit; the document's `info.license` is Apache 2.0) | link-ok | MockServer's own control-plane API description; its draft-04 meta-schema `$ref` is pinned in `corpus-remote-ref-pins.tsv` |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -584,9 +601,9 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 127 | `torrentarr` | `media-type-range`, `duplicate-normalized-paths` | ✅ byte-matched, no generator change |
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
-| 130 | `komga` | `media-type-range` | ⚠️ registered with 32 of 338 files in `unmatched` (40 when batch 14 registered it) |
+| 130 | `komga` | `media-type-range` | ⚠️ registered with 31 of 338 files in `unmatched` (40 when batch 14 registered it) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
-| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 306 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair) in `unmatched` and 148 crozier-only modules declared |
+| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 305 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair, 306 until row 232's example-quoting repair) in `unmatched` and 148 crozier-only modules declared |
 
 **What the three byte-matched rows cost.** AGCO: `float` joined
 `naming::is_reserved`'s builtin set; hoisted operation-scoped types are deduped by
@@ -616,7 +633,7 @@ would have left no measured reason for the gap, which is the opposite of what th
 backlog is for. Each residual is a distinct body of work, named here so the next
 change has an exact set to shorten:
 
-- **`komga` (32 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
+- **`komga` (31 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
   `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a
   `@contextlib.contextmanager`; crozier makes **6**. Komga keys its ranges on
   `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of
@@ -635,7 +652,7 @@ change has an exact set to shorten:
   carries the document's full declared property set while Fern narrows it
   (`BadRequestErrorBody` is `error` plus an optional `message` in the golden,
   against crozier's seven fields).
-- **`webflow-v2` (306 files + 148 crozier-only modules).** Two independent
+- **`webflow-v2` (305 files + 148 crozier-only modules).** Two independent
   divergences. Its `servers` carry `x-fern-server-name: Data API`, so Fern names
   the environment member `DATA_API` and threads
   `base_url=self._client_wrapper.get_environment().base` through every raw client,
@@ -994,12 +1011,16 @@ Every other usable candidate in the two ledgers is now disposed of:
   the shared sha256 in its ledger disposition — among them Milvus's
   `v2.3.x/openapi.json` and `v2.4.x/Restful API v2.openapi.json`, the same bytes
   as rows 169 and 168 under other paths.
-- **Eight documents whose keys were already `golden`** read
+- **Eight documents whose keys were already `golden`** were left
   `pending-registration; owner thin-goldens-continue` in their ledger
   disposition: SimStudio's `openapi-v2-logs.json` and `openapi-v2-tables.json`,
   Vellum's gateway, `vfarcic/dot-ai`, Palo Alto's `code/Technologies.json`,
   marimo's `plugins.openapi.yaml`, MockServer's own description and Otoroshi's
-  schema bundle.
+  schema bundle. Batch 20 registers seven of them as rows 216 to 222, and their
+  dispositions now name those rows. MockServer's mutable absolute `$ref` to the
+  draft-04 meta-schema kept it out of that batch; once
+  `corpus-remote-ref-pins.tsv` pinned that `$ref` to an immutable commit copy,
+  it was registered as row 232.
 - **The three jentic documents** the `golden-reach-witnesses` handoff proposed —
   DigitalOcean, Cvent and Sellsy — are Fern refusals, recorded in
   [`AGENTS.md`](AGENTS.md#specs-already-tried-and-rejected-do-not-re-attempt-without-a-fix-upstream)
@@ -1079,3 +1100,141 @@ object hoists its value; and a query parameter beside a body keeps the
 `content-type` header. The hoisted-map repair also closes six of `webflow-v2`'s
 open files, which proves it now; the other eight rest on the measured golden until
 the hand-off's registration commits it.
+
+## Batch 20 — the golden-reach continuation's pending witnesses (rows 216–260)
+
+The two witness-search ledgers left eight usable documents whose keys were
+already `golden` marked `pending-registration; owner thin-goldens-continue`.
+Seven are registered here, each generated by Route A at Python 5.20.0 / CLI
+5.67.1 and byte-matching with `unmatched: &[]`:
+
+| # | name | the key its ledger row names | status |
+|---:|---|---|---|
+| 216 | `sim-logs` | `anyof-array-variant-closed-object-item` | ✅ byte-matched with no repair |
+| 217 | `sim-tables` | `anyof-array-variant-closed-object-item` | ✅ byte-matched after five repairs |
+| 218 | `vellum-gateway` | `anyof-array-variant-closed-object-item` | ✅ byte-matched after two repairs |
+| 219 | `dot-ai` | `anyof-array-variant-closed-object-item` | ✅ byte-matched after two repairs |
+| 220 | `paloalto-code-technologies` | `anyof-array-variant-struct-item` | ✅ byte-matched after one repair |
+| 221 | `marimo-plugins` | `anyof-array-variant-struct-item` | ✅ byte-matched after ten repairs |
+| 222 | `otoroshi` | `ref-pointer-undeclared-component-head` | ✅ byte-matched after three repairs |
+
+The repairs were read off Fern's own sources — the CLI 5.67.1 importer bundle and
+the `fernapi/fern-python-sdk:5.20.0` generator — rather than inferred from one
+golden, and each is pinned offline by a `tests/generation.rs` test on a fragment
+of its document:
+- Parsing and naming: a `"servers": null` reads as no servers (Palo Alto); a tag's
+  words are stripped from an operationId they prefix, so Vellum's
+  `credential_requests_peek` under `credential-requests` is `peek`
+  (`getEndpointLocation`); `application/x-ndjson` is JSON (`MediaType.isJSON`,
+  Otoroshi's bulk bodies).
+- Types: an inline-object array beside `null` hoists its element (Vellum); a
+  component that is only `type: "null"` is `Optional[Any]`, and a response naming
+  a nullable component is optional (marimo); a union's members tagged by a string
+  `const` — on `type` whether or not it is required, on any property when it is —
+  are discriminated (`getPossibleDiscriminants`: marimo's search filters, Sim's
+  upload transfers); a nullable map's nullability reaches a map nested as its
+  value (marimo); a map property whose value is `anyOf: [string, null]` is
+  `Dict[str, Optional[str]]` (Sim); a `$ref` to an undeclared component is the
+  unknown type with no field docs (Otoroshi).
+- Requests: a `$ref` to a `type: "null"` or `{}` component is an optional or a
+  required `request`; a `$ref` body sent as one `request` collapses to its bare
+  type name and loses its `content-type` unless its target is titled, whatever the
+  request body's own description says (`buildRequest`); a propertyless model that
+  is an operation's only input is documented as `request` in `reference.md`.
+- Examples: an empty map example is synthesized as `{"key": "value"}` (dot-ai);
+  a body component's 3.1 `examples` array fills its fields, while a map declaring
+  only `examples` gives a property none (Sim); a union's later enum alternative is
+  exampled by its member outside a path parameter (marimo); a required unexampled
+  `{}` property fails the importer's request example, so the fallback's two-item
+  lists show (marimo); the docstring writer puts headers before query parameters
+  (Sim); a 3.1 response naming a `{}` component guards the empty body (marimo),
+  which also closes one of `komga`'s residual files; and an argument-free client
+  is constructed on one line in the README (dot-ai).
+
+The eighth, MockServer's own description
+(`mock-server/mockserver-monorepo@ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037`,
+`jekyll-www.mock-server.com/mockserver-openapi.yaml`, Apache-2.0), `$ref`s
+`http://json-schema.org/draft-04/schema`, a mutable absolute reference that
+`scripts/fetch-corpus.sh` refuses unpinned. It is registered below as row 232:
+`corpus-remote-ref-pins.tsv` pins that reference to `json-schema-org/json-schema-spec`
+at `d4c5b3a2…`, the commit the json-schema.org site's `_includes/draft-04`
+submodule pins, with its digest. Its first probe crashed crozier (an
+annotated-reference cycle, and a class with an empty name hoisted for the
+meta-schema), so it is a golden for the bugs it exposed whatever its reach
+measures; the three closures that named it as their witness name row 232 again.
+
+### Rows 223–232: witnesses the arm searches found
+
+The instrumented probes of build `1131cbbcb0e3` found nine Fern-accepted,
+licensed documents that execute a handling site no earlier golden reached, and
+MockServer (row 232) is the witness the batch above set aside. Each is
+registered here with its Fern 5.20.0 golden and byte-matches with
+`unmatched: &[]`:
+
+| # | name | the row whose unreached site it reached | status |
+|---:|---|---|---|
+| 223 | `nexmo-conversation` | `ref-pointer-composition-index`, `ref-pointer-nested-properties` | ✅ byte-matched after three repairs |
+| 224 | `codat-assess` | `ref-pointer-composition-index` | ✅ byte-matched after two repairs |
+| 225 | `googleapis-monitoring-v1` | `enum-leading-zero-member` | ✅ byte-matched after one repair |
+| 226 | `docu-goapiserver` | `anyof-anyof-variant` | ✅ byte-matched after four repairs |
+| 227 | `onevoice` | `mutualTLS` | ✅ byte-matched after one repair |
+| 228 | `xfsc-oidc-identity-resolver` | `securityscheme-type-openidconnect` | ✅ byte-matched after one repair |
+| 229 | `adyen-acs-notification` | `enum-leading-digit-identifier` | ✅ byte-matched after one repair |
+| 230 | `peopledatalabs` | `enum-leading-digit-identifier` | ✅ byte-matched after five repairs |
+| 231 | `standrig` | `anyof-string-const-variant` | ✅ byte-matched after three repairs |
+| 232 | `mockserver` | `oneof-array-variant-closed-object-item` | ✅ byte-matched after the repairs listed under MockServer below |
+
+Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
+- Pointers: Fern's importer converts any reference whose text names `properties`
+  as a copy at the reference, walking the whole pointer to a composition member,
+  and names a discriminated variant so copied after the pointer (Vonage); a
+  schema `$ref` into `#/components/parameters/<name>/schema` is that schema
+  copied with its description (Codat).
+- Requests: an inline schema in `components.requestBodies` keeps its
+  `content-type`, and an optional query parameter whose example YAML reads as a
+  timestamp is left out of the worked call (Vonage).
+- Names: a zero-led digit run collapses onto the word before it like any other
+  (`ALIGN_PERCENTILE_05` is `ALIGN_PERCENTILE05`); only a name *led* by one,
+  which Fern refuses, keeps crozier's legal fallback (Cloud Monitoring); and a
+  value that is a number *whole* is spelled as that number with its leading
+  zeros read away, so `01` is `ONE` (Adyen); past 9,999 Fern's speller writes
+  `undefined`, so `10001+` is `UNDEFINED`, and consecutive single letters join
+  as lodash re-splits Fern's `upperFirst(camelCase(…))` name, so `u.s.` is `US`
+  (People Data Labs).
+- Layout: a tab written into generated Python is four spaces (Fern's code
+  writer), identical inline body-union members collapse to `Union[typing.Any]`,
+  and the README passes that body's placeholder on one line (People Data Labs).
+- Types: an `anyOf` variant that is one member beside `null` is that member made
+  optional (Primula Tracker).
+- Typeless shapes: a schema with no `type` but a `const` is `str`, an inline
+  object's property whose alternatives are all booleans is one `bool`, and a
+  body closed with `additionalProperties: false` but declaring no `properties`
+  is a `Dict[str, Any]` request (StandRig).
+- Auth: an `openIdConnect` scheme is a bearer token, required on OAuth2's terms
+  (XFSC); a requirement naming only schemes Fern does not support — a cookie
+  `apiKey`, `mutualTLS` — defines no auth at all (OneVoice).
+- Examples: a binary download the importer declines shows only Fern's first IR
+  *error* example, so one declaring no error response has none (Codat); an array
+  body and a `$ref`-to-union body take the media type's example, an enum variant
+  matches only its own values, and an unknown body's example drops its `null`
+  members (Primula Tracker).
+- MockServer: a `$ref` naming a whole remote document is one component named
+  after its file, with `#` meaning it and `#/definitions/<name>` a component of
+  its own; an annotated reference that cycles back terminates; a degraded
+  `Union[Any]` keeps its declared properties as reference edges, so a model
+  holding it repairs its forward references; `allOf` of a scalar reference plus
+  annotations is that scalar; `json` is a reserved field name; a later error
+  body leaves an earlier enum property behind as a type; an optional `$ref` to a
+  composition is a required argument, and an inline body field renamed for a
+  parameter collision is sent under its renamed argument. Its examples: a union
+  is exampled as Fern's heuristic picks and narrows it; a free-form value drops
+  nulls and empty arrays; a map of models constructs each value; a string
+  holding `"` is single-quoted; a binary download's inline body drops its media
+  example; and `reference.md` documents the singular `example`, writing a
+  free-form map value on one line. Its names: sub-client imports sort
+  case-insensitively, and a summary's one-letter words join as camel-casing
+  joins them (`load_ag_rpc_…`).
+
+OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
+unresolved without a diagnostic, so its golden is the document's types and
+client wrapper only; the wrapper is what pins the auth arm.

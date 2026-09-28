@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_part_tint_tint_mode_one import (
+    TransactionRequestOperationsOperationsItemActionPartTintTintModeOne,
+)
+from .transaction_request_operations_operations_item_action_part_tint_tint_mode_zero import (
+    TransactionRequestOperationsOperationsItemActionPartTintTintModeZero,
+)
+
+TransactionRequestOperationsOperationsItemActionPartTintTintMode = typing.Union[
+    TransactionRequestOperationsOperationsItemActionPartTintTintModeZero,
+    TransactionRequestOperationsOperationsItemActionPartTintTintModeOne,
+]

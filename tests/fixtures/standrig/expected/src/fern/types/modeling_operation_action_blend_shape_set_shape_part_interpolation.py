@@ -1,0 +1,27 @@
+
+
+import typing
+
+from .modeling_operation_action_blend_shape_set_shape_part_interpolation_four import (
+    ModelingOperationActionBlendShapeSetShapePartInterpolationFour,
+)
+from .modeling_operation_action_blend_shape_set_shape_part_interpolation_one import (
+    ModelingOperationActionBlendShapeSetShapePartInterpolationOne,
+)
+from .modeling_operation_action_blend_shape_set_shape_part_interpolation_three import (
+    ModelingOperationActionBlendShapeSetShapePartInterpolationThree,
+)
+from .modeling_operation_action_blend_shape_set_shape_part_interpolation_two import (
+    ModelingOperationActionBlendShapeSetShapePartInterpolationTwo,
+)
+from .modeling_operation_action_blend_shape_set_shape_part_interpolation_zero import (
+    ModelingOperationActionBlendShapeSetShapePartInterpolationZero,
+)
+
+ModelingOperationActionBlendShapeSetShapePartInterpolation = typing.Union[
+    ModelingOperationActionBlendShapeSetShapePartInterpolationZero,
+    ModelingOperationActionBlendShapeSetShapePartInterpolationOne,
+    ModelingOperationActionBlendShapeSetShapePartInterpolationTwo,
+    ModelingOperationActionBlendShapeSetShapePartInterpolationThree,
+    ModelingOperationActionBlendShapeSetShapePartInterpolationFour,
+]

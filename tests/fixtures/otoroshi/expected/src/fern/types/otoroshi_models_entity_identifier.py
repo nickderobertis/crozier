@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .otoroshi_models_service_descriptor_identifier import OtoroshiModelsServiceDescriptorIdentifier
+from .otoroshi_models_service_group_identifier import OtoroshiModelsServiceGroupIdentifier
+
+OtoroshiModelsEntityIdentifier = typing.Union[
+    OtoroshiModelsServiceDescriptorIdentifier, OtoroshiModelsServiceGroupIdentifier
+]

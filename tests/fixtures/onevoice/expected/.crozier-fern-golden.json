@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "onevoice",
+  "corpus_spec_ref": "5dab014aaf878650bbf19aea528f72a0fe265e35",
+  "corpus_spec_url": "https://raw.githubusercontent.com/f1xgun/onevoice/5dab014aaf878650bbf19aea528f72a0fe265e35/docs/api/spec/openapi.yaml"
+}

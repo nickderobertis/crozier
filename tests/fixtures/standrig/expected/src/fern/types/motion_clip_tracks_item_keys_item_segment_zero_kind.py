@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .motion_clip_tracks_item_keys_item_segment_zero_kind_one import MotionClipTracksItemKeysItemSegmentZeroKindOne
+from .motion_clip_tracks_item_keys_item_segment_zero_kind_two import MotionClipTracksItemKeysItemSegmentZeroKindTwo
+from .motion_clip_tracks_item_keys_item_segment_zero_kind_zero import MotionClipTracksItemKeysItemSegmentZeroKindZero
+
+MotionClipTracksItemKeysItemSegmentZeroKind = typing.Union[
+    MotionClipTracksItemKeysItemSegmentZeroKindZero,
+    MotionClipTracksItemKeysItemSegmentZeroKindOne,
+    MotionClipTracksItemKeysItemSegmentZeroKindTwo,
+]

@@ -65,7 +65,7 @@ pub struct OpenApi {
     #[serde(default)]
     pub security: Option<Vec<SecurityRequirement>>,
     /// Declared API servers; the first drives the generated environment enum.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "de_servers")]
     pub servers: Vec<Server>,
     /// Declared operation tags. Fern sometimes preserves the declared tag spelling
     /// in generated docs rather than title-casing an operation-only tag.
@@ -949,6 +949,14 @@ pub struct Schema {
     /// same position is inlined — so the origin has to outlive the rewrite.
     #[serde(skip)]
     pub multi_type_union: bool,
+    /// The `$ref` this node was copied from by `normalize_schema_pointer_refs`,
+    /// when that reference named `properties` and so was one Fern's importer
+    /// converts as a copy at its use site. Not a wire field: a discriminated-union
+    /// variant copied this way is declared under a name read off the reference
+    /// itself, as Fern's variant conversion names it (the Vonage Conversation
+    /// API's `ComponentsSchemasChannelPropertiesFromOneOf0`).
+    #[serde(skip)]
+    pub ref_origin: Option<String>,
     /// Set when this node stood where a schema object was expected but the document
     /// carried a non-object value there (e.g. a JSON array, from a `required` list
     /// misplaced inside `properties`). Not a wire field — the `properties`
@@ -1140,6 +1148,18 @@ where
     D: serde::Deserializer<'de>,
 {
     Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// Deserialize the document's `servers`, tolerating an explicit `null`.
+///
+/// Palo Alto's `code/Technologies.json` writes `"servers": null`, and Fern
+/// generates it as a document declaring no servers, so `null` reads as the
+/// absent key does.
+fn de_servers<'de, D>(deserializer: D) -> std::result::Result<Vec<Server>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    Ok(Option::<Vec<Server>>::deserialize(deserializer)?.unwrap_or_default())
 }
 
 /// Deserialize an object's `properties` map, tolerating a value that is not a
@@ -1490,6 +1510,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // normalizations run, so every later pass sees one self-contained document.
     let remote_origin = crate::refs::resolve(&mut doc, &crate::refs::CurlFetcher, path)?;
 
+    normalize_parameter_schema_refs(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -1795,6 +1816,22 @@ fn inline_schema_pointers(
         }
     }
     if let Some(reference) = schema.reference.clone() {
+        // A pointer met again inside its own expansion names the node it is
+        // being copied from, and copying it once more would never end: the
+        // STAC-style `intersectsFilter` geometry union lists a
+        // `GeometryCollection` whose `geometries` point back at
+        // `#/components/schemas/intersectsFilter/properties/intersects`. Left a
+        // reference, it was expanded again wherever it was used; it is the
+        // unknown type instead, as an unresolvable reference is. A plain
+        // component reference stays one: it names a class and terminates.
+        if expanding.contains(&reference) && schema_pointer_target(components, &reference).is_some()
+        {
+            *schema = Schema {
+                description: schema.description.take(),
+                ..Schema::default()
+            };
+            return;
+        }
         if !expanding.contains(&reference) {
             if let Some(target) = schema_pointer_target(components, &reference) {
                 *schema = target.clone();
@@ -1802,6 +1839,23 @@ fn inline_schema_pointers(
                 inline_schema_pointers(schema, components, expanding);
                 expanding.pop();
                 return;
+            }
+            // Fern's v1 importer converts *any* reference whose text names
+            // `properties` as a copy at the reference (`$ref.includes("properties")`
+            // in its `convertSchema`), walking the whole pointer: a plain
+            // component named `conversation_properties` and a pointer that ends on
+            // a composition member (the Vonage Conversation API's
+            // `…/channel/properties/from/oneOf/0`) are copied like the pointers
+            // above, where one without the word keeps its reference.
+            if reference.contains("properties") {
+                if let Some(target) = properties_reference_target(components, &reference) {
+                    *schema = target.clone();
+                    schema.ref_origin = Some(reference.clone());
+                    expanding.push(reference);
+                    inline_schema_pointers(schema, components, expanding);
+                    expanding.pop();
+                    return;
+                }
             }
         }
     }
@@ -1869,6 +1923,50 @@ fn schema_pointer_target<'a>(
         index += 1;
     }
     (!ends_on_member).then_some(schema)
+}
+
+/// The schema a reference naming `properties` resolves to by a walk of the whole
+/// pointer, a composition member at its end included — Fern's
+/// `resolveSchemaReference` — or `None` where no component or segment names one.
+fn properties_reference_target<'a>(
+    components: &'a IndexMap<String, Schema>,
+    reference: &str,
+) -> Option<&'a Schema> {
+    let pointer = reference.strip_prefix("#/components/schemas/")?;
+    let segments: Vec<String> = pointer
+        .split('/')
+        .map(|segment| segment.replace("~1", "/").replace("~0", "~"))
+        .collect();
+    let (name, path) = segments.split_first()?;
+    let mut schema = components.get(name)?;
+    let mut index = 0;
+    while index < path.len() {
+        schema = match path[index].as_str() {
+            "properties" => {
+                index += 1;
+                schema.properties.get(path.get(index)?)?
+            }
+            "items" => schema.items.as_deref()?,
+            "additionalProperties" => match &schema.additional_properties {
+                Some(AdditionalProperties::Schema(value)) => value,
+                _ => return None,
+            },
+            composition @ ("allOf" | "oneOf" | "anyOf") => {
+                index += 1;
+                let members = match composition {
+                    "allOf" => &schema.all_of,
+                    "oneOf" => &schema.one_of,
+                    _ => &schema.any_of,
+                };
+                members
+                    .as_ref()?
+                    .get(path.get(index)?.parse::<usize>().ok()?)?
+            }
+            _ => return None,
+        };
+        index += 1;
+    }
+    Some(schema)
 }
 
 /// An object schema whose `required` is not a list is Fern's unknown type: its
@@ -2017,7 +2115,13 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
         .components
         .schemas
         .iter()
-        .filter(|(_, schema)| schema.explicitly_nullable())
+        // A component that is only `type: "null"` is nullable too: a `$ref` to
+        // marimo-plugins' `marimo-chatbot.cancel_prompt.output` answers
+        // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
+        .filter(|(_, schema)| {
+            schema.explicitly_nullable()
+                || matches!(&schema.ty, Some(TypeField::Single(ty)) if ty == "null")
+        })
         .map(|(name, _)| name.clone())
         .collect();
     if nullable.is_empty() {
@@ -2204,8 +2308,9 @@ fn normalize_response_schema_refs(doc: &mut OpenApi) {
             for response in operation.responses.values_mut() {
                 for media in response.content.values_mut() {
                     if let Some(schema) = &mut media.schema {
-                        resolve_response_schema_refs(
+                        resolve_indexed_schema_refs(
                             schema,
+                            "#/paths/",
                             &schemas,
                             &mut std::collections::BTreeSet::new(),
                         );
@@ -2214,6 +2319,34 @@ fn normalize_response_schema_refs(doc: &mut OpenApi) {
             }
         }
     }
+}
+
+/// Resolve schema `$ref`s that point into a component parameter's schema
+/// (`#/components/parameters/companyId/schema`) as a copy at the reference, the
+/// way Fern's importer resolves any local pointer: Codat's webhook bodies share
+/// their identifier fields' type and description with the path parameters.
+fn normalize_parameter_schema_refs(doc: &mut OpenApi) {
+    let mut schemas = IndexMap::new();
+    for (name, parameter) in &doc.components.parameters {
+        if let Some(schema) = &parameter.schema {
+            let pointer = format!(
+                "#/components/parameters/{}/schema",
+                json_pointer_segment(name)
+            );
+            index_schema_pointers(schema, &pointer, &mut schemas);
+        }
+    }
+    if schemas.is_empty() {
+        return;
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        resolve_indexed_schema_refs(
+            schema,
+            "#/components/parameters/",
+            &schemas,
+            &mut std::collections::BTreeSet::new(),
+        );
+    });
 }
 
 fn json_pointer_segment(segment: &str) -> String {
@@ -2246,41 +2379,42 @@ fn index_schema_pointers(schema: &Schema, pointer: &str, schemas: &mut IndexMap<
     }
 }
 
-fn resolve_response_schema_refs(
+fn resolve_indexed_schema_refs(
     schema: &mut Schema,
+    prefix: &str,
     schemas: &IndexMap<String, Schema>,
     resolving: &mut std::collections::BTreeSet<String>,
 ) {
     if let Some(reference) = schema
         .reference
         .as_deref()
-        .filter(|reference| reference.starts_with("#/paths/"))
+        .filter(|reference| reference.starts_with(prefix))
         .map(str::to_string)
     {
         if resolving.insert(reference.clone()) {
             if let Some(target) = schemas.get(&reference) {
                 *schema = target.clone();
-                resolve_response_schema_refs(schema, schemas, resolving);
+                resolve_indexed_schema_refs(schema, prefix, schemas, resolving);
             }
             resolving.remove(&reference);
         }
         return;
     }
     for property in schema.properties.values_mut() {
-        resolve_response_schema_refs(property, schemas, resolving);
+        resolve_indexed_schema_refs(property, prefix, schemas, resolving);
     }
     if let Some(items) = &mut schema.items {
-        resolve_response_schema_refs(items, schemas, resolving);
+        resolve_indexed_schema_refs(items, prefix, schemas, resolving);
     }
     if let Some(AdditionalProperties::Schema(value)) = &mut schema.additional_properties {
-        resolve_response_schema_refs(value, schemas, resolving);
+        resolve_indexed_schema_refs(value, prefix, schemas, resolving);
     }
     for member in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
         .into_iter()
         .flatten()
         .flatten()
     {
-        resolve_response_schema_refs(member, schemas, resolving);
+        resolve_indexed_schema_refs(member, prefix, schemas, resolving);
     }
 }
 
@@ -3086,10 +3220,23 @@ components:
                 .and_then(TypeField::primary),
             Some("string")
         );
-        // A pointer ending on a composition member, through a non-schema
-        // `additionalProperties`, to nothing, through `$defs`, or at a whole
-        // component is left for the lowering.
-        for kept in ["member", "open", "missing", "defs", "whole"] {
+        // A pointer whose text names `properties` is copied even where it ends
+        // on a composition member, as Fern's importer copies the Vonage
+        // Conversation API's `…/channel/properties/from/oneOf/0`, and the copy
+        // remembers the pointer it came from.
+        let member = &revision.properties["member"];
+        assert!(member.reference.is_none());
+        assert_eq!(
+            member.ty.as_ref().and_then(TypeField::primary),
+            Some("string")
+        );
+        assert_eq!(
+            member.ref_origin.as_deref(),
+            Some("#/components/schemas/Page/properties/choice/anyOf/1")
+        );
+        // One through a non-schema `additionalProperties`, to nothing, through
+        // `$defs`, or at a whole component is left for the lowering.
+        for kept in ["open", "missing", "defs", "whole"] {
             assert!(
                 revision.properties[kept].reference.is_some(),
                 "{kept} should keep its $ref"
@@ -3102,9 +3249,12 @@ components:
         assert_eq!(again.any_of.as_ref().map(Vec::len), Some(2));
         assert_eq!(again.nullable, Some(true));
         assert_eq!(again.description.as_deref(), Some("the reply"));
-        // A pointer met again while its own copy expands terminates.
+        // A pointer met again while its own copy expands terminates, as the
+        // unknown type: left a reference, the IR expanded it again wherever
+        // it was used.
         let next = &doc.components.schemas["Loop"].properties["next"];
-        assert!(next.reference.is_some());
+        assert!(next.reference.is_none());
+        assert!(next.ty.is_none() && next.properties.is_empty() && next.one_of.is_none());
     }
 
     #[test]

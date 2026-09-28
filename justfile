@@ -242,6 +242,23 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e viskit_studio_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e embedpdf_cloudpdf_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e npq_registration_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sim_logs_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sim_tables_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e vellum_gateway_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e dot_ai_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e paloalto_code_technologies_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e marimo_plugins_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e otoroshi_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e standrig_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mockserver_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_acs_notification_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_conversation_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e codat_assess_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e googleapis_monitoring_v1_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e docu_goapiserver_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e onevoice_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xfsc_oidc_identity_resolver_matches_fern_output
 
 # Format the codebase in place.
 format:
@@ -319,6 +336,16 @@ test-fixtures-coverage:
     python3 tests/fixtures_coverage_test.py
     python3 tests/golden_reach_test.py
     PYTHONPATH=tests/without-posix-modules python3 tests/golden_reach_test.py
+
+# The arm search's YAML fallback against the census's stdlib loader: identical
+# counts on every registered YAML source, and each refused form's pinned sample
+# read as what it declares. Outside `check` — it needs the search's pinned
+# ruamel.yaml (read from the script's own inline metadata) and the network for
+# the link-ok corpus and the sample; CI's live-e2e leg runs it.
+test-census-fallback:
+    ./scripts/fetch-corpus.sh
+    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
+    CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.

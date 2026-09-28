@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "vellum-gateway",
+  "corpus_spec_ref": "74e3c467f7cb65736e0c59bda3bcce152de35783",
+  "corpus_spec_url": "https://raw.githubusercontent.com/vellum-ai/vellum-assistant/74e3c467f7cb65736e0c59bda3bcce152de35783/gateway/openapi.json"
+}

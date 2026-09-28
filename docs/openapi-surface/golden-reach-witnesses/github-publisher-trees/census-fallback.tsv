@@ -1,0 +1,12 @@
+document	sha256	loader
+openapi-specs/dlp/IncidentsAPI.yaml	35f442b98167274dbc989571be8a40cbd3e7e65022800424c25b6b04da94a138	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi-specs/dlp/ReportsAPI.yaml	7569dcae5d7b9fa3f191be7fb1e851628352304bde27860ccd510555f4ab833d	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi-specs/dlp/dlp-api-spec-v2.yaml	28301d7f48d3da679ff8a473b11c3b6ec228b868c855671ceea9a111f3165231	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi/.raw/v2.yaml	5735932aa0a23bc5a75ee4f7ffe31e3935356534f30834f9e7e47f82c6e51150	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi/v2.yaml	87bdfa4de7bf15032a432b197eb3f8a51c86646762a0fa07e6b89b65cb59333d	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi/v2/openapi-2025-03-12.yaml	28fdedfc57a13d9046469e0b77799e6a31de2f81186f19733fb78e0b12638a35	ruamel.yaml 0.19.1 (YAML 1.2)
+openapi/v2/private/openapi-private-preview-snapshot-namespaces.yaml	6dceba82b5270e90cdd9049a4c4f0403aaf345417e146836441b780da78d2f19	ruamel.yaml 0.19.1 (YAML 1.2)
+spec/yaml/twilio_api_v2010.yaml	d2f981cea4d45f41c1dde64681301047479830aab7e779035475605fdcda0bc9	ruamel.yaml 0.19.1 (YAML 1.2)
+yaml/BalancePlatformNegativeBalanceCompensationWarningNotification-v1.yaml	1d611b60504549f08872818f859c90783d32be051d475d466069d378077023a7	ruamel.yaml 0.19.1 (YAML 1.2)
+yaml/ManagementService-v1.yaml	ceb6d28f77c7b4d28f1af9d1d3e2b7d58433f535cacc0b5006487cc85e919489	ruamel.yaml 0.19.1 (YAML 1.2)
+yaml/ManagementService-v3.yaml	84ba50fc7acd4beef3f21701df18e615b012eb6524d2665a1a537151746b14ad	ruamel.yaml 0.19.1 (YAML 1.2)

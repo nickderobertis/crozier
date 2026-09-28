@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 182 of the 214 registered sources are `link-ok` (a split
+  and 199 of the 231 registered sources are `link-ok` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-unfetched` to downgrade that to a warning, or `--vendored-only` to
   census the offline half on purpose.
@@ -503,35 +503,50 @@ class _YamlReader:
         return "".join(out)
 
     def flow(self, rest: str, index: int) -> Any:
-        """A flow collection, gathered across lines until its brackets balance."""
-        buffer = rest
+        """A flow collection, gathered across lines until its brackets balance.
+
+        The depth is counted over each gathered line alone, carrying a quoted
+        scalar still open at a line's end into the next, and the lines are
+        joined once: counting the whole buffer again at every line made a
+        document written as one JSON collection in a `.yaml` file (MongoDB's
+        `v1-deprecated/v1.yaml`, 65,880 lines) quadratic, past two hours.
+        """
+        parts = [rest]
+        depth, open_quote = self.flow_depth_open(rest)
         cursor = index + 1
-        while self.flow_depth(buffer) > 0 and cursor < len(self.lines):
-            buffer = f"{buffer} {self.strip_comment(self.lines[cursor]).strip()}"
+        while depth > 0 and cursor < len(self.lines):
+            piece = self.strip_comment(self.lines[cursor]).strip()
+            parts.append(piece)
+            more, open_quote = self.flow_depth_open(f"{open_quote} {piece}" if open_quote else piece)
+            depth += more
             cursor += 1
-        if self.flow_depth(buffer) != 0:
+        if depth != 0:
             self.fail(index, "a flow collection is never closed")
+        buffer = " ".join(parts)
         self.pos = cursor
         value, end = self.flow_node(buffer, 0, index)
         if buffer[end:].strip():
             self.fail(index, f"unexpected text after a flow collection: {buffer[end:].strip()!r}")
         return value
 
-    def flow_depth(self, text: str) -> int:
+    def flow_depth_open(self, text: str) -> tuple[int, str]:
+        """The bracket depth `text` adds, and the quoted scalar it leaves open (from its quote)."""
         depth = 0
         cursor = 0
         while cursor < len(text):
             char = text[cursor]
             if char in "\"'":
                 end = self.scan_quoted(text, cursor)
-                cursor = end if end is not None else len(text)
+                if end is None:
+                    return depth, text[cursor:]
+                cursor = end
                 continue
             if char in "[{":
                 depth += 1
             elif char in "]}":
                 depth -= 1
             cursor += 1
-        return depth
+        return depth, ""
 
     def flow_node(self, text: str, start: int, index: int) -> tuple[Any, int]:
         cursor = self.skip_space(text, start)
@@ -547,8 +562,14 @@ class _YamlReader:
             if end is None:
                 self.fail(index, "a quoted scalar in a flow collection is never closed")
             return self.unquote(self.line_at(index), text[cursor:end]), end
+        # A plain scalar runs to a flow indicator, or to a `:` that a space, the
+        # end of the text or a flow indicator follows: YAML 1.2 keeps any other
+        # `:` in the scalar, so `[urn:ietf:params:oauth:client-assertion-type:jwt-bearer]`
+        # is one URN and not a key and value.
         end = cursor
-        while end < len(text) and text[end] not in ",]}:":
+        while end < len(text) and text[end] not in ",]}":
+            if text[end] == ":" and (end + 1 == len(text) or text[end + 1] in " \t,[]{}"):
+                break
             end += 1
         raw = text[cursor:end].strip()
         if raw.startswith("*"):
@@ -572,6 +593,11 @@ class _YamlReader:
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
             if cursor < len(text) and text[cursor] == ":":
+                if closer == "]":
+                    # `[x: y]` is a sequence of one single-pair mapping, which
+                    # this reader does not build; it refuses it rather than
+                    # dropping the pair.
+                    self.fail(index, "a single-pair mapping inside a flow sequence is not supported")
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 mapping[value] = entry
             else:
@@ -1521,8 +1547,8 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "7613c1076e2847f9",
-    "prop_type_ref": "e73a4bfddf0a3452",
+    "hoist_union_variant": "02d8d8e27d684799",
+    "prop_type_ref": "98ec4d7137906c59",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -2092,7 +2118,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(zip(
 NAMING_PORT_DIGESTS = {
     "sanitize_identifier": "9da64b4ddcfd04c9",
     "digit_word": "4d705bf2bae3d676",
-    "enum_words": "67bfc6430bc02e52",
+    "enum_words": "e4d20db244630b00",
     "whole_value_enum_words": "baffe48e924ec4a3",
     "numeric_enum_identifier": "34ad46d37aed1b81",
     "finalize_enum_ident": "2c40bdccda3bcf5f",
@@ -2156,31 +2182,43 @@ def enum_identifier(value: str) -> str:
         whole = "not_applicable"
     if whole is not None:
         return whole
+    # A zero-led value that is a number whole is spelled as that number.
+    if len(folded) > 1 and folded[0] == "0" and folded.isascii() and folded.isdigit():
+        number = int(folded)
+        if number <= 9999:
+            return numeric_enum_name(number)
     spaced = "".join(
         "" if char in "'\u2019" else
         char if char.isascii() and char.isalnum() else " "
         for char in folded
     )
     words = split_words(spaced)
-    leading_zero = "_" in folded and any(
-        len(word) > 1 and word[0] == "0" and word.isascii() and word.isdigit()
-        for word in words
+    # Only a *first* word that is a zero-led digit run keeps the legal fallback.
+    leading_zero = "_" in folded and bool(words) and (
+        len(words[0]) > 1 and words[0][0] == "0" and words[0].isascii() and words[0].isdigit()
     )
+    value_leads_with_digit = bool(folded) and folded[0].isascii() and folded[0].isdigit()
     if words:
         first = words[0]
         digits = len(first) - len(first.lstrip("0123456789"))
         if digits:
             number = first[:digits]
-            if len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
-                words[0] = numeric_enum_name(int(number)) + ("_" + first[digits:] if first[digits:] else "")
-    join_letters = any(char.isascii() and char.isdigit() for char in folded) or all(
-        not char.isascii() or not char.isalpha() or char.isupper() for char in folded
-    )
+            spelled = None
+            if value_leads_with_digit:
+                significant = number.lstrip("0") or "0"
+                if int(significant) <= 9999:
+                    spelled = numeric_enum_name(int(significant))
+                elif len(folded.encode()) > digits:
+                    spelled = "undefined"
+            elif len(number) <= 4 and (len(number) == 1 or number[0] != "0"):
+                spelled = numeric_enum_name(int(number))
+            if spelled is not None:
+                words[0] = spelled + ("_" + first[digits:] if first[digits:] else "")
     merged: list[str] = []
     previous_single = False
     for word in words:
         single = len(word) == 1 and word.isascii() and word.isalpha()
-        if join_letters and single and previous_single:
+        if single and previous_single:
             merged[-1] += word
         else:
             merged.append(word)
@@ -2819,15 +2857,24 @@ def _candidate_tag_values(
         )
         if references_components and not (enum_tag and tagged_by_enum):
             if candidate == "type":
-                supported = candidate in required_names(variant) and isinstance(
-                    schema_example(field), str
+                supported = (
+                    candidate in required_names(variant)
+                    and isinstance(schema_example(field), str)
+                    or written(field, "const")
+                    and isinstance(field["const"], str)
                 )
-            elif candidate == "role":
+            elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)
             elif candidate in ("message_type", "mcp_server_type"):
                 supported = True
+            elif candidate == "name":
+                supported = singleton_enum
             else:
-                supported = False
+                supported = (
+                    candidate in required_names(variant)
+                    and written(field, "const")
+                    and isinstance(field["const"], str)
+                )
             if not supported:
                 return None
         elif not singleton_enum:

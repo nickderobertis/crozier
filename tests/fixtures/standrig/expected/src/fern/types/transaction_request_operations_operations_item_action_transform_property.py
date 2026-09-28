@@ -1,0 +1,31 @@
+
+
+import typing
+
+from .transaction_request_operations_operations_item_action_transform_property_five import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyFive,
+)
+from .transaction_request_operations_operations_item_action_transform_property_four import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyFour,
+)
+from .transaction_request_operations_operations_item_action_transform_property_one import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyOne,
+)
+from .transaction_request_operations_operations_item_action_transform_property_three import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyThree,
+)
+from .transaction_request_operations_operations_item_action_transform_property_two import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyTwo,
+)
+from .transaction_request_operations_operations_item_action_transform_property_zero import (
+    TransactionRequestOperationsOperationsItemActionTransformPropertyZero,
+)
+
+TransactionRequestOperationsOperationsItemActionTransformProperty = typing.Union[
+    TransactionRequestOperationsOperationsItemActionTransformPropertyZero,
+    TransactionRequestOperationsOperationsItemActionTransformPropertyOne,
+    TransactionRequestOperationsOperationsItemActionTransformPropertyTwo,
+    TransactionRequestOperationsOperationsItemActionTransformPropertyThree,
+    TransactionRequestOperationsOperationsItemActionTransformPropertyFour,
+    TransactionRequestOperationsOperationsItemActionTransformPropertyFive,
+]
