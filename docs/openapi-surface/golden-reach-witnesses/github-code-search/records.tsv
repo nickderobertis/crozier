@@ -3575,10 +3575,10 @@ enum-empty-identifier-member	document	ycm-core/ycmd:docs/openapi.yml@a290328810c
 enum-empty-identifier-member	document	zenobia-pay/core:openapi.yml@d9d99ef8b28d7f849c574cba019076e4cd53ac4a	census 0	candidates.jsonl
 enum-empty-identifier-member	query	"enum:" filename:openapi.yaml	67456	queries.jsonl
 enum-empty-identifier-member	query	"enum:" filename:openapi.yml	80768	queries.jsonl
-enum-empty-identifier-member	screen	Rabbittee/body-composition:gas/openapi.yml@15010ae9983ddcb3eb5e8aef9cf992695d714c37 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 11 errors, e.g. Enum value 幾乎不動 is not suitable for code generation.	screens.jsonl
+enum-empty-identifier-member	screen	Rabbittee/body-composition:gas/openapi.yml@15010ae9983ddcb3eb5e8aef9cf992695d714c37 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 11 errors and 0 warnings. First: Enum value 幾乎不動 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	screens.jsonl
 enum-empty-identifier-member	screen	Rabbittee/body-composition:gas/openapi.yml@15010ae9983ddcb3eb5e8aef9cf992695d714c37 licence	passed	screens.jsonl
 enum-empty-identifier-member	screen	Rabbittee/body-composition:gas/openapi.yml@15010ae9983ddcb3eb5e8aef9cf992695d714c37 ref	passed	screens.jsonl
-enum-empty-identifier-member	screen	aki-lua87/PSO2API:doc/openapi.yml@0edeccfa8a94c5b86f4a7217777aa009d6c191d8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 6 errors, e.g. Path must start with a slash.	screens.jsonl
+enum-empty-identifier-member	screen	aki-lua87/PSO2API:doc/openapi.yml@0edeccfa8a94c5b86f4a7217777aa009d6c191d8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 6 errors and 0 warnings. First: Path must start with a slash.	screens.jsonl
 enum-empty-identifier-member	screen	aki-lua87/PSO2API:doc/openapi.yml@0edeccfa8a94c5b86f4a7217777aa009d6c191d8 licence	passed	screens.jsonl
 enum-empty-identifier-member	screen	aki-lua87/PSO2API:doc/openapi.yml@0edeccfa8a94c5b86f4a7217777aa009d6c191d8 ref	passed	screens.jsonl
 enum-leading-digit-identifier	document	28Pollux28/galvanize:galvanize-instancer/api/openapi.yaml.in@87073547b1f048bd814628f23029082df522b0e5	census 0	candidates.jsonl
@@ -4785,7 +4785,7 @@ format-hostname	query	"format: hostname" filename:openapi.yaml	172	queries.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 fern	passed	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 licence	passed	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 ref	passed	screens.jsonl
-format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Path parameter is unreferenced in endpoint: item_id.	screens.jsonl
+format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 1 error and 0 warnings. First: Path parameter is unreferenced in endpoint: item_id.	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 licence	passed	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 ref	passed	screens.jsonl
 format-ipv4	document	9seconds/topographer:openapi.yaml@17fb92994da69ddd9027a66a123be82a57b36cd2	census 1	candidates.jsonl
@@ -5971,16 +5971,16 @@ http-dpop	document	zerkerlabs/treeship:docs/content/docs/api/hub-openapi.yaml@df
 http-dpop	document	zerkerlabs/treeship:docs/public/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5	census 1	candidates.jsonl
 http-dpop	query	"\"scheme\": \"dpop\"" filename:openapi.json	2	queries.jsonl
 http-dpop	query	"scheme: dpop" filename:openapi.yaml	18	queries.jsonl
-http-dpop	screen	aleju03/mania-hub:docs/companella-api.openapi.yaml@57739d322d81010dc391c4a20ba4beb84bb39044 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 6 errors, e.g. Endpoint requires auth, but no auth is defined.	screens.jsonl
+http-dpop	screen	aleju03/mania-hub:docs/companella-api.openapi.yaml@57739d322d81010dc391c4a20ba4beb84bb39044 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 6 errors and 0 warnings. First: Endpoint requires auth, but no auth is defined.	screens.jsonl
 http-dpop	screen	aleju03/mania-hub:docs/companella-api.openapi.yaml@57739d322d81010dc391c4a20ba4beb84bb39044 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
 http-dpop	screen	aleju03/mania-hub:docs/companella-api.openapi.yaml@57739d322d81010dc391c4a20ba4beb84bb39044 ref	passed	screens.jsonl
-http-dpop	screen	sgrastar/authrim:packages/ar-token/openapi/token.openapi.yaml@5abbf92096aad6ae653f158e8cb04441532e9b3c fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 refuses the document: Unsupported OpenAPI version: 3.2.0	screens.jsonl
+http-dpop	screen	sgrastar/authrim:packages/ar-token/openapi/token.openapi.yaml@5abbf92096aad6ae653f158e8cb04441532e9b3c fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: [api]: Unsupported OpenAPI version: 3.2.0	screens.jsonl
 http-dpop	screen	sgrastar/authrim:packages/ar-token/openapi/token.openapi.yaml@5abbf92096aad6ae653f158e8cb04441532e9b3c licence	passed	screens.jsonl
 http-dpop	screen	sgrastar/authrim:packages/ar-token/openapi/token.openapi.yaml@5abbf92096aad6ae653f158e8cb04441532e9b3c ref	passed	screens.jsonl
-http-dpop	screen	zerkerlabs/treeship:docs/content/docs/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 10 errors, e.g. Endpoint requires auth, but no auth is defined.	screens.jsonl
+http-dpop	screen	zerkerlabs/treeship:docs/content/docs/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 10 errors and 4 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown. First: Endpoint requires auth, but no auth is defined.	screens.jsonl
 http-dpop	screen	zerkerlabs/treeship:docs/content/docs/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 licence	passed	screens.jsonl
 http-dpop	screen	zerkerlabs/treeship:docs/content/docs/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 ref	passed	screens.jsonl
-http-dpop	screen	zerkerlabs/treeship:docs/public/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 4 errors, e.g. Endpoint requires auth, but no auth is defined.	screens.jsonl
+http-dpop	screen	zerkerlabs/treeship:docs/public/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 4 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Endpoint requires auth, but no auth is defined.	screens.jsonl
 http-dpop	screen	zerkerlabs/treeship:docs/public/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 licence	passed	screens.jsonl
 http-dpop	screen	zerkerlabs/treeship:docs/public/api/hub-openapi.yaml@dfa73441603bccf62df7bd1e648199ae47b3ddd5 ref	passed	screens.jsonl
 http-mutual	candidate	nnworkspace/elan:60-specifications/liquidity-reservation/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408	census 1	probe.jsonl
@@ -6008,10 +6008,10 @@ http-mutual	document	sarthak11234/MEDid:docs/api/openapi.yaml@299c4ebc6c0f2d9cae
 http-mutual	document	suarezrominajulieta/Evo-tesis:EvoMaster-master/EvoMaster-master/core-it/src/test/resources/APIs_guru/conjur.local/5.1.1/openapi.yaml@c11ae92daa273be94a435aadad384306c9b96134	census 1	candidates.jsonl
 http-mutual	query	"\"scheme\": \"mutual\"" filename:openapi.json	1	queries.jsonl
 http-mutual	query	"scheme: mutual" filename:openapi.yaml	20	queries.jsonl
-http-mutual	screen	nnworkspace/elan:60-specifications/liquidity-reservation/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+http-mutual	screen	nnworkspace/elan:60-specifications/liquidity-reservation/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 1 error and 0 warnings. First: Service requires auth, but no auth is defined.	screens.jsonl
 http-mutual	screen	nnworkspace/elan:60-specifications/liquidity-reservation/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 licence	passed	screens.jsonl
 http-mutual	screen	nnworkspace/elan:60-specifications/liquidity-reservation/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 ref	passed	screens.jsonl
-http-mutual	screen	nnworkspace/elan:60-specifications/onboarding/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 1 errors, e.g. Service requires auth, but no auth is defined.	screens.jsonl
+http-mutual	screen	nnworkspace/elan:60-specifications/onboarding/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 1 error and 0 warnings. First: Service requires auth, but no auth is defined.	screens.jsonl
 http-mutual	screen	nnworkspace/elan:60-specifications/onboarding/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 licence	passed	screens.jsonl
 http-mutual	screen	nnworkspace/elan:60-specifications/onboarding/openapi.yaml@f2ee2bf813d3b4c8444fa704a27eb4923022b408 ref	passed	screens.jsonl
 http-negotiate	candidate	LISSConsulting/LISSTech.DrainCtl:internal/dashboard/openapi.yaml@feca8381e5e8ee67d57bc1c008945f6ddb1a6b9a	census 2	probe.jsonl
@@ -6051,7 +6051,7 @@ http-negotiate	document	marcomattolab/airflow-keycloak:airflow-openapi.yaml@565e
 http-negotiate	document	susieOrg/petStore2_public:apifox/modi/openapi.json@709a59f68b8b303187b99c76127861bec8e67b47	census 2	candidates.jsonl
 http-negotiate	query	"\"scheme\": \"negotiate\"" filename:openapi.json	2	queries.jsonl
 http-negotiate	query	"scheme: negotiate" filename:openapi.yaml	32	queries.jsonl
-http-negotiate	screen	LISSConsulting/LISSTech.DrainCtl:internal/dashboard/openapi.yaml@feca8381e5e8ee67d57bc1c008945f6ddb1a6b9a fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 31 errors, e.g. Parameters path parameter 'host', query parameter 'host' all normalize to 'host' in generated SDKs. This causes broken code (duplicate keyword arguments in Pyth	screens.jsonl
+http-negotiate	screen	LISSConsulting/LISSTech.DrainCtl:internal/dashboard/openapi.yaml@feca8381e5e8ee67d57bc1c008945f6ddb1a6b9a fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 31 errors and 2 warnings in 0.004 seconds. Run fern check --warnings to print out the warnings not shown. First: Endpoint requires auth, but no auth is defined.	screens.jsonl
 http-negotiate	screen	LISSConsulting/LISSTech.DrainCtl:internal/dashboard/openapi.yaml@feca8381e5e8ee67d57bc1c008945f6ddb1a6b9a licence	failed: the document's info.license names 'Proprietary', which is no redistribution grant the corpus admits and governs the description over the repository's	screens.jsonl
 http-negotiate	screen	LISSConsulting/LISSTech.DrainCtl:internal/dashboard/openapi.yaml@feca8381e5e8ee67d57bc1c008945f6ddb1a6b9a ref	passed	screens.jsonl
 inheritance-discriminated-union	document	A2-ai/ghqctoolkit:openapi/openapi.yml@253caea08762a84980ff8619321ec99918982db9	census 0	candidates.jsonl
@@ -7609,7 +7609,7 @@ oneof-array-variant-closed-object-item	document	zama-ai/fhevm:relayer/openapi.ym
 oneof-array-variant-closed-object-item	document	zenbakiak/skillet:openapi.yml@e475f03647390b673d807abd294e6d89e9ed1342	census 0	candidates.jsonl
 oneof-array-variant-closed-object-item	query	"oneOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yaml	8800	queries.jsonl
 oneof-array-variant-closed-object-item	query	"oneOf:" "type:" "items:" "additionalProperties:" "type: array" filename:openapi.yml	8128	queries.jsonl
-oneof-array-variant-closed-object-item	screen	beeequeue/arm-server:docs/openapi.yaml@86c9359fc9df49b9d42cf21dc67bdc99b1658fbf fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Failed to resolve #/$defs/400)	screens.jsonl
+oneof-array-variant-closed-object-item	screen	beeequeue/arm-server:docs/openapi.yaml@86c9359fc9df49b9d42cf21dc67bdc99b1658fbf fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern generate exit 0 over an unparsed document, 28 Python files: [api]: python-sdk Failed to parse openapi document API Docs - arm-server	screens.jsonl
 oneof-array-variant-closed-object-item	screen	beeequeue/arm-server:docs/openapi.yaml@86c9359fc9df49b9d42cf21dc67bdc99b1658fbf licence	passed	screens.jsonl
 oneof-array-variant-closed-object-item	screen	beeequeue/arm-server:docs/openapi.yaml@86c9359fc9df49b9d42cf21dc67bdc99b1658fbf ref	passed	screens.jsonl
 oneof-discriminated-union	document	AdviceNXT/sbp:schemas/openapi.yaml@fc911e2175b14213a5925b07df89794790342604	census 2	candidates.jsonl
@@ -8858,10 +8858,10 @@ ref-pointer-nested-items	document	xixi1856/20260802:contracts/openapi.yaml@90658
 ref-pointer-nested-items	document	xskoum01/task-workbench:docs/openapi.yaml@ab241275e85a80850a6f6aaac0f6cc671638df9a	census 0	candidates.jsonl
 ref-pointer-nested-items	query	"$ref:" "/properties/" "/items" filename:openapi.yaml	112	queries.jsonl
 ref-pointer-nested-items	query	"\"$ref\"" "/properties/" "/items" filename:openapi.json	57	queries.jsonl
-ref-pointer-nested-items	screen	api-evangelist/codat:openapi/_original/codat-bank-feeds-openapi.json@245b344099b1b4d281c285ab3b22dfd6e238e912 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	api-evangelist/codat:openapi/_original/codat-bank-feeds-openapi.json@245b344099b1b4d281c285ab3b22dfd6e238e912 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern generate exit 0 over an unparsed document, 28 Python files: [api]: python-sdk Failed to parse openapi document Bank Feeds	screens.jsonl
 ref-pointer-nested-items	screen	api-evangelist/codat:openapi/_original/codat-bank-feeds-openapi.json@245b344099b1b4d281c285ab3b22dfd6e238e912 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
 ref-pointer-nested-items	screen	api-evangelist/codat:openapi/_original/codat-bank-feeds-openapi.json@245b344099b1b4d281c285ab3b22dfd6e238e912 ref	passed	screens.jsonl
-ref-pointer-nested-items	screen	api-evangelist/drata:openapi/_original/drata-safebase-trust-api-openapi.json@ca2b27a42eada497e13f7da0be7da4bb4d8413e2 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Failed to resolve #/paths/~1document~1%7Bid%7D/get/parameters/0)	screens.jsonl
+ref-pointer-nested-items	screen	api-evangelist/drata:openapi/_original/drata-safebase-trust-api-openapi.json@ca2b27a42eada497e13f7da0be7da4bb4d8413e2 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern generate exit 0 over an unparsed document, 28 Python files: [api]: python-sdk Failed to parse openapi document SafeBase API documentation	screens.jsonl
 ref-pointer-nested-items	screen	api-evangelist/drata:openapi/_original/drata-safebase-trust-api-openapi.json@ca2b27a42eada497e13f7da0be7da4bb4d8413e2 licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
 ref-pointer-nested-items	screen	api-evangelist/drata:openapi/_original/drata-safebase-trust-api-openapi.json@ca2b27a42eada497e13f7da0be7da4bb4d8413e2 ref	passed	screens.jsonl
 ref-pointer-nested-items	screen	danimnunes/thesis:blockchain/lib/ebsi-core-services/apis/authorisation-v4/api/openapi.yaml@04c27d23d8624e63dced66f043b1f35bb18ea457 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generator crashed: OSError: [Errno 36] File name too long	screens.jsonl
@@ -8870,7 +8870,7 @@ ref-pointer-nested-items	screen	danimnunes/thesis:blockchain/lib/ebsi-core-servi
 ref-pointer-nested-items	screen	jakemannix/virtual-tools-spec:openapi.yaml@416641e33b62b90ba055104e669754d6b22d56fb fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 check reports 0 errors, e.g. no error line	screens.jsonl
 ref-pointer-nested-items	screen	jakemannix/virtual-tools-spec:openapi.yaml@416641e33b62b90ba055104e669754d6b22d56fb licence	failed: the repository carries no licence at the pinned commit (GitHub answers 404) and the document declares no info.license	screens.jsonl
 ref-pointer-nested-items	screen	jakemannix/virtual-tools-spec:openapi.yaml@416641e33b62b90ba055104e669754d6b22d56fb ref	passed	screens.jsonl
-ref-pointer-nested-items	screen	jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links)	screens.jsonl
+ref-pointer-nested-items	screen	jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern generate exit 0 over an unparsed document, 28 Python files: [api]: python-sdk Failed to parse openapi document Bank Feeds	screens.jsonl
 ref-pointer-nested-items	screen	jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 licence	passed	screens.jsonl
 ref-pointer-nested-items	screen	jentic/jentic-public-apis:apis/openapi/codat.io/bank-feeds/3.0.0/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8 ref	passed	screens.jsonl
 ref-pointer-nested-items	screen	kadirbelen/Estate-Project-API:static/openapi.json@214086f46834fab0e588fa12629fbc8dc21d3322 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 generated over an unparsed document ([api]: python-sdk Failed to resolve #/paths/~1adverts/get/responses/400)	screens.jsonl

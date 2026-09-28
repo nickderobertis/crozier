@@ -30,7 +30,11 @@ files it here.
   Contract B line per declared source, a per-source tally of the declarers and how
   the instrumented run fared on each (its `outstanding` column is what the
   search still owes), whether `src/` has moved since the build those probes ran
-  on, and what became of every candidate that passed all three screens.
+  on, and what became of every candidate that passed all three screens. A row a
+  registered witness has since reached keeps the arm its record searched for and
+  reads `witness-found`; `probe` still probes its declarers on the counted
+  build, against that arm as it resolves in today's `src/` (or the row's
+  handling sites, where a repair restructured the whole arm away).
 - `<source>/records.tsv` — the evidence those lines rest on, in Contract B's
   `key kind subject result file` form. A walked or fetched declarer is a
   `document` row; a declarer becomes a `candidate` only when it is screened.

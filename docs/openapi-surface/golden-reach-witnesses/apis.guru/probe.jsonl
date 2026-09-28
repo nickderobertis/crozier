@@ -39,16 +39,6 @@
 {"candidate": "APIs/xtrf.eu/2.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
 {"candidate": "APIs/yodlee.com/1.1.0/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
 {"candidate": "APIs/zuora.com/2021-08-20/openapi.yaml", "key": "media-type-key-parameters", "reached": ["src/ir.rs::is_json_like_media_type", "src/ir.rs::is_text_response_media"], "status": "generated"}
-{"candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "property-anyof-discriminated-union", "reached": ["src/ir.rs::InlineHoister::hoist_discriminated_union"], "status": "generated"}
-{"build": "8a9454cb74d0", "candidate": "APIs/github.com/ghes-3.1/1.1.4/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
-{"build": "8a9454cb74d0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
-{"build": "8a9454cb74d0", "candidate": "APIs/shotstack.io/v1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
-{"build": "8a9454cb74d0", "candidate": "APIs/soundcloud.com/1.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
-{"build": "8a9454cb74d0", "candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
-{"build": "8a9454cb74d0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "APIs/apache.org/airflow/2.5.3/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": [], "status": "generated"}
-{"build": "1131cbbcb0e3", "candidate": "APIs/surevoip.co.uk/9dcb0dc8/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/codat.io/accounting/2.1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "exit 1: /2.1.0/openapi.yaml: found a tab character where an indentation space is expected at line 43982 column 17, while scanning a block scalar at line 43981 column 28"}
 {"build": "4828cc2b93f0", "candidate": "APIs/codat.io/assess/1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/codat.io/commerce/2.1.0/openapi.yaml", "key": "ref-pointer-composition-index", "reached": [], "status": "generated"}
@@ -7227,3 +7217,13 @@
 {"build": "4828cc2b93f0", "candidate": "APIs/github.com/ghes-3.8/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:2825:14: Simple statements must be separated by newlines or semicolons"}
 {"build": "4828cc2b93f0", "candidate": "APIs/github.com/github.ae/1.1.4/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1169:14: Simple statements must be separated by newlines or semicolons"}
 {"build": "4828cc2b93f0", "candidate": "APIs/openlinksw.com/osdb/1.0.0/openapi.yaml", "key": "format-uri-template", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/github.com/ghes-3.1/1.1.4/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: d: ruff exited with exit status: 2: error: Failed to parse src/fern/actions/raw_client.py:1473:14: Simple statements must be separated by newlines or semicolons"}
+{"build": "4828cc2b93f0", "candidate": "APIs/rebilly.com/2.1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "exit 1: c/fern/_3d_secure/client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/_3d_secure/client.py:21:7: Expected an identifier"}
+{"build": "4828cc2b93f0", "candidate": "APIs/shotstack.io/v1/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/soundcloud.com/1.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "anyof-sole-member", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/stripe.com/2022-11-15/openapi.yaml", "key": "property-anyof-discriminated-union", "reached": [], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/apache.org/airflow/2.5.3/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
+{"build": "4828cc2b93f0", "candidate": "APIs/surevoip.co.uk/9dcb0dc8/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
