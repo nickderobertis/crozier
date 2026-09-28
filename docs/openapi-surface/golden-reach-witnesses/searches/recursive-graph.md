@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `25888bdf46a2`, the one the reach ledger is measured on,
+build of commit `4828cc2b93f0`, the one the reach ledger is measured on,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -28,7 +28,7 @@ final reconciliation decides whether the arm's search reads `exhausted`.
 #### Declarers, and how the instrumented run fared on each
 
 Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
-build `25888bdf46a2` only. A declarer not probed on it, one whose run
+build `4828cc2b93f0` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
@@ -43,7 +43,7 @@ search on its own.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 1800 | 0 | 0 | 1800 | 0 | 0 | 128 | 0 | 0 | 0 |
 | `jentic` | 28920 | 0 | 0 | 28920 | 0 | 0 | 1078 | 5 | 5 | 0 |
-| `github-code-search` | 184 | 0 | 0 | 184 | 0 | 0 | 8 | 0 | 0 | 0 |
+| `github-code-search` | 184 | 0 | 0 | 184 | 0 | 0 | 9 | 0 | 0 | 0 |
 | `github-publisher-trees` | 1120 | 0 | 46 | 1120 | 0 | 0 | 82 | 0 | 0 | 0 |
 | `sourcegraph` | 99 | 0 | 0 | 99 | 0 | 0 | 17 | 0 | 0 | 0 |
 | `vendor-portals` | 924 | 0 | 161 | 924 | 0 | 0 | 34 | 0 | 0 | 0 |
