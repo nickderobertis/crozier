@@ -3362,6 +3362,7 @@ const CORPORA: &[&Corpus] = &[
     &STANDRIG,
     &MOCKSERVER,
     &IDEACONSULT_ENANOMAPPER,
+    &OPENAIRE_GRAPH,
 ];
 
 #[test]
@@ -6160,6 +6161,19 @@ const MOCKSERVER: Corpus = Corpus {
 /// as APIs.guru pins it, whose operations declare `externalDocs`
 const IDEACONSULT_ENANOMAPPER: Corpus = Corpus {
     api: "ideaconsult-enanomapper",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openaire-graph`: corpus row 302, the OpenAIRE Graph API 2.0 from
+/// jentic/jentic-public-apis, whose schemas declare `xml.attribute`
+const OPENAIRE_GRAPH: Corpus = Corpus {
+    api: "openaire-graph",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12112,6 +12126,11 @@ fn mockserver_matches_fern_output() {
 #[test]
 fn ideaconsult_enanomapper_matches_fern_output() {
     assert_link_ok_corpus_matches(&IDEACONSULT_ENANOMAPPER);
+}
+
+#[test]
+fn openaire_graph_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENAIRE_GRAPH);
 }
 
 #[test]
