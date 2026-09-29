@@ -2489,10 +2489,10 @@ It carries one segment per declared source, counted off that source's
   table names each and its measured reason.
 - **18 candidates stay open, because GitHub refused them.** Their pinned blob
   had answered 404. `reacquire-head` requested each again, through the
-  rate-limit guard's `core` bucket, at its repository's current revision. 16
-  are in repositories that `GET /repos/<owner>/<repo>` now answers 404 for. Two
-  are in repositories whose head no longer holds the file, and whose history of
-  the path lists no commit. Sourcegraph's mirror of the pinned commit answered
+  rate-limit guard's `core` bucket, at its repository's current revision. 15
+  are in nine repositories that `GET /repos/<owner>/<repo>` now answers 404 for.
+  Three, in two repositories, are in ones whose head no longer holds the file,
+  and whose history of the path lists no commit. Sourcegraph's mirror of the pinned commit answered
   404 for all 18. Each refusal, with its status and time, is the `census` cell
   of the candidate's `records.tsv` row and the note of its key's line. Nine keys
   carry at least one, so they read `search-incomplete` and are not closed.

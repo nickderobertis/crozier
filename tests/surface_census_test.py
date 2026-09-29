@@ -6542,6 +6542,99 @@ class PyYamlOracleTests(unittest.TestCase):
 
 
 
+class EscalationRestatementTests(unittest.TestCase):
+    """The prose that restates the unwitnessed keys' ledgers, recomputed from them.
+
+    The compact lines' counts are re-derived by `witness-search-github-index.py`,
+    but their notes, the index's escalation table and the sentences summing them
+    restate how many candidates stay open, which ones, and how many keys each
+    outcome holds. Each of those is recomputed here from the six `records.tsv`
+    ledgers the compact lines link.
+    """
+
+    REGIONS = REPO / "docs" / "openapi-surface"
+    DOC = REPO / "docs" / "openapi-surface-coverage.md"
+    SCHEMAS = REGIONS / "schemas.md"
+    WORDS = {word: n for n, word in enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve thirteen".split())}
+    STAYS_OPEN = re.compile(r"what stays open is (\d+) candidate\(s\)")
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.doc = cls.DOC.read_text(encoding="utf-8")
+        cls.schemas = cls.SCHEMAS.read_text(encoding="utf-8")
+        cls.lines = compact_search_lines(cls.schemas)
+        cls.open_rows: dict[str, list[dict[str, str]]] = {}
+        for source in DECLARED_SOURCES:
+            _header, by_key = compact_ledger(cls.REGIONS / f"witness-search-{source}" / "records.tsv")
+            for key in cls.lines:
+                cls.open_rows.setdefault(key, []).extend(
+                    row for _number, row in by_key.get(key, []) if row["disposition"] == "outstanding")
+        cls.refused = {key: rows for key, rows in cls.open_rows.items()
+                       if cls.STAYS_OPEN.search(cls.lines[key][3])}
+
+    def number(self, word: str) -> int:
+        return int(word) if word.isdigit() else self.WORDS[word.lower()]
+
+    def test_each_note_names_every_candidate_its_key_still_owes(self) -> None:
+        for key, rows in self.refused.items():
+            with self.subTest(key=key):
+                note = self.lines[key][3]
+                self.assertEqual(len(rows), int(self.STAYS_OPEN.search(note)[1]))
+                for row in rows:
+                    self.assertIn(f"`{row['candidate']}` at `{row['revision']}`", note)
+                    self.assertIn(row["census"].removeprefix("acquisition-failure: "), note)
+
+    def test_the_escalation_table_counts_what_each_key_owes(self) -> None:
+        section = self.doc.split("| key | selector | outstanding, per source |", 1)[1].split("\n\n", 1)[0]
+        rows = {cells[0].strip("`"): cells for line in section.splitlines()
+                if (cells := table_cells(line, 5)) and cells[0].startswith("`")}
+        self.assertEqual(set(self.lines), set(rows))
+        for key, cells in rows.items():
+            with self.subTest(key=key):
+                owed = self.open_rows[key]
+                if "not asked" in cells[2]:
+                    continue
+                if not owed:
+                    self.assertEqual("none", cells[2])
+                    continue
+                self.assertEqual({"github-code-search"}, {row["source"] for row in owed})
+                self.assertTrue(cells[2].startswith(f"github-code-search {len(owed)}, "), cells[2])
+
+    def test_the_sentences_summing_the_outcomes_add_up(self) -> None:
+        outcomes = Counter(line[1].strip("`") for line in self.lines.values())
+        refused = [row for rows in self.refused.values() for row in rows]
+        gone = sum(bool(re.match(r"GET /repos/\S+ answered HTTP 404", row["census"].split(": ", 1)[1]))
+                   for row in refused)
+        expected = {
+            "exhausted": outcomes[EXHAUSTED],
+            "incomplete": len(self.refused),
+            "refused": len(refused),
+            "gone": gone,
+            "kept": len(refused) - gone,
+        }
+        sentences = [
+            (self.schemas, r"(\w+) keys read `exhausted`", "exhausted"),
+            (self.schemas, r"(\w+) keys still\s+read `search-incomplete`", "incomplete"),
+            (self.schemas, r"reason: (\d+) `github-code-search` candidates", "refused"),
+            (self.doc, r"(\w+) have a search record that reads `exhausted`", "exhausted"),
+            (self.doc, r"(\w+) read `search-incomplete`\s+only because GitHub refused (?:\d+)", "incomplete"),
+            (self.doc, r"only because GitHub refused (\d+) candidates", "refused"),
+            (self.doc, r"\*\*(\w+) read `exhausted`, \w+ read `search-incomplete`", "exhausted"),
+            (self.doc, r"read `exhausted`, (\w+) read `search-incomplete` under the scope", "incomplete"),
+            (self.doc, r"\*\*(\d+) candidates stay open, because GitHub refused them", "refused"),
+            (self.doc, r"(\d+)\s+are in \w+ repositories that `GET /repos", "gone"),
+            (self.doc, r"(\w+), in \w+ repositories, are in ones whose head no longer", "kept"),
+            (self.doc, r"closes the (\w+)\s+`search-incomplete` keys", "incomplete"),
+            (self.doc, r"the (\d+) blobs GitHub and", "refused"),
+        ]
+        for text, pattern, name in sentences:
+            with self.subTest(pattern=pattern):
+                found = re.search(pattern, text)
+                self.assertIsNotNone(found, pattern)
+                self.assertEqual(expected[name], self.number(found[1]))
+
+
 class RankedBacklogTests(unittest.TestCase):
     """The index's synthesis restates the six region files; recompute it from them.
 

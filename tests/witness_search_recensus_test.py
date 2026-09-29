@@ -146,6 +146,46 @@ class FullYamlTest(unittest.TestCase):
             self.assertEqual(0, again.returncode, again.stderr)
             self.assertIn("0 parse-failure row(s)", again.stdout)
 
+    def test_a_document_past_the_time_bound_is_refused_with_the_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            # Large enough that the pure-Python parser cannot finish it inside one second.
+            data = b"openapi: 3.0.3\nx:\n" + b"".join(b"  k%d: [a, {b: c}]\n" % n for n in range(400_000))
+            digest = hashlib.sha256(data).hexdigest()
+            (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+            row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/huge", "path": "a.yaml",
+                   "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"}
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                            "--cache", str(cache), "--timeout", "1")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            refused = [r for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")]
+            self.assertEqual("census-refused", refused[0]["disposition"])
+            self.assertIn("parse exceeded 1 s", refused[0]["diagnostic"])
+            self.assertIn(f"sha256 {digest}", refused[0]["diagnostic"])
+
+    def test_an_absent_copy_and_a_bad_bound_name_their_repair(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            row = {"source": "sourcegraph", "key": KEY, "repository": "github.com/example/api", "path": "a.yaml",
+                   "commit": "c" * 40, "sha256": "a" * 64, "disposition": "parse-failure"}
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            missing = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                          "--cache", str(Path(tmp) / "empty"))
+            self.assertEqual(1, missing.returncode)
+            self.assertIn(f"no cached copy of sha256 {'a' * 64}", missing.stderr)
+            self.assertIn("pass the cache it was acquired into with --cache", missing.stderr)
+            bound = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                        "--cache", str(Path(tmp) / "empty"), "--jobs", "0")
+            self.assertEqual(2, bound.returncode)
+            self.assertIn("--jobs and --timeout must be positive", bound.stderr)
+
     def test_a_copy_that_does_not_hash_to_its_pin_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"
@@ -191,8 +231,13 @@ class Upstream(BaseHTTPRequestHandler):
             self.reply(200, {"sha": HEAD})
         elif self.path == f"/example/kept/{HEAD}/openapi.yaml":
             self.reply(200, DECLARER)
-        elif self.path in ("/repos/example/moved", "/repos/example/dropped"):
+        elif self.path in ("/repos/example/moved", "/repos/example/dropped", "/repos/example/headless",
+                           "/repos/example/unlisted"):
             self.reply(200, {"default_branch": "main"})
+        elif self.path == "/repos/example/unlisted/commits/main":
+            self.reply(200, {"sha": HEAD})
+        elif self.path.startswith("/repos/example/unlisted/commits?path="):
+            self.reply(500, {"message": "Server Error"})
         elif self.path in ("/repos/example/moved/commits/main", "/repos/example/dropped/commits/main"):
             self.reply(200, {"sha": HEAD})
         elif self.path == f"/repos/example/moved/commits?path=openapi.yaml&sha={HEAD}&per_page=100":
@@ -224,18 +269,19 @@ class ReacquireHeadTest(unittest.TestCase):
             rows = [{"source": "github-code-search", "key": KEY, "selector": SELECTOR,
                      "repository": f"example/{name}", "path": "openapi.yaml", "commit": PINNED,
                      "blob": git_blob(DECLARER), "disposition": "acquisition-failure", "status": 404,
-                     "diagnostic": "404: Not Found"} for name in ("kept", "mirrored", "gone", "moved", "dropped")]
+                     "diagnostic": "404: Not Found"}
+                    for name in ("kept", "mirrored", "gone", "moved", "dropped", "headless", "unlisted")]
             (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
 
             completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
                             env={"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
                                  "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"})
             self.assertEqual(0, completed.returncode, completed.stderr)
-            self.assertIn("5 404 candidate(s) requested at head: 2 acquisition-failure, 3 declares", completed.stdout)
+            self.assertIn("7 404 candidate(s) requested at head: 4 acquisition-failure, 3 declares", completed.stdout)
 
             records = {row["candidate"].split(":")[0].split("/")[1]: row
                        for row in INDEX.source_rows(root, "github-code-search")}
-            self.assertEqual(5, len(records), records)  # a read at another commit supersedes its pinned 404
+            self.assertEqual(7, len(records), records)  # a read at another commit supersedes its pinned 404
             self.assertEqual(HEAD, records["kept"]["revision"])
             self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records["kept"]["census"])
             self.assertEqual(PINNED, records["mirrored"]["revision"])
@@ -253,17 +299,21 @@ class ReacquireHeadTest(unittest.TestCase):
             self.assertIn(f"openapi.yaml at {HEAD} (head of main) answered HTTP 404 at", records["dropped"]["census"])
             self.assertIn(f"the path's history at {HEAD} lists 0 commit(s), none serving blob", records["dropped"]["census"])
             self.assertIn(f"Sourcegraph's mirror at {PINNED} served HTTP 404 at", records["dropped"]["census"])
+            # A head commit GitHub will not name, and a history GitHub will not list.
+            self.assertIn("GET /repos/example/headless/commits/main answered HTTP 404 at", records["headless"]["census"])
+            self.assertIn(f"the path's history at {HEAD} answered HTTP 500 at", records["unlisted"]["census"])
+            self.assertEqual({"outstanding"}, {records[name]["disposition"] for name in ("headless", "unlisted")})
 
             ledger = {row["repository"].split("/")[1]: row for _, row in INDEX.jsonl(evidence / "candidates.jsonl")}
             self.assertEqual("sourcegraph-mirror", ledger["mirrored"]["acquisition_route"])
             guarded = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl") if row.get("bucket") == "core"]
             rest = [path for path in server.paths if path.startswith("/repos/")]
             self.assertEqual(len(rest), len(guarded))
-            # five repositories, three head commits, and two histories of the path
-            self.assertEqual(10, len(rest))
+            # seven repositories, five head commits asked for, and three histories of the path
+            self.assertEqual(15, len(rest))
             sourcegraph = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl")
                            if row.get("host") == "sourcegraph"]
-            self.assertEqual(3, len(sourcegraph))
+            self.assertEqual(5, len(sourcegraph))
 
             misspelt = run("--evidence-root", str(root), "reacquire-head", "--key", "no-such-key",
                            "--cache-dir", str(Path(tmp) / "cache"))
