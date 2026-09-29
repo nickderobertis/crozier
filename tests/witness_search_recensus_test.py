@@ -157,6 +157,54 @@ class FullYamlTest(unittest.TestCase):
             self.assertEqual(0, again.returncode, again.stderr)
             self.assertIn("1 parse-failure row(s) over 1 document(s) read again: 1 does-not-declare", again.stdout)
 
+    def test_a_publisher_tree_document_is_censused_for_every_key(self) -> None:
+        # A publisher tree's ledger is `documents.jsonl`, keyed by document rather than by key:
+        # each reading records every key's count under `status`, whatever `--key` names.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-github-publisher-trees"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            rows = []
+            for name, data in (("declarer", DECLARER), ("template", TEMPLATE), ("chart", NOT_OPENAPI)):
+                digest = hashlib.sha256(data).hexdigest()
+                (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+                rows.append({"source": "github-publisher-trees", "repository": "example/publisher",
+                             "path": f"{name}.yaml", "commit": "c" * 40, "blob": git_blob(data),
+                             "sha256": digest, "status": "parse-failure",
+                             "diagnostic": "the stdlib loader refused it"})
+            (evidence / "documents.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "github-publisher-trees",
+                            "--cache", str(cache), "--key", OTHER)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertIn("github-publisher-trees: 3 parse-failure row(s) over 3 document(s) read again: "
+                          "1 census-refused, 1 excluded-non-openapi-3, 1 readable", completed.stdout)
+
+            appended = {row["path"].split(".")[0]: row
+                        for _, row in INDEX.jsonl(evidence / "documents.jsonl") if row.get("loader")}
+            self.assertEqual({"declarer", "template", "chart"}, set(appended))
+            self.assertTrue(all("disposition" not in row for row in appended.values()))
+            self.assertEqual("readable", appended["declarer"]["status"])
+            self.assertEqual({KEY: 1, OTHER: 0}, appended["declarer"]["selector_counts"])
+            self.assertEqual("census-refused", appended["template"]["status"])
+            self.assertIn(f"sha256 {rows[1]['sha256']}", appended["template"]["diagnostic"])
+            self.assertEqual("excluded-non-openapi-3", appended["chart"]["status"])
+            self.assertNotIn("selector_count", appended["chart"])
+
+            records = {(row["key"], row["candidate"].split(":")[1].split(".")[0]): row
+                       for row in INDEX.source_rows(root, "github-publisher-trees")}
+            self.assertEqual(6, len(records), records)  # the re-reading supersedes each parse failure
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records[(KEY, "declarer")]["census"])
+            self.assertEqual("census 0; read by ruamel.yaml 0.19.1 (YAML 1.2)", records[(OTHER, "declarer")]["census"])
+            self.assertTrue(records[(KEY, "template")]["census"].startswith("census-refused: ruamel.yaml 0.19.1"))
+            self.assertEqual("rejected", records[(OTHER, "chart")]["disposition"])
+
+            again = run("--evidence-root", str(root), "full-yaml", "--source", "github-publisher-trees",
+                        "--cache", str(cache))
+            self.assertIn("0 parse-failure row(s) over 0 document(s) read again", again.stdout)
+
     def test_a_document_past_the_time_bound_is_refused_with_the_bound(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"
