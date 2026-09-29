@@ -253,6 +253,9 @@ def classify(
         raise ValueError(f"unknown acquisition status: {status}")
     # A document read by a parser other than the census's own names it.
     read_by = f"; read by {row['loader']}" if row.get("loader") else ""
+    # A candidate read from a namesake repository holding its blob names that repository.
+    if row.get("served_by"):
+        read_by += f"; served by {row['served_by']}"
     if status in RAW_DECLARING and count:
         census = f"census {count}{read_by}"
         screen = screened.get((key, name, digest))

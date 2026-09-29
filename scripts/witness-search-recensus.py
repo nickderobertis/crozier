@@ -27,6 +27,14 @@ commit through the paced raw lane. A read is censused as any acquisition is, at
 that commit, and supersedes the 404; a refusal is recorded with its status and
 time and leaves the candidate open.
 
+`reacquire-namesake` seeks each candidate `reacquire-head` left refused in the
+repositories GitHub's repository search names exactly as the candidate's own is
+named, a fork's parent and siblings among them: each one's history of the path,
+through the guarded `core` bucket, and each commit's file through the paced raw
+lane, kept only where it hashes to the blob GitHub's search named. A read is
+censused as any acquisition is and supersedes the refusal, naming the repository
+that served it; otherwise the refusal is extended with what was searched.
+
 Exit 0 means the stage finished, 1 means evidence or a cache needs repair, and 2
 means the arguments are invalid.
 """
@@ -204,7 +212,7 @@ def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], di
                    keys: dict[str, dict[str, str]]) -> dict[str, Any]:
     kept = ("source", "key", "selector", "repository", "path", "commit", "blob", "url",
             "acquisition_route", "raw_url", "document", "shared_with_key", "supersedes",
-            "reacquired_at_head", "github_refusal")
+            "reacquired_at_head", "github_refusal", "served_by", "namesakes_searched")
     record: dict[str, Any] = {field: row[field] for field in kept if field in row}
     record.update(sha256=digest, loader=verdict.get("loader", REACH.YAML_LOADER), recensus_of=status_of(row))
     field = "status" if source == "github-publisher-trees" else "disposition"
@@ -406,6 +414,100 @@ def reacquire_head(args: argparse.Namespace) -> int:
     return 0
 
 
+def namesakes(acquirer: Any, repository: str) -> tuple[list[str], str]:
+    """Every other repository GitHub's repository search names exactly as `repository` is named.
+
+    A fork keeps its parent's name, so these are where a deleted or rewritten
+    fork's unchanged file can still be read: its parent and its siblings. The
+    search is one guarded `search` call; what it answers is part of the refusal
+    when no namesake serves the blob.
+    """
+    name = repository.split("/", 1)[1]
+    status, payload, _ = acquirer.github_json(
+        "search", f"/search/repositories?q={urllib.parse.quote(f'{name} in:name')}&per_page=100")
+    at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    if status != 200 or not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
+        return [], f"the repository search for `{name}` answered HTTP {status} at {at}"
+    found = [item["full_name"] for item in payload["items"]
+             if isinstance(item, dict) and isinstance(item.get("full_name"), str)
+             and item["full_name"].split("/", 1)[1].lower() == name.lower()
+             and item["full_name"].lower() != repository.lower()]
+    return found, f"the repository search for `{name}` names {len(found)} namesake(s) ({', '.join(found) or 'none'}) at {at}"
+
+
+def reacquire_namesake(args: argparse.Namespace) -> int:
+    """Read each candidate `reacquire-head` left refused from a namesake repository holding its blob.
+
+    The blob GitHub's search named identifies the bytes, so a namesake's commit
+    serving a file that hashes to it serves the candidate's own document. That
+    commit's record keeps the candidate's name, names the repository serving it
+    in `served_by`, and supersedes the refusal; a candidate no namesake serves
+    keeps its refusal, extended with what the search and each history showed.
+    """
+    source = "github-code-search"
+    evidence = args.evidence_root / f"witness-search-{source}"
+    keys = INDEX.read_keys(evidence)
+    wanted = set(args.key)
+    pending = [row for _, row in latest_rows(evidence, source)
+               if status_of(row) == "acquisition-failure" and row.get("status") == 404
+               and row.get("reacquired_at_head")
+               and (args.again or not row.get("namesakes_searched"))
+               and (not wanted or row["key"] in wanted)]
+    acquirer = GITHUB.Acquirer(
+        evidence, cache=args.cache_dir,
+        raw_github_url=GITHUB.checked_service_url(
+            os.environ.get("CROZIER_RAW_GITHUB_URL", GITHUB.RAW_GITHUB_URL), "CROZIER_RAW_GITHUB_URL",
+            "raw.githubusercontent.com"))
+    searched: dict[str, tuple[list[str], str]] = {}
+    tally: dict[str, int] = {}
+    for row in pending:
+        if row["repository"] not in searched:
+            searched[row["repository"]] = namesakes(acquirer, row["repository"])
+        found, note = searched[row["repository"]]
+        base = {field: row[field] for field in ("source", "key", "selector", "repository", "path")}
+        record: dict[str, Any] | None = None
+        histories = []
+        for namesake in found:
+            status, commits, _ = acquirer.github_json(
+                "core", f"/repos/{namesake}/commits?path={urllib.parse.quote(row['path'])}&per_page=100")
+            at = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+            if status != 200 or not isinstance(commits, list):
+                histories.append(f"{namesake}'s history of the path answered HTTP {status} at {at}")
+                continue
+            for commit in commits:
+                sha = commit.get("sha") if isinstance(commit, dict) else None
+                if not isinstance(sha, str):
+                    continue
+                raw_url = (acquirer.raw_github_url + "/" + urllib.parse.quote(namesake, safe="/") + "/" + sha
+                           + "/" + urllib.parse.quote(row["path"], safe="/"))
+                got, data = acquirer.raw_github_get(raw_url, row["key"], f"{namesake}/{row['path']}@{sha}")
+                if got == 200 and git_blob(data) == row.get("blob"):
+                    record = acquirer.classify_and_record(
+                        {**base, "commit": sha, "blob": row["blob"], "raw_url": raw_url,
+                         "acquisition_route": "pinned-raw-github", "served_by": namesake,
+                         "supersedes": row["commit"], "reacquired_at_head": True, "namesakes_searched": True,
+                         "github_refusal": row.get("diagnostic")}, data)
+                    break
+            if record is not None:
+                break
+            histories.append(f"{namesake}'s history of the path lists {len(commits)} commit(s), none serving "
+                             f"blob {row.get('blob')}, at {at}")
+        if record is None:
+            record = {**{field: row[field] for field in row if field != "at"}, "namesakes_searched": True,
+                      "diagnostic": "; ".join([str(row.get("diagnostic")), note, *histories])}
+            acquirer.write("candidates.jsonl", record)
+        elif status_of(record) == "parse-failure":
+            local = acquirer.cache / "documents" / record["document"]
+            record = verdict_record(source, record, read_document(str(local), DEFAULT_TIMEOUT_S),
+                                    record["sha256"], keys)
+            acquirer.write("candidates.jsonl", record)
+        verdict = status_of(record)
+        tally[verdict] = tally.get(verdict, 0) + 1
+    print(f"witness-search-recensus: {len(pending)} refused candidate(s) sought in namesake repositories: "
+          + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--evidence-root", type=Path, default=REPO / "docs/openapi-surface")
@@ -421,6 +523,11 @@ def main() -> int:
     head.add_argument("--cache-dir", type=Path, required=True)
     head.add_argument("--key", action="append", default=[])
     head.add_argument("--again", action="store_true", help="request candidates an earlier run requested too")
+    namesake = stages.add_parser("reacquire-namesake",
+                                 help="seek each candidate refused at head in the repositories named as its own is")
+    namesake.add_argument("--cache-dir", type=Path, required=True)
+    namesake.add_argument("--key", action="append", default=[])
+    namesake.add_argument("--again", action="store_true", help="seek candidates an earlier run sought too")
     args = parser.parse_args()
     source = args.source if args.stage == "full-yaml" else "github-code-search"
     unknown = set(args.key) - set(INDEX.read_keys(args.evidence_root / f"witness-search-{source}"))
@@ -430,6 +537,8 @@ def main() -> int:
         if args.jobs < 1 or args.timeout < 1:
             parser.error("--jobs and --timeout must be positive")
         return full_yaml(args)
+    if args.stage == "reacquire-namesake":
+        return reacquire_namesake(args)
     return reacquire_head(args)
 
 

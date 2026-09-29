@@ -38,9 +38,9 @@ three ways:
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
 - **15 remain unproven.** 13 are the `FIXTURE` `gap` rows. Each is a shape Fern
-  generates output from. Two have a search record that reads `exhausted`: every
-  candidate is decided and none is registrable. Nine read `search-incomplete`
-  only because GitHub refused 18 candidates at every route there is to them,
+  generates output from. Five have a search record that reads `exhausted`: every
+  candidate is decided and none is registrable. Six read `search-incomplete`
+  only because GitHub refused 12 candidates at every route there is to them,
   and two were never searched.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. The other 2 are `golden`
@@ -2467,7 +2467,7 @@ corpus admits real specifications only. The other two, `oneof-anyof-variant`
 and `oneof-closed-empty-object-variant`, name crozier-generating arms that no
 probe has put to Fern.
 
-**Two read `exhausted`, nine read `search-incomplete` under the scope
+**Five read `exhausted`, six read `search-incomplete` under the scope
 exception, and two were never searched.** Each key's reconciled record is its
 line under
 [`schemas.md`'s Witness search (exhaustive)](openapi-surface/schemas.md#witness-search-exhaustive).
@@ -2487,18 +2487,32 @@ It carries one segment per declared source, counted off that source's
   Helm and Go templates, JSONC configuration files, truncated JSON, and YAML
   that is not UTF-8 or not well indented. Three documents declare a key; the
   table names each and its measured reason.
-- **18 candidates stay open, because GitHub refused them.** Their pinned blob
-  had answered 404. `reacquire-head` requested each again, through the
-  rate-limit guard's `core` bucket, at its repository's current revision. 15
-  are in nine repositories that `GET /repos/<owner>/<repo>` now answers 404 for.
+- **Six refused candidates were read from the forks' parents.** 18 candidates'
+  pinned blob had answered 404. `reacquire-head` requested each again, through
+  the rate-limit guard's `core` bucket, at its repository's current revision,
+  and at Sourcegraph's mirror of the pinned commit. `reacquire-namesake` then
+  sought each in every repository GitHub's repository search names exactly as
+  its own is named, which is where a deleted fork's parent is: that
+  repository's history of the path, kept only at a commit whose file hashes to
+  the blob GitHub's search named. `jdgiles26/inference_builder`'s three
+  `builder/samples` documents are NVIDIA-AI-IOT's, and
+  `ethandong16/lobehub`'s `packages/openapi/openapi.yml` is LobeHub's. All six
+  candidates they account for read `census 0`, each row naming the repository
+  that served it.
+- **12 candidates stay open, because GitHub refused them.** 9
+  are in seven repositories that `GET /repos/<owner>/<repo>` now answers 404 for.
   Three, in two repositories, are in ones whose head no longer holds the file,
-  and whose history of the path lists no commit. Sourcegraph's mirror of the pinned commit answered
-  404 for all 18. Each refusal, with its status and time, is the `census` cell
-  of the candidate's `records.tsv` row and the note of its key's line. Nine keys
+  and whose history of the path lists no commit. Sourcegraph's mirror of the pinned
+  commit answered 404 for all 12, and no namesake repository holds any of
+  their blobs. Each refusal, with its status and time, is the `census` cell of
+  the candidate's `records.tsv` row and the note of its key's line. Six keys
   carry at least one, so they read `search-incomplete` and are not closed.
-- **`oneof-array-variant-annotated-ref-item` and
-  `oneof-bare-object-example-variant` read `exhausted`.** No candidate of
-  theirs was refused, and every one is decided.
+- **Five keys read `exhausted`.** `oneof-array-variant-annotated-ref-item` and
+  `oneof-bare-object-example-variant` had no candidate refused.
+  `annotated-ref-target-string-const`,
+  `oneof-array-variant-anyof-discriminated-union-item` and
+  `oneof-array-variant-anyof-nullable-item` had theirs read from the forks'
+  parents. Every candidate of the five is decided.
 - **Two keys were never searched.** `oneof-anyof-variant` and
   `oneof-closed-empty-object-variant` joined the census after the
   witness-search-redo contract froze, and no search node has run their
@@ -2513,25 +2527,25 @@ and name every candidate the census confirmed.
 
 | key | selector | outstanding, per source | census-confirmed candidates, and the measured reason each is unusable | what would unblock it |
 |---|---|---|---|---|
-| `annotated-ref-target-string-const` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror | none | GitHub or a mirror serving the refused blob again |
-| `array-item-inheritance-union` | `schema.items>schema.discriminator:inheritance-union` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror | `AndreVelde/cars-trip` `openapi.yaml`: passes all three screens and is declined as a synthetic kata fixture, as the row's own evidence cell records. `atacan/MistralAPI` `openapi.yaml`: `fern check` exit 1, 12 errors. `opastorello/unifi-api-docs`, eight `network/v9.*/openapi.json` versions at two revisions each: no licence evidence (no `info.license`, no repository licence) and `fern check` exit 1. `airlift/airlift` `api/src/test/resources/openapi/complex-recursive.json`: passes all three screens and is declined as a unit-test resource | a publisher-owned declarer Fern accepts; GitHub or a mirror serving the refused blob again |
-| `array-item-pointer-walk-oneof` | `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror | `Gi60s/kaos-api` `docs/openapi.json`: no licence evidence, and Fern did not parse it. `api-evangelist` copies of Beyond Identity (three files) and Cvent (two): no licence evidence and `fern check` exit 1. Jentic's Cvent `ea` and Sellsy `2.128.0` trees, ten files: eight fail the licence screen (the aggregator's CC0 grant is admitted, the publisher's grant is unproven), and Cvent's two `*-entry.json` pass it but Fern generates an empty SDK. `api-evangelist/beyond-identity` `openapi/beyond-identity-credential-binding-jobs-api-openapi.yml`, read by the full YAML parser: no licence evidence (no `info.license`, repository licence 404), and the repository describes itself as an independent third-party profile, not Beyond Identity's publication; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | a Cvent or Sellsy redistribution grant; GitHub or a mirror serving the refused blob again |
+| `annotated-ref-target-string-const` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` | none | none | nothing a search can add: every candidate is decided |
+| `array-item-inheritance-union` | `schema.items>schema.discriminator:inheritance-union` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `AndreVelde/cars-trip` `openapi.yaml`: passes all three screens and is declined as a synthetic kata fixture, as the row's own evidence cell records. `atacan/MistralAPI` `openapi.yaml`: `fern check` exit 1, 12 errors. `opastorello/unifi-api-docs`, eight `network/v9.*/openapi.json` versions at two revisions each: no licence evidence (no `info.license`, no repository licence) and `fern check` exit 1. `airlift/airlift` `api/src/test/resources/openapi/complex-recursive.json`: passes all three screens and is declined as a unit-test resource | a publisher-owned declarer Fern accepts; GitHub or a mirror serving the refused blob again |
+| `array-item-pointer-walk-oneof` | `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Gi60s/kaos-api` `docs/openapi.json`: no licence evidence, and Fern did not parse it. `api-evangelist` copies of Beyond Identity (three files) and Cvent (two): no licence evidence and `fern check` exit 1. Jentic's Cvent `ea` and Sellsy `2.128.0` trees, ten files: eight fail the licence screen (the aggregator's CC0 grant is admitted, the publisher's grant is unproven), and Cvent's two `*-entry.json` pass it but Fern generates an empty SDK. `api-evangelist/beyond-identity` `openapi/beyond-identity-credential-binding-jobs-api-openapi.yml`, read by the full YAML parser: no licence evidence (no `info.license`, repository licence 404), and the repository describes itself as an independent third-party profile, not Beyond Identity's publication; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | a Cvent or Sellsy redistribution grant; GitHub or a mirror serving the refused blob again |
 | `oneof-anyof-variant` | `schema.oneOf>schema.anyOf` | every declared source: not asked | none; no search has run | a six-source search of the selector |
 | `oneof-array-variant-annotated-ref-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component` | none | none | nothing a search can add: every candidate is decided |
-| `oneof-array-variant-anyof-discriminated-union-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror | `api-evangelist/unleash` `unleash-projects-api-openapi.yml`: no licence evidence and `fern check` exit 1. `api-evangelist/unleash` `openapi/unleash-unstable-api-openapi.yml`, read by the full YAML parser: no licence evidence and a self-described third-party profile, as the other Unleash copy; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | Unleash's own publication of the document with a grant; GitHub or a mirror serving the refused blob again |
-| `oneof-array-variant-anyof-nullable-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror | `fern-api/fern` `seed/openapi/circular-references/openapi.yml` at three revisions: passes all three screens and is declined as Fern's own seed test input, which serves no API | GitHub or a mirror serving the refused blob again |
+| `oneof-array-variant-anyof-discriminated-union-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` | none | `api-evangelist/unleash` `unleash-projects-api-openapi.yml`: no licence evidence and `fern check` exit 1. `api-evangelist/unleash` `openapi/unleash-unstable-api-openapi.yml`, read by the full YAML parser: no licence evidence and a self-described third-party profile, as the other Unleash copy; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | Unleash's own publication of the document with a grant; nothing a search can add: every candidate is decided |
+| `oneof-array-variant-anyof-nullable-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` | none | `fern-api/fern` `seed/openapi/circular-references/openapi.yml` at three revisions: passes all three screens and is declined as Fern's own seed test input, which serves no API | nothing a search can add: every candidate is decided |
 | `oneof-bare-object-example-variant` | `schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object` | none | `konfig-dev/konfig` `sdks/db/intermediate-fixed-specs/ironclad/openapi.yaml`: passes all three screens and is declined as an SDK vendor's copy, not Ironclad's publication. `api-evangelist/ironclad` `ironclad-workflows-api-openapi.yml`: no licence evidence and `fern check` exit 1. `wiremock/wiremock` `wiremock-admin-api.json`: `fern check` exit 1. Jentic's Ironclad tree, five files: the publisher's grant is unproven | an Ironclad redistribution grant; nothing a search can add: every candidate is decided |
 | `oneof-closed-empty-object-variant` | `schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object` | every declared source: not asked | none; no search has run | a six-source search of the selector |
-| `property-sole-anyof-composed-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror | `OpenAPITools/openapi-generator` `src/test/resources/3_0/ocaml/enum-in-composed-schema.yaml`: passes all three screens and is declined as a generator's test fixture. `APWG/ecx2-openapi-doc` `ecx2-openapi.yaml` at `9218d45`, 6 sites, read by the full YAML parser: the Anti-Phishing Working Group's own description, GPL-3.0 by its repository `LICENSE` and `info.license`, and `fern check` exits 0, but the generator at `fernapi/fern-python-sdk:5.20.0` exits 1 with `Found 24 errors and 0 warnings`: `Objects can only extend other objects, and root.Brand is not an object`, one per scalar component its search filters list under `allOf` | a Fern that generates APWG's eCX document; GitHub or a mirror serving the refused blob again |
-| `property-sole-anyof-empty-object-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 6, each refused by GitHub at its current revision and by Sourcegraph's mirror | none | GitHub or a mirror serving the refused blob again |
-| `property-sole-oneof-composed-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror | `api-evangelist` copies of Cvent (two files) and Infoworks (four): no licence evidence and `fern check` exit 1. `OpenRailAssociation/osrd` `editoast/openapi.yaml`: `fern check` passes and the generator exits 1. `macro-inc/macro` `service-storage/openapi.json`: `fern check` exit 1, 2 errors. Jentic's Cvent `ea` tree, five files: three fail the licence screen, and the two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent redistribution grant, or a Fern that generates OSRD; GitHub or a mirror serving the refused blob again |
-| `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; GitHub or a mirror serving the refused blob again |
+| `property-sole-anyof-composed-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `OpenAPITools/openapi-generator` `src/test/resources/3_0/ocaml/enum-in-composed-schema.yaml`: passes all three screens and is declined as a generator's test fixture. `APWG/ecx2-openapi-doc` `ecx2-openapi.yaml` at `9218d45`, 6 sites, read by the full YAML parser: the Anti-Phishing Working Group's own description, GPL-3.0 by its repository `LICENSE` and `info.license`, and `fern check` exits 0, but the generator at `fernapi/fern-python-sdk:5.20.0` exits 1 with `Found 24 errors and 0 warnings`: `Objects can only extend other objects, and root.Brand is not an object`, one per scalar component its search filters list under `allOf` | a Fern that generates APWG's eCX document; GitHub or a mirror serving the refused blob again |
+| `property-sole-anyof-empty-object-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 4, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | none | GitHub or a mirror serving the refused blob again |
+| `property-sole-oneof-composed-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `api-evangelist` copies of Cvent (two files) and Infoworks (four): no licence evidence and `fern check` exit 1. `OpenRailAssociation/osrd` `editoast/openapi.yaml`: `fern check` passes and the generator exits 1. `macro-inc/macro` `service-storage/openapi.json`: `fern check` exit 1, 2 errors. Jentic's Cvent `ea` tree, five files: three fail the licence screen, and the two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent redistribution grant, or a Fern that generates OSRD; GitHub or a mirror serving the refused blob again |
+| `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; GitHub or a mirror serving the refused blob again |
 
-**What would move the rest.** Nothing a search can still do closes the nine
-`search-incomplete` keys: their only open items are the 18 blobs GitHub and
+**What would move the rest.** Nothing a search can still do closes the six
+`search-incomplete` keys: their only open items are the 12 blobs GitHub and
 Sourcegraph's mirror both refuse, and each would be decided the moment either
 served one again; `scripts/witness-search-recensus.py reacquire-head --again`
-re-requests them. A Fern that generates APWG's eCX
+and `reacquire-namesake --again` re-request them. A Fern that generates APWG's eCX
 document, or a grant from a publisher the table names, would give a key a
 witness. The two unsearched keys need their first search, which is a search
 node's work.

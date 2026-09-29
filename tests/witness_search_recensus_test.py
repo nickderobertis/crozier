@@ -11,7 +11,9 @@ description. Each ledger row it appends, and the `records.tsv` row
 `reacquire-head` against a loopback server standing in for api.github.com,
 raw.githubusercontent.com and Sourcegraph: a file the head still holds, a
 deleted repository whose blob Sourcegraph's mirror still serves, and one
-nothing serves. Every REST call is logged by the rate-limit guard.
+nothing serves. `reacquire-namesake` against the same server: a refused fork
+whose parent's history still holds its blob, and ones no namesake holds. Every
+REST call is logged by the rate-limit guard.
 
 It needs the search's pinned ruamel.yaml: run it as `just test-census-fallback`.
 """
@@ -233,7 +235,22 @@ class Upstream(BaseHTTPRequestHandler):
         self.server.paths.append(self.path)
         reset = int(time.time()) + 60
         if self.path == "/rate_limit":
-            self.reply(200, {"resources": {"core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": reset}}})
+            self.reply(200, {"resources": {"core": {"limit": 5000, "used": 0, "remaining": 5000, "reset": reset},
+                                           "search": {"limit": 30, "used": 0, "remaining": 30, "reset": reset}}})
+        elif self.path == "/search/repositories?q=forked%20in%3Aname&per_page=100":
+            # The candidate itself, a parent and an unrelated partial match: only the parent is a namesake.
+            self.reply(200, {"items": [{"full_name": "example/forked"}, {"full_name": "upstream/Forked"},
+                                       {"full_name": "other/forked-too"}]})
+        elif self.path == "/search/repositories?q=orphan%20in%3Aname&per_page=100":
+            self.reply(200, {"items": []})
+        elif self.path == "/search/repositories?q=unsearched%20in%3Aname&per_page=100":
+            self.reply(422, {"message": "Validation Failed"})
+        elif self.path == "/repos/upstream/Forked/commits?path=openapi.yaml&per_page=100":
+            self.reply(200, [{"sha": HEAD}, {"sha": OLDER}])  # changed since the fork, held before it
+        elif self.path == f"/upstream/Forked/{HEAD}/openapi.yaml":
+            self.reply(200, DUPLICATE)
+        elif self.path == f"/upstream/Forked/{OLDER}/openapi.yaml":
+            self.reply(200, DECLARER)
         elif self.path == "/repos/example/kept":
             self.reply(200, {"default_branch": "main"})
         elif self.path == "/repos/example/kept/commits/main":
@@ -346,6 +363,74 @@ class ReacquireHeadTest(unittest.TestCase):
                           env={"CROZIER_GITHUB_API_URL": url, "CROZIER_SOURCEGRAPH_URL": "file:///etc/passwd"})
             self.assertEqual(1, invalid.returncode)
             self.assertIn("CROZIER_SOURCEGRAPH_URL must use https://sourcegraph.com", invalid.stderr)
+
+
+class ReacquireNamesakeTest(unittest.TestCase):
+    def test_each_refused_candidate_is_sought_in_its_namesakes(self) -> None:
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server.paths = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-github-code-search"
+            keys_file(evidence)
+            refusal = "GET /repos/example/{} answered HTTP 404 at 2026-09-29T06:00:00+00:00"
+            rows = [{"source": "github-code-search", "key": KEY, "selector": SELECTOR,
+                     "repository": f"example/{name}", "path": "openapi.yaml", "commit": PINNED,
+                     "blob": git_blob(DECLARER), "disposition": "acquisition-failure", "status": 404,
+                     "reacquired_at_head": True, "diagnostic": refusal.format(name)}
+                    for name in ("forked", "orphan", "unsearched")]
+            # A 404 `reacquire-head` has not requested yet is not this stage's to seek.
+            rows.append({**rows[1], "repository": "example/unrequested", "reacquired_at_head": False})
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+            completed = run("--evidence-root", str(root), "reacquire-namesake",
+                            "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertEqual("witness-search-recensus: 3 refused candidate(s) sought in namesake repositories: "
+                             "2 acquisition-failure, 1 declares\n", completed.stdout)
+
+            records = {row["candidate"].split(":")[0].split("/")[1]: row
+                       for row in INDEX.source_rows(root, "github-code-search")}
+            self.assertEqual(4, len(records), records)  # the namesake's read supersedes the pinned refusal
+            self.assertEqual(OLDER, records["forked"]["revision"])
+            # The stdlib loader refuses its `? ` key, so the full parser reads it as `full-yaml` would.
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2); served by upstream/Forked",
+                             records["forked"]["census"])
+            self.assertEqual("outstanding", records["forked"]["disposition"])  # its screens are still owed
+            self.assertEqual(PINNED, records["orphan"]["revision"])
+            self.assertIn(refusal.format("orphan"), records["orphan"]["census"])
+            self.assertIn("the repository search for `orphan` names 0 namesake(s) (none) at",
+                          records["orphan"]["census"])
+            self.assertIn("the repository search for `unsearched` answered HTTP 422 at",
+                          records["unsearched"]["census"])
+            self.assertEqual({"outstanding"}, {records[name]["disposition"]
+                                               for name in ("orphan", "unsearched", "unrequested")})
+
+            ledger = [row for _, row in INDEX.jsonl(evidence / "candidates.jsonl")]
+            served = next(row for row in ledger if row.get("served_by"))
+            self.assertEqual(f"{url}/upstream/Forked/{OLDER}/openapi.yaml", served["raw_url"])
+            self.assertEqual(PINNED, served["supersedes"])
+            self.assertEqual(refusal.format("forked"), served["github_refusal"])
+            calls = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl") if row.get("host") == "github"]
+            rest = [path for path in server.paths if path.startswith(("/repos/", "/search/"))]
+            self.assertEqual(len(rest), len(calls))  # every REST call went through the guard
+            # three repository searches and the one namesake's history of the path
+            self.assertEqual((3, 1), (sum(p.startswith("/search/") for p in rest),
+                                      sum(p.startswith("/repos/") for p in rest)))
+
+            # A second run leaves what the first sought; `--again` seeks only what is still refused.
+            second = run("--evidence-root", str(root), "reacquire-namesake",
+                         "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertIn("0 refused candidate(s) sought", second.stdout)
+            again = run("--evidence-root", str(root), "reacquire-namesake", "--again",
+                        "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertIn("2 refused candidate(s) sought in namesake repositories: 2 acquisition-failure",
+                          again.stdout)
 
 
 if __name__ == "__main__":
