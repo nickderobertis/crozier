@@ -12,7 +12,8 @@ in for, so this suite holds it to two things over a committed sample:
 * on one real document of each form only ruamel.yaml reads —
   `tests/data/census-fallback-sample.tsv`, pinned by commit and digest — the
   stdlib loader refuses it and the fallback reading counts the declarations the
-  document visibly makes.
+  document visibly makes. A form the stdlib loader has since learned
+  (`STDLIB_READS`) keeps its sample, now read by both loaders identically.
 
 It needs the pinned parser and, for a sample document not yet cached, the
 network: run it as `just test-census-fallback`, which CI's `live-e2e` leg does.
@@ -68,6 +69,12 @@ def sample_document(url: str, sha256: str) -> Path:
     return path
 
 
+# Sampled forms the stdlib loader now reads although the sample pinned them as
+# refused: a quote inside a flow plain scalar (dashy's `page's config`). Both
+# loaders must agree on these rather than the stdlib loader refusing them.
+STDLIB_READS = {"flow-collection"}
+
+
 class FallbackAgreementTests(unittest.TestCase):
     def test_both_loaders_count_the_same_selectors_wherever_both_read(self) -> None:
         sources = registered_yaml_sources()
@@ -94,12 +101,16 @@ class FallbackAgreementTests(unittest.TestCase):
         for row in rows:
             with self.subTest(form=row["form"], url=row["url"]):
                 path = sample_document(row["url"], row["sha256"])
-                with self.assertRaises(search.CENSUS.DocumentError):
-                    search.CENSUS.load_document(path)
-                reading = search.fallback_reading(path, path.read_bytes())
-                self.assertIsNotNone(reading, "the pinned parser reads one description")
-                document, loader = reading
-                self.assertTrue(loader.startswith(search.YAML_LOADER), loader)
+                if row["form"] in STDLIB_READS:
+                    document = search.CENSUS.load_document(path)
+                    self.assertEqual(search.yaml_stream(path.read_bytes()), [document])
+                else:
+                    with self.assertRaises(search.CENSUS.DocumentError):
+                        search.CENSUS.load_document(path)
+                    reading = search.fallback_reading(path, path.read_bytes())
+                    self.assertIsNotNone(reading, "the pinned parser reads one description")
+                    document, loader = reading
+                    self.assertTrue(loader.startswith(search.YAML_LOADER), loader)
                 counts = search.CENSUS.census_document(document, root_path=path)
                 declared = dict(pair.split("=") for pair in row["declares"].split(";"))
                 self.assertEqual({selector: int(n) for selector, n in declared.items()},

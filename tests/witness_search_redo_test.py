@@ -532,6 +532,15 @@ class WitnessSearchRedoTests(unittest.TestCase):
             if line.startswith("| `"):
                 cells = [cell.strip() for cell in line.strip("|").split("|")]
                 recorded.setdefault(cells[0].strip("`"), []).append(cells)
+        # candidates.md is byte-frozen (historical-sha256.tsv), so a rejection
+        # screened after it froze is recorded by its source ledger's screen.
+        screened: dict[str, list[dict]] = {}
+        for ledger in sorted((REPO / "docs/openapi-surface").glob("*/screens.jsonl")):
+            for text in ledger.read_text(encoding="utf-8").splitlines():
+                screen = json.loads(text)
+                if "repository" in screen and "commit" in screen:
+                    artifact = f"{screen['repository']}@{screen['commit']}/{screen['path']}"
+                    screened.setdefault(artifact, []).append({**screen, "ledger": ledger})
         count = 0
         for line in rejected.splitlines():
             if not line.startswith("| `"):
@@ -543,7 +552,20 @@ class WitnessSearchRedoTests(unittest.TestCase):
             artifact = catalogue[1] if catalogue else source.strip("`")
             with self.subTest(spec=label):
                 rows = recorded.get(artifact, [])
-                self.assertEqual(1, len(rows), f"{artifact}: expected exactly one record")
+                screens = [s for s in screened.get(artifact, []) if s["disposition"] == "rejected"]
+                self.assertEqual(
+                    1, len(rows) + len(screens), f"{artifact}: expected exactly one record"
+                )
+                if screens:
+                    screen = screens[0]
+                    self.assertTrue(screen["fern"].startswith("failed: "), screen["fern"])
+                    self.assertIn(screen["sha256"], diagnostic)
+                    for phrase in re.findall(r"`([^`]+)`", screen["fern"]):
+                        self.assertIn(phrase, diagnostic)
+                    for log in screen["fern_logs"]:
+                        self.assertTrue((screen["ledger"].parent / log).is_file(), log)
+                    count += 1
+                    continue
                 self.assertEqual("`fern-rejected`", rows[0][6])
                 self.assertIn(
                     diagnostic.replace("../../docs/", "../../"), rows[0][7]

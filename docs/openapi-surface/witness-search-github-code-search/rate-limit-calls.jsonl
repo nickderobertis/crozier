@@ -54693,3 +54693,107 @@
 {"at": "2026-09-26T00:41:57.089+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4947, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 53}
 {"at": "2026-09-26T00:41:57.816+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4946, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 54}
 {"at": "2026-09-26T00:41:58.535+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4945, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 55}
+{"at": "2026-09-29T06:05:23.473+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4979, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 21}
+{"at": "2026-09-29T06:05:24.407+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4978, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 22}
+{"at": "2026-09-29T06:05:27.683+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4976, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 24}
+{"at": "2026-09-29T06:05:28.512+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4975, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 25}
+{"at": "2026-09-29T06:05:29.357+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4974, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 26}
+{"at": "2026-09-29T06:05:30.270+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4973, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 27}
+{"at": "2026-09-29T06:05:31.423+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4972, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 28}
+{"at": "2026-09-29T06:05:32.489+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4970, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 30}
+{"at": "2026-09-29T06:05:33.343+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4970, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 30}
+{"at": "2026-09-29T06:05:34.207+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4969, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 31}
+{"at": "2026-09-29T06:05:35.000+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4968, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 32}
+{"at": "2026-09-29T06:05:36.936+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4967, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 33}
+{"at": "2026-09-29T06:05:37.751+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4966, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 34}
+{"at": "2026-09-29T06:06:40.284+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4961, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 39}
+{"at": "2026-09-29T06:06:41.142+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4960, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 40}
+{"at": "2026-09-29T06:06:42.581+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:06:52.883+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:06:53.731+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4955, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 45}
+{"at": "2026-09-29T06:07:03.084+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:03.972+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4952, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 48}
+{"at": "2026-09-29T06:07:13.305+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:23.637+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:24.489+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4946, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 54}
+{"at": "2026-09-29T06:07:33.870+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:44.081+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:45.094+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4937, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 63}
+{"at": "2026-09-29T06:07:46.018+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4936, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 64}
+{"at": "2026-09-29T06:07:54.294+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:07:55.160+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4934, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 66}
+{"at": "2026-09-29T06:08:04.539+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:05.417+00:00", "bucket": "core", "cost": 1, "host": "github", "limit": 5000, "remaining": 4899, "reserved": 1, "reset": 1790664288, "resource": "core", "status": 404, "used": 101}
+{"at": "2026-09-29T06:08:14.735+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:15.745+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4925, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 75}
+{"at": "2026-09-29T06:08:24.921+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:25.759+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4914, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 86}
+{"at": "2026-09-29T06:08:35.121+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:35.964+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4906, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 94}
+{"at": "2026-09-29T06:08:45.465+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:55.645+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:08:56.473+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4886, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 114}
+{"at": "2026-09-29T06:09:05.844+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:09:16.159+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:09:26.360+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:09:36.561+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:10:05.226+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4865, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 135}
+{"at": "2026-09-29T06:10:06.092+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4864, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 136}
+{"at": "2026-09-29T06:10:07.140+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4863, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 137}
+{"at": "2026-09-29T06:10:08.219+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:10:09.248+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4862, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 138}
+{"at": "2026-09-29T06:10:18.510+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:10:19.517+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4861, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 139}
+{"at": "2026-09-29T06:10:20.455+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4860, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 140}
+{"at": "2026-09-29T06:10:21.628+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4859, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 141}
+{"at": "2026-09-29T06:10:28.704+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:11:52.925+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4845, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 155}
+{"at": "2026-09-29T06:11:54.281+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:11:55.084+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4841, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 159}
+{"at": "2026-09-29T06:12:04.481+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:12:05.328+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4829, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 171}
+{"at": "2026-09-29T06:12:06.156+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4827, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 173}
+{"at": "2026-09-29T06:12:07.165+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4824, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 176}
+{"at": "2026-09-29T06:12:14.679+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:12:15.605+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4817, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 183}
+{"at": "2026-09-29T06:12:24.875+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:12:25.770+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4816, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 184}
+{"at": "2026-09-29T06:12:26.644+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4815, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 185}
+{"at": "2026-09-29T06:12:27.696+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4814, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 186}
+{"at": "2026-09-29T06:12:35.087+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 404}
+{"at": "2026-09-29T06:13:27.481+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4807, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 193}
+{"at": "2026-09-29T06:13:28.451+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4805, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 195}
+{"at": "2026-09-29T06:13:29.375+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4804, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 196}
+{"at": "2026-09-29T06:13:30.368+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4802, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 198}
+{"at": "2026-09-29T06:13:31.233+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4798, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 404, "used": 202}
+{"at": "2026-09-29T06:13:32.234+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4793, "reserved": 1, "reset": 1790665400, "resource": "core", "status": 200, "used": 207}
+{"at": "2026-09-29T09:13:32.998+00:00", "bucket": "search", "cost": 1, "host": "github", "limit": 30, "remaining": 29, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 1}
+{"at": "2026-09-29T09:13:34.164+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4860, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 140}
+{"at": "2026-09-29T09:13:44.741+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4859, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 141}
+{"at": "2026-09-29T09:13:52.330+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 28, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 2}
+{"at": "2026-09-29T09:13:53.289+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 27, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 3}
+{"at": "2026-09-29T09:13:54.268+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 26, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 4}
+{"at": "2026-09-29T09:13:56.080+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 25, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 5}
+{"at": "2026-09-29T09:13:57.117+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4855, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 145}
+{"at": "2026-09-29T09:13:58.024+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4854, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 146}
+{"at": "2026-09-29T09:13:58.986+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4853, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 147}
+{"at": "2026-09-29T09:13:59.949+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4852, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 148}
+{"at": "2026-09-29T09:14:00.865+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4851, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 149}
+{"at": "2026-09-29T09:14:01.780+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4850, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 150}
+{"at": "2026-09-29T09:14:07.567+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 24, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 6}
+{"at": "2026-09-29T09:14:08.495+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4849, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 151}
+{"at": "2026-09-29T09:14:09.401+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4848, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 152}
+{"at": "2026-09-29T09:14:10.337+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4847, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 153}
+{"at": "2026-09-29T09:14:12.672+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4846, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 154}
+{"at": "2026-09-29T09:14:13.601+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4845, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 155}
+{"at": "2026-09-29T09:14:14.531+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4844, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 156}
+{"at": "2026-09-29T09:14:15.523+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 23, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 7}
+{"at": "2026-09-29T09:14:16.591+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 22, "reserved": 1, "reset": 1790673269, "resource": "search", "status": 200, "used": 8}
+{"at": "2026-09-29T09:14:17.553+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4842, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 158}
+{"at": "2026-09-29T09:14:22.500+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4840, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 160}
+{"at": "2026-09-29T09:14:26.091+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4838, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 162}
+{"at": "2026-09-29T09:14:30.982+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4837, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 163}
+{"at": "2026-09-29T09:14:40.695+00:00", "bucket": "search", "cost": 1, "host": "github", "limit": 30, "remaining": 29, "reserved": 1, "reset": 1790673340, "resource": "search", "status": 200, "used": 1}
+{"at": "2026-09-29T09:14:48.127+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 28, "reserved": 1, "reset": 1790673340, "resource": "search", "status": 200, "used": 2}
+{"at": "2026-09-29T09:14:49.586+00:00", "bucket": "search", "host": "github", "limit": 30, "remaining": 27, "reserved": 1, "reset": 1790673340, "resource": "search", "status": 200, "used": 3}
+{"at": "2026-09-29T09:14:50.582+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4835, "reserved": 1, "reset": 1790676209, "resource": "core", "status": 200, "used": 165}

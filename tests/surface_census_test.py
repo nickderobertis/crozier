@@ -6256,14 +6256,15 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
 
-    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_refused(self) -> None:
+    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_built(self) -> None:
         """YAML 1.2's rule: a `:` no space follows stays in a plain scalar.
 
         The loader used to stop every plain scalar at a `:` and then drop the
         "pair" a flow sequence cannot hold, so OpenBanking Project's
         `enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]` read as
         an empty list. A `: ` inside a flow sequence is an implicit single-pair
-        mapping, which this reader refuses by name rather than dropping.
+        mapping, which it now builds: APWG's eCX document writes
+        `examples: [example: 1702353706]`, which it used to refuse.
         """
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yml"
@@ -6281,10 +6282,47 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 },
                 census.load_document(path),
             )
-            path.write_text("pairs: [x: y]\n", encoding="utf-8")
-            with self.assertRaises(census.DocumentError) as raised:
-                census.load_document(path)
-        self.assertIn("a single-pair mapping inside a flow sequence is not supported", str(raised.exception))
+            path.write_text("pairs: [x: y, z, {w: 1}]\nexamples: [\n  example: 1702353706\n]\n",
+                            encoding="utf-8")
+            self.assertEqual({"pairs": [{"x": "y"}, "z", {"w": 1}], "examples": [{"example": 1702353706}]},
+                             census.load_document(path))
+
+    def test_a_quote_inside_a_flow_plain_scalar_and_a_bare_flow_key_read_as_yaml_does(self) -> None:
+        """Two flow forms APWG's eCX document (`APWG/ecx2-openapi-doc`, corpus row 261) writes.
+
+        A quote opens a quoted scalar only where a node starts, so the key
+        `domain"` its example spells for `"domain"` is a plain scalar, where the
+        loader used to open a string at it and lose the brackets' balance ("a
+        flow collection is never closed"). And `{ "json events" }` is a key with
+        a null value, where the loader used to drop the entry.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                "example:\n"
+                "  {\n"
+                '    "data": [\n'
+                '    {\n'
+                '      "id": 1,\n'
+                '      domain": "ecrimex.net",\n'
+                "      it's: plain\n"
+                "    } ]\n"
+                "  }\n"
+                "empty:\n"
+                "  {\n"
+                '  "data": {\n'
+                '    "json events"\n'
+                "    }\n"
+                "  }\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {
+                    "example": {"data": [{"id": 1, 'domain"': "ecrimex.net", "it's": "plain"}]},
+                    "empty": {"data": {"json events": None}},
+                },
+                census.load_document(path),
+            )
 
     def test_the_openbanking_client_assertion_enum_reads_as_its_one_urn(self) -> None:
         """The registered document the misread cost a `schema.enum:string-valued` site."""
@@ -6502,6 +6540,135 @@ class PyYamlOracleTests(unittest.TestCase):
                 theirs = census.census_document(yaml.safe_load(path.read_text(encoding="utf-8")))
                 self.assertEqual(theirs, mine)
 
+
+
+class EscalationRestatementTests(unittest.TestCase):
+    """The prose that restates the unwitnessed keys' ledgers, recomputed from them.
+
+    The compact lines' counts are re-derived by `witness-search-github-index.py`,
+    but their notes, the index's escalation table and the sentences summing them
+    restate how many candidates stay open, which ones, and how many keys each
+    outcome holds. Each of those is recomputed here from the six `records.tsv`
+    ledgers the compact lines link.
+    """
+
+    REGIONS = REPO / "docs" / "openapi-surface"
+    DOC = REPO / "docs" / "openapi-surface-coverage.md"
+    SCHEMAS = REGIONS / "schemas.md"
+    WORDS = {word: n for n, word in enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve thirteen".split())}
+    STAYS_OPEN = re.compile(r"what stays open is (\d+) candidate\(s\)")
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.doc = cls.DOC.read_text(encoding="utf-8")
+        cls.schemas = cls.SCHEMAS.read_text(encoding="utf-8")
+        cls.lines = compact_search_lines(cls.schemas)
+        cls.open_rows: dict[str, list[dict[str, str]]] = {}
+        # Rows the full YAML parser decided, and rows a namesake repository served.
+        cls.reread: list[dict[str, str]] = []
+        cls.served: dict[str, list[dict[str, str]]] = {}
+        for source in DECLARED_SOURCES:
+            _header, by_key = compact_ledger(cls.REGIONS / f"witness-search-{source}" / "records.tsv")
+            for key in cls.lines:
+                rows = [row for _number, row in by_key.get(key, [])]
+                cls.open_rows.setdefault(key, []).extend(row for row in rows if row["disposition"] == "outstanding")
+                cls.reread.extend(row for row in rows
+                                  if "; read by " in row["census"] or row["census"].startswith("census-refused"))
+                cls.served.setdefault(key, []).extend(row for row in rows if "; served by " in row["census"])
+        cls.refused = {key: rows for key, rows in cls.open_rows.items()
+                       if cls.STAYS_OPEN.search(cls.lines[key][3])}
+
+    def number(self, word: str) -> int:
+        word = word.replace(",", "")
+        return int(word) if word.isdigit() else self.WORDS[word.lower()]
+
+    def test_each_note_names_every_candidate_a_namesake_served(self) -> None:
+        self.assertTrue(any(self.served.values()))
+        for key, rows in self.served.items():
+            with self.subTest(key=key):
+                note = self.lines[key][3]
+                if not rows:
+                    self.assertNotIn("were read from a namesake repository", note)
+                    continue
+                self.assertIn(f"the {len(rows)} candidate(s) whose pinned blob GitHub answered 404 for", note)
+                for row in rows:
+                    by = row["census"].split("; served by ", 1)[1]
+                    self.assertIn(f"`{row['candidate']}` at `{row['revision']}`, served by `{by}`", note)
+
+    def test_each_note_names_every_candidate_its_key_still_owes(self) -> None:
+        for key, rows in self.refused.items():
+            with self.subTest(key=key):
+                note = self.lines[key][3]
+                self.assertEqual(len(rows), int(self.STAYS_OPEN.search(note)[1]))
+                for row in rows:
+                    self.assertIn(f"`{row['candidate']}` at `{row['revision']}`", note)
+                    self.assertIn(row["census"].removeprefix("acquisition-failure: "), note)
+
+    def test_the_escalation_table_counts_what_each_key_owes(self) -> None:
+        section = self.doc.split("| key | selector | outstanding, per source |", 1)[1].split("\n\n", 1)[0]
+        rows = {cells[0].strip("`"): cells for line in section.splitlines()
+                if (cells := table_cells(line, 5)) and cells[0].startswith("`")}
+        self.assertEqual(set(self.lines), set(rows))
+        for key, cells in rows.items():
+            with self.subTest(key=key):
+                owed = self.open_rows[key]
+                if "not asked" in cells[2]:
+                    continue
+                if not owed:
+                    self.assertEqual("none", cells[2])
+                    continue
+                self.assertEqual({"github-code-search"}, {row["source"] for row in owed})
+                self.assertTrue(cells[2].startswith(f"github-code-search {len(owed)}, "), cells[2])
+
+    def test_the_sentences_summing_the_outcomes_add_up(self) -> None:
+        outcomes = Counter(line[1].strip("`") for line in self.lines.values())
+        refused = [row for rows in self.refused.values() for row in rows]
+        gone = sum(bool(re.match(r"GET /repos/\S+ answered HTTP 404", row["census"].split(": ", 1)[1]))
+                   for row in refused)
+        served = [row for rows in self.served.values() for row in rows]
+        declaring = {(row["candidate"], row["revision"]) for row in self.reread
+                     if re.match(r"census [1-9]", row["census"])}
+        expected = {
+            "reread": len(self.reread),
+            "declaring": len(declaring),
+            "served": len(served),
+            "forks": len({row["candidate"].split(":", 1)[0] for row in served}),
+            "pinned-404": len(served) + len(refused),
+            "exhausted": outcomes[EXHAUSTED],
+            "incomplete": len(self.refused),
+            "refused": len(refused),
+            "gone": gone,
+            "kept": len(refused) - gone,
+        }
+        sentences = [
+            (self.schemas, r"(\w+) keys read `exhausted`", "exhausted"),
+            (self.schemas, r"(\w+) keys still\s+read `search-incomplete`", "incomplete"),
+            (self.schemas, r"reason: (\d+) `github-code-search` candidates", "refused"),
+            (self.doc, r"(\w+) have a search record that reads `exhausted`", "exhausted"),
+            (self.doc, r"(\w+) read `search-incomplete`\s+only because GitHub refused (?:\d+)", "incomplete"),
+            (self.doc, r"only because GitHub refused (\d+) candidates", "refused"),
+            (self.doc, r"\*\*(\w+) read `exhausted`, \w+ read `search-incomplete`", "exhausted"),
+            (self.doc, r"read `exhausted`, (\w+) read `search-incomplete` under the scope", "incomplete"),
+            (self.doc, r"\*\*(\d+) candidates stay open, because GitHub refused them", "refused"),
+            (self.doc, r"(\d+)\s+are in \w+ repositories that `GET /repos", "gone"),
+            (self.doc, r"(\w+), in \w+ repositories, are in ones whose head no longer", "kept"),
+            (self.doc, r"closes the (\w+)\s+`search-incomplete` keys", "incomplete"),
+            (self.doc, r"the (\d+) blobs GitHub and", "refused"),
+            (self.schemas, r"The ([\d,]+) documents the census's standard-library YAML", "reread"),
+            (self.doc, r"The witness searches recorded ([\d,]+) candidate", "reread"),
+            (self.doc, r"The ([\d,]+) candidates the census's\s+standard-library YAML loader refused", "reread"),
+            (self.doc, r"(\w+) documents declare a key", "declaring"),
+            (self.doc, r"\*\*(\w+) refused candidates were read from the forks' parents", "served"),
+            (self.doc, r"(\d+) candidates'\s+pinned blob had answered 404", "pinned-404"),
+            (self.schemas, r"(\w+) in \w+ deleted forks\s+were read from the fork's parent", "served"),
+            (self.schemas, r"\w+ in (\w+) deleted forks\s+were read from the fork's parent", "forks"),
+        ]
+        for text, pattern, name in sentences:
+            with self.subTest(pattern=pattern):
+                found = re.search(pattern, text)
+                self.assertIsNotNone(found, pattern)
+                self.assertEqual(expected[name], self.number(found[1]))
 
 
 class RankedBacklogTests(unittest.TestCase):
