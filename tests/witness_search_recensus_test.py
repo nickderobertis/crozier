@@ -84,11 +84,15 @@ def git_blob(data: bytes) -> str:
     return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
 
 
+OTHER = "oneof-anyof-variant"
+
+
 def keys_file(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / "keys.json").write_text(
-        json.dumps({"keys": {KEY: {"region": "schemas", "selector": SELECTOR, "selector_status": "available"}}}),
-        encoding="utf-8")
+    (directory / "keys.json").write_text(json.dumps({"keys": {
+        KEY: {"region": "schemas", "selector": SELECTOR, "selector_status": "available"},
+        OTHER: {"region": "schemas", "selector": "schema.oneOf>schema.anyOf", "selector_status": "available"},
+    }}), encoding="utf-8")
 
 
 def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
@@ -113,10 +117,12 @@ class FullYamlTest(unittest.TestCase):
                              "repository": f"github.com/example/{name}", "path": "openapi.yaml",
                              "commit": "c" * 40, "sha256": digest, "document": f"{digest}.yaml",
                              "disposition": "parse-failure", "diagnostic": "the stdlib loader refused it"})
-            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            other = {**rows[0], "key": OTHER, "selector": "schema.oneOf>schema.anyOf"}
+            (evidence / "candidates.jsonl").write_text(
+                "".join(json.dumps(r) + "\n" for r in [*rows, other]), encoding="utf-8")
 
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
-                            "--cache", str(cache), "--jobs", "2")
+                            "--cache", str(cache), "--jobs", "2", "--key", KEY)
             self.assertEqual(0, completed.returncode, completed.stderr)
             self.assertIn("4 parse-failure row(s) over 4 document(s) read again", completed.stdout)
 
@@ -142,9 +148,12 @@ class FullYamlTest(unittest.TestCase):
             self.assertEqual("rejected", records["template"]["disposition"])
             self.assertEqual("rejected", records["chart"]["disposition"])
 
+            # The key filter left the other key's row to a later run, which reads it and no more.
+            self.assertEqual("outstanding", next(r for r in INDEX.source_rows(root, "sourcegraph")
+                                                 if r["key"] == OTHER)["disposition"])
             again = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph", "--cache", str(cache))
             self.assertEqual(0, again.returncode, again.stderr)
-            self.assertIn("0 parse-failure row(s)", again.stdout)
+            self.assertIn("1 parse-failure row(s) over 1 document(s) read again: 1 does-not-declare", again.stdout)
 
     def test_a_document_past_the_time_bound_is_refused_with_the_bound(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -314,6 +323,17 @@ class ReacquireHeadTest(unittest.TestCase):
             sourcegraph = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl")
                            if row.get("host") == "sourcegraph"]
             self.assertEqual(5, len(sourcegraph))
+
+            # A second run leaves what the first decided; `--again` requests only what is still refused.
+            env = {"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
+                   "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"}
+            second = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertIn("0 404 candidate(s) requested at head", second.stdout)
+            again = run("--evidence-root", str(root), "reacquire-head", "--again",
+                        "--cache-dir", str(Path(tmp) / "cache"), env=env)
+            self.assertEqual(0, again.returncode, again.stderr)
+            self.assertIn("4 404 candidate(s) requested at head: 4 acquisition-failure", again.stdout)
+            self.assertEqual(7, len(INDEX.source_rows(root, "github-code-search")))
 
             misspelt = run("--evidence-root", str(root), "reacquire-head", "--key", "no-such-key",
                            "--cache-dir", str(Path(tmp) / "cache"))
