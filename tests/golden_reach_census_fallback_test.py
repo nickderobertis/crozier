@@ -69,9 +69,9 @@ def sample_document(url: str, sha256: str) -> Path:
     return path
 
 
-# Sampled forms the stdlib loader was taught to read after the sample was pinned:
-# a quote inside a flow plain scalar (dashy's `page's config`), read since the
-# fixture-gap closure taught it APWG's eCX document.
+# Sampled forms the stdlib loader now reads although the sample pinned them as
+# refused: a quote inside a flow plain scalar (dashy's `page's config`). Both
+# loaders must agree on these rather than the stdlib loader refusing them.
 STDLIB_READS = {"flow-collection"}
 
 
