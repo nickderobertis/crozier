@@ -7727,7 +7727,7 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertIn(row[1], self.PROOF_FORMS)
                     self.assertIn(
                         row[2],
-                        ("discards", "ignores", "refuses", "crashes", "coincidence"),
+                        NON_GENERATION_VERDICTS,
                         f"{key}: the cited proof has no non-generation verdict",
                     )
                     self.assertTrue(
@@ -8342,6 +8342,12 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
         admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
         self.assertEqual(6, len(admitted_verdicts))
+        self.assertEqual(
+            list(NON_GENERATION_VERDICTS),
+            [verdict for verdict in admitted_verdicts if verdict != "measured"],
+            "NON_GENERATION_VERDICTS is not the gate's admitted set less `measured`, the one "
+            "verdict that records Fern generating and is never a non-generation proof",
+        )
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
                          "the gate's refusal message states other verdicts than it admits")
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
