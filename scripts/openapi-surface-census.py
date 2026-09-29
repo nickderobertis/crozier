@@ -603,7 +603,13 @@ class _YamlReader:
                 return (mapping if closer == "}" else items), cursor + 1
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
-            if cursor < len(text) and text[cursor] == ":":
+            keyed = cursor < len(text) and text[cursor] == ":"
+            if (keyed or closer == "}") and isinstance(value, (dict, list)):
+                # A collection as a key (a Helm template's `{{ .Values.x }}`) is
+                # YAML, but no JSON object model holds it: the document is no
+                # description this census can read.
+                self.fail(index, "a flow collection is used as a mapping key")
+            if keyed:
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 if closer == "]":
                     # `[x: y]` is a sequence holding the single-pair mapping `{x: y}`.

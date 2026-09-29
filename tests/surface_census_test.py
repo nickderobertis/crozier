@@ -6383,6 +6383,17 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertIn("stalls", str(raised.exception))
 
 
+    def test_a_flow_collection_used_as_a_key_is_a_parse_error_not_a_crash(self) -> None:
+        """A Helm template's `{{ .Values.x }}` keys a mapping on a mapping, which no object model holds."""
+        for text in ("info: {{ .Values.title }}\n", "info: {[a]: b}\n", "tags: [{a}: b]\n"):
+            with self.subTest(text=text), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                with self.assertRaises(census.DocumentError) as raised:
+                    census.load_document(path)
+                self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
+
+
 @unittest.skipIf(
     os.name == "nt",
     "the POSIX shell resolver's semantics are not reproduced by MSYS",
