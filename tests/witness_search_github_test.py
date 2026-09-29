@@ -18,6 +18,7 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -260,6 +261,17 @@ class LocalServer(BaseHTTPRequestHandler):
                     {"message": "secondary rate limit"},
                     {"X-Ratelimit-Remaining": "9", "Retry-After": "1"},
                 )
+            elif state["page_capped"]:
+                # 980 reported, 922 served across the ten pages GitHub allows; page 11 is 422.
+                page = int(urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)["page"][0])
+                if page > 10:
+                    self.reply(422, {"message": "Cannot access beyond the first 1000 results"})
+                else:
+                    self.reply(200, {"total_count": 980, "incomplete_results": False, "items": [
+                        {"repository": {"full_name": "example/api"}, "path": f"openapi-{page}-{n}.yaml",
+                         "sha": "a" * 40,
+                         "url": f"http://127.0.0.1:{self.server.server_port}/repos/example/api/contents/openapi.yaml?ref={'b' * 40}"}
+                        for n in range(22 if page == 10 else 100)]})
             else:
                 early_empty = state["early_empty"] and "page=2" in self.path
                 self.reply(
@@ -414,6 +426,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "incomplete_sourcegraph": False,
             "partition": False,
             "early_empty": False,
+            "page_capped": False,
             "contents": 0,
             "sourcegraph": 0,
             "refuse_sourcegraph": False,
@@ -1243,6 +1256,19 @@ components:
             self.search.github_search("closed-object", "additionalProperties")
         )
         self.assertEqual(2, self.server.state["searches"])
+
+    def test_a_window_short_at_the_last_page_github_serves_is_truncated_not_paged_past(self) -> None:
+        self.server.state["page_capped"] = True
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        rows = [json.loads(line) for line in (self.root / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(list(range(1, 11)), [row["page"] for row in rows if row["outcome"] == "answered"])
+        self.assertNotIn("refused", {row["outcome"] for row in rows})
+        truncated = next(row for row in rows if row["outcome"] == "outstanding-index-truncation")
+        self.assertEqual((980, 922, 10), (truncated["reported"], truncated["retrieved"], truncated["page"]))
+        self.assertEqual(10, self.server.state["searches"])
+        # A resumed search reads the same ten pages off the ledger and asks GitHub nothing more.
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertEqual(10, self.server.state["searches"])
 
     def test_old_empty_page_is_marked_outstanding_on_resume(self) -> None:
         query = "additionalProperties"

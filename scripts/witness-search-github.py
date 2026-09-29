@@ -53,6 +53,10 @@ RAW_BACKOFF_BASE_S = 10.0
 RAW_TRANSFER_ATTEMPT_BUDGET = 3
 CODE_SEARCH_SPACING_S = 30.0
 CODE_SEARCH_REFUSAL_COOLDOWN_S = 300.0
+# GitHub code search serves a query's first 1,000 results, 10 pages of 100, and
+# answers a later page 422; a window short of its reported count at the last
+# page is truncated there as surely as one an empty page ends.
+CODE_SEARCH_PAGE_CAP = 10
 SOURCEGRAPH_SPACING_S = 10.0
 SOURCEGRAPH_REFUSAL_COOLDOWN_S = 3600.0
 OPENAPI_VERSION = re.compile(r"3\.\d+\.\d+(?:[-+].*)?")
@@ -848,7 +852,9 @@ class Acquirer:
             "result_count"
         ):
             return [item for row in answered for item in row["results"]]
-        if answered and answered[-1].get("page_count") == 0:
+        if answered and (
+            answered[-1].get("page_count") == 0 or len(answered) >= CODE_SEARCH_PAGE_CAP
+        ):
             split = self._split_truncated(
                 key, query, lower, upper, answered[0]["result_count"],
                 answered[-1]["retrieved_total"],
@@ -998,7 +1004,7 @@ class Acquirer:
                 return found
             if self.first_page_only:
                 return None
-            if not items:
+            if not items or page >= CODE_SEARCH_PAGE_CAP:
                 self.write(
                     "queries.jsonl",
                     {
