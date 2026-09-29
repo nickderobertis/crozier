@@ -1315,9 +1315,10 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            return [(row["document"], row["status"], row["sha256"])
-                    for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-                    if row["status"] != "readable"]
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        repeated = repeated_documents(rows)
+        return [(document_subject(row, repeated), row["status"], row["sha256"])
+                for row in rows if row["status"] != "readable"]
     return [(r["subject"], r["result"], "") for r in read_records(source)
             if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
 
@@ -1804,10 +1805,14 @@ def local_copies(
                     by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
         enumeration = source_dir(source) / "enumeration.tsv.gz"
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-                cut_off = row["status"].startswith("unreadable: census exceeded")
-                if row["status"] != "readable" and (timed_out or not cut_off):
-                    unread[row["document"]] = (locate(source, root, row, by_digest), row["sha256"])
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        # A path two trees pin is two documents, each named `<walk>:<path>` as the
+        # records name it, so neither copy's reading stands in for the other's.
+        repeated = repeated_documents(rows)
+        for row in rows:
+            cut_off = row["status"].startswith("unreadable: census exceeded")
+            if row["status"] != "readable" and (timed_out or not cut_off):
+                unread[document_subject(row, repeated)] = (locate(source, root, row, by_digest), row["sha256"])
         return unread
     fetched: dict[str, dict[str, Any]] = {}
     ledger = source_dir(source) / "candidates.jsonl"
@@ -1921,9 +1926,9 @@ def recensus(args: argparse.Namespace) -> int:
             rows = list(csv.DictReader(handle, delimiter="\t"))
         added: list[dict[str, str]] = []
         for row in rows:
-            if row["document"] not in readings:
+            if document_subject(row, repeated) not in readings:
                 continue
-            counts, parsed, _loader, _digest = readings[row["document"]]
+            counts, parsed, _loader, _digest = readings[document_subject(row, repeated)]
             found = {key: n for key in walked for n in [count(key, counts, parsed)] if n}
             row["status"], row["matched_keys"] = "readable", ",".join(found)
             added += [{"key": key, "kind": "document", "subject": document_subject(row, repeated),
