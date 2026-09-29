@@ -2827,7 +2827,19 @@ fn reference_entry(
                 })
                 .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
         } else {
-            dp.name.trim_end_matches('_').to_string()
+            // A query parameter's `[]` is spelled out the same way: eNanoMapper's
+            // `property_uris[]` is `property_uris_array` in `reference.md`.
+            ep.query_params
+                .iter()
+                .find(|query| query.py_name == dp.name)
+                .filter(|query| query.wire_name.ends_with("[]"))
+                .map(|query| {
+                    naming::field_name(&format!(
+                        "{}_array",
+                        query.wire_name.trim_end_matches("[]")
+                    ))
+                })
+                .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
         };
         params.push(ParamRow {
             name: reference_name,

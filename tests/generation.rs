@@ -12623,3 +12623,70 @@ components:
         "{raw}"
     );
 }
+
+/// eNanoMapper's `getInvestigationResults` requires an inline-enum `type`
+/// exampled `bystudytype`, a later member: Fern's worked call passes the
+/// enum's first member all the same. Its `getSubstanceByUUID` takes a
+/// `property_uris[]` query parameter, which the Python signature names
+/// `property_uris` while `reference.md` spells the bracket out.
+#[test]
+fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_as_an_array()
+{
+    let files = render(
+        r#"openapi: 3.0.0
+info: { title: eNanoMapper database, version: 4.0.0 }
+servers:
+  - url: https://api.ideaconsult.net
+paths:
+  /investigation:
+    get:
+      operationId: getInvestigationResults
+      tags: [Studies]
+      parameters:
+        - in: query
+          name: type
+          required: true
+          example: bystudytype
+          schema: { type: string, enum: [byinvestigation, byassay, bystudytype] }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /substance/{uuid}:
+    get:
+      operationId: getSubstanceByUUID
+      tags: [Substances]
+      parameters:
+        - { in: path, name: uuid, required: true, schema: { type: string } }
+        - { in: query, name: 'property_uris[]', description: Property URIs, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+"#,
+    );
+    let studies = files
+        .iter()
+        .find(|(path, _)| path.ends_with("studies/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the studies client");
+    assert!(
+        studies.contains("type=GetInvestigationResultsRequestType.BYINVESTIGATION,"),
+        "{studies}"
+    );
+    assert!(!studies.contains("BYSTUDYTYPE,\n"), "{studies}");
+    let substances = files
+        .iter()
+        .find(|(path, _)| path.ends_with("substances/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the substances client");
+    assert!(
+        substances.contains("property_uris: typing.Optional[str] = None,"),
+        "{substances}"
+    );
+    let reference = files
+        .iter()
+        .find(|(path, _)| path.ends_with("reference.md"))
+        .map(|(_, contents)| contents)
+        .expect("reference.md");
+    assert!(
+        reference.contains("**property_uris_array:** `typing.Optional[str]` — Property URIs"),
+        "{reference}"
+    );
+}

@@ -2660,22 +2660,21 @@ fn build_endpoint(
             // worked example of its own; see [`fern_imports_no_endpoint_example`].
             let omit_synthesized_example = without_declared_example
                 && (!required || !fern_imports_no_endpoint_example(doc, op));
-            // Fern leaves an optional enum-typed query parameter out of a worked
-            // call however its enum and its example are declared: measured on Fern
-            // 5.20.0, an inline `enum` carrying a schema example, the same enum
-            // carrying a parameter-level example, and a `$ref` to a named enum all
-            // render the call without it. (A *required* one is rendered from the
-            // enum's first member, not from its example.)
-            let optional_enum = p.required != Some(true)
-                && p.schema.as_ref().is_some_and(|schema| {
-                    let resolved = schema
-                        .reference
-                        .as_deref()
-                        .and_then(|reference| resolve_ref(doc, reference))
-                        .unwrap_or(schema);
-                    string_enum_values(resolved).is_some()
-                });
-            let example = if omit_synthesized_example || optional_enum {
+            // Fern never examples an enum-typed query parameter from a declared
+            // example: measured on Fern 5.20.0, an inline `enum` carrying a schema
+            // example, the same enum carrying a parameter-level example, and a
+            // `$ref` to a named enum all render the call without an optional one,
+            // and a *required* one is rendered from the enum's first member —
+            // eNanoMapper's `type`, exampled `bystudytype`, is `BYINVESTIGATION`.
+            let string_enum = p.schema.as_ref().is_some_and(|schema| {
+                let resolved = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                string_enum_values(resolved).is_some()
+            });
+            let example = if omit_synthesized_example || string_enum {
                 None
             } else {
                 query_parameter_example(doc, p)
