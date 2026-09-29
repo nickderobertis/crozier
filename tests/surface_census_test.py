@@ -998,8 +998,8 @@ def completeness_failures(
     """Every non-`golden` row: a committed proof, or a searched `gap`.
 
     A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
-    row's own evidence cell; a tree Fern generated output from is not in the
-    manifest at all, so it settles nothing. A searched `gap` carries one line in its
+    row's own evidence cell; a `measured` row is a byte comparison over a
+    generated shape and settles nothing. A searched `gap` carries one line in its
     own region file's `### Witness search (exhaustive)` compact table.
     """
     failures = []
@@ -8312,12 +8312,13 @@ class RankedBacklogTests(unittest.TestCase):
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
         """Three facts about Contract A live beside `tests/e2e.rs`'s manifest gate,
         so this holds them to it rather than letting either copy drift: the
-        verdicts each proof form establishes, read off the gate's own `match form`,
-        the five verdicts the gate admits, and the refusal record's five fields,
-        as the index states them."""
+        verdicts each proof form establishes, read off the gate's own `match form`
+        (which also admits `measured` on an `absent-tree` row, a value no
+        `limitations` row carries), the six verdicts the gate admits, and the
+        refusal record's five fields, as the index states them."""
         gate = (REPO / "tests" / "e2e.rs").read_text(encoding="utf-8")
         arms = {
-            form: tuple(re.findall(r'"([a-z]+)"', verdicts))
+            form: tuple(v for v in re.findall(r'"([a-z]+)"', verdicts) if v != "measured")
             for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
         }
         self.assertEqual(self.PROOF_FORMS, arms, "the proof forms drifted from the manifest gate")
@@ -8329,13 +8330,18 @@ class RankedBacklogTests(unittest.TestCase):
             re.findall(r'"([a-z_]+)"', fields.group(1)),
             "the gate's refusal fields are not the index's",
         )
+        self.assertEqual(
+            {"absent-tree"},
+            {form for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+             if '"measured"' in verdicts},
+            "`measured` is admitted on a form other than `absent-tree`",
+        )
         admitted = re.search(r"\} else if !\[(.*?)\]\s*\.contains\(&verdict\)", gate, re.S)
         refused = re.search(r"is not one Contract A admits \\\s*\((.*?)\)", gate, re.S)
-        vocabulary = re.search(r"`verdict` admits exactly five values: (.*?)\. ", " ".join(self.doc.split()))
+        vocabulary = re.search(r"`verdict` admits exactly six values: (.*?)\. ", " ".join(self.doc.split()))
         self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
         admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
-        self.assertEqual(["discards", "ignores", "refuses", "crashes", "coincidence"], admitted_verdicts,
-                         "the gate admits a verdict fixed Contract A does not")
+        self.assertEqual(6, len(admitted_verdicts))
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
                          "the gate's refusal message states other verdicts than it admits")
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
