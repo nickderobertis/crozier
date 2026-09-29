@@ -3363,6 +3363,7 @@ const CORPORA: &[&Corpus] = &[
     &MOCKSERVER,
     &IDEACONSULT_ENANOMAPPER,
     &OPENAIRE_GRAPH,
+    &QREDENCE_FLEET_RLM,
 ];
 
 #[test]
@@ -6168,6 +6169,19 @@ const IDEACONSULT_ENANOMAPPER: Corpus = Corpus {
 /// jentic/jentic-public-apis, whose schemas declare `xml.attribute`
 const OPENAIRE_GRAPH: Corpus = Corpus {
     api: "openaire-graph",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `qredence-fleet-rlm`: corpus row 303, fleet-rlm's own server description
+/// from Qredence/fleet-rlm, whose `oneOf` holds a variant that is an `anyOf`
+const QREDENCE_FLEET_RLM: Corpus = Corpus {
+    api: "qredence-fleet-rlm",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12125,6 +12139,11 @@ fn ideaconsult_enanomapper_matches_fern_output() {
 #[test]
 fn openaire_graph_matches_fern_output() {
     assert_link_ok_corpus_matches(&OPENAIRE_GRAPH);
+}
+
+#[test]
+fn qredence_fleet_rlm_matches_fern_output() {
+    assert_link_ok_corpus_matches(&QREDENCE_FLEET_RLM);
 }
 
 #[test]

@@ -253,6 +253,7 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e mockserver_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e ideaconsult_enanomapper_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e openaire_graph_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e qredence_fleet_rlm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_acs_notification_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_conversation_matches_fern_output
