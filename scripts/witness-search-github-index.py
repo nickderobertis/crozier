@@ -845,7 +845,7 @@ def disposition_counts(root: Path, source: str) -> dict[str, Counter]:
     return counts
 
 
-def compact_counts(root: Path) -> dict[Path, str]:
+def rederived_region_texts(root: Path) -> dict[Path, str]:
     """Each region file with its compact search lines' counts derived from the ledgers.
 
     A compact line's segments are `records.tsv` counted per disposition, so they
@@ -945,7 +945,7 @@ def main() -> int:
             changed.append(str(target))
         if not inventory.is_file() or inventory.read_text(encoding="utf-8") != owed:
             changed.append(str(inventory))
-        changed.extend(str(path) for path, text in compact_counts(args.evidence_root).items()
+        changed.extend(str(path) for path, text in rederived_region_texts(args.evidence_root).items()
                        if path.read_text(encoding="utf-8") != text)
         if changed:
             print(
@@ -958,7 +958,7 @@ def main() -> int:
         return 0
     write_ledger(target, expected, args.shard_bytes)
     inventory.write_text(owed, encoding="utf-8")
-    for path, text in compact_counts(args.evidence_root).items():
+    for path, text in rederived_region_texts(args.evidence_root).items():
         if path.read_text(encoding="utf-8") != text:
             path.write_text(text, encoding="utf-8")
     print(f"{target}: {len(central)} candidate records")

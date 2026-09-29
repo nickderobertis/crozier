@@ -166,6 +166,7 @@ class FullYamlTest(unittest.TestCase):
 
 HEAD = "d" * 40
 PINNED = "e" * 40
+OLDER = "f" * 40
 
 
 class Upstream(BaseHTTPRequestHandler):
@@ -190,6 +191,16 @@ class Upstream(BaseHTTPRequestHandler):
             self.reply(200, {"sha": HEAD})
         elif self.path == f"/example/kept/{HEAD}/openapi.yaml":
             self.reply(200, DECLARER)
+        elif self.path in ("/repos/example/moved", "/repos/example/dropped"):
+            self.reply(200, {"default_branch": "main"})
+        elif self.path in ("/repos/example/moved/commits/main", "/repos/example/dropped/commits/main"):
+            self.reply(200, {"sha": HEAD})
+        elif self.path == f"/repos/example/moved/commits?path=openapi.yaml&sha={HEAD}&per_page=100":
+            self.reply(200, [{"sha": HEAD}, {"sha": OLDER}])  # removed at head, present before it
+        elif self.path == f"/repos/example/dropped/commits?path=openapi.yaml&sha={HEAD}&per_page=100":
+            self.reply(200, [])
+        elif self.path == f"/example/moved/{OLDER}/openapi.yaml":
+            self.reply(200, DECLARER)
         elif self.path.startswith("/repos/"):
             self.reply(404, {"message": "Not Found"})
         elif self.path == f"/github.com/example/mirrored/-/raw/openapi.yaml?rev={PINNED}":
@@ -213,18 +224,18 @@ class ReacquireHeadTest(unittest.TestCase):
             rows = [{"source": "github-code-search", "key": KEY, "selector": SELECTOR,
                      "repository": f"example/{name}", "path": "openapi.yaml", "commit": PINNED,
                      "blob": git_blob(DECLARER), "disposition": "acquisition-failure", "status": 404,
-                     "diagnostic": "404: Not Found"} for name in ("kept", "mirrored", "gone")]
+                     "diagnostic": "404: Not Found"} for name in ("kept", "mirrored", "gone", "moved", "dropped")]
             (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
 
             completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
                             env={"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
                                  "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"})
             self.assertEqual(0, completed.returncode, completed.stderr)
-            self.assertIn("3 404 candidate(s) requested at head: 1 acquisition-failure, 2 declares", completed.stdout)
+            self.assertIn("5 404 candidate(s) requested at head: 2 acquisition-failure, 3 declares", completed.stdout)
 
             records = {row["candidate"].split(":")[0].split("/")[1]: row
                        for row in INDEX.source_rows(root, "github-code-search")}
-            self.assertEqual(3, len(records), records)  # the head read supersedes its pinned 404
+            self.assertEqual(5, len(records), records)  # a read at another commit supersedes its pinned 404
             self.assertEqual(HEAD, records["kept"]["revision"])
             self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records["kept"]["census"])
             self.assertEqual(PINNED, records["mirrored"]["revision"])
@@ -233,15 +244,32 @@ class ReacquireHeadTest(unittest.TestCase):
             self.assertIn("GET /repos/example/gone answered HTTP 404 at", records["gone"]["census"])
             self.assertIn(f"Sourcegraph's mirror at {PINNED} served HTTP 404 at", records["gone"]["census"])
 
+            # Head served, file gone from it: the path's history reaches the pinned blob.
+            self.assertEqual(OLDER, records["moved"]["revision"])
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records["moved"]["census"])
+            # Head served, and neither its history nor the mirror holds the blob: refused, at its pin.
+            self.assertEqual(PINNED, records["dropped"]["revision"])
+            self.assertEqual("outstanding", records["dropped"]["disposition"])
+            self.assertIn(f"openapi.yaml at {HEAD} (head of main) answered HTTP 404 at", records["dropped"]["census"])
+            self.assertIn(f"the path's history at {HEAD} lists 0 commit(s), none serving blob", records["dropped"]["census"])
+            self.assertIn(f"Sourcegraph's mirror at {PINNED} served HTTP 404 at", records["dropped"]["census"])
+
             ledger = {row["repository"].split("/")[1]: row for _, row in INDEX.jsonl(evidence / "candidates.jsonl")}
             self.assertEqual("sourcegraph-mirror", ledger["mirrored"]["acquisition_route"])
             guarded = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl") if row.get("bucket") == "core"]
             rest = [path for path in server.paths if path.startswith("/repos/")]
             self.assertEqual(len(rest), len(guarded))
-            self.assertEqual(4, len(rest))  # three repositories, and one head commit
+            # five repositories, three head commits, and two histories of the path
+            self.assertEqual(10, len(rest))
             sourcegraph = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl")
                            if row.get("host") == "sourcegraph"]
-            self.assertEqual(2, len(sourcegraph))
+            self.assertEqual(3, len(sourcegraph))
+
+            misspelt = run("--evidence-root", str(root), "reacquire-head", "--key", "no-such-key",
+                           "--cache-dir", str(Path(tmp) / "cache"))
+            self.assertEqual(2, misspelt.returncode)
+            self.assertIn("--key ['no-such-key'] names no key of witness-search-github-code-search/keys.json",
+                          misspelt.stderr)
 
             invalid = run("--evidence-root", str(root), "reacquire-head", "--again",
                           "--cache-dir", str(Path(tmp) / "cache"),

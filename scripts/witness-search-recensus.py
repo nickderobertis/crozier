@@ -231,9 +231,6 @@ def full_yaml(args: argparse.Namespace) -> int:
     evidence = args.evidence_root / f"witness-search-{args.source}"
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
-    unknown = wanted - set(keys)
-    if unknown:
-        fail(f"{sorted(unknown)} are not keys of {evidence / 'keys.json'}; check the spelling")
     pending: list[tuple[dict[str, Any], str]] = []
     for _, row in latest_rows(evidence, args.source):
         if status_of(row) != "parse-failure":
@@ -257,10 +254,8 @@ def full_yaml(args: argparse.Namespace) -> int:
     with concurrent.futures.ProcessPoolExecutor(args.jobs, mp_context=context) as pool:
         futures = {pool.submit(read_document, str(path), args.timeout): digest
                    for digest, path in sorted(copies.items())}
-        for done, future in enumerate(concurrent.futures.as_completed(futures), 1):
+        for future in concurrent.futures.as_completed(futures):
             verdicts[futures[future]] = future.result()
-            if done % 100 == 0:
-                print(f"witness-search-recensus: {done}/{len(futures)} documents read", file=sys.stderr)
     tally: dict[str, int] = {}
     for row, digest in pending:
         record = verdict_record(args.source, row, verdicts[digest], digest, keys)
@@ -427,6 +422,10 @@ def main() -> int:
     head.add_argument("--key", action="append", default=[])
     head.add_argument("--again", action="store_true", help="request candidates an earlier run requested too")
     args = parser.parse_args()
+    source = args.source if args.stage == "full-yaml" else "github-code-search"
+    unknown = set(args.key) - set(INDEX.read_keys(args.evidence_root / f"witness-search-{source}"))
+    if unknown:
+        parser.error(f"--key {sorted(unknown)} names no key of witness-search-{source}/keys.json; check the spelling")
     if args.stage == "full-yaml":
         if args.jobs < 1 or args.timeout < 1:
             parser.error("--jobs and --timeout must be positive")
