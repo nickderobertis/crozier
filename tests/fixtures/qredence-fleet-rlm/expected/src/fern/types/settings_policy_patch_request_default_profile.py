@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .settings_policy_patch_request_default_profile_updates import SettingsPolicyPatchRequestDefaultProfileUpdates
+
+SettingsPolicyPatchRequestDefaultProfile = typing.Union[SettingsPolicyPatchRequestDefaultProfileUpdates, typing.Any]

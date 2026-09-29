@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "qredence-fleet-rlm",
+  "corpus_spec_ref": "0322623598b6cda0eea580694264e69a40081f10",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Qredence/fleet-rlm/0322623598b6cda0eea580694264e69a40081f10/openapi.yaml"
+}

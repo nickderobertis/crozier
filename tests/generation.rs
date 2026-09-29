@@ -12737,3 +12737,86 @@ paths:
     assert!(client.contains("client.research_products.search1()\n"), "{client}");
     assert!(!client.contains("size=\"10\""), "{client}");
 }
+
+/// fleet-rlm (OpenAPI 3.1): a multipart part declaring `contentMediaType:
+/// application/octet-stream` is a file, as `format: binary` is, and a component
+/// union member that composes an `anyOf` of its own is that union, the
+/// properties declared beside it unread.
+#[test]
+fn an_octet_stream_part_is_a_file_and_a_composing_union_member_is_its_union() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: fleet-rlm, version: 0.7.10 }
+paths:
+  /api/attachments:
+    post:
+      tags: [attachments]
+      operationId: create_attachment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/Body_create_attachment' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /api/settings:
+    patch:
+      tags: [settings]
+      operationId: patch_settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingsPolicyPatchRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+components:
+  schemas:
+    Body_create_attachment:
+      type: object
+      required: [attachment]
+      properties:
+        attachment: { type: string, contentMediaType: application/octet-stream }
+    SettingsPolicyPatchRequest:
+      oneOf:
+        - required: [revision, path]
+          properties:
+            path: { type: string }
+        - required: [revision]
+          anyOf:
+            - required: [updates]
+              properties:
+                updates: { minItems: 1 }
+            - required: [default_profile]
+          properties:
+            default_profile: { not: { type: 'null' } }
+      properties:
+        revision: { type: string }
+"#,
+    );
+    let raw = files
+        .iter()
+        .find(|(path, _)| path.ends_with("attachments/raw_client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the attachments raw client");
+    assert!(raw.contains("attachment: core.File,"), "{raw}");
+    assert!(raw.contains("files={\n                \"attachment\": attachment,"), "{raw}");
+    let member = files
+        .iter()
+        .find(|(path, _)| path.ends_with("types/settings_policy_patch_request_default_profile.py"))
+        .map(|(_, contents)| contents)
+        .expect("the composing member's own union");
+    assert!(
+        member.contains(
+            "SettingsPolicyPatchRequestDefaultProfile = typing.Union[SettingsPolicyPatchRequestDefaultProfileUpdates, typing.Any]"
+        ),
+        "{member}"
+    );
+    assert!(
+        files
+            .keys()
+            .any(|path| path.ends_with("types/settings_policy_patch_request_default_profile_updates.py")),
+        "{:?}",
+        files.keys()
+    );
+}

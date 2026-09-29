@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .settings_policy_patch_request_default_profile import SettingsPolicyPatchRequestDefaultProfile
+from .settings_policy_patch_request_path import SettingsPolicyPatchRequestPath
+from .settings_policy_patch_request_profile import SettingsPolicyPatchRequestProfile
+
+SettingsPolicyPatchRequest = typing.Union[
+    SettingsPolicyPatchRequestPath, SettingsPolicyPatchRequestProfile, SettingsPolicyPatchRequestDefaultProfile
+]

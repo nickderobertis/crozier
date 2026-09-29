@@ -829,6 +829,10 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
+    /// The 3.1 `contentMediaType` of a string's content: `application/octet-stream`
+    /// is how a 3.1 document spells a binary string that 3.0 spells `format: binary`.
+    #[serde(rename = "contentMediaType", default)]
+    pub content_media_type: Option<String>,
     /// Object properties, in document order. Deserialized leniently: a property
     /// whose value is not a schema object degrades to a malformed unknown node
     /// rather than aborting the parse (issue #86), and an explicit `null` map

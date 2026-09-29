@@ -6448,9 +6448,15 @@ fn hoist_form_object(
         .enumerate()
         .map(|(reference_order, (prop, prop_schema))| {
             let spec_required = required.contains(&prop.as_str());
+            // A 3.1 part spells its binary content `contentMediaType:
+            // application/octet-stream` where 3.0 writes `format: binary`, and Fern
+            // reads either as a file: fleet-rlm's `attachment` is `core.File`.
+            let octet_stream = |schema: &Schema| {
+                schema.content_media_type.as_deref() == Some("application/octet-stream")
+            };
             let binary_scalar = |schema: &Schema| {
                 schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
-                    && schema.format.as_deref() == Some("binary")
+                    && (schema.format.as_deref() == Some("binary") || octet_stream(schema))
             };
             // A part is a file when it is a binary string, and equally when it is
             // an ARRAY of them: SFTPGo's `filenames` is
@@ -6478,6 +6484,10 @@ fn hoist_form_object(
                     || resolved.all_of.is_some());
             let type_ref = if is_unknown(prop_schema) && !prop_schema.malformed {
                 TypeRef::Primitive(Prim::Any)
+            } else if is_file && octet_stream(prop_schema) {
+                TypeRef::Primitive(Prim::Bytes)
+            } else if is_file && prop_schema.items.as_deref().is_some_and(octet_stream) {
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Bytes)))
             } else if is_file {
                 base_type_ref(prop_schema)
             } else {
@@ -10916,6 +10926,16 @@ impl Builder<'_> {
                 }
             }
         }
+        // A variant composing alternatives of its own is that union even where it
+        // declares properties beside them, which Fern leaves unread: fleet-rlm's
+        // `SettingsPolicyPatchRequest` offers, third, `default_profile` beside an
+        // `anyOf` of two requirement sets, and its golden declares
+        // `SettingsPolicyPatchRequestDefaultProfile` as the union of those two.
+        if is_inline_object(variant) && variant.all_of.is_none() {
+            if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
+                return self.composed_variant(parent, index, variant, siblings, members);
+            }
+        }
         // An object declaring `properties: {}` is an empty model, not a map:
         // Timely's `V1.Project.cost` offers a cost object or `{type: object,
         // properties: {}}`, and Fern declares `V1ProjectCostOne`.
@@ -10961,29 +10981,7 @@ impl Builder<'_> {
         // `ResultIntent` alias then references by name.
         if variant.reference.is_none() {
             if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
-                let name = variant_class_name(parent, index, variant, siblings);
-                let module = naming::module_name(&name);
-                let docstring = clean_doc(variant.description.as_deref());
-                if let Some(decl) =
-                    self.discriminated_union(&name, &module, variant, docstring.clone())
-                {
-                    self.types.push(TypeDecl::DiscriminatedUnion(decl));
-                    return TypeRef::Named(name);
-                }
-                let nested = members
-                    .iter()
-                    .enumerate()
-                    .map(|(nested_index, member)| {
-                        self.variant_ref(&name, nested_index, member, members)
-                    })
-                    .collect();
-                self.push_alias(
-                    &name,
-                    module,
-                    TypeRef::Union(dedupe_union_members(nested)),
-                    docstring,
-                );
-                return TypeRef::Named(name);
+                return self.composed_variant(parent, index, variant, siblings, members);
             }
         }
         // `format: binary` is a file body, not a union alternative: in a union
@@ -10995,6 +10993,38 @@ impl Builder<'_> {
             TypeRef::Primitive(Prim::Bytes) => TypeRef::Primitive(Prim::Str),
             other => other,
         }
+    }
+
+    /// A variant that composes its own alternatives, as the named union
+    /// `{parent}{Ordinal}` over them: a tagged union where they are
+    /// discriminated, else an alias of their deduplicated union.
+    fn composed_variant(
+        &mut self,
+        parent: &str,
+        index: usize,
+        variant: &Schema,
+        siblings: &[Schema],
+        members: &[Schema],
+    ) -> TypeRef {
+        let name = variant_class_name(parent, index, variant, siblings);
+        let module = naming::module_name(&name);
+        let docstring = clean_doc(variant.description.as_deref());
+        if let Some(decl) = self.discriminated_union(&name, &module, variant, docstring.clone()) {
+            self.types.push(TypeDecl::DiscriminatedUnion(decl));
+            return TypeRef::Named(name);
+        }
+        let nested = members
+            .iter()
+            .enumerate()
+            .map(|(nested_index, member)| self.variant_ref(&name, nested_index, member, members))
+            .collect();
+        self.push_alias(
+            &name,
+            module,
+            TypeRef::Union(dedupe_union_members(nested)),
+            docstring,
+        );
+        TypeRef::Named(name)
     }
 
     /// The scalar type an `allOf` names when it holds exactly one `$ref` to a
