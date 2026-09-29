@@ -231,3 +231,11 @@ format-uri-reference	github-code-search	"format: uri-reference" filename:openapi
 format-uri-reference	github-code-search	"\"format\": \"uri-reference\"" filename:openapi.json
 format-uri-reference	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri-reference" count:all type:file
 format-uri-reference	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri-reference\"" count:all type:file
+format-idn-hostname	github-code-search	"format: idn-hostname" filename:openapi.yaml
+format-idn-hostname	github-code-search	"\"format\": \"idn-hostname\"" filename:openapi.json
+format-idn-hostname	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: idn-hostname" count:all type:file
+format-idn-hostname	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"idn-hostname\"" count:all type:file
+format-iri	github-code-search	"format: iri" filename:openapi.yaml
+format-iri	github-code-search	"\"format\": \"iri\"" filename:openapi.json
+format-iri	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: iri" count:all type:file
+format-iri	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"iri\"" count:all type:file
