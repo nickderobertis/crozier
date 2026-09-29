@@ -7715,7 +7715,7 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertIn(row[1], self.PROOF_FORMS)
                     self.assertIn(
                         row[2],
-                        ("discards", "ignores", "refuses", "crashes", "coincidence"),
+                        NON_GENERATION_VERDICTS,
                         f"{key}: the cited proof has no non-generation verdict",
                     )
                     self.assertTrue(
@@ -8322,8 +8322,8 @@ class RankedBacklogTests(unittest.TestCase):
         vocabulary = re.search(r"`verdict` admits exactly five values: (.*?)\. ", " ".join(self.doc.split()))
         self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
         admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
-        self.assertEqual(["discards", "ignores", "refuses", "crashes", "coincidence"], admitted_verdicts,
-                         "the gate admits a verdict fixed Contract A does not")
+        self.assertEqual(list(NON_GENERATION_VERDICTS), admitted_verdicts,
+                         "the gate admits other verdicts than NON_GENERATION_VERDICTS")
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
                          "the gate's refusal message states other verdicts than it admits")
         self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
