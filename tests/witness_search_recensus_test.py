@@ -4,8 +4,8 @@
 
 `full-yaml` over a temporary ledger whose parse failures name real documents in
 a temporary cache: one only the full YAML parser reads, one only its lenient
-reading reads, one no reading reads, and one that is YAML but no OpenAPI
-description. Each ledger row it appends, and the `records.tsv` row
+reading reads, one no reading reads, one that is YAML but no OpenAPI
+description, and one that names Swagger 2.0. Each ledger row it appends, and the `records.tsv` row
 `witness-search-github-index.py` derives from it, says what was read and how.
 
 `reacquire-head` against a loopback server standing in for api.github.com,
@@ -68,6 +68,8 @@ paths: {}
 """
 TEMPLATE = b"{{- if .Values.enabled }}\nopenapi: 3.0.0\n{{- end }}\n"
 NOT_OPENAPI = b"name: chart\nversion: 1.0.0\n"
+# Names a version, but Swagger 2.0's, which the census does not read.
+SWAGGER = b"swagger: '2.0'\ninfo: {title: Legacy, version: '1'}\npaths: {}\n"
 
 
 def _load(name: str, path: Path):
@@ -112,7 +114,7 @@ class FullYamlTest(unittest.TestCase):
             (cache / "documents").mkdir(parents=True)
             rows = []
             for name, data in (("declarer", DECLARER), ("duplicate", DUPLICATE), ("template", TEMPLATE),
-                               ("chart", NOT_OPENAPI)):
+                               ("chart", NOT_OPENAPI), ("legacy", SWAGGER)):
                 digest = hashlib.sha256(data).hexdigest()
                 (cache / "documents" / f"{digest}.yaml").write_bytes(data)
                 rows.append({"source": "sourcegraph", "key": KEY, "selector": SELECTOR,
@@ -126,7 +128,7 @@ class FullYamlTest(unittest.TestCase):
             completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
                             "--cache", str(cache), "--jobs", "2", "--key", KEY)
             self.assertEqual(0, completed.returncode, completed.stderr)
-            self.assertIn("4 parse-failure row(s) over 4 document(s) read again", completed.stdout)
+            self.assertIn("5 parse-failure row(s) over 5 document(s) read again", completed.stdout)
 
             appended = {row["repository"].rsplit("/", 1)[1]: row
                         for _, row in INDEX.jsonl(evidence / "candidates.jsonl") if row.get("loader")}
@@ -139,6 +141,10 @@ class FullYamlTest(unittest.TestCase):
             self.assertIn("ruamel.yaml 0.19.1", appended["template"]["diagnostic"])
             self.assertIn(f"sha256 {rows[2]['sha256']}", appended["template"]["diagnostic"])
             self.assertEqual("excluded-non-openapi-3", appended["chart"]["disposition"])
+            self.assertIn("0 naming an `openapi` or `swagger` version", appended["chart"]["diagnostic"])
+            self.assertEqual("excluded-non-openapi-3", appended["legacy"]["disposition"])
+            self.assertEqual("names `openapi` None / `swagger` '2.0'", appended["legacy"]["diagnostic"])
+            self.assertEqual(0, appended["legacy"]["selector_count"])
 
             records = {row["candidate"].split("/", 1)[1].split(":")[0]: row
                        for row in INDEX.source_rows(root, "sourcegraph")}
@@ -149,6 +155,7 @@ class FullYamlTest(unittest.TestCase):
             self.assertTrue(records["template"]["census"].startswith("census-refused: ruamel.yaml 0.19.1"))
             self.assertEqual("rejected", records["template"]["disposition"])
             self.assertEqual("rejected", records["chart"]["disposition"])
+            self.assertEqual("rejected", records["legacy"]["disposition"])
 
             # The key filter left the other key's row to a later run, which reads it and no more.
             self.assertEqual("outstanding", next(r for r in INDEX.source_rows(root, "sourcegraph")
