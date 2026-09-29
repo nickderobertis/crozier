@@ -1734,6 +1734,17 @@ components:
             "| kept as written |\n\n## After\n",
             region.read_text(encoding="utf-8"))
         subprocess.run([*command, "--check"], check=True, capture_output=True)
+        # A segment the index cannot read is refused by name, and the region file is left as written.
+        malformed = ("# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n"
+                     "|---|---|---|---|\n| `shape` | `witness-found` | sourcegraph: many candidates | kept |\n")
+        region.write_text(malformed, encoding="utf-8")
+        for args in (command, [*command, "--check"]):
+            refused = subprocess.run(args, capture_output=True, text=True)
+            self.assertEqual(1, refused.returncode, refused.stderr)
+            self.assertIn(f"{region}: shape: malformed compact search segment 'sourcegraph: many candidates'",
+                          refused.stderr)
+            self.assertIn("inspect the source evidence and rerun the index", refused.stderr)
+        self.assertEqual(malformed, region.read_text(encoding="utf-8"))
         region.unlink()
         (code / "closure-shape.json").write_text(json.dumps({"witness": "example/api"}), encoding="utf-8")
         subprocess.run(command, check=True, capture_output=True, text=True)
