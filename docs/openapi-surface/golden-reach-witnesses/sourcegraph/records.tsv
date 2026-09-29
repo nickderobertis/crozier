@@ -1,8 +1,8 @@
 key	kind	subject	result	file
 *	wait	sourcegraph guard log index-pacing-waits.jsonl	8 entries	index-pacing-waits.jsonl
 *	wait	sourcegraph guard log rate-limit-calls.jsonl	188 entries	rate-limit-calls.jsonl
-*	wait	sourcegraph guard log raw-github-calls.jsonl	11099 entries	raw-github-calls.jsonl
-*	wait	sourcegraph guard log raw-github-waits.jsonl	10544 entries	raw-github-waits.jsonl
+*	wait	sourcegraph guard log raw-github-calls.jsonl	12157 entries	raw-github-calls.jsonl
+*	wait	sourcegraph guard log raw-github-waits.jsonl	11600 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/producer_api_plugin/producer.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/Azure-Samples/AI-Gateway:labs/realtime-mcp-agents/src/spotify/apim-api/openapi.json@1679e3137d2fe7592d2a668d77ff71550d35b69e	census 0	candidates.jsonl
@@ -7765,7 +7765,7 @@ non-identifier-operation-id	document	github.com/vastsa/FileCodeBoxFronted:openap
 non-identifier-operation-id	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"operationId: " content:"tags:" count:all type:file	22399	queries.jsonl
 non-identifier-operation-id	query	file:(openapi|swagger).*\.json$ content:"\"operationId\": \"" content:"\"tags\"" count:all type:file	42440	queries.jsonl
 oneof-anyof-variant	document	github.com/APIs-guru/openapi-directory:APIs/graphhopper.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
-oneof-anyof-variant	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/3_0_3_unit_test_spec.yaml@ad2d8349065a1e28bd8072303210eead36dc9fa1	acquisition-failure: parse-failure	candidates.jsonl
+oneof-anyof-variant	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/3_0_3_unit_test_spec.yaml@ad2d8349065a1e28bd8072303210eead36dc9fa1	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/Quchaosheng/workbench-mobile-home-robot:docs/api-openapi-v1.json@b79c601d61c53a7effd16715445170449cf23a35	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/Quchaosheng/workbench-mobile-home-robot:services/backend/workbench_backend/api-openapi-v1.json@b79c601d61c53a7effd16715445170449cf23a35	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/RevylAI/revyl-cli:openapi.json@1ba06772fa1ba4654dd7ec1f9a8933a09aba3f9c	census 0	candidates.jsonl
@@ -7863,7 +7863,7 @@ oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-2026
 oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29575_Nadrf_MLModelManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/openthread/ot-br-posix:src/rest/openapi.yaml@c2fb2682153418ae5f39cf7adca5343a04f42048	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/pennersr/django-allauth:allauth/headless/spec/doc/openapi.yaml@cf7a2b908cad028d60b44bf1b4cd8306f575ebf2	census 0	candidates.jsonl
-oneof-anyof-variant	document	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/unit_test_spec/3_0_3_unit_test_spec.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a	acquisition-failure: parse-failure	candidates.jsonl
+oneof-anyof-variant	document	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/unit_test_spec/3_0_3_unit_test_spec.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/supabase/cli:apps/cli-go/api/v1-openapi.yaml@5abfa7d2fb33b21daaeb2432cc60378257dbd417	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/swagger-api/swagger-parser:modules/swagger-parser-v3/src/test/resources/referenceFiles/TS29510_Nnrf_NFManagement.yaml@69f6d78250b70d2ccfcd306ff0aa74353a698f2a	census 0	candidates.jsonl
 oneof-anyof-variant	document	github.com/swagger-api/swagger-parser:modules/swagger-parser-v3/src/test/resources/referenceFiles/TS29571_CommonData.yaml@69f6d78250b70d2ccfcd306ff0aa74353a698f2a	census 0	candidates.jsonl

@@ -49,10 +49,8 @@ three ways:
 464 + 66 + 12 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
 rows with at least one handling site no golden-only witness executes, 60 arms
-in all. The six-source searches of 59 of those arms, across 53 rows, read
-`exhausted`. The other arm is `oneof-anyof-variant`'s inline one, whose search
-still owes documents the census could not read, so it reads
-`search-incomplete`. One reached arm rests on a witness whose redistribution
+in all. The six-source searches of all 60 arms, across the 54 rows, read
+`exhausted`. One reached arm rests on a witness whose redistribution
 grant is disputed.
 
 **What the census still cannot enumerate.** The 542 are what a selector over a
@@ -1816,18 +1814,17 @@ The golden rows split in two. **410** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **54** carry
 at least one handling site no golden-only witness executes: 60 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
-states under Contract B's six declared sources. 59 read `exhausted`: each of
-those arms' six-source searches owes nothing and found no registrable
-real-world document that executes it. That includes the `scalar_body` fallback
-of `format-idn-hostname` and `format-iri`, the two rows that joined `golden` in
-the final reconciliation on `short-io`, which does not reach that arm; the
-remaining-gap searches ran both arms' searches. The other one is
+states under Contract B's six declared sources. All 60 read `exhausted`: each
+of those arms' six-source searches owes nothing and found no registrable
+real-world document that executes it. The remaining-gap searches ran three of
+them. Two are the `scalar_body` fallback of `format-idn-hostname` and
+`format-iri`, the rows that joined `golden` in the final reconciliation on
+`short-io`, which does not reach that arm. The third is
 `hoist_union_variant`'s nested-composition arm, `oneof-anyof-variant`'s inline
-arm. Its three registered witnesses declare the shape in a component, which
-`Builder::composed_variant` handles, and the one declarer whose instrumented run
-reaches the inline arm, Vercel's description in `jentic`, is refused by `fern
-check`; the search still owes Sourcegraph documents the census could not read,
-so it reads `search-incomplete`. Every arm
+one. The row's three registered witnesses declare the shape in a component,
+which `Builder::composed_variant` handles, and the one declarer whose
+instrumented run reaches the inline arm, Vercel's description in `jentic`, is
+refused by `fern check`. Every arm
 here stays an unreached arm of a `golden` row, not a settled one. `RankedBacklogTests` rebuilds this table from
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv) and the records, so a
 re-measured ledger or a re-rendered record that moves an arm fails the gate
@@ -1846,7 +1843,7 @@ until the table follows.
 | 4 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` |
 | 5 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` |
 | 5 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` |
-| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `search-incomplete` |
+| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `exhausted` |
 | 7 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 64 | `exhausted` |
 | 8 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]` | 50 | `exhausted` |
 | 9 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 41 | `exhausted` |

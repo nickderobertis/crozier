@@ -1,3 +1,1 @@
 key	source	item	blocker	build	src_moved_since
-oneof-anyof-variant	sourcegraph	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/3_0_3_unit_test_spec.yaml@ad2d8349065a1e28bd8072303210eead36dc9fa1	acquisition-failure: parse-failure	21ed5668773a	
-oneof-anyof-variant	sourcegraph	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/unit_test_spec/3_0_3_unit_test_spec.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a	acquisition-failure: parse-failure	21ed5668773a	
