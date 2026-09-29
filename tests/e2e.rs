@@ -3364,6 +3364,8 @@ const CORPORA: &[&Corpus] = &[
     &IDEACONSULT_ENANOMAPPER,
     &OPENAIRE_GRAPH,
     &QREDENCE_FLEET_RLM,
+    &FIWARE_CONTEXT_GENERATOR,
+    &HASURA_METADATA,
 ];
 
 #[test]
@@ -6182,6 +6184,33 @@ const OPENAIRE_GRAPH: Corpus = Corpus {
 /// from Qredence/fleet-rlm, whose `oneOf` holds a variant that is an `anyOf`
 const QREDENCE_FLEET_RLM: Corpus = Corpus {
     api: "qredence-fleet-rlm",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `fiware-context-generator`: corpus row 304, the LiveBuildings data model API
+/// from live-buildings/context-generator, whose array item's `oneOf` holds an
+/// `anyOf`
+const FIWARE_CONTEXT_GENERATOR: Corpus = Corpus {
+    api: "fiware-context-generator",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `hasura-metadata`: corpus row 305, Hasura GraphQL Engine's metadata schema
+/// from hasura/graphql-engine, whose properties' `oneOf` holds an `anyOf`
+const HASURA_METADATA: Corpus = Corpus {
+    api: "hasura-metadata",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12144,6 +12173,16 @@ fn openaire_graph_matches_fern_output() {
 #[test]
 fn qredence_fleet_rlm_matches_fern_output() {
     assert_link_ok_corpus_matches(&QREDENCE_FLEET_RLM);
+}
+
+#[test]
+fn fiware_context_generator_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
+}
+
+#[test]
+fn hasura_metadata_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HASURA_METADATA);
 }
 
 #[test]
