@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .cockroach_arr_rel_using_f_key_on_multiple_columns import CockroachArrRelUsingFKeyOnMultipleColumns
+from .cockroach_arr_rel_using_f_key_on_single_column import CockroachArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnPostgresCockroachForeignKeyConstraintOn = typing.Union[
+    CockroachArrRelUsingFKeyOnSingleColumn, CockroachArrRelUsingFKeyOnMultipleColumns
+]

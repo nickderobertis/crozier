@@ -357,6 +357,17 @@ impl Imports {
         ".".repeat(depth + 1)
     }
 
+    /// The package-relative dotted module a generated type lives in —
+    /// `types.config`, or `{tag}.types.{module}` for a tag-scoped one — whatever
+    /// file imports it.
+    fn package_module_path(&self, class: &str) -> String {
+        let m = naming::module_name(class);
+        match self.tag_types.get(class) {
+            Some(tag) if !tag.is_empty() => format!("{}.types.{m}", module_path(tag)),
+            _ => format!("types.{m}"),
+        }
+    }
+
     /// The relative module path a referenced generated type is imported from,
     /// chosen from this file's [`RefLoc`] and whether the type is tag-scoped.
     fn type_import_path(&self, class: &str) -> String {
@@ -659,13 +670,13 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
             }
         },
         TypeRef::Named(class) => {
-            imports.add_type(class);
+            let local = imports.add_type(class);
             // A forward reference (issue #84) renders as a quoted string so the
             // annotation needs no eager import of a not-yet-defined name.
             if imports.forward.contains(class) {
                 Doc::atom(format!("\"{class}\""))
             } else {
-                Doc::atom(class.clone())
+                Doc::atom(local)
             }
         }
         TypeRef::Optional(inner) => {
@@ -3602,6 +3613,17 @@ fn render_type_decl(
             imports.forward = forward.clone();
             imports.forward.extend(repair.names.iter().cloned());
             imports.cur_module = obj.module.clone();
+            // A model's own pydantic `class Config` holds the name `Config`, so a
+            // component of that name is imported under its package path: Hasura's
+            // `DataConnectorConnSourceConfig.value` is `types_config_Config`.
+            let config_module = imports.type_import_path("Config");
+            let config_alias = format!(
+                "{}_Config",
+                imports.package_module_path("Config").replace('.', "_")
+            );
+            imports
+                .aliases
+                .insert((config_module, "Config".to_string()), config_alias);
             imports.add_plain("typing");
             imports.add_plain("pydantic");
             imports.add_core("pydantic_utilities", "IS_PYDANTIC_V2");

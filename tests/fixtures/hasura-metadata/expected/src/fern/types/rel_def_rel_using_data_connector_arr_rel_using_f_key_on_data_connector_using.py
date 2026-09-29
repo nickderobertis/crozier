@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .dataconnector_ru_manual import DataconnectorRuManual
+from .ruf_key_on_arr_rel_using_f_key_on_data_connector import RufKeyOnArrRelUsingFKeyOnDataConnector
+
+RelDefRelUsingDataConnectorArrRelUsingFKeyOnDataConnectorUsing = typing.Union[
+    RufKeyOnArrRelUsingFKeyOnDataConnector, DataconnectorRuManual
+]

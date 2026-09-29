@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .mssql_ru_manual import MssqlRuManual
+from .ruf_key_on_arr_rel_using_f_key_on_mssql import RufKeyOnArrRelUsingFKeyOnMssql
+
+RelDefRelUsingMssqlArrRelUsingFKeyOnMssqlUsing = typing.Union[RufKeyOnArrRelUsingFKeyOnMssql, MssqlRuManual]

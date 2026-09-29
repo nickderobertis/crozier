@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .mssql_ru_manual import MssqlRuManual
+from .ruf_key_on_obj_rel_using_choice_mssql import RufKeyOnObjRelUsingChoiceMssql
+
+RelDefRelUsingMssqlObjRelUsingChoiceMssqlUsing = typing.Union[RufKeyOnObjRelUsingChoiceMssql, MssqlRuManual]

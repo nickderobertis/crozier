@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .postgres_ru_manual import PostgresRuManual
+from .ruf_key_on_obj_rel_using_choice_postgres_vanilla import RufKeyOnObjRelUsingChoicePostgresVanilla
+
+RelDefRelUsingPostgresVanillaObjRelUsingChoicePostgresVanillaUsing = typing.Union[
+    RufKeyOnObjRelUsingChoicePostgresVanilla, PostgresRuManual
+]

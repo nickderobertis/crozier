@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .url_conf_from_params_connection_parameters_left import UrlConfFromParamsConnectionParametersLeft
+from .url_conf_from_params_connection_parameters_right import UrlConfFromParamsConnectionParametersRight
+
+UrlConfFromParamsConnectionParameters = typing.Union[
+    UrlConfFromParamsConnectionParametersLeft, UrlConfFromParamsConnectionParametersRight
+]

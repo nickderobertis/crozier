@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .postgres_ru_manual import PostgresRuManual
+from .ruf_key_on_arr_rel_using_f_key_on_postgres_vanilla import RufKeyOnArrRelUsingFKeyOnPostgresVanilla
+
+RelDefRelUsingPostgresVanillaArrRelUsingFKeyOnPostgresVanillaUsing = typing.Union[
+    RufKeyOnArrRelUsingFKeyOnPostgresVanilla, PostgresRuManual
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "hasura-metadata",
+  "corpus_spec_ref": "94915fe51d6d21bd7f6d4452dc16221bef8cfefd",
+  "corpus_spec_url": "https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json"
+}

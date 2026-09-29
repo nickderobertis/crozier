@@ -31,6 +31,27 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+/// [`render`] over a `.json` document, which the loader reads with serde_json.
+fn render_json(spec: &str) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.json");
+    std::fs::write(&path, spec).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
 fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("api.yml");
@@ -12825,5 +12846,181 @@ components:
                 .ends_with("types/settings_policy_patch_request_default_profile_updates.py")),
         "{:?}",
         files.keys()
+    );
+}
+
+/// LiveBuildings' data model API: alternatives that all convert to one type are
+/// that type — an array item offering two string shapes, or a URI beside an
+/// `anyOf` of the same two, is `str` — and a required property so collapsed is
+/// documented by its first alternative, while an optional one keeps its own
+/// description on the wrapper. A `+json` success body declaring examples and no
+/// schema is unknown JSON.
+#[test]
+fn string_alternatives_collapse_and_a_schemaless_json_ld_body_is_unknown() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: LiveBuildings data model, version: 0.0.1 }
+paths:
+  /ngsi-ld/v1/entities:
+    get:
+      tags: [ngsi-ld]
+      operationId: getEntities
+      parameters:
+        - { in: query, name: type, required: true, schema: { type: string, enum: [Building] } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/ld+json:
+              examples:
+                keyvalues: { summary: Key-values, value: [{ id: urn:ngsi-ld:Building:1 }] }
+components:
+  schemas:
+    Building:
+      type: object
+      required: [id]
+      properties:
+        id:
+          description: Unique identifier of the entity
+          anyOf:
+            - { type: string, minLength: 1, description: Identifier format of any NGSI entity }
+            - { type: string, format: uri, description: Identifier format of any NGSI entity }
+        refMap:
+          description: Reference to the map containing the building
+          anyOf:
+            - { type: string, minLength: 1, description: Identifier format of any NGSI entity }
+            - { type: string, format: uri, description: Identifier format of any NGSI entity }
+        owner:
+          type: array
+          items:
+            anyOf:
+              - { type: string, minLength: 1 }
+              - { type: string, format: uri }
+        occupier:
+          type: array
+          items:
+            oneOf:
+              - { type: string, format: uri }
+              - anyOf:
+                  - { type: string, minLength: 1 }
+                  - { type: string, format: uri }
+"#,
+    );
+    let building = files
+        .iter()
+        .find(|(path, _)| path.ends_with("types/building.py"))
+        .map(|(_, contents)| contents)
+        .expect("the building model");
+    assert!(building.contains("    id: str = pydantic.Field()\n    \"\"\"\n    Identifier format of any NGSI entity\n"), "{building}");
+    assert!(
+        building.contains("description=\"Reference to the map containing the building\""),
+        "{building}"
+    );
+    assert!(
+        building.contains("    owner: typing.Optional[typing.List[str]] = None"),
+        "{building}"
+    );
+    assert!(
+        building.contains("    occupier: typing.Optional[typing.List[str]] = None"),
+        "{building}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("building_owner_item")
+                || path.contains("building_occupier_item")),
+        "{:?}",
+        files.keys()
+    );
+    let raw = files
+        .iter()
+        .find(|(path, _)| path.ends_with("ngsi_ld/raw_client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the raw client");
+    assert!(raw.contains("-> HttpResponse[typing.Any]:"), "{raw}");
+}
+
+/// Hasura's metadata schema: `additionalProperties` beside alternatives is the
+/// map Fern reads, a `type: null` among them unread; a map value that is only
+/// `additionalProperties: true` is unknown; a `type: "null"` element is an
+/// optional unknown; a discriminator mapping to bare names leaves the union
+/// unknown and its members their tags; a union of references each tagged by a
+/// one-member enum drops the tag from the member models; a component named
+/// `Config` is imported under its package path beside a model's own `class
+/// Config`; and a float literal past `f64::MAX` still loads.
+#[test]
+fn hasura_shaped_maps_unions_and_names_generate_like_fern() {
+    let files = render_json(
+        r##"{
+  "openapi": "3.0.0",
+  "info": { "title": "", "version": "" },
+  "paths": {},
+  "components": { "schemas": {
+    "Holder": { "type": "object", "required": ["table", "value"], "properties": {
+      "table": { "additionalProperties": true, "anyOf": [ { "$ref": "#/components/schemas/TableName" }, { "type": "string" } ] },
+      "set": { "type": "object", "additionalProperties": { "additionalProperties": true } },
+      "postgres": { "type": "array", "items": { "type": "null" } },
+      "fields": { "type": "array", "items": { "additionalProperties": true, "anyOf": [ { "$ref": "#/components/schemas/TableName" }, { "$ref": "#/components/schemas/TableName" } ] } },
+      "limit": { "type": "number", "maximum": 1.7976931348623159077293051907890247336179769789423065727343008115773267580550096313270847732240753602112011387987139335765878976881441662249284743063947412437776789342486548527630221960124609411945308295208500576883815068234246288147391311054082723716335051068458629823994724593847971630483535632962422413721e308 },
+      "value": { "$ref": "#/components/schemas/Config" },
+      "body": { "oneOf": [ { "$ref": "#/components/schemas/Remove" }, { "$ref": "#/components/schemas/Transform" } ] }
+    } },
+    "TableName": { "type": "object", "properties": { "name": { "type": "string" } } },
+    "Config": { "type": "object", "properties": { "uri": { "type": "string" } } },
+    "Value": { "additionalProperties": true, "anyOf": [ { "type": "string" }, { "type": "null" }, { "type": "number" } ] },
+    "Arguments": { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/Value" } },
+    "Remove": { "type": "object", "required": ["action"], "properties": { "action": { "type": "string", "enum": ["remove"] } } },
+    "Transform": { "type": "object", "required": ["action", "template"], "properties": { "action": { "type": "string", "enum": ["transform"] }, "template": { "type": "string" } } },
+    "ReturnType": { "discriminator": { "propertyName": "type", "mapping": { "table": "TableResponse" } }, "oneOf": [ { "$ref": "#/components/schemas/TableResponse" } ] },
+    "TableResponse": { "type": "object", "required": ["type"], "properties": { "type": { "type": "string", "enum": ["table"] } } }
+  } }
+}"##,
+    );
+    let file = |suffix: &str| {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no {suffix}: {:?}", files.keys()))
+    };
+    let holder = file("types/holder.py");
+    assert!(
+        holder.contains("    table: typing.Dict[str, typing.Any]\n"),
+        "{holder}"
+    );
+    assert!(holder.contains("    set_: typing_extensions.Annotated[\n        typing.Optional[typing.Dict[str, typing.Any]],"), "{holder}");
+    assert!(
+        holder.contains(
+            "    postgres: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"
+        ),
+        "{holder}"
+    );
+    assert!(
+        holder.contains(
+            "    fields: typing.Optional[typing.List[typing.Dict[str, typing.Any]]] = None"
+        ),
+        "{holder}"
+    );
+    assert!(
+        holder.contains("from .config import Config as types_config_Config"),
+        "{holder}"
+    );
+    assert!(
+        holder.contains("    value: types_config_Config\n"),
+        "{holder}"
+    );
+    assert!(file("types/value.py").contains("Value = typing.Dict[str, typing.Any]\n"));
+    assert!(file("types/arguments.py").contains("Arguments = typing.Dict[str, Value]\n"));
+    assert!(file("types/return_type.py").contains("ReturnType = typing.Any\n"));
+    assert!(file("types/table_response.py").contains("    type: TableResponseType\n"));
+    assert!(
+        !file("types/remove.py").contains("action"),
+        "{}",
+        file("types/remove.py")
+    );
+    assert!(
+        !file("types/transform.py").contains("action"),
+        "{}",
+        file("types/transform.py")
     );
 }

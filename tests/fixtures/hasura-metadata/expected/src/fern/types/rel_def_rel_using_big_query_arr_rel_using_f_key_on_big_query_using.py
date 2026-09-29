@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .bigquery_ru_manual import BigqueryRuManual
+from .ruf_key_on_arr_rel_using_f_key_on_big_query import RufKeyOnArrRelUsingFKeyOnBigQuery
+
+RelDefRelUsingBigQueryArrRelUsingFKeyOnBigQueryUsing = typing.Union[RufKeyOnArrRelUsingFKeyOnBigQuery, BigqueryRuManual]

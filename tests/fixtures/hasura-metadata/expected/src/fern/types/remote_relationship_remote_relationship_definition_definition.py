@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .relationship_to_schema import RelationshipToSchema
+from .relationship_to_source import RelationshipToSource
+from .to_schema_relationship_def_legacy_format import ToSchemaRelationshipDefLegacyFormat
+
+RemoteRelationshipRemoteRelationshipDefinitionDefinition = typing.Union[
+    RelationshipToSource, RelationshipToSchema, ToSchemaRelationshipDefLegacyFormat
+]

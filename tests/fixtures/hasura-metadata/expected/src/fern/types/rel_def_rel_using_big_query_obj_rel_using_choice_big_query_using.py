@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .bigquery_ru_manual import BigqueryRuManual
+from .ruf_key_on_obj_rel_using_choice_big_query import RufKeyOnObjRelUsingChoiceBigQuery
+
+RelDefRelUsingBigQueryObjRelUsingChoiceBigQueryUsing = typing.Union[RufKeyOnObjRelUsingChoiceBigQuery, BigqueryRuManual]

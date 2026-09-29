@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .cockroach_obj_rel_remote_table_multiple_columns import CockroachObjRelRemoteTableMultipleColumns
+from .cockroach_obj_rel_remote_table_single_column import CockroachObjRelRemoteTableSingleColumn
+
+RufKeyOnObjRelUsingChoicePostgresCockroachForeignKeyConstraintOn = typing.Union[
+    str, typing.List[str], CockroachObjRelRemoteTableSingleColumn, CockroachObjRelRemoteTableMultipleColumns
+]

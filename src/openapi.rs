@@ -1048,20 +1048,33 @@ impl Schema {
     /// `type: null` alternative.
     #[must_use]
     pub fn explicitly_nullable(&self) -> bool {
+        // A map's alternatives are unread, and so is a `type: null` among them:
+        // Hasura's `GraphQLValue_Name` is `additionalProperties: true` beside an
+        // `anyOf` offering `null`, and Fern's alias is a bare `Dict[str, Any]`.
+        let map_first = self.properties.is_empty()
+            && self
+                .ty
+                .as_ref()
+                .is_none_or(|ty| ty.primary() == Some("object"))
+            && matches!(
+                self.additional_properties,
+                Some(AdditionalProperties::Bool(true) | AdditionalProperties::Schema(_))
+            );
         self.nullable == Some(true)
             || matches!(
                 self.ty.as_ref(),
                 Some(TypeField::Multiple(types)) if types.iter().any(|ty| ty == "null")
             )
-            || self
-                .one_of
-                .as_ref()
-                .or(self.any_of.as_ref())
-                .is_some_and(|members| {
-                    members.iter().any(|member| {
-                        member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+            || !map_first
+                && self
+                    .one_of
+                    .as_ref()
+                    .or(self.any_of.as_ref())
+                    .is_some_and(|members| {
+                        members.iter().any(|member| {
+                            member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+                        })
                     })
-                })
     }
 }
 
@@ -1459,10 +1472,24 @@ pub fn load(path: &Path) -> Result<OpenApi> {
             path: path.to_path_buf(),
             message: e.to_string(),
         })?,
-        Some("json") => serde_json::from_str(&text).map_err(|e| Error::ParseSpec {
-            path: path.to_path_buf(),
-            message: e.to_string(),
-        })?,
+        // A float literal past `f64::MAX` is out of range to serde_json, which
+        // refuses the whole document; JavaScript reads it as `Infinity`, and so
+        // Fern generates from it. Hasura's metadata schema bounds
+        // `Limit_MaxTime.global` by `maximum: 1.7976931348623159…e308`. JSON is
+        // YAML, whose reader takes the literal as the infinite float, so the
+        // document is read again that way — only for that refusal.
+        Some("json") => serde_json::from_str(&text)
+            .or_else(|error| {
+                if error.to_string().starts_with("number out of range") {
+                    serde_yaml_ng::from_str(&text).map_err(|_| error)
+                } else {
+                    Err(error)
+                }
+            })
+            .map_err(|e| Error::ParseSpec {
+                path: path.to_path_buf(),
+                message: e.to_string(),
+            })?,
         _ => {
             return Err(Error::UnknownSpecFormat {
                 path: path.to_path_buf(),

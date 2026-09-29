@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .cockroach_ru_manual import CockroachRuManual
+from .ruf_key_on_obj_rel_using_choice_postgres_cockroach import RufKeyOnObjRelUsingChoicePostgresCockroach
+
+RelDefRelUsingPostgresCockroachObjRelUsingChoicePostgresCockroachUsing = typing.Union[
+    RufKeyOnObjRelUsingChoicePostgresCockroach, CockroachRuManual
+]

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .postgres_obj_rel_remote_table_multiple_columns import PostgresObjRelRemoteTableMultipleColumns
+from .postgres_obj_rel_remote_table_single_column import PostgresObjRelRemoteTableSingleColumn
+
+RufKeyOnObjRelUsingChoicePostgresVanillaForeignKeyConstraintOn = typing.Union[
+    str, typing.List[str], PostgresObjRelRemoteTableSingleColumn, PostgresObjRelRemoteTableMultipleColumns
+]
