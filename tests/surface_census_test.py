@@ -6256,14 +6256,15 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.callbacks", WEBHOOKS): 1}, rows(completed))
 
-    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_refused(self) -> None:
+    def test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_built(self) -> None:
         """YAML 1.2's rule: a `:` no space follows stays in a plain scalar.
 
         The loader used to stop every plain scalar at a `:` and then drop the
         "pair" a flow sequence cannot hold, so OpenBanking Project's
         `enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]` read as
         an empty list. A `: ` inside a flow sequence is an implicit single-pair
-        mapping, which this reader refuses by name rather than dropping.
+        mapping, which it now builds: APWG's eCX document writes
+        `examples: [example: 1702353706]`, which it used to refuse.
         """
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "openapi.yml"
@@ -6281,10 +6282,47 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 },
                 census.load_document(path),
             )
-            path.write_text("pairs: [x: y]\n", encoding="utf-8")
-            with self.assertRaises(census.DocumentError) as raised:
-                census.load_document(path)
-        self.assertIn("a single-pair mapping inside a flow sequence is not supported", str(raised.exception))
+            path.write_text("pairs: [x: y, z, {w: 1}]\nexamples: [\n  example: 1702353706\n]\n",
+                            encoding="utf-8")
+            self.assertEqual({"pairs": [{"x": "y"}, "z", {"w": 1}], "examples": [{"example": 1702353706}]},
+                             census.load_document(path))
+
+    def test_a_quote_inside_a_flow_plain_scalar_and_a_bare_flow_key_read_as_yaml_does(self) -> None:
+        """Two flow forms APWG's eCX document (`APWG/ecx2-openapi-doc`, corpus row 261) writes.
+
+        A quote opens a quoted scalar only where a node starts, so the key
+        `domain"` its example spells for `"domain"` is a plain scalar, where the
+        loader used to open a string at it and lose the brackets' balance ("a
+        flow collection is never closed"). And `{ "json events" }` is a key with
+        a null value, where the loader used to drop the entry.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "openapi.yml"
+            path.write_text(
+                "example:\n"
+                "  {\n"
+                '    "data": [\n'
+                '    {\n'
+                '      "id": 1,\n'
+                '      domain": "ecrimex.net",\n'
+                "      it's: plain\n"
+                "    } ]\n"
+                "  }\n"
+                "empty:\n"
+                "  {\n"
+                '  "data": {\n'
+                '    "json events"\n'
+                "    }\n"
+                "  }\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                {
+                    "example": {"data": [{"id": 1, 'domain"': "ecrimex.net", "it's": "plain"}]},
+                    "empty": {"data": {"json events": None}},
+                },
+                census.load_document(path),
+            )
 
     def test_the_openbanking_client_assertion_enum_reads_as_its_one_urn(self) -> None:
         """The registered document the misread cost a `schema.enum:string-valued` site."""
