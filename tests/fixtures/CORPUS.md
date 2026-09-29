@@ -1241,3 +1241,38 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
 OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
 unresolved without a diagnostic, so its golden is the document's types and
 client wrapper only; the wrapper is what pins the auth arm.
+
+## Rows 301–330 — the remaining-gap searches' witnesses
+
+The search that closed the census's last open shapes registers a real-world
+witness for each one a licensed, immutably pinned document Fern generates from
+declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
+
+| # | name | the row it witnesses | status |
+|---:|---|---|---|
+| 301 | `ideaconsult-enanomapper` | `operation-external-docs` | ✅ byte-matched after two repairs |
+| 302 | `openaire-graph` | `xml-attribute` | ✅ byte-matched after two repairs |
+| 303 | `qredence-fleet-rlm` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
+
+Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
+- Examples: a required enum-typed query parameter is exampled by the enum's
+  first member whatever example it declares (`type`, exampled `bystudytype`, is
+  `BYINVESTIGATION`), and an optional one whose declared example Fern discards
+  (a number on a `type: string` parameter) is left out of the call rather than
+  given its default (eNanoMapper, OpenAIRE).
+- Names: `reference.md` spells a query parameter's `[]` out as `_array`
+  (`property_uris[]` is `property_uris_array`), as it does a form field's
+  (eNanoMapper); and a springdoc duplicate suffix joins the name it numbers
+  (`getById_1` is `get_by_id1`), which also moved six of Komga's residual files
+  to parity (OpenAIRE).
+- Types: a 3.1 multipart part declaring `contentMediaType:
+  application/octet-stream` is a file, as `format: binary` is, and a component
+  union member composing an `anyOf` of its own is that union, the properties
+  declared beside it unread (fleet-rlm).
+
+The screened documents these searches found that could not be registered are
+recorded with their measured reason in each search's record: the Open Build
+Service API (`opensuse.org/obs/2.10.50`, GPL-2.0, which declares
+`xml.attribute` 164 times) passes `fern check` and its generate exits 0 over a
+document Fern never parsed (`Failed to resolve
+#/paths/~1architectures/get/responses/401`), writing an empty SDK.
