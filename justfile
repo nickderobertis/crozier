@@ -344,13 +344,16 @@ test-fixtures-coverage:
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
 # counts on every registered YAML source, and each refused form's pinned sample
-# read as what it declares. Outside `check` — it needs the search's pinned
-# ruamel.yaml (read from the script's own inline metadata) and the network for
-# the link-ok corpus and the sample; CI's live-e2e leg runs it.
+# read as what it declares. Then the witness-search re-census CLI over temporary
+# ledgers, a loopback GitHub and Sourcegraph, and the same pinned parser.
+# Outside `check` — it needs the pinned ruamel.yaml (read from each script's own
+# inline metadata) and the network for the link-ok corpus and the sample; CI's
+# live-e2e leg runs it.
 test-census-fallback:
     ./scripts/fetch-corpus.sh
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
+    uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/witness-search-recensus.py)" python3 tests/witness_search_recensus_test.py
 
 # Census aid: report the exact expected files crozier still does not reproduce.
 # The output is the ready-to-paste `unmatched` task list. Not part of `check`.

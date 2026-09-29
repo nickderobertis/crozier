@@ -1758,6 +1758,36 @@ components:
         self.assertEqual("outstanding", pending["disposition"])
         self.assertEqual("not-fetched", pending["digest"])
         subprocess.run([*command, "--check"], check=True, capture_output=True)
+        # A region file's compact search line is re-derived from the ledgers it links.
+        region = root / "schemas.md"
+        stale = ("sourcegraph: 9 candidates (9 witness-found, 0 rejected, 0 outstanding, 0 not-owed) "
+                 "[records](witness-search-sourcegraph/records.tsv) witness `example/api:openapi.yaml` at `x`")
+        region.write_text(
+            "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
+            f"| `shape` | `witness-found` | {stale} | kept as written |\n\n## After\n", encoding="utf-8")
+        drifted = subprocess.run([*command, "--check"], capture_output=True, text=True)
+        self.assertEqual(1, drifted.returncode)
+        self.assertIn(str(region), drifted.stderr)
+        subprocess.run(command, check=True, capture_output=True)
+        self.assertEqual(
+            "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
+            "| `shape` | `witness-found` | sourcegraph: 1 candidates (1 witness-found, 0 rejected, 0 outstanding, "
+            "0 not-owed) [records](witness-search-sourcegraph/records.tsv) witness `example/api:openapi.yaml` at `x` "
+            "| kept as written |\n\n## After\n",
+            region.read_text(encoding="utf-8"))
+        subprocess.run([*command, "--check"], check=True, capture_output=True)
+        # A segment the index cannot read is refused by name, and the region file is left as written.
+        malformed = ("# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n"
+                     "|---|---|---|---|\n| `shape` | `witness-found` | sourcegraph: many candidates | kept |\n")
+        region.write_text(malformed, encoding="utf-8")
+        for args in (command, [*command, "--check"]):
+            refused = subprocess.run(args, capture_output=True, text=True)
+            self.assertEqual(1, refused.returncode, refused.stderr)
+            self.assertIn(f"{region}: shape: malformed compact search segment 'sourcegraph: many candidates'",
+                          refused.stderr)
+            self.assertIn("inspect the source evidence and rerun the index", refused.stderr)
+        self.assertEqual(malformed, region.read_text(encoding="utf-8"))
+        region.unlink()
         (code / "closure-shape.json").write_text(json.dumps({"witness": "example/api"}), encoding="utf-8")
         subprocess.run(command, check=True, capture_output=True, text=True)
         with (root / "witness-search-github/candidates.tsv").open(encoding="utf-8") as stream:

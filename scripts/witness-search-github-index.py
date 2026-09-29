@@ -15,6 +15,7 @@ import io
 import json
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -24,7 +25,9 @@ RAW_OUTSTANDING = frozenset({
     "acquisition-failure", "parse-failure", "acquisition-outstanding", "selector-unavailable",
 })
 RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
-RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO
+# Every parser available refused the document: decided, with the refusal as its reason.
+RAW_REFUSED = "census-refused"
+RAW_STATUSES = RAW_DECLARING | RAW_OUTSTANDING | RAW_ZERO | {RAW_REFUSED}
 FIELDS = (
     "source",
     "key",
@@ -254,8 +257,13 @@ def classify(
     if status in RAW_DECLARING and "selector_count" not in row and isinstance(counts, dict) and key not in counts:
         status = "selector-unavailable"
         row = {**row, "diagnostic": "the census over this document never counted this key"}
+    # A document read by a parser other than the census's own names it.
+    read_by = f"; read by {row['loader']}" if row.get("loader") else ""
+    # A candidate read from a namesake repository holding its blob names that repository.
+    if row.get("served_by"):
+        read_by += f"; served by {row['served_by']}"
     if status in RAW_DECLARING and count:
-        census = f"census {count}"
+        census = f"census {count}{read_by}"
         screen = screened.get((key, name, digest))
         if screen:
             licence = screen_value(screen["license"])
@@ -288,12 +296,16 @@ def classify(
             if closed and status == "acquisition-outstanding"
             else "outstanding"
         )
+    elif status == RAW_REFUSED:
+        census = f"{status}: {row.get('diagnostic')}"
+        licence = ref = fern = f"not-run: {status}"
+        disposition = "rejected"
     else:
         census = (
             "census 0"
             if status in ("does-not-declare", "readable")
             else f"{status}: not OpenAPI 3"
-        )
+        ) + read_by
         licence = ref = fern = "not-run: census found no declaration"
         disposition = "rejected"
     return {
@@ -333,6 +345,9 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
                 source, key, row, f"{filename}:{number}", screened, closed=closed
             )
             latest[(key, result["candidate"], result["revision"])] = result
+            # A re-acquisition at a later commit replaces the row it re-requested.
+            if row.get("supersedes"):
+                latest.pop((key, result["candidate"], row["supersedes"]), None)
             if source == "github-code-search" and row.get("blob"):
                 resolved_blobs.add((key, result["candidate"], row["blob"]))
     if source == "github-publisher-trees":
@@ -821,6 +836,64 @@ def render_plain(rows: list[dict[str, str]], fields: tuple[str, ...]) -> str:
     return output.getvalue()
 
 
+EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+COMPACT_SEGMENT = re.compile(
+    r"(?P<source>[\w.-]+): \d+ candidates \([^)]*\) "
+    r"\[records\]\(witness-search-(?P<directory>[\w.-]+)/records\.tsv\)(?P<witness> witness `[^`]+` at `[^`]+`)?"
+)
+
+
+def disposition_counts(root: Path, source: str) -> dict[str, Counter]:
+    """key -> how many of one source's `records.tsv` rows hold each disposition."""
+    path = root / f"witness-search-{source}" / "records.tsv"
+    csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
+    counts: dict[str, Counter] = {}
+    with io.StringIO(read_ledger(path), newline="") as stream:
+        for row in csv.DictReader(stream, delimiter="\t"):
+            counts.setdefault(row["key"], Counter())[row["disposition"]] += 1
+    return counts
+
+
+def rederived_region_texts(root: Path) -> dict[Path, str]:
+    """Each region file with its compact search lines' counts derived from the ledgers.
+
+    A compact line's segments are `records.tsv` counted per disposition, so they
+    are re-derived here rather than restated by hand; the outcome and note beside
+    them are the maintainer's, and are left as they stand.
+    """
+    by_source: dict[str, dict[str, Counter]] = {}
+    rewritten = {}
+    for path in sorted(root.glob("*.md")):
+        text = path.read_text(encoding="utf-8")
+        if EXHAUSTIVE_SEARCH_HEADING not in text:
+            continue
+        head, rest = text.split(EXHAUSTIVE_SEARCH_HEADING, 1)
+        body, _, tail = rest.partition("\n#")
+        lines = body.split("\n")
+        for number, line in enumerate(lines):
+            cells = line.split(" | ")
+            if not line.startswith("| `") or len(cells) != 4:
+                continue
+            key = cells[0][2:].strip("`")
+            segments = []
+            for piece in cells[2].split("; "):
+                match = COMPACT_SEGMENT.fullmatch(piece)
+                if match is None:
+                    raise ValueError(f"{path}: {key}: malformed compact search segment {piece!r}")
+                source = match["source"]
+                if source not in by_source:
+                    by_source[source] = disposition_counts(root, source)
+                count = by_source[source].get(key, Counter())
+                segments.append(
+                    f"{source}: {sum(count.values())} candidates ("
+                    + ", ".join(f"{count[name]} {name}" for name in DISPOSITIONS)
+                    + f") [records](witness-search-{match['directory']}/records.tsv){match['witness'] or ''}")
+            cells[2] = "; ".join(segments)
+            lines[number] = " | ".join(cells)
+        rewritten[path] = head + EXHAUSTIVE_SEARCH_HEADING + "\n".join(lines) + ("\n#" + tail if _ else "")
+    return rewritten
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -881,6 +954,8 @@ def main() -> int:
             changed.append(str(target))
         if not inventory.is_file() or inventory.read_text(encoding="utf-8") != owed:
             changed.append(str(inventory))
+        changed.extend(str(path) for path, text in rederived_region_texts(args.evidence_root).items()
+                       if path.read_text(encoding="utf-8") != text)
         if changed:
             print(
                 "candidate records differ from evidence: "
@@ -892,6 +967,9 @@ def main() -> int:
         return 0
     write_ledger(target, expected, args.shard_bytes)
     inventory.write_text(owed, encoding="utf-8")
+    for path, text in rederived_region_texts(args.evidence_root).items():
+        if path.read_text(encoding="utf-8") != text:
+            path.write_text(text, encoding="utf-8")
     print(f"{target}: {len(central)} candidate records")
     return 0
 

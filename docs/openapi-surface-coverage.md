@@ -38,8 +38,10 @@ three ways:
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
 - **12 remain unproven.** 12 are the `FIXTURE` `gap` rows. Each is a shape Fern
-  generates output from, and each has a search record that reads
-  `search-incomplete`: each still owes candidates the census could not read.
+  generates output from. Six have a search record that reads `exhausted`: every
+  candidate is decided and none is registrable. The other six read
+  `search-incomplete` only because GitHub refused 12 candidates at every route
+  there is to them.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. The other 0 are `golden`
   rows declared only by `DROPPED` corpus rows that carry no golden: corpus rows
@@ -85,11 +87,16 @@ the census cannot measure the population beyond its own reach.
    bring them inside.
 5. **Documents the census cannot read.** The census parses with a
    standard-library YAML subset. The witness searches recorded 3,942 candidate
-   documents it refused ([the escalation](#generated-shapes-with-no-registrable-witness)),
-   so whatever they declare is invisible to every selector. The arm search's
-   pinned `ruamel.yaml` fallback reads such documents. Adopting it in the census
-   proper, with `just test-census-fallback` holding the two readings equal,
-   would bring them inside.
+   documents it refused for the eleven searched `FIXTURE` keys, and
+   [`witness-search-recensus.py`](../scripts/witness-search-recensus.py) read
+   every one of them again with the arm search's pinned `ruamel.yaml`: each is
+   censused, or recorded `census-refused` with the parser's error
+   ([the escalation](#generated-shapes-with-no-registrable-witness)). The
+   census proper keeps its standard-library loader, which now also reads the
+   three flow forms one of those documents, APWG's eCX description, writes.
+   What stays outside is the
+   parse failures the searches recorded for keys already `golden`, and any
+   document neither reading parses.
 6. **Cross-document references beyond the pinned trees.** The census follows a
    relative `$ref` only inside a registered source's pinned tree, and an
    absolute-URL `$ref` only through
@@ -2477,49 +2484,87 @@ corpus admits real specifications only. The twelfth,
 `oneof-closed-empty-object-variant`, names a crozier-generating arm that no
 probe has put to Fern.
 
-**The outcome is `search-incomplete` for all twelve, and `exhausted` for
-none.** Each key's reconciled record is its line under
+**Six read `exhausted` and six read `search-incomplete` under the scope
+exception.** Each key's reconciled record is its
+line under
 [`schemas.md`'s Witness search (exhaustive)](openapi-surface/schemas.md#witness-search-exhaustive).
 It carries one segment per declared source, counted off that source's
-`records.tsv`. None meets Contract B's five conditions, because every key
-still owes candidates. `github-code-search`, `github-publisher-trees` and
-`sourcegraph` each returned candidates, and some of them are still undecided.
-Nearly all are documents the census's standard-library YAML loader could not
-parse. They are recorded `outstanding` with `parse-failure` and never counted
-as absence. The rest are 18 `github-code-search` candidates whose pinned blob
-GitHub answered with 404. `oneof-closed-empty-object-variant` joined the census
-after the witness-search-redo contract froze; the remaining-gap searches ran its
-first search over all six sources, as they ran `oneof-anyof-variant`'s, whose
-three witnesses took that row off this list.
+`records.tsv`.
+
+- **Every parse failure is decided.** The 3,942 candidates the census's
+  standard-library YAML loader refused for the eleven searched keys were read
+  again by
+  [`witness-search-recensus.py`](../scripts/witness-search-recensus.py)
+  `full-yaml`, from the cached copy each ledger row pins, verified against its
+  digest. It uses the arm search's pinned `ruamel.yaml` 0.19.1, relaxed on
+  duplicate keys and unrecognised tags only where the strict reading refuses
+  those. Each document is censused with the key's selector, and its
+  `records.tsv` row names the loader. Where every reading refuses it, the row
+  reads `census-refused` with each error and the document's sha256. Those are
+  Helm and Go templates, JSONC configuration files, truncated JSON, and YAML
+  that is not UTF-8 or not well indented. Three documents declare a key; the
+  table names each and its measured reason. `oneof-closed-empty-object-variant`'s
+  81 such candidates, from its first search, were read the same way: each is
+  censused declaring nothing or recorded `census-refused`.
+- **Six refused candidates were read from the forks' parents.** 18 candidates'
+  pinned blob had answered 404. `reacquire-head` requested each again, through
+  the rate-limit guard's `core` bucket, at its repository's current revision,
+  and at Sourcegraph's mirror of the pinned commit. `reacquire-namesake` then
+  sought each in every repository GitHub's repository search names exactly as
+  its own is named, which is where a deleted fork's parent is: that
+  repository's history of the path, kept only at a commit whose file hashes to
+  the blob GitHub's search named. `jdgiles26/inference_builder`'s three
+  `builder/samples` documents are NVIDIA-AI-IOT's, and
+  `ethandong16/lobehub`'s `packages/openapi/openapi.yml` is LobeHub's. All six
+  candidates they account for read `census 0`, each row naming the repository
+  that served it.
+- **12 candidates stay open, because GitHub refused them.** 9
+  are in seven repositories that `GET /repos/<owner>/<repo>` now answers 404 for.
+  Three, in two repositories, are in ones whose head no longer holds the file,
+  and whose history of the path lists no commit. Sourcegraph's mirror of the pinned
+  commit answered 404 for all 12, and no namesake repository holds any of
+  their blobs. Each refusal, with its status and time, is the `census` cell of
+  the candidate's `records.tsv` row and the note of its key's line. Six keys
+  carry at least one, so they read `search-incomplete` and are not closed.
+- **Six keys read `exhausted`.** `oneof-array-variant-annotated-ref-item` and
+  `oneof-bare-object-example-variant` had no candidate refused.
+  `annotated-ref-target-string-const`,
+  `oneof-array-variant-anyof-discriminated-union-item` and
+  `oneof-array-variant-anyof-nullable-item` had theirs read from the forks'
+  parents. `oneof-closed-empty-object-variant`, which joined the census after
+  the witness-search-redo contract froze, had its first search over all six
+  sources in the remaining-gap searches, and none of its candidates was
+  refused. Every candidate of the six is decided. The same searches ran the
+  other key the final reconciliation left unsearched, `oneof-anyof-variant`,
+  whose three witnesses took it off this list.
 
 Each census-negative candidate is one `records.tsv` row whose `census 0`, or
-whose not-OpenAPI exclusion, is the measured reason it is unusable. The tables
-below count those rows rather than restating them, and name every candidate the
-census confirmed.
+whose not-OpenAPI exclusion or `census-refused` reason, is the measured reason
+it is unusable. The tables below count those rows rather than restating them,
+and name every candidate the census confirmed.
 
 | key | selector | outstanding, per source | census-confirmed candidates, and the measured reason each is unusable | what would unblock it |
 |---|---|---|---|---|
-| `annotated-ref-target-string-const` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` | github-code-search 113 (111 parse, 2 404); github-publisher-trees 57; sourcegraph 8 | none | a full YAML parse and census of the 178 outstanding documents |
-| `array-item-inheritance-union` | `schema.items>schema.discriminator:inheritance-union` | github-code-search 319 (318 parse, 1 404); github-publisher-trees 57; sourcegraph 26 | `AndreVelde/cars-trip` `openapi.yaml`: passes all three screens and is declined as a synthetic kata fixture, as the row's own evidence cell records. `atacan/MistralAPI` `openapi.yaml`: `fern check` exit 1, 12 errors. `opastorello/unifi-api-docs`, eight `network/v9.*/openapi.json` versions at two revisions each: no licence evidence (no `info.license`, no repository licence) and `fern check` exit 1. `airlift/airlift` `api/src/test/resources/openapi/complex-recursive.json`: passes all three screens and is declined as a unit-test resource | a publisher-owned declarer Fern accepts; failing that, the outstanding 402 read |
-| `array-item-pointer-walk-oneof` | `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf` | github-code-search 829 (827 parse, 2 404); github-publisher-trees 57; sourcegraph 81 | `Gi60s/kaos-api` `docs/openapi.json`: no licence evidence, and Fern did not parse it. `api-evangelist` copies of Beyond Identity (three files) and Cvent (two): no licence evidence and `fern check` exit 1. Jentic's Cvent `ea` and Sellsy `2.128.0` trees, ten files: eight fail the licence screen (the aggregator's CC0 grant is admitted, the publisher's grant is unproven), and Cvent's two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent or Sellsy redistribution grant; the outstanding 967 read |
-| `oneof-array-variant-annotated-ref-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component` | github-code-search 393 (parse); github-publisher-trees 57; sourcegraph 58 | none | the outstanding 508 read |
-| `oneof-array-variant-anyof-discriminated-union-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` | github-code-search 283 (282 parse, 1 404); github-publisher-trees 57; sourcegraph 41 | `api-evangelist/unleash` `unleash-projects-api-openapi.yml`: no licence evidence and `fern check` exit 1 | Unleash's own publication of the document with a grant; the outstanding 381 read |
-| `oneof-array-variant-anyof-nullable-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` | github-code-search 283 (282 parse, 1 404); github-publisher-trees 57; sourcegraph 41 | `fern-api/fern` `seed/openapi/circular-references/openapi.yml` at three revisions: passes all three screens and is declined as Fern's own seed test input, which serves no API | the outstanding 381 read |
-| `oneof-bare-object-example-variant` | `schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object` | github-code-search 56 (parse); github-publisher-trees 57; sourcegraph 8 | `konfig-dev/konfig` `sdks/db/intermediate-fixed-specs/ironclad/openapi.yaml`: passes all three screens and is declined as an SDK vendor's copy, not Ironclad's publication. `api-evangelist/ironclad` `ironclad-workflows-api-openapi.yml`: no licence evidence and `fern check` exit 1. `wiremock/wiremock` `wiremock-admin-api.json`: `fern check` exit 1. Jentic's Ironclad tree, five files: the publisher's grant is unproven | an Ironclad redistribution grant; the outstanding 121 read |
-| `oneof-closed-empty-object-variant` | `schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object` | github-code-search 1 (parse); github-publisher-trees 57; sourcegraph 23 | Jentic's V7 Labs `go.v7labs.com` tree, five files: no licence evidence (the aggregator's CC0 grant is admitted, the publisher's grant is unproven). `chrisdoc/hevy-mcp` `openapi-spec.json` and `crescat-io/saloon-sdk-generator` `tests/Samples/paddle-openapi.yaml`: third-party copies of Hevy's and Paddle's own descriptions, neither publisher granting redistribution. `github/rest-api-description`'s dereferenced descriptions, the same 144 files in the vendor-portal and the publisher-tree walk: `fern check` exit 1, with 30 to 46 errors each | a V7 Labs, Hevy or Paddle redistribution grant; the outstanding 81 read |
-| `property-sole-anyof-composed-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 162 (160 parse, 2 404); github-publisher-trees 57; sourcegraph 31 | `OpenAPITools/openapi-generator` `src/test/resources/3_0/ocaml/enum-in-composed-schema.yaml`: passes all three screens and is declined as a generator's test fixture | the outstanding 250 read |
-| `property-sole-anyof-empty-object-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 41 (35 parse, 6 404); github-publisher-trees 57; sourcegraph 5 | none | the outstanding 103 read |
-| `property-sole-oneof-composed-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 406 (404 parse, 2 404); github-publisher-trees 57; sourcegraph 59 | `api-evangelist` copies of Cvent (two files) and Infoworks (four): no licence evidence and `fern check` exit 1. `OpenRailAssociation/osrd` `editoast/openapi.yaml`: `fern check` passes and the generator exits 1. `macro-inc/macro` `service-storage/openapi.json`: `fern check` exit 1, 2 errors. Jentic's Cvent `ea` tree, five files: three fail the licence screen, and the two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent redistribution grant, or a Fern that generates OSRD; the outstanding 522 read |
-| `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 81 (80 parse, 1 404); github-publisher-trees 57; sourcegraph 9 | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; the outstanding 147 read |
+| `annotated-ref-target-string-const` | `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued` | none | none | nothing a search can add: every candidate is decided |
+| `array-item-inheritance-union` | `schema.items>schema.discriminator:inheritance-union` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `AndreVelde/cars-trip` `openapi.yaml`: passes all three screens and is declined as a synthetic kata fixture, as the row's own evidence cell records. `atacan/MistralAPI` `openapi.yaml`: `fern check` exit 1, 12 errors. `opastorello/unifi-api-docs`, eight `network/v9.*/openapi.json` versions at two revisions each: no licence evidence (no `info.license`, no repository licence) and `fern check` exit 1. `airlift/airlift` `api/src/test/resources/openapi/complex-recursive.json`: passes all three screens and is declined as a unit-test resource | a publisher-owned declarer Fern accepts; GitHub or a mirror serving the refused blob again |
+| `array-item-pointer-walk-oneof` | `schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Gi60s/kaos-api` `docs/openapi.json`: no licence evidence, and Fern did not parse it. `api-evangelist` copies of Beyond Identity (three files) and Cvent (two): no licence evidence and `fern check` exit 1. Jentic's Cvent `ea` and Sellsy `2.128.0` trees, ten files: eight fail the licence screen (the aggregator's CC0 grant is admitted, the publisher's grant is unproven), and Cvent's two `*-entry.json` pass it but Fern generates an empty SDK. `api-evangelist/beyond-identity` `openapi/beyond-identity-credential-binding-jobs-api-openapi.yml`, read by the full YAML parser: no licence evidence (no `info.license`, repository licence 404), and the repository describes itself as an independent third-party profile, not Beyond Identity's publication; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | a Cvent or Sellsy redistribution grant; GitHub or a mirror serving the refused blob again |
+| `oneof-array-variant-annotated-ref-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component` | none | none | nothing a search can add: every candidate is decided |
+| `oneof-array-variant-anyof-discriminated-union-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` | none | `api-evangelist/unleash` `unleash-projects-api-openapi.yml`: no licence evidence and `fern check` exit 1. `api-evangelist/unleash` `openapi/unleash-unstable-api-openapi.yml`, read by the full YAML parser: no licence evidence and a self-described third-party profile, as the other Unleash copy; `fern check` at CLI 5.67.1 exits 0 over its OpenAPI 3.2.0 | Unleash's own publication of the document with a grant; nothing a search can add: every candidate is decided |
+| `oneof-array-variant-anyof-nullable-item` | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` | none | `fern-api/fern` `seed/openapi/circular-references/openapi.yml` at three revisions: passes all three screens and is declined as Fern's own seed test input, which serves no API | nothing a search can add: every candidate is decided |
+| `oneof-bare-object-example-variant` | `schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object` | none | `konfig-dev/konfig` `sdks/db/intermediate-fixed-specs/ironclad/openapi.yaml`: passes all three screens and is declined as an SDK vendor's copy, not Ironclad's publication. `api-evangelist/ironclad` `ironclad-workflows-api-openapi.yml`: no licence evidence and `fern check` exit 1. `wiremock/wiremock` `wiremock-admin-api.json`: `fern check` exit 1. Jentic's Ironclad tree, five files: the publisher's grant is unproven | an Ironclad redistribution grant; nothing a search can add: every candidate is decided |
+| `oneof-closed-empty-object-variant` | `schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object` | none | Jentic's V7 Labs `go.v7labs.com` tree, five files: no licence evidence (the aggregator's CC0 grant is admitted, the publisher's grant is unproven). `chrisdoc/hevy-mcp` `openapi-spec.json` and `crescat-io/saloon-sdk-generator` `tests/Samples/paddle-openapi.yaml`: third-party copies of Hevy's and Paddle's own descriptions, neither publisher granting redistribution. `github/rest-api-description`'s dereferenced descriptions, the same 144 files in the vendor-portal and the publisher-tree walk: `fern check` exit 1, with 30 to 46 errors each | a V7 Labs, Hevy or Paddle redistribution grant, or a Fern that generates GitHub's description |
+| `property-sole-anyof-composed-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `OpenAPITools/openapi-generator` `src/test/resources/3_0/ocaml/enum-in-composed-schema.yaml`: passes all three screens and is declined as a generator's test fixture. `APWG/ecx2-openapi-doc` `ecx2-openapi.yaml` at `9218d45`, 6 sites, read by the full YAML parser: the Anti-Phishing Working Group's own description, GPL-3.0 by its repository `LICENSE` and `info.license`, and `fern check` exits 0, but the generator at `fernapi/fern-python-sdk:5.20.0` exits 1 with `Found 24 errors and 0 warnings`: `Objects can only extend other objects, and root.Brand is not an object`, one per scalar component its search filters list under `allOf` | a Fern that generates APWG's eCX document; GitHub or a mirror serving the refused blob again |
+| `property-sole-anyof-empty-object-member` | `schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 4, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | none | GitHub or a mirror serving the refused blob again |
+| `property-sole-oneof-composed-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf` | github-code-search 2, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `api-evangelist` copies of Cvent (two files) and Infoworks (four): no licence evidence and `fern check` exit 1. `OpenRailAssociation/osrd` `editoast/openapi.yaml`: `fern check` passes and the generator exits 1. `macro-inc/macro` `service-storage/openapi.json`: `fern check` exit 1, 2 errors. Jentic's Cvent `ea` tree, five files: three fail the licence screen, and the two `*-entry.json` pass it but Fern generates an empty SDK | a Cvent redistribution grant, or a Fern that generates OSRD; GitHub or a mirror serving the refused blob again |
+| `property-sole-oneof-empty-object-member` | `schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` | github-code-search 1, each refused by GitHub at its current revision and by Sourcegraph's mirror, and held by no namesake repository | `Dynamsoft/Dynamic-Web-TWAIN` `dwt-openapi.yaml`: repository licence `NOASSERTION`, and `fern check` exit 1. `nhsengland/innovation-service-backend-api` `apps/innovations/.apim/swagger.yaml`: Fern accepts it, and its repository licence reads `NOASSERTION` | NHS England's licence evidenced for the file; GitHub or a mirror serving the refused blob again |
 
-**What unblocks the whole set is one piece of work.** 3,942 of the 3,960
-outstanding candidates across the eleven keys searched before are parse failures,
-and so are all 81 of `oneof-closed-empty-object-variant`'s. The
-standard-library loader the census uses refuses them, while the golden-reach
-arm search already reads documents with its pinned `ruamel.yaml` fallback
-([Golden reach, row by row](#golden-reach-row-by-row)). Censusing those
-documents with that fallback, and re-requesting the 18 404s at a live
-revision, would let these rows read `exhausted` or `witness-found`.
+**What would move the rest.** Nothing a search can still do closes the six
+`search-incomplete` keys: their only open items are the 12 blobs GitHub and
+Sourcegraph's mirror both refuse, and each would be decided the moment either
+served one again; `scripts/witness-search-recensus.py reacquire-head --again`
+and `reacquire-namesake --again` re-request them. A Fern that generates APWG's eCX
+document, or a grant from a publisher the table names, would give a key a
+witness.
 
 **The three grant-blocked artifacts' keys are settled on replacement witnesses,
 and none on a blocked artifact.** The eight artifacts
@@ -2556,7 +2601,7 @@ functions named in each verdict are counted from that union.
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 862 | all-e2e 433, non-e2e 429 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 433 of the 447. |
-| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 12 (after PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares, and `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the twelve ranked `FIXTURE` gaps point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). A registered witness is the only thing that would reach those arms. **Second, golden rows' unreached arms sit here.** Most of [the 60 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
+| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 12 (after PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares, and `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the twelve ranked `FIXTURE` gaps point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `exhausted` or `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). A registered witness is the only thing that would reach those arms. **Second, golden rows' unreached arms sit here.** Most of [the 60 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
 | `src/emit.rs` | 405 | all-e2e 135, non-e2e 270 | none | **Still blind, and why: a probe-settled shape and example rendering the census cannot enumerate.** On the 2026-09-28 run the union is 286 regions. 125 of them are the object-typed path parameter block: `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10. They are driven by `parameter-style-simple-path-object`, a `limitations` row settled by its committed `absent-tree` proof. The final reconciliation's scan of every golden-bearing source found no `style: simple` path parameter over an object schema, so no golden can reach that code until one is registered. Most of the rest is example rendering: `build_example_inner` 19, `header_first_query_example` 16, `raw_type_str_ctx` 13, `named_value_inner` 10, `flat` 9, `url_arg` 9 and `value_from_example` 7. Its branches switch on generated types or on example content, which are entries 2 and 3 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). The last named block is `append_request_call_args` 12. |
 | `src/cli.rs` | 290 | all-e2e 131, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/refs.rs` | 249 | all-e2e 115, non-e2e 134 | none | **Still blind, and why: the failure paths and tree walks of cross-document resolution.** On the 2026-09-28 run the union is 150 regions: `from_reference` 34, `resolve_path_item` 22, `document` 18, `resolve_reference` 16, `resolve_parameter` 12, `resolve_schema` 11, `pointer` 9, `curl_fetch` 7, `error` 7, `import_pointer_at_path` 7, `import_remote_document` 3. The two registered pinned trees, FOLIO row 139 and Raybot row 140, reach part of each function. What stays blind is chiefly the error arms, a reference that fails to load or resolve, which a document Fern generates from does not take. The rest is reference forms no pinned tree declares. That is entry 6 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage): shapes reached through references beyond the pinned trees are not counted, so no row names them. |

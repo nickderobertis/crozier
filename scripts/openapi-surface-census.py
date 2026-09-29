@@ -512,12 +512,13 @@ class _YamlReader:
         `v1-deprecated/v1.yaml`, 65,880 lines) quadratic, past two hours.
         """
         parts = [rest]
-        depth, open_quote = self.flow_depth_open(rest)
+        depth, open_quote, last = self.flow_depth_open(rest, "")
         cursor = index + 1
         while depth > 0 and cursor < len(self.lines):
             piece = self.strip_comment(self.lines[cursor]).strip()
             parts.append(piece)
-            more, open_quote = self.flow_depth_open(f"{open_quote} {piece}" if open_quote else piece)
+            more, open_quote, last = self.flow_depth_open(
+                f"{open_quote} {piece}" if open_quote else piece, "" if open_quote else last)
             depth += more
             cursor += 1
         if depth != 0:
@@ -529,24 +530,34 @@ class _YamlReader:
             self.fail(index, f"unexpected text after a flow collection: {buffer[end:].strip()!r}")
         return value
 
-    def flow_depth_open(self, text: str) -> tuple[int, str]:
-        """The bracket depth `text` adds, and the quoted scalar it leaves open (from its quote)."""
+    def flow_depth_open(self, text: str, last: str) -> tuple[int, str, str]:
+        """The bracket depth `text` adds, the quoted scalar it leaves open (from its quote), and its last character.
+
+        A quote opens a quoted scalar only where a node starts, after `[`, `{`,
+        `,` or `:` (or at the start of the collection); elsewhere it is a
+        character of a plain scalar, as in the key `domain"` a real example
+        spells for `"domain"`. `last` is the previous line's last significant
+        character, so a node starting a gathered line is judged by it.
+        """
         depth = 0
         cursor = 0
         while cursor < len(text):
             char = text[cursor]
-            if char in "\"'":
+            if char in "\"'" and last in "[{,:":
                 end = self.scan_quoted(text, cursor)
                 if end is None:
-                    return depth, text[cursor:]
+                    return depth, text[cursor:], char
                 cursor = end
+                last = char
                 continue
             if char in "[{":
                 depth += 1
             elif char in "]}":
                 depth -= 1
+            if char not in " \t":
+                last = char
             cursor += 1
-        return depth, ""
+        return depth, "", last
 
     def flow_node(self, text: str, start: int, index: int) -> tuple[Any, int]:
         cursor = self.skip_space(text, start)
@@ -593,13 +604,14 @@ class _YamlReader:
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
             if cursor < len(text) and text[cursor] == ":":
-                if closer == "]":
-                    # `[x: y]` is a sequence of one single-pair mapping, which
-                    # this reader does not build; it refuses it rather than
-                    # dropping the pair.
-                    self.fail(index, "a single-pair mapping inside a flow sequence is not supported")
                 entry, cursor = self.flow_node(text, cursor + 1, index)
-                mapping[value] = entry
+                if closer == "]":
+                    # `[x: y]` is a sequence holding the single-pair mapping `{x: y}`.
+                    items.append({value: entry})
+                else:
+                    mapping[value] = entry
+            elif closer == "}":
+                mapping[value] = None  # `{k}` is a key with a null value
             else:
                 items.append(value)
             cursor = self.skip_space(text, cursor)
