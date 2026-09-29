@@ -1255,6 +1255,8 @@ declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
 | 301 | `ideaconsult-enanomapper` | `operation-external-docs` | ✅ byte-matched after two repairs |
 | 302 | `openaire-graph` | `xml-attribute` | ✅ byte-matched after two repairs |
 | 303 | `qredence-fleet-rlm` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
+| 304 | `fiware-context-generator` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
+| 305 | `hasura-metadata` | `oneof-anyof-variant` | ✅ byte-matched after seven repairs |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Examples: a required enum-typed query parameter is exampled by the enum's
@@ -1271,6 +1273,22 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   application/octet-stream` is a file, as `format: binary` is, and a component
   union member composing an `anyOf` of its own is that union, the properties
   declared beside it unread (fleet-rlm).
+- Alternatives: a union whose members all lower to `str` collapses to `str`,
+  keeping the member's description, and a JSON-like success response that
+  declares no schema is `typing.Any` (FIWARE). Its two GitHub Pages `$ref`s
+  are pinned in `corpus-remote-ref-pins.tsv`.
+- Maps: a schema declaring `additionalProperties` beside `oneOf` or `anyOf`
+  is a map before it is a union, at the component, property and array-item
+  level, and its null member no longer makes it optional; a map value that is
+  only `additionalProperties: true` is `typing.Any`, and a `type: "null"`
+  array item `Optional[Any]` (Hasura).
+- Discriminators and names: a mapping value naming no component makes the
+  union an alias of `typing.Any` and keeps the discriminant property; a
+  discriminant is inferred from any property of the first member, not only
+  `type`; a model referencing a `Config` component imports it as
+  `types_config_Config`, clear of pydantic's own `Config` class;
+  and a JSON document with an integer past `u64` loads through the YAML
+  reader, as Fern's does (Hasura).
 
 The screened documents these searches found that could not be registered are
 recorded with their measured reason in each search's record: the Open Build
