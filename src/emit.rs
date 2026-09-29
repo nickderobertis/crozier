@@ -2834,10 +2834,7 @@ fn reference_entry(
                 .find(|query| query.py_name == dp.name)
                 .filter(|query| query.wire_name.ends_with("[]"))
                 .map(|query| {
-                    naming::field_name(&format!(
-                        "{}_array",
-                        query.wire_name.trim_end_matches("[]")
-                    ))
+                    naming::field_name(&format!("{}_array", query.wire_name.trim_end_matches("[]")))
                 })
                 .unwrap_or_else(|| dp.name.trim_end_matches('_').to_string())
         };

@@ -137,7 +137,7 @@ fern-streaming-extension	operation.x-fern-streaming	src/openapi.rs::Operation::s
 parameter-name	parameter.name	src/ir.rs::header_param_stem,src/ir.rs::path_param_position,src/openapi.rs::normalize_parameters,src/emit.rs::url_arg[if stripped\.contains]	
 parameter-in	parameter.in	src/ir.rs::build_endpoint[let has_unsupported_params],src/ir.rs::build_endpoint[^\s*PathParam \{],src/ir.rs::build_endpoint[^\s*QueryParam \{],src/ir.rs::build_endpoint[^\s*HeaderParam \{]	
 parameter-description	parameter.description	src/emit.rs::push_path_param,src/emit.rs::raw_docstring[if let Some\(desc\) = &dp\.description],src/emit.rs::push_param_doc	
-parameter-required	parameter.required	src/emit.rs::method_params[if required && !base\.starts_with],src/ir.rs::build_endpoint[&& p\.schema\.as_ref\(\)\.is_some_and],src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)]	
+parameter-required	parameter.required	src/emit.rs::method_params[if required && !base\.starts_with],src/ir.rs::build_endpoint[=^\s*!required && !without_declared_example],src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)]	
 parameter-deprecated	parameter.deprecated	none	
 parameter-allow-empty-value	parameter.allowEmptyValue	none	
 parameter-style	parameter.style	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
@@ -462,3 +462,4 @@ format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primi
 boolean-schema-true	fixture=webflow-v2	none	
 xml-wrapped	schema.xml.wrapped	none	
 apiKey-query	fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	
+oneof-anyof-variant	schema.oneOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::composed_variant	

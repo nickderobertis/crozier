@@ -10932,7 +10932,8 @@ impl Builder<'_> {
         // `anyOf` of two requirement sets, and its golden declares
         // `SettingsPolicyPatchRequestDefaultProfile` as the union of those two.
         if is_inline_object(variant) && variant.all_of.is_none() {
-            if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
+            let composed = variant.one_of.as_ref().or(variant.any_of.as_ref());
+            if let Some(members) = composed {
                 return self.composed_variant(parent, index, variant, siblings, members);
             }
         }

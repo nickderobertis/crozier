@@ -239,3 +239,7 @@ format-iri	github-code-search	"format: iri" filename:openapi.yaml
 format-iri	github-code-search	"\"format\": \"iri\"" filename:openapi.json
 format-iri	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: iri" count:all type:file
 format-iri	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"iri\"" count:all type:file
+oneof-anyof-variant	github-code-search	"- anyOf:" "oneOf:" filename:openapi.yaml
+oneof-anyof-variant	github-code-search	"\"oneOf\"" "{\"anyOf\"" filename:openapi.json
+oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"- anyOf:" count:all type:file
+oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"{\"anyOf\"" count:all type:file

@@ -12630,8 +12630,8 @@ components:
 /// `property_uris[]` query parameter, which the Python signature names
 /// `property_uris` while `reference.md` spells the bracket out.
 #[test]
-fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_as_an_array()
-{
+fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_as_an_array(
+) {
     let files = render(
         r#"openapi: 3.0.0
 info: { title: eNanoMapper database, version: 4.0.0 }
@@ -12734,7 +12734,10 @@ paths:
     assert!(client.contains("    def search1(\n"), "{client}");
     assert!(client.contains("    def get_by_id1("), "{client}");
     assert!(!client.contains("search_1"), "{client}");
-    assert!(client.contains("client.research_products.search1()\n"), "{client}");
+    assert!(
+        client.contains("client.research_products.search1()\n"),
+        "{client}"
+    );
     assert!(!client.contains("size=\"10\""), "{client}");
 }
 
@@ -12800,7 +12803,10 @@ components:
         .map(|(_, contents)| contents)
         .expect("the attachments raw client");
     assert!(raw.contains("attachment: core.File,"), "{raw}");
-    assert!(raw.contains("files={\n                \"attachment\": attachment,"), "{raw}");
+    assert!(
+        raw.contains("files={\n                \"attachment\": attachment,"),
+        "{raw}"
+    );
     let member = files
         .iter()
         .find(|(path, _)| path.ends_with("types/settings_policy_patch_request_default_profile.py"))
@@ -12815,7 +12821,8 @@ components:
     assert!(
         files
             .keys()
-            .any(|path| path.ends_with("types/settings_policy_patch_request_default_profile_updates.py")),
+            .any(|path| path
+                .ends_with("types/settings_policy_patch_request_default_profile_updates.py")),
         "{:?}",
         files.keys()
     );
