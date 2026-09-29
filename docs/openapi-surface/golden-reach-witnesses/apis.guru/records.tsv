@@ -1466,6 +1466,7 @@ format-hostname	document	APIs/sendgrid.com/1.0.0/openapi.yaml	census 2	enumerati
 format-hostname	document	APIs/sinao.app/1.1.0/openapi.yaml	census 1	enumeration.tsv.gz
 format-hostname	document	APIs/vercel.com/0.0.1/openapi.yaml	census 1	enumeration.tsv.gz
 format-hostname	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+format-idn-hostname	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 format-ipv4	document	APIs/digitalocean.com/2.0/openapi.yaml	census 6	enumeration.tsv.gz
 format-ipv4	document	APIs/exavault.com/2.0/openapi.yaml	census 4	enumeration.tsv.gz
 format-ipv4	document	APIs/iptwist.com/1.0.0/openapi.yaml	census 2	enumeration.tsv.gz
@@ -1478,6 +1479,8 @@ format-ipv4	document	APIs/shutterstock.com/1.1.32/openapi.yaml	census 3	enumerat
 format-ipv4	document	APIs/threatjammer.com/1.2.27/openapi.yaml	census 5	enumeration.tsv.gz
 format-ipv4	document	APIs/vercel.com/0.0.1/openapi.yaml	census 1	enumeration.tsv.gz
 format-ipv4	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+format-iri	document	APIs/mercure.local/0.3.2/openapi.yaml	census 2	enumeration.tsv.gz
+format-iri	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 format-json-pointer	document	APIs/gsmtasks.com/2.4.13/openapi.yaml	census 1	enumeration.tsv.gz
 format-json-pointer	document	APIs/telnyx.com/2.0.0/openapi.yaml	census 3	enumeration.tsv.gz
 format-json-pointer	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz

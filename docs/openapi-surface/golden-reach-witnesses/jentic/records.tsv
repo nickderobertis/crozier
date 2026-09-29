@@ -21668,6 +21668,12 @@ format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	
 format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
 format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-hostname	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
+format-idn-hostname	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 6	probe.jsonl
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 6	probe.jsonl
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 6	probe.jsonl
@@ -21851,6 +21857,17 @@ format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	fail
 format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
 format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-ipv4	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/input-entry.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/output-entry.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/openapi.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/openapi.json	census 4	enumeration.tsv.gz
+format-iri	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
