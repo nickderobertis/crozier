@@ -916,6 +916,36 @@ class ArmSearchStageTests(_StageScratch):
             enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
         self.assertEqual(("readable", ""), (enumeration["b.yaml"]["status"], enumeration["b.yaml"]["matched_keys"]))
 
+    def test_a_walk_for_another_key_keeps_the_matches_earlier_walks_recorded(self) -> None:
+        """A walk censuses only the keys it is given, and rewrites the whole enumeration.
+
+        The row another key's walk matched keeps that match, so that key's
+        `document` record still rests on an enumeration row; walking that key again
+        records it once, not twice.
+        """
+        self.walk()
+        evidence = golden_reach_search.EVIDENCE / "jentic"
+
+        def enumeration() -> dict[str, dict[str, str]]:
+            with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+                return {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", "format-iri", "--jobs", "1"]
+            )
+        self.assertEqual(0, code)
+        rows = enumeration()
+        self.assertEqual(self.KEY, rows["a.yaml"]["matched_keys"])
+        self.assertEqual("", rows["b.yaml"]["matched_keys"])
+        self.assertTrue(rows["c.yaml"]["status"].startswith("unreadable: "))
+        records = {(r["key"], r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")}
+        self.assertIn((self.KEY, "document", "a.yaml", "census 1"), records)
+        self.assertIn(("format-iri", "walk", f"jentic-public-apis@{self.REVISION}", "3"), records)
+        self.assertFalse({r for r in records if r[0] == "format-iri" and r[1] == "document"})
+        self.walk()
+        self.assertEqual(self.KEY, enumeration()["a.yaml"]["matched_keys"])
+
     def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
         """The publisher trees pin `openapi.yaml` at the root of several repositories.
 
