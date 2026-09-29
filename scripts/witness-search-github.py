@@ -666,13 +666,13 @@ class Acquirer:
                     "paths": sorted(paths.values(), key=lambda x: x["path"]),
                 },
             )
-        done = {
-            (row["repository"], row["path"], row["commit"])
-            for row in jsonl(self.evidence / "documents.jsonl")
-            if row.get("status") not in ("acquisition-failure",)
-        }
+        recorded: dict[tuple[str, str, str], dict[str, Any]] = {}
+        for row in jsonl(self.evidence / "documents.jsonl"):
+            if row.get("status") not in ("acquisition-failure",):
+                recorded[(row["repository"], row["path"], row["commit"])] = row
         for path, item in sorted(paths.items()):
-            if (repository, path, commit) in done:
+            if (repository, path, commit) in recorded:
+                self.recount_tree_document(recorded[(repository, path, commit)], keys)
                 continue
             url = (
                 self.raw_github_url
@@ -723,6 +723,49 @@ class Acquirer:
                 continue
             result = self.census_tree_document(data, keys)
             self.write("documents.jsonl", {**identity, **result})
+
+    def recount_tree_document(
+        self, row: dict[str, Any], keys: dict[str, dict[str, str]]
+    ) -> None:
+        """Count, over a walked document's cached bytes, the keys its census never counted.
+
+        A key joins the search after the trees were walked; the walk read each
+        document once, for the keys it had then. A readable document whose row
+        lacks a key is read again from the cache at its recorded digest, and a
+        row carrying every key's count is appended, the recorded counts kept
+        as they were. Without cached bytes, or where the census no longer reads
+        them, nothing is written, and the index reads the uncounted key as
+        outstanding for that document.
+        """
+        counts = row.get("selector_counts")
+        if row.get("status") != "readable" or not isinstance(counts, dict):
+            return
+        missing = {key: value for key, value in keys.items() if key not in counts}
+        digest = row.get("sha256")
+        if not missing or not isinstance(digest, str):
+            return
+        cached = [
+            path for suffix in (".json", ".yaml")
+            if (path := self.cache / "documents" / (digest + suffix)).is_file()
+        ]
+        if not cached:
+            return
+        data = cached[0].read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest:
+            return
+        result = self.census_tree_document(data, missing)
+        if result.get("status") != "readable":
+            return
+        self.write(
+            "documents.jsonl",
+            {
+                **{field: row[field] for field in ("source", "repository", "path", "commit", "blob", "url", "acquisition_route") if field in row},
+                "sha256": digest,
+                "status": "readable",
+                "selector_counts": {**result["selector_counts"], **counts},
+                "recounted_keys": sorted(missing),
+            },
+        )
 
     def census_tree_document(
         self, data: bytes, keys: dict[str, dict[str, str]]

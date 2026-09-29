@@ -620,6 +620,48 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual("acquisition-failure", records[-1]["status"])
         self.assertEqual(403, records[-1]["http_status"])
 
+    def test_a_key_added_after_the_walk_is_counted_from_the_cached_document(self) -> None:
+        """A walked document read before a key joined is counted for it again, from the cache.
+
+        The second walk fetches nothing: it reads the document's cached bytes at
+        their recorded digest, appends a row carrying every key's count with the
+        earlier counts kept, and the index then reads the new key's count off it.
+        A key no row ever counted is a count still owed, never a zero.
+        """
+        publisher = {"repository": "example/api", "commit": "c" * 40,
+                     "scope": "", "derivation": "local API publisher"}
+        first = {"closed-object": {"selector": "schema.additionalProperties=false"}}
+        self.search.publisher_walk(publisher, first)
+        fetched = self.server.state["raw_hits"]
+        ledger = self.root / "documents.jsonl"
+        before = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(["closed-object"], list(before[0]["selector_counts"]))
+
+        root = self.root / "evidence-root"
+        directory = root / "witness-search-github-publisher-trees"
+        directory.mkdir(parents=True)
+        grown = {**first, "one-of": {"selector": "schema.oneOf"}}
+        (directory / "keys.json").write_text(json.dumps({"keys": grown}), encoding="utf-8")
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        owed = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
+        self.assertEqual("outstanding", owed["one-of"]["disposition"])
+        self.assertIn("never counted this key", owed["one-of"]["census"])
+
+        self.search.publisher_walk(publisher, grown)
+        self.assertEqual(fetched, self.server.state["raw_hits"], "a recount reads the cache, not the network")
+        after = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(len(before) + 1, len(after))
+        self.assertEqual(["one-of"], after[-1]["recounted_keys"])
+        self.assertEqual(before[0]["sha256"], after[-1]["sha256"])
+        self.assertEqual(before[0]["selector_counts"]["closed-object"], after[-1]["selector_counts"]["closed-object"])
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        counted = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
+        self.assertEqual(f"census {after[-1]['selector_counts']['one-of']}", counted["one-of"]["census"])
+        self.assertEqual(owed["closed-object"], counted["closed-object"] | {"evidence": owed["closed-object"]["evidence"]})
+
+        self.search.publisher_walk(publisher, grown)
+        self.assertEqual(len(after), len(ledger.read_text(encoding="utf-8").splitlines()), "a counted key is not counted twice")
+
     def test_sourcegraph_http_error_stops_search(self) -> None:
         self.server.state["sourcegraph_status"] = 404
         with self.assertRaisesRegex(SEARCH.SearchStopped, "HTTP 404"):
