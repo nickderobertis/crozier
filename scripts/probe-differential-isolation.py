@@ -17,7 +17,8 @@ three conditions on the parsed documents, never on their text:
 
 The selector is read from the key's own region row, which is where every
 feature's census selector is recorded: the first code span in its `evidence`
-cell that the census grammar accepts. `tests/e2e.rs` runs this for every
+cell that the census grammar accepts. A selector ending `x-*` counts every
+extension that object declares. `tests/e2e.rs` runs this for every
 `differential` row of `docs/openapi-surface/probe-expected/MANIFEST.tsv`.
 
 Usage: probe-differential-isolation.py ROOT KEY PROBE CONTROL
@@ -125,8 +126,19 @@ def failures(root: Path, key: str, probe_path: Path, control_path: Path) -> list
     probe = census.load_document(probe_path)
     control = census.load_document(control_path)
 
+    head, _, last = selector.rpartition(".")
+
     def count(document: Any) -> int:
-        return census.census_document(document).get(selector, 0)
+        counts = census.census_document(document)
+        if last != "x-*":
+            return counts.get(selector, 0)
+        # `<object>.x-*` is the region files' name for every extension that
+        # object declares, which the census counts one `x-` name at a time.
+        return sum(
+            value
+            for name, value in counts.items()
+            if name.rpartition(".")[0] == head and name.rpartition(".")[2].startswith("x-")
+        )
 
     declared = count(probe)
     found: list[str] = []

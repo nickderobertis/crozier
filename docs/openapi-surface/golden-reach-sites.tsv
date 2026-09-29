@@ -440,3 +440,25 @@ security-conjunction-document	openapi.security	src/ir.rs::all_operations_authent
 security-conjunction-operation	operation.security	src/ir.rs::all_operations_authenticated,src/ir.rs::body_response_same_ref,src/ir.rs::operation_uses_basic_auth	
 components-securityschemes	components.securitySchemes	src/openapi.rs::normalize_security_scheme_refs,src/openapi.rs::load[for \(scheme_name.* in &doc\.components\.security_schemes \{],src/ir.rs::auth_model[find\(\x7cscheme\x7c \{],src/ir.rs::additional_api_key_global_headers,src/ir.rs::oauth_scope_enum	`src/ir.rs::auth_model`'s empty-`securitySchemes` arm is the absence arm
 schema-name-nonidentifier-name	components.schemas:nonidentifier-name	src/naming.rs::class_name	
+link-description	link.description	none	
+range-3XX	fixture=osparc-simcore-webserver	none	`resolve_errors` and its siblings skip a key `u16` cannot parse, a rejection arm rather than a handling site
+range-4XX	fixture=discord-com,fixture=fergus,fixture=webflow-v2	none	`resolve_errors` and its siblings skip a key `u16` cannot parse, a rejection arm rather than a handling site
+range-5XX	fixture=fergus,fixture=listennotes,fixture=webflow-v2	none	`resolve_errors` and its siblings skip a key `u16` cannot parse, a rejection arm rather than a handling site
+xml-request	fixture=agco-ats,fixture=mockserver,fixture=swagger-petstore	none	
+xml-response	fixture=agco-ats,fixture=mockserver,fixture=swagger-petstore	none	
+nonascii-info-title	info.title:non-ascii	none	`src/config.rs::default_package_name` names the package only when no `--package-name` is set, a generator setting rather than a document shape, and every corpus row sets one
+server-description-multiword	fixture=adyen-capital,fixture=alma-france,fixture=amazonaws.com-cloudformation,fixture=amazonaws.com-cloudfront,fixture=apache.org,fixture=apache.org-airflow,fixture=api-openverse-org,fixture=apideck.com-proxy,fixture=apideck.com-vault,fixture=apivideo-android-uploader,fixture=audiobookshelf,fixture=auto-agent-protocol,fixture=aws-importexport,fixture=blackadi-oauth2,fixture=buildrelay,fixture=bunq.com,fixture=cyclonedx-transparency-exchange,fixture=dnd5eapi.co,fixture=docu-goapiserver,fixture=dot-ai,fixture=electric-sql,fixture=eozilla,fixture=gambitcomm.local-mimic,fixture=helixdb-http-api,fixture=k8s-container-service-provider,fixture=komga,fixture=letta,fixture=listennotes,fixture=livepeer-ai-runner,fixture=mindee-ocr,fixture=nexmo-conversation,fixture=onevoice,fixture=openbanking-brasil-directory,fixture=openbankingproject-ch-kundenbeziehung,fixture=openepcis-dpp-ready,fixture=openfigi.com,fixture=openintegrationhub-secret-service,fixture=openlinksw-osdb,fixture=osparc-simcore-webserver,fixture=otoroshi,fixture=paypal-catalog-products,fixture=redhat.com-catalog_inventory,fixture=sac-backend,fixture=short-io,fixture=skool,fixture=skool-entry,fixture=spendesk,fixture=steaminputdb,fixture=strapi-rest-api,fixture=tamoss,fixture=thrivecart,fixture=timelyapp,fixture=timelyapp-entry,fixture=tlon-notes,fixture=traccar.org,fixture=vellum-gateway,fixture=volview-backend-contract,fixture=vtex-pricing,fixture=webflow-v2,fixture=xero.com-xero-payroll-au,fixture=xfsc-oidc-identity-resolver,fixture=ziptax-node,fixture=zulip-jentic,fixture=zulip-jentic-entry	src/ir.rs::environment_model[\.and_then\(\x7cdescription\x7c \{]	
+extension-server	server.x-*	none	
+extension-components	components.x-*	none	
+extension-request-body	requestBody.x-*	none	
+extension-media-type	mediaType.x-*	none	
+extension-example	example.x-*	none	
+multiple-of	schema.multipleOf	none	`src/openapi.rs`'s `Schema` declares no field for it
+contains	schema.contains	none	`src/openapi.rs`'s `Schema` declares no field for it
+const-boolean	fixture=dot-ai,fixture=opencodeui,fixture=sim-tables,fixture=standrig	src/ir.rs::string_enum_values[\} else \{]	
+const-integer	fixture=discord-com,fixture=osparc-simcore-webserver,fixture=standrig,fixture=volview-backend-contract	src/ir.rs::string_enum_values[\} else \{]	
+format-idn-hostname	schema.format=idn-hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+boolean-schema-true	fixture=webflow-v2	none	
+xml-wrapped	schema.xml.wrapped	none	
+apiKey-query	fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	
