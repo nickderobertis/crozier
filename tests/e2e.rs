@@ -3361,6 +3361,7 @@ const CORPORA: &[&Corpus] = &[
     &PEOPLEDATALABS,
     &STANDRIG,
     &MOCKSERVER,
+    &IDEACONSULT_ENANOMAPPER,
 ];
 
 #[test]
@@ -6146,6 +6147,19 @@ const STANDRIG: Corpus = Corpus {
 /// pinned
 const MOCKSERVER: Corpus = Corpus {
     api: "mockserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ideaconsult-enanomapper`: corpus row 301, the eNanoMapper database API 4.0.0
+/// as APIs.guru pins it, whose operations declare `externalDocs`
+const IDEACONSULT_ENANOMAPPER: Corpus = Corpus {
+    api: "ideaconsult-enanomapper",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12093,6 +12107,11 @@ fn standrig_matches_fern_output() {
 #[test]
 fn mockserver_matches_fern_output() {
     assert_link_ok_corpus_matches(&MOCKSERVER);
+}
+
+#[test]
+fn ideaconsult_enanomapper_matches_fern_output() {
+    assert_link_ok_corpus_matches(&IDEACONSULT_ENANOMAPPER);
 }
 
 #[test]
