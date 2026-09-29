@@ -227,6 +227,42 @@ class FullYamlTest(unittest.TestCase):
             self.assertIn("parse exceeded 1 s", refused[0]["diagnostic"])
             self.assertIn(f"sha256 {digest}", refused[0]["diagnostic"])
 
+    def test_a_census_walk_past_its_bound_or_its_depth_is_refused(self) -> None:
+        # Aliases cost the parser nothing and the walk everything: eleven levels of eight
+        # shared `allOf` members is 8^11 schemas to walk, and a 1,500-link chain kept under an
+        # `x-` extension is one schema 1,500 levels deep.
+        bomb = ["openapi: 3.0.3", "info: {title: t, version: '1'}", "paths: {}", "components:", "  schemas:",
+                "    L0: &l0 {type: object, properties: {a: {type: string}}}"]
+        bomb += [f"    L{n}: &l{n} {{allOf: [{', '.join([f'*l{n - 1}'] * 8)}]}}" for n in range(1, 12)]
+        chain = ["openapi: 3.0.3", "info: {title: t, version: '1'}", "paths: {}", "x-chain:", "  - &l0 {type: string}"]
+        chain += [f"  - &l{n} {{type: array, items: *l{n - 1}}}" for n in range(1, 1500)]
+        chain += ["components:", "  schemas:", "    Deep: *l1499"]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-sourcegraph"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            rows = []
+            for name, text in (("bomb", bomb), ("chain", chain)):
+                data = ("\n".join(text) + "\n").encode()
+                digest = hashlib.sha256(data).hexdigest()
+                (cache / "documents" / f"{digest}.yaml").write_bytes(data)
+                rows.append({"source": "sourcegraph", "key": KEY, "repository": f"github.com/example/{name}",
+                             "path": "a.yaml", "commit": "c" * 40, "sha256": digest, "disposition": "parse-failure"})
+            (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "sourcegraph",
+                            "--cache", str(cache), "--timeout", "2")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            refused = {r["repository"].rsplit("/", 1)[1]: r
+                       for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")}
+            self.assertEqual({"census-refused"}, {r["disposition"] for r in refused.values()})
+            self.assertTrue(refused["bomb"]["diagnostic"].startswith(
+                "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 2 s; sha256 "))
+            self.assertTrue(refused["chain"]["diagnostic"].startswith(
+                "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading: RecursionError: "))
+            self.assertIn(f"sha256 {rows[1]['sha256']}", refused["chain"]["diagnostic"])
+
     def test_an_absent_copy_and_a_bad_bound_name_their_repair(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"
@@ -289,6 +325,10 @@ class Upstream(BaseHTTPRequestHandler):
             # The candidate itself, a parent and an unrelated partial match: only the parent is a namesake.
             self.reply(200, {"items": [{"full_name": "example/forked"}, {"full_name": "upstream/Forked"},
                                        {"full_name": "other/forked-too"}]})
+        elif self.path == "/search/repositories?q=stale%20in%3Aname&per_page=100":
+            self.reply(200, {"items": [{"full_name": "upstream/stale"}]})
+        elif self.path == "/repos/upstream/stale/commits?path=openapi.yaml&per_page=100":
+            self.reply(500, {"message": "Server Error"})
         elif self.path == "/search/repositories?q=orphan%20in%3Aname&per_page=100":
             self.reply(200, {"items": []})
         elif self.path == "/search/repositories?q=unsearched%20in%3Aname&per_page=100":
@@ -324,6 +364,8 @@ class Upstream(BaseHTTPRequestHandler):
             self.reply(404, {"message": "Not Found"})
         elif self.path == f"/github.com/example/mirrored/-/raw/openapi.yaml?rev={PINNED}":
             self.reply(200, DECLARER)
+        elif self.path == f"/github.com/example/tampered/-/raw/openapi.yaml?rev={PINNED}":
+            self.reply(200, DUPLICATE)
         else:
             self.reply(404, b"Not Found")
 
@@ -413,6 +455,32 @@ class ReacquireHeadTest(unittest.TestCase):
             self.assertIn("CROZIER_SOURCEGRAPH_URL must use https://sourcegraph.com", invalid.stderr)
 
 
+class MirrorHashTest(unittest.TestCase):
+    def test_a_mirror_blob_of_another_hash_is_not_the_candidate(self) -> None:
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
+        server.paths = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        url = f"http://127.0.0.1:{server.server_port}"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-github-code-search"
+            keys_file(evidence)
+            row = {"source": "github-code-search", "key": KEY, "selector": SELECTOR, "repository": "example/tampered",
+                   "path": "openapi.yaml", "commit": PINNED, "blob": git_blob(DECLARER),
+                   "disposition": "acquisition-failure", "status": 404, "diagnostic": "404: Not Found"}
+            (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+            completed = run("--evidence-root", str(root), "reacquire-head", "--cache-dir", str(Path(tmp) / "cache"),
+                            env={"CROZIER_GITHUB_API_URL": url, "CROZIER_RAW_GITHUB_URL": url,
+                                 "CROZIER_SOURCEGRAPH_URL": url, "GITHUB_TOKEN": "offline-test-token"})
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            (record,) = INDEX.source_rows(root, "github-code-search")
+            self.assertEqual((PINNED, "outstanding"), (record["revision"], record["disposition"]))
+            self.assertIn(f"Sourcegraph's mirror at {PINNED} served a blob hashing to {git_blob(DUPLICATE)}, "
+                          f"not {git_blob(DECLARER)} at", record["census"])
+
+
 class ReacquireNamesakeTest(unittest.TestCase):
     def test_each_refused_candidate_is_sought_in_its_namesakes(self) -> None:
         server = ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
@@ -431,7 +499,7 @@ class ReacquireNamesakeTest(unittest.TestCase):
                      "repository": f"example/{name}", "path": "openapi.yaml", "commit": PINNED,
                      "blob": git_blob(DECLARER), "disposition": "acquisition-failure", "status": 404,
                      "reacquired_at_head": True, "diagnostic": refusal.format(name)}
-                    for name in ("forked", "orphan", "unsearched")]
+                    for name in ("forked", "orphan", "unsearched", "stale")]
             # A 404 `reacquire-head` has not requested yet is not this stage's to seek.
             rows.append({**rows[1], "repository": "example/unrequested", "reacquired_at_head": False})
             (evidence / "candidates.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
@@ -439,12 +507,12 @@ class ReacquireNamesakeTest(unittest.TestCase):
             completed = run("--evidence-root", str(root), "reacquire-namesake",
                             "--cache-dir", str(Path(tmp) / "cache"), env=env)
             self.assertEqual(0, completed.returncode, completed.stderr)
-            self.assertEqual("witness-search-recensus: 3 refused candidate(s) sought in namesake repositories: "
-                             "2 acquisition-failure, 1 declares\n", completed.stdout)
+            self.assertEqual("witness-search-recensus: 4 refused candidate(s) sought in namesake repositories: "
+                             "3 acquisition-failure, 1 declares\n", completed.stdout)
 
             records = {row["candidate"].split(":")[0].split("/")[1]: row
                        for row in INDEX.source_rows(root, "github-code-search")}
-            self.assertEqual(4, len(records), records)  # the namesake's read supersedes the pinned refusal
+            self.assertEqual(5, len(records), records)  # the namesake's read supersedes the pinned refusal
             self.assertEqual(OLDER, records["forked"]["revision"])
             # The stdlib loader refuses its `? ` key, so the full parser reads it as `full-yaml` would.
             self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2); served by upstream/Forked",
@@ -456,8 +524,9 @@ class ReacquireNamesakeTest(unittest.TestCase):
                           records["orphan"]["census"])
             self.assertIn("the repository search for `unsearched` answered HTTP 422 at",
                           records["unsearched"]["census"])
+            self.assertIn("upstream/stale's history of the path answered HTTP 500 at", records["stale"]["census"])
             self.assertEqual({"outstanding"}, {records[name]["disposition"]
-                                               for name in ("orphan", "unsearched", "unrequested")})
+                                               for name in ("orphan", "unsearched", "stale", "unrequested")})
 
             ledger = [row for _, row in INDEX.jsonl(evidence / "candidates.jsonl")]
             served = next(row for row in ledger if row.get("served_by"))
@@ -467,8 +536,8 @@ class ReacquireNamesakeTest(unittest.TestCase):
             calls = [row for _, row in INDEX.jsonl(evidence / "rate-limit-calls.jsonl") if row.get("host") == "github"]
             rest = [path for path in server.paths if path.startswith(("/repos/", "/search/"))]
             self.assertEqual(len(rest), len(calls))  # every REST call went through the guard
-            # three repository searches and the one namesake's history of the path
-            self.assertEqual((3, 1), (sum(p.startswith("/search/") for p in rest),
+            # four repository searches and the two namesakes' histories of the path
+            self.assertEqual((4, 2), (sum(p.startswith("/search/") for p in rest),
                                       sum(p.startswith("/repos/") for p in rest)))
 
             # A second run leaves what the first sought; `--again` seeks only what is still refused.
@@ -477,7 +546,7 @@ class ReacquireNamesakeTest(unittest.TestCase):
             self.assertIn("0 refused candidate(s) sought", second.stdout)
             again = run("--evidence-root", str(root), "reacquire-namesake", "--again",
                         "--cache-dir", str(Path(tmp) / "cache"), env=env)
-            self.assertIn("2 refused candidate(s) sought in namesake repositories: 2 acquisition-failure",
+            self.assertIn("3 refused candidate(s) sought in namesake repositories: 3 acquisition-failure",
                           again.stdout)
 
 

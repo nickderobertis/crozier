@@ -6565,16 +6565,36 @@ class EscalationRestatementTests(unittest.TestCase):
         cls.schemas = cls.SCHEMAS.read_text(encoding="utf-8")
         cls.lines = compact_search_lines(cls.schemas)
         cls.open_rows: dict[str, list[dict[str, str]]] = {}
+        # Rows the full YAML parser decided, and rows a namesake repository served.
+        cls.reread: list[dict[str, str]] = []
+        cls.served: dict[str, list[dict[str, str]]] = {}
         for source in DECLARED_SOURCES:
             _header, by_key = compact_ledger(cls.REGIONS / f"witness-search-{source}" / "records.tsv")
             for key in cls.lines:
-                cls.open_rows.setdefault(key, []).extend(
-                    row for _number, row in by_key.get(key, []) if row["disposition"] == "outstanding")
+                rows = [row for _number, row in by_key.get(key, [])]
+                cls.open_rows.setdefault(key, []).extend(row for row in rows if row["disposition"] == "outstanding")
+                cls.reread.extend(row for row in rows
+                                  if "; read by " in row["census"] or row["census"].startswith("census-refused"))
+                cls.served.setdefault(key, []).extend(row for row in rows if "; served by " in row["census"])
         cls.refused = {key: rows for key, rows in cls.open_rows.items()
                        if cls.STAYS_OPEN.search(cls.lines[key][3])}
 
     def number(self, word: str) -> int:
+        word = word.replace(",", "")
         return int(word) if word.isdigit() else self.WORDS[word.lower()]
+
+    def test_each_note_names_every_candidate_a_namesake_served(self) -> None:
+        self.assertTrue(any(self.served.values()))
+        for key, rows in self.served.items():
+            with self.subTest(key=key):
+                note = self.lines[key][3]
+                if not rows:
+                    self.assertNotIn("were read from a namesake repository", note)
+                    continue
+                self.assertIn(f"the {len(rows)} candidate(s) whose pinned blob GitHub answered 404 for", note)
+                for row in rows:
+                    by = row["census"].split("; served by ", 1)[1]
+                    self.assertIn(f"`{row['candidate']}` at `{row['revision']}`, served by `{by}`", note)
 
     def test_each_note_names_every_candidate_its_key_still_owes(self) -> None:
         for key, rows in self.refused.items():
@@ -6606,7 +6626,15 @@ class EscalationRestatementTests(unittest.TestCase):
         refused = [row for rows in self.refused.values() for row in rows]
         gone = sum(bool(re.match(r"GET /repos/\S+ answered HTTP 404", row["census"].split(": ", 1)[1]))
                    for row in refused)
+        served = [row for rows in self.served.values() for row in rows]
+        declaring = {(row["candidate"], row["revision"]) for row in self.reread
+                     if re.match(r"census [1-9]", row["census"])}
         expected = {
+            "reread": len(self.reread),
+            "declaring": len(declaring),
+            "served": len(served),
+            "forks": len({row["candidate"].split(":", 1)[0] for row in served}),
+            "pinned-404": len(served) + len(refused),
             "exhausted": outcomes[EXHAUSTED],
             "incomplete": len(self.refused),
             "refused": len(refused),
@@ -6627,6 +6655,14 @@ class EscalationRestatementTests(unittest.TestCase):
             (self.doc, r"(\w+), in \w+ repositories, are in ones whose head no longer", "kept"),
             (self.doc, r"closes the (\w+)\s+`search-incomplete` keys", "incomplete"),
             (self.doc, r"the (\d+) blobs GitHub and", "refused"),
+            (self.schemas, r"The ([\d,]+) documents the census's standard-library YAML", "reread"),
+            (self.doc, r"The witness searches recorded ([\d,]+) candidate", "reread"),
+            (self.doc, r"The ([\d,]+) candidates the census's\s+standard-library YAML loader refused", "reread"),
+            (self.doc, r"(\w+) documents declare a key", "declaring"),
+            (self.doc, r"\*\*(\w+) refused candidates were read from the forks' parents", "served"),
+            (self.doc, r"(\d+) candidates'\s+pinned blob had answered 404", "pinned-404"),
+            (self.schemas, r"(\w+) in \w+ deleted forks\s+were read from the fork's parent", "served"),
+            (self.schemas, r"\w+ in (\w+) deleted forks\s+were read from the fork's parent", "forks"),
         ]
         for text, pattern, name in sentences:
             with self.subTest(pattern=pattern):
