@@ -7227,3 +7227,4 @@
 {"build": "4828cc2b93f0", "candidate": "APIs/apache.org/airflow/2.5.3/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/surevoip.co.uk/9dcb0dc8/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
+{"build": "21ed5668773a", "candidate": "APIs/mercure.local/0.3.2/openapi.yaml", "key": "format-iri", "reached": [], "status": "exit 1: /fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:30:155: Duplicate parameter \"last_event_id\""}
