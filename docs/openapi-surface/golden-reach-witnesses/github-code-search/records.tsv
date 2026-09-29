@@ -1,6 +1,6 @@
 key	kind	subject	result	file
-*	wait	github-code-search guard log index-pacing-waits.jsonl	25 entries	index-pacing-waits.jsonl
-*	wait	github-code-search guard log rate-limit-calls.jsonl	10105 entries	rate-limit-calls.jsonl
+*	wait	github-code-search guard log index-pacing-waits.jsonl	27 entries	index-pacing-waits.jsonl
+*	wait	github-code-search guard log rate-limit-calls.jsonl	10159 entries	rate-limit-calls.jsonl
 *	wait	github-code-search guard log rate-limit-waits.jsonl	1 entries	rate-limit-waits.jsonl
 *	wait	github-code-search guard log raw-github-calls.jsonl	464 entries	raw-github-calls.jsonl
 *	wait	github-code-search guard log raw-github-waits.jsonl	461 entries	raw-github-waits.jsonl
@@ -4788,6 +4788,11 @@ format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.e
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 1 error and 0 warnings. First: Path parameter is unreferenced in endpoint: item_id.	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 licence	passed	screens.jsonl
 format-hostname	screen	Gk0Wk/openapi-thrift:tests/fixtures/apifox-boundary-lab.header-cookie.export.openapi.json@5114458f49ab086773073f37864ff2431da495e3 ref	passed	screens.jsonl
+format-idn-hostname	document	justiceo/openapi-zod:test/fixtures/primitives/openapi.yaml@c337702598557af6fc43e7a90184f7da70819427	census 1	candidates.jsonl
+format-idn-hostname	document	podengo-project/idmsvc-api:public.openapi.json@6f45f172fd0ebc1818c628cdc9b8f8600d664c68	census 2	candidates.jsonl
+format-idn-hostname	document	podengo-project/idmsvc-api:public.openapi.yaml@6f45f172fd0ebc1818c628cdc9b8f8600d664c68	census 2	candidates.jsonl
+format-idn-hostname	query	"\"format\": \"idn-hostname\"" filename:openapi.json	1	queries.jsonl
+format-idn-hostname	query	"format: idn-hostname" filename:openapi.yaml	2	queries.jsonl
 format-ipv4	document	9seconds/topographer:openapi.yaml@17fb92994da69ddd9027a66a123be82a57b36cd2	census 1	candidates.jsonl
 format-ipv4	document	APIs-guru/openapi-directory:APIs/iptwist.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 2	candidates.jsonl
 format-ipv4	document	APIs-guru/openapi-directory:APIs/maif.local/otoroshi/1.5.0-dev/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 3	candidates.jsonl
@@ -4990,6 +4995,55 @@ format-ipv4	document	ynishi/runpod-cli:runpod-openapi.json@eb3adac4d83fee4b284d7
 format-ipv4	document	zerotier/zerotier-rust-api:zerotier-one-api/openapi.yaml@fbeddabfc6feeeea2a18f0c91552271ba9a3a9ae	census 1	candidates.jsonl
 format-ipv4	query	"\"format\": \"ipv4\"" filename:openapi.json	169	queries.jsonl
 format-ipv4	query	"format: ipv4" filename:openapi.yaml	313	queries.jsonl
+format-iri	document	APIs-guru/openapi-directory:APIs/mercure.local/0.3.2/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 2	candidates.jsonl
+format-iri	document	Budibase/openapi-rest-templates:volt-io/openapi.yaml@cf9397b0c599117184ae2791849ccd5ba3f235c7	census 0	candidates.jsonl
+format-iri	document	ClintonCao/EvoMaster:core-it/src/test/resources/APIs_guru/mercure.local/0.3.2/openapi.yaml@1a2336d2e9d2b9441c3b357cb4743c6e9fed429e	census 2	candidates.jsonl
+format-iri	document	ConductionNL/Proto-application-flatland:api/public/schema/openapi.yaml@f24a346554cd14a359ef3029a91a76041befc948	census 0	candidates.jsonl
+format-iri	document	ConductionNL/Proto-application-listy:api/public/schema/openapi.yaml@0f22d0f96974074cf1d473997561ad170eca9742	census 0	candidates.jsonl
+format-iri	document	ConductionNL/Proto-application-mister-wolf:api/public/schema/openapi.yaml@060ccc8e33750832ead1cad40ae6addf6d42f51e	census 0	candidates.jsonl
+format-iri	document	ConductionNL/bzk-mock:api/public/schema/openapi.yaml@02b820ab1db76c202e9ce5c2ae228504b5bbec1b	census 0	candidates.jsonl
+format-iri	document	ConductionNL/challenges-ui:api/public/schema/openapi.yaml@39f0a0ba226bdea9bf0d4da3a59d3a6d088536d1	census 0	candidates.jsonl
+format-iri	document	ConductionNL/corona-interface:api/public/schema/openapi.yaml@22a826f1bb8aa78cddae798d136e992874dc658a	census 0	candidates.jsonl
+format-iri	document	ConductionNL/formulieren-ui:api/public/schema/openapi.yaml@c9d5824766aae30c27e4033b09d27ac6fa7a0560	census 0	candidates.jsonl
+format-iri	document	ConductionNL/ggd-ui:api/public/schema/openapi.yaml@da2295f5b9a8a1a7a6921b18c29cd70c6fde7592	census 0	candidates.jsonl
+format-iri	document	ConductionNL/instemmingen-interface:api/public/schema/openapi.yaml@9d9a58e48303c18b1de2603c1b05132b94825eb6	census 0	candidates.jsonl
+format-iri	document	ConductionNL/larping-ui:api/public/schema/openapi.yaml@0cf6c749ae36fef552683ef42710280274d0e760	census 0	candidates.jsonl
+format-iri	document	ConductionNL/nl-design:api/public/schema/openapi.yaml@550122562346c0ebec8efe6b2ecd6f31b0e42241	census 0	candidates.jsonl
+format-iri	document	ConductionNL/proto-application-commonground:api/public/schema/openapi.yaml@f27966fe3e5c367d783eb12d068cf22e36c71b93	census 0	candidates.jsonl
+format-iri	document	ConductionNL/stages-ui:api/public/schema/openapi.yaml@e559bab861c8d0cb1cdc98b396753617a7284bbb	census 0	candidates.jsonl
+format-iri	document	ConductionNL/vrijwilligers-ui:api/public/schema/openapi.yaml@948e6cd4e31d027f0f6b1af821a59e8dc6658965	census 0	candidates.jsonl
+format-iri	document	DataFire/Integrations:integrations/generated/mercure_local/openapi.json@56332a12c8011cb27be25e3173a0f3b3729c08da	census 0	candidates.jsonl
+format-iri	document	LoriMarshall/openapidir:APIs/mercure.local/0.3.2/openapi.yaml@433a94f3e9e268f2b000b0b497785ede34332a7f	census 2	candidates.jsonl
+format-iri	document	OdysseyMomentum/id-vault:api/public/schema/openapi.yaml@990a249828da51b3982f6a99df3fad441f614223	census 0	candidates.jsonl
+format-iri	document	WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/mercure.local/0.3.2/openapi.yaml@39d9814afc1bf682a36f6aea8aa31618323e711a	census 2	candidates.jsonl
+format-iri	document	WebFuzzing/fuzzing-nosql:wb-mongo/EvoMaster-mongo/core-it/src/test/resources/APIs_guru/mercure.local/0.3.2/openapi.yaml@beab2413018c8ac6fa8c3ee68dac856ffd3cc628	census 2	candidates.jsonl
+format-iri	document	WilcoLouwerse/Begrafenisplanner-application-NLDesign:api/public/schema/openapi.yaml@312797ea4146b75dc2df64e5d66bb93b0909de59	census 0	candidates.jsonl
+format-iri	document	YorickGroeneveld/grafregistratiecomponent:api/public/schema/openapi.yaml@6febd5887b1526440be1ad78abaa900f1fb9c9dc	census 0	candidates.jsonl
+format-iri	document	adityaghatge/nlp2rest:rule_extractor/APIs-guru/specifications/mercure.local/0.3.2/openapi.yaml@23fc8dc5e37f7ef1681c135abfba30e6cfad2a91	census 2	candidates.jsonl
+format-iri	document	altairengineering/iots-python:openapi/anythingdb_openapi.yaml@15c106bba483e0b0bb1c11ce889fd552c6afe162	census 1	candidates.jsonl
+format-iri	document	arke-so/mini-arke-frontend:src/lib/api-client/infra/openapi.yaml@be9fa398955499d17d468ebd52c2de3a8febb11a	census 0	candidates.jsonl
+format-iri	document	codingsoo/nlp2rest:rule_extractor/APIs-guru/specifications/mercure.local/0.3.2/openapi.yaml@ae3783b7e4475947bd27511ca4dadc4a273d046c	census 2	candidates.jsonl
+format-iri	document	dns-technologies/SDMS:docs/api/sdms-api/openapi.json@eb372065e273ceade9939542ce56565c4d422e91	census 2	candidates.jsonl
+format-iri	document	dunglas/mercure:spec/openapi.yaml@958610e1895e66db38cc6f41c3304d5cccd3eac2	census 0	candidates.jsonl
+format-iri	document	jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/openapi.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	jrmgx/hivecache:server/openapi.json@29398a799cb8417a9430c9eede42e0f26f87c773	census 15	candidates.jsonl
+format-iri	document	justiceo/openapi-zod:test/fixtures/primitives/openapi.yaml@c337702598557af6fc43e7a90184f7da70819427	census 1	candidates.jsonl
+format-iri	document	konfig-dev/konfig:sdks/db/intermediate-fixed-specs/volt-io/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
+format-iri	document	konfig-sdks/openapi-examples:volt-io/openapi.yaml@161ab49c45e45825ca3832945c59a3ba904321ba	census 0	candidates.jsonl
+format-iri	document	lzaglewski/mer-clone:spec/openapi.yaml@d373e588feb47f9cdc76795cefe0a531e7dab9a1	census 2	candidates.jsonl
+format-iri	document	milieuinfo/mocat:openapi.yaml@788e4bdfd6153ab327b7a284f2d877abce7e570c	census 18	candidates.jsonl
+format-iri	document	morrieinmaas/digispoof:api/public/schema/openapi.yaml@fbab531f1dadede17d26bf65f861bfcdad7c011f	census 0	candidates.jsonl
+format-iri	document	pauloZion1/mercure:spec/openapi.yaml@1c6009b40bd76e62bd62c94183fe442751492c4e	census 2	candidates.jsonl
+format-iri	document	radusoltan/ecom_api:docs/api/cart-openapi.yaml@ba4c7c664436ac7888cdede6629423ebb30a14d9	census 0	candidates.jsonl
+format-iri	document	sgort/commonground.nu:api/public/schema/openapi.yaml@e743196c75d5a91606b1f35064a70513d2e73c32	census 0	candidates.jsonl
+format-iri	document	stryd/efulfilmentshop-go:api/openapi.yaml@3aec60b8d85f8650682506f2c96a694271b392dc	census 0	candidates.jsonl
+format-iri	document	suarezrominajulieta/Evo-tesis:EvoMaster-master/EvoMaster-master/core-it/src/test/resources/APIs_guru/mercure.local/0.3.2/openapi.yaml@c11ae92daa273be94a435aadad384306c9b96134	census 2	candidates.jsonl
+format-iri	document	swaptacular/swaptacular.github.io:public/docs/swpt_creditors/openapi.json@f1350e063269d717de0807bcad5b54a59e8f4fad	census 1	candidates.jsonl
+format-iri	document	sweetdream-001/sem-mercure:spec/openapi.yaml@49ab82007d9fd0815939023c133fceaf98e2111b	census 2	candidates.jsonl
+format-iri	document	tmoody1973/npr-cds-openapi:mcp-server/specs/openapi.yaml@0ed2159bf447a61cc64722bf9f9f324f776d2bd1	census 0	candidates.jsonl
+format-iri	document	vinit-agr/vinit-website:public/APIs/mercure.local/0.3.2/openapi.yaml@a0bc9f6a5692ce38dadefb859fad52f963df7298	census 2	candidates.jsonl
+format-iri	query	"\"format\": \"iri\"" filename:openapi.json	5	queries.jsonl
+format-iri	query	"format: iri" filename:openapi.yaml	42	queries.jsonl
 format-json-pointer	document	CrowdStrike/aidr-go:specs/ai-guard.openapi.json@b9f3198f1f8e5929a9b2102578c3fbb7c78148d1	census 2	candidates.jsonl
 format-json-pointer	document	CrowdStrike/aidr-python:specs/ai-guard.openapi.json@f0d3197ce0276eb6903f3ab686d93582603f5d11	census 2	candidates.jsonl
 format-json-pointer	document	CrowdStrike/aidr-typescript:specs/ai-guard.openapi.json@d0543948f92316ae874d2977d5ae05da37907b62	census 2	candidates.jsonl

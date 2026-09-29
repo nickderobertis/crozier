@@ -180,3 +180,7 @@
 {"at": "2026-09-27T21:13:55.624+00:00", "bucket": "core", "host": "github", "reserved": 1, "status": 404}
 {"at": "2026-09-27T21:13:57.095+00:00", "bucket": "core", "host": "github", "reserved": 1, "status": 404}
 {"at": "2026-09-27T21:13:57.865+00:00", "bucket": "core", "host": "github", "reserved": 1, "status": 404}
+{"at": "2026-09-29T06:07:25.272+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 200}
+{"at": "2026-09-29T06:08:10.630+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 200}
+{"at": "2026-09-29T06:09:18.707+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 200}
+{"at": "2026-09-29T06:10:13.564+00:00", "host": "sourcegraph", "lane": "sourcegraph", "status": 200}

@@ -1,8 +1,8 @@
 key	kind	subject	result	file
-*	wait	sourcegraph guard log index-pacing-waits.jsonl	7 entries	index-pacing-waits.jsonl
-*	wait	sourcegraph guard log rate-limit-calls.jsonl	182 entries	rate-limit-calls.jsonl
-*	wait	sourcegraph guard log raw-github-calls.jsonl	10961 entries	raw-github-calls.jsonl
-*	wait	sourcegraph guard log raw-github-waits.jsonl	10416 entries	raw-github-waits.jsonl
+*	wait	sourcegraph guard log index-pacing-waits.jsonl	8 entries	index-pacing-waits.jsonl
+*	wait	sourcegraph guard log rate-limit-calls.jsonl	186 entries	rate-limit-calls.jsonl
+*	wait	sourcegraph guard log raw-github-calls.jsonl	10993 entries	raw-github-calls.jsonl
+*	wait	sourcegraph guard log raw-github-waits.jsonl	10445 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/producer_api_plugin/producer.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/Azure-Samples/AI-Gateway:labs/realtime-mcp-agents/src/spotify/apim-api/openapi.json@1679e3137d2fe7592d2a668d77ff71550d35b69e	census 0	candidates.jsonl
@@ -5407,6 +5407,15 @@ format-hostname	document	github.com/vitodeploy/vito:public/api-docs/openapi/site
 format-hostname	document	github.com/wework/json-schema-to-openapi-schema:test/schemas/example2/openapi.json@b33ca9b5e03fca2e960693c97079777ed2e4fe90	census 0	candidates.jsonl
 format-hostname	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: hostname" count:all type:file	89	queries.jsonl
 format-hostname	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"hostname\"" count:all type:file	118	queries.jsonl
+format-idn-hostname	document	github.com/WebFuzzing/EvoMaster:core-tests/e2e-tests/spring/spring-rest-bb/src/main/resources/static/openapi-bbadvancedformats.json@39d9814afc1bf682a36f6aea8aa31618323e711a	census 1	candidates.jsonl
+format-idn-hostname	document	github.com/corvus-dotnet/Corvus.JsonSchema:tests-v4/Corvus.Json.Specs.Tests/HandWritten/ValidateWithDifferentFlagLevels/OpenApi30.schema.json@6af6c149ee5c9461faa9850a34d0e0cff1fd9be2	census 0	candidates.jsonl
+format-idn-hostname	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 1	candidates.jsonl
+format-idn-hostname	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 1	candidates.jsonl
+format-idn-hostname	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 1	candidates.jsonl
+format-idn-hostname	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 1	candidates.jsonl
+format-idn-hostname	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/openapi.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 1	candidates.jsonl
+format-idn-hostname	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: idn-hostname" count:all type:file	0	queries.jsonl
+format-idn-hostname	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"idn-hostname\"" count:all type:file	7	queries.jsonl
 format-ipv4	document	github.com/APIs-guru/openapi-directory:APIs/exavault.com/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 4	candidates.jsonl
 format-ipv4	document	github.com/APIs-guru/openapi-directory:APIs/iptwist.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 2	candidates.jsonl
 format-ipv4	document	github.com/APIs-guru/openapi-directory:APIs/linode.com/4.151.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
@@ -5609,6 +5618,33 @@ format-ipv4	document	github.com/vmware/vic:lib/apiservers/service/swagger.json@9
 format-ipv4	document	github.com/wework/json-schema-to-openapi-schema:test/schemas/example2/openapi.json@b33ca9b5e03fca2e960693c97079777ed2e4fe90	census 0	candidates.jsonl
 format-ipv4	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: ipv4" count:all type:file	148	queries.jsonl
 format-ipv4	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"ipv4\"" count:all type:file	162	queries.jsonl
+format-iri	document	github.com/3redronin/mu-server:src/test/resources/openapi/meta-2026-02-26.json@24119c79d7953f3dacd4cdc87536b9b2fd829b6a	census 0	candidates.jsonl
+format-iri	document	github.com/APIs-guru/openapi-directory:APIs/mercure.local/0.3.2/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 2	candidates.jsonl
+format-iri	document	github.com/DataFire/Integrations:integrations/generated/mercure_local/openapi.json@56332a12c8011cb27be25e3173a0f3b3729c08da	census 0	candidates.jsonl
+format-iri	document	github.com/WebFuzzing/EvoMaster:core-tests/e2e-tests/spring/spring-rest-bb/src/main/resources/static/openapi-bbadvancedformats.json@39d9814afc1bf682a36f6aea8aa31618323e711a	census 1	candidates.jsonl
+format-iri	document	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/mercure.local/0.3.2/openapi.yaml@39d9814afc1bf682a36f6aea8aa31618323e711a	census 2	candidates.jsonl
+format-iri	document	github.com/api-platform/schema-generator:tests/e2e/openapi.yml@22635fbacac8011c73cdbbb5c20507c77c02d89d	census 0	candidates.jsonl
+format-iri	document	github.com/corvus-dotnet/Corvus.JsonSchema:tests-v4/Corvus.Json.Specs.Tests/HandWritten/ValidateWithDifferentFlagLevels/OpenApi30.schema.json@6af6c149ee5c9461faa9850a34d0e0cff1fd9be2	census 0	candidates.jsonl
+format-iri	document	github.com/dns-technologies/SDMS:docs/api/sdms-api/openapi.json@eb372065e273ceade9939542ce56565c4d422e91	census 2	candidates.jsonl
+format-iri	document	github.com/dunglas/mercure:spec/openapi.yaml@958610e1895e66db38cc6f41c3304d5cccd3eac2	census 0	candidates.jsonl
+format-iri	document	github.com/eclipse-ditto/ditto:documentation/src/main/resources/openapi/ditto-api-2.yml@17ce6df63ca3bcb64441f34f3acd92f026e7eddd	census 0	candidates.jsonl
+format-iri	document	github.com/eclipse-ditto/ditto:documentation/src/main/resources/openapi/sources/schemas/wot-thingDescription.yml@17ce6df63ca3bcb64441f34f3acd92f026e7eddd	census 0	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/meta/import/input-bundled.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/meta/import/input-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/meta/import/output-bundled.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/meta/import/output-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/mercure.local/main/0.3.2/openapi.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 2	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 4	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 4	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 4	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 4	candidates.jsonl
+format-iri	document	github.com/jentic/jentic-public-apis:apis/openapi/short.io/main/1.0.0/openapi.json@9f955435ef67a5f951563d1bf63bbaf154204b83	census 4	candidates.jsonl
+format-iri	document	github.com/konfig-dev/konfig:sdks/db/intermediate-fixed-specs/volt-io/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
+format-iri	document	github.com/microsoft/vscode-json-languageservice:src/test/fixtures/openapi/oas-3.2-meta-2025-09-17.json@3885a6e58d84db4dc9fac0229ba237ee1c2ad924	census 0	candidates.jsonl
+format-iri	document	github.com/python-openapi/openapi-schema-validator:openapi_schema_validator/schemas/oas3.2/meta/2025-09-17.json@005e0804dd853714e6ddd8d6e8c808266df6a3c1	census 0	candidates.jsonl
+format-iri	document	github.com/swagger-api/apidom:packages/apidom-ls/src/services/validation/json-schema/open-api-32/openapi-schema-32-meta.json@8fbcbbf9da41cc01f7fc15c45c9a4cdf5dd9daeb	census 0	candidates.jsonl
+format-iri	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: iri" count:all type:file	7	queries.jsonl
+format-iri	query	file:(openapi|swagger).*\.json$ content:"\"format\": \"iri\"" count:all type:file	18	queries.jsonl
 format-json-pointer	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/3_0_3_unit_test_spec.yaml@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 1	candidates.jsonl
 format-json-pointer	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/draft6/format.json@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 0	candidates.jsonl
 format-json-pointer	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/draft6/optional/format/json-pointer.json@10e6c21c97abb098cc67f14dfdd02171ce56b115	census 0	candidates.jsonl
