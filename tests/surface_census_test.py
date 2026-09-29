@@ -917,7 +917,19 @@ SEARCH_OUTCOMES = (
     SEARCH_INCOMPLETE,
     EXHAUSTED,
 )
-EXCLUDED_SOURCES = re.compile(r"(?i)postman|swaggerhub")
+# The sources Contract B excludes are the ones the frozen witness-search-redo
+# contract searched that the capability table does not declare (Postman and
+# SwaggerHub), read off that contract's own validator rather than re-listed.
+_redo_spec = importlib.util.spec_from_file_location(
+    "witness_search_redo", REPO / "scripts" / "witness-search-redo.py"
+)
+assert _redo_spec and _redo_spec.loader
+_redo_module = importlib.util.module_from_spec(_redo_spec)
+_redo_spec.loader.exec_module(_redo_module)
+EXCLUDED_SOURCE_NAMES = tuple(
+    source for source in _redo_module.ALL_SOURCES if source not in DECLARED_SOURCES
+)
+EXCLUDED_SOURCES = re.compile("(?i)" + "|".join(map(re.escape, EXCLUDED_SOURCE_NAMES)))
 OUTSTANDING_NOTE = re.compile(r"\boutstanding: (?P<sources>`[\w.-]+`(?:(?:, |,? and )`[\w.-]+`)*)")
 
 
@@ -8335,6 +8347,53 @@ class RankedBacklogTests(unittest.TestCase):
             self.doc,
             "the index does not state the gate's manifest header",
         )
+
+    def test_contract_b_restatements_agree_with_the_index(self) -> None:
+        """`SEARCH_OUTCOMES` is the settlement rule's own numbered outcome list
+        plus the sixth word the exhaustive-search contract adds, and the excluded
+        sources are exactly the two the index explains leaving out."""
+        rule = self.doc.split("#### The settlement rule, as amended", 1)[1].split("\n#### ", 1)[0]
+        stated = [
+            word
+            for pair in re.findall(r"^\d+\. \*\*`([a-z-]+)`\*\*(?: or \*\*`([a-z-]+)`\*\*)?", rule, re.M)
+            for word in pair
+            if word
+        ]
+        sixth = re.search(r"\*\*The outcome vocabulary gains a sixth word:\*\* \*\*`([a-z-]+)`\*\*", self.doc)
+        self.assertTrue(stated and sixth, "the index's outcome vocabulary no longer parses")
+        self.assertEqual([*stated, sixth.group(1)], list(SEARCH_OUTCOMES),
+                         "SEARCH_OUTCOMES is not the index's outcome vocabulary")
+        self.assertTrue(set(BLOCKED_OUTCOMES) <= set(SEARCH_OUTCOMES))
+        self.assertEqual(("swaggerhub", "postman"), EXCLUDED_SOURCE_NAMES)
+        flat = " ".join(self.doc.split())
+        self.assertIn("**Why Postman is not a declared source.**", flat)
+        self.assertIn("Postman is not one, for [the reason recorded beside SwaggerHub's]", flat)
+
+    def test_fern_ledger_golden_annotations_track_their_region_rows(self) -> None:
+        """A `fern-limitations.md` row annotated as settled `golden` by the walk
+        names a region row that is `golden` and declared by exactly the stated
+        number of golden-bearing registered sources."""
+        ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
+        annotation = re.compile(
+            r"\*\*Region row `golden` since the 2026-09-28 walk:\*\* (\d+) golden-bearing "
+            r"registered sources? now declares? the shape, so \[its row\]\(openapi-surface/([a-z0-9-]+)\.md\)"
+        )
+        seen = 0
+        for line in ledger.splitlines():
+            for found in annotation.finditer(line):
+                seen += 1
+                key = re.match(r"\| `([^`]+)` \|", line).group(1)
+                with self.subTest(key=key):
+                    entry = self.entries.get(key)
+                    self.assertIsNotNone(entry, f"{key}: the annotation names no region row")
+                    region, cells = entry
+                    self.assertEqual(found.group(2), region, f"{key}: links the wrong region file")
+                    self.assertEqual("golden", cells[3].strip("`"), f"{key}: its region row is not `golden`")
+                    declarers = re.search(r"declaration sites? in (\d+) golden-bearing registered sources?", cells[4])
+                    self.assertTrue(declarers, f"{key}: its region row states no declarer count")
+                    self.assertEqual(declarers.group(1), found.group(1),
+                                     f"{key}: the ledger's declarer count drifted from its region row")
+        self.assertTrue(seen, "no golden annotation parsed; the check reads nothing")
 
     def test_the_evidence_kinds_are_the_indexs_own(self) -> None:
         """`records.tsv`'s `kind` values are declared once, in the index's list of
