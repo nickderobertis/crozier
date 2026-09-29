@@ -1570,6 +1570,11 @@ class Acquirer:
         self.write("candidates.jsonl", record)
         return record
 
+    def cached(self, fetched: dict[str, Any]) -> bool:
+        """Whether a ledger row's document is in the cache, holding the bytes it pinned."""
+        path = self.cache / "documents" / str(fetched.get("document"))
+        return path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == fetched.get("sha256")
+
     def reuse(
         self, fetched: dict[str, Any], key: str, selector: str
     ) -> dict[str, Any]:
@@ -1917,7 +1922,20 @@ def _main() -> int:
             if digest[0] % shards != shard:
                 continue
             documents.setdefault(identity[1:], []).append((identity[0], item))
-        for members in documents.values():
+        # A document an earlier run read for another key is the same repository,
+        # path and revision: its cached bytes are classified again rather than
+        # fetched again, wherever they still hash to the digest that run pinned.
+        earlier = {
+            (row["repository"], row["path"], row.get("commit") or row.get("blob")): row
+            for row in jsonl(args.evidence / "candidates.jsonl")
+            if row.get("document") and row.get("disposition") != "acquisition-failure"
+        }
+        for document, members in documents.items():
+            read = earlier.get(document)
+            if read is not None and acquirer.cached(read):
+                for other, _ in members:
+                    acquirer.reuse(read, other, keys[other]["selector"])
+                continue
             key, item = members[0]
             selector = keys[key]["selector"]
             try:
