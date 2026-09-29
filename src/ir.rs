@@ -892,8 +892,14 @@ fn inline_body_source_names(
             };
             let is_enum = string_enum_values(target).is_some() || is_int_enum(target);
             let is_union = target.one_of.is_some() || target.any_of.is_some();
+            // A component that is only `allOf` one `$ref` is an alias of it, which
+            // Fern keeps beside the inlined method: Zoonk's `LessonVisibilityUpdate`
+            // is `allOf: [$ref LessonVisibility]`, and `lesson_visibility_update.py`
+            // declares `LessonVisibilityUpdate = LessonVisibility`.
+            let is_alias = !target.properties.declared() && sole_all_of_ref(target).is_some();
             if !is_enum
                 && !is_union
+                && !is_alias
                 && !is_map(target)
                 && (target.properties.declared() || target.all_of.is_some())
             {
@@ -2910,7 +2916,18 @@ fn build_endpoint(
                     .as_ref()
                     .is_some_and(|members| members.len() == 1) =>
         {
-            single_all_of_ref(schema).map(|reference| TypeRef::Named(ref_to_class(reference)))
+            // A `nullable` written beside that `allOf` is the schema's own, not a
+            // `$ref`'s ignored sibling: Zoonk's `getLessonQuestionThread` answers
+            // `{nullable: true, allOf: [$ref LessonQuestionThread]}` and returns
+            // `typing.Optional[LessonQuestionThread]`.
+            single_all_of_ref(schema).map(|reference| {
+                let named = TypeRef::Named(ref_to_class(reference));
+                if is_optional(schema) {
+                    optional_type_ref(named)
+                } else {
+                    named
+                }
+            })
         }
         Some(schema) if is_inline_struct(schema) => {
             let name = format!("{pascal_ctx}Response");
@@ -9194,6 +9211,16 @@ impl Builder<'_> {
                 // where a property two branches declare keeps the first branch's
                 // position and the last branch's schema.
                 if let Some(branches) = member.one_of.as_ref().or(member.any_of.as_ref()) {
+                    // A `oneOf` whose branches each tag themselves is a
+                    // discriminated union, which has no properties to lend: Zoonk's
+                    // lesson steps are `allOf: [{id, …}, oneOf: [{kind: alphabet,
+                    // content}, …]]`, and Fern's step model carries `id` and the
+                    // rest but neither `kind` nor `content`.
+                    if member.one_of.is_some()
+                        && inferred_discriminant_property(member, schemas).is_some()
+                    {
+                        continue;
+                    }
                     let mut merged = Schema::default();
                     for branch in branches {
                         for (prop, prop_schema) in &branch.properties {
@@ -10061,6 +10088,25 @@ impl Builder<'_> {
                         );
                     }
                     if let Some(members) = value.one_of.as_ref().or(value.any_of.as_ref()) {
+                        // Inline members that each tag themselves are a discriminated
+                        // union at a map's value as at a property: Zoonk's
+                        // `LessonCompletionRequest.answers` maps to a `oneOf` of
+                        // objects tagged `kind`, and Fern declares
+                        // `LessonCompletionRequestAnswersValue_FillBlank` and its siblings.
+                        if value.discriminator.is_some() || members.len() > 1 {
+                            if let Some(decl) = self.discriminated_union(
+                                &value_name,
+                                &naming::module_name(&value_name),
+                                value,
+                                clean_doc(value.description.as_deref()),
+                            ) {
+                                self.types.push(TypeDecl::DiscriminatedUnion(decl));
+                                return TypeRef::Dict(
+                                    Box::new(TypeRef::Primitive(Prim::Str)),
+                                    Box::new(TypeRef::Named(value_name)),
+                                );
+                            }
+                        }
                         let nullable = members.iter().any(|member| {
                             member.ty.as_ref().and_then(TypeField::primary) == Some("null")
                         });

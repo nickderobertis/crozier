@@ -13024,3 +13024,93 @@ fn hasura_shaped_maps_unions_and_names_generate_like_fern() {
         file("types/transform.py")
     );
 }
+
+/// Zoonk's shapes, as Fern 5.20.0 generates them: a map whose value is a `oneOf`
+/// of objects each tagging itself `kind` is a discriminated union; an `allOf`
+/// member that is such a `oneOf` lends the model no properties; a request body
+/// component that is only `allOf` one `$ref` stays in the type layer as an alias
+/// and is what `reference.md` documents; and a `nullable` beside a response's
+/// lone `allOf` `$ref` makes the method return it optionally.
+#[test]
+fn zoonk_shaped_tagged_unions_aliases_and_nullable_responses_generate_like_fern() {
+    let files = render_json(
+        r##"{
+  "openapi": "3.0.3",
+  "info": { "title": "", "version": "" },
+  "paths": {
+    "/answers": { "post": { "operationId": "postAnswers",
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Answers" } } } },
+      "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Steps" } } } } } } },
+    "/visibility": { "patch": { "operationId": "updateVisibility",
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VisibilityUpdate" } } } },
+      "responses": { "200": { "description": "ok" } } } },
+    "/thread": { "get": { "operationId": "getThread",
+      "responses": { "200": { "description": "or null", "content": { "application/json": { "schema": { "nullable": true, "allOf": [ { "$ref": "#/components/schemas/Thread" } ] } } } } } } }
+  },
+  "components": { "schemas": {
+    "Answers": { "type": "object", "required": ["answers"], "properties": {
+      "answers": { "type": "object", "additionalProperties": { "type": "object", "oneOf": [
+        { "type": "object", "required": ["kind", "userAnswers"], "properties": { "kind": { "type": "string", "enum": ["fillBlank"] }, "userAnswers": { "type": "array", "items": { "type": "string" } } } },
+        { "type": "object", "required": ["kind", "userPairs"], "properties": { "kind": { "type": "string", "enum": ["matchColumns"] }, "userPairs": { "type": "array", "items": { "type": "object", "required": ["left"], "properties": { "left": { "type": "string" } } } } } }
+      ] } }
+    } },
+    "Steps": { "type": "object", "required": ["steps"], "properties": {
+      "steps": { "type": "array", "items": { "allOf": [
+        { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" } }, "additionalProperties": false },
+        { "oneOf": [
+          { "type": "object", "required": ["kind", "content"], "properties": { "kind": { "type": "string", "enum": ["alphabet"] }, "content": { "type": "object", "properties": { "symbol": { "type": "string" } } } } },
+          { "type": "object", "required": ["kind", "content"], "properties": { "kind": { "type": "string", "enum": ["reading"] }, "content": { "type": "object", "properties": { "text": { "type": "string" } } } } }
+        ] }
+      ] } }
+    } },
+    "Visibility": { "type": "object", "required": ["hidden"], "properties": { "hidden": { "type": "array", "items": { "type": "string" } } } },
+    "VisibilityUpdate": { "allOf": [ { "$ref": "#/components/schemas/Visibility" } ] },
+    "Thread": { "type": "object", "properties": { "id": { "type": "string" } } }
+  } }
+}"##,
+    );
+    let file = |suffix: &str| {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no {suffix}: {:?}", files.keys()))
+    };
+    let answers = file("types/answers_answers_value.py");
+    assert!(
+        answers.contains("class AnswersAnswersValue_FillBlank(UniversalBaseModel):"),
+        "{answers}"
+    );
+    assert!(
+        answers.contains("    kind: typing.Literal[\"matchColumns\"] = \"matchColumns\"\n"),
+        "{answers}"
+    );
+    assert!(
+        answers.contains("pydantic.Field(discriminator=\"kind\")"),
+        "{answers}"
+    );
+    assert!(file("acme/client.py").contains("answers: typing.Dict[str, AnswersAnswersValue],"));
+    let step = file("types/steps_steps_item.py");
+    assert!(step.contains("    id: str\n"), "{step}");
+    assert!(
+        !step.contains("kind") && !step.contains("content"),
+        "{step}"
+    );
+    assert_eq!(
+        "from .visibility import Visibility\n\nVisibilityUpdate = Visibility\n",
+        file("types/visibility_update.py")
+            .lines()
+            .filter(|line| !line.starts_with('#'))
+            .skip_while(|line| line.is_empty())
+            .map(|line| format!("{line}\n"))
+            .collect::<String>()
+    );
+    assert!(file("reference.md").contains("**request:** `VisibilityUpdate`"));
+    let client = file("acme/client.py");
+    assert!(
+        client.contains(
+            "def get_thread(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Optional[Thread]:"
+        ),
+        "{client}"
+    );
+}

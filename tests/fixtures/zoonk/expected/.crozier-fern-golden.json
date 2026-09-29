@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "zoonk",
+  "corpus_spec_ref": "4546e69762e30f245c9306acb95aa56fc69d2682",
+  "corpus_spec_url": "https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json"
+}

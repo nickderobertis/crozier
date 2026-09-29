@@ -227,6 +227,7 @@ re-measure with `just fixtures-gaps`.
 | 303 | `qredence-fleet-rlm` | github-raw | https://raw.githubusercontent.com/Qredence/fleet-rlm/0322623598b6cda0eea580694264e69a40081f10/openapi.yaml | `0322623598b6cda0eea580694264e69a40081f10` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | fleet-rlm 0.7.10 (OpenAPI 3.1), Qredence's own server description; a `oneOf` variant that is itself an `anyOf` |
 | 304 | `fiware-context-generator` | github-raw | https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml | `354bf6920d20955aabb55f4778a4d8a3d855440b` | MIT (the publisher repository's pinned `LICENSE`, FIWARE Foundation; the document declares no `info.license`) | link-ok | The LiveBuildings data model API 0.0.1, the context generator's own description; an array item's `oneOf` member that is an `anyOf` |
 | 305 | `hasura-metadata` | github-raw | https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json | `94915fe51d6d21bd7f6d4452dc16221bef8cfefd` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Hasura GraphQL Engine's metadata schema as its repository publishes it: 334 component schemas and no paths; properties whose `oneOf` holds an `anyOf` |
+| 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1257,6 +1258,7 @@ declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
 | 303 | `qredence-fleet-rlm` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
 | 304 | `fiware-context-generator` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
 | 305 | `hasura-metadata` | `oneof-anyof-variant` | ✅ byte-matched after seven repairs |
+| 306 | `zoonk` | `oneof-closed-empty-object-variant` | ✅ byte-matched after four repairs |
 
 Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
 - Examples: a required enum-typed query parameter is exampled by the enum's
@@ -1289,6 +1291,13 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
   `types_config_Config`, clear of pydantic's own `Config` class;
   and a JSON document with an integer past `u64` loads through the YAML
   reader, as Fern's does (Hasura).
+- Tagged unions and aliases: a map whose value is a `oneOf` of objects each
+  tagging itself with a one-member `enum` is a discriminated union, as it is at
+  a property; an `allOf` member that is such a `oneOf` lends the model none of
+  its branches' properties; a request body component that is only `allOf` one
+  `$ref` stays in the type layer as an alias, which `reference.md` documents as
+  the `request`; and a `nullable` beside a response's lone `allOf` `$ref` makes
+  the method return it optionally (Zoonk).
 
 The screened documents these searches found that could not be registered are
 recorded with their measured reason in each search's record: the Open Build

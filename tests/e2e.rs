@@ -3366,6 +3366,7 @@ const CORPORA: &[&Corpus] = &[
     &QREDENCE_FLEET_RLM,
     &FIWARE_CONTEXT_GENERATOR,
     &HASURA_METADATA,
+    &ZOONK,
 ];
 
 #[test]
@@ -6211,6 +6212,19 @@ const FIWARE_CONTEXT_GENERATOR: Corpus = Corpus {
 /// from hasura/graphql-engine, whose properties' `oneOf` holds an `anyOf`
 const HASURA_METADATA: Corpus = Corpus {
     api: "hasura-metadata",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `zoonk`: corpus row 306, Zoonk's API from zoonk/zoonk, whose `MeDeletion`
+/// `oneOf` offers a closed empty object
+const ZOONK: Corpus = Corpus {
+    api: "zoonk",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12183,6 +12197,11 @@ fn fiware_context_generator_matches_fern_output() {
 #[test]
 fn hasura_metadata_matches_fern_output() {
     assert_link_ok_corpus_matches(&HASURA_METADATA);
+}
+
+#[test]
+fn zoonk_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZOONK);
 }
 
 #[test]
