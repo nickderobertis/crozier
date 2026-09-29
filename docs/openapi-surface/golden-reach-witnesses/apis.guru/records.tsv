@@ -5536,6 +5536,7 @@ non-identifier-operation-id	document	APIs/zeno.fm/0.6-99cfdac/openapi.yaml	censu
 non-identifier-operation-id	document	APIs/zoom.us/2.0.0/openapi.yaml	census 373	enumeration.tsv.gz
 non-identifier-operation-id	document	APIs/zuora.com/2021-08-20/openapi.yaml	census 428	enumeration.tsv.gz
 non-identifier-operation-id	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
+oneof-anyof-variant	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 oneof-array-variant-anyof-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 oneof-array-variant-closed-object-item	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	enumeration.tsv.gz
 oneof-discriminated-union	document	APIs/ably.net/control/1.0.14/openapi.yaml	census 12	enumeration.tsv.gz

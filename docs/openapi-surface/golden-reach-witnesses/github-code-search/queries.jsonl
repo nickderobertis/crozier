@@ -132,3 +132,5 @@
 {"at": "2026-09-29T06:07:37.565+00:00", "key": "format-idn-hostname", "outcome": "answered", "query": "\"\\\"format\\\": \\\"idn-hostname\\\"\" filename:openapi.json", "result_count": 1, "retrieved": 1, "source": "github-code-search"}
 {"at": "2026-09-29T06:08:09.703+00:00", "key": "format-iri", "outcome": "answered", "query": "\"format: iri\" filename:openapi.yaml", "result_count": 42, "retrieved": 42, "source": "github-code-search"}
 {"at": "2026-09-29T06:09:14.413+00:00", "key": "format-iri", "outcome": "answered", "query": "\"\\\"format\\\": \\\"iri\\\"\" filename:openapi.json", "result_count": 5, "retrieved": 5, "source": "github-code-search"}
+{"at": "2026-09-29T10:14:27.601+00:00", "key": "oneof-anyof-variant", "outcome": "answered", "query": "\"- anyOf:\" \"oneOf:\" filename:openapi.yaml", "result_count": 184, "retrieved": 100, "source": "github-code-search"}
+{"at": "2026-09-29T10:18:08.336+00:00", "key": "oneof-anyof-variant", "outcome": "answered", "query": "\"\\\"oneOf\\\"\" \"{\\\"anyOf\\\"\" filename:openapi.json", "result_count": 13, "retrieved": 13, "source": "github-code-search"}

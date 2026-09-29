@@ -1,6 +1,6 @@
 key	kind	subject	result	file
 *	wait	github-code-search guard log index-pacing-waits.jsonl	27 entries	index-pacing-waits.jsonl
-*	wait	github-code-search guard log rate-limit-calls.jsonl	10159 entries	rate-limit-calls.jsonl
+*	wait	github-code-search guard log rate-limit-calls.jsonl	10274 entries	rate-limit-calls.jsonl
 *	wait	github-code-search guard log rate-limit-waits.jsonl	1 entries	rate-limit-waits.jsonl
 *	wait	github-code-search guard log raw-github-calls.jsonl	464 entries	raw-github-calls.jsonl
 *	wait	github-code-search guard log raw-github-waits.jsonl	461 entries	raw-github-waits.jsonl
@@ -7258,6 +7258,121 @@ non-identifier-operation-id	document	wizelements/second-brain:openapi.yaml.bak@8
 non-identifier-operation-id	document	youssefboutaleb/yolov8_fastapi_gradio:openapi.json@9158dcc0c8f6fc7e2aa54c8949a0bf8b10cc668f	census 5	candidates.jsonl
 non-identifier-operation-id	query	"\"operationId\"" "\"tags\"" "\"summary\"" filename:openapi.json	33152	queries.jsonl
 non-identifier-operation-id	query	"operationId:" "tags:" "summary:" filename:openapi.yaml	46912	queries.jsonl
+oneof-anyof-variant	document	APIs-guru/openapi-directory:APIs/graphhopper.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
+oneof-anyof-variant	document	AldanaRocha/TiendaRopa-Progra4:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@b81f0af498a5c4aec7c33f259a2ba2b1a45852b6	census 0	candidates.jsonl
+oneof-anyof-variant	document	BOHUYESHAN-APB/CMYKE:docs/siliconflow_openapi.yaml@ba3da1453987703b8bfb1157092359ff826a9cd7	census 0	candidates.jsonl
+oneof-anyof-variant	document	Chachamaru127/harness-mem:docs/openapi.yaml@9e8c5ed799cf40708c018e3daf86de9041264ef1	census 0	candidates.jsonl
+oneof-anyof-variant	document	CyberdyneHQ/django-allauth-testbed:allauth/headless/spec/doc/openapi.yaml@674045fed44b64d7825cdf613b152e5f455f3931	census 0	candidates.jsonl
+oneof-anyof-variant	document	EDWARD-012/LeaveSync:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@1e0650b6bfcd03b33dbf1242b741046f710d8b3c	census 0	candidates.jsonl
+oneof-anyof-variant	document	Farah-94/Project4-Ecommerce-website:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@8013d2fad055e977bbe0da0708f21718bd283739	census 0	candidates.jsonl
+oneof-anyof-variant	document	IamSabbirHossain26/dj_ecommerce_project:myenv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@8dd08d31062bfd74b54d909e6917204b1fcf39b7	census 0	candidates.jsonl
+oneof-anyof-variant	document	InnerWarden/inner-warden:crates/dashboard-kit/contracts/v1/dashboard-core-v1.openapi.yaml@3cae98a37002d90c300b6330448392143f0f3ae6	census 0	candidates.jsonl
+oneof-anyof-variant	document	InoGo-Software/go-graphhopper:api/openapi.yaml@726f9834cf502c4dee81b657d8fa7f06f4ce32fd	census 0	candidates.jsonl
+oneof-anyof-variant	document	JackCulleton/workflow-manage:openapi.yaml@8cc8a34a2eb14fdc313731fc4ccad14fed68a343	census 0	candidates.jsonl
+oneof-anyof-variant	document	JackCulleton/workflow-manage:public/openapi.yaml@8cc8a34a2eb14fdc313731fc4ccad14fed68a343	census 0	candidates.jsonl
+oneof-anyof-variant	document	JophilGulane/PSUSphere:Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@be327b12db731ae8c8789333540b196c14e2d5bf	census 0	candidates.jsonl
+oneof-anyof-variant	document	KWCapstoneGitFolio/realGitFolio:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@3f0121fe2e7f7cfb8eefe3052d91bd72fcb7d4be	census 0	candidates.jsonl
+oneof-anyof-variant	document	Kong/developer.konghq.com:api-specs/konnect/ai-builder/v1/openapi.yaml@a3fc5e098b0abe175d47417b3e50886734a3634d	census 0	candidates.jsonl
+oneof-anyof-variant	document	Leibniz-HBI/CoSMA-Editor:ui/openapi/allauth_openapi.yaml@cd897294e0d2e3d93f42416a052b5bd6aa7caae4	census 0	candidates.jsonl
+oneof-anyof-variant	document	MapleTcT/ft-mes:contracts/bpi-api/openapi.json@1ec2fffc3f94bd55ddf8f3c65b56937315a4a9c2	census 0	candidates.jsonl
+oneof-anyof-variant	document	MobiDataLab/mdl-catalog-api:APIs/graphhopper.io/1.0.0/openapi.yaml@53259e30d5833e90ec3bd0da39b280164d93c795	census 0	candidates.jsonl
+oneof-anyof-variant	document	Mozilla-Ocho/tabstack-cli:openapi.yaml@1b49b369a4aafe1375fdf0f434fb6059b8c2ad5a	census 0	candidates.jsonl
+oneof-anyof-variant	document	Munirmohammed/Django-AllAuth:allauth/headless/spec/doc/openapi.yaml@f45f35dfac266df0aa15cc93bfdff67a8e62f5db	census 0	candidates.jsonl
+oneof-anyof-variant	document	Naurt-Ltd/api_specification:generated/go/api/openapi.yaml@9c646a67cce229e9998472d54fe32720a5cfda7e	census 0	candidates.jsonl
+oneof-anyof-variant	document	OpenNSW/nsw-srilanka:api/payment.openapi.yaml@78b52f27bf8f49f7f7a6dd9506d498234e7833e0	census 0	candidates.jsonl
+oneof-anyof-variant	document	PinelliaChill/Operant:sdk/protocol/schema/operant-phase23.openapi.json@08e65ea4551fd84352c56f3ef1edbbffc24022bf	census 0	candidates.jsonl
+oneof-anyof-variant	document	Qredence/fleet-rlm:openapi.yaml@0322623598b6cda0eea580694264e69a40081f10	census 1	candidates.jsonl
+oneof-anyof-variant	document	Quadrafy/Quadrafy:docs/openapi.yaml@426d944f363132d54d97a2fc9231193bf2220212	census 0	candidates.jsonl
+oneof-anyof-variant	document	Radhendelvadiya/Info_AI_IDS:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@10e9e3c9af157952570ee38fa7e28deb5ccf71e2	census 0	candidates.jsonl
+oneof-anyof-variant	document	SQUADD26/docs:openapi.yaml@5a6ec1cd9656b22419e6fc8bc254488f3c05aeb8	census 0	candidates.jsonl
+oneof-anyof-variant	document	Sakayori-Iroha-168/Software_Teamwork:docs/services/gateway/api/public.openapi.yaml@59616bf85c4150c395ad23059e95612f669c9aae	census 0	candidates.jsonl
+oneof-anyof-variant	document	SatyamPote/Nexhire:ai_recruitment_platform/venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@c9cfc8191e4ced8d3a8b022582aeb326097c216e	census 0	candidates.jsonl
+oneof-anyof-variant	document	Sh-aran13/Library-Management-System-using-Django:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@6cda36d75004ca7f259d793ea7f46068a31ce869	census 0	candidates.jsonl
+oneof-anyof-variant	document	Sidimohamedlemin/fintrack-project:django/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@864099ef6475b54f5a2016e0cfa42d61506545c2	census 0	candidates.jsonl
+oneof-anyof-variant	document	Sidimohamedlemin/fintrack-project:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@864099ef6475b54f5a2016e0cfa42d61506545c2	census 0	candidates.jsonl
+oneof-anyof-variant	document	Soturine/tcc:docs/contracts/openapi.yaml@2cb74f2d4d56cf8a0146239316d8ebe72ff19ede	census 0	candidates.jsonl
+oneof-anyof-variant	document	Storm1289/File-Encryptor-wedversion-33:Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@85193cbb5a2d4fd39fe7d91e55017eb3c1130612	census 0	candidates.jsonl
+oneof-anyof-variant	document	Thavizup-Deesan/DSSI-PROJECT-2568:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@4363b6b21c071eeeb4f4a0c875573e2a315fc388	census 0	candidates.jsonl
+oneof-anyof-variant	document	TheMarstonConnell/ted:api/openapi.yaml@c3ce38a296e0e14fe3c07e472cdb4035d2340e8c	census 0	candidates.jsonl
+oneof-anyof-variant	document	UPM-RSTI/AGF:src/free5gclib/openapi/Namf_Communication/api/openapi.yaml@2fad8387df9f762f4786a7e094c69fc47c6b5d8d	census 0	candidates.jsonl
+oneof-anyof-variant	document	UPM-RSTI/AGF:src/free5gclib/openapi/Nnrf_NFManagement/api/openapi.yaml@2fad8387df9f762f4786a7e094c69fc47c6b5d8d	census 0	candidates.jsonl
+oneof-anyof-variant	document	UPM-RSTI/AGF:src/free5gclib/openapi/Nudr_DataRepository/api/openapi.yaml@2fad8387df9f762f4786a7e094c69fc47c6b5d8d	census 0	candidates.jsonl
+oneof-anyof-variant	document	VEuPathDB/pathfinder-app:packages/spec/openapi.yaml@74d6bf986b5da7c9847d711bfcb6613f3d452277	census 0	candidates.jsonl
+oneof-anyof-variant	document	Vyshna2000/ElectronicReviewApplication:renv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@424761233128a80203ee615727e9fd6dd17d814d	census 0	candidates.jsonl
+oneof-anyof-variant	document	WhiteCrow0409/AlgoRush:algo/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@3f019d2497cfa4ce1d4c09faa27b18c4796d71de	census 0	candidates.jsonl
+oneof-anyof-variant	document	YouSangSon/Omni-Folio:contracts/openapi.json@758357ed9126e3bb4c35045b019e0e6d2bfed508	census 0	candidates.jsonl
+oneof-anyof-variant	document	agentset-ai/agentset-python:.speakeasy/out.openapi.yaml@11a28c8c795cd5340e4f1710c727b169c07b73a1	census 0	candidates.jsonl
+oneof-anyof-variant	document	antinvestor/service-authentication:apps/audit/audit/v1/audit.openapi.yaml@0f41cdb6e1f96827533276809b8e49aff4c991f6	census 0	candidates.jsonl
+oneof-anyof-variant	document	api-evangelist/mediamath:openapi/_original/reporting-api-openapi.yaml@8382143b5cdb9317d280e1ef74fa5e7cdf5623a4	census 0	candidates.jsonl
+oneof-anyof-variant	document	api7/portal-sdk-typescript:packages/portal-sdk/openapi.yaml@d3d2648f9ba70bedc82a517f93ca5c07d7b98d15	census 0	candidates.jsonl
+oneof-anyof-variant	document	appscode/static-assets:files/cluster-api/v1.9.0/runtime-sdk-openapi.yaml@3fda03407a7b03c860146fd39348f82d795ec0b0	census 0	candidates.jsonl
+oneof-anyof-variant	document	atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718	census 1	candidates.jsonl
+oneof-anyof-variant	document	bilalsahin37/solutio-360-community:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@ead3d4d99f834cd9754fdf450991ef2d1e3ec6a7	census 0	candidates.jsonl
+oneof-anyof-variant	document	brent-hoover/spork:sutra/contracts/sutra.openapi.yaml@d8b68be9d4422c18347087c1108463e9840f390b	census 0	candidates.jsonl
+oneof-anyof-variant	document	cableproject/cable:Free5GC-Cable/openapi-main/Namf_Communication/api/openapi.yaml@2ada1e6d11b1218a286748384cb1b4a994f89f87	census 0	candidates.jsonl
+oneof-anyof-variant	document	cableproject/cable:Free5GC-Cable/openapi-main/Nnrf_NFManagement/api/openapi.yaml@2ada1e6d11b1218a286748384cb1b4a994f89f87	census 0	candidates.jsonl
+oneof-anyof-variant	document	cableproject/cable:Free5GC-Cable/openapi-main/Nudr_DataRepository/api/openapi.yaml@2ada1e6d11b1218a286748384cb1b4a994f89f87	census 0	candidates.jsonl
+oneof-anyof-variant	document	chiga0/marshal-harness:packages/task-api/openapi.json@bf96d2c4256aa96984d9d9354436acf8a35d9448	census 0	candidates.jsonl
+oneof-anyof-variant	document	chukwuagoziesolomon/bestie-server:myenv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@a0a87039205a188ac201f6eb0d4a894a74ba46f6	census 0	candidates.jsonl
+oneof-anyof-variant	document	chukwuagoziesolomon/bestie-server:myenv/Lib/site-packages/~llauth/headless/spec/doc/openapi.yaml@a0a87039205a188ac201f6eb0d4a894a74ba46f6	census 0	candidates.jsonl
+oneof-anyof-variant	document	codingsoo/nlp2rest:rule_extractor/APIs-guru/specifications/graphhopper.com/1.0.0/openapi.yaml@ae3783b7e4475947bd27511ca4dadc4a273d046c	census 0	candidates.jsonl
+oneof-anyof-variant	document	coranlabs/QORE:qore_free5gc/CORAN_LIB_OPENAPI/Namf_Communication/api/openapi.yaml@c06d95b51e87864d335b955d6277040d5c96a0dc	census 0	candidates.jsonl
+oneof-anyof-variant	document	coranlabs/QORE:qore_free5gc/CORAN_LIB_OPENAPI/Nnrf_NFManagement/api/openapi.yaml@c06d95b51e87864d335b955d6277040d5c96a0dc	census 0	candidates.jsonl
+oneof-anyof-variant	document	coranlabs/QORE:qore_free5gc/CORAN_LIB_OPENAPI/Nudr_DataRepository/api/openapi.yaml@c06d95b51e87864d335b955d6277040d5c96a0dc	census 0	candidates.jsonl
+oneof-anyof-variant	document	csuyangpeng/2204:GoDev/openapi/Namf_Communication/api/openapi.yaml@645327e1df8e6b6814888c43fbbd5184d240bcea	census 0	candidates.jsonl
+oneof-anyof-variant	document	csuyangpeng/2204:GoDev/openapi/Nnrf_NFManagement/api/openapi.yaml@645327e1df8e6b6814888c43fbbd5184d240bcea	census 0	candidates.jsonl
+oneof-anyof-variant	document	csuyangpeng/2204:GoDev/openapi/Nudr_DataRepository/api/openapi.yaml@645327e1df8e6b6814888c43fbbd5184d240bcea	census 0	candidates.jsonl
+oneof-anyof-variant	document	dinavinter/api:openapi/authorization/openapi.yaml@5e2310bf45b85b5d654b727fad1daa9946b8b989	census 0	candidates.jsonl
+oneof-anyof-variant	document	eigenpal/openparser:docs/OCR_API_OPENAPI.yaml@bc71fecfbd228a785963db37c48bfc7e427da08c	census 0	candidates.jsonl
+oneof-anyof-variant	document	enable-intelligent-and-containerized-5g/openapi:Namf_Communication/api/openapi.yaml@627746834ff6e15786d5b9ed2fded9516deeeba7	census 0	candidates.jsonl
+oneof-anyof-variant	document	enable-intelligent-and-containerized-5g/openapi:Nnrf_NFManagement/api/openapi.yaml@627746834ff6e15786d5b9ed2fded9516deeeba7	census 0	candidates.jsonl
+oneof-anyof-variant	document	enable-intelligent-and-containerized-5g/openapi:Nudr_DataRepository/api/openapi.yaml@627746834ff6e15786d5b9ed2fded9516deeeba7	census 0	candidates.jsonl
+oneof-anyof-variant	document	eval-hub/eval-hub:docs/openapi.yaml@fd54a524f2559a2649fba9a9cf9ff3a0d54bb6a8	census 0	candidates.jsonl
+oneof-anyof-variant	document	iadityachourasia/DigiPramaan:OCR_API_OPENAPI.yaml@4258c8c10a62896c6b856becb1e3f956831fb537	census 0	candidates.jsonl
+oneof-anyof-variant	document	inconceivablelabs/fabric-api:fabric-openapi.yaml@a1966b74b5653bd4151c3c1d2cda5ea8d50cf731	census 0	candidates.jsonl
+oneof-anyof-variant	document	isa-group/RDS:apis/Graphhopper/openapi.yaml@3baee43d7da8f04b8985abd91267df5ca7715575	census 0	candidates.jsonl
+oneof-anyof-variant	document	itoncompany/Idcraft:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@49f77225ea8d5125e1acec19d64f4652db60f942	census 0	candidates.jsonl
+oneof-anyof-variant	document	jorgenavarroortiz/multitechnology_testbed_v0:lib/Namf_Communication/api/openapi.yaml@a52cbf1f43d697a93945d7e9454517433bf14aee	census 0	candidates.jsonl
+oneof-anyof-variant	document	jorgenavarroortiz/multitechnology_testbed_v0:lib/Nnrf_NFManagement/api/openapi.yaml@a52cbf1f43d697a93945d7e9454517433bf14aee	census 0	candidates.jsonl
+oneof-anyof-variant	document	jorgenavarroortiz/multitechnology_testbed_v0:lib/Nudr_DataRepository/api/openapi.yaml@a52cbf1f43d697a93945d7e9454517433bf14aee	census 0	candidates.jsonl
+oneof-anyof-variant	document	kebZhang/Aether_TYcustom:shared-libs/openapi/Npcf_AMPolicyControl/api/openapi.yaml@27c329b4a38d382d1519c8bc833108d60bb25394	census 0	candidates.jsonl
+oneof-anyof-variant	document	kingfest19/gowbuy-project:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@dd1a6f58271951458e8433010e18266638568259	census 0	candidates.jsonl
+oneof-anyof-variant	document	konfig-dev/konfig:sdks/db/intermediate-fixed-specs/aeternity-foundation/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
+oneof-anyof-variant	document	konfig-sdks/openapi-examples:aeternity-foundation/openapi.yaml@161ab49c45e45825ca3832945c59a3ba904321ba	census 0	candidates.jsonl
+oneof-anyof-variant	document	kpiiorkr/bsl:data/openapi.json@46d967029d5c9e76cfe942bb89778ea321501ede	census 0	candidates.jsonl
+oneof-anyof-variant	document	m-paternostro/lappdog:openapi.yaml@a1b20def9ace24c06d3e1ef3e46049d6180333cf	census 0	candidates.jsonl
+oneof-anyof-variant	document	martinssmrr/central_contratos:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@e7555e7dd9ba96417431ab92338e30c6e15c3d92	census 0	candidates.jsonl
+oneof-anyof-variant	document	meission/go-graphhopper:api/openapi.yaml@cbe33ed067eca493c181eba5df412245066ab37a	census 0	candidates.jsonl
+oneof-anyof-variant	document	mgoltzsche/kubemate:openapi.yaml@5a37043e9ebcf17f975247c8bbca6c01db9afa40	census 0	candidates.jsonl
+oneof-anyof-variant	document	mithileshchellappan/pushboy:docs/openapi.yaml@688123d556fe2895a1578a233f993158317c40b0	census 0	candidates.jsonl
+oneof-anyof-variant	document	moustafa-shaaban/Django-Vue-Starter-Template:backend/allauth-openapi.yaml@f0d82237a3a16a2414a9248eb0b8d907bec747b3	census 0	candidates.jsonl
+oneof-anyof-variant	document	nectario/NektronMoments:contracts/v1/openapi.json@e2d135d5d8e739472cc699ce6726143525e68be8	census 0	candidates.jsonl
+oneof-anyof-variant	document	nklsw/nuxt-allauth-poc:allauth-openapi.yaml@b02c167e3fd72d2883e9f97db70af25619be0e09	census 0	candidates.jsonl
+oneof-anyof-variant	document	ogcincubator/bblocks-openscience:build/annotated/osc/api-profiles/processes/sample-implementation/openapi.yaml@4c35b70b4639d76fb099170194e50aa69dc2740b	census 0	candidates.jsonl
+oneof-anyof-variant	document	omec-project/openapi:Npcf_AMPolicyControl/api/openapi.yaml@27a56806138ed9e16910a6d4cadf4bf38101dca6	census 0	candidates.jsonl
+oneof-anyof-variant	document	openthread/ot-br-posix:src/rest/openapi.yaml@c2fb2682153418ae5f39cf7adca5343a04f42048	census 0	candidates.jsonl
+oneof-anyof-variant	document	pennersr/django-allauth:allauth/headless/spec/doc/openapi.yaml@cf7a2b908cad028d60b44bf1b4cd8306f575ebf2	census 0	candidates.jsonl
+oneof-anyof-variant	document	r06521541/NTUBTOB-management-system:apps/mobile_api/openapi.json@2b8e93e9029ac9be924967696b9be544f377c456	census 0	candidates.jsonl
+oneof-anyof-variant	document	raedalhmudi/Mutazan_tenants:truck/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@f326af1ec959d4de9358e74af642871f6b3d0c39	census 0	candidates.jsonl
+oneof-anyof-variant	document	rustic-ai/forge:forge-go/api/openapi/openapi.json@978d58a7c1520c50e5140764fb2c7ea5d9100ccb	census 0	candidates.jsonl
+oneof-anyof-variant	document	shynuu/free5gc-cli:lib/openapi/Namf_Communication/api/openapi.yaml@4dca1023a9647ad4a2ec940be8c379920d38b0de	census 0	candidates.jsonl
+oneof-anyof-variant	document	shynuu/free5gc-cli:lib/openapi/Nnrf_NFManagement/api/openapi.yaml@4dca1023a9647ad4a2ec940be8c379920d38b0de	census 0	candidates.jsonl
+oneof-anyof-variant	document	shynuu/free5gc-cli:lib/openapi/Nudr_DataRepository/api/openapi.yaml@4dca1023a9647ad4a2ec940be8c379920d38b0de	census 0	candidates.jsonl
+oneof-anyof-variant	document	siggeix7/palworld-server-site:web/dashboard/api/openapi.json@14e59cc16ca36bf1ea5393818f1f7895605f5960	census 0	candidates.jsonl
+oneof-anyof-variant	document	sourabhsbeats-cyber/local-backend:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@04a3b9b98e0346e801a5cdb8fe86998b2c469141	census 0	candidates.jsonl
+oneof-anyof-variant	document	spand009/Synergy:ControlPlane/go/pkg/mod/github.com/free5gc/openapi@v1.0.0/Namf_Communication/api/openapi.yaml@19cd1487a3fb98f44fb4db7aadd20591475852a7	census 0	candidates.jsonl
+oneof-anyof-variant	document	spand009/Synergy:ControlPlane/go/pkg/mod/github.com/free5gc/openapi@v1.0.0/Nnrf_NFManagement/api/openapi.yaml@19cd1487a3fb98f44fb4db7aadd20591475852a7	census 0	candidates.jsonl
+oneof-anyof-variant	document	spand009/Synergy:ControlPlane/go/pkg/mod/github.com/free5gc/openapi@v1.0.0/Nudr_DataRepository/api/openapi.yaml@19cd1487a3fb98f44fb4db7aadd20591475852a7	census 0	candidates.jsonl
+oneof-anyof-variant	document	tfournet/graphwing:openapi.json@afc25ee96485758aa4bfbc1a6b896169ec847eb8	census 0	candidates.jsonl
+oneof-anyof-variant	document	tryAGI/AssemblyAI:src/libs/AssemblyAI/openapi.yaml@1028f8b61cda3f1dc8777d732093fd3e4558d9c9	census 1	candidates.jsonl
+oneof-anyof-variant	document	turbobeest/modelspec:api/worker/openapi.yaml@5b52373eaa3e8def027cb82e9a59a05d332100e3	census 0	candidates.jsonl
+oneof-anyof-variant	document	vibepwners/hovel:docs/site/spec/reference/daemon-rpc.openapi.json@1789ce47554a2ee17c7bd46d391b63946af60d0a	census 0	candidates.jsonl
+oneof-anyof-variant	document	vineshreddy987/Complaint-Management-System:venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@90fa123e386e574bd04ed0db9cc0522fa515ab9f	census 0	candidates.jsonl
+oneof-anyof-variant	document	wock9000/robinhoodpools:src/rhpools/static/openapi.json@e715da893616f890b49686b53999752e4d114d55	census 0	candidates.jsonl
+oneof-anyof-variant	document	xxkhyn/bado:.venv/Lib/site-packages/allauth/headless/spec/doc/openapi.yaml@c2c7e04a6f81b909c6045683b56f52721e5900bb	census 0	candidates.jsonl
+oneof-anyof-variant	document	ziozzang/hangang:docs/openapi.json@1b5d2bd63f99cdcb1a5941900abf044666bfaa0b	census 0	candidates.jsonl
+oneof-anyof-variant	query	"- anyOf:" "oneOf:" filename:openapi.yaml	184	queries.jsonl
+oneof-anyof-variant	query	"\"oneOf\"" "{\"anyOf\"" filename:openapi.json	13	queries.jsonl
 oneof-array-variant-anyof-item	document	APIs-guru/openapi-directory:APIs/apideck.com/webhook/10.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 oneof-array-variant-anyof-item	document	APIs-guru/openapi-directory:APIs/cpy.re/peertube/5.1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
 oneof-array-variant-anyof-item	document	APIs-guru/openapi-directory:APIs/graphhopper.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl

@@ -1,8 +1,8 @@
 key	kind	subject	result	file
 *	wait	sourcegraph guard log index-pacing-waits.jsonl	8 entries	index-pacing-waits.jsonl
-*	wait	sourcegraph guard log rate-limit-calls.jsonl	186 entries	rate-limit-calls.jsonl
-*	wait	sourcegraph guard log raw-github-calls.jsonl	10993 entries	raw-github-calls.jsonl
-*	wait	sourcegraph guard log raw-github-waits.jsonl	10445 entries	raw-github-waits.jsonl
+*	wait	sourcegraph guard log rate-limit-calls.jsonl	188 entries	rate-limit-calls.jsonl
+*	wait	sourcegraph guard log raw-github-calls.jsonl	11099 entries	raw-github-calls.jsonl
+*	wait	sourcegraph guard log raw-github-waits.jsonl	10544 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/producer_api_plugin/producer.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/Azure-Samples/AI-Gateway:labs/realtime-mcp-agents/src/spotify/apim-api/openapi.json@1679e3137d2fe7592d2a668d77ff71550d35b69e	census 0	candidates.jsonl
@@ -7764,6 +7764,114 @@ non-identifier-operation-id	document	github.com/trpc/trpc:packages/openapi/test/
 non-identifier-operation-id	document	github.com/vastsa/FileCodeBoxFronted:openapi.json@b4c8aa8c10a9565d87ed80c3a3307317346110ed	census 21	candidates.jsonl
 non-identifier-operation-id	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"operationId: " content:"tags:" count:all type:file	22399	queries.jsonl
 non-identifier-operation-id	query	file:(openapi|swagger).*\.json$ content:"\"operationId\": \"" content:"\"tags\"" count:all type:file	42440	queries.jsonl
+oneof-anyof-variant	document	github.com/APIs-guru/openapi-directory:APIs/graphhopper.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/OpenAPITools/openapi-generator:modules/openapi-generator/src/test/resources/3_0/unit_test_spec/3_0_3_unit_test_spec.yaml@ad2d8349065a1e28bd8072303210eead36dc9fa1	acquisition-failure: parse-failure	candidates.jsonl
+oneof-anyof-variant	document	github.com/Quchaosheng/workbench-mobile-home-robot:docs/api-openapi-v1.json@b79c601d61c53a7effd16715445170449cf23a35	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/Quchaosheng/workbench-mobile-home-robot:services/backend/workbench_backend/api-openapi-v1.json@b79c601d61c53a7effd16715445170449cf23a35	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/RevylAI/revyl-cli:openapi.json@1ba06772fa1ba4654dd7ec1f9a8933a09aba3f9c	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/box.com/2.0.0/openapi.yaml@43493bc969c49f9103515bd8b762a1b1bcd71b31	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/WebFuzzing/EvoMaster:core-tests/integration-tests/core-it/src/test/resources/APIs_guru/graphhopper.com/1.0.0/openapi.yaml@43493bc969c49f9103515bd8b762a1b1bcd71b31	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/antflydb/antfly:specs/openapi/antfly/metadata.yaml@d594e8a3e1150a80c95e4f4cd539e76c051eb4a3	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/archie0732/healthy-diet-ai-agent:openapi.yml@f9573be7acfc875eaeb629ba8566134450e071fd	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/bytebase/bytebase:backend/api/mcp/gen/openapi.yaml@dc0138311121493605c0456cb9509a7a3c123df9	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/datamodel-code-generator/datamodel-code-generator:tests/data/openapi/allof_with_required_inherited_coverage.yaml@8afc3a2260a229eb44a97bd9065981d729e97e45	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/dstackai/dstack:website/mkdocs/docs/reference/plugins/rest/rest_plugin_openapi.json@6e360246081f6a03a7893536cfd5d74826aa6b65	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/fluxerapp/fluxer:fluxer_admin/openapi-admin.json@c4889061311204b8558d075f25de34b5f9925eaf	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/formbricks/formbricks:docs/api-v2-reference/openapi.yml@9b7bfa0d83bdf63aaa35d1cacfbbdbb01dcbae02	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/isa-group/RESTest:src/test/resources/Graphhopper/openapi.yaml@cab2eddefe3276618ae2513a9361940974d1bb92	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/kenn-io/msgvault:api/openapi.yaml@5d1ce39233eba06c1d93bd75b736ee159d077228	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/konfig-dev/konfig:sdks/db/intermediate-fixed-specs/aeternity-foundation/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/konfig-dev/konfig:sdks/db/intermediate-fixed-specs/nocodb/openapi.yaml@bec3d36b9a341f30707a4ab3d9de6c4154809ada	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/lobehub/lobehub:packages/openapi/openapi.yml@164a4f25dc1153727151a604b4104629f26e49ed	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/mendix/docs:static/openapi-spec/catalog-common-definitions_v5.yaml@93faa7c4f8c3bed177e130ef31239cbc66911509	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/muonsoft/openapi-mock:test/resources/openapi-files/CombinedTypes.yaml@0418a29ad2e56bb6e9c847a6ee271a75bf61b785	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20210629-openapitools-5.2.0/modified/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20210629-openapitools-5.2.0/modified/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20210629-openapitools-5.2.0/standard/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20210629-openapitools-5.2.0/standard/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20230226-openapitools-6.4.0/modified/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20230226-openapitools-6.4.0/modified/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20230226-openapitools-6.4.0/standard/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r16-20230226-openapitools-6.4.0/standard/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/modified/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/modified/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/modified/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/modified/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/modified/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/standard/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/standard/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/standard/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/standard/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20230301-openapitools-6.4.0/standard/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/modified/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/modified/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/modified/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/modified/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/modified/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/standard/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/standard/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/standard/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/standard/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r17-20260316-openapitools-7.20.0/standard/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS28111_FaultNrm.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29257_UAE_C2OperationModeManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29257_UAE_ChangeUSSManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29508_Nsmf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29512_Npcf_SMPolicyControl.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29517_Naf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29522_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29522_ServiceParameter.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29549_SS_ADAE_SlicePerformanceAnalytics.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29569_Naiotf_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/modified/TS29575_Nadrf_MLModelManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS28111_FaultNrm.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29257_UAE_C2OperationModeManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29257_UAE_ChangeUSSManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29508_Nsmf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29512_Npcf_SMPolicyControl.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29517_Naf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29522_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29522_ServiceParameter.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29549_SS_ADAE_SlicePerformanceAnalytics.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29569_Naiotf_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/patched/TS29575_Nadrf_MLModelManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS28111_FaultNrm.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29257_UAE_C2OperationModeManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29257_UAE_ChangeUSSManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29508_Nsmf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29510_Nnrf_NFManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29512_Npcf_SMPolicyControl.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29517_Naf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29519_Application_Data.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29520_Nnwdaf_EventsSubscription.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29522_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29522_ServiceParameter.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29523_Npcf_EventExposure.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29549_SS_ADAE_SlicePerformanceAnalytics.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29569_Naiotf_AIoT.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29571_CommonData.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/open5gs/open5gs:lib/sbi/support/r19-20260402-openapitools-7.20.0/standard/TS29575_Nadrf_MLModelManagement.yaml@94136b13df5138431299f96168b156b3273cdfa4	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/openthread/ot-br-posix:src/rest/openapi.yaml@c2fb2682153418ae5f39cf7adca5343a04f42048	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/pennersr/django-allauth:allauth/headless/spec/doc/openapi.yaml@cf7a2b908cad028d60b44bf1b4cd8306f575ebf2	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/rust-codegen-group/openapi-nexus:tests/openapi-generator-fixtures/oas30/unit_test_spec/3_0_3_unit_test_spec.yaml@1f8e1d8a3264d697c3aca8db7db01148d878115a	acquisition-failure: parse-failure	candidates.jsonl
+oneof-anyof-variant	document	github.com/supabase/cli:apps/cli-go/api/v1-openapi.yaml@5abfa7d2fb33b21daaeb2432cc60378257dbd417	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/swagger-api/swagger-parser:modules/swagger-parser-v3/src/test/resources/referenceFiles/TS29510_Nnrf_NFManagement.yaml@69f6d78250b70d2ccfcd306ff0aa74353a698f2a	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/swagger-api/swagger-parser:modules/swagger-parser-v3/src/test/resources/referenceFiles/TS29571_CommonData.yaml@69f6d78250b70d2ccfcd306ff0aa74353a698f2a	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/swagger-api/swagger-parser:modules/swagger-parser-v3/src/test/resources/referenceFiles/nbsf-management.yaml@69f6d78250b70d2ccfcd306ff0aa74353a698f2a	census 1	candidates.jsonl
+oneof-anyof-variant	document	github.com/vellum-ai/vellum-assistant:clients/web/openapi-schemas/auth.yaml@637f7a70566b26ea8df5ab5c8180feff640d5f78	census 0	candidates.jsonl
+oneof-anyof-variant	document	github.com/wock9000/robinhoodpools:src/rhpools/static/openapi.json@e715da893616f890b49686b53999752e4d114d55	census 0	candidates.jsonl
+oneof-anyof-variant	query	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"- anyOf:" count:all type:file	116	queries.jsonl
+oneof-anyof-variant	query	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"{\"anyOf\"" count:all type:file	6	queries.jsonl
 oneof-array-variant-anyof-item	document	github.com/AliyunContainerService/velero-plugin:vendor/github.com/google/gnostic-models/openapiv2/openapi-2.0.json@cce011028e137b00d0e3e8f6238e8577f7bfbaf1	census 0	candidates.jsonl
 oneof-array-variant-anyof-item	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 oneof-array-variant-anyof-item	document	github.com/Azure-Samples/ai-hub-gateway-solution-accelerator:bicep/infra/modules/apim/openai-api/OpenAI-Import.openapi.yaml@6b9a9ef558d2990df630de9ca4949429f07e68f2	census 0	candidates.jsonl
