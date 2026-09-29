@@ -54693,3 +54693,17 @@
 {"at": "2026-09-26T00:41:57.089+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4947, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 53}
 {"at": "2026-09-26T00:41:57.816+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4946, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 54}
 {"at": "2026-09-26T00:41:58.535+00:00", "bucket": "core", "host": "github", "limit": 5000, "remaining": 4945, "reserved": 1, "reset": 1790386131, "resource": "core", "status": 404, "used": 55}
+{"at": "2026-09-29T07:40:42.735+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790667700, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:41:18.144+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790667700, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:41:50.808+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790667770, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:42:23.458+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790667770, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:42:56.122+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790667835, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:43:29.742+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790667835, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:44:01.265+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790667901, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:44:35.849+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790667901, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:45:09.016+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790667967, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:45:42.431+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790667967, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:46:15.269+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790668034, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:46:48.023+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790668034, "resource": "code_search", "status": 200, "used": 2}
+{"at": "2026-09-29T07:47:22.450+00:00", "bucket": "code_search", "cost": 1, "host": "github", "limit": 10, "remaining": 9, "reserved": 1, "reset": 1790668099, "resource": "code_search", "status": 200, "used": 1}
+{"at": "2026-09-29T07:47:55.560+00:00", "bucket": "code_search", "host": "github", "limit": 10, "remaining": 8, "reserved": 1, "reset": 1790668099, "resource": "code_search", "status": 200, "used": 2}
