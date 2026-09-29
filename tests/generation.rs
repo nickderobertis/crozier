@@ -12690,3 +12690,50 @@ paths:
         "{reference}"
     );
 }
+
+/// OpenAIRE's Graph API, as springdoc numbers duplicate operationIds:
+/// `search_1` and `getById_1` name `search1` and `get_by_id1`, the suffix
+/// joined to the name it numbers. Its optional `size` is `type: string` but
+/// exampled `10`, a number Fern discards, and the call then passes nothing
+/// for it rather than the `"10"` its default would synthesize.
+#[test]
+fn a_numbered_operation_id_joins_its_suffix_and_a_discarded_optional_example_leaves_the_call() {
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: OpenAIRE Graph API, version: '2.0' }
+servers:
+  - url: https://api.openaire.eu/graph
+paths:
+  /v1/researchProducts:
+    get:
+      tags: [Research products]
+      operationId: search_1
+      parameters:
+        - in: query
+          name: size
+          required: false
+          example: 10
+          schema: { type: string, default: '10', example: 10 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /v1/researchProducts/{id}:
+    get:
+      tags: [Research products]
+      operationId: getById_1
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+"#,
+    );
+    let client = files
+        .iter()
+        .find(|(path, _)| path.ends_with("research_products/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the research products client");
+    assert!(client.contains("    def search1(\n"), "{client}");
+    assert!(client.contains("    def get_by_id1("), "{client}");
+    assert!(!client.contains("search_1"), "{client}");
+    assert!(client.contains("client.research_products.search1()\n"), "{client}");
+    assert!(!client.contains("size=\"10\""), "{client}");
+}

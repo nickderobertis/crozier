@@ -2674,7 +2674,13 @@ fn build_endpoint(
                     .unwrap_or(schema);
                 string_enum_values(resolved).is_some()
             });
-            let example = if omit_synthesized_example || string_enum {
+            // An optional parameter whose declared example Fern discards (a
+            // numeric example on a `type: string` parameter) leaves the call
+            // rather than taking a synthesized sample: OpenAIRE's `size`, exampled
+            // `10` beside its default `"10"`, is absent from its worked calls.
+            let discarded_optional_example =
+                !required && !without_declared_example && parameter_example(doc, p).is_none();
+            let example = if omit_synthesized_example || string_enum || discarded_optional_example {
                 None
             } else {
                 query_parameter_example(doc, p)
@@ -7136,6 +7142,24 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
         url_words.as_str()
     } else {
         id
+    };
+    // A springdoc-style duplicate suffix (`search_1`, `getById_1`) is joined to
+    // the name it numbers, as Fern camel-cases it before deriving the method:
+    // OpenAIRE's `getById_1` is `get_by_id1` and Komga's `downloadBookFile_1` is
+    // `download_book_file1`, where an id whose head carries a `_` of its own is
+    // grouped as ever.
+    let joined: String;
+    let id = match id.rsplit_once('_') {
+        Some((head, digits))
+            if !digits.is_empty()
+                && digits.chars().all(|c| c.is_ascii_digit())
+                && !head.contains('_')
+                && head.ends_with(|c: char| c.is_ascii_alphanumeric()) =>
+        {
+            joined = format!("{head}{digits}");
+            joined.as_str()
+        }
+        _ => id,
     };
     if let Some(template) = Some(id)
         .filter(|_| ends_on_template)
