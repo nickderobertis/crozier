@@ -2454,8 +2454,9 @@ of the [ranked backlog](#the-ranked-fixture-backlog), all in
 [`schemas.md`](openapi-surface/schemas.md). Each one names a branch of
 `src/ir.rs` that emits a model, union or alias. For eleven of them the branch
 was measured by a committed probe that Fern generates from: each has a
-`measured` `absent-tree` row in
-[`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) that crozier is
+committed Fern tree, declared in
+[`probe-generation/MEASUREMENTS.tsv`](openapi-surface/probe-generation/MEASUREMENTS.tsv)
+rather than in the non-generation proof manifest, that crozier is
 byte-compared against. That comparison is not parity evidence, because the
 corpus admits real specifications only. The other two, `oneof-anyof-variant`
 and `oneof-closed-empty-object-variant`, name crozier-generating arms that no
@@ -4131,8 +4132,7 @@ own `evidence` cell ([the classification below](#the-limitations-rows-under-the-
 #### What a committed proof of non-generation is
 
 This is Contract A. [`openapi-surface/probe-expected/MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv)
-is the one declaration of every committed probe measurement the gate reads —
-each non-generation proof, and each `measured` tree below: tab-separated,
+is the one declaration of every committed non-generation proof: tab-separated,
 a header line, one row per key sorted by key, and six columns:
 
 ```
@@ -4142,17 +4142,12 @@ key	form	verdict	artifact	control	digest
 - `key` is the region-file row key the proof settles, spelled as that row spells
   it.
 - `form` is `absent-tree`, `refusal` or `differential`.
-- `verdict` admits exactly six values: `discards`, `ignores`, `refuses`,
-  `crashes`, `coincidence` and `measured`. The first five are
-  [`fern-limitations.md`](fern-limitations.md#how-to-read-a-verdict) verdicts,
-  each naming the non-generation the proof establishes. `measured`, admitted on
-  `absent-tree` rows only, marks a committed Fern tree that records Fern
-  **generating** output from a hand-written probe. crozier is byte-gated against
-  it, but it settles no row and no gate or report counts it as a non-generation
-  proof. The 29 trees the `schemas` witness-supply probes committed are those
-  rows, and their region rows stay `gap` until a real specification lands.
-  `implements` is refused by construction: a shape Fern emits output derived
-  from is not settleable by a probe at all.
+- `verdict` admits exactly five values: `discards`, `ignores`, `refuses`,
+  `crashes` and `coincidence`. Each is a
+  [`fern-limitations.md`](fern-limitations.md#how-to-read-a-verdict) verdict
+  naming the non-generation the proof establishes. `implements` is refused by
+  construction: a shape Fern emits output derived from is not settleable by a
+  probe at all.
 - `artifact` is the path, from the repository root, where the proof is committed.
 - `control` is the control probe's key for a `differential` row, and `—` for the
   other two forms.
@@ -4202,11 +4197,22 @@ directions are enforced: a row whose artifact is missing fails, and so does an
 artifact under `probe-expected/` that no row names. A divergence is repaired in
 `src/`, never by editing a committed tree or record.
 
-This branch also leaves one tier out: the one that requires every non-`golden`
-region row to carry either a manifest row or a `gap` classification with an
-exhaustive search record. Adding it before the proofs exist would fail the gate
-over work that has not been done yet, so until the final reconciliation lands,
-the manifest is a growing set and the gate checks only what it names.
+**What the manifest does not hold.** A probe Fern *generated* output from
+proves no non-generation, so its committed Fern tree is not a Contract A proof
+and has no manifest row. The 29 such trees the `schemas` witness-supply probes
+committed live in
+[`openapi-surface/probe-generation/`](openapi-surface/probe-generation/MEASUREMENTS.tsv),
+declared by its own `MEASUREMENTS.tsv` (`key`, `artifact`, `digest`). The same
+gate holds that directory to its declaration in both directions, checks each
+tree's digest, byte-compares crozier against each tree, and refuses a key
+declared both there and in the manifest. Those trees settle no row, and no gate
+or count reads them as a proof: their region rows stay `gap` until a real
+specification lands.
+
+**The completeness tier.** `RankedBacklogTests` requires every non-`golden`
+region row to carry either a manifest row with a non-generation verdict, cited
+from its own evidence cell, or a `gap` classification with a Contract B search
+record, and fails naming the row and the half it lacks.
 
 #### What makes a search exhaustive
 

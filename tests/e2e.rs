@@ -1235,22 +1235,25 @@ fn assert_corpus_matches(c: &Corpus) {
     }
 }
 
-/// Every committed Fern probe measurement, driven from the one declaration of
-/// them: `docs/openapi-surface/probe-expected/MANIFEST.tsv` (Contract A in
-/// `docs/openapi-surface-coverage.md`). These are probe expectations, not corpus
+/// Every committed Fern probe measurement, driven from the two declarations of
+/// them. `docs/openapi-surface/probe-expected/MANIFEST.tsv` (Contract A in
+/// `docs/openapi-surface-coverage.md`) declares the non-generation proofs; the
+/// gate reads every row the way its form requires — crozier against a committed
+/// tree, a refusal record against the pin and against crozier's own outcome, a
+/// differential pair against itself. `docs/openapi-surface/probe-generation/
+/// MEASUREMENTS.tsv` declares the probe trees Fern *generated* output from,
+/// which prove nothing about non-generation and settle no row, but which crozier
+/// is still byte-compared against. Both hold their artifacts on disk to the
+/// declaration in both directions. These are probe expectations, not corpus
 /// goldens: a probe never enters `CORPUS.md` and never counts as parity
-/// evidence. The manifest names each proof's form, and this reads every row the
-/// way its form requires — crozier against a committed tree, a refusal record
-/// against the pin and against crozier's own outcome, a differential pair
-/// against itself — and holds the artifacts on disk to the manifest in both
-/// directions.
+/// evidence.
 // llmlint: ignore[names_match_behavior] The name is the one this node's acceptance criteria and its `cargo nextest -E 'test(witness_supply_probes_match_fern_measurements)'` check select it by; renaming it would silently empty that filter.
 #[test]
 fn witness_supply_probes_match_fern_measurements() {
-    let failures = probe_manifest_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
+    let failures = probe_measurement_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
     assert!(
         failures.is_empty(),
-        "the committed probe measurements disagree with MANIFEST.tsv:\n{}",
+        "the committed probe measurements disagree with their declarations:\n{}",
         failures.join("\n")
     );
 }
@@ -1306,6 +1309,8 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
 }
 
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
+const PROBE_GENERATION_DIR: &str = "docs/openapi-surface/probe-generation";
+const PROBE_GENERATION_HEADER: &str = "key\tartifact\tdigest";
 const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
 const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";
 const REFUSAL_FIELDS: [&str; 5] = [
@@ -1323,6 +1328,122 @@ struct ProbeProof {
     artifact: String,
     control: String,
     digest: String,
+}
+
+/// Both declarations under `root`: the Contract A proofs, then the generation
+/// measurements, which may not name a key a proof does.
+fn probe_measurement_failures(root: &Path) -> Vec<String> {
+    let mut failures = probe_manifest_failures(root);
+    failures.extend(probe_generation_failures(root));
+    failures
+}
+
+/// Read `probe-generation/MEASUREMENTS.tsv` under `root` and return every way
+/// the committed Fern trees it declares — probes Fern generated output from —
+/// fail to agree with it: the declaration's shape, both directions between it
+/// and the directory, each tree's digest, and crozier's byte comparison. A key
+/// here is never also a Contract A proof, because Fern generating from a shape
+/// is the one thing a non-generation proof cannot record.
+fn probe_generation_failures(root: &Path) -> Vec<String> {
+    let base = root.join(PROBE_GENERATION_DIR);
+    let text = match std::fs::read_to_string(base.join("MEASUREMENTS.tsv")) {
+        Ok(text) => text,
+        Err(error) => return vec![format!("MEASUREMENTS.tsv: cannot be read: {error}")],
+    };
+    let proofs: std::collections::BTreeSet<String> =
+        std::fs::read_to_string(root.join(PROBE_EXPECTED_DIR).join("MANIFEST.tsv"))
+            .map(|manifest| parse_probe_manifest(&manifest).0)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|proof| proof.key)
+            .collect();
+    let mut failures = Vec::new();
+    let mut lines = text.lines();
+    if lines.next() != Some(PROBE_GENERATION_HEADER) {
+        failures.push(format!(
+            "MEASUREMENTS.tsv: the header line must be exactly {PROBE_GENERATION_HEADER:?}"
+        ));
+    }
+    let mut named = std::collections::BTreeSet::from(["MEASUREMENTS.tsv".to_string()]);
+    let mut declared: Vec<(String, String)> = Vec::new();
+    for (index, line) in lines.enumerate() {
+        let fields: Vec<&str> = line.split('\t').collect();
+        let [key, artifact, digest] = fields[..] else {
+            failures.push(format!(
+                "MEASUREMENTS.tsv line {}: {} column(s); every row has the three \
+                 {PROBE_GENERATION_HEADER:?}",
+                index + 2,
+                fields.len()
+            ));
+            continue;
+        };
+        if declared
+            .last()
+            .is_some_and(|(previous, _)| previous.as_str() >= key)
+        {
+            failures.push(format!(
+                "{key}: MEASUREMENTS.tsv rows must be sorted by key with no key twice"
+            ));
+        }
+        if proofs.contains(key) {
+            failures.push(format!(
+                "{key}: is declared both as a generation measurement and as a MANIFEST.tsv \
+                 non-generation proof; Fern either generated from the shape or it did not"
+            ));
+        }
+        let expected_artifact = format!("{PROBE_GENERATION_DIR}/{key}");
+        if artifact != expected_artifact {
+            failures.push(format!(
+                "{key}: artifact `{artifact}` must be `{expected_artifact}`"
+            ));
+        }
+        named.insert(key.to_string());
+        declared.push((key.to_string(), digest.to_string()));
+    }
+    match std::fs::read_dir(&base) {
+        Ok(entries) => {
+            let mut present: Vec<String> = entries
+                .filter_map(Result::ok)
+                .map(|entry| entry.file_name().to_string_lossy().into_owned())
+                .collect();
+            present.sort();
+            for name in present.into_iter().filter(|name| !named.contains(name)) {
+                failures.push(format!(
+                    "{name}: is under {PROBE_GENERATION_DIR}/ but no MEASUREMENTS.tsv row \
+                     names it — declare it with a row, or remove it"
+                ));
+            }
+        }
+        Err(error) => failures.push(format!("{PROBE_GENERATION_DIR}: cannot be listed: {error}")),
+    }
+    for (key, digest) in &declared {
+        let tree = base.join(key);
+        if !tree.is_dir() {
+            failures.push(format!(
+                "{key}: its tree {PROBE_GENERATION_DIR}/{key}/ is missing — a declaration \
+                 cannot outlive its artifact"
+            ));
+            continue;
+        }
+        match probe_artifact_digest(&tree) {
+            Ok(actual) if actual == *digest => {}
+            Ok(actual) => failures.push(format!(
+                "{key}: {PROBE_GENERATION_DIR}/{key} hashes to {actual}, but MEASUREMENTS.tsv \
+                 declares {digest} — a committed Fern artifact changed; restore it, never \
+                 re-declare it to match"
+            )),
+            Err(error) => failures.push(format!("{key}: {error}")),
+        }
+        let probe = root.join(PROBE_DOCUMENTS_DIR).join(format!("{key}.yml"));
+        if probe.is_file() {
+            failures.extend(probe_tree_failures(key, &probe, &tree));
+        } else {
+            failures.push(format!(
+                "{key}: its probe document {PROBE_DOCUMENTS_DIR}/{key}.yml is missing"
+            ));
+        }
+    }
+    failures
 }
 
 /// Read `MANIFEST.tsv` under `root` and return every way the committed probe
@@ -1411,7 +1532,7 @@ fn parse_probe_manifest(text: &str) -> (Vec<ProbeProof>, Vec<String>) {
             ));
         }
         let expected_verdicts: &[&str] = match form {
-            "absent-tree" => &["discards", "measured"],
+            "absent-tree" => &["discards"],
             "refusal" => &["refuses", "crashes"],
             "differential" => &["ignores", "coincidence"],
             _ => {
@@ -1426,19 +1547,10 @@ fn parse_probe_manifest(text: &str) -> (Vec<ProbeProof>, Vec<String>) {
                 "{key}: verdict `implements` — a shape Fern emits output derived from is not \
                  settleable by a probe; only a registered real-world specification settles it"
             ));
-        } else if ![
-            "discards",
-            "ignores",
-            "refuses",
-            "crashes",
-            "coincidence",
-            "measured",
-        ]
-        .contains(&verdict)
-        {
+        } else if !["discards", "ignores", "refuses", "crashes", "coincidence"].contains(&verdict) {
             failures.push(format!(
                 "{key}: verdict `{verdict}` is not one Contract A admits \
-                 (`discards`, `ignores`, `refuses`, `crashes`, `coincidence`, or `measured`)"
+                 (`discards`, `ignores`, `refuses`, `crashes`, or `coincidence`)"
             ));
         } else if !expected_verdicts.is_empty() && !expected_verdicts.contains(&verdict) {
             failures.push(format!(
@@ -1888,6 +2000,7 @@ struct ProbeManifestFixture {
 const FIXTURE_DIFFERENTIAL_KEY: &str = "sample-extension";
 const FIXTURE_CONTROL_KEY: &str = "sample-extension-control";
 const FIXTURE_REFUSAL_KEY: &str = "sample-refused";
+const FIXTURE_GENERATED_KEY: &str = "sample-generated";
 const FIXTURE_PROBE: &str = "openapi: 3.1.0
 info:
   title: sample
@@ -1918,6 +2031,13 @@ impl ProbeManifestFixture {
         let expected = root.join(PROBE_EXPECTED_DIR);
         std::fs::create_dir_all(&probes).expect("fixture probes directory");
         std::fs::create_dir_all(&expected).expect("fixture expectation directory");
+        std::fs::create_dir_all(root.join(PROBE_GENERATION_DIR))
+            .expect("fixture generation directory");
+        std::fs::write(
+            root.join(PROBE_GENERATION_DIR).join("MEASUREMENTS.tsv"),
+            format!("{PROBE_GENERATION_HEADER}\n"),
+        )
+        .expect("fixture measurements");
         std::fs::write(
             root.join("docs/openapi-surface/sample.md"),
             format!(
@@ -2041,7 +2161,36 @@ impl ProbeManifestFixture {
     }
 
     fn failures(&self) -> Vec<String> {
-        probe_manifest_failures(self.root())
+        probe_measurement_failures(self.root())
+    }
+
+    /// Declare one generation measurement: a probe crozier generates from, its
+    /// stripped tree under `probe-generation/`, and its `MEASUREMENTS.tsv` row.
+    fn add_generation_measurement(&self) {
+        std::fs::copy(
+            self.path(&format!("{PROBE_DOCUMENTS_DIR}/{FIXTURE_CONTROL_KEY}.yml")),
+            self.path(&format!(
+                "{PROBE_DOCUMENTS_DIR}/{FIXTURE_GENERATED_KEY}.yml"
+            )),
+        )
+        .expect("generation probe");
+        self.write_stripped_tree(FIXTURE_GENERATED_KEY);
+        std::fs::rename(
+            self.tree(FIXTURE_GENERATED_KEY),
+            self.generation_tree(FIXTURE_GENERATED_KEY),
+        )
+        .expect("move tree to probe-generation");
+        let tree = format!("{PROBE_GENERATION_DIR}/{FIXTURE_GENERATED_KEY}");
+        let digest = probe_artifact_digest(&self.path(&tree)).expect("tree digest");
+        std::fs::write(
+            self.path(&format!("{PROBE_GENERATION_DIR}/MEASUREMENTS.tsv")),
+            format!("{PROBE_GENERATION_HEADER}\n{FIXTURE_GENERATED_KEY}\t{tree}\t{digest}\n"),
+        )
+        .expect("fixture measurements");
+    }
+
+    fn generation_tree(&self, key: &str) -> PathBuf {
+        self.root().join(PROBE_GENERATION_DIR).join(key)
     }
 
     /// The one failure an induced case is expected to produce, naming its key.
@@ -2122,6 +2271,59 @@ fn probe_manifest_refuses_an_implements_verdict() {
     fixture.assert_refused(
         FIXTURE_DIFFERENTIAL_KEY,
         "a shape Fern emits output derived from is not settleable by a probe",
+    );
+}
+
+#[test]
+fn probe_manifest_refuses_a_measured_verdict() {
+    // Contract A declares non-generation proofs only; a tree Fern generated
+    // output from belongs in `probe-generation/`, never in the manifest.
+    let fixture = ProbeManifestFixture::new();
+    fixture.edit_manifest("\tignores\t", "\tmeasured\t");
+    fixture.assert_refused(FIXTURE_DIFFERENTIAL_KEY, "is not one Contract A admits");
+}
+
+#[test]
+fn generation_measurements_are_byte_compared_and_held_to_their_declaration() {
+    let fixture = ProbeManifestFixture::new();
+    fixture.add_generation_measurement();
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+
+    // crozier diverging from a generation measurement fails like a proof does.
+    let readme = fixture
+        .generation_tree(FIXTURE_GENERATED_KEY)
+        .join("README.md");
+    let text = std::fs::read_to_string(&readme).expect("tree README");
+    std::fs::write(&readme, format!("{text}\ndrift\n")).expect("drifted README");
+    fixture.assert_refused(FIXTURE_GENERATED_KEY, "but MEASUREMENTS.tsv declares");
+    fixture.assert_refused(
+        FIXTURE_GENERATED_KEY,
+        "differs from the committed Fern measurement",
+    );
+
+    let fixture = ProbeManifestFixture::new();
+    fixture.add_generation_measurement();
+    std::fs::create_dir(fixture.generation_tree("sample-stray")).expect("stray tree");
+    fixture.assert_refused("sample-stray", "no MEASUREMENTS.tsv row names it");
+
+    let fixture = ProbeManifestFixture::new();
+    fixture.add_generation_measurement();
+    std::fs::remove_dir_all(fixture.generation_tree(FIXTURE_GENERATED_KEY)).expect("remove");
+    fixture.assert_refused(FIXTURE_GENERATED_KEY, "is missing");
+
+    // A key cannot be both generated from and proven not generated from.
+    let fixture = ProbeManifestFixture::new();
+    fixture.add_generation_measurement();
+    let measurements = fixture.path(&format!("{PROBE_GENERATION_DIR}/MEASUREMENTS.tsv"));
+    let text = std::fs::read_to_string(&measurements).expect("measurements");
+    std::fs::write(
+        &measurements,
+        text.replace(FIXTURE_GENERATED_KEY, FIXTURE_DIFFERENTIAL_KEY),
+    )
+    .expect("colliding measurement");
+    fixture.assert_refused(
+        FIXTURE_DIFFERENTIAL_KEY,
+        "declared both as a generation measurement",
     );
 }
 

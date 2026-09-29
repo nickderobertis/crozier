@@ -38,7 +38,12 @@ Keep a clean generation's complete comment-stripped output in the sibling
 versioned exit verdict as `probe-expected/<key>.fern-refusal.txt` instead; a
 refusal must never acquire a fabricated output tree. Either artifact is declared in
 [`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) under
-[Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is).
+[Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is),
+which admits non-generation verdicts only. A tree in which Fern generates output
+derived from the shape proves no non-generation: keep it in
+`../probe-generation/<key>/` and declare it in
+[`../probe-generation/MEASUREMENTS.tsv`](../probe-generation/MEASUREMENTS.tsv)
+instead, where crozier is still byte-compared against it but it settles no row.
 
 ## Naming
 
