@@ -39,9 +39,8 @@ three ways:
   crozier against.
 - **12 remain unproven.** 12 are the `FIXTURE` `gap` rows. Each is a shape Fern
   generates output from. Six have a search record that reads `exhausted`: every
-  candidate is decided and none is registrable. The other six read
-  `search-incomplete` only because GitHub refused 12 candidates at every route
-  there is to them.
+  candidate is decided and none is registrable. The other six read `search-incomplete`
+  only because GitHub refused 12 candidates at every route there is to them.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. The other 0 are `golden`
   rows declared only by `DROPPED` corpus rows that carry no golden: corpus rows
@@ -2484,7 +2483,7 @@ corpus admits real specifications only. The twelfth,
 `oneof-closed-empty-object-variant`, names a crozier-generating arm that no
 probe has put to Fern.
 
-**Six read `exhausted` and six read `search-incomplete` under the scope
+**Six read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its
 line under
 [`schemas.md`'s Witness search (exhaustive)](openapi-surface/schemas.md#witness-search-exhaustive).

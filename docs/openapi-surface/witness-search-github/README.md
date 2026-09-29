@@ -106,6 +106,15 @@ licence texts under `licences/`:
 - **Fern**: `fern check` at CLI 5.67.1, then `fern generate --local` with
   `fernapi/fern-python-sdk` 5.20.0.
 
+The screens of `oneof-anyof-variant` and `oneof-closed-empty-object-variant`
+differ in two ways. Each repository's licence file was downloaded at the pinned
+commit from raw.githubusercontent.com and kept under `licences/`. The Fern run
+each screen cites is one line per document digest in that source's
+`fern-screens-remaining-gaps.jsonl`. The line gives both commands' exit codes
+and first diagnostics, the digests of their full output, and the count of
+Python files generated. A generate that exits 0 over a document Fern never
+parsed is marked `generate_parse_failure` and fails the screen as an empty SDK.
+
 A key is closed only by a candidate that passes all three screens and that
 review finds to be the publisher's own description. That review applies the
 standard in the preamble to the `schemas.md` witness search.

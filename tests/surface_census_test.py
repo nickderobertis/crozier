@@ -6609,7 +6609,9 @@ class EscalationRestatementTests(unittest.TestCase):
         section = self.doc.split("| key | selector | outstanding, per source |", 1)[1].split("\n\n", 1)[0]
         rows = {cells[0].strip("`"): cells for line in section.splitlines()
                 if (cells := table_cells(line, 5)) and cells[0].startswith("`")}
-        self.assertEqual(set(self.lines), set(rows))
+        # A key whose search found a witness is registered, not escalated.
+        escalated = {key for key, line in self.lines.items() if line[1].strip("`") != "witness-found"}
+        self.assertEqual(escalated, set(rows))
         for key, cells in rows.items():
             with self.subTest(key=key):
                 owed = self.open_rows[key]

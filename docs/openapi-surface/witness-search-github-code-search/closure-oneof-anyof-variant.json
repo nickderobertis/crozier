@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "0322623598b6cda0eea580694264e69a40081f10",
+    "path": "openapi.yaml",
+    "repository": "github.com/Qredence/fleet-rlm",
+    "screen": "witness-search-sourcegraph/screens.jsonl:109",
+    "sha256": "1b408ec817115fe3a450ea1a454f97afbbe72a44bf63a1eac278cf3cee9ae598"
+  },
+  "key": "oneof-anyof-variant",
+  "outcome": "witness-found, registered as CORPUS.md row 303 (with rows 304 and 305)",
+  "source": "github-code-search",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}
