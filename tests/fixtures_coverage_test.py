@@ -47,18 +47,25 @@ def load_reporter():
 reporter = load_reporter()
 
 
-def nextest_list(expression: str) -> set[tuple[str, str]]:
+def nextest_list(
+    expression: str, env: dict[str, str] | None = None
+) -> set[tuple[str, str]]:
     """(binary id, test name) cargo-nextest actually selects — the real boundary.
 
     Keyed on the binary too: `generation.rs` and `e2e.rs` share some test names,
     and collapsing them would make the tiers look like they overlap.
+
+    `--color never` because this parses the listing: `CARGO_TERM_COLOR=always`
+    (release.yml sets it; a developer's shell may too) otherwise wraps every
+    name in ANSI escapes, and no plain test name would match.
     """
     listing = subprocess.run(
-        ["cargo", "nextest", "list", "--locked", "-E", expression],
+        ["cargo", "nextest", "list", "--locked", "--color", "never", "-E", expression],
         cwd=REPO,
         capture_output=True,
         text=True,
         check=True,
+        env=env,
     ).stdout
     selected = set()
     for line in listing.splitlines():
@@ -118,6 +125,15 @@ class TierSelectionTests(unittest.TestCase):
         )
         for name in golden:
             self.assertIn("matches_fern_output", name)
+
+    def test_the_selection_reads_the_same_with_colour_forced(self) -> None:
+        # release.yml's re-gate exports CARGO_TERM_COLOR=always; the listing
+        # this suite parses must not change under it.
+        expression = f"test(={OFFLINE_GOLDEN}) or test(={UNIT})"
+        coloured = nextest_list(expression, env={**os.environ, "CARGO_TERM_COLOR": "always"})
+        plain = nextest_list(expression, env={**os.environ, "CARGO_TERM_COLOR": "never"})
+        self.assertEqual(plain, coloured)
+        self.assertIn(OFFLINE_GOLDEN, {name for _binary, name in coloured})
 
 
 @unittest.skipIf(os.name == "nt", "the coverage recipe is a POSIX shell script")
