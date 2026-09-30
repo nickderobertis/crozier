@@ -1,0 +1,60 @@
+openapi: 3.1.0
+info:
+  title: inline-anyof-variants fixture
+  version: 1.0.0
+paths:
+  /variants:
+    get:
+      operationId: getVariants
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - oneOf:
+                      - type: string
+                      - type: integer
+                  - type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Target"
+                        - description: annotated
+                  - type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            size:
+                              type: integer
+                  - type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        code:
+                          type: integer
+                  - allOf:
+                      - $ref: "#/components/schemas/Target"
+                      - type: object
+                        properties:
+                          extra:
+                            type: string
+                  - type: array
+                    items:
+                      anyOf:
+                        - type: string
+                        - type: "null"
+                  - type: array
+                    items:
+                      oneOf:
+                        - type: integer
+                        - type: "null"
+components:
+  schemas:
+    Target:
+      type: object
+      properties:
+        name:
+          type: string

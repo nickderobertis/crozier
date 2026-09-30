@@ -220,7 +220,7 @@ read-only	schema.readOnly	src/ir.rs::schema_property_is_read_only,src/ir.rs::Bui
 write-only	schema.writeOnly	none	
 xml	schema.xml	none	
 externaldocs	schema.externalDocs	none	
-example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_literal,src/ir.rs::parameter_example_value,src/ir.rs::array_item_example,src/ir.rs::example_is_schema_definition,src/ir.rs::Builder::add_object[if let Some\(example\) = schema_example\(schema\)]	
+example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_literal,src/ir.rs::parameter_example_value,src/ir.rs::array_item_example,src/ir.rs::Builder::add_object[if let Some\(example\) = schema_example\(schema\)]	
 deprecated	schema.deprecated	none	
 dollar-schema	schema.$schema	none	
 dollar-id	schema.$id	none	

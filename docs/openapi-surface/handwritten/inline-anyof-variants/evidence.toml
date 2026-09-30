@@ -1,0 +1,45 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "4bb836a887e98a2b2506a5c10aaf7614d50b6c2a74b20937e1a34b7371b9bf2b"
+
+[[covers]]
+key = "anyof-oneof-variant"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-oneof-variant.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-array-variant-annotated-ref-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-annotated-ref-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-array-variant-composed-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-composed-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-array-variant-closed-object-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-closed-object-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-allof-variant"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-allof-variant.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-array-variant-anyof-nullable-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-anyof-nullable-item.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-array-variant-oneof-nullable-item"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-oneof-nullable-item.md#witness-search-exhaustive"
+verdict = "exhausted"
