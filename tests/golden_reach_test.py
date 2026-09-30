@@ -1526,6 +1526,17 @@ class ArmSearchStageTests(_StageScratch):
             golden_reach_search.main(["render", "--key", self.KEY, "--build", earlier])
         self.assertIn("states no arm it searched for", str(refused.exception))
 
+    def test_a_cached_timeout_is_generated_again_only_when_timeouts_are_retried(self) -> None:
+        cache = {"a" * 64: {"status": "timeout after 300s", "reached": []},
+                 "b" * 64: {"status": "generated", "reached": []}}
+        documents = ["a" * 64, "b" * 64, "c" * 64]
+        self.assertEqual(["c" * 64], golden_reach_search.to_generate(documents, cache, False))
+        self.assertEqual(["a" * 64, "c" * 64], golden_reach_search.to_generate(documents, cache, True))
+        # The probe's cache holds that timeout exactly as a run appends it, and reads it back so.
+        golden_reach_search.append_probe_cache("build", "a" * 64, cache["a" * 64])
+        reread = golden_reach_search.load_probe_cache("build")
+        self.assertEqual(["a" * 64], golden_reach_search.to_generate(["a" * 64], reread, True))
+
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,
                                  capture_output=True, text=True, check=True).stdout.strip()

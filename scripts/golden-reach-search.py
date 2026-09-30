@@ -78,7 +78,7 @@ import tempfile
 import time
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
@@ -1016,7 +1016,7 @@ def probe(args: argparse.Namespace) -> int:
                 continue
             digest_or_reason[key_path] = digest
             by_digest.setdefault(digest, path)
-    todo = [digest for digest in by_digest if digest not in cache]
+    todo = to_generate(by_digest, cache, args.retry_timeouts)
 
     def rows_for(key: str) -> list[dict[str, Any]]:
         arms, earlier, pending = plans[key]
@@ -1046,6 +1046,18 @@ def probe(args: argparse.Namespace) -> int:
     print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
           f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
     return 0
+
+
+def to_generate(documents: Iterable[str], cache: dict[str, dict[str, Any]], retry_timeouts: bool) -> list[str]:
+    """The document digests a probe generates: every one the build's cache lacks.
+
+    A cached run that timed out is no reading of the arms, so `--retry-timeouts`
+    generates it again (under the invocation's `--timeout`) rather than filing
+    the cached timeout a second time.
+    """
+    return [digest for digest in documents
+            if digest not in cache
+            or (retry_timeouts and cache[digest]["status"].startswith("timeout"))]
 
 
 def _probe_one(
