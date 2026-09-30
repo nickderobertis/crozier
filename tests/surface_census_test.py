@@ -1028,7 +1028,9 @@ def completeness_failures(
     A proof is a `MANIFEST.tsv` row with a non-generation verdict, cited from the
     row's own evidence cell; a `measured` row is a byte comparison over a
     generated shape and settles nothing. A searched `gap` carries one line in its
-    own region file's `### Witness search (exhaustive)` compact table.
+    own region file's `### Witness search (exhaustive)` compact table, and so
+    does a `handwritten` row, whose fixture `handwritten_fixtures_match_fern_goldens`
+    gates: the failed search is what admitted it.
     """
     failures = []
     searched = {
@@ -1048,14 +1050,14 @@ def completeness_failures(
             )
         if proof:
             continue
-        if category != "gap":
+        if category not in ("gap", "handwritten"):
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks a MANIFEST.tsv row carrying a "
                 f"non-generation verdict, the only thing that settles a `{category}` row"
             )
         elif record is None:
             failures.append(
-                f"{key} ({region}.md, `gap`): lacks both halves — no MANIFEST.tsv row "
+                f"{key} ({region}.md, `{category}`): lacks both halves — no MANIFEST.tsv row "
                 f"carrying a non-generation verdict, and no Contract B search record under "
                 f"`{EXHAUSTIVE_SEARCH_HEADING}` in {region}.md"
             )
@@ -1873,7 +1875,10 @@ class GrammarContractTests(unittest.TestCase):
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
         }
-        self.assertEqual(set(census.CONJUNCTIONS), derived & set(census.CONJUNCTIONS))
+        retired = set(census.RETIRED_CASE_CONJUNCTIONS)
+        self.assertLessEqual(retired, set(census.CONJUNCTIONS), "a retired spelling is still declared")
+        self.assertEqual(set(), retired & derived, "a retired conjunction is read off a live case")
+        self.assertEqual(set(census.CONJUNCTIONS) - retired, derived & set(census.CONJUNCTIONS))
         self.assertEqual(set(), derived - set(census.CONJUNCTIONS) - set(census.PREDICATES))
 
     # ------------------------------------------------------------------

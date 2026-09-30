@@ -1857,6 +1857,20 @@ def case_verdict(function: str, case: Case) -> str:
     return case.selector if case.hole is None else case.hole
 
 
+# Declared conjunctions no case of the table is read off any more, each with why
+# it is still declared. A case leaves the table when `src/ir.rs` loses the arm it
+# read; its conjunction stays while a region row's key, and the witness search
+# that key ran, are spelled by it.
+RETIRED_CASE_CONJUNCTIONS = {
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": (
+        "`hoist_union_variant`'s case 11, removed with the arm it read once Fern was "
+        "shown to type every bare object member a map (the hand-written "
+        "`inline-oneof-variants` fixture); `oneof-bare-object-example-variant` is "
+        "keyed and was searched by it"
+    ),
+}
+
+
 CONJUNCTIONS.update(
     {
         RESIDUAL_SELECTORS[(function, case.number)]: case.residual
