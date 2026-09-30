@@ -88669,6 +88669,12 @@ oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1
 oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json licence	passed	screens.jsonl
 oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json ref	passed	screens.jsonl
 oneof-array-variant-closed-object-item	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/input-bundle.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/input-entry.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/output-bundle.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/output-entry.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/openapi.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-entry.json	census 3	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/output-bundle.json	census 3	enumeration.tsv.gz

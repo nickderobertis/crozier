@@ -243,3 +243,7 @@ oneof-anyof-variant	github-code-search	"- anyOf:" "oneOf:" filename:openapi.yaml
 oneof-anyof-variant	github-code-search	"\"oneOf\"" "{\"anyOf\"" filename:openapi.json
 oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"- anyOf:" count:all type:file
 oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"{\"anyOf\"" count:all type:file
+oneof-closed-empty-object-variant	github-code-search	"oneOf:" "properties: {}" "additionalProperties: false" filename:openapi.yaml
+oneof-closed-empty-object-variant	github-code-search	"\"oneOf\"" "\"properties\": {}" "\"additionalProperties\": false" filename:openapi.json
+oneof-closed-empty-object-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"properties: {}" content:"additionalProperties: false" count:all type:file
+oneof-closed-empty-object-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"\"properties\": {}" content:"\"additionalProperties\": false" count:all type:file
