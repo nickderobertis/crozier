@@ -701,6 +701,9 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             "no FIXTURE gap rows": "",
             "has no selector": "| `shape-a` | x | x | `gap` | no selector | x | x | FIXTURE |\n",
             "duplicate gap key": valid + valid,
+            "handwritten shape-b has no selector in witness-search-keys.tsv": valid
+            + "| `shape-b` | x | x | `handwritten` | handwritten: shape-b-fixture; search: exhausted"
+            " ([record](schemas.md#witness-search-exhaustive)) |  |  |  |\n",
         }
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -717,6 +720,50 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     self.assertEqual(completed.returncode, 1)
                     self.assertIn(expected, completed.stderr)
                     self.assertIn("repair the FIXTURE gap rows", completed.stderr)
+
+    def test_key_derivation_keeps_a_handwritten_row_with_its_tracked_selector(self) -> None:
+        """A row a hand-written fixture moved out of `gap` stays in the searched key set.
+
+        Its evidence cell names fixtures and a search rather than a selector, so
+        the selector is the one the tracked file already records for the key.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for region in ("document-paths.md", "parameters.md", "bodies-media.md",
+                           "security.md", "oas31-extensions.md"):
+                (root / region).write_text("", encoding="utf-8")
+            (root / "schemas.md").write_text(
+                "| `shape-a` | x | x | `gap` | census `schema.items` | x | x | FIXTURE |\n"
+                "| `shape-b` | x | x | `handwritten` | handwritten: shape-b-fixture; search: exhausted"
+                " ([record](schemas.md#witness-search-exhaustive)) |  |  |  |\n"
+                "| `shape-c` | x | x | `golden` | census `schema.oneOf` | x |  |  |\n",
+                encoding="utf-8",
+            )
+            (root / "witness-search-keys.tsv").write_text(
+                "key\tselector\tregion\tcensus_status\n"
+                "shape-a\tschema.items\tschemas.md\tsupported\n"
+                "shape-b\tschema.items>schema.discriminator:inheritance-union\tschemas.md\tsupported\n",
+                encoding="utf-8",
+            )
+            completed = subprocess.run(
+                [sys.executable, str(KEYS), "--regions-dir", str(root)],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(
+                completed.stdout,
+                (root / "witness-search-keys.tsv").read_text(encoding="utf-8"),
+                "the derivation dropped the handwritten row or changed its selector",
+            )
+            (root / "witness-search-keys.tsv").write_text(
+                "name\tshape\nshape-b\tschema.items\n", encoding="utf-8"
+            )
+            refused = subprocess.run(
+                [sys.executable, str(KEYS), "--regions-dir", str(root)],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(refused.returncode, 1)
+            self.assertIn("has no `key` and `selector` columns", refused.stderr)
 
     def test_local_census_rejects_incomplete_tsv_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

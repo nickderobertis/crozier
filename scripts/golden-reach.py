@@ -64,7 +64,7 @@ DEFAULT_OUT = REPO / ".local" / "golden-reach"
 # What a native binary's file name ends in: the llvm tools and cargo's outputs carry it.
 EXE = ".exe" if os.name == "nt" else ""
 GOLDEN_TEST = re.compile(r"matches_fern_output")
-CATEGORIES = ("golden", "limitations", "gap")
+CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 CELL_PREFIX = "reach:"
 # A site spec may hold a comma inside its `[regex]`, so the ledger separates
 # sites with a string no spec may contain.
