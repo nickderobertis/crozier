@@ -14,6 +14,9 @@ import threading
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from region_flip import flipped_regions  # noqa: E402
+
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/apis-guru-gap-screen.py"
 REPORT = REPO / "docs/openapi-surface/apis-guru-gap-witnesses.tsv"
@@ -672,6 +675,34 @@ components:
                 self.assertEqual(completed.stderr, expected)
                 self.assertEqual(completed.stdout, "")
                 self.assertFalse(output.exists())
+
+    def test_a_handwritten_row_stays_a_screening_target(self) -> None:
+        """A row a hand-written fixture covers still has no real-specification
+        witness, so the screen keeps its key, with the selector its search ran on."""
+        key = "annotated-ref-target-string-const"
+        regions = flipped_regions(self.root / "regions", key)
+        document = self.spec("hit.json", json.dumps({
+            "openapi": "3.0.0", "info": {"title": "A", "version": "1"},
+            "paths": {}, "components": {"schemas": {"Hit": {"anyOf": [{
+                "type": "array", "items": {"type": "object", "properties": {"x": {"type": "string"}}}
+            }]}}},
+        }))
+        index = self.index([("hit.example", "1", document)])
+        before, before_output = self.invoke(index, self.root / "before.tsv")
+        after, after_output = self.invoke(
+            index, self.root / "after.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(0, before.returncode, before.stderr)
+        self.assertEqual(0, after.returncode, after.stderr)
+        self.assertEqual(before_output.read_bytes(), after_output.read_bytes())
+
+        (regions / "witness-search-keys.tsv").unlink()
+        refused, output = self.invoke(
+            index, self.root / "refused.tsv", None, "--regions-dir", str(regions)
+        )
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"handwritten row {key!r} has no selector in witness-search-keys.tsv", refused.stderr)
+        self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

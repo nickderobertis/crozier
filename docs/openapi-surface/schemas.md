@@ -1628,6 +1628,19 @@ record. That contract's reconciler reads it verbatim, so it stays as history.
 It is not the key's search record and settles nothing. The two sources it names
 that Contract B excludes, SwaggerHub and Postman, appear in no line below.
 
+**The redo contract, as amended by the `handwritten-evidence` node.** A row of a
+key that contract owns may become `handwritten`
+([the category rules](../openapi-surface-coverage.md#the-category-rules)), and
+its evidence cell then carries no inline history. For such a row the reconciler,
+`scripts/witness-search-redo.py --reconcile`, still requires exactly one row for
+the key. It reads the row's `search:` link in place of the history, and requires
+that link to resolve to the key's line below and that line to state the verdict
+the cell states. The shard records stay reconciled as for every other key, and
+the wide scrape's baseline keeps the key exactly when the shards read it
+`search-incomplete`. The contract's own files are byte-pinned by
+[`historical-sha256.tsv`](witness-scrape-wide/historical-sha256.tsv), so the
+amendment is stated here rather than in them.
+
 Five keys read `exhausted`: `annotated-ref-target-string-const`,
 `oneof-array-variant-annotated-ref-item`,
 `oneof-array-variant-anyof-discriminated-union-item`,

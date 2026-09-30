@@ -13,9 +13,19 @@ so a probe never produces a `CORPUS.md` row, never counts as parity evidence in
 [`../../openapi-surface-coverage.md`](../../openapi-surface-coverage.md), and
 never moves a region row to `golden`. What a probe settles is a `limitations` row
 on a measured **non-generation** verdict only
-([the amended rule](../../openapi-surface-coverage.md#what-a-probe-may-settle-as-amended-again));
-a shape Fern generates from is settled by a real specification alone, and a
-real-world witness found later is what promotes a settled row.
+([the amended rule](../../openapi-surface-coverage.md#what-a-probe-may-settle-as-amended-again)).
+A shape Fern generates from is settled by a real specification. Only where the
+real-specification search for it has failed may a hand-written document stand
+as generation evidence instead, and then as a **hand-written fixture** under
+[`../handwritten/`](../handwritten/AGENTS.md), never as a probe. That is a
+lower level of proof than a real specification. The fixture cites the failed
+search, and it never counts as a real-specification match. Its feature-level
+cover puts the row in the `handwritten` category. An arm-level cover leaves a
+`golden` row `golden`, reported only in the unreached-arm table's hand-written
+column and in `handwritten-reach.tsv`
+([the category rules](../../openapi-surface-coverage.md#the-category-rules)).
+A probe Fern generated from, a `measured` tree, may be copied into such a
+fixture. A real-world witness found later supersedes either.
 
 ## Re-running one
 

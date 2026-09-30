@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import re
 import sys
 from pathlib import Path
@@ -51,7 +52,7 @@ def schema_rows(text: str) -> dict[str, list[list[str]]]:
         if (
             len(cells) == 8
             and value(cells[0]) != "key"
-            and value(cells[3]) in {"golden", "limitations", "gap"}
+            and value(cells[3]) in {"golden", "limitations", "handwritten", "gap"}
         ):
             found.setdefault(value(cells[0]), []).append(cells)
     return found
@@ -188,9 +189,8 @@ def screened_keys(path: Path, *, artifact: str | None = None) -> set[str]:
     return found
 
 
-def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()) -> list[str]:
-    failures = validate_documents(paths, contract)
-    keys = contract_keys(contract)
+def shard_records(paths: list[Path]) -> dict[tuple[str, str], list[str]]:
+    """`(key, source)` -> its first record row across the shards."""
     records: dict[tuple[str, str], list[str]] = {}
     for path in paths:
         for row in table(path.read_text(encoding="utf-8"), "## Records")[1:]:
@@ -198,24 +198,25 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
                 pair = (value(row[0]), value(row[2]))
                 if pair not in records:
                     records[pair] = row
-    missing = sorted(
-        (key, source)
-        for key in keys
-        for source in ALL_SOURCES
-        if (key, source) not in records
-    )
-    if missing:
-        failures.append(f"reconciliation: missing source/key coverage {missing}")
-        return failures
+    return records
+
+
+def frozen_outcomes(
+    keys: dict[str, str],
+    records: dict[tuple[str, str], list[str]],
+    candidates: Path,
+    supplement_candidates: tuple[Path, ...] = (),
+) -> dict[str, str]:
+    """Each owned key's outcome, as the shards and the candidate screens decide it."""
     witnesses = screened_keys(candidates)
     for supplement in supplement_candidates:
         witnesses.update(screened_keys(supplement))
-    rows = schema_rows(schemas.read_text(encoding="utf-8"))
+    outcomes = {}
     for key in keys:
         answered = all(
             value(records[(key, source)][4]) != "unanswered" for source in ALL_SOURCES
         )
-        expected = (
+        outcomes[key] = (
             "witness-found"
             if key in witnesses
             else "none-found"
@@ -225,10 +226,51 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
             if not answered
             else "witness-blocked"
         )
+    return outcomes
+
+
+def handwritten_module():
+    """The hand-written fixture gate, whose record reading a `handwritten` row is held to."""
+    path = Path(__file__).resolve().parent / "handwritten-fixtures.py"
+    spec = importlib.util.spec_from_file_location("redo_handwritten_fixtures", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()) -> list[str]:
+    failures = validate_documents(paths, contract)
+    keys = contract_keys(contract)
+    records = shard_records(paths)
+    missing = sorted(
+        (key, source)
+        for key in keys
+        for source in ALL_SOURCES
+        if (key, source) not in records
+    )
+    if missing:
+        failures.append(f"reconciliation: missing source/key coverage {missing}")
+        return failures
+    outcomes = frozen_outcomes(keys, records, candidates, supplement_candidates)
+    rows = schema_rows(schemas.read_text(encoding="utf-8"))
+    for key in keys:
+        expected = outcomes[key]
         owned_rows = rows.get(key, [])
         if len(owned_rows) != 1:
             failures.append(
                 f"reconciliation: schemas.md has {len(owned_rows)} rows for {key}"
+            )
+            continue
+        if value(owned_rows[0][3]) == "handwritten":
+            # The amendment `contract.md` records: a row a hand-written fixture
+            # covers carries no inline history. Its `search:` link must resolve
+            # to the key's Contract B record and state that record's verdict;
+            # the shard records above stay reconciled as for every key.
+            failures.extend(
+                f"reconciliation: schemas.md row {failure}"
+                for failure in handwritten_module().evidence_cell_failures(schemas, key, owned_rows[0][4])
             )
             continue
         outcome, details = authoritative_details(owned_rows[0])

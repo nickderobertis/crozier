@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 # llmlint: ignore-file[new_code_lands_in_a_project] This Cargo crate has no Nx graph; this region-key derivation command lives with the just-driven census scripts and is drift-checked by the acquisition tier.
-"""Derive the witness-search key set from the region tables at this checkout."""
+"""Derive the witness-search key set from the region tables at this checkout.
+
+The set is every `FIXTURE` `gap` row, plus every `handwritten` row: a hand-written
+fixture is admitted only after that key's real-specification search failed, so
+the key keeps its tracked selector here, and the hand-written fixture gate reads
+it from this file (docs/openapi-surface/handwritten/AGENTS.md).
+"""
 
 from __future__ import annotations
 
@@ -34,8 +40,22 @@ def census_module():
     return module
 
 
+def tracked_selectors(regions: Path) -> dict[str, str]:
+    """key -> selector, from the tracked key set this command derives.
+
+    A `handwritten` row's evidence cell names its fixtures and search, not its
+    selector, so the key keeps the selector it was searched with here.
+    """
+    path = regions / "witness-search-keys.tsv"
+    if not path.is_file():
+        return {}
+    with path.open(encoding="utf-8", newline="") as handle:
+        return {row["key"]: row["selector"] for row in csv.DictReader(handle, dialect="excel-tab")}
+
+
 def keys(regions: Path) -> list[tuple[str, str, str, str]]:
     census = census_module()
+    tracked = tracked_selectors(regions)
     found: dict[str, tuple[str, str, str, str]] = {}
     for name in region_files():
         path = regions / name
@@ -43,19 +63,31 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
             if not line.startswith("|"):
                 continue
             cells = [cell.strip() for cell in line.replace("\\|", "\0").strip().strip("|").split("|")]
-            if len(cells) != 8 or cells[3].strip("` ") != "gap" or "FIXTURE" not in cells[7]:
+            if len(cells) != 8:
                 continue
+            category = cells[3].strip("` ")
             key = cells[0].strip("` ")
-            match = re.search(r"census `([^`]+)`|Shape read `([^`]+)`", line)
-            if not match:
-                raise ValueError(f"{path}: gap {key} has no selector")
-            selector = match.group(1) or match.group(2)
+            if category == "handwritten":
+                # Admitted only after a failed search of this very key, so the
+                # key stays in the set that search ran over, with its selector.
+                if key not in tracked:
+                    raise ValueError(
+                        f"{path}: handwritten {key} has no selector in witness-search-keys.tsv"
+                    )
+                selector = tracked[key]
+            elif category != "gap" or "FIXTURE" not in cells[7]:
+                continue
+            else:
+                match = re.search(r"census `([^`]+)`|Shape read `([^`]+)`", line)
+                if not match:
+                    raise ValueError(f"{path}: gap {key} has no selector")
+                selector = match.group(1) or match.group(2)
             status = "supported" if census.selector_error(selector) is None else "unsupported-by-census"
             if key in found:
                 raise ValueError(f"duplicate gap key {key}")
             found[key] = (key, selector, name, status)
     if not found:
-        raise ValueError(f"no FIXTURE gap rows in {regions}")
+        raise ValueError(f"no FIXTURE gap rows or handwritten rows in {regions}")
     return sorted(found.values())
 
 
@@ -70,7 +102,7 @@ def main() -> int:
     try:
         writer.writerows(keys(args.regions_dir))
     except (OSError, ValueError) as error:
-        print(f"witness-search-region-keys: {error}; repair the FIXTURE gap rows in {args.regions_dir}", file=sys.stderr)
+        print(f"witness-search-region-keys: {error}; repair the FIXTURE gap rows and handwritten rows in {args.regions_dir}", file=sys.stderr)
         return 1
     return 0
 
