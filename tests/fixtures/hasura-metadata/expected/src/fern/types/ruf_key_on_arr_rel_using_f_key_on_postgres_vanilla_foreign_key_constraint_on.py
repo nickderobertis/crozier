@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .postgres_arr_rel_using_f_key_on_multiple_columns import PostgresArrRelUsingFKeyOnMultipleColumns
+from .postgres_arr_rel_using_f_key_on_single_column import PostgresArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnPostgresVanillaForeignKeyConstraintOn = typing.Union[
+    PostgresArrRelUsingFKeyOnSingleColumn, PostgresArrRelUsingFKeyOnMultipleColumns
+]

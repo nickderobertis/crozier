@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .mssql_arr_rel_using_f_key_on_multiple_columns import MssqlArrRelUsingFKeyOnMultipleColumns
+from .mssql_arr_rel_using_f_key_on_single_column import MssqlArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnMssqlForeignKeyConstraintOn = typing.Union[
+    MssqlArrRelUsingFKeyOnSingleColumn, MssqlArrRelUsingFKeyOnMultipleColumns
+]

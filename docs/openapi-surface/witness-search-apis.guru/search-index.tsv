@@ -289,3 +289,7 @@ securityscheme-ref	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb8272
 *	wait	unread-responses.jsonl	supporting acquisition record	unread-responses.jsonl
 *	wait	list.json.gz	supporting acquisition record	list.json.gz
 *	wait	rate-limit-calls.jsonl	supporting acquisition record	rate-limit-calls.jsonl
+oneof-anyof-variant	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
+oneof-anyof-variant	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv
+oneof-closed-empty-object-variant	walk	APIs-guru/openapi-directory@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49	4138	acquisition-manifest.tsv
+oneof-closed-empty-object-variant	walk	api.apis.guru/v2/list.json@sha256:dfac835d2d1f13dfdb82723d72be1acf567df53c1b710bf6d68e28b795696e66	3992	acquisition-manifest.tsv

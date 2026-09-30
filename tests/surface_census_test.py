@@ -6383,6 +6383,17 @@ class FlowCollectionRegressionTests(unittest.TestCase):
         self.assertIn("stalls", str(raised.exception))
 
 
+    def test_a_flow_collection_used_as_a_key_is_a_parse_error_not_a_crash(self) -> None:
+        """A Helm template's `{{ .Values.x }}` keys a mapping on a mapping, which no object model holds."""
+        for text in ("info: {{ .Values.title }}\n", "info: {[a]: b}\n", "tags: [{a}: b]\n"):
+            with self.subTest(text=text), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                with self.assertRaises(census.DocumentError) as raised:
+                    census.load_document(path)
+                self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
+
+
 @unittest.skipIf(
     os.name == "nt",
     "the POSIX shell resolver's semantics are not reproduced by MSYS",
@@ -6609,7 +6620,9 @@ class EscalationRestatementTests(unittest.TestCase):
         section = self.doc.split("| key | selector | outstanding, per source |", 1)[1].split("\n\n", 1)[0]
         rows = {cells[0].strip("`"): cells for line in section.splitlines()
                 if (cells := table_cells(line, 5)) and cells[0].startswith("`")}
-        self.assertEqual(set(self.lines), set(rows))
+        # A key whose search found a witness is registered, not escalated.
+        escalated = {key for key, line in self.lines.items() if line[1].strip("`") != "witness-found"}
+        self.assertEqual(escalated, set(rows))
         for key, cells in rows.items():
             with self.subTest(key=key):
                 owed = self.open_rows[key]
@@ -8163,17 +8176,19 @@ class RankedBacklogTests(unittest.TestCase):
         return [row for row in rows if row["walk"] in named]
 
     def test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly(self) -> None:
-        """A `gap` row admitted after the witness-search-redo contract froze.
+        """A row admitted as a `gap` after the witness-search-redo contract froze.
 
         Its search is recorded once, as its line of the compact grammar under
         `### Witness search (exhaustive)`, and never on its own evidence cell: a
         second copy there is a record the compact reconciliation never reads. An
         entry cell the frozen contract does not own carries no `search outcome`.
+        The rule holds after the search registers a witness and the row turns
+        `golden`: its line stays the search's record.
         """
         frozen = frozen_search_keys(FROZEN_SEARCH_CONTRACT.read_text(encoding="utf-8"))
         checked = []
         for key, (region, cells) in sorted(self.entries.items()):
-            if cells[3].strip("`") != "gap" or key in frozen:
+            if cells[3].strip("`") not in ("gap", "golden") or key in frozen:
                 continue
             record = compact_search_lines(
                 (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")

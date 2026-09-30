@@ -916,6 +916,70 @@ class ArmSearchStageTests(_StageScratch):
             enumeration = {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
         self.assertEqual(("readable", ""), (enumeration["b.yaml"]["status"], enumeration["b.yaml"]["matched_keys"]))
 
+    def test_a_walk_for_another_key_keeps_the_matches_earlier_walks_recorded(self) -> None:
+        """A walk censuses only the keys it is given, and rewrites the whole enumeration.
+
+        The row another key's walk matched keeps that match, so that key's
+        `document` record still rests on an enumeration row; walking that key again
+        records it once, not twice.
+        """
+        self.walk()
+        evidence = golden_reach_search.EVIDENCE / "jentic"
+
+        def enumeration() -> dict[str, dict[str, str]]:
+            with gzip.open(evidence / "enumeration.tsv.gz", "rt", encoding="utf-8") as handle:
+                return {row["document"]: row for row in csv.DictReader(handle, delimiter="\t")}
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", "format-iri", "--jobs", "1"]
+            )
+        self.assertEqual(0, code)
+        rows = enumeration()
+        self.assertEqual(self.KEY, rows["a.yaml"]["matched_keys"])
+        self.assertEqual("", rows["b.yaml"]["matched_keys"])
+        self.assertTrue(rows["c.yaml"]["status"].startswith("unreadable: "))
+        records = {(r["key"], r["kind"], r["subject"], r["result"]) for r in golden_reach_search.read_records("jentic")}
+        self.assertIn((self.KEY, "document", "a.yaml", "census 1"), records)
+        self.assertIn(("format-iri", "walk", f"jentic-public-apis@{self.REVISION}", "3"), records)
+        self.assertFalse({r for r in records if r[0] == "format-iri" and r[1] == "document"})
+        self.walk()
+        self.assertEqual(self.KEY, enumeration()["a.yaml"]["matched_keys"])
+
+    def test_a_path_two_trees_pin_unreadable_is_refused_once_per_tree(self) -> None:
+        """Two trees pinning one path the census cannot read are two documents to refuse.
+
+        Named by path alone the second copy's refusal overwrote the first, and
+        the copy left over read as an outstanding item of every arm search; each
+        is filed under its `<walk>:<path>` name, and neither is outstanding.
+        """
+        manifest = golden_reach_search.SURFACE / "witness-search-jentic" / "acquisition-manifest.tsv"
+        other = self.scratch / "other"
+        other.mkdir()
+        (other / "c.yaml").write_text("openapi: 3.0.0\ninfo: [unclosed\n", encoding="utf-8")
+        digest = hashlib.sha256((other / "c.yaml").read_bytes()).hexdigest()
+        with manifest.open("a", encoding="utf-8") as handle:
+            handle.write(f"other-tree\tc.yaml\t{self.REVISION}\t{digest}\n")
+        # The walk reads each tree's copy under the one root, so the second copy
+        # sits where the listing's path resolves once the first is read.
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(
+                ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
+        unread = golden_reach_search.local_copies("jentic", self.root, fetch=False)
+        self.assertEqual({"jentic-public-apis:c.yaml", "other-tree:c.yaml"}, set(unread))
+        if importlib.util.find_spec("ruamel") is None:
+            self.skipTest("ruamel.yaml, the YAML 1.2 parser `refuse` reads YAML with, is not installed")
+        (self.root / "c.yaml").write_bytes((other / "c.yaml").read_bytes())
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)]))
+        refused = golden_reach_search.read_refused("jentic")
+        self.assertEqual({"other-tree:c.yaml"}, set(refused), "only the copy whose pinned bytes were read is refused")
+        self.assertEqual(digest, refused["other-tree:c.yaml"]["sha256"])
+        self.assertEqual(
+            [("jentic-public-apis:c.yaml", "unreadable")],
+            [(document, reason.split(":", 1)[0]) for document, reason in golden_reach_search._unreadable(self.KEY, "jentic")],
+        )
+
     def test_a_path_two_trees_pin_is_one_declarer_per_tree(self) -> None:
         """The publisher trees pin `openapi.yaml` at the root of several repositories.
 
@@ -1463,6 +1527,17 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(["render", "--key", self.KEY, "--build", earlier])
         self.assertIn("states no arm it searched for", str(refused.exception))
+
+    def test_a_cached_timeout_is_generated_again_only_when_timeouts_are_retried(self) -> None:
+        cache = {"a" * 64: {"status": "timeout after 300s", "reached": []},
+                 "b" * 64: {"status": "generated", "reached": []}}
+        documents = ["a" * 64, "b" * 64, "c" * 64]
+        self.assertEqual(["c" * 64], golden_reach_search.to_generate(documents, cache, False))
+        self.assertEqual(["a" * 64, "c" * 64], golden_reach_search.to_generate(documents, cache, True))
+        # The probe's cache holds that timeout exactly as a run appends it, and reads it back so.
+        golden_reach_search.append_probe_cache("build", "a" * 64, cache["a" * 64])
+        reread = golden_reach_search.load_probe_cache("build")
+        self.assertEqual(["a" * 64], golden_reach_search.to_generate(["a" * 64], reread, True))
 
     def test_a_probe_refuses_a_build_src_has_moved_from(self) -> None:
         touched = subprocess.run(["git", "log", "-1", "--format=%H", "--", "src/"], cwd=REPO,

@@ -18,7 +18,8 @@ duplicate key, an application tag) with that parser relaxed on those two rules
 alone. What either reading reads is censused by the census's own selector engine
 and recorded with the loader named; what both refuse is recorded
 `census-refused` with the parser, its version, each error and the document's
-digest.
+digest. A publisher-tree document that reading read before a requested key
+joined `keys.json` carries no count for it, so it is read again the same way.
 
 `reacquire-head` requests each candidate whose pinned blob GitHub answered 404
 again at the repository's current revision: the repository and its default
@@ -214,7 +215,9 @@ def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], di
             "acquisition_route", "raw_url", "document", "shared_with_key", "supersedes",
             "reacquired_at_head", "github_refusal", "served_by", "namesakes_searched")
     record: dict[str, Any] = {field: row[field] for field in kept if field in row}
-    record.update(sha256=digest, loader=verdict.get("loader", REACH.YAML_LOADER), recensus_of=status_of(row))
+    # A reading repeated for a key added since names the parse failure the first one decided.
+    record.update(sha256=digest, loader=verdict.get("loader", REACH.YAML_LOADER),
+                  recensus_of=row.get("recensus_of") or status_of(row))
     field = "status" if source == "github-publisher-trees" else "disposition"
     if verdict["verdict"] == "refused":
         record[field] = REFUSED
@@ -235,13 +238,28 @@ def verdict_record(source: str, row: dict[str, Any], verdict: dict[str, Any], di
     return record
 
 
+def uncounted(source: str, row: dict[str, Any], wanted: set[str]) -> bool:
+    """A publisher-tree document the full parser read before a wanted key joined `keys.json`.
+
+    Its reading counted the keys of its day; a key added since has no count on
+    it, and the census's stdlib loader cannot supply one, so the full parser
+    reads the same cached copy again for every key.
+    """
+    return (source == "github-publisher-trees" and status_of(row) == "readable"
+            and row.get("recensus_of") == "parse-failure"
+            and bool(wanted - set(row.get("selector_counts") or {})))
+
+
 def full_yaml(args: argparse.Namespace) -> int:
     evidence = args.evidence_root / f"witness-search-{args.source}"
     keys = INDEX.read_keys(evidence)
     wanted = set(args.key)
     pending: list[tuple[dict[str, Any], str]] = []
+    recounts = 0
     for _, row in latest_rows(evidence, args.source):
-        if status_of(row) != "parse-failure":
+        if uncounted(args.source, row, wanted or set(keys)):
+            recounts += 1
+        elif status_of(row) != "parse-failure":
             continue
         if wanted and args.source != "github-publisher-trees" and row["key"] not in wanted:
             continue
@@ -272,8 +290,9 @@ def full_yaml(args: argparse.Namespace) -> int:
         INDEX.append_ledger(evidence / ledger_name(args.source), json.dumps(stamped, sort_keys=True) + "\n")
         verdict = status_of(record)
         tally[verdict] = tally.get(verdict, 0) + 1
-    print(f"witness-search-recensus: {args.source}: {len(pending)} parse-failure row(s) over "
-          f"{len(copies)} document(s) read again: "
+    counted_since = f" and {recounts} full-parser reading(s) missing a key's count" if recounts else ""
+    print(f"witness-search-recensus: {args.source}: {len(pending) - recounts} parse-failure row(s)"
+          f"{counted_since} over {len(copies)} document(s) read again: "
           + ", ".join(f"{count} {verdict}" for verdict, count in sorted(tally.items())))
     return 0
 

@@ -3361,6 +3361,12 @@ const CORPORA: &[&Corpus] = &[
     &PEOPLEDATALABS,
     &STANDRIG,
     &MOCKSERVER,
+    &IDEACONSULT_ENANOMAPPER,
+    &OPENAIRE_GRAPH,
+    &QREDENCE_FLEET_RLM,
+    &FIWARE_CONTEXT_GENERATOR,
+    &HASURA_METADATA,
+    &ZOONK,
 ];
 
 #[test]
@@ -4950,21 +4956,17 @@ const KOMGA: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "README.md",
         "reference.md",
         "src/fern/api_keys/raw_client.py",
         "src/fern/book_pages/client.py",
         "src/fern/book_pages/raw_client.py",
         "src/fern/book_poster/client.py",
         "src/fern/book_poster/raw_client.py",
-        "src/fern/books/client.py",
         "src/fern/books/raw_client.py",
         "src/fern/client_settings/client.py",
         "src/fern/collection_poster/client.py",
         "src/fern/collection_poster/raw_client.py",
         "src/fern/collections/raw_client.py",
-        "src/fern/deprecated/client.py",
-        "src/fern/deprecated/raw_client.py",
         "src/fern/duplicate_pages/client.py",
         "src/fern/duplicate_pages/raw_client.py",
         "src/fern/file_system/raw_client.py",
@@ -4978,8 +4980,6 @@ const KOMGA: Corpus = Corpus {
         "src/fern/server_settings/raw_client.py",
         "src/fern/types/search_operator_boolean.py",
         "src/fern/types/search_operator_date.py",
-        "src/fern/user_session/client.py",
-        "src/fern/user_session/raw_client.py",
         "src/fern/users/raw_client.py",
     ],
 };
@@ -6146,6 +6146,85 @@ const STANDRIG: Corpus = Corpus {
 /// pinned
 const MOCKSERVER: Corpus = Corpus {
     api: "mockserver",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `ideaconsult-enanomapper`: corpus row 301, the eNanoMapper database API 4.0.0
+/// as APIs.guru pins it, whose operations declare `externalDocs`
+const IDEACONSULT_ENANOMAPPER: Corpus = Corpus {
+    api: "ideaconsult-enanomapper",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `openaire-graph`: corpus row 302, the OpenAIRE Graph API 2.0 from
+/// jentic/jentic-public-apis, whose schemas declare `xml.attribute`
+const OPENAIRE_GRAPH: Corpus = Corpus {
+    api: "openaire-graph",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `qredence-fleet-rlm`: corpus row 303, fleet-rlm's own server description
+/// from Qredence/fleet-rlm, whose `oneOf` holds a variant that is an `anyOf`
+const QREDENCE_FLEET_RLM: Corpus = Corpus {
+    api: "qredence-fleet-rlm",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `fiware-context-generator`: corpus row 304, the LiveBuildings data model API
+/// from live-buildings/context-generator, whose array item's `oneOf` holds an
+/// `anyOf`
+const FIWARE_CONTEXT_GENERATOR: Corpus = Corpus {
+    api: "fiware-context-generator",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `hasura-metadata`: corpus row 305, Hasura GraphQL Engine's metadata schema
+/// from hasura/graphql-engine, whose properties' `oneOf` holds an `anyOf`
+const HASURA_METADATA: Corpus = Corpus {
+    api: "hasura-metadata",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `zoonk`: corpus row 306, Zoonk's API from zoonk/zoonk, whose `MeDeletion`
+/// `oneOf` offers a closed empty object
+const ZOONK: Corpus = Corpus {
+    api: "zoonk",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -12093,6 +12172,36 @@ fn standrig_matches_fern_output() {
 #[test]
 fn mockserver_matches_fern_output() {
     assert_link_ok_corpus_matches(&MOCKSERVER);
+}
+
+#[test]
+fn ideaconsult_enanomapper_matches_fern_output() {
+    assert_link_ok_corpus_matches(&IDEACONSULT_ENANOMAPPER);
+}
+
+#[test]
+fn openaire_graph_matches_fern_output() {
+    assert_link_ok_corpus_matches(&OPENAIRE_GRAPH);
+}
+
+#[test]
+fn qredence_fleet_rlm_matches_fern_output() {
+    assert_link_ok_corpus_matches(&QREDENCE_FLEET_RLM);
+}
+
+#[test]
+fn fiware_context_generator_matches_fern_output() {
+    assert_link_ok_corpus_matches(&FIWARE_CONTEXT_GENERATOR);
+}
+
+#[test]
+fn hasura_metadata_matches_fern_output() {
+    assert_link_ok_corpus_matches(&HASURA_METADATA);
+}
+
+#[test]
+fn zoonk_matches_fern_output() {
+    assert_link_ok_corpus_matches(&ZOONK);
 }
 
 #[test]

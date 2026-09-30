@@ -27,7 +27,7 @@ Three rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
   whose spec has not been fetched would otherwise report as declaring nothing,
-  and 199 of the 231 registered sources are `link-ok` (a split
+  and 205 of the 237 registered sources are `link-ok` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-unfetched` to downgrade that to a warning, or `--vendored-only` to
   census the offline half on purpose.
@@ -603,7 +603,13 @@ class _YamlReader:
                 return (mapping if closer == "}" else items), cursor + 1
             value, cursor = self.flow_node(text, cursor, index)
             cursor = self.skip_space(text, cursor)
-            if cursor < len(text) and text[cursor] == ":":
+            keyed = cursor < len(text) and text[cursor] == ":"
+            if (keyed or closer == "}") and isinstance(value, (dict, list)):
+                # A collection as a key (a Helm template's `{{ .Values.x }}`) is
+                # YAML, but no JSON object model holds it: the document is no
+                # description this census can read.
+                self.fail(index, "a flow collection is used as a mapping key")
+            if keyed:
                 entry, cursor = self.flow_node(text, cursor + 1, index)
                 if closer == "]":
                     # `[x: y]` is a sequence holding the single-pair mapping `{x: y}`.

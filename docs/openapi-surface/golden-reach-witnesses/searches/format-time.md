@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `4828cc2b93f0`, the one the reach ledger is measured on,
+build of commit `e8e8dbfb8cb5`, the one the reach ledger is measured on,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -30,7 +30,7 @@ unregistered; `search-incomplete` otherwise.
 #### Declarers, and how the instrumented run fared on each
 
 Counted off each source's `records.tsv` and `probe.jsonl`, probes of the
-build `4828cc2b93f0` only. A declarer not probed on it, one whose run
+build `e8e8dbfb8cb5` only. A declarer not probed on it, one whose run
 did not finish (a timeout), and one crozier failed on without a profile are
 outstanding: the arm may be in them, and nothing here says otherwise.
 `outstanding` sums the unprobed, the timed out, the failed without a profile
@@ -43,11 +43,11 @@ search on its own.
 
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `apis.guru` | 9 | 0 | 0 | 9 | 0 | 0 | 1 | 0 | 0 | 0 |
-| `jentic` | 210 | 0 | 0 | 210 | 0 | 0 | 25 | 0 | 0 | 0 |
-| `github-code-search` | 186 | 0 | 2 | 186 | 0 | 0 | 22 | 0 | 0 | 0 |
-| `github-publisher-trees` | 13 | 0 | 46 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 142 | 0 | 0 | 142 | 0 | 0 | 6 | 0 | 0 | 0 |
-| `vendor-portals` | 8 | 0 | 161 | 8 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `apis.guru` | 9 | 0 | 0 | 9 | 0 | 0 | 2 | 0 | 0 | 0 |
+| `jentic` | 210 | 0 | 0 | 210 | 0 | 0 | 30 | 0 | 0 | 0 |
+| `github-code-search` | 187 | 0 | 1 | 187 | 0 | 0 | 24 | 0 | 0 | 0 |
+| `github-publisher-trees` | 13 | 0 | 48 | 13 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `sourcegraph` | 142 | 0 | 0 | 142 | 0 | 0 | 9 | 0 | 0 | 0 |
+| `vendor-portals` | 8 | 0 | 168 | 8 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 **Verdict: `exhausted`.** No real-world document in the six declared sources both declares this row and reaches the arm while passing every screen, so the arm has no real witness and stays open.

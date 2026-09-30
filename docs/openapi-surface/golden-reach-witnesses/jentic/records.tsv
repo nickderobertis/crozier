@@ -21668,6 +21668,12 @@ format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	
 format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
 format-hostname	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-hostname	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+format-idn-hostname	document	apis/openapi/short.io/main/1.0.0/openapi.json	census 1	enumeration.tsv.gz
+format-idn-hostname	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json	census 6	probe.jsonl
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json	census 6	probe.jsonl
 format-ipv4	candidate	apis/openapi/cloudflare.com/main/4.0.0/meta/import/output-bundle.json	census 6	probe.jsonl
@@ -21851,6 +21857,17 @@ format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json fern	fail
 format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json licence	passed	screens.jsonl
 format-ipv4	screen	apis/openapi/cloudflare.com/main/4.0.0/openapi.json ref	passed	screens.jsonl
 format-ipv4	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/input-entry.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/meta/import/output-entry.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/mercure.local/main/0.3.2/openapi.json	census 2	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/input-bundle.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/input-entry.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/output-bundle.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/meta/import/output-entry.json	census 4	enumeration.tsv.gz
+format-iri	document	apis/openapi/short.io/main/1.0.0/openapi.json	census 4	enumeration.tsv.gz
+format-iri	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-bundled.json	census 1	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/input-entry.json	census 1	enumeration.tsv.gz
 format-json-pointer	document	apis/openapi/gsmtasks.com/main/2.4.13/meta/import/output-bundled.json	census 1	enumeration.tsv.gz
@@ -88524,6 +88541,52 @@ non-identifier-operation-id	document	apis/openapi/{vanity-name}.api.visier.io/vi
 non-identifier-operation-id	document	apis/openapi/{vanity-name}.api.visier.io/visier-user-management/22222222.99201.1256/meta/import/output-entry.json	census 22	enumeration.tsv.gz
 non-identifier-operation-id	document	apis/openapi/{vanity-name}.api.visier.io/visier-user-management/22222222.99201.1256/openapi.json	census 22	enumeration.tsv.gz
 non-identifier-operation-id	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+oneof-anyof-variant	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json	census 2	probe.jsonl
+oneof-anyof-variant	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json	census 2	probe.jsonl
+oneof-anyof-variant	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json	census 2	probe.jsonl
+oneof-anyof-variant	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json	census 2	probe.jsonl
+oneof-anyof-variant	candidate	apis/openapi/vercel.com/main/0.0.1/openapi.json	census 2	probe.jsonl
+oneof-anyof-variant	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/assemblyai.com/main/1.3.4/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/assemblyai.com/main/1.3.4/openapi.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/elastic.co/kibana/1.0/meta/import/input-bundle.json	census 6	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/elastic.co/kibana/1.0/meta/import/input-entry.json	census 6	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/elastic.co/kibana/1.0/meta/import/output-bundle.json	census 6	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/elastic.co/kibana/1.0/meta/import/output-entry.json	census 6	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/elastic.co/kibana/1.0/openapi.json	census 6	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-bundle.json	census 30	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/input-entry.json	census 30	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-bundle.json	census 30	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/metabase.com/main/v0.57.1-SNAPSHOT/meta/import/output-entry.json	census 30	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/metabase.com/main/v0.57.1-SNAPSHOT/openapi.json	census 30	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-bundle.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/input-entry.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-bundle.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/meta/import/output-entry.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/sandbox.moffin.mx/main/0.1.0/openapi.json	census 1	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json	census 2	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json	census 2	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json	census 2	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json	census 2	enumeration.tsv.gz
+oneof-anyof-variant	document	apis/openapi/vercel.com/main/0.0.1/openapi.json	census 2	enumeration.tsv.gz
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 2 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json licence	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json ref	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 2 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json licence	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json ref	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 2 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json licence	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json ref	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 2 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json licence	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/meta/import/output-entry.json ref	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json fern	failed: Fern CLI 5.67.1 / python-sdk 5.20.0 fern check exit 1: Found 2 errors and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown. First: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json licence	passed	screens.jsonl
+oneof-anyof-variant	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json ref	passed	screens.jsonl
+oneof-anyof-variant	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 oneof-array-variant-anyof-item	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/input-bundled.json	census 1	probe.jsonl
 oneof-array-variant-anyof-item	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/input-entry.json	census 1	probe.jsonl
 oneof-array-variant-anyof-item	candidate	apis/openapi/vercel.com/main/0.0.1/meta/import/output-bundled.json	census 1	probe.jsonl
@@ -88606,6 +88669,12 @@ oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1
 oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json licence	passed	screens.jsonl
 oneof-array-variant-closed-object-item	screen	apis/openapi/vercel.com/main/0.0.1/openapi.json ref	passed	screens.jsonl
 oneof-array-variant-closed-object-item	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/input-bundle.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/input-entry.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/output-bundle.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/meta/import/output-entry.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	document	apis/openapi/go.v7labs.com/main/0.1.0/openapi.json	census 4	enumeration.tsv.gz
+oneof-closed-empty-object-variant	walk	jentic/jentic-public-apis@eb9d12a2684b0fbcb5aecf51e8ae54dba0929743	74240	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-bundle.json	census 3	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/input-entry.json	census 3	enumeration.tsv.gz
 oneof-discriminated-union	document	apis/openapi/100hires.com/main/2.0.0/meta/import/output-bundle.json	census 3	enumeration.tsv.gz

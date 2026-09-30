@@ -66,6 +66,11 @@
       "selector": "securityScheme.flows.password",
       "selector_status": "available"
     },
+    "oneof-anyof-variant": {
+      "region": "schemas",
+      "selector": "schema.oneOf>schema.anyOf",
+      "selector_status": "available"
+    },
     "oneof-array-variant-annotated-ref-item": {
       "region": "schemas",
       "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
@@ -104,6 +109,11 @@
     "oneof-bare-object-example-variant": {
       "region": "schemas",
       "selector": "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
+      "selector_status": "available"
+    },
+    "oneof-closed-empty-object-variant": {
+      "region": "schemas",
+      "selector": "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
       "selector_status": "available"
     },
     "property-sole-anyof-closed-object-member": {

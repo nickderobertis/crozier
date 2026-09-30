@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .bigquery_obj_rel_remote_table_multiple_columns import BigqueryObjRelRemoteTableMultipleColumns
+from .bigquery_obj_rel_remote_table_single_column import BigqueryObjRelRemoteTableSingleColumn
+
+RufKeyOnObjRelUsingChoiceBigQueryForeignKeyConstraintOn = typing.Union[
+    str, typing.List[str], BigqueryObjRelRemoteTableSingleColumn, BigqueryObjRelRemoteTableMultipleColumns
+]

@@ -222,6 +222,12 @@ re-measure with `just fixtures-gaps`.
 | 230 | `peopledatalabs` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/peopledatalabs.com/main/5.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`) | link-ok | People Data Labs API 5.0; an enum value led by a number past Fern's number-to-words range (`10001+`) |
 | 231 | `standrig` | github-raw | https://raw.githubusercontent.com/sayaka-aiart/StandRig/33e15309c44f8122a88e01ed7e71efc9989cb652/docs/openapi.json | `33e15309c44f8122a88e01ed7e71efc9989cb652` | Apache-2.0 (the repository's `LICENSE` at the pinned commit; the document declares no `info.license`) | link-ok | StandRig Modeling Tools core API 0.2.0 (OpenAPI 3.1); an `anyOf` alternative that is a string `const` |
 | 232 | `mockserver` | github-raw | https://raw.githubusercontent.com/mock-server/mockserver-monorepo/ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037/jekyll-www.mock-server.com/mockserver-openapi.yaml | `ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037` | Apache-2.0 (the repository's `LICENSE.md` at the pinned commit; the document's `info.license` is Apache 2.0) | link-ok | MockServer's own control-plane API description; its draft-04 meta-schema `$ref` is pinned in `corpus-remote-ref-pins.tsv` |
+| 301 | `ideaconsult-enanomapper` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/ideaconsult.net/enanomapper/4.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | LGPL (the document's own `info.license`, `API available under GNU Lesser General Public License`, inside the CC0-1.0 `APIs-guru/openapi-directory` aggregation) | link-ok | The eNanoMapper database API 4.0.0 as Ideaconsult publishes it; operations declaring `externalDocs` |
+| 302 | `openaire-graph` | github-raw | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/graph.openaire.eu/main/2.0/openapi.json | `eb9d12a2684b0fbcb5aecf51e8ae54dba0929743` | CC-BY (the document's own `info.license` names https://graph.openaire.eu/docs/license, which grants re-use under CC-BY; the aggregating repository is CC0-1.0) | link-ok | The OpenAIRE Graph API 2.0 as its publisher serves it (`info.x-jentic-source-url` is `https://graph.openaire.eu/docs/apis/home/`); schemas declaring `xml.attribute` |
+| 303 | `qredence-fleet-rlm` | github-raw | https://raw.githubusercontent.com/Qredence/fleet-rlm/0322623598b6cda0eea580694264e69a40081f10/openapi.yaml | `0322623598b6cda0eea580694264e69a40081f10` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | fleet-rlm 0.7.10 (OpenAPI 3.1), Qredence's own server description; a `oneOf` variant that is itself an `anyOf` |
+| 304 | `fiware-context-generator` | github-raw | https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml | `354bf6920d20955aabb55f4778a4d8a3d855440b` | MIT (the publisher repository's pinned `LICENSE`, FIWARE Foundation; the document declares no `info.license`) | link-ok | The LiveBuildings data model API 0.0.1, the context generator's own description; an array item's `oneOf` member that is an `anyOf` |
+| 305 | `hasura-metadata` | github-raw | https://raw.githubusercontent.com/hasura/graphql-engine/94915fe51d6d21bd7f6d4452dc16221bef8cfefd/metadata.openapi.json | `94915fe51d6d21bd7f6d4452dc16221bef8cfefd` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Hasura GraphQL Engine's metadata schema as its repository publishes it: 334 component schemas and no paths; properties whose `oneOf` holds an `anyOf` |
+| 306 | `zoonk` | github-raw | https://raw.githubusercontent.com/zoonk/zoonk/4546e69762e30f245c9306acb95aa56fc69d2682/apps/apple/Zoonk/openapi.json | `4546e69762e30f245c9306acb95aa56fc69d2682` | MIT (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | link-ok | Zoonk's API as its repository publishes it for the Apple client: 48 paths and 69 component schemas; `MeDeletion`'s `oneOf` offers a closed empty object |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -601,7 +607,7 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 127 | `torrentarr` | `media-type-range`, `duplicate-normalized-paths` | ✅ byte-matched, no generator change |
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
-| 130 | `komga` | `media-type-range` | ⚠️ registered with 31 of 338 files in `unmatched` (40 when batch 14 registered it) |
+| 130 | `komga` | `media-type-range` | ⚠️ registered with 25 of 338 files in `unmatched` (40 when batch 14 registered it, 31 until row 302's numbered-operationId repair) |
 | 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
 | 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 305 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair, 306 until row 232's example-quoting repair) in `unmatched` and 148 crozier-only modules declared |
 
@@ -633,7 +639,7 @@ would have left no measured reason for the gap, which is the opposite of what th
 backlog is for. Each residual is a distinct body of work, named here so the next
 change has an exact set to shorten:
 
-- **`komga` (31 files, 40 when this batch registered it).** Binary/streaming responses. Fern makes **30**
+- **`komga` (25 files, 40 when this batch registered it, 31 until row 302's numbered-operationId repair joined `getGenres_1` into `get_genres1`).** Binary/streaming responses. Fern makes **30**
   `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a
   `@contextlib.contextmanager`; crozier makes **6**. Komga keys its ranges on
   `default` — `GET /api/v1/books/{bookId}/pages/{pageNumber}` declares `400` of
@@ -1238,3 +1244,64 @@ Each repair is pinned offline by a `tests/generation.rs` fragment of its documen
 OneVoice's paths are all relative `$ref`s into sibling files, which Fern leaves
 unresolved without a diagnostic, so its golden is the document's types and
 client wrapper only; the wrapper is what pins the auth arm.
+
+## Rows 301–330 — the remaining-gap searches' witnesses
+
+The search that closed the census's last open shapes registers a real-world
+witness for each one a licensed, immutably pinned document Fern generates from
+declares. Each byte-matches its Fern 5.20.0 golden with `unmatched: &[]`:
+
+| # | name | the row it witnesses | status |
+|---:|---|---|---|
+| 301 | `ideaconsult-enanomapper` | `operation-external-docs` | ✅ byte-matched after two repairs |
+| 302 | `openaire-graph` | `xml-attribute` | ✅ byte-matched after two repairs |
+| 303 | `qredence-fleet-rlm` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
+| 304 | `fiware-context-generator` | `oneof-anyof-variant` | ✅ byte-matched after two repairs |
+| 305 | `hasura-metadata` | `oneof-anyof-variant` | ✅ byte-matched after seven repairs |
+| 306 | `zoonk` | `oneof-closed-empty-object-variant` | ✅ byte-matched after four repairs |
+
+Each repair is pinned offline by a `tests/generation.rs` fragment of its document:
+- Examples: a required enum-typed query parameter is exampled by the enum's
+  first member whatever example it declares (`type`, exampled `bystudytype`, is
+  `BYINVESTIGATION`), and an optional one whose declared example Fern discards
+  (a number on a `type: string` parameter) is left out of the call rather than
+  given its default (eNanoMapper, OpenAIRE).
+- Names: `reference.md` spells a query parameter's `[]` out as `_array`
+  (`property_uris[]` is `property_uris_array`), as it does a form field's
+  (eNanoMapper); and a springdoc duplicate suffix joins the name it numbers
+  (`getById_1` is `get_by_id1`), which also moved six of Komga's residual files
+  to parity (OpenAIRE).
+- Types: a 3.1 multipart part declaring `contentMediaType:
+  application/octet-stream` is a file, as `format: binary` is, and a component
+  union member composing an `anyOf` of its own is that union, the properties
+  declared beside it unread (fleet-rlm).
+- Alternatives: a union whose members all lower to `str` collapses to `str`,
+  keeping the member's description, and a JSON-like success response that
+  declares no schema is `typing.Any` (FIWARE). Its two GitHub Pages `$ref`s
+  are pinned in `corpus-remote-ref-pins.tsv`.
+- Maps: a schema declaring `additionalProperties` beside `oneOf` or `anyOf`
+  is a map before it is a union, at the component, property and array-item
+  level, and its null member no longer makes it optional; a map value that is
+  only `additionalProperties: true` is `typing.Any`, and a `type: "null"`
+  array item `Optional[Any]` (Hasura).
+- Discriminators and names: a mapping value naming no component makes the
+  union an alias of `typing.Any` and keeps the discriminant property; a
+  discriminant is inferred from any property of the first member, not only
+  `type`; a model referencing a `Config` component imports it as
+  `types_config_Config`, clear of pydantic's own `Config` class;
+  and a JSON document with an integer past `u64` loads through the YAML
+  reader, as Fern's does (Hasura).
+- Tagged unions and aliases: a map whose value is a `oneOf` of objects each
+  tagging itself with a one-member `enum` is a discriminated union, as it is at
+  a property; an `allOf` member that is such a `oneOf` lends the model none of
+  its branches' properties; a request body component that is only `allOf` one
+  `$ref` stays in the type layer as an alias, which `reference.md` documents as
+  the `request`; and a `nullable` beside a response's lone `allOf` `$ref` makes
+  the method return it optionally (Zoonk).
+
+The screened documents these searches found that could not be registered are
+recorded with their measured reason in each search's record: the Open Build
+Service API (`opensuse.org/obs/2.10.50`, GPL-2.0, which declares
+`xml.attribute` 164 times) passes `fern check` and its generate exits 0 over a
+document Fern never parsed (`Failed to resolve
+#/paths/~1architectures/get/responses/401`), writing an empty SDK.

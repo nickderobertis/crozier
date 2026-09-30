@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .data_connector_source_timeout_microseconds import DataConnectorSourceTimeoutMicroseconds
+from .data_connector_source_timeout_milliseconds import DataConnectorSourceTimeoutMilliseconds
+from .data_connector_source_timeout_seconds import DataConnectorSourceTimeoutSeconds
+
+DataConnectorConnSourceConfigTimeout = typing.Union[
+    DataConnectorSourceTimeoutSeconds, DataConnectorSourceTimeoutMilliseconds, DataConnectorSourceTimeoutMicroseconds
+]

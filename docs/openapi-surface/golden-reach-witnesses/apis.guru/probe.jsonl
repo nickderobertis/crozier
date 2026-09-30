@@ -7021,15 +7021,6 @@
 {"build": "4828cc2b93f0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "format-password", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/here.com/positioning/2.1.1/openapi.yaml", "key": "format-regex", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/vercel.com/0.0.1/openapi.yaml", "key": "format-regex", "reached": [], "status": "exit 1: ith exit status: 2: error: Failed to parse src/fern/projects/types/create_project_request_environment_variables_item_target.py:7:214: Expected `:`, found string"}
-{"build": "4828cc2b93f0", "candidate": "APIs/adyen.com/BalancePlatformConfigurationNotification-v1/1/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/adyen.com/BalancePlatformService/2/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/maif.local/otoroshi/1.5.0-dev/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/microsoft.com/graph-beta/1.0.1/openapi.yaml", "key": "format-time", "reached": [], "status": "exit 1: resource_access_package_resource_scopes_access_package_resource_get_access_package_resource_environment_request_select_item.py: File name too long (os error 36)"}
-{"build": "4828cc2b93f0", "candidate": "APIs/microsoft.com/graph/1.0.1/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/wealthreader.com/1.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
-{"build": "4828cc2b93f0", "candidate": "APIs/zuora.com/2021-08-20/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/airbyte.local/config/1.0.0/openapi.yaml", "key": "format-uri", "reached": [], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/alertersystem.com/1.7.0/openapi.yaml", "key": "format-uri", "reached": [], "status": "exit 1: py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/alert_log/client.py:84:115: Duplicate keyword argument \"data_segment_code\""}
 {"build": "4828cc2b93f0", "candidate": "APIs/amadeus.com/2.2.0/openapi.yaml", "key": "format-uri", "reached": [], "status": "generated"}
@@ -7227,3 +7218,13 @@
 {"build": "4828cc2b93f0", "candidate": "APIs/apache.org/airflow/2.5.3/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
 {"build": "4828cc2b93f0", "candidate": "APIs/surevoip.co.uk/9dcb0dc8/openapi.yaml", "key": "securityscheme-type-openidconnect", "reached": ["src/ir.rs::auth_model[find\\(\\x7cscheme\\x7c \\{]"], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/mercure.local/0.3.2/openapi.yaml", "key": "format-iri", "reached": [], "status": "exit 1: /fern/raw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/raw_client.py:30:155: Duplicate parameter \"last_event_id\""}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/adyen.com/BalancePlatformConfigurationNotification-v1/1/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/adyen.com/BalancePlatformService/2/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/just-eat.co.uk/1.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/maif.local/otoroshi/1.5.0-dev/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/wealthreader.com/1.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/zoom.us/2.0.0/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/zuora.com/2021-08-20/openapi.yaml", "key": "format-time", "reached": [], "status": "generated"}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/microsoft.com/graph-beta/1.0.1/openapi.yaml", "key": "format-time", "reached": [], "status": "exit 1:  ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/device_app_management_functions/raw_client.py:98:240: Duplicate parameter \"count\""}
+{"build": "e8e8dbfb8cb5", "candidate": "APIs/microsoft.com/graph/1.0.1/openapi.yaml", "key": "format-time", "reached": [], "status": "exit 1: aw_client.py with ruff failed: ruff exited with exit status: 2: error: Failed to parse src/fern/groups_onenote/raw_client.py:372:882: Duplicate parameter \"self\""}

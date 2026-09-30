@@ -31,6 +31,27 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+/// [`render`] over a `.json` document, which the loader reads with serde_json.
+fn render_json(spec: &str) -> HashMap<String, String> {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let path = dir.path().join("api.json");
+    std::fs::write(&path, spec).unwrap();
+    render_files(GenerateArgs {
+        spec: path,
+        output: PathBuf::from("unused"),
+        package_name: Some("acme".to_string()),
+        project_name: Some("acme".to_string()),
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+    })
+    .expect("render succeeds")
+    .into_iter()
+    .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+    .collect()
+}
+
 fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
     let dir = tempfile::tempdir().expect("tempdir");
     let path = dir.path().join("api.yml");
@@ -12621,5 +12642,475 @@ components:
     assert!(
         raw.contains("                \"children\": children,\n"),
         "{raw}"
+    );
+}
+
+/// eNanoMapper's `getInvestigationResults` requires an inline-enum `type`
+/// exampled `bystudytype`, a later member: Fern's worked call passes the
+/// enum's first member all the same. Its `getSubstanceByUUID` takes a
+/// `property_uris[]` query parameter, which the Python signature names
+/// `property_uris` while `reference.md` spells the bracket out.
+#[test]
+fn a_required_enum_query_parameter_is_exampled_by_its_first_member_and_a_bracketed_name_is_documented_as_an_array(
+) {
+    let files = render(
+        r#"openapi: 3.0.0
+info: { title: eNanoMapper database, version: 4.0.0 }
+servers:
+  - url: https://api.ideaconsult.net
+paths:
+  /investigation:
+    get:
+      operationId: getInvestigationResults
+      tags: [Studies]
+      parameters:
+        - in: query
+          name: type
+          required: true
+          example: bystudytype
+          schema: { type: string, enum: [byinvestigation, byassay, bystudytype] }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /substance/{uuid}:
+    get:
+      operationId: getSubstanceByUUID
+      tags: [Substances]
+      parameters:
+        - { in: path, name: uuid, required: true, schema: { type: string } }
+        - { in: query, name: 'property_uris[]', description: Property URIs, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+"#,
+    );
+    let studies = files
+        .iter()
+        .find(|(path, _)| path.ends_with("studies/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the studies client");
+    assert!(
+        studies.contains("type=GetInvestigationResultsRequestType.BYINVESTIGATION,"),
+        "{studies}"
+    );
+    assert!(!studies.contains("BYSTUDYTYPE,\n"), "{studies}");
+    let substances = files
+        .iter()
+        .find(|(path, _)| path.ends_with("substances/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the substances client");
+    assert!(
+        substances.contains("property_uris: typing.Optional[str] = None,"),
+        "{substances}"
+    );
+    let reference = files
+        .iter()
+        .find(|(path, _)| path.ends_with("reference.md"))
+        .map(|(_, contents)| contents)
+        .expect("reference.md");
+    assert!(
+        reference.contains("**property_uris_array:** `typing.Optional[str]` — Property URIs"),
+        "{reference}"
+    );
+}
+
+/// OpenAIRE's Graph API, as springdoc numbers duplicate operationIds:
+/// `search_1` and `getById_1` name `search1` and `get_by_id1`, the suffix
+/// joined to the name it numbers. Its optional `size` is `type: string` but
+/// exampled `10`, a number Fern discards, and the call then passes nothing
+/// for it rather than the `"10"` its default would synthesize.
+#[test]
+fn a_numbered_operation_id_joins_its_suffix_and_a_discarded_optional_example_leaves_the_call() {
+    let files = render(
+        r#"openapi: 3.0.1
+info: { title: OpenAIRE Graph API, version: '2.0' }
+servers:
+  - url: https://api.openaire.eu/graph
+paths:
+  /v1/researchProducts:
+    get:
+      tags: [Research products]
+      operationId: search_1
+      parameters:
+        - in: query
+          name: size
+          required: false
+          example: 10
+          schema: { type: string, default: '10', example: 10 }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /v1/researchProducts/{id}:
+    get:
+      tags: [Research products]
+      operationId: getById_1
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: string } }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+"#,
+    );
+    let client = files
+        .iter()
+        .find(|(path, _)| path.ends_with("research_products/client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the research products client");
+    assert!(client.contains("    def search1(\n"), "{client}");
+    assert!(client.contains("    def get_by_id1("), "{client}");
+    assert!(!client.contains("search_1"), "{client}");
+    assert!(
+        client.contains("client.research_products.search1()\n"),
+        "{client}"
+    );
+    assert!(!client.contains("size=\"10\""), "{client}");
+}
+
+/// fleet-rlm (OpenAPI 3.1): a multipart part declaring `contentMediaType:
+/// application/octet-stream` is a file, as `format: binary` is, and a component
+/// union member that composes an `anyOf` of its own is that union, the
+/// properties declared beside it unread.
+#[test]
+fn an_octet_stream_part_is_a_file_and_a_composing_union_member_is_its_union() {
+    let files = render(
+        r#"openapi: 3.1.0
+info: { title: fleet-rlm, version: 0.7.10 }
+paths:
+  /api/attachments:
+    post:
+      tags: [attachments]
+      operationId: create_attachment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/Body_create_attachment' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+  /api/settings:
+    patch:
+      tags: [settings]
+      operationId: patch_settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SettingsPolicyPatchRequest' }
+      responses:
+        '200': { description: OK, content: { application/json: { schema: { type: object } } } }
+components:
+  schemas:
+    Body_create_attachment:
+      type: object
+      required: [attachment]
+      properties:
+        attachment: { type: string, contentMediaType: application/octet-stream }
+    SettingsPolicyPatchRequest:
+      oneOf:
+        - required: [revision, path]
+          properties:
+            path: { type: string }
+        - required: [revision]
+          anyOf:
+            - required: [updates]
+              properties:
+                updates: { minItems: 1 }
+            - required: [default_profile]
+          properties:
+            default_profile: { not: { type: 'null' } }
+      properties:
+        revision: { type: string }
+"#,
+    );
+    let raw = files
+        .iter()
+        .find(|(path, _)| path.ends_with("attachments/raw_client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the attachments raw client");
+    assert!(raw.contains("attachment: core.File,"), "{raw}");
+    assert!(
+        raw.contains("files={\n                \"attachment\": attachment,"),
+        "{raw}"
+    );
+    let member = files
+        .iter()
+        .find(|(path, _)| path.ends_with("types/settings_policy_patch_request_default_profile.py"))
+        .map(|(_, contents)| contents)
+        .expect("the composing member's own union");
+    assert!(
+        member.contains(
+            "SettingsPolicyPatchRequestDefaultProfile = typing.Union[SettingsPolicyPatchRequestDefaultProfileUpdates, typing.Any]"
+        ),
+        "{member}"
+    );
+    assert!(
+        files
+            .keys()
+            .any(|path| path
+                .ends_with("types/settings_policy_patch_request_default_profile_updates.py")),
+        "{:?}",
+        files.keys()
+    );
+}
+
+/// LiveBuildings' data model API: alternatives that all convert to one type are
+/// that type — an array item offering two string shapes, or a URI beside an
+/// `anyOf` of the same two, is `str` — and a required property so collapsed is
+/// documented by its first alternative, while an optional one keeps its own
+/// description on the wrapper. A `+json` success body declaring examples and no
+/// schema is unknown JSON.
+#[test]
+fn string_alternatives_collapse_and_a_schemaless_json_ld_body_is_unknown() {
+    let files = render(
+        r#"openapi: 3.0.3
+info: { title: LiveBuildings data model, version: 0.0.1 }
+paths:
+  /ngsi-ld/v1/entities:
+    get:
+      tags: [ngsi-ld]
+      operationId: getEntities
+      parameters:
+        - { in: query, name: type, required: true, schema: { type: string, enum: [Building] } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/ld+json:
+              examples:
+                keyvalues: { summary: Key-values, value: [{ id: urn:ngsi-ld:Building:1 }] }
+components:
+  schemas:
+    Building:
+      type: object
+      required: [id]
+      properties:
+        id:
+          description: Unique identifier of the entity
+          anyOf:
+            - { type: string, minLength: 1, description: Identifier format of any NGSI entity }
+            - { type: string, format: uri, description: Identifier format of any NGSI entity }
+        refMap:
+          description: Reference to the map containing the building
+          anyOf:
+            - { type: string, minLength: 1, description: Identifier format of any NGSI entity }
+            - { type: string, format: uri, description: Identifier format of any NGSI entity }
+        owner:
+          type: array
+          items:
+            anyOf:
+              - { type: string, minLength: 1 }
+              - { type: string, format: uri }
+        occupier:
+          type: array
+          items:
+            oneOf:
+              - { type: string, format: uri }
+              - anyOf:
+                  - { type: string, minLength: 1 }
+                  - { type: string, format: uri }
+"#,
+    );
+    let building = files
+        .iter()
+        .find(|(path, _)| path.ends_with("types/building.py"))
+        .map(|(_, contents)| contents)
+        .expect("the building model");
+    assert!(building.contains("    id: str = pydantic.Field()\n    \"\"\"\n    Identifier format of any NGSI entity\n"), "{building}");
+    assert!(
+        building.contains("description=\"Reference to the map containing the building\""),
+        "{building}"
+    );
+    assert!(
+        building.contains("    owner: typing.Optional[typing.List[str]] = None"),
+        "{building}"
+    );
+    assert!(
+        building.contains("    occupier: typing.Optional[typing.List[str]] = None"),
+        "{building}"
+    );
+    assert!(
+        !files
+            .keys()
+            .any(|path| path.contains("building_owner_item")
+                || path.contains("building_occupier_item")),
+        "{:?}",
+        files.keys()
+    );
+    let raw = files
+        .iter()
+        .find(|(path, _)| path.ends_with("ngsi_ld/raw_client.py"))
+        .map(|(_, contents)| contents)
+        .expect("the raw client");
+    assert!(raw.contains("-> HttpResponse[typing.Any]:"), "{raw}");
+}
+
+/// Hasura's metadata schema: `additionalProperties` beside alternatives is the
+/// map Fern reads, a `type: null` among them unread; a map value that is only
+/// `additionalProperties: true` is unknown; a `type: "null"` element is an
+/// optional unknown; a discriminator mapping to bare names leaves the union
+/// unknown and its members their tags; a union of references each tagged by a
+/// one-member enum drops the tag from the member models; a component named
+/// `Config` is imported under its package path beside a model's own `class
+/// Config`; and a float literal past `f64::MAX` still loads.
+#[test]
+fn hasura_shaped_maps_unions_and_names_generate_like_fern() {
+    let files = render_json(
+        r##"{
+  "openapi": "3.0.0",
+  "info": { "title": "", "version": "" },
+  "paths": {},
+  "components": { "schemas": {
+    "Holder": { "type": "object", "required": ["table", "value"], "properties": {
+      "table": { "additionalProperties": true, "anyOf": [ { "$ref": "#/components/schemas/TableName" }, { "type": "string" } ] },
+      "set": { "type": "object", "additionalProperties": { "additionalProperties": true } },
+      "postgres": { "type": "array", "items": { "type": "null" } },
+      "fields": { "type": "array", "items": { "additionalProperties": true, "anyOf": [ { "$ref": "#/components/schemas/TableName" }, { "$ref": "#/components/schemas/TableName" } ] } },
+      "limit": { "type": "number", "maximum": 1.7976931348623159077293051907890247336179769789423065727343008115773267580550096313270847732240753602112011387987139335765878976881441662249284743063947412437776789342486548527630221960124609411945308295208500576883815068234246288147391311054082723716335051068458629823994724593847971630483535632962422413721e308 },
+      "value": { "$ref": "#/components/schemas/Config" },
+      "body": { "oneOf": [ { "$ref": "#/components/schemas/Remove" }, { "$ref": "#/components/schemas/Transform" } ] }
+    } },
+    "TableName": { "type": "object", "properties": { "name": { "type": "string" } } },
+    "Config": { "type": "object", "properties": { "uri": { "type": "string" } } },
+    "Value": { "additionalProperties": true, "anyOf": [ { "type": "string" }, { "type": "null" }, { "type": "number" } ] },
+    "Arguments": { "type": "object", "additionalProperties": { "$ref": "#/components/schemas/Value" } },
+    "Remove": { "type": "object", "required": ["action"], "properties": { "action": { "type": "string", "enum": ["remove"] } } },
+    "Transform": { "type": "object", "required": ["action", "template"], "properties": { "action": { "type": "string", "enum": ["transform"] }, "template": { "type": "string" } } },
+    "ReturnType": { "discriminator": { "propertyName": "type", "mapping": { "table": "TableResponse" } }, "oneOf": [ { "$ref": "#/components/schemas/TableResponse" } ] },
+    "TableResponse": { "type": "object", "required": ["type"], "properties": { "type": { "type": "string", "enum": ["table"] } } }
+  } }
+}"##,
+    );
+    let file = |suffix: &str| {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no {suffix}: {:?}", files.keys()))
+    };
+    let holder = file("types/holder.py");
+    assert!(
+        holder.contains("    table: typing.Dict[str, typing.Any]\n"),
+        "{holder}"
+    );
+    assert!(holder.contains("    set_: typing_extensions.Annotated[\n        typing.Optional[typing.Dict[str, typing.Any]],"), "{holder}");
+    assert!(
+        holder.contains(
+            "    postgres: typing.Optional[typing.List[typing.Optional[typing.Any]]] = None"
+        ),
+        "{holder}"
+    );
+    assert!(
+        holder.contains(
+            "    fields: typing.Optional[typing.List[typing.Dict[str, typing.Any]]] = None"
+        ),
+        "{holder}"
+    );
+    assert!(
+        holder.contains("from .config import Config as types_config_Config"),
+        "{holder}"
+    );
+    assert!(
+        holder.contains("    value: types_config_Config\n"),
+        "{holder}"
+    );
+    assert!(file("types/value.py").contains("Value = typing.Dict[str, typing.Any]\n"));
+    assert!(file("types/arguments.py").contains("Arguments = typing.Dict[str, Value]\n"));
+    assert!(file("types/return_type.py").contains("ReturnType = typing.Any\n"));
+    assert!(file("types/table_response.py").contains("    type: TableResponseType\n"));
+    assert!(
+        !file("types/remove.py").contains("action"),
+        "{}",
+        file("types/remove.py")
+    );
+    assert!(
+        !file("types/transform.py").contains("action"),
+        "{}",
+        file("types/transform.py")
+    );
+}
+
+/// Zoonk's shapes, as Fern 5.20.0 generates them: a map whose value is a `oneOf`
+/// of objects each tagging itself `kind` is a discriminated union; an `allOf`
+/// member that is such a `oneOf` lends the model no properties; a request body
+/// component that is only `allOf` one `$ref` stays in the type layer as an alias
+/// and is what `reference.md` documents; and a `nullable` beside a response's
+/// lone `allOf` `$ref` makes the method return it optionally.
+#[test]
+fn zoonk_shaped_tagged_unions_aliases_and_nullable_responses_generate_like_fern() {
+    let files = render_json(
+        r##"{
+  "openapi": "3.0.3",
+  "info": { "title": "", "version": "" },
+  "paths": {
+    "/answers": { "post": { "operationId": "postAnswers",
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Answers" } } } },
+      "responses": { "200": { "description": "ok", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Steps" } } } } } } },
+    "/visibility": { "patch": { "operationId": "updateVisibility",
+      "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/VisibilityUpdate" } } } },
+      "responses": { "200": { "description": "ok" } } } },
+    "/thread": { "get": { "operationId": "getThread",
+      "responses": { "200": { "description": "or null", "content": { "application/json": { "schema": { "nullable": true, "allOf": [ { "$ref": "#/components/schemas/Thread" } ] } } } } } } }
+  },
+  "components": { "schemas": {
+    "Answers": { "type": "object", "required": ["answers"], "properties": {
+      "answers": { "type": "object", "additionalProperties": { "type": "object", "oneOf": [
+        { "type": "object", "required": ["kind", "userAnswers"], "properties": { "kind": { "type": "string", "enum": ["fillBlank"] }, "userAnswers": { "type": "array", "items": { "type": "string" } } } },
+        { "type": "object", "required": ["kind", "userPairs"], "properties": { "kind": { "type": "string", "enum": ["matchColumns"] }, "userPairs": { "type": "array", "items": { "type": "object", "required": ["left"], "properties": { "left": { "type": "string" } } } } } }
+      ] } }
+    } },
+    "Steps": { "type": "object", "required": ["steps"], "properties": {
+      "steps": { "type": "array", "items": { "allOf": [
+        { "type": "object", "required": ["id"], "properties": { "id": { "type": "string" } }, "additionalProperties": false },
+        { "oneOf": [
+          { "type": "object", "required": ["kind", "content"], "properties": { "kind": { "type": "string", "enum": ["alphabet"] }, "content": { "type": "object", "properties": { "symbol": { "type": "string" } } } } },
+          { "type": "object", "required": ["kind", "content"], "properties": { "kind": { "type": "string", "enum": ["reading"] }, "content": { "type": "object", "properties": { "text": { "type": "string" } } } } }
+        ] }
+      ] } }
+    } },
+    "Visibility": { "type": "object", "required": ["hidden"], "properties": { "hidden": { "type": "array", "items": { "type": "string" } } } },
+    "VisibilityUpdate": { "allOf": [ { "$ref": "#/components/schemas/Visibility" } ] },
+    "Thread": { "type": "object", "properties": { "id": { "type": "string" } } }
+  } }
+}"##,
+    );
+    let file = |suffix: &str| {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(suffix))
+            .map(|(_, contents)| contents.as_str())
+            .unwrap_or_else(|| panic!("no {suffix}: {:?}", files.keys()))
+    };
+    let answers = file("types/answers_answers_value.py");
+    assert!(
+        answers.contains("class AnswersAnswersValue_FillBlank(UniversalBaseModel):"),
+        "{answers}"
+    );
+    assert!(
+        answers.contains("    kind: typing.Literal[\"matchColumns\"] = \"matchColumns\"\n"),
+        "{answers}"
+    );
+    assert!(
+        answers.contains("pydantic.Field(discriminator=\"kind\")"),
+        "{answers}"
+    );
+    assert!(file("acme/client.py").contains("answers: typing.Dict[str, AnswersAnswersValue],"));
+    let step = file("types/steps_steps_item.py");
+    assert!(step.contains("    id: str\n"), "{step}");
+    assert!(
+        !step.contains("kind") && !step.contains("content"),
+        "{step}"
+    );
+    assert_eq!(
+        "from .visibility import Visibility\n\nVisibilityUpdate = Visibility\n",
+        file("types/visibility_update.py")
+            .lines()
+            .filter(|line| !line.starts_with('#'))
+            .skip_while(|line| line.is_empty())
+            .map(|line| format!("{line}\n"))
+            .collect::<String>()
+    );
+    assert!(file("reference.md").contains("**request:** `VisibilityUpdate`"));
+    let client = file("acme/client.py");
+    assert!(
+        client.contains(
+            "def get_thread(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Optional[Thread]:"
+        ),
+        "{client}"
     );
 }

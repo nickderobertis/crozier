@@ -1,0 +1,18 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "fiware-context-generator",
+  "corpus_spec_ref": "354bf6920d20955aabb55f4778a4d8a3d855440b",
+  "corpus_spec_url": "https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml",
+  "corpus_remote_ref_pins": [
+    {
+      "url": "https://smart-data-models.github.io/dataModel.Organization/Organization/examples/example-normalized.jsonld",
+      "pinned_url": "https://raw.githubusercontent.com/smart-data-models/dataModel.Organization/cab4ecc9f2da24e258b14791b44b54a9ba4c0882/Organization/examples/example-normalized.jsonld",
+      "sha256": "a44b46bc7a442add26543fc9ff124efda341c3ab959ebfb0675b5a770bb4e23f"
+    },
+    {
+      "url": "https://smart-data-models.github.io/dataModel.Organization/Organization/examples/example.json",
+      "pinned_url": "https://raw.githubusercontent.com/smart-data-models/dataModel.Organization/cab4ecc9f2da24e258b14791b44b54a9ba4c0882/Organization/examples/example.json",
+      "sha256": "fc9ec3bf284b55716b66732afeac15b06121150a663b860135bb742a6b3f89c7"
+    }
+  ]
+}

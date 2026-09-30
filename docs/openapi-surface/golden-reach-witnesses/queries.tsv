@@ -231,3 +231,19 @@ format-uri-reference	github-code-search	"format: uri-reference" filename:openapi
 format-uri-reference	github-code-search	"\"format\": \"uri-reference\"" filename:openapi.json
 format-uri-reference	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: uri-reference" count:all type:file
 format-uri-reference	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"uri-reference\"" count:all type:file
+format-idn-hostname	github-code-search	"format: idn-hostname" filename:openapi.yaml
+format-idn-hostname	github-code-search	"\"format\": \"idn-hostname\"" filename:openapi.json
+format-idn-hostname	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: idn-hostname" count:all type:file
+format-idn-hostname	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"idn-hostname\"" count:all type:file
+format-iri	github-code-search	"format: iri" filename:openapi.yaml
+format-iri	github-code-search	"\"format\": \"iri\"" filename:openapi.json
+format-iri	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"format: iri" count:all type:file
+format-iri	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"format\": \"iri\"" count:all type:file
+oneof-anyof-variant	github-code-search	"- anyOf:" "oneOf:" filename:openapi.yaml
+oneof-anyof-variant	github-code-search	"\"oneOf\"" "{\"anyOf\"" filename:openapi.json
+oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"- anyOf:" count:all type:file
+oneof-anyof-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"{\"anyOf\"" count:all type:file
+oneof-closed-empty-object-variant	github-code-search	"oneOf:" "properties: {}" "additionalProperties: false" filename:openapi.yaml
+oneof-closed-empty-object-variant	github-code-search	"\"oneOf\"" "\"properties\": {}" "\"additionalProperties\": false" filename:openapi.json
+oneof-closed-empty-object-variant	sourcegraph	file:(openapi|swagger).*\.(yaml|yml)$ content:"oneOf:" content:"properties: {}" content:"additionalProperties: false" count:all type:file
+oneof-closed-empty-object-variant	sourcegraph	file:(openapi|swagger).*\.json$ content:"\"oneOf\": [" content:"\"properties\": {}" content:"\"additionalProperties\": false" count:all type:file

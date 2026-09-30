@@ -1,0 +1,13 @@
+{
+  "confirmed_witness": {
+    "commit": "4546e69762e30f245c9306acb95aa56fc69d2682",
+    "path": "apps/apple/Zoonk/openapi.json",
+    "repository": "github.com/zoonk/zoonk",
+    "screen": "witness-search-github-code-search/screens.jsonl:84",
+    "sha256": "66fb51c1cedb48101854a6e837b665ad3f83bd2d947a7ddc1fe8deef9d654e16"
+  },
+  "key": "oneof-closed-empty-object-variant",
+  "outcome": "witness-found, registered as CORPUS.md row 306",
+  "source": "github-publisher-trees",
+  "unacquired_disposition": "not owed while this key is closed on a licensed, Fern-accepted, publisher-owned witness; every planned query is still issued, and unacquired identities stay in the ledgers and reopen if registration or byte matching fails"
+}

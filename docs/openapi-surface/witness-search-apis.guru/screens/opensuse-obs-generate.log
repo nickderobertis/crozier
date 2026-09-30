@@ -1,0 +1,29 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/crozier-fern-parity-2026-09-23/scratch/1333466-4/tmp.Nz0bpsQrSM/fern/.preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Open Build Service API
+::error title=[api]%3A python-sdk::Failed to parse openapi document Open Build Service API
+[api]: python-sdk Failed to resolve #/paths/~1architectures/get/responses/401 
+                  CliError: Failed to resolve #/paths/~1architectures/get/responses/401
+                      at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)
+                      at Ewf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:118800)
+                      at N1r (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:114735)
+                      at kue (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:122958)
+                      at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136726)
+                      at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)
+                      at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167
+                      at Array.forEach (<anonymous>)
+                      at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)
+                      at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+::error title=[api]%3A python-sdk::Failed to resolve #/paths/~1architectures/get/responses/401 %0ACliError: Failed to resolve #/paths/~1architectures/get/responses/401%0A    at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)%0A    at Ewf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:118800)%0A    at N1r (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:114735)%0A    at kue (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:122958)%0A    at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136726)%0A    at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)%0A    at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167%0A    at Array.forEach (<anonymous>)%0A    at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)%0A    at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-30092-jmYBFOfQUSLl
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/ai-orchestrator/runs/crozier-fern-parity-2026-09-23/scratch/1333466-4/tmp.Nz0bpsQrSM/fern/.preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+exit 0

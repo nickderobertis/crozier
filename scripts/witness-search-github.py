@@ -53,6 +53,10 @@ RAW_BACKOFF_BASE_S = 10.0
 RAW_TRANSFER_ATTEMPT_BUDGET = 3
 CODE_SEARCH_SPACING_S = 30.0
 CODE_SEARCH_REFUSAL_COOLDOWN_S = 300.0
+# GitHub code search serves a query's first 1,000 results, 10 pages of 100, and
+# answers a later page 422; a window short of its reported count at the last
+# page is truncated there as surely as one an empty page ends.
+CODE_SEARCH_PAGE_CAP = 10
 SOURCEGRAPH_SPACING_S = 10.0
 SOURCEGRAPH_REFUSAL_COOLDOWN_S = 3600.0
 OPENAPI_VERSION = re.compile(r"3\.\d+\.\d+(?:[-+].*)?")
@@ -666,13 +670,13 @@ class Acquirer:
                     "paths": sorted(paths.values(), key=lambda x: x["path"]),
                 },
             )
-        done = {
-            (row["repository"], row["path"], row["commit"])
-            for row in jsonl(self.evidence / "documents.jsonl")
-            if row.get("status") not in ("acquisition-failure",)
-        }
+        recorded: dict[tuple[str, str, str], dict[str, Any]] = {}
+        for row in jsonl(self.evidence / "documents.jsonl"):
+            if row.get("status") not in ("acquisition-failure",):
+                recorded[(row["repository"], row["path"], row["commit"])] = row
         for path, item in sorted(paths.items()):
-            if (repository, path, commit) in done:
+            if (repository, path, commit) in recorded:
+                self.recount_tree_document(recorded[(repository, path, commit)], keys)
                 continue
             url = (
                 self.raw_github_url
@@ -723,6 +727,49 @@ class Acquirer:
                 continue
             result = self.census_tree_document(data, keys)
             self.write("documents.jsonl", {**identity, **result})
+
+    def recount_tree_document(
+        self, row: dict[str, Any], keys: dict[str, dict[str, str]]
+    ) -> None:
+        """Count, over a walked document's cached bytes, the keys its census never counted.
+
+        A key joins the search after the trees were walked; the walk read each
+        document once, for the keys it had then. A readable document whose row
+        lacks a key is read again from the cache at its recorded digest, and a
+        row carrying every key's count is appended, the recorded counts kept
+        as they were. Without cached bytes, or where the census no longer reads
+        them, nothing is written, and the index reads the uncounted key as
+        outstanding for that document.
+        """
+        counts = row.get("selector_counts")
+        if row.get("status") != "readable" or not isinstance(counts, dict):
+            return
+        missing = {key: value for key, value in keys.items() if key not in counts}
+        digest = row.get("sha256")
+        if not missing or not isinstance(digest, str):
+            return
+        cached = [
+            path for suffix in (".json", ".yaml")
+            if (path := self.cache / "documents" / (digest + suffix)).is_file()
+        ]
+        if not cached:
+            return
+        data = cached[0].read_bytes()
+        if hashlib.sha256(data).hexdigest() != digest:
+            return
+        result = self.census_tree_document(data, missing)
+        if result.get("status") != "readable":
+            return
+        self.write(
+            "documents.jsonl",
+            {
+                **{field: row[field] for field in ("source", "repository", "path", "commit", "blob", "url", "acquisition_route") if field in row},
+                "sha256": digest,
+                "status": "readable",
+                "selector_counts": {**result["selector_counts"], **counts},
+                "recounted_keys": sorted(missing),
+            },
+        )
 
     def census_tree_document(
         self, data: bytes, keys: dict[str, dict[str, str]]
@@ -805,7 +852,9 @@ class Acquirer:
             "result_count"
         ):
             return [item for row in answered for item in row["results"]]
-        if answered and answered[-1].get("page_count") == 0:
+        if answered and (
+            answered[-1].get("page_count") == 0 or len(answered) >= CODE_SEARCH_PAGE_CAP
+        ):
             split = self._split_truncated(
                 key, query, lower, upper, answered[0]["result_count"],
                 answered[-1]["retrieved_total"],
@@ -955,7 +1004,7 @@ class Acquirer:
                 return found
             if self.first_page_only:
                 return None
-            if not items:
+            if not items or page >= CODE_SEARCH_PAGE_CAP:
                 self.write(
                     "queries.jsonl",
                     {
@@ -1521,6 +1570,11 @@ class Acquirer:
         self.write("candidates.jsonl", record)
         return record
 
+    def cached(self, fetched: dict[str, Any]) -> bool:
+        """Whether a ledger row's document is in the cache, holding the bytes it pinned."""
+        path = self.cache / "documents" / str(fetched.get("document"))
+        return path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == fetched.get("sha256")
+
     def reuse(
         self, fetched: dict[str, Any], key: str, selector: str
     ) -> dict[str, Any]:
@@ -1868,7 +1922,20 @@ def _main() -> int:
             if digest[0] % shards != shard:
                 continue
             documents.setdefault(identity[1:], []).append((identity[0], item))
-        for members in documents.values():
+        # A document an earlier run read for another key is the same repository,
+        # path and revision: its cached bytes are classified again rather than
+        # fetched again, wherever they still hash to the digest that run pinned.
+        earlier = {
+            (row["repository"], row["path"], row.get("commit") or row.get("blob")): row
+            for row in jsonl(args.evidence / "candidates.jsonl")
+            if row.get("document") and row.get("disposition") != "acquisition-failure"
+        }
+        for document, members in documents.items():
+            read = earlier.get(document)
+            if read is not None and acquirer.cached(read):
+                for other, _ in members:
+                    acquirer.reuse(read, other, keys[other]["selector"])
+                continue
             key, item = members[0]
             selector = keys[key]["selector"]
             try:

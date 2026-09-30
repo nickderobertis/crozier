@@ -18,6 +18,7 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -260,6 +261,17 @@ class LocalServer(BaseHTTPRequestHandler):
                     {"message": "secondary rate limit"},
                     {"X-Ratelimit-Remaining": "9", "Retry-After": "1"},
                 )
+            elif state["page_capped"]:
+                # 980 reported, 922 served across the ten pages GitHub allows; page 11 is 422.
+                page = int(urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)["page"][0])
+                if page > 10:
+                    self.reply(422, {"message": "Cannot access beyond the first 1000 results"})
+                else:
+                    self.reply(200, {"total_count": 980, "incomplete_results": False, "items": [
+                        {"repository": {"full_name": "example/api"}, "path": f"openapi-{page}-{n}.yaml",
+                         "sha": "a" * 40,
+                         "url": f"http://127.0.0.1:{self.server.server_port}/repos/example/api/contents/openapi.yaml?ref={'b' * 40}"}
+                        for n in range(22 if page == 10 else 100)]})
             else:
                 early_empty = state["early_empty"] and "page=2" in self.path
                 self.reply(
@@ -414,6 +426,7 @@ class WitnessSearchGithubTests(unittest.TestCase):
             "incomplete_sourcegraph": False,
             "partition": False,
             "early_empty": False,
+            "page_capped": False,
             "contents": 0,
             "sourcegraph": 0,
             "refuse_sourcegraph": False,
@@ -619,6 +632,48 @@ class WitnessSearchGithubTests(unittest.TestCase):
         records = [json.loads(line) for line in (self.root / "documents.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual("acquisition-failure", records[-1]["status"])
         self.assertEqual(403, records[-1]["http_status"])
+
+    def test_a_key_added_after_the_walk_is_counted_from_the_cached_document(self) -> None:
+        """A walked document read before a key joined is counted for it again, from the cache.
+
+        The second walk fetches nothing: it reads the document's cached bytes at
+        their recorded digest, appends a row carrying every key's count with the
+        earlier counts kept, and the index then reads the new key's count off it.
+        A key no row ever counted is a count still owed, never a zero.
+        """
+        publisher = {"repository": "example/api", "commit": "c" * 40,
+                     "scope": "", "derivation": "local API publisher"}
+        first = {"closed-object": {"selector": "schema.additionalProperties=false"}}
+        self.search.publisher_walk(publisher, first)
+        fetched = self.server.state["raw_hits"]
+        ledger = self.root / "documents.jsonl"
+        before = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(["closed-object"], list(before[0]["selector_counts"]))
+
+        root = self.root / "evidence-root"
+        directory = root / "witness-search-github-publisher-trees"
+        directory.mkdir(parents=True)
+        grown = {**first, "one-of": {"selector": "schema.oneOf"}}
+        (directory / "keys.json").write_text(json.dumps({"keys": grown}), encoding="utf-8")
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        owed = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
+        self.assertEqual("outstanding", owed["one-of"]["disposition"])
+        self.assertIn("never counted this key", owed["one-of"]["census"])
+
+        self.search.publisher_walk(publisher, grown)
+        self.assertEqual(fetched, self.server.state["raw_hits"], "a recount reads the cache, not the network")
+        after = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(len(before) + 1, len(after))
+        self.assertEqual(["one-of"], after[-1]["recounted_keys"])
+        self.assertEqual(before[0]["sha256"], after[-1]["sha256"])
+        self.assertEqual(before[0]["selector_counts"]["closed-object"], after[-1]["selector_counts"]["closed-object"])
+        (directory / "documents.jsonl").write_text(ledger.read_text(encoding="utf-8"), encoding="utf-8")
+        counted = {row["key"]: row for row in SEARCH.INDEX.source_rows(root, "github-publisher-trees")}
+        self.assertEqual(f"census {after[-1]['selector_counts']['one-of']}", counted["one-of"]["census"])
+        self.assertEqual(owed["closed-object"], counted["closed-object"] | {"evidence": owed["closed-object"]["evidence"]})
+
+        self.search.publisher_walk(publisher, grown)
+        self.assertEqual(len(after), len(ledger.read_text(encoding="utf-8").splitlines()), "a counted key is not counted twice")
 
     def test_sourcegraph_http_error_stops_search(self) -> None:
         self.server.state["sourcegraph_status"] = 404
@@ -958,6 +1013,49 @@ class WitnessSearchGithubTests(unittest.TestCase):
         self.assertEqual(1, sum("shared_with_key" in row for row in rows))
         self.assertFalse((evaluation / "documents").exists())
 
+    def test_cli_evaluate_reads_a_document_an_earlier_run_fetched_from_the_cache(self) -> None:
+        """A later run's key reuses the bytes an earlier run's key fetched, unless they no longer match."""
+        script = REPO / "scripts/witness-search-github.py"
+        evaluation = self.root / "cli-later"
+        evaluation.mkdir()
+        cache = self.root / "cli-later-cache"
+        item = {
+            "repository": "example/api",
+            "path": "openapi.yaml",
+            "sha": "a" * 40,
+            "url": f"{self.url}/repos/example/api/contents/openapi.yaml?ref={'b' * 40}",
+        }
+        first, second, third = tuple(sorted(SEARCH.derive_keys(REPO / "docs/openapi-surface"))[:3])
+        env = {**os.environ, "CROZIER_GITHUB_API_URL": self.url, "GITHUB_TOKEN": "offline-test-token"}
+
+        def evaluate(key: str) -> None:
+            with (evaluation / "queries.jsonl").open("a", encoding="utf-8") as ledger:
+                ledger.write(json.dumps({"source": "github-code-search", "key": key, "query": f"q {key}",
+                                         "outcome": "answered", "results": [item]}) + "\n")
+            evaluated = subprocess.run(
+                [sys.executable, str(script), *SOURCE_COMMIT, "--evidence", str(evaluation),
+                 "--cache", str(cache), "--source", "github-code-search", "--stage", "evaluate", "--key", key],
+                env=env, capture_output=True, text=True,
+            )
+            self.assertEqual(0, evaluated.returncode, evaluated.stderr)
+
+        evaluate(first)
+        evaluate(second)
+        self.assertEqual(1, self.server.state["contents"])
+        rows = [json.loads(line) for line in (evaluation / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual([first, second], [row["key"] for row in rows])
+        self.assertEqual(first, rows[1]["shared_with_key"])
+        self.assertEqual(rows[0]["sha256"], rows[1]["sha256"])
+        self.assertEqual("does-not-declare", rows[1]["disposition"])
+
+        # A cached copy that no longer hashes to its pin is no reading: the document is fetched again.
+        (cache / "documents" / rows[0]["document"]).write_bytes(b"openapi: 3.0.0\n")
+        evaluate(third)
+        self.assertEqual(2, self.server.state["contents"])
+        last = json.loads((evaluation / "candidates.jsonl").read_text(encoding="utf-8").splitlines()[-1])
+        self.assertEqual(third, last["key"])
+        self.assertNotIn("shared_with_key", last)
+
     def test_cli_evaluate_raw_route_downloads_at_the_commit_off_the_rest_buckets(self) -> None:
         """Exact-commit raw download: no contents read, paced lane, sharded identities."""
         script = REPO / "scripts/witness-search-github.py"
@@ -1201,6 +1299,19 @@ components:
             self.search.github_search("closed-object", "additionalProperties")
         )
         self.assertEqual(2, self.server.state["searches"])
+
+    def test_a_window_short_at_the_last_page_github_serves_is_truncated_not_paged_past(self) -> None:
+        self.server.state["page_capped"] = True
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        rows = [json.loads(line) for line in (self.root / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(list(range(1, 11)), [row["page"] for row in rows if row["outcome"] == "answered"])
+        self.assertNotIn("refused", {row["outcome"] for row in rows})
+        truncated = next(row for row in rows if row["outcome"] == "outstanding-index-truncation")
+        self.assertEqual((980, 922, 10), (truncated["reported"], truncated["retrieved"], truncated["page"]))
+        self.assertEqual(10, self.server.state["searches"])
+        # A resumed search reads the same ten pages off the ledger and asks GitHub nothing more.
+        self.assertIsNone(self.search.github_search("closed-object", "additionalProperties"))
+        self.assertEqual(10, self.server.state["searches"])
 
     def test_old_empty_page_is_marked_outstanding_on_resume(self) -> None:
         query = "additionalProperties"

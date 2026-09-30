@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .citus_arr_rel_using_f_key_on_multiple_columns import CitusArrRelUsingFKeyOnMultipleColumns
+from .citus_arr_rel_using_f_key_on_single_column import CitusArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnPostgresCitusForeignKeyConstraintOn = typing.Union[
+    CitusArrRelUsingFKeyOnSingleColumn, CitusArrRelUsingFKeyOnMultipleColumns
+]

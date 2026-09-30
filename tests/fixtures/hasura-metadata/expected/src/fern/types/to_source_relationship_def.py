@@ -1,0 +1,23 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .to_source_relationship_def_relationship_type import ToSourceRelationshipDefRelationshipType
+
+
+class ToSourceRelationshipDef(UniversalBaseModel):
+    field_mapping: typing.Dict[str, str]
+    relationship_type: ToSourceRelationshipDefRelationshipType
+    source: str
+    table: typing.Dict[str, typing.Any]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

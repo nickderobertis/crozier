@@ -137,7 +137,7 @@ fern-streaming-extension	operation.x-fern-streaming	src/openapi.rs::Operation::s
 parameter-name	parameter.name	src/ir.rs::header_param_stem,src/ir.rs::path_param_position,src/openapi.rs::normalize_parameters,src/emit.rs::url_arg[if stripped\.contains]	
 parameter-in	parameter.in	src/ir.rs::build_endpoint[let has_unsupported_params],src/ir.rs::build_endpoint[^\s*PathParam \{],src/ir.rs::build_endpoint[^\s*QueryParam \{],src/ir.rs::build_endpoint[^\s*HeaderParam \{]	
 parameter-description	parameter.description	src/emit.rs::push_path_param,src/emit.rs::raw_docstring[if let Some\(desc\) = &dp\.description],src/emit.rs::push_param_doc	
-parameter-required	parameter.required	src/emit.rs::method_params[if required && !base\.starts_with],src/ir.rs::build_endpoint[&& p\.schema\.as_ref\(\)\.is_some_and],src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)]	
+parameter-required	parameter.required	src/emit.rs::method_params[if required && !base\.starts_with],src/ir.rs::build_endpoint[=^\s*!required && !without_declared_example],src/ir.rs::build_endpoint[^\s*HeaderParam \{],src/ir.rs::global_headers[if p\.location == Some\(ParameterLocation::Header\)]	
 parameter-deprecated	parameter.deprecated	none	
 parameter-allow-empty-value	parameter.allowEmptyValue	none	
 parameter-style	parameter.style	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
@@ -204,7 +204,7 @@ enum	schema.enum	src/ir.rs::string_enum_values,src/ir.rs::build_enum,src/ir.rs::
 type-single	schema.type	src/openapi.rs::TypeField::primary,src/ir.rs::base_type_ref[match schema\.ty\.as_ref\(\)\.and_then\(\x7ct\x7c t\.primary\(\)\) \{],src/ir.rs::scalar_body,src/ir.rs::is_object_type,src/ir.rs::is_string_type,src/ir.rs::declares_scalar_type	
 allof	schema.allOf	src/ir.rs::member_fields,src/ir.rs::single_all_of_ref,src/ir.rs::sole_all_of_ref,src/ir.rs::described_all_of_ref,src/ir.rs::sole_inline_all_of,src/ir.rs::Builder::add_object[for member in schema\.all_of\.iter\(\)\.flatten\(\) \{]	
 oneof	schema.oneOf	src/ir.rs::union_variants,src/ir.rs::Builder::add_named[if let Some\(variants\) = schema\.one_of\.as_ref\(\)\.or\(schema\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::discriminated_union,src/ir.rs::Builder::variant_ref[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/openapi.rs::collapse_sole_composition_member	
-anyof	schema.anyOf	src/ir.rs::union_variants,src/ir.rs::Builder::add_named[if let Some\(variants\) = schema\.one_of\.as_ref\(\)\.or\(schema\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::field_type_ref[if let Some\(members\) = prop_schema\.any_of\.as_ref\(\)\.or\(prop_schema\.one_of\.as_ref\(\)\) \{],src/ir.rs::simple_nullable_member,src/openapi.rs::collapse_sole_composition_member	
+anyof	schema.anyOf	src/ir.rs::union_variants,src/ir.rs::Builder::add_named[if let Some\(variants\) = schema\.one_of\.as_ref\(\)\.or\(schema\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::field_type_ref[if let Some\(members\) = alternatives \{],src/ir.rs::simple_nullable_member,src/openapi.rs::collapse_sole_composition_member	
 not	schema.not	none	
 items	schema.items	src/ir.rs::base_type_ref[Some\("array"\) => \{],src/ir.rs::array_item_type_ref,src/ir.rs::Builder::nested_array_element,src/ir.rs::InlineHoister::hoist_array_item_type	
 properties	schema.properties	src/ir.rs::Builder::collect_fields,src/ir.rs::InlineHoister::hoist_object_fields,src/ir.rs::hoist_inline_object,src/ir.rs::is_inline_object,src/ir.rs::is_inline_struct	
@@ -321,6 +321,7 @@ anyof-inline-object-variant	schema.anyOf>schema.properties:non-empty	src/ir.rs::
 oneof-empty-object-variant	schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
 anyof-empty-object-variant	schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
 anyof-closed-empty-object-variant	schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object	
+oneof-closed-empty-object-variant	schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$],src/ir.rs::is_declared_empty_object,src/ir.rs::Builder::variant_ref[if is_inline_object\(variant\) \x7c\x7c is_declared_empty_object\(variant\) \{]	
 property-string-enum	schema.properties>schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
 property-string-const	schema.properties>schema.const:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(prop_schema\) \{],src/ir.rs::Builder::field_type_ref[^\s*if let Some\(values\) = string_enum_values\(prop_schema\) \{],src/ir.rs::string_enum_values	
 property-inline-struct	schema.properties>schema.properties:non-empty	src/ir.rs::InlineHoister::prop_type_ref[is_inline_struct\(prop_schema\) \{],src/ir.rs::is_inline_struct	
@@ -462,3 +463,4 @@ format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primi
 boolean-schema-true	fixture=webflow-v2	none	
 xml-wrapped	schema.xml.wrapped	none	
 apiKey-query	fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	
+oneof-anyof-variant	schema.oneOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::composed_variant	

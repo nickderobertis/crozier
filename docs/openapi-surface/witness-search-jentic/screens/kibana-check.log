@@ -1,0 +1,181 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 40 errors
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponseProperties
+        issue: ComponentsSchemasCasesAlertCommentResponseProperties is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponsePropertiesCreatedBy
+        issue: ComponentsSchemasCasesAlertCommentResponsePropertiesCreatedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponsePropertiesPushedBy
+        issue: ComponentsSchemasCasesAlertCommentResponsePropertiesPushedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponsePropertiesRule
+        issue: ComponentsSchemasCasesAlertCommentResponsePropertiesRule is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponsePropertiesType
+        issue: ComponentsSchemasCasesAlertCommentResponsePropertiesType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesAlertCommentResponsePropertiesUpdatedBy
+        issue: ComponentsSchemasCasesAlertCommentResponsePropertiesUpdatedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesCasesWebhook
+        issue: ComponentsSchemasCasesConnectorPropertiesCasesWebhook is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesCasesWebhookType
+        issue: ComponentsSchemasCasesConnectorPropertiesCasesWebhookType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesJira
+        issue: ComponentsSchemasCasesConnectorPropertiesJira is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesJiraFields
+        issue: ComponentsSchemasCasesConnectorPropertiesJiraFields is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesJiraType
+        issue: ComponentsSchemasCasesConnectorPropertiesJiraType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesNone
+        issue: ComponentsSchemasCasesConnectorPropertiesNone is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesNoneType
+        issue: ComponentsSchemasCasesConnectorPropertiesNoneType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesResilient
+        issue: ComponentsSchemasCasesConnectorPropertiesResilient is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesResilientFields
+        issue: ComponentsSchemasCasesConnectorPropertiesResilientFields is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesResilientType
+        issue: ComponentsSchemasCasesConnectorPropertiesResilientType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenow
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenow is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenowFields
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenowFields is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenowSir
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenowSir is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenowSirFields
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenowSirFields is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenowSirType
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenowSirType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesServicenowType
+        issue: ComponentsSchemasCasesConnectorPropertiesServicenowType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesSwimlane
+        issue: ComponentsSchemasCasesConnectorPropertiesSwimlane is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesSwimlaneFields
+        issue: ComponentsSchemasCasesConnectorPropertiesSwimlaneFields is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesConnectorPropertiesSwimlaneType
+        issue: ComponentsSchemasCasesConnectorPropertiesSwimlaneType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesUserCommentResponseProperties
+        issue: ComponentsSchemasCasesUserCommentResponseProperties is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesUserCommentResponsePropertiesCreatedBy
+        issue: ComponentsSchemasCasesUserCommentResponsePropertiesCreatedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesUserCommentResponsePropertiesPushedBy
+        issue: ComponentsSchemasCasesUserCommentResponsePropertiesPushedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesUserCommentResponsePropertiesType
+        issue: ComponentsSchemasCasesUserCommentResponsePropertiesType is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> ComponentsSchemasCasesUserCommentResponsePropertiesUpdatedBy
+        issue: ComponentsSchemasCasesUserCommentResponsePropertiesUpdatedBy is already declared in cases.yml
+
+    [error]
+        path: __package__.yml -> types -> KibanaHttpApIsClassicFieldDefinitionConfig -> extends -> KibanaHttpApIsRecursiveRecord
+        issue: Objects can only extend other objects, and KibanaHttpApIsRecursiveRecord is not an object.
+
+    [error]
+        path: __package__.yml -> types -> KibanaHttpApIsFieldDefinitionConfig -> extends -> KibanaHttpApIsRecursiveRecord
+        issue: Objects can only extend other objects, and KibanaHttpApIsRecursiveRecord is not an object.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /api/agent_builder/converse/async -> post -> description
+        issue: Endpoint description for POST /api/agent_builder/converse/async contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: securityAiAssistantApi.yml -> service -> endpoints -> UpdateConversation
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: securityExceptionsApi.yml -> service -> endpoints -> UpdateExceptionList
+        issue: Multiple request properties resolve to the same generated name version after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Body property: <Request Body> -> _version (name: "_version")
+  - Body property: <Request Body> -> version (name: "version")
+
+    [error]
+        path: securityListsApi.yml -> service -> endpoints -> PatchList
+        issue: Multiple request properties resolve to the same generated name version after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Body property: <Request Body> -> _version (name: "_version")
+  - Body property: <Request Body> -> version (name: "version")
+
+    [error]
+        path: securityListsApi.yml -> service -> endpoints -> UpdateList
+        issue: Multiple request properties resolve to the same generated name version after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Body property: <Request Body> -> _version (name: "_version")
+  - Body property: <Request Body> -> version (name: "version")
+
+    [error]
+        path: securityOsqueryApi.yml -> service -> endpoints -> OsqueryUpdateSavedQuery
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: spaces.yml -> service -> endpoints -> put-spaces-space-id
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: streams.yml -> service -> endpoints -> post-streams-name-content-export
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+Found 40 errors and 52 warnings in 0.004 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+exit 1

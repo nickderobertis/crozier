@@ -212,6 +212,47 @@ class FullYamlTest(unittest.TestCase):
                         "--cache", str(cache))
             self.assertIn("0 parse-failure row(s) over 0 document(s) read again", again.stdout)
 
+    def test_a_key_added_after_a_publisher_tree_rereading_is_counted_from_the_same_copy(self) -> None:
+        # The full parser read the document while `keys.json` named only KEY; OTHER joined
+        # later, so its record would stay owed until the same copy is read again for it.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "evidence"
+            evidence = root / "witness-search-github-publisher-trees"
+            keys_file(evidence)
+            cache = Path(tmp) / "cache"
+            (cache / "documents").mkdir(parents=True)
+            digest = hashlib.sha256(DECLARER).hexdigest()
+            (cache / "documents" / f"{digest}.yaml").write_bytes(DECLARER)
+            first = {"source": "github-publisher-trees", "repository": "example/publisher",
+                     "path": "declarer.yaml", "commit": "c" * 40, "blob": git_blob(DECLARER),
+                     "sha256": digest, "status": "parse-failure", "diagnostic": "the stdlib loader refused it"}
+            read = {**{k: v for k, v in first.items() if k != "diagnostic"}, "status": "readable",
+                    "loader": "ruamel.yaml 0.19.1 (YAML 1.2)", "recensus_of": "parse-failure",
+                    "selector_counts": {KEY: 1}}
+            (evidence / "documents.jsonl").write_text(json.dumps(first) + "\n" + json.dumps(read) + "\n",
+                                                      encoding="utf-8")
+            owed = {row["key"]: row for row in INDEX.source_rows(root, "github-publisher-trees")}
+            self.assertEqual("outstanding", owed[OTHER]["disposition"])
+            self.assertIn("never counted this key", owed[OTHER]["census"])
+
+            completed = run("--evidence-root", str(root), "full-yaml", "--source", "github-publisher-trees",
+                            "--cache", str(cache), "--key", OTHER)
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            self.assertIn("github-publisher-trees: 0 parse-failure row(s) and 1 full-parser reading(s) "
+                          "missing a key's count over 1 document(s) read again: 1 readable", completed.stdout)
+            appended = [row for _, row in INDEX.jsonl(evidence / "documents.jsonl")][-1]
+            self.assertEqual({KEY: 1, OTHER: 0}, appended["selector_counts"])
+            self.assertEqual("parse-failure", appended["recensus_of"])
+
+            records = {row["key"]: row for row in INDEX.source_rows(root, "github-publisher-trees")}
+            self.assertEqual("census 0; read by ruamel.yaml 0.19.1 (YAML 1.2)", records[OTHER]["census"])
+            self.assertEqual("rejected", records[OTHER]["disposition"])
+            self.assertEqual("census 1; read by ruamel.yaml 0.19.1 (YAML 1.2)", records[KEY]["census"])
+
+            again = run("--evidence-root", str(root), "full-yaml", "--source", "github-publisher-trees",
+                        "--cache", str(cache))
+            self.assertIn("0 parse-failure row(s) over 0 document(s) read again", again.stdout)
+
     def test_a_document_past_the_time_bound_is_refused_with_the_bound(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "evidence"

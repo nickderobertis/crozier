@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .citus_obj_rel_remote_table_multiple_columns import CitusObjRelRemoteTableMultipleColumns
+from .citus_obj_rel_remote_table_single_column import CitusObjRelRemoteTableSingleColumn
+
+RufKeyOnObjRelUsingChoicePostgresCitusForeignKeyConstraintOn = typing.Union[
+    str, typing.List[str], CitusObjRelRemoteTableSingleColumn, CitusObjRelRemoteTableMultipleColumns
+]

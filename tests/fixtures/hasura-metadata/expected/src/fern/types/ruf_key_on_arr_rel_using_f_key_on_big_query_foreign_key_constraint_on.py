@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .bigquery_arr_rel_using_f_key_on_multiple_columns import BigqueryArrRelUsingFKeyOnMultipleColumns
+from .bigquery_arr_rel_using_f_key_on_single_column import BigqueryArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnBigQueryForeignKeyConstraintOn = typing.Union[
+    BigqueryArrRelUsingFKeyOnSingleColumn, BigqueryArrRelUsingFKeyOnMultipleColumns
+]

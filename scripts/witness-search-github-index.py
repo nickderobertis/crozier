@@ -251,6 +251,12 @@ def classify(
     status = row.get("disposition") or row.get("status") or "acquisition-outstanding"
     if status not in RAW_STATUSES:
         raise ValueError(f"unknown acquisition status: {status}")
+    # A walked document whose census predates the key never counted it: that is
+    # a count still owed, not a zero.
+    counts = row.get("selector_counts")
+    if status in RAW_DECLARING and "selector_count" not in row and isinstance(counts, dict) and key not in counts:
+        status = "selector-unavailable"
+        row = {**row, "diagnostic": "the census over this document never counted this key"}
     # A document read by a parser other than the census's own names it.
     read_by = f"; read by {row['loader']}" if row.get("loader") else ""
     # A candidate read from a namesake repository holding its blob names that repository.

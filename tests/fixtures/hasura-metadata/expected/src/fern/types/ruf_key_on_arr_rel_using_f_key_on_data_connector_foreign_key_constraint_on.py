@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .dataconnector_arr_rel_using_f_key_on_multiple_columns import DataconnectorArrRelUsingFKeyOnMultipleColumns
+from .dataconnector_arr_rel_using_f_key_on_single_column import DataconnectorArrRelUsingFKeyOnSingleColumn
+
+RufKeyOnArrRelUsingFKeyOnDataConnectorForeignKeyConstraintOn = typing.Union[
+    DataconnectorArrRelUsingFKeyOnSingleColumn, DataconnectorArrRelUsingFKeyOnMultipleColumns
+]

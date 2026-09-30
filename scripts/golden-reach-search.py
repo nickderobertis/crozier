@@ -23,7 +23,8 @@ Each subcommand does one stage and writes its evidence under
   listing, read from a local copy whose every byte is checked against the
   listing's SHA-256 before the census reads it. Every document goes into
   ``enumeration.tsv.gz`` — Contract B's enumeration columns — with the requested
-  keys it declares, or the measured reason it could not be read. The publisher
+  keys it declares (beside the keys earlier walks matched it for, which it
+  keeps), or the measured reason it could not be read. The publisher
   trees' pins name documents rather than archives, so ``fetch-pins`` first
   fetches each one with no local copy at its pinned commit.
 * ``query`` — a source that takes a text query (``github-code-search``,
@@ -77,7 +78,7 @@ import tempfile
 import time
 import urllib.parse
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
@@ -620,6 +621,8 @@ def walk(args: argparse.Namespace) -> int:
             result["counts"] = json.dumps(counts)
             result["matched_keys"] = ",".join(counts)
     out = source_dir(source) / "enumeration.tsv.gz"
+    requested = {key for key, _ in keys}
+    earlier = earlier_matches(out, requested)
     records: list[dict[str, str]] = []
     walks: dict[tuple[str, str], int] = defaultdict(int)
     with gzip.open(out, "wt", encoding="utf-8", newline="") as handle:
@@ -627,8 +630,12 @@ def walk(args: argparse.Namespace) -> int:
         writer.writeheader()
         for row, result in zip(listing, results):
             walks[(row["walk"], row["revision"])] += 1
+            # A row another search matched keeps that match: this walk answers for
+            # the keys it was given, and the other keys' document records rest on it.
+            kept = earlier.get((row["walk"], row["document"], row["sha256"]), []) if result["status"] == "readable" else []
+            matched = ",".join(dict.fromkeys([*kept, *filter(None, result["matched_keys"].split(","))]))
             writer.writerow({**{f: row[f] for f in ("walk", "document", "revision", "sha256")},
-                             "matched_keys": result["matched_keys"], "status": result["status"]})
+                             "matched_keys": matched, "status": result["status"]})
             counts = json.loads(result.get("counts") or "{}")
             for key, count in counts.items():
                 records.append({"key": key, "kind": "document", "subject": document_subject(row, repeated),
@@ -638,13 +645,29 @@ def walk(args: argparse.Namespace) -> int:
         for (tree, revision), count in sorted(walks.items()):
             records.append({"key": key, "kind": "walk", "subject": f"{tree}@{revision}",
                             "result": str(count), "file": listing_file})
-    requested = {key for key, _ in keys}
     kept = [r for r in read_records(source) if r["key"] in requested and r["kind"] not in ("walk", "document")]
     write_records(source, requested, kept + records)
     unreadable = sum(1 for r in results if r["status"] != "readable")
     print(f"golden-reach-search: {source}: {len(listing)} documents walked, {unreadable} unreadable")
     return 0
 
+
+
+def earlier_matches(path: Path, requested: set[str]) -> dict[tuple[str, str, str], list[str]]:
+    """Each document's keys an earlier walk matched, other than `requested`, by (walk, document, sha256).
+
+    A walk writes the whole enumeration again but censuses only the keys it is
+    given, so the matches of every other key's search are carried over from the
+    file it replaces: the same pinned bytes, read by that key's own walk.
+    """
+    if not path.is_file():
+        return {}
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
+        return {
+            (row["walk"], row["document"], row["sha256"]): kept
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+            if (kept := [key for key in filter(None, row["matched_keys"].split(",")) if key not in requested])
+        }
 
 
 def fetch_pins(args: argparse.Namespace) -> int:
@@ -993,7 +1016,7 @@ def probe(args: argparse.Namespace) -> int:
                 continue
             digest_or_reason[key_path] = digest
             by_digest.setdefault(digest, path)
-    todo = [digest for digest in by_digest if digest not in cache]
+    todo = to_generate(by_digest, cache, args.retry_timeouts)
 
     def rows_for(key: str) -> list[dict[str, Any]]:
         arms, earlier, pending = plans[key]
@@ -1023,6 +1046,18 @@ def probe(args: argparse.Namespace) -> int:
     print(f"golden-reach-search: {args.source}: {len(by_digest)} document(s) for {len(plans)} key(s), "
           f"{len(todo)} generated, {reaching} declarer row(s) reach an unreached arm")
     return 0
+
+
+def to_generate(documents: Iterable[str], cache: dict[str, dict[str, Any]], retry_timeouts: bool) -> list[str]:
+    """The document digests a probe generates: every one the build's cache lacks.
+
+    A cached run that timed out is no reading of the arms, so `--retry-timeouts`
+    generates it again (under the invocation's `--timeout`) rather than filing
+    the cached timeout a second time.
+    """
+    return [digest for digest in documents
+            if digest not in cache
+            or (retry_timeouts and cache[digest]["status"].startswith("timeout"))]
 
 
 def _probe_one(
@@ -1292,9 +1327,10 @@ def _unread(key: str, source: str) -> list[tuple[str, str, str]]:
         # A walked document the census could not read may declare the row; the
         # walk's enumeration, not a per-key row, is where that is recorded.
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            return [(row["document"], row["status"], row["sha256"])
-                    for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-                    if row["status"] != "readable"]
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        repeated = repeated_documents(rows)
+        return [(document_subject(row, repeated), row["status"], row["sha256"])
+                for row in rows if row["status"] != "readable"]
     return [(r["subject"], r["result"], "") for r in read_records(source)
             if r["key"] == key and r["kind"] == "document" and not r["result"].startswith("census ")]
 
@@ -1781,10 +1817,14 @@ def local_copies(
                     by_digest.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
         enumeration = source_dir(source) / "enumeration.tsv.gz"
         with gzip.open(enumeration, "rt", encoding="utf-8", newline="") as handle:
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE):
-                cut_off = row["status"].startswith("unreadable: census exceeded")
-                if row["status"] != "readable" and (timed_out or not cut_off):
-                    unread[row["document"]] = (locate(source, root, row, by_digest), row["sha256"])
+            rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        # A path two trees pin is two documents, each named `<walk>:<path>` as the
+        # records name it, so neither copy's reading stands in for the other's.
+        repeated = repeated_documents(rows)
+        for row in rows:
+            cut_off = row["status"].startswith("unreadable: census exceeded")
+            if row["status"] != "readable" and (timed_out or not cut_off):
+                unread[document_subject(row, repeated)] = (locate(source, root, row, by_digest), row["sha256"])
         return unread
     fetched: dict[str, dict[str, Any]] = {}
     ledger = source_dir(source) / "candidates.jsonl"
@@ -1898,9 +1938,9 @@ def recensus(args: argparse.Namespace) -> int:
             rows = list(csv.DictReader(handle, delimiter="\t"))
         added: list[dict[str, str]] = []
         for row in rows:
-            if row["document"] not in readings:
+            if document_subject(row, repeated) not in readings:
                 continue
-            counts, parsed, _loader, _digest = readings[row["document"]]
+            counts, parsed, _loader, _digest = readings[document_subject(row, repeated)]
             found = {key: n for key in walked for n in [count(key, counts, parsed)] if n}
             row["status"], row["matched_keys"] = "readable", ",".join(found)
             added += [{"key": key, "kind": "document", "subject": document_subject(row, repeated),
