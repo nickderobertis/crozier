@@ -14,7 +14,7 @@ on:
         required: false
         type: string
       fixtures:
-        description: Comma-separated CORPUS.md names (blank refreshes existing corpus goldens)
+        description: Comma-separated CORPUS.md names (blank refreshes existing corpus goldens, packaged and declared flat)
         required: false
         type: string
 
@@ -106,7 +106,10 @@ jobs:
 
       # Publish complete successful fixtures regardless of sibling failures or
       # later comparison termination. The tool stages only successful expected/
-      # trees, verifies origin still equals this checkout, and performs a normal push.
+      # trees and current expected-flat/ trees (the flat goldens
+      # tests/fixtures/flat-goldens.txt declares, refreshed in the same
+      # generation step), verifies origin still equals this checkout, and
+      # performs a normal push.
       - name: Publish successful Fern goldens
         id: publication
         if: always()

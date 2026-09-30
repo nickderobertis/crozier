@@ -1,0 +1,24 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .endpoints_error_category import EndpointsErrorCategory
+from .endpoints_error_code import EndpointsErrorCode
+
+
+class EndpointsError(UniversalBaseModel):
+    category: EndpointsErrorCategory
+    code: EndpointsErrorCode
+    detail: typing.Optional[str] = None
+    field: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

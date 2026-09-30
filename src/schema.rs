@@ -62,7 +62,14 @@ mod tests {
         assert_eq!(s["$id"], SCHEMA_URL);
         assert_eq!(s["type"], "object");
         let props = s["properties"].as_object().unwrap();
-        for key in ["spec", "output", "package-name", "audiences", "generators"] {
+        for key in [
+            "spec",
+            "output",
+            "package-name",
+            "audiences",
+            "layout",
+            "generators",
+        ] {
             assert!(props.contains_key(key), "missing property {key}");
         }
         // `generators` is an object whose values follow the generator schema, and
