@@ -13440,3 +13440,51 @@ fn flat_output_carries_no_project_name() {
     assert_eq!(one, other);
     assert!(one.values().all(|contents| !contents.contains("acme-dist")));
 }
+
+#[cfg(unix)]
+#[test]
+fn flat_regeneration_removes_a_symlink_but_not_what_it_points_at() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    let elsewhere = dir.path().join("elsewhere");
+    std::fs::create_dir_all(&elsewhere).unwrap();
+    std::fs::write(elsewhere.join("keep.txt"), "not crozier's\n").unwrap();
+    generate_flat(&out);
+    std::os::unix::fs::symlink(&elsewhere, out.join("linked")).unwrap();
+
+    generate_flat(&out);
+    assert!(
+        !out.join("linked").exists(),
+        "the link inside the old tree is cleared"
+    );
+    assert!(
+        elsewhere.join("keep.txt").is_file(),
+        "its target is never followed"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
+    use std::os::unix::fs::PermissionsExt;
+    let dir = tempfile::tempdir().expect("tempdir");
+    let out = dir.path().join("sdk");
+    generate_flat(&out);
+    // Searchable but not listable: the marker is found, the entries are not.
+    std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o311)).unwrap();
+    let result = generate(GenerateArgs {
+        spec: out.with_extension("yml"),
+        output: out.clone(),
+        package_name: Some("acme".to_string()),
+        project_name: None,
+        client_class_name: None,
+        audiences: Vec::new(),
+        audience_strict: false,
+        extra_fields: crozier::settings::ExtraFields::Allow,
+        layout: crozier::settings::Layout::Flat,
+    });
+    std::fs::set_permissions(&out, std::fs::Permissions::from_mode(0o755)).unwrap();
+    let err = result.expect_err("an unlistable previous generation fails the run");
+    assert!(err.to_string().contains("could not write"), "{err}");
+    assert!(err.to_string().contains("sdk"), "{err}");
+}

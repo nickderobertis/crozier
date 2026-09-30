@@ -10140,15 +10140,13 @@ pub fn clean_flat_tree(root: &std::path::Path) -> Result<()> {
     if !root.join(".fern").join("metadata.json").is_file() {
         return Ok(());
     }
-    let entries = std::fs::read_dir(root).map_err(|source| Error::WriteOutput {
-        path: root.to_path_buf(),
-        source,
-    })?;
-    for entry in entries {
-        let entry = entry.map_err(|source| Error::WriteOutput {
+    let entries = std::fs::read_dir(root)
+        .and_then(|dir| dir.collect::<std::io::Result<Vec<_>>>())
+        .map_err(|source| Error::WriteOutput {
             path: root.to_path_buf(),
             source,
         })?;
+    for entry in entries {
         let name = entry.file_name();
         if name.to_string_lossy().starts_with('.') && name != ".fern" {
             continue;
