@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.84](https://github.com/nickderobertis/crozier/compare/v0.0.83...v0.0.84) - 2026-09-30
+
+### Added
+
+- *(fixtures)* search and witness the shapes no search has answered ([#305](https://github.com/nickderobertis/crozier/pull/305))
+
 ## [0.0.83](https://github.com/nickderobertis/crozier/compare/v0.0.82...v0.0.83) - 2026-09-28
 
 ### Added
