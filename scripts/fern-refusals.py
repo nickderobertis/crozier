@@ -533,13 +533,18 @@ def diagnostics(log: str) -> list[str]:
         elif "[error] " in text:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
-                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack|\w*(Error|Exception)\b.*:", api.group(1)):
+                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack|.* is undefined$|\w*(Error|Exception)\b.*:", api.group(1)):
             message = api.group(1)
-        message = message.strip()
-        if message and message not in found:
+        # A name Fern could not form leaves the phrase leading with a space.
+        message = message.rstrip()
+        if message.strip() and message not in found:
             found.append(message)
     specific = [message for message in found if not message.startswith("Failed to parse openapi document")]
     return specific or found
+
+
+# Every class's and finding's template by name, for `most_specific`.
+TEMPLATES: dict[str, str] = {}
 
 
 def template_pattern(template: str) -> re.Pattern[str]:
@@ -547,12 +552,24 @@ def template_pattern(template: str) -> re.Pattern[str]:
     return re.compile("^" + ".*?".join(parts) + "$", re.S)
 
 
+def most_specific(names: list[str], templates: dict[str, str]) -> list[str]:
+    """Of the templates matching one message, those with the most literal text:
+    `Default value <…> is not a valid enum value` over `… is not a valid <…>`."""
+    if not names:
+        return names
+    literal = {name: len(templates[name].replace("<…>", "")) for name in names}
+    best = max(literal.values())
+    return [name for name in names if literal[name] == best]
+
+
 def class_patterns(classes: list[dict[str, str]]) -> list[tuple[str, re.Pattern[str]]]:
+    TEMPLATES.update((row["class"], row["diagnostic"]) for row in classes)
     return [(row["class"], template_pattern(row["diagnostic"])) for row in classes]
 
 
 def finding_patterns(findings: list[dict[str, str]]) -> list[tuple[str, re.Pattern[str]]]:
     """The phrases `fern check` refuses while `fern generate` still writes an SDK."""
+    TEMPLATES.update((row["finding"], row["diagnostic"]) for row in findings)
     return [(row["finding"], template_pattern(row["diagnostic"])) for row in findings
             if row["kind"] == "check-only"]
 
@@ -565,8 +582,10 @@ def classify(messages: list[str], patterns: list[tuple[str, re.Pattern[str]]],
     found: list[str] = []
     unmatched: list[str] = []
     for message in messages:
-        hits = [name for name, pattern in patterns if pattern.match(message)]
-        near = [name for name, pattern in findings if pattern.match(message)]
+        matched = most_specific([name for name, pattern in [*patterns, *findings] if pattern.match(message)],
+                                TEMPLATES)
+        hits = [name for name, _ in patterns if name in matched]
+        near = [name for name, _ in findings if name in matched]
         if len(hits) + len(near) != 1:
             unmatched.append(f"{message}  [matches: {', '.join(hits + near) or 'none'}]")
         elif hits and hits[0] not in carried:

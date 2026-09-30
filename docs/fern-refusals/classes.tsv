@@ -1,6 +1,6 @@
 class	family	fern_stage	fern_exit	diagnostic	documents	status	crozier_diagnostic	population_strict
 default-not-enum-value	documents	check	1	Default value <…> is not a valid enum value	0	unevaluated	—	—
-default-not-valid-integer	documents	check	1	Default value <…> is not a valid integer	0	unevaluated	—	—
+default-not-valid-for-type	documents	check	1	Default value <…> is not a valid <…>	0	unevaluated	—	—
 discriminant-value-unsuitable	names	check	1	Discriminant value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.	0	unevaluated	—	—
 duplicate-example-name	documents	check	1	Duplicate example name: <…>	0	unevaluated	—	—
 duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <…>.	0	unevaluated	—	—
@@ -26,6 +26,7 @@ service-auth-undefined	documents	check	1	Service requires auth, but no auth is d
 type-name-collision	names	check	1	<…> is already declared in <…>	0	unevaluated	—	—
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	0	unevaluated	—	—
 type-not-defined	documents	check	1	<…> is not defined.	0	unevaluated	—	—
+undefined-component-reference	documents	check	0	<…> is undefined	0	unevaluated	—	—
 unresolved-reference	documents	check	0	Failed to resolve <…>	0	unevaluated	—	—
 unresolved-schema-reference	documents	check	0	Unexpected error: Failed to resolve schema reference: <…>	0	unevaluated	—	—
 unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	0	unevaluated	—	—
