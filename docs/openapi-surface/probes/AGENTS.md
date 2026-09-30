@@ -6,7 +6,6 @@ and a real `fern generate` so
 with a shape no real-world document supplies. They exist so a verdict there can
 be **re-run** rather than taken on trust.
 
-<!-- llmlint: ignore[agents_md_durable_and_terse] This node's acceptance criteria require this file itself to state that a hand-written fixture is lower proof, admitted only after a failed search it cites, never a real-specification match, and how feature-level and arm-level covers classify; a probe author reads this file, not the fixture contract, so the statement is kept here and the contract is linked. -->
 **None of these is a corpus fixture, and none may become one.**
 [`../../../tests/fixtures/`](../../../tests/fixtures/) takes real-world
 specifications only ([`../../../tests/fixtures/AGENTS.md`](../../../tests/fixtures/AGENTS.md)),
@@ -15,9 +14,10 @@ so a probe never produces a `CORPUS.md` row, never counts as parity evidence in
 never moves a region row to `golden`. What a probe settles is a `limitations` row
 on a measured **non-generation** verdict only
 ([the amended rule](../../openapi-surface-coverage.md#what-a-probe-may-settle-as-amended-again));
-a shape Fern generates from is settled by a real specification. Only after the
-real-specification search for it has failed, and citing that search, may a
-hand-written document stand as generation evidence, and then as a
+a shape Fern generates from is settled by a real specification.
+<!-- llmlint: ignore[agents_md_durable_and_terse] This node's acceptance criteria require this file itself to state that a hand-written fixture is lower proof, admitted only after a failed search it cites, never a real-specification match, and how feature-level and arm-level covers classify; a probe author reads this file, not the fixture contract, so the statement is kept here and the contract is linked. -->
+Only after the real-specification search for it has failed, and citing that
+search, may a hand-written document stand as generation evidence, and then as a
 [hand-written fixture](../handwritten/AGENTS.md), never a probe. That is a lower
 level of proof than a real specification and never counts as a
 real-specification match. A feature-level cover makes its row `handwritten`; an

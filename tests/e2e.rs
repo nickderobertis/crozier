@@ -2063,6 +2063,43 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
     }
 }
 
+/// The contract states the pin in prose and in its `evidence.toml` example; the
+/// gate holds each fixture to `assets/scaffolding/metadata.json`, so this holds
+/// the prose to it too. Every version the contract names is one of the two pins.
+#[test]
+fn the_handwritten_contract_states_the_corpus_pin() {
+    let contract = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("{HANDWRITTEN_DIR}/AGENTS.md")),
+    )
+    .expect("the hand-written fixture contract");
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    for (field, pin) in [
+        ("fern_cli_version", &cli_pin),
+        ("fern_python_sdk_version", &sdk_pin),
+    ] {
+        assert!(
+            contract.contains(&format!("{field} = \"{pin}\"")),
+            "the contract's evidence.toml example does not pin {field} to {pin}"
+        );
+    }
+    let versions: Vec<&str> = contract
+        .split(|c: char| !(c.is_ascii_digit() || c == '.'))
+        .filter(|token| {
+            token.split('.').count() == 3 && token.split('.').all(|part| !part.is_empty())
+        })
+        .collect();
+    assert!(
+        !versions.is_empty(),
+        "the contract no longer states the pin"
+    );
+    for version in versions {
+        assert!(
+            version == cli_pin || version == sdk_pin,
+            "the contract names version {version}, which is neither pin ({cli_pin}, {sdk_pin})"
+        );
+    }
+}
+
 /// A scratch repository laid out as the real one is, holding one valid
 /// hand-written fixture with a feature-level and an arm-level cover, and the
 /// region row, ledgers and search records they cite, for the gate to be driven
