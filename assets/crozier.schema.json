@@ -59,6 +59,17 @@
           ],
           "description": "How generated pydantic models treat unknown fields (Fern's\n`pydantic_config.extra_fields`). Python-generator-specific, so it lives\nhere and not among the shared top-level defaults. Defaults to\n[`ExtraFields::Allow`] when unset."
         },
+        "layout": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Layout"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`\n(Fern's `local-file-system` output). Defaults to [`Layout::Packaged`]."
+        },
         "output": {
           "description": "Directory to write the generated SDK into.",
           "type": [
@@ -110,6 +121,21 @@
           "type": "string"
         }
       ]
+    },
+    "Layout": {
+      "description": "Which tree a generator writes — the two output modes Fern has, so a team\nmigrating from Fern sets the one that matches how it ran Fern:\n\n- [`Packaged`](Layout::Packaged) (default) writes a pip-installable package:\n  `pyproject.toml`, `requirements.txt`, `README.md`, `reference.md`, `.fern/`,\n  `tests/`, and the modules under `src/<package>/`. It matches\n  `fern generate --preview --output`.\n- [`Flat`](Layout::Flat) writes the package's modules at the output root, with\n  `README.md`, `CONTRIBUTING.md`, `reference.md`, `.fern/` and `tests/` beside\n  them and no packaging (no `pyproject.toml`, `requirements.txt`, `py.typed`, or\n  `version.py`). It matches Fern writing to a `local-file-system` output path.\n\nSee `docs/matching.md` for every way the flat form differs.",
+      "oneOf": [
+        {
+          "const": "packaged",
+          "description": "A pip-installable package (Fern's `--preview --output`).",
+          "type": "string"
+        },
+        {
+          "const": "flat",
+          "description": "The bare module tree at the output root (Fern's `local-file-system` output).",
+          "type": "string"
+        }
+      ]
     }
   },
   "$id": "https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/crozier.schema.json",
@@ -147,6 +173,17 @@
       },
       "description": "The named generator instances (one SDK each), in declaration order.",
       "type": "object"
+    },
+    "layout": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Layout"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Shared default output layout (`packaged` or `flat`)."
     },
     "output": {
       "description": "Shared default output directory.",

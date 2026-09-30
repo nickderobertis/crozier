@@ -140,6 +140,13 @@ struct GenerateCmd {
     /// drops them silently, `forbid` rejects them.
     #[arg(long = "extra-fields", value_name = "MODE")]
     extra_fields: Option<crate::settings::ExtraFields>,
+
+    /// Which tree to write, matching how Fern was run: `packaged` (default) is a
+    /// pip-installable package with the modules under `src/<package>/` (Fern's
+    /// `--preview --output`); `flat` is the bare module tree at the output root
+    /// (Fern's `local-file-system` output).
+    #[arg(long = "layout", value_name = "LAYOUT")]
+    layout: Option<crate::settings::Layout>,
 }
 
 impl GenerateCmd {
@@ -156,6 +163,7 @@ impl GenerateCmd {
             audiences: (!self.audiences.is_empty()).then(|| self.audiences.clone()),
             audience_strict: self.audience_strict.then_some(true),
             extra_fields: self.extra_fields,
+            layout: self.layout,
         }
     }
 }

@@ -10767,6 +10767,7 @@ const CROZIER_ENV_VARS: &[&str] = &[
     "CROZIER_AUDIENCES",
     "CROZIER_AUDIENCE_STRICT",
     "CROZIER_EXTRA_FIELDS",
+    "CROZIER_LAYOUT",
 ];
 
 /// Every `CROZIER_*` identifier mentioned in a source file, in order.
@@ -11400,6 +11401,8 @@ fn config_labels_the_layer_every_field_came_from() {
         ("audiences", "public", "generator"),
         ("audience-strict", "true", "env"),
         ("extra-fields", "forbid", "generator"),
+        // Never unset: with no layer supplying it, the value a run would use.
+        ("layout", "packaged", "default"),
     ];
     assert_eq!(rows.len(), expected.len(), "{stdout}");
     for (row, want) in rows.iter().zip(expected) {
@@ -11429,9 +11432,218 @@ fn config_labels_the_layer_every_field_came_from() {
             source, "default",
             "{field} should fall to the default layer"
         );
-        let expected = if field == "type" { "python" } else { "(unset)" };
+        let expected = match field.as_str() {
+            "type" => "python",
+            "layout" => "packaged",
+            _ => "(unset)",
+        };
         assert_eq!(value, expected, "{field}");
     }
+}
+
+/// Which tree a run wrote under `out/`: `packaged` (`pyproject.toml` beside
+/// `src/<package>/`) or `flat` (the package's modules at the root, no packaging).
+fn written_layout(out: &Path, package: &str) -> &'static str {
+    let packaged = out.join("pyproject.toml").is_file()
+        && out.join(format!("src/{package}/__init__.py")).is_file();
+    let flat = out.join("__init__.py").is_file()
+        && out.join("types/thing.py").is_file()
+        && !out.join("pyproject.toml").exists()
+        && !out.join("src").exists();
+    match (packaged, flat) {
+        (true, false) => "packaged",
+        (false, true) => "flat",
+        _ => panic!("{} holds neither layout", out.display()),
+    }
+}
+
+/// One case of the layout precedence journey: the layers present, the value the
+/// documented order resolves to, and the source `crozier config` should name.
+struct LayoutCase {
+    config: &'static str,
+    env: &'static [(&'static str, &'static str)],
+    args: &'static [&'static str],
+    winner: &'static str,
+    source: &'static str,
+}
+
+#[test]
+fn layout_resolves_flag_then_env_then_generator_then_shared_then_default() {
+    // Each case peels one layer, and each winner differs from the layer below it,
+    // so every step of the order is observable in the tree the run writes.
+    let four = "spec: ./api.yml\nlayout: flat\ngenerators:\n  python:\n    output: ./out\n    package-name: tiny\n    layout: packaged\n";
+    let generator_flat = "spec: ./api.yml\nlayout: packaged\ngenerators:\n  python:\n    output: ./out\n    package-name: tiny\n    layout: flat\n";
+    let shared_flat = "spec: ./api.yml\nlayout: flat\ngenerators:\n  python:\n    output: ./out\n    package-name: tiny\n";
+    let neither =
+        "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    package-name: tiny\n";
+    let cases = [
+        // The flag beats an env var, a generator value and a shared value.
+        LayoutCase {
+            config: four,
+            env: &[("CROZIER_LAYOUT", "flat")],
+            args: &["--layout", "packaged"],
+            winner: "packaged",
+            source: "env",
+        },
+        // `CROZIER_LAYOUT` beats the generator's own value.
+        LayoutCase {
+            config: four,
+            env: &[("CROZIER_LAYOUT", "flat")],
+            args: &[],
+            winner: "flat",
+            source: "env",
+        },
+        // The generator's value beats the shared one.
+        LayoutCase {
+            config: four,
+            env: &[],
+            args: &[],
+            winner: "packaged",
+            source: "generator",
+        },
+        LayoutCase {
+            config: generator_flat,
+            env: &[],
+            args: &[],
+            winner: "flat",
+            source: "generator",
+        },
+        // An empty `CROZIER_LAYOUT` counts as unset.
+        LayoutCase {
+            config: generator_flat,
+            env: &[("CROZIER_LAYOUT", "")],
+            args: &[],
+            winner: "flat",
+            source: "generator",
+        },
+        // The shared top-level value is inherited.
+        LayoutCase {
+            config: shared_flat,
+            env: &[],
+            args: &[],
+            winner: "flat",
+            source: "shared",
+        },
+        // No layer at all: the built-in `packaged`.
+        LayoutCase {
+            config: neither,
+            env: &[],
+            args: &[],
+            winner: "packaged",
+            source: "default",
+        },
+    ];
+
+    for case in cases {
+        let dir = layered_run(case.config, case.env, case.args);
+        assert_eq!(
+            written_layout(&dir.path().join("out"), "tiny"),
+            case.winner,
+            "config {:?}, env {:?}, args {:?}",
+            case.config,
+            case.env,
+            case.args
+        );
+
+        // `crozier config` (which has no `--layout` flag) names the same layer
+        // for the env/config layers the run above saw.
+        let mut config = crozier_clean_env();
+        config.current_dir(dir.path()).args(["config", "python"]);
+        for (name, value) in case.env {
+            config.env(name, value);
+        }
+        let out = config.output().expect("run crozier config");
+        assert!(out.status.success());
+        let stdout = String::from_utf8(out.stdout).expect("utf-8 stdout");
+        let layout = config_rows(&stdout, "python")
+            .into_iter()
+            .find(|row| row.0 == "layout")
+            .unwrap_or_else(|| panic!("no layout row in {stdout}"));
+        let shown = if case.args.is_empty() {
+            case.winner
+        } else {
+            "flat"
+        };
+        assert_eq!(
+            (layout.1.as_str(), layout.2.as_str()),
+            (shown, case.source),
+            "{stdout}"
+        );
+    }
+}
+
+#[test]
+fn a_bad_layout_is_refused_naming_the_value_and_its_layer() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC).unwrap();
+    let run = |config: Option<&str>, env: Option<&str>, args: &[&str]| {
+        match config {
+            Some(text) => std::fs::write(dir.path().join("crozier.yml"), text).unwrap(),
+            None => {
+                let _ = std::fs::remove_file(dir.path().join("crozier.yml"));
+            }
+        }
+        let mut cmd = crozier_clean_env();
+        cmd.current_dir(dir.path())
+            .env("CROZIER_SPEC", "./api.yml")
+            .env("CROZIER_OUTPUT", "./out")
+            .args(["generate", "python"])
+            .args(args);
+        if let Some(value) = env {
+            cmd.env("CROZIER_LAYOUT", value);
+        }
+        cmd.assert()
+            .failure()
+            .stderr(predicate::str::contains("panicked").not())
+    };
+
+    // The flag: a usage error (exit 2, as for any bad flag value) naming the
+    // flag, the value, and the accepted values.
+    run(None, None, &["--layout", "nested"]).code(2).stderr(
+        predicate::str::contains("'nested'")
+            .and(predicate::str::contains("--layout"))
+            .and(predicate::str::contains("packaged, flat")),
+    );
+    // The environment: the variable and the value.
+    run(None, Some("nested"), &[])
+        .code(1)
+        .stderr(predicate::str::contains(
+            "`CROZIER_LAYOUT` must be `packaged` or `flat`, got `nested`",
+        ));
+    // The file, at either level: the file, the value, and the accepted values.
+    for config in [
+        "layout: nested\n",
+        "generators:\n  python:\n    layout: nested\n",
+    ] {
+        run(Some(config), None, &[]).code(1).stderr(
+            predicate::str::contains("invalid config")
+                .and(predicate::str::contains("crozier.yml"))
+                .and(predicate::str::contains("nested"))
+                .and(predicate::str::contains("`packaged` or `flat`")),
+        );
+    }
+    // `--layout` is a per-generation flag, so it cannot be broadcast to two.
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        "generators:\n  a:\n    output: ./a\n  b:\n    output: ./b\n",
+    )
+    .unwrap();
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_SPEC", "./api.yml")
+        .args(["generate", "--layout", "flat"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains(
+            "apply to a single generator, but 2",
+        ));
+    assert!(
+        !dir.path().join("out").exists()
+            && !dir.path().join("a").exists()
+            && !dir.path().join("b").exists(),
+        "a refused layout must not generate anything"
+    );
 }
 
 #[test]

@@ -22,7 +22,7 @@ use crate::ir::{
     TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
-use crate::settings::ExtraFields;
+use crate::settings::{ExtraFields, Layout};
 use crate::wrap::Doc;
 
 /// The header comment crozier writes atop every generated file. It differs from
@@ -1314,23 +1314,27 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let repair_map = forward_repair_map(&ir.types, &ir.tag_types);
     let empty_forward = std::collections::HashSet::new();
 
-    // version.py
-    let version = render(
-        &env,
-        "version.py",
-        "version.py",
-        context! { project_name => ir.project_name },
-    )?;
-    files.push(GeneratedFile {
-        path: PathBuf::from(format!("src/{pkg}/version.py")),
-        contents: version,
-    });
+    // version.py and the py.typed marker are packaging: Fern's flat module tree
+    // carries neither.
+    let packaged = ir.layout == Layout::Packaged;
+    if packaged {
+        let version = render(
+            &env,
+            "version.py",
+            "version.py",
+            context! { project_name => ir.project_name },
+        )?;
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/version.py")),
+            contents: version,
+        });
 
-    // py.typed (an empty marker file).
-    files.push(GeneratedFile {
-        path: PathBuf::from(format!("src/{pkg}/py.typed")),
-        contents: String::new(),
-    });
+        // py.typed (an empty marker file).
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/py.typed")),
+            contents: String::new(),
+        });
+    }
 
     // The client package tree the module names imply. A module is normally one
     // directory (`videos`); an `x-crozier-sdk-group-name` list nests it
@@ -1415,9 +1419,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .iter()
             .any(|endpoint| endpoint.pagination.is_some()),
     ));
+    // Fern's flat tree has no publishing identity, so its wrapper sends no
+    // `SDK-Name`/`SDK-Version` headers.
     files.push(client_wrapper_file(
         pkg,
-        &ir.project_name,
+        packaged.then_some(ir.project_name.as_str()),
         &ir.auth,
         &ir.global_headers,
     ));
@@ -1673,7 +1679,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     files.push(reference_file(&env, ir, &reference_modules(ir), &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
-    files.extend(scaffolding_files(pkg, &ir.project_name));
+    files.extend(scaffolding_files(pkg, &ir.project_name, ir.layout));
 
     // Final wrapping is delegated to `ruff format` (the tool Fern runs), so the
     // emitters above produce content-correct Python without reproducing ruff's
@@ -1681,7 +1687,24 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // (Markdown, TOML, JSON, the `py.typed` marker) are left untouched.
     format_python_files(pkg, &mut files)?;
 
+    if ir.layout == Layout::Flat {
+        flatten_package_paths(pkg, &mut files);
+    }
+
     Ok(files)
+}
+
+/// Move the package's modules from `src/<pkg>/` to the output root, which is
+/// where Fern's flat tree (a `local-file-system` output) puts them. Everything
+/// else — `README.md`, `reference.md`, `.fern/`, `tests/` — is already at the root
+/// in both layouts.
+fn flatten_package_paths(pkg: &str, files: &mut [GeneratedFile]) {
+    let package_root = PathBuf::from(format!("src/{pkg}"));
+    for file in files.iter_mut() {
+        if let Ok(rest) = file.path.strip_prefix(&package_root) {
+            file.path = rest.to_path_buf();
+        }
+    }
 }
 
 /// Generate `environment.py`: an `enum.Enum` of the SDK's server environments.
@@ -2060,11 +2083,16 @@ fn root_init_file(
             4,
         ));
     }
-    tc.push_str(&from_import_block(
-        ".version",
-        &["__version__".to_string()],
-        4,
-    ));
+    // `__version__` reads the installed distribution's metadata, so only the
+    // packaged form exports it; Fern's flat tree has no `version.py`.
+    let packaged = ir.layout == Layout::Packaged;
+    if packaged {
+        tc.push_str(&from_import_block(
+            ".version",
+            &["__version__".to_string()],
+            4,
+        ));
+    }
 
     // `_dynamic_imports` pairs: every symbol → its source module.
     let mut pairs: Vec<(String, String)> = Vec::new();
@@ -2095,7 +2123,9 @@ fn root_init_file(
             pairs.push((n.clone(), format!(".{}", module_path(tag))));
         }
     }
-    pairs.push(("__version__".to_string(), ".version".to_string()));
+    if packaged {
+        pairs.push(("__version__".to_string(), ".version".to_string()));
+    }
 
     let names: Vec<String> = pairs.iter().map(|(n, _)| n.clone()).collect();
     Ok(GeneratedFile {
@@ -3058,38 +3088,60 @@ const DEFAULT_SDK_VERSION: &str = "0.0.0";
 /// the SDK version. The Python test/default-client templates carry the same
 /// substitutions so non-`fern` package names remain importable. Vendored under
 /// `assets/scaffolding/` (Apache-2.0; see `NOTICE`).
-fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
+///
+/// The flat layout drops the packaging (`pyproject.toml`, `requirements.txt`), and
+/// its aiohttp install hint names the package (import) name where the packaged
+/// form names the distribution — Fern's flat tree has no distribution to name.
+fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<GeneratedFile> {
     let pyproject = include_str!("../assets/scaffolding/pyproject.toml")
         .replace(SDK_NAME_PLACEHOLDER, project_name)
         .replace(PACKAGE_PLACEHOLDER, pkg)
         .replace(SDK_VERSION_PLACEHOLDER, DEFAULT_SDK_VERSION);
+    let install_name = match layout {
+        Layout::Packaged => project_name,
+        Layout::Flat => pkg,
+    };
     let substitute_names = |contents: &str| {
         contents
-            .replace(SDK_NAME_PLACEHOLDER, project_name)
+            .replace(SDK_NAME_PLACEHOLDER, install_name)
             .replace(PACKAGE_PLACEHOLDER, pkg)
     };
     let mut default_clients = substitute_names(include_str!(
         "../assets/scaffolding/default_clients.py.tmpl"
     ));
-    if default_clients.lines().any(|line| line.len() > 120) {
+    // The vendored file carries the hint as ruff lays out a mid-length name: the
+    // call split over three lines. Ruff joins it back onto one line when that fits
+    // in 120 columns (a short name, e.g. a flat tree's `fern`), and splits the
+    // string itself when even the split call overflows.
+    let hint = format!(
+        "\"To use the aiohttp client, install the aiohttp extra: pip install {install_name}[aiohttp]\""
+    );
+    let one_line = format!("            raise RuntimeError({hint})");
+    if one_line.chars().count() <= crate::pyfmt::LINE_LENGTH {
         default_clients = default_clients.replace(
+            &format!("            raise RuntimeError(\n                {hint}\n            )"),
+            &one_line,
+        );
+    } else if default_clients.lines().any(|line| line.len() > 120) {
+        default_clients = default_clients.replace(
+            &hint,
             &format!(
-                "\"To use the aiohttp client, install the aiohttp extra: pip install {project_name}[aiohttp]\""
-            ),
-            &format!(
-                "\"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install {project_name}[aiohttp]\""
+                "\"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install {install_name}[aiohttp]\""
             ),
         );
     }
-    vec![
-        GeneratedFile {
+    let mut files = Vec::new();
+    if layout == Layout::Packaged {
+        files.push(GeneratedFile {
             path: PathBuf::from("pyproject.toml"),
             contents: pyproject,
-        },
-        GeneratedFile {
+        });
+        files.push(GeneratedFile {
             path: PathBuf::from("requirements.txt"),
             contents: include_str!("../assets/scaffolding/requirements.txt").to_string(),
-        },
+        });
+    }
+    files.extend([
         GeneratedFile {
             path: PathBuf::from(".fern/metadata.json"),
             contents: include_str!("../assets/scaffolding/metadata.json").to_string(),
@@ -3112,7 +3164,8 @@ fn scaffolding_files(pkg: &str, project_name: &str) -> Vec<GeneratedFile> {
                 "../assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
             )),
         },
-    ]
+    ]);
+    files
 }
 
 /// Emit the vendored core runtime for a package. The runtime assets are emitted
@@ -3370,7 +3423,7 @@ fn distinct_global_header_params(global_headers: &[GlobalHeader]) -> Vec<&Global
 /// continuations, which would eat the Python indentation).
 fn client_wrapper_file(
     pkg: &str,
-    project_name: &str,
+    sdk_name: Option<&str>,
     auth: &Auth,
     global_headers: &[GlobalHeader],
 ) -> GeneratedFile {
@@ -3428,8 +3481,15 @@ fn client_wrapper_file(
     // crozier brands its own SDK-identity headers rather than impersonating Fern;
     // the e2e byte-match normalizes the `X-Crozier-` prefix back to `X-Fern-` so
     // the comparison against Fern's fixtures is otherwise exact (see docs/matching).
+    // The SDK-identity pair names the published distribution, so only the
+    // packaged form (`sdk_name` present) sends it.
+    let sdk_identity = sdk_name.map_or_else(String::new, |name| {
+        format!(
+            "            \"X-Crozier-SDK-Name\": \"{name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n"
+        )
+    });
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n            \"X-Crozier-SDK-Name\": \"{project_name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n{sdk_identity}            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     // Lead with the generated-file header (like every other emitted module): it
@@ -10045,6 +10105,42 @@ pub fn clean_package_tree(root: &std::path::Path, package: &str) -> Result<()> {
     }
 }
 
+/// The flat layout's counterpart of [`clean_package_tree`]: there the package *is*
+/// the output root, so a previous generation's modules sit directly under it.
+///
+/// A root counts as a previous generation only when it carries the
+/// `.fern/metadata.json` crozier writes; any other directory (a fresh one, or one
+/// the user owns) is written into without deleting anything. A previous
+/// generation loses every entry except the dot-entries beside `.fern/` (`.git`,
+/// `.fernignore`, editor state), which crozier never writes.
+pub fn clean_flat_tree(root: &std::path::Path) -> Result<()> {
+    if !root.join(".fern").join("metadata.json").is_file() {
+        return Ok(());
+    }
+    let entries = std::fs::read_dir(root).map_err(|source| Error::WriteOutput {
+        path: root.to_path_buf(),
+        source,
+    })?;
+    for entry in entries {
+        let entry = entry.map_err(|source| Error::WriteOutput {
+            path: root.to_path_buf(),
+            source,
+        })?;
+        let name = entry.file_name();
+        if name.to_string_lossy().starts_with('.') && name != ".fern" {
+            continue;
+        }
+        let path = entry.path();
+        let removed = if path.is_dir() && !path.is_symlink() {
+            std::fs::remove_dir_all(&path)
+        } else {
+            std::fs::remove_file(&path)
+        };
+        removed.map_err(|source| Error::WriteOutput { path, source })?;
+    }
+    Ok(())
+}
+
 /// Format every crozier-*generated* `.py` file in place with `ruff format`,
 /// delegating line-wrapping to the tool Fern uses. Two classes of file are left
 /// untouched:
@@ -10881,6 +10977,7 @@ mod tests {
             global_headers: Vec::new(),
             environment: None,
             extra_fields: crate::settings::ExtraFields::Allow,
+            layout: crate::settings::Layout::Packaged,
         }
     }
 
