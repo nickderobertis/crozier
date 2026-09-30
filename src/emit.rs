@@ -2545,6 +2545,16 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
                 ""
             },
         )
+        // Fern's shield credits the organization. Only the flat layout follows
+        // it: the packaged README keeps the `Fern` it has always carried, so no
+        // packaged output changes with the layout setting.
+        .replace(
+            "@@SHIELD_ORG@@",
+            match ir.layout {
+                Layout::Packaged => "Fern",
+                Layout::Flat => &org,
+            },
+        )
         .replace("@@ORG@@", &org)
         .replace("@@PROJECT@@", &ir.project_name)
         .replace("@@PKG@@", pkg)
@@ -3112,12 +3122,13 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
     // The vendored file carries the hint as ruff lays out a mid-length name: the
     // call split over three lines. Ruff joins it back onto one line when that fits
     // in 120 columns (a short name, e.g. a flat tree's `fern`), and splits the
-    // string itself when even the split call overflows.
+    // string itself when even the split call overflows. Only the flat layout
+    // joins it, so no packaged output changes with the layout setting.
     let hint = format!(
         "\"To use the aiohttp client, install the aiohttp extra: pip install {install_name}[aiohttp]\""
     );
     let one_line = format!("            raise RuntimeError({hint})");
-    if one_line.chars().count() <= crate::pyfmt::LINE_LENGTH {
+    if layout == Layout::Flat && one_line.chars().count() <= crate::pyfmt::LINE_LENGTH {
         default_clients = default_clients.replace(
             &format!("            raise RuntimeError(\n                {hint}\n            )"),
             &one_line,

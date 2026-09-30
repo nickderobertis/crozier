@@ -13250,30 +13250,34 @@ fn flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging() {
 #[test]
 fn aiohttp_hint_follows_ruffs_layout_for_the_name_length() {
     use crozier::settings::Layout;
-    let hint = |files: &HashMap<String, String>| files["src/acme/_default_clients.py"].clone();
+    let hint = |files: &HashMap<String, String>, path: &str| files[path].clone();
+    let three_lines = |name: &str| {
+        format!(
+            "            raise RuntimeError(\n                \"To use the aiohttp client, install the aiohttp extra: pip install {name}[aiohttp]\"\n            )\n"
+        )
+    };
 
-    // A short name fits on one line, as Fern's ruff pass leaves it.
-    let short = hint(&render_layout("acme", "acme", Layout::Packaged));
+    // Flat: a short name fits on one line, as Fern's ruff pass leaves it.
+    let short = hint(
+        &render_layout("acme", "acme", Layout::Flat),
+        "_default_clients.py",
+    );
     assert!(short.contains(
         "            raise RuntimeError(\"To use the aiohttp client, install the aiohttp extra: pip install acme[aiohttp]\")\n"
     ));
-
-    // A mid-length name splits the call over three lines.
-    let mid = hint(&render_layout(
-        "acme",
-        "default_package_name",
-        Layout::Packaged,
-    ));
-    assert!(mid.contains(
-        "            raise RuntimeError(\n                \"To use the aiohttp client, install the aiohttp extra: pip install default_package_name[aiohttp]\"\n            )\n"
-    ));
+    // Packaged keeps the three-line call it has always written, for any name
+    // that fits it, so the layout setting changes no packaged output.
+    let packaged = |project: &str| {
+        hint(
+            &render_layout("acme", project, Layout::Packaged),
+            "src/acme/_default_clients.py",
+        )
+    };
+    assert!(packaged("acme").contains(&three_lines("acme")));
+    assert!(packaged("default_package_name").contains(&three_lines("default_package_name")));
 
     // A name too long even for the split call splits the string too.
-    let long = hint(&render_layout(
-        "acme",
-        "fern_query-parameters-openapi",
-        Layout::Packaged,
-    ));
+    let long = packaged("fern_query-parameters-openapi");
     assert!(long.contains(
         "                \"To use the aiohttp client, install the aiohttp extra: \"\n                \"pip install fern_query-parameters-openapi[aiohttp]\"\n"
     ));
@@ -13389,14 +13393,41 @@ fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
 }
 
 #[test]
-fn readme_shield_names_the_organization_crozier_derives_from_the_package() {
-    let readme = &render_package(
-        "openapi: 3.0.0\ninfo:\n  title: T\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      responses:\n        '200':\n          description: OK\n",
-        "acme",
-    )["README.md"];
-    assert!(readme.starts_with("# Acme Python Library\n"), "{readme}");
-    assert!(readme.contains("utm_source=Acme%2FPython)"), "{readme}");
-    assert!(!readme.contains("Fern%2FPython"), "{readme}");
+fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() {
+    use crozier::settings::Layout;
+    let spec = "openapi: 3.0.0\ninfo:\n  title: T\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      responses:\n        '200':\n          description: OK\n";
+    let readme = |layout: Layout| {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let path = dir.path().join("api.yml");
+        std::fs::write(&path, spec).unwrap();
+        render_files(GenerateArgs {
+            spec: path,
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: None,
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            layout,
+        })
+        .expect("render succeeds")
+        .into_iter()
+        .find(|file| file.path == Path::new("README.md"))
+        .expect("a README")
+        .contents
+    };
+    // Flat follows the organization, as Fern's flat `acme` tree does.
+    let flat = readme(Layout::Flat);
+    assert!(flat.starts_with("# Acme Python Library\n"), "{flat}");
+    assert!(flat.contains("utm_source=Acme%2FPython)"), "{flat}");
+    // Packaged keeps the shield it has always carried.
+    let packaged = readme(Layout::Packaged);
+    assert!(
+        packaged.starts_with("# Acme Python Library\n"),
+        "{packaged}"
+    );
+    assert!(packaged.contains("utm_source=Fern%2FPython)"), "{packaged}");
 }
 
 #[test]

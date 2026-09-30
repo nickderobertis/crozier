@@ -1480,9 +1480,11 @@ and crozier's flat output reproduces each:
    `pip install fern[aiohttp]` flat against `pip install
    default_package_name[aiohttp]` packaged, for the default names. Ruff lays the
    hint's `raise` out by the name's length: on one line when it fits in 120
-   columns (a flat `fern`, or a packaged `my_pkg`), split over three lines
-   otherwise, with the string itself split when even that overflows. That rule
-   applies to both layouts.
+   columns (a flat `fern`), split over three lines otherwise, with the string
+   itself split when even that overflows. crozier joins the short form only in
+   the flat layout. Fern's packaged `my_pkg` measured one line too, but the
+   packaged output is held byte-for-byte to what it was before `layout` existed,
+   and no packaged golden has a name that short.
 3. `core/client_wrapper.py` sends no `X-Fern-SDK-Name` or `X-Fern-SDK-Version`
    header. The gate normalizes those two lines off both sides
    ([SDK-identity headers](#crozier-vs-fern-sdk-identity-headers)), so crozier's
@@ -1505,9 +1507,12 @@ any repository in both modes, so no golden carries either key.
 README heading (`# Acme Python Library`, and the shield's `utm_source`) from
 the workspace **organization** in `fern.config.json`. crozier derives all three
 from `--package-name`, so the Fern input matching crozier's package name is the
-organization. The README shield's `utm_source` followed crozier's package-derived
-organization only once the `acme` golden below measured it. Before that it was
-fixed at `Fern`, which every `fern`-organization golden matches. Fern's own
+organization. The flat README's shield `utm_source` follows that
+package-derived organization, as the `acme` golden below measured. The packaged
+README keeps the fixed `Fern` it has always carried, which every
+`fern`-organization golden matches. The seed golden's `Seed%2FPython` shows
+Fern's packaged shield follows the organization too, but aligning it would move
+packaged output, which the setting leaves untouched. Fern's own
 `package_name` option is a different knob. With `package_name: my_pkg` it
 renamed the module and the distribution, but the client stayed `FernApi` and
 the README heading stayed `# Fern Python Library`. crozier cannot set the
