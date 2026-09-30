@@ -381,16 +381,17 @@ def committed_check(entry: dict[str, Any]) -> dict[str, str] | None:
 
 
 def upgraded(row: dict[str, str]) -> dict[str, str]:
-    """A measurement taken before generations were measured for every document,
-    in today's fields: its one log is the check's or the generation's."""
-    row = dict(row)
+    """A measurement in today's fields, each one present. One taken before
+    generations were measured carries a single log, the check's or the
+    generation's."""
+    row = dict({field: "" for field in MEASUREMENT_FIELDS}, **row)
     if "fern_stage" in row:
         stage, status, log = row.pop("fern_stage"), row.pop("fern_exit"), row.pop("fern_log")
         if stage == "check":
             row.update(check_exit=status, check_log=log)
         else:
             row.update(check_exit="0", check_log="", generate_exit=status, generate_log=log)
-    return row
+    return {field: row[field] for field in MEASUREMENT_FIELDS}
 
 
 def crozier_measure(binary: Path, document: Path, timeout: int) -> dict[str, str]:
@@ -413,17 +414,27 @@ def read_measurements() -> dict[str, dict[str, str]]:
     return {row["key"]: upgraded(row) for row in map(json.loads, path.read_text(encoding="utf-8").splitlines())}
 
 
+def check_blocks(row: dict[str, str]) -> bool:
+    """Whether the document's `fern check` names a refusal class. Every class's
+    probe shows its phrase stopping `fern generate` too, so such a document's
+    generation need not be run to know Fern refuses it."""
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    findings = read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER)
+    carried, _found, _unmatched = classify(diagnostics(read_log(row.get("check_log", ""))),
+                                           class_patterns(classes), finding_patterns(findings))
+    return row.get("check_exit") not in ("", "0") and bool(carried)
+
+
 def missing_measurements(row: dict[str, str]) -> set[str]:
     """Which of `check`, `generate` and `crozier` a retrievable document still needs."""
     if row.get("unretrievable"):
         return set()
     missing = set()
     log = row.get("check_log")
-    if not row.get("check_exit") or (log and "heap out of memory" in
-                                     (REPO / log).read_text(encoding="utf-8", errors="replace")):
+    if not row.get("check_exit") or (log and "heap out of memory" in read_log(log)):
         # A run that ran out of memory reported the host, not Fern: take it again.
         missing.add("check")
-    if not row.get("generate_files"):
+    elif not row.get("generate_files") and not check_blocks(row):
         missing.add("generate")
     if not row.get("crozier_exit"):
         missing.add("crozier")
@@ -450,10 +461,12 @@ def measure(args: argparse.Namespace) -> int:
         row = {} if args.again else dict(done.get(entry["key"], {}))
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = missing_measurements(row) if row.get("check_exit") or row.get("crozier_exit") else \
-            {"check", "generate", "crozier"}
+            {"check", "crozier"}
         if "check" in needed:
             row.update(committed_check(entry) if not row.get("check_exit") and committed_check(entry)
                        else fern_check(path, digest, args.timeout))
+            if not row.get("generate_files") and not check_blocks(row):
+                needed.add("generate")
         if "generate" in needed:
             row.update(fern_generate(path, digest, args.timeout))
         if "crozier" in needed:
@@ -580,7 +593,11 @@ def verdict(result: dict[str, str], patterns: list[tuple[str, re.Pattern[str]]],
     """
     check_classes, check_found, check_unmatched = classify(diagnostics(read_log(result["check_log"])),
                                                            patterns, findings)
-    gen_classes, _gen_found, gen_unmatched = classify(diagnostics(read_log(result["generate_log"])),
+    if check_classes and result["check_exit"] != "0" and not result.get("generate_exit"):
+        # The check named a class, which stops the generation too; it was not run.
+        return ({"fern_stage": "check", "fern_exit": result["check_exit"], "fern_log": result["check_log"],
+                 "classes": ",".join(check_classes)}, check_found, check_unmatched)
+    gen_classes, _gen_found, gen_unmatched = classify(diagnostics(read_log(result.get("generate_log", ""))),
                                                       patterns, findings)
     refused = result["generate_exit"] != "0" or result["generate_files"] == "0" or gen_classes
     if not refused:
