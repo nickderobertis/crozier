@@ -57,6 +57,22 @@ A generator setting no OpenAPI document can express is pinned by giving an
 already-registered source a second row name with that declaration
 (`eos.local-extra-fields-forbid` over `eos.local`), not by hunting a new spec.
 
+**A hand-written document is never a corpus fixture.** Where the
+real-specification search for a shape Fern generates from has failed, a
+hand-written document may stand as generation evidence, but only as a
+**hand-written fixture** under
+[`../../docs/openapi-surface/handwritten/`](../../docs/openapi-surface/handwritten/AGENTS.md),
+which states its contract. It is a lower level of proof than a real
+specification. It is admitted only after that failed search, which it cites,
+and it never counts as a real-specification match: it is never a `CORPUS.md`
+row or a corpus golden, the census never reads it, and it is no witness in
+`golden-reach.tsv` or the golden-only tier below. Its feature-level cover puts
+the region row in the `handwritten` category. An arm-level cover leaves a
+`golden` row `golden`, and the fixture is reported only in the unreached-arm
+table's hand-written column and in `handwritten-reach.tsv`
+([the category rules](../../docs/openapi-surface-coverage.md#the-category-rules)).
+A real specification registered later supersedes it.
+
 ## Choosing a real-world spec — Fern must accept it FIRST
 
 A candidate clears three screens: its licence must permit redistributing a
