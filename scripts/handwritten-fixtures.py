@@ -28,7 +28,6 @@ category and its ledger — is stated once, in
 from __future__ import annotations
 
 import argparse
-import csv
 import importlib.util
 import json
 import os
@@ -75,6 +74,11 @@ def _load(name: str, path: Path) -> Any:
 
 def golden_reach() -> Any:
     return _load("handwritten_golden_reach", REPO / "scripts" / "golden-reach.py")
+
+
+def region_keys() -> Any:
+    """The one reader of `witness-search-keys.tsv`, the searched key set."""
+    return _load("handwritten_region_keys", REPO / "scripts" / "witness-search-region-keys.py")
 
 
 def census() -> Any:
@@ -377,11 +381,11 @@ def gate(root: Path) -> dict[str, Any]:
     except (SystemExit, OSError) as error:
         ledger = {}
         failures.append(f"golden-reach.tsv: {error}")
-    selectors: dict[str, str] = {}
-    keys_path = root / REGIONS / "witness-search-keys.tsv"
-    if keys_path.is_file():
-        with keys_path.open(encoding="utf-8", newline="") as handle:
-            selectors = {row["key"]: row["selector"] for row in csv.DictReader(handle, dialect="excel-tab")}
+    try:
+        selectors = region_keys().tracked_selectors(root / REGIONS)
+    except ValueError as error:
+        selectors = {}
+        failures.append(f"witness-search-keys.tsv: {error}")
     reach_rows, found = read_reach_ledger(root / REACH_LEDGER)
     failures += found
     measured = {(f, k, s): (executed, total) for f, k, s, executed, total in reach_rows}

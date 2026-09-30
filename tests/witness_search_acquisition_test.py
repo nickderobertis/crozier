@@ -755,6 +755,15 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 (root / "witness-search-keys.tsv").read_text(encoding="utf-8"),
                 "the derivation dropped the handwritten row or changed its selector",
             )
+            (root / "witness-search-keys.tsv").write_text(
+                "name\tshape\nshape-b\tschema.items\n", encoding="utf-8"
+            )
+            refused = subprocess.run(
+                [sys.executable, str(KEYS), "--regions-dir", str(root)],
+                cwd=REPO, capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(refused.returncode, 1)
+            self.assertIn("has no `key` and `selector` columns", refused.stderr)
 
     def test_local_census_rejects_incomplete_tsv_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

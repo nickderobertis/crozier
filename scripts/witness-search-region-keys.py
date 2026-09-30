@@ -50,7 +50,13 @@ def tracked_selectors(regions: Path) -> dict[str, str]:
     if not path.is_file():
         return {}
     with path.open(encoding="utf-8", newline="") as handle:
-        return {row["key"]: row["selector"] for row in csv.DictReader(handle, dialect="excel-tab")}
+        reader = csv.DictReader(handle, dialect="excel-tab")
+        if not {"key", "selector"} <= set(reader.fieldnames or ()):
+            raise ValueError(
+                f"{path} has no `key` and `selector` columns; regenerate it with "
+                "`scripts/witness-search-region-keys.py`"
+            )
+        return {row["key"]: row["selector"] for row in reader}
 
 
 def keys(regions: Path) -> list[tuple[str, str, str, str]]:

@@ -2416,6 +2416,17 @@ fn handwritten_gate_holds_fixtures_and_rows_to_each_other() {
     );
 
     let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.path("docs/openapi-surface/witness-search-keys.tsv"),
+        "name\tshape\nsample-shape\tschema.format=email\n",
+    )
+    .expect("malformed key set");
+    fixture.assert_refused(
+        "witness-search-keys.tsv",
+        "has no `key` and `selector` columns",
+    );
+
+    let fixture = HandwrittenFixture::new();
     fixture.edit_evidence("key = \"sample-shape\"", "key = \"no-such-row\"");
     fixture.assert_refused(HANDWRITTEN_FIXTURE, "no region row carries this key");
 }

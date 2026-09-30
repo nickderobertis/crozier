@@ -25,6 +25,7 @@ One directory per fixture, `docs/openapi-surface/handwritten/<fixture>/`, where
 three entries:
 
 - `openapi.yml`: the hand-written OpenAPI document.
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The contract fixes that this tree is built the way probes/AGENTS.md prescribes; linking that one procedure keeps a single copy of the pinned Fern workspace recipe, and this folder file is loaded without the index. -->
 - `fern-expected/`: the complete comment-stripped tree Fern generated from it at
   Fern CLI 5.67.1 and `fernapi/fern-python-sdk` 5.20.0, the corpus pin, built
   the way [`../probes/AGENTS.md`](../probes/AGENTS.md#re-running-one) prescribes.
