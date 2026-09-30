@@ -154,7 +154,11 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
             key = row[0].strip("`")
             if row[3].strip("`") == "handwritten":
                 if key not in tracked:
-                    raise ValueError(f"{region}/{key}: handwritten, and no selector in witness-search-keys.tsv")
+                    raise ValueError(
+                        f"{region}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
+                        "restore that file from git, or regenerate it with "
+                        "`scripts/witness-search-region-keys.py`"
+                    )
                 selector = tracked[key]
             elif row[3].strip("`") != "gap" or not re.search(r"\bFIXTURE\b", row[7]):
                 continue

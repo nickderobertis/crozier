@@ -78,7 +78,8 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
                 # key stays in the set that search ran over, with its selector.
                 if key not in tracked:
                     raise ValueError(
-                        f"{path}: handwritten {key} has no selector in witness-search-keys.tsv"
+                        f"{path}: handwritten {key} has no selector in witness-search-keys.tsv; "
+                        "restore that file from git, where the key's search recorded it"
                     )
                 selector = tracked[key]
             elif category != "gap" or "FIXTURE" not in cells[7]:
