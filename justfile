@@ -266,6 +266,14 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e onevoice_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xfsc_oidc_identity_resolver_matches_fern_output
 
+# The corpus byte-match with strict Fern compatibility on (docs/fern-refusals/):
+# a refusal class that refuses a document Fern generates from fails it. The
+# setting travels by `CROZIER_FERN_STRICT`, which every corpus run reads because
+# none passes `--no-config`; the first line proves crozier sees it from here.
+test-corpus-match-strict:
+    CROZIER_FERN_STRICT=true cargo run --locked --quiet -- config python | grep -Eq '^  fern-strict +true +\(env\)$'
+    CROZIER_FERN_STRICT=true just test-corpus-match
+
 # Format the codebase in place.
 format:
     cargo fmt --all

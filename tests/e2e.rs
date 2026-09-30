@@ -2326,7 +2326,9 @@ fn generate_corpus(c: &Corpus) -> tempfile::TempDir {
 
 /// The exact public CLI invocation used for a corpus. Reporters call the same
 /// command without assert_cmd's fail-fast assertion so one broken corpus cannot
-/// hide differences in its siblings.
+/// hide differences in its siblings. It never passes `--no-config`: `just
+/// test-corpus-match-strict` turns strict Fern compatibility on through
+/// `CROZIER_FERN_STRICT`, which `--no-config` would silently drop.
 fn corpus_command(c: &Corpus, output: &Path) -> Command {
     let mut command = crozier();
     command
@@ -12426,4 +12428,1102 @@ fn onevoice_matches_fern_output() {
 #[test]
 fn xfsc_oidc_identity_resolver_matches_fern_output() {
     assert_link_ok_corpus_matches(&XFSC_OIDC_IDENTITY_RESOLVER);
+}
+
+// ---------------------------------------------------------------------------
+// The Fern refusal registry (`docs/fern-refusals/`): the classes of input Fern
+// refuses, crashes on, or falsely reports success over, and what crozier does
+// with each in its default and `--fern-strict` modes. See
+// docs/fern-refusals/README.md for the contract this gate enforces.
+// ---------------------------------------------------------------------------
+
+const FERN_REFUSALS_DIR: &str = "docs/fern-refusals";
+const FERN_REFUSAL_CLASSES_HEADER: &str = "class\tfamily\tfern_stage\tfern_exit\tdiagnostic\tdocuments\tstatus\tcrozier_diagnostic\tpopulation_strict";
+const FERN_REFUSAL_DOCUMENTS_HEADER: &str = "digest\tsource\tlocator\trevision\trecorded_by\tfern_stage\tfern_exit\tfern_log\tclasses\tcrozier_exit\tcrozier_files\tcrozier_strict_exit";
+
+/// One `classes.tsv` row, as far as the gate reads it.
+struct RefusalClass {
+    class: String,
+    status: String,
+    fern_exit: String,
+    documents: String,
+    crozier_diagnostic: String,
+}
+
+/// Every refusal class the registry declares holds: see [`fern_refusal_failures`].
+#[test]
+fn fern_refusal_classes_hold() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let failures = fern_refusal_failures(&registry, &crozier);
+    assert!(
+        failures.is_empty(),
+        "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
+        failures.join("\n")
+    );
+}
+
+/// Every way the refusal registry at `registry` fails its contract, each line
+/// naming the class (or file) and the condition it breaks. `generator` builds
+/// the command that stands for crozier — the real binary for the gate, and a
+/// subprocess double wrapping it where a test needs behaviour crozier does not
+/// have yet.
+///
+/// `classes.tsv` alone says which classes exist. Each row's `probe.yml` and
+/// `fern-refusal.txt` must exist, the record must carry Contract A's five
+/// fields at the corpus pin with a non-empty `diagnostic`, and nothing more is
+/// asked of an `unevaluated` row. A `refuse` class's probe is refused with and
+/// without `--fern-strict`; a `generate` class's probe generates by default, its
+/// `wire_test.py` passes against that SDK, and it is refused under
+/// `--fern-strict` with a line saying `fern-strict` caused it. Every
+/// `documents.tsv` class id and every directory under the registry is a
+/// `classes.tsv` row.
+fn fern_refusal_failures(registry: &Path, generator: &dyn Fn() -> Command) -> Vec<String> {
+    let text = match std::fs::read_to_string(registry.join("classes.tsv")) {
+        Ok(text) => text,
+        Err(error) => return vec![format!("classes.tsv: cannot be read: {error}")],
+    };
+    let (classes, mut failures) = parse_refusal_classes(&text);
+    let known: std::collections::BTreeSet<&str> =
+        classes.iter().map(|class| class.class.as_str()).collect();
+
+    match std::fs::read_dir(registry) {
+        Ok(entries) => {
+            let mut directories: Vec<String> = entries
+                .filter_map(Result::ok)
+                .filter(|entry| entry.path().is_dir())
+                .map(|entry| entry.file_name().to_string_lossy().into_owned())
+                .collect();
+            directories.sort();
+            for name in directories {
+                if !known.contains(name.as_str()) {
+                    failures.push(format!(
+                        "{name}: is a directory under the registry but no classes.tsv row names it \
+                         — add its row, or remove the directory"
+                    ));
+                }
+            }
+        }
+        Err(error) => failures.push(format!("the registry cannot be listed: {error}")),
+    }
+
+    let carried = refusal_document_class_counts(registry, &known, &mut failures);
+    for class in &classes {
+        let count = carried.get(class.class.as_str()).copied().unwrap_or(0);
+        if class.documents != count.to_string() {
+            failures.push(format!(
+                "{}: classes.tsv counts {} document(s), but {count} documents.tsv row(s) carry it",
+                class.class, class.documents
+            ));
+        }
+        failures.extend(refusal_class_failures(registry, class, generator));
+    }
+    failures
+}
+
+/// The header, the column count, the sort order and each cell's vocabulary.
+/// Rows that parse are returned even when a sibling failed, so one bad row
+/// cannot hide another.
+fn parse_refusal_classes(text: &str) -> (Vec<RefusalClass>, Vec<String>) {
+    let mut failures = Vec::new();
+    let mut lines = text.lines();
+    if lines.next() != Some(FERN_REFUSAL_CLASSES_HEADER) {
+        failures.push(format!(
+            "classes.tsv: the header line must be exactly {FERN_REFUSAL_CLASSES_HEADER:?}"
+        ));
+    }
+    let mut classes: Vec<RefusalClass> = Vec::new();
+    for (index, line) in lines.enumerate() {
+        let fields: Vec<&str> = line.split('\t').collect();
+        let [class, family, fern_stage, fern_exit, diagnostic, documents, status, crozier_diagnostic, population_strict] =
+            fields[..]
+        else {
+            failures.push(format!(
+                "classes.tsv line {}: {} column(s); every row has the nine of the header",
+                index + 2,
+                fields.len()
+            ));
+            continue;
+        };
+        if let Some(previous) = classes
+            .last()
+            .filter(|previous| previous.class.as_str() >= class)
+        {
+            failures.push(format!(
+                "{class}: classes.tsv rows must be sorted by class with no class twice; it follows {}",
+                previous.class
+            ));
+        }
+        let kebab = !class.is_empty()
+            && !class.starts_with('-')
+            && !class.ends_with('-')
+            && !class.contains("--")
+            && class
+                .bytes()
+                .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-');
+        if !kebab {
+            failures.push(format!("{class}: a class id is kebab-case"));
+        }
+        if !["names", "documents"].contains(&family) {
+            failures.push(format!(
+                "{class}: family `{family}` is not `names` or `documents`"
+            ));
+        }
+        if !["check", "generate"].contains(&fern_stage) {
+            failures.push(format!(
+                "{class}: fern_stage `{fern_stage}` is not `check` or `generate`"
+            ));
+        }
+        if fern_exit.parse::<i64>().is_err() {
+            failures.push(format!(
+                "{class}: fern_exit `{fern_exit}` is not an exit status"
+            ));
+        }
+        if diagnostic.trim().is_empty() || diagnostic == "—" {
+            failures.push(format!(
+                "{class}: diagnostic is empty; it quotes Fern's phrase"
+            ));
+        }
+        if documents.parse::<u64>().is_err() {
+            failures.push(format!("{class}: documents `{documents}` is not a count"));
+        }
+        let evaluated = match status {
+            "unevaluated" => false,
+            "generate" | "refuse" => true,
+            _ => {
+                failures.push(format!(
+                    "{class}: status `{status}` is not `unevaluated`, `generate` or `refuse`"
+                ));
+                false
+            }
+        };
+        if evaluated {
+            if crozier_diagnostic.trim().is_empty() || crozier_diagnostic == "—" {
+                failures.push(format!(
+                    "{class}: a `{status}` class names the substring crozier's refusal line carries in crozier_diagnostic"
+                ));
+            }
+            let fraction = population_strict
+                .split_once('/')
+                .and_then(|(refused, total)| {
+                    Some((refused.parse::<u64>().ok()?, total.parse::<u64>().ok()?))
+                });
+            if fraction.is_none_or(|(refused, total)| refused > total) {
+                failures.push(format!(
+                    "{class}: population_strict `{population_strict}` is not `<refused>/<total>`"
+                ));
+            }
+        } else if status == "unevaluated" && (crozier_diagnostic != "—" || population_strict != "—")
+        {
+            failures.push(format!(
+                "{class}: an `unevaluated` class carries `—` in crozier_diagnostic and population_strict"
+            ));
+        }
+        classes.push(RefusalClass {
+            class: class.to_string(),
+            status: status.to_string(),
+            fern_exit: fern_exit.to_string(),
+            documents: documents.to_string(),
+            crozier_diagnostic: crozier_diagnostic.to_string(),
+        });
+    }
+    (classes, failures)
+}
+
+/// `documents.tsv`'s header and order, and how many rows carry each class;
+/// a class id that is no `classes.tsv` row is a failure.
+fn refusal_document_class_counts<'a>(
+    registry: &Path,
+    known: &std::collections::BTreeSet<&'a str>,
+    failures: &mut Vec<String>,
+) -> std::collections::BTreeMap<&'a str, usize> {
+    let mut counts = std::collections::BTreeMap::new();
+    let text = match std::fs::read_to_string(registry.join("documents.tsv")) {
+        Ok(text) => text,
+        Err(error) => {
+            failures.push(format!("documents.tsv: cannot be read: {error}"));
+            return counts;
+        }
+    };
+    let mut lines = text.lines();
+    if lines.next() != Some(FERN_REFUSAL_DOCUMENTS_HEADER) {
+        failures.push(format!(
+            "documents.tsv: the header line must be exactly {FERN_REFUSAL_DOCUMENTS_HEADER:?}"
+        ));
+    }
+    let mut previous: Option<&str> = None;
+    for (index, line) in lines.enumerate() {
+        let fields: Vec<&str> = line.split('\t').collect();
+        if fields.len() != 12 {
+            failures.push(format!(
+                "documents.tsv line {}: {} column(s); every row has the twelve of the header",
+                index + 2,
+                fields.len()
+            ));
+            continue;
+        }
+        let digest = fields[0];
+        if previous.is_some_and(|previous| previous >= digest) {
+            failures.push(format!(
+                "documents.tsv line {}: rows must be sorted by digest with no digest twice",
+                index + 2
+            ));
+        }
+        previous = Some(digest);
+        if fields[8].is_empty() {
+            failures.push(format!("{digest}: documents.tsv carries no class"));
+        }
+        for id in fields[8].split(',').filter(|id| !id.is_empty()) {
+            match known.get(id) {
+                Some(class) => *counts.entry(*class).or_insert(0) += 1,
+                None => failures.push(format!(
+                    "{id}: documents.tsv row {digest} carries it, but it is not a classes.tsv row"
+                )),
+            }
+        }
+    }
+    counts
+}
+
+/// One class's files, record and — once evaluated — crozier's behaviour over its probe.
+fn refusal_class_failures(
+    registry: &Path,
+    class: &RefusalClass,
+    generator: &dyn Fn() -> Command,
+) -> Vec<String> {
+    let id = class.class.as_str();
+    let dir = registry.join(id);
+    let probe = dir.join("probe.yml");
+    let record = dir.join("fern-refusal.txt");
+    let mut failures = Vec::new();
+    if !probe.is_file() {
+        failures.push(format!("{id}: its probe {id}/probe.yml is missing"));
+    }
+    match std::fs::read_to_string(&record) {
+        Ok(text) => failures.extend(refusal_record_failures(id, &text, &class.fern_exit)),
+        Err(_) => failures.push(format!(
+            "{id}: its Fern record {id}/fern-refusal.txt is missing"
+        )),
+    }
+    let wire_test = dir.join("wire_test.py");
+    if class.status == "generate" && !wire_test.is_file() {
+        failures.push(format!(
+            "{id}: a `generate` class carries {id}/wire_test.py"
+        ));
+    } else if class.status != "generate" && wire_test.exists() {
+        failures.push(format!(
+            "{id}: {id}/wire_test.py is present, but only a `generate` class carries one"
+        ));
+    }
+    if class.status != "unevaluated" && !dir.join("evaluation.md").is_file() {
+        failures.push(format!(
+            "{id}: an evaluated class carries {id}/evaluation.md"
+        ));
+    }
+    if class.status == "unevaluated" || !probe.is_file() {
+        return failures;
+    }
+
+    let diagnostic = class.crozier_diagnostic.as_str();
+    match class.status.as_str() {
+        "refuse" => {
+            for strict in [false, true] {
+                match refusal_run(generator, &probe, strict) {
+                    Ok(run) => failures.extend(refused_failures(id, &run, diagnostic, false)),
+                    Err(error) => failures.push(format!("{id}: {error}")),
+                }
+            }
+        }
+        "generate" => {
+            match refusal_run(generator, &probe, false) {
+                Ok(run) if run.code == Some(0) && !run.files.is_empty() => {
+                    failures.extend(wire_test_failures(id, &wire_test, &run.target, &probe));
+                }
+                Ok(run) => failures.push(format!(
+                    "{id}: a `generate` class's probe is refused by default (exit {}), where \
+                     crozier should generate: {}",
+                    exit_label(run.code),
+                    run.stderr.trim()
+                )),
+                Err(error) => failures.push(format!("{id}: {error}")),
+            }
+            match refusal_run(generator, &probe, true) {
+                Ok(run) => failures.extend(refused_failures(id, &run, diagnostic, true)),
+                Err(error) => failures.push(format!("{id}: {error}")),
+            }
+        }
+        _ => {}
+    }
+    failures
+}
+
+/// A class's `fern-refusal.txt`: Contract A's five fields in order, at the
+/// corpus pin, with Fern's non-empty phrase and the exit `classes.tsv` states.
+/// A false success records exit 0, so the exit is held to the row rather than
+/// to non-zero.
+fn refusal_record_failures(id: &str, text: &str, fern_exit: &str) -> Vec<String> {
+    let mut failures = Vec::new();
+    let fields: Vec<(&str, &str)> = text
+        .lines()
+        .map(|line| line.split_once(": ").unwrap_or((line, "")))
+        .collect();
+    let names: Vec<&str> = fields.iter().map(|(name, _)| *name).collect();
+    if names != REFUSAL_FIELDS {
+        failures.push(format!(
+            "{id}: fern-refusal.txt carries fields {names:?}; it carries exactly \
+             {REFUSAL_FIELDS:?}, in that order and spelling"
+        ));
+    }
+    let value = |name: &str| {
+        fields
+            .iter()
+            .find(|(field, _)| *field == name)
+            .map(|(_, value)| value.trim())
+    };
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    for (name, pin) in [
+        ("fern_cli_version", cli_pin.as_str()),
+        ("fern_python_sdk_version", sdk_pin.as_str()),
+    ] {
+        if value(name) != Some(pin) {
+            failures.push(format!(
+                "{id}: fern-refusal.txt's {name} is `{}`, but the corpus pins `{pin}`",
+                value(name).unwrap_or("")
+            ));
+        }
+    }
+    if value("diagnostic").is_none_or(str::is_empty) {
+        failures.push(format!(
+            "{id}: fern-refusal.txt's diagnostic is empty; it quotes the phrase Fern printed"
+        ));
+    }
+    if let Some(exit) = value("generate_exit").filter(|exit| *exit != fern_exit) {
+        failures.push(format!(
+            "{id}: fern-refusal.txt records generate_exit `{exit}`, but classes.tsv's fern_exit is `{fern_exit}`"
+        ));
+    }
+    failures
+}
+
+/// One crozier run over a probe, into a fresh output directory it may not create.
+struct RefusalRun {
+    code: Option<i32>,
+    stderr: String,
+    files: Vec<String>,
+    target: PathBuf,
+    _out: tempfile::TempDir,
+}
+
+fn exit_label(code: Option<i32>) -> String {
+    code.map_or_else(|| "without a status".to_string(), |code| code.to_string())
+}
+
+/// crozier over `probe` exactly as a user runs it — hermetic (`--no-config`, no
+/// `CROZIER_*` override), with or without `--fern-strict` — keeping the output
+/// directory so what it wrote can be counted.
+fn refusal_run(
+    generator: &dyn Fn() -> Command,
+    probe: &Path,
+    strict: bool,
+) -> Result<RefusalRun, String> {
+    let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
+    let target = out.path().join("sdk");
+    let mut command = generator();
+    for name in CROZIER_ENV_VARS {
+        command.env_remove(name);
+    }
+    let result = command
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(probe)
+        .arg("--output")
+        .arg(&target)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .args(strict.then_some("--fern-strict"))
+        .output()
+        .map_err(|error| format!("could not run crozier: {error}"))?;
+    let files = if target.exists() {
+        try_walk_files(&target)?
+    } else {
+        Vec::new()
+    };
+    Ok(RefusalRun {
+        code: result.status.code(),
+        stderr: String::from_utf8_lossy(&result.stderr).into_owned(),
+        files,
+        target,
+        _out: out,
+    })
+}
+
+/// Whether one run is a refusal in the contract's sense: exit 1, nothing
+/// written, and one stderr line carrying the class id and `diagnostic` — and,
+/// when strict mode alone caused it, saying `fern-strict` did.
+fn refused_failures(
+    id: &str,
+    run: &RefusalRun,
+    diagnostic: &str,
+    strict_caused: bool,
+) -> Vec<String> {
+    let mode = if strict_caused {
+        "under --fern-strict"
+    } else {
+        "in its mode"
+    };
+    let mut failures = Vec::new();
+    if run.code == Some(0) {
+        failures.push(format!(
+            "{id}: crozier generated from the probe {mode}; the class says it is refused \
+             ({} file(s) written)",
+            run.files.len()
+        ));
+        return failures;
+    }
+    if run.code != Some(1) {
+        failures.push(format!(
+            "{id}: crozier's refusal {mode} exited {}; a refusal exits 1",
+            exit_label(run.code)
+        ));
+    }
+    if !run.files.is_empty() {
+        failures.push(format!(
+            "{id}: crozier's refusal {mode} wrote {} file(s) to the output directory ({}); a \
+             refusal writes nothing",
+            run.files.len(),
+            run.files.join(", ")
+        ));
+    }
+    match run.stderr.lines().find(|line| line.contains(diagnostic)) {
+        None => failures.push(format!(
+            "{id}: crozier's refusal {mode} printed no line containing crozier_diagnostic \
+             {diagnostic:?}; it printed: {}",
+            run.stderr.trim()
+        )),
+        Some(line) => {
+            if !line.contains(id) {
+                failures.push(format!(
+                    "{id}: crozier's refusal line {mode} does not name the class: {line}"
+                ));
+            }
+            if strict_caused && !line.contains("fern-strict") {
+                failures.push(format!(
+                    "{id}: crozier's refusal line under --fern-strict does not say fern-strict \
+                     caused it: {line}"
+                ));
+            }
+        }
+    }
+    failures
+}
+
+/// Run a `generate` class's `wire_test.py` against crozier's default SDK for its
+/// probe, in an environment holding exactly what that SDK's `pyproject.toml`
+/// declares (its pinned `mypy` among it).
+fn wire_test_failures(id: &str, wire_test: &Path, sdk: &Path, probe: &Path) -> Vec<String> {
+    let py = match sdk_python_env(&sdk.join("pyproject.toml")) {
+        Ok(py) => py,
+        Err(reason) => {
+            if std::env::var_os("CI").is_some() {
+                return vec![format!(
+                    "{id}: wire_test.py cannot run, because the SDK's Python environment is \
+                     unavailable: {reason}"
+                )];
+            }
+            eprintln!("skipping {id}/wire_test.py: {reason}");
+            return Vec::new();
+        }
+    };
+    let class_dir = wire_test.parent().unwrap_or(wire_test);
+    let result = std::process::Command::new(&py)
+        .args(["-m", "pytest", "-q", "-p", "no:cacheprovider", "--rootdir"])
+        .arg(class_dir)
+        .arg(wire_test)
+        .env("CROZIER_SDK_DIR", sdk)
+        .env("CROZIER_SDK_SRC", sdk.join("src"))
+        .env("CROZIER_PROBE", probe)
+        .env("MYPY_CACHE_DIR", sdk_mypy_cache(&py))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output();
+    match result {
+        Ok(output) if output.status.success() => Vec::new(),
+        Ok(output) => vec![format!(
+            "{id}: wire_test.py failed against crozier's default SDK for the probe:\n{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        )],
+        Err(error) => vec![format!("{id}: could not run wire_test.py: {error}")],
+    }
+}
+
+/// The pip requirements a generated `pyproject.toml` declares — its runtime
+/// dependencies, its optional extras, and its dev group (the pinned `mypy`
+/// among them) — translated from Poetry's constraint syntax. `python` itself is
+/// the interpreter, not a requirement.
+fn pyproject_requirements(pyproject: &str) -> Vec<String> {
+    const SECTIONS: [&str; 2] = [
+        "[tool.poetry.dependencies]",
+        "[tool.poetry.group.dev.dependencies]",
+    ];
+    let mut requirements = Vec::new();
+    let mut in_section = false;
+    for line in pyproject.lines() {
+        let line = line.trim();
+        if line.starts_with('[') {
+            in_section = SECTIONS.contains(&line);
+            continue;
+        }
+        let Some((name, value)) = line.split_once('=').filter(|_| in_section) else {
+            continue;
+        };
+        let name = name.trim();
+        if name.is_empty() || name == "python" {
+            continue;
+        }
+        let value = value.trim();
+        let quoted = |text: &str| text.split('"').nth(1).map(str::to_string);
+        let constraint = if value.starts_with('{') {
+            value
+                .split_once("version")
+                .and_then(|(_, rest)| quoted(rest))
+        } else {
+            quoted(value)
+        };
+        let Some(constraint) = constraint else {
+            continue;
+        };
+        requirements.push(format!("{name}{}", pip_constraint(&constraint)));
+    }
+    requirements
+}
+
+/// One Poetry constraint as a pip specifier: `^1.2.3` is `>=1.2.3,<2` (`^0.2.3`
+/// is `>=0.2.3,<0.3`), a bare version is exact, and anything else is already a
+/// comparison.
+fn pip_constraint(constraint: &str) -> String {
+    let constraint: String = constraint.chars().filter(|c| !c.is_whitespace()).collect();
+    if let Some(version) = constraint.strip_prefix('^') {
+        let parts: Vec<u64> = version
+            .split('.')
+            .map_while(|part| part.parse().ok())
+            .collect();
+        let upper = match parts.as_slice() {
+            [0, minor, ..] => format!("0.{}", minor + 1),
+            [major, ..] => (major + 1).to_string(),
+            [] => return format!(">={version}"),
+        };
+        return format!(">={version},<{upper}");
+    }
+    if constraint.starts_with(|c: char| c.is_ascii_digit()) {
+        return format!("=={constraint}");
+    }
+    constraint
+}
+
+/// Prepare (creating and caching) a virtualenv holding what a generated SDK's
+/// `pyproject.toml` declares, and return its interpreter. Cached under the
+/// system temp dir by a digest of the requirement list, so a change to the
+/// pins builds a fresh one. `uv` is used when present, else `venv` + `pip`.
+fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
+    let text = std::fs::read_to_string(pyproject)
+        .map_err(|error| format!("cannot read {}: {error}", pyproject.display()))?;
+    let requirements = pyproject_requirements(&text);
+    if !requirements.iter().any(|r| r.starts_with("mypy==")) {
+        return Err(format!("{} declares no pinned mypy", pyproject.display()));
+    }
+    let base = python_interpreter().ok_or("no python3/python on PATH")?;
+    let key = sha256_hex(requirements.join("\n").as_bytes());
+    let venv = std::env::temp_dir().join(format!("crozier-sdk-env-{}", &key[..16]));
+    let venv_py = venv_python(&venv);
+    let ready = venv.join(".crozier-ready");
+    if venv_py.exists() && ready.is_file() {
+        return Ok(venv_py);
+    }
+    let run = |mut cmd: std::process::Command, what: &str| -> Result<(), String> {
+        let output = cmd
+            .output()
+            .map_err(|e| format!("failed to spawn {what}: {e}"))?;
+        if output.status.success() {
+            return Ok(());
+        }
+        Err(format!(
+            "{what} failed:\n{}",
+            String::from_utf8_lossy(&output.stderr)
+        ))
+    };
+    if uv_available() {
+        let mut venv_cmd = std::process::Command::new("uv");
+        venv_cmd.args(["venv", "--allow-existing"]).arg(&venv);
+        run(venv_cmd, "uv venv")?;
+        let mut install = std::process::Command::new("uv");
+        install
+            .args(["pip", "install", "--python"])
+            .arg(&venv_py)
+            .args(&requirements);
+        run(install, "uv pip install")?;
+    } else {
+        let mut venv_cmd = std::process::Command::new(base);
+        venv_cmd.args(["-m", "venv"]).arg(&venv);
+        run(venv_cmd, "python -m venv")?;
+        let mut install = std::process::Command::new(&venv_py);
+        install.args(["-m", "pip", "install"]).args(&requirements);
+        run(install, "pip install")?;
+    }
+    std::fs::write(&ready, requirements.join("\n"))
+        .map_err(|error| format!("cannot mark {} ready: {error}", venv.display()))?;
+    Ok(venv_py)
+}
+
+/// The `mypy` cache kept beside an SDK environment, so repeated runs re-check
+/// only what changed rather than the whole standard library and pydantic.
+fn sdk_mypy_cache(py: &Path) -> PathBuf {
+    py.parent()
+        .and_then(Path::parent)
+        .map_or_else(std::env::temp_dir, Path::to_path_buf)
+        .join("mypy-cache")
+}
+
+#[test]
+fn pyproject_requirements_translate_poetry_constraints() {
+    let text = "[tool.poetry.dependencies]\npython = \"^3.10\"\naiohttp = { version = \">=3.14.1,<4\", optional = true, python = \">=3.10\"}\nhttpx-aiohttp = { version = \"0.1.8\", optional = true}\npydantic = \">= 1.9.2\"\n\n[tool.poetry.group.dev.dependencies]\nmypy = \"==1.13.0\"\npytest = \"^9.0.3\"\nlegacy = \"^0.4.1\"\n\n[tool.pytest.ini_options]\ntestpaths = [ \"tests\" ]\n";
+    assert_eq!(
+        pyproject_requirements(text),
+        [
+            "aiohttp>=3.14.1,<4",
+            "httpx-aiohttp==0.1.8",
+            "pydantic>=1.9.2",
+            "mypy==1.13.0",
+            "pytest>=9.0.3,<10",
+            "legacy>=0.4.1,<0.5",
+        ]
+    );
+}
+
+/// Restoring Fern's `# type: ignore` pragmas to the copied runtime is what lets
+/// a generated SDK type-check: over a minimal one-operation document, crozier's
+/// default SDK reports zero `mypy` errors under its own `pyproject.toml` — its
+/// pinned `mypy`, its configuration, and exactly the dependencies it declares.
+#[test]
+fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let py = match sdk_python_env(&sdk.join("pyproject.toml")) {
+        Ok(py) => py,
+        Err(reason) => {
+            if std::env::var_os("CI").is_some() {
+                panic!("the SDK type-check needs a Python env, unavailable in CI: {reason}");
+            }
+            eprintln!("skipping the SDK type-check: {reason}");
+            return;
+        }
+    };
+    let output = std::process::Command::new(&py)
+        .args(["-m", "mypy", "."])
+        .current_dir(&sdk)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .env("MYPY_CACHE_DIR", sdk_mypy_cache(&py))
+        .output()
+        .expect("run mypy over the generated SDK");
+    let report = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        output.status.success() && report.contains("Success: no issues found"),
+        "mypy reports errors in crozier's SDK under its own pin:\n{report}{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+/// One class written into a scratch registry: its row, probe, Fern record and,
+/// where the row calls for them, its wire test and evaluation.
+struct ScratchClass<'a> {
+    id: &'a str,
+    status: &'a str,
+    crozier_diagnostic: &'a str,
+    probe: &'a str,
+    wire_test: Option<&'a str>,
+    record: bool,
+}
+
+/// Lay out `docs/fern-refusals/` under `root`: `classes.tsv` sorted by class,
+/// each class's directory, and a `documents.tsv` whose rows carry `documents`.
+fn write_scratch_registry(root: &Path, classes: &[ScratchClass], documents: &[(&str, &str)]) {
+    let (cli, sdk) = probe_fern_pins();
+    let mut sorted: Vec<&ScratchClass> = classes.iter().collect();
+    sorted.sort_by_key(|class| class.id);
+    let mut table = format!("{FERN_REFUSAL_CLASSES_HEADER}\n");
+    for class in sorted {
+        let carried = documents
+            .iter()
+            .filter(|(_, ids)| ids.split(',').any(|id| id == class.id))
+            .count();
+        let (diagnostic, population) = if class.status == "unevaluated" {
+            ("—", "—")
+        } else {
+            (class.crozier_diagnostic, "0/0")
+        };
+        table.push_str(&format!(
+            "{}\tdocuments\tcheck\t1\tA scratch phrase about <…>\t{carried}\t{}\t{diagnostic}\t{population}\n",
+            class.id, class.status
+        ));
+        let dir = root.join(class.id);
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("probe.yml"), class.probe).unwrap();
+        if class.record {
+            std::fs::write(
+                dir.join("fern-refusal.txt"),
+                format!(
+                    "fern_cli_version: {cli}\nfern_python_sdk_version: {sdk}\ngenerate_exit: 1\n\
+                     diagnostic: A scratch phrase about x\noutput_tree: none\n"
+                ),
+            )
+            .unwrap();
+        }
+        if let Some(wire_test) = class.wire_test {
+            std::fs::write(dir.join("wire_test.py"), wire_test).unwrap();
+        }
+        if class.status != "unevaluated" {
+            std::fs::write(dir.join("evaluation.md"), "# Scratch evaluation\n").unwrap();
+        }
+    }
+    std::fs::write(root.join("classes.tsv"), table).unwrap();
+    let mut rows = format!("{FERN_REFUSAL_DOCUMENTS_HEADER}\n");
+    for (digest, ids) in documents {
+        rows.push_str(&format!(
+            "{digest}\tscratch\t—\t—\t—\tcheck\t1\t—\t{ids}\t0\t1\t—\n"
+        ));
+    }
+    std::fs::write(root.join("documents.tsv"), rows).unwrap();
+}
+
+/// A `wire_test.py` holding the contract against `TINY_SPEC_WITH_OP`'s SDK: the
+/// package imports, `mypy` under its own pin reports zero errors, and through
+/// an injected `httpx.MockTransport` the request reaches `GET /thing` and the
+/// declared response parses into `Thing`.
+const SCRATCH_PASSING_WIRE_TEST: &str = r#"import os
+import subprocess
+import sys
+
+import httpx
+
+SDK = os.environ["CROZIER_SDK_DIR"]
+sys.path.insert(0, os.environ["CROZIER_SDK_SRC"])
+
+from fern import FernApi  # noqa: E402
+from fern.types import Thing  # noqa: E402
+
+
+def test_mypy_reports_no_error_under_the_sdk_pin():
+    run = subprocess.run([sys.executable, "-m", "mypy", "."], cwd=SDK, capture_output=True, text=True)
+    assert run.returncode == 0, run.stdout + run.stderr
+
+
+def test_the_request_and_its_response_round_trip():
+    seen = []
+
+    def answer(request):
+        seen.append(request)
+        return httpx.Response(200, json={"name": "widget"})
+
+    client = FernApi(base_url="https://api.test", httpx_client=httpx.Client(transport=httpx.MockTransport(answer)))
+    thing = client.thing.get_thing()
+    assert [(request.method, str(request.url)) for request in seen] == [("GET", "https://api.test/thing")]
+    assert thing == Thing(name="widget")
+"#;
+
+const SCRATCH_FAILING_WIRE_TEST: &str =
+    "def test_the_wire_disagrees():\n    assert False, \"scratch wire test fails on purpose\"\n";
+
+/// A stand-in for crozier as it will behave once classes are evaluated: it
+/// reads the class's own `classes.tsv` row and refuses a `refuse` class's probe
+/// in both modes, and a `generate` class's under `--fern-strict`, printing the
+/// one line the contract asks for; everything else runs the real binary. With
+/// `STUB_WRITES_ON_REFUSAL` set it writes a file before refusing.
+const SCRATCH_STRICT_CROZIER: &str = r#"import os
+import subprocess
+import sys
+from pathlib import Path
+
+args = sys.argv[1:]
+spec = Path(args[args.index("--spec") + 1])
+out = Path(args[args.index("--output") + 1])
+cls = spec.parent.name
+rows = [line.split("\t") for line in (spec.parent.parent / "classes.tsv").read_text().splitlines()[1:]]
+status, phrase = next((row[6], row[7]) for row in rows if row[0] == cls)
+strict = "--fern-strict" in args
+if status == "refuse" or (status == "generate" and strict):
+    if os.environ.get("STUB_WRITES_ON_REFUSAL"):
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "partial.py").write_text("")
+    cause = " (refused by fern-strict: Fern refuses this document)" if status == "generate" else ""
+    print(f"error: [{cls}] {phrase}{cause}", file=sys.stderr)
+    sys.exit(1)
+sys.exit(subprocess.run([os.environ["STUB_CROZIER"], *[a for a in args if a != "--fern-strict"]]).returncode)
+"#;
+
+/// The command that runs [`SCRATCH_STRICT_CROZIER`] from `dir`, or `None` (a
+/// skip locally, a failure in CI) when no Python is on PATH.
+fn scratch_strict_crozier(dir: &Path, writes_on_refusal: bool) -> Option<impl Fn() -> Command> {
+    let Some(py) = python_interpreter() else {
+        assert!(
+            std::env::var_os("CI").is_none(),
+            "the refusal-gate journeys need Python, unavailable in CI"
+        );
+        eprintln!("skipping: no python3/python on PATH");
+        return None;
+    };
+    let stub = dir.join("strict_crozier.py");
+    std::fs::write(&stub, SCRATCH_STRICT_CROZIER).unwrap();
+    let real = assert_cmd::cargo::cargo_bin("crozier");
+    Some(move || {
+        let mut command = Command::new(py);
+        command.arg(&stub).env("STUB_CROZIER", &real);
+        if writes_on_refusal {
+            command.env("STUB_WRITES_ON_REFUSAL", "1");
+        }
+        command
+    })
+}
+
+/// Whether a Python environment for a generated SDK can be had here, so a
+/// journey asserting on `wire_test.py` knows the gate actually ran it.
+fn sdk_env_available() -> bool {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("api.yml");
+    std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    match sdk_python_env(&sdk.join("pyproject.toml")) {
+        Ok(_) => true,
+        Err(reason) => {
+            assert!(
+                std::env::var_os("CI").is_none(),
+                "the refusal-gate journeys need an SDK Python env, unavailable in CI: {reason}"
+            );
+            eprintln!("the wire-test half is skipped: {reason}");
+            false
+        }
+    }
+}
+
+fn header_array_probe() -> String {
+    std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/probes/header-array.yml"),
+    )
+    .expect("the header-array probe crozier refuses")
+}
+
+#[test]
+fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    let Some(generator) = scratch_strict_crozier(scratch.path(), false) else {
+        return;
+    };
+    let wired = sdk_env_available();
+    write_scratch_registry(
+        &registry,
+        &[
+            ScratchClass {
+                id: "scratch-generate",
+                status: "generate",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: Some(SCRATCH_PASSING_WIRE_TEST),
+                record: true,
+            },
+            ScratchClass {
+                id: "scratch-refuse",
+                status: "refuse",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "scratch-unevaluated",
+                status: "unevaluated",
+                crozier_diagnostic: "—",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: true,
+            },
+        ],
+        &[("0".repeat(64).as_str(), "scratch-generate,scratch-refuse")],
+    );
+    let failures = fern_refusal_failures(&registry, &generator);
+    assert!(
+        failures.is_empty(),
+        "a registry whose classes hold was refused (wire test run: {wired}):\n{}",
+        failures.join("\n")
+    );
+}
+
+#[test]
+fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    let wired = sdk_env_available();
+    let refused = header_array_probe();
+    write_scratch_registry(
+        &registry,
+        &[
+            ScratchClass {
+                id: "generated-though-refuse",
+                status: "refuse",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "refused-by-default",
+                status: "generate",
+                crozier_diagnostic: "unsupported array schema",
+                probe: &refused,
+                wire_test: Some(SCRATCH_PASSING_WIRE_TEST),
+                record: true,
+            },
+            ScratchClass {
+                id: "not-refused-when-strict",
+                status: "generate",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: Some(SCRATCH_PASSING_WIRE_TEST),
+                record: true,
+            },
+            ScratchClass {
+                id: "missing-diagnostic",
+                status: "refuse",
+                crozier_diagnostic: "a phrase crozier never prints",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "failing-wire-test",
+                status: "generate",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: Some(SCRATCH_FAILING_WIRE_TEST),
+                record: true,
+            },
+            ScratchClass {
+                id: "no-record",
+                status: "unevaluated",
+                crozier_diagnostic: "—",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: false,
+            },
+        ],
+        &[(
+            "1".repeat(64).as_str(),
+            "generated-though-refuse,ghost-class",
+        )],
+    );
+    std::fs::create_dir_all(registry.join("stray-directory")).unwrap();
+
+    let failures = fern_refusal_failures(&registry, &crozier);
+    let report = failures.join("\n");
+    let mut expected = vec![
+        (
+            "generated-though-refuse:",
+            "crozier generated from the probe in its mode",
+        ),
+        (
+            "refused-by-default:",
+            "a `generate` class's probe is refused by default",
+        ),
+        (
+            "not-refused-when-strict:",
+            "crozier generated from the probe under --fern-strict",
+        ),
+        (
+            "missing-diagnostic:",
+            "printed no line containing crozier_diagnostic \"a phrase crozier never prints\"",
+        ),
+        (
+            "no-record:",
+            "its Fern record no-record/fern-refusal.txt is missing",
+        ),
+        (
+            "stray-directory:",
+            "is a directory under the registry but no classes.tsv row names it",
+        ),
+        ("ghost-class:", "but it is not a classes.tsv row"),
+    ];
+    if wired {
+        expected.push((
+            "failing-wire-test:",
+            "wire_test.py failed against crozier's default SDK",
+        ));
+        assert!(
+            report.contains("scratch wire test fails on purpose"),
+            "the failing wire test's own message should reach the report:\n{report}"
+        );
+    }
+    for (class, condition) in expected {
+        assert!(
+            failures
+                .iter()
+                .any(|line| line.starts_with(class) && line.contains(condition)),
+            "no failure names {class} with {condition:?}:\n{report}"
+        );
+    }
+    // The classes that hold where it matters are not blamed for what they do right.
+    assert!(
+        !failures
+            .iter()
+            .any(|line| line.starts_with("not-refused-when-strict:")
+                && line.contains("wire_test.py")),
+        "a passing wire test was reported:\n{report}"
+    );
+}
+
+#[test]
+fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    let Some(generator) = scratch_strict_crozier(scratch.path(), true) else {
+        return;
+    };
+    write_scratch_registry(
+        &registry,
+        &[ScratchClass {
+            id: "writes-on-refusal",
+            status: "refuse",
+            crozier_diagnostic: "GET /thing: the scratch element",
+            probe: TINY_SPEC_WITH_OP,
+            wire_test: None,
+            record: true,
+        }],
+        &[],
+    );
+    let failures = fern_refusal_failures(&registry, &generator);
+    assert!(
+        failures
+            .iter()
+            .any(|line| line.starts_with("writes-on-refusal:")
+                && line.contains("wrote 1 file(s) to the output directory (partial.py)")),
+        "a refusal that wrote output was not reported:\n{}",
+        failures.join("\n")
+    );
 }
