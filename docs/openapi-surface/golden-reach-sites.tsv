@@ -95,7 +95,7 @@ pathitem-ref	pathItem.$ref	src/refs.rs::Resolver::resolve_path_item[if let Some\
 relative-file-ref	pathItem.$ref:relative-file	src/refs.rs::Resolver::resolve_path_item[if let DocumentLocation::Local\(file\) = &source_path \{],src/refs.rs::split_external,src/refs.rs::DocumentLocation::from_reference[match source \{]	
 missing-operation-id	operation.operationId	src/ir.rs::endpoint_method_name[\} else if id.is_empty\(\) \{],src/ir.rs::synthesized_method_name,src/ir.rs::endpoint_pascal_context[if id.is_empty\(\) \{],src/ir.rs::module_title[if id.is_empty\(\) \{],src/ir.rs::endpoint_module[if id.is_empty\(\) && first_tag\(op\).is_none\(\) \{]	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
 duplicate-operation-id	operation.operationId:duplicate	src/ir.rs::endpoints[if let Some\(index\) = out.iter\(\).position\(],src/ir.rs::endpoints[tag_types.retain\(\x7ctag_type\x7c \{]	
-non-identifier-operation-id	operation.operationId	src/openapi.rs::reject_unemittable_operation_ids,src/ir.rs::dotted_id_names_a_group,src/ir.rs::method_from_groupless_id,src/ir.rs::endpoint_module[if !id.is_empty\(\) \{]	
+non-identifier-operation-id	operation.operationId	src/openapi.rs::reject_unemittable_operation_ids,src/ir.rs::dotted_id_names_a_group,src/ir.rs::method_from_groupless_id	
 untagged-operation	operation.tags	src/ir.rs::endpoint_method_name[if first_tag\(op\).is_none\(\) \{],src/ir.rs::endpoint_module[if first_tag\(op\).is_none\(\) && !id.contains\('.'\) \{],src/ir.rs::endpoint_module[if id.is_empty\(\) && first_tag\(op\).is_none\(\) \{]	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
 multi-tagged-operation	operation.tags:multiple	src/ir.rs::first_tag	
 path-leading-literal-segment	openapi.paths:leading-literal-segment	none	`src/ir.rs::path_group` is unreachable: `endpoint_module` returns before its last line for every operation, one with neither `operationId` nor tag at its first check, so no document takes it
@@ -130,7 +130,7 @@ extension-tag	tag.x-*	none
 extension-schema	schema.x-*	src/openapi.rs::Schema::ignored,src/openapi.rs::Schema::enum_member_names,src/ir.rs::resolve_request_body[return hoist_fields\(&class, types\)\.map\(\x7cmut fields\x7c \{]	
 extension-security-scheme	securityScheme.x-*	none	
 audience-dual-header-policy	operation.x-fern-audiences,operation.x-crozier-audiences	src/openapi.rs::Operation::audiences,src/openapi.rs::filter_by_audience[let keep = \x7cop: &Operation\x7c \{],src/openapi.rs::filter_by_audience[if labels\.is_empty\(\) \{],src/openapi.rs::filter_by_audience[\} else \{],src/openapi.rs::filter_by_audience[if slot\.as_ref\(\)\.is_some_and\(\x7cop\x7c !keep\(op\)\) \{]	
-x-fern-or-crozier-ignore	operation.x-fern-ignore,schema.x-fern-ignore,operation.x-crozier-ignore,schema.x-crozier-ignore	src/openapi.rs::Operation::ignored,src/openapi.rs::Schema::ignored,src/openapi.rs::filter_ignored[for key in &ignored_schemas \{],src/openapi.rs::filter_ignored[if slot\.as_ref\(\)\.is_some_and\(\x7cop\x7c op\.ignored\(\)\) \{],src/openapi.rs::filter_ignored[if ignored_schemas\.contains\(key\) \{]	`filter_ignored`'s early return is the absence arm, taken by a document that ignores nothing
+x-fern-or-crozier-ignore	operation.x-fern-ignore,schema.x-fern-ignore,operation.x-crozier-ignore,schema.x-crozier-ignore	src/openapi.rs::Operation::ignored,src/openapi.rs::Schema::ignored,src/openapi.rs::filter_ignored[for key in &ignored_schemas \{],src/openapi.rs::filter_ignored[if slot\.as_ref\(\)\.is_some_and\(\x7cop\x7c op\.ignored\(\)\) \{]	`filter_ignored`'s early return is the absence arm, taken by a document that ignores nothing
 codegen-request-body-name-extension	operation.x-codegen-request-body-name	src/ir.rs::uses_codegen_request_body_name	
 is-beta-extension	schema.x-is-beta	src/ir.rs::resolve_request_body[return hoist_fields\(&class, types\)\.map\(\x7cmut fields\x7c \{]	
 fern-streaming-extension	operation.x-fern-streaming	src/openapi.rs::Operation::streaming,src/openapi.rs::Streaming::condition_property,src/ir.rs::stream_condition_body_source_names,src/ir.rs::stream_condition_variants	
@@ -241,22 +241,22 @@ dependent-required	schema.dependentRequired	none
 examples	schema.examples	src/openapi.rs::de_schema_examples,src/ir.rs::schema_example,src/ir.rs::schema_example_literal	
 format-date-time	schema.format=date-time	src/ir.rs::base_type_ref[=Some\("date-time"\)],src/ir.rs::scalar_body[=Some\("date-time"\)],src/emit.rs::render_type[Prim::Datetime => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Datetime\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Datetime\) => \{]	
 format-date	schema.format=date	src/ir.rs::base_type_ref[=Some\("date"\) =>],src/ir.rs::scalar_body[=Some\("date"\) =>],src/emit.rs::render_type[Prim::Date => \{],src/emit.rs::raw_type_str_ctx[TypeRef::Primitive\(Prim::Date\) => \{],src/emit.rs::ExampleCtx::value[TypeRef::Primitive\(Prim::Date\) => \{]	
-format-time	schema.format=time	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-duration	schema.format=duration	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-email	schema.format=email	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-hostname	schema.format=hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-ipv4	schema.format=ipv4	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-time	schema.format=time	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-duration	schema.format=duration	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-email	schema.format=email	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
+format-hostname	schema.format=hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
+format-ipv4	schema.format=ipv4	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
 format-uuid	schema.format=uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
-format-uri	schema.format=uri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-uri-reference	schema.format=uri-reference	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-uri-template	schema.format=uri-template	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-json-pointer	schema.format=json-pointer	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-regex	schema.format=regex	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-uri	schema.format=uri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
+format-uri-reference	schema.format=uri-reference	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-uri-template	schema.format=uri-template	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-json-pointer	schema.format=json-pointer	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-regex	schema.format=regex	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-int32	schema.format=int32	src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/ir.rs::int_prim	
 format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>]	
 format-float	schema.format=float	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-double	schema.format=double	src/ir.rs::number_prim[=_ => Prim::Float]	
-format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
 format-byte	schema.format=byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-binary	schema.format=binary	src/ir.rs::base_type_ref[=Some\("binary"\)],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response,src/ir.rs::has_wildcard_binary_response,src/ir.rs::resolve_request_body[let binary_media = \x7cmedia_type],src/ir.rs::hoist_form_object[let binary_scalar = \x7cschema: &Schema\x7c \{],src/ir.rs::Builder::variant_ref[match base_type_ref\(variant\) \{]	
 content-encoding	schema.contentEncoding	none	
@@ -458,8 +458,8 @@ multiple-of	schema.multipleOf	none	`src/openapi.rs`'s `Schema` declares no field
 contains	schema.contains	none	`src/openapi.rs`'s `Schema` declares no field for it
 const-boolean	fixture=dot-ai,fixture=opencodeui,fixture=sim-tables,fixture=standrig	src/ir.rs::string_enum_values[\} else \{]	
 const-integer	fixture=discord-com,fixture=osparc-simcore-webserver,fixture=standrig,fixture=volview-backend-contract	src/ir.rs::string_enum_values[\} else \{]	
-format-idn-hostname	schema.format=idn-hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
-format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => return None]	
+format-idn-hostname	schema.format=idn-hostname	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
+format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 boolean-schema-true	fixture=webflow-v2	none	
 xml-wrapped	schema.xml.wrapped	none	
 apiKey-query	fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	

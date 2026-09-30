@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9c8131cba3e4865f05063c71b4eebe871a255bdd002076e4d8e988b6fe11d3ca"
+
+[[covers]]
+key = "x-fern-or-crozier-ignore"
+arm = 'src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/x-fern-or-crozier-ignore.md#witness-search-exhaustive"
+verdict = "exhausted"
