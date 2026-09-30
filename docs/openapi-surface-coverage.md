@@ -48,9 +48,9 @@ three ways:
   golden-only witnesses ([the list](#golden-rows-with-no-golden-only-witness)).
 
 465 + 66 + 11 = 542. `golden` is still not `golden`-exhausted.
-[Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
-rows with at least one handling site no golden-only witness executes, 60 arms
-in all. The six-source searches of all 60 arms, across the 54 rows, read
+[Golden reach](#every-unreached-arm-and-its-search-verdict) counts 55 golden
+rows with at least one handling site no golden-only witness executes, 61 arms
+in all. The six-source searches of all 61 arms, across the 55 rows, read
 `exhausted`. One reached arm rests on a witness whose redistribution
 grant is disputed.
 
@@ -1820,12 +1820,12 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 The golden rows split in two. **410** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **54** carry
-at least one handling site no golden-only witness executes: 60 unreached arms
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **55** carry
+at least one handling site no golden-only witness executes: 61 unreached arms
 in all. Every one is named below with the verdict its linked arm-search record
-states under Contract B's six declared sources. All 60 read `exhausted`: each
+states under Contract B's six declared sources. All 61 read `exhausted`: each
 of those arms' six-source searches owes nothing and found no registrable
-real-world document that executes it. The remaining-gap searches ran three of
+real-world document that executes it. The remaining-gap searches ran four of
 them. Two are the `scalar_body` fallback of `format-idn-hostname` and
 `format-iri`, the rows that joined `golden` in the final reconciliation on
 `short-io`, which does not reach that arm. The third is
@@ -1833,7 +1833,12 @@ them. Two are the `scalar_body` fallback of `format-idn-hostname` and
 one. The row's three registered witnesses declare the shape in a component,
 which `Builder::composed_variant` handles, and the one declarer whose
 instrumented run reaches the inline arm, Vercel's description in `jentic`, is
-refused by `fern check`. Every arm
+refused by `fern check`. The fourth is case 10c of `hoist_union_variant`,
+`oneof-closed-empty-object-variant`'s inline arm. Its witness, Zoonk, declares
+the member in a component, which `Builder::variant_ref` handles. The declarers
+whose instrumented runs reach the inline arm fail a screen: GitHub's 144
+dereferenced descriptions `fern check` rejects, and the Hevy and Paddle
+descriptions are third-party copies. Every arm
 here stays an unreached arm of a `golden` row, not a settled one. `RankedBacklogTests` rebuilds this table from
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv) and the records, so a
 re-measured ledger or a re-rendered record that moves an arm fails the gate
@@ -1868,7 +1873,7 @@ until the table follows.
 | 19 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` |
 | 20 | `anyof-array-variant-closed-object-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 13 | `exhausted` |
 | 21 | `anyof-allof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 11 | `exhausted` |
-| 22 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 11 | `search-incomplete` |
+| 22 | `oneof-closed-empty-object-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]` | 11 | `exhausted` |
 | 23 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` |
 | 24 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` |
 | 25 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` |
