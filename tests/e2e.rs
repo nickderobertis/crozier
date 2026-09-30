@@ -2602,6 +2602,163 @@ fn handwritten_gate_refuses_a_row_its_covers_do_not_describe() {
     fixture.assert_refused(HANDWRITTEN_FIXTURE, "does not name the arm");
 }
 
+/// One induced breakage per remaining rule of the contract, each on a fresh
+/// well-formed fixture, each refused with the fixture (or file) and the rule named.
+#[test]
+fn handwritten_gate_refuses_each_remaining_contract_breakage() {
+    type Breakage = fn(&HandwrittenFixture);
+    let cases: [(&str, &str, Breakage); 18] = [
+        (HANDWRITTEN_FIXTURE, "evidence.toml cannot be read", |f| {
+            std::fs::write(f.evidence(), [0xff, 0xfe, 0x00]).expect("undecodable evidence")
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "evidence.toml `digest` is not a string",
+            |f| {
+                let text = std::fs::read_to_string(f.evidence()).expect("evidence");
+                let line = text
+                    .lines()
+                    .find(|l| l.starts_with("digest = "))
+                    .expect("digest")
+                    .to_string();
+                f.edit_evidence(&line, "digest = 5");
+            },
+        ),
+        (HANDWRITTEN_FIXTURE, "is not a `[[covers]]` table", |f| {
+            let text = std::fs::read_to_string(f.evidence()).expect("evidence");
+            let head = &text[..text.find("[[covers]]").expect("covers")];
+            std::fs::write(f.evidence(), format!("{head}covers = [\"x\"]\n")).expect("evidence");
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "carries unknown field(s) ['note']",
+            |f| {
+                f.edit_evidence(
+                    "key = \"sample-shape\"",
+                    "key = \"sample-shape\"\nnote = \"x\"",
+                )
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "every field is a non-empty string",
+            |f| f.edit_evidence("key = \"sample-shape\"", "key = \"\""),
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "its `renewed` record `docs/none.md` does not exist",
+            |f| {
+                f.edit_evidence(
+                "#witness-search-exhaustive\"\nverdict = \"exhausted\"\n\n",
+                "#incomplete-search\"\nverdict = \"search-incomplete\"\nrenewed = \"docs/none.md\"\n\n",
+            )
+            },
+        ),
+        ("handwritten-reach.tsv", "missing — restore it", |f| {
+            std::fs::remove_file(f.path("docs/openapi-surface/handwritten-reach.tsv"))
+                .expect("ledger")
+        }),
+        (
+            "handwritten-reach.tsv",
+            "the header line must be exactly",
+            |f| {
+                std::fs::write(
+                    f.path("docs/openapi-surface/handwritten-reach.tsv"),
+                    "fixture\tkey\n",
+                )
+                .expect("ledger")
+            },
+        ),
+        (
+            "handwritten-reach.tsv line 2",
+            "not five tab-separated fields",
+            |f| f.write_reach("sample-fixture\tsample-golden\n"),
+        ),
+        ("handwritten-reach.tsv", "rows are not sorted", |f| {
+            f.write_reach(&format!(
+                "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n\
+                 {HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n"
+            ))
+        }),
+        (
+            HANDWRITTEN_DIR,
+            "missing — the fixture directory must exist",
+            |f| std::fs::remove_dir_all(f.path(HANDWRITTEN_DIR)).expect("fixture directory"),
+        ),
+        ("stray.txt", "is not a fixture directory", |f| {
+            std::fs::write(f.path(&format!("{HANDWRITTEN_DIR}/stray.txt")), "x\n").expect("stray")
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "fern-expected is not a directory",
+            |f| {
+                let tree = f.fixture_dir().join("fern-expected");
+                std::fs::remove_dir_all(&tree).expect("tree");
+                std::fs::write(&tree, "x\n").expect("tree as a file");
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "records no selector for this key",
+            |f| {
+                std::fs::write(
+                    f.path("docs/openapi-surface/witness-search-keys.tsv"),
+                    "key\tselector\tregion\tcensus_status\n",
+                )
+                .expect("key set")
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "the census cannot read openapi.yml",
+            |f| {
+                std::fs::write(
+                    f.fixture_dir().join("openapi.yml"),
+                    "openapi: 3.0.3\n\tinfo: [\n",
+                )
+                .expect("unreadable document")
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "an arm-level cover's row must read `golden`",
+            |f| {
+                f.edit_evidence(
+                    "key = \"sample-golden\"\narm",
+                    "key = \"sample-shape\"\narm",
+                )
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "golden-reach.tsv measures no such site",
+            |f| {
+                let ledger = f.path("docs/openapi-surface/golden-reach.tsv");
+                let text = std::fs::read_to_string(&ledger).expect("golden-reach ledger");
+                std::fs::write(
+                    &ledger,
+                    text.replace(&format!("{HANDWRITTEN_ARM}=0/1"), "src/ir.rs::other=0/1"),
+                )
+                .expect("golden-reach ledger");
+            },
+        ),
+        ("sample-shape", "golden-reach-sites.tsv lists it", |f| {
+            let table = f.path("docs/openapi-surface/golden-reach-sites.tsv");
+            let text = std::fs::read_to_string(&table).expect("site table");
+            std::fs::write(
+                &table,
+                format!("{text}sample-shape\tschema.format=email\tnone\t\n"),
+            )
+            .expect("site table");
+        }),
+    ];
+    for (subject, message, breakage) in cases {
+        let fixture = HandwrittenFixture::new();
+        breakage(&fixture);
+        fixture.assert_refused(subject, message);
+    }
+}
+
 /// A census source read from inside the fixture directory — here a vendored
 /// corpus directory that is a link to one — is refused whatever it is named.
 #[cfg(unix)]
