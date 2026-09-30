@@ -113,6 +113,11 @@ jobs:
             ext: zip
     runs-on: ${{ matrix.os }}
     steps:
+      # Windows' 260-character path limit fails the checkout on the deepest
+      # committed fixture paths; ci.yml's Windows jobs apply the same setting.
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - name: Install Rust target
         run: rustup target add ${{ matrix.target }}
@@ -318,6 +323,11 @@ jobs:
             os: windows-latest
     runs-on: ${{ matrix.os }}
     steps:
+      # Windows' 260-character path limit fails the checkout on the deepest
+      # committed fixture paths; ci.yml's Windows jobs apply the same setting.
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
       - uses: actions/checkout@v4
       - name: Build wheel
         uses: PyO3/maturin-action@v1
