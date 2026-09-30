@@ -1,0 +1,9 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping body parameter, body, in POST /api/users
+[sdk] 1 error
+    [error]
+        path: api.yml -> service -> endpoints -> test -> errors -> root.ForbiddenError
+        issue: Error is not defined.
+
+Found 1 error and 0 warnings in <n> seconds.

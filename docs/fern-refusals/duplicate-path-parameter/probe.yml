@@ -1,0 +1,15 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /accounts/{account_id}/members/{account_id}:
+    get:
+      operationId: getMember
+      parameters:
+        - name: account_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '204': {description: No Content}

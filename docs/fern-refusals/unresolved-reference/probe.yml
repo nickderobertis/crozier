@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+security:
+  - BearerAuth: []
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '200':
+          description: OK
+components:
+  securitySchemes:
+    BearerAuth:
+      $ref: './components.yaml#/components/securitySchemes/BearerAuth'

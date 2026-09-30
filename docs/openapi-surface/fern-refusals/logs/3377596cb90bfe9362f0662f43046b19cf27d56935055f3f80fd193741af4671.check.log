@@ -1,0 +1,464 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 85 errors
+    [error]
+        path: __package__.yml -> types -> CommonQueryDslRankFeatureFunctionLinear -> extends -> CommonQueryDslRankFeatureFunction
+        issue: Objects can only extend other objects, and CommonQueryDslRankFeatureFunction is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CommonQueryDslRankFeatureFunctionLogarithm -> extends -> CommonQueryDslRankFeatureFunction
+        issue: Objects can only extend other objects, and CommonQueryDslRankFeatureFunction is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CommonQueryDslRankFeatureFunctionSaturation -> extends -> CommonQueryDslRankFeatureFunction
+        issue: Objects can only extend other objects, and CommonQueryDslRankFeatureFunction is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CommonQueryDslRankFeatureFunctionSigmoid -> extends -> CommonQueryDslRankFeatureFunction
+        issue: Objects can only extend other objects, and CommonQueryDslRankFeatureFunction is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CommonRrfRank -> extends -> CommonRankBase
+        issue: Objects can only extend other objects, and CommonRankBase is not an object.
+
+    [error]
+        path: bulk.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulk.yml -> service -> endpoints -> 1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulk.yml -> service -> endpoints -> 2
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulk.yml -> service -> endpoints -> 3
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulkStream.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulkStream.yml -> service -> endpoints -> 1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulkStream.yml -> service -> endpoints -> 2
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: bulkStream.yml -> service -> endpoints -> 3
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: cat.yml -> service -> endpoints -> fielddata1
+        issue: Multiple request properties have the name fields. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "fields"
+  - Query Parameter "fields"
+
+    [error]
+        path: cat.yml -> service -> endpoints -> recovery1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: cat.yml -> service -> endpoints -> segmentReplication1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: cat.yml -> service -> endpoints -> snapshots1
+        issue: Multiple request properties have the name repository. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "repository"
+  - Query Parameter "repository"
+
+    [error]
+        path: clearScroll.yml -> service -> endpoints -> 1
+        issue: Multiple request properties have the name scroll_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scroll_id"
+  - Body property: <Request Body> -> scroll_id
+
+    [error]
+        path: deleteByQuery.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: exists.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: existsSource.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: explain.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: explain.yml -> service -> endpoints -> 1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: get.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: getSource.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: indices.yml -> service -> endpoints -> analyze2
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: indices.yml -> service -> endpoints -> analyze3
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: indices.yml -> service -> endpoints -> clearCache1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: indices.yml -> service -> endpoints -> getMapping1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias10
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias5
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias6
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias7
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias8
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putAlias9
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Body property: <Request Body> -> index
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putMapping0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "source" (name: "source")
+  - Body property: <Request Body> -> _source (name: "_source")
+
+    [error]
+        path: indices.yml -> service -> endpoints -> putMapping1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "source" (name: "source")
+  - Body property: <Request Body> -> _source (name: "_source")
+
+    [error]
+        path: ism.yml -> service -> endpoints -> addPolicy1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> addPolicy1Superseded
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> changePolicy1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> changePolicy1Superseded
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> removePolicy1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> removePolicy1Superseded
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> retryIndex1
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: ism.yml -> service -> endpoints -> retryIndex1Superseded
+        issue: Multiple request properties have the name index. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "index"
+  - Query Parameter "index"
+
+    [error]
+        path: knn.yml -> service -> endpoints -> searchModels0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: knn.yml -> service -> endpoints -> searchModels1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: mget.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: mget.yml -> service -> endpoints -> 1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: mget.yml -> service -> endpoints -> 2
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: mget.yml -> service -> endpoints -> 3
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: ml.yml -> service -> endpoints -> updateController0
+        issue: Multiple request properties have the name model_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "model_id"
+  - Body property: <Request Body> -> model_id
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_cat/fielddata/{fields} -> get
+        issue: Parameters path parameter 'fields', query parameter 'fields' all normalize to 'fields' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_cat/recovery/{index} -> get
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_cat/segment_replication/{index} -> get
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_cat/snapshots/{repository} -> get
+        issue: Parameters path parameter 'repository', query parameter 'repository' all normalize to 'repository' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_opendistro/_ism/add/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_opendistro/_ism/change_policy/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_opendistro/_ism/remove/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_opendistro/_ism/retry/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_plugins/_ism/add/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_plugins/_ism/change_policy/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_plugins/_ism/remove/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_plugins/_ism/retry/{index} -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_scripts/{id}/{context} -> post
+        issue: Parameters path parameter 'context', query parameter 'context' all normalize to 'context' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_scripts/{id}/{context} -> put
+        issue: Parameters path parameter 'context', query parameter 'context' all normalize to 'context' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_search/scroll/{scroll_id} -> get
+        issue: Parameters path parameter 'scroll_id', query parameter 'scroll_id' all normalize to 'scrollId' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /_search/scroll/{scroll_id} -> post
+        issue: Parameters path parameter 'scroll_id', query parameter 'scroll_id' all normalize to 'scrollId' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{index}/_analyze -> get
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{index}/_analyze -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{index}/_cache/clear -> post
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{index}/_mapping -> get
+        issue: Parameters path parameter 'index', query parameter 'index' all normalize to 'index' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: putScript.yml -> service -> endpoints -> 2
+        issue: Multiple request properties have the name context. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "context"
+  - Query Parameter "context"
+
+    [error]
+        path: putScript.yml -> service -> endpoints -> 3
+        issue: Multiple request properties have the name context. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "context"
+  - Query Parameter "context"
+
+    [error]
+        path: renderSearchTemplate.yml -> service -> endpoints -> 3
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: scroll.yml -> service -> endpoints -> 2
+        issue: Multiple request properties have the name scroll_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scroll_id"
+  - Query Parameter "scroll_id"
+
+    [error]
+        path: scroll.yml -> service -> endpoints -> 3
+        issue: Multiple request properties have the name scroll_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scroll_id"
+  - Query Parameter "scroll_id"
+
+    [error]
+        path: search.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: search.yml -> service -> endpoints -> 1
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: search.yml -> service -> endpoints -> 2
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: search.yml -> service -> endpoints -> 3
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: snapshot.yml -> service -> endpoints -> createRepository0
+        issue: Multiple request properties have the name repository. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "repository"
+  - Body property: <Request Body> -> repository
+
+    [error]
+        path: snapshot.yml -> service -> endpoints -> createRepository1
+        issue: Multiple request properties have the name repository. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "repository"
+  - Body property: <Request Body> -> repository
+
+    [error]
+        path: update.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+    [error]
+        path: updateByQuery.yml -> service -> endpoints -> 0
+        issue: Multiple request properties resolve to the same generated name source after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "_source" (name: "_source")
+  - Query Parameter "source" (name: "source")
+
+Found 85 errors and 230 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

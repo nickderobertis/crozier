@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document probe
+[api]: Failed to resolve ./components.yaml#/components/securitySchemes/BearerAuth 
+       CliError: Failed to resolve ./components.yaml#/components/securitySchemes/BearerAuth
+All checks passed

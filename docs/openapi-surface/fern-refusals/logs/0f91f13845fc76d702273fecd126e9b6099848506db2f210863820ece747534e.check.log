@@ -1,0 +1,114 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 12 errors
+    [error]
+        path: accounts.yml -> service -> endpoints -> getAccountActivities -> examples[0] -> response
+        issue: "fill" is not a valid example for this enum. Enum values are:
+  - FILL
+  - ACATC
+  - ACATS
+  - CGD
+  - CIL
+  - CSD
+  - CSW
+  - DIV
+  - DIVCGL
+  - DIVCGS
+  - DIVNRA
+  - DIVROC
+  - DIVTXEX
+  - FEE
+  - INT
+  - JNLC
+  - JNLS
+  - MA
+  - OPASN
+  - OPCA
+  - OPCSH
+  - OPEXC
+  - OPEXP
+  - OPTRD
+  - PTC
+  - REO
+  - REORG
+  - SPIN
+  - SPLIT
+  - FOPT
+  - OCT
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> getAccountActivitiesByType -> examples[0] -> response
+        issue: "fill" is not a valid example for this enum. Enum values are:
+  - FILL
+  - ACATC
+  - ACATS
+  - CGD
+  - CIL
+  - CSD
+  - CSW
+  - DIV
+  - DIVCGL
+  - DIVCGS
+  - DIVNRA
+  - DIVROC
+  - DIVTXEX
+  - FEE
+  - INT
+  - JNLC
+  - JNLS
+  - MA
+  - OPASN
+  - OPCA
+  - OPCSH
+  - OPEXC
+  - OPEXP
+  - OPTRD
+  - PTC
+  - REO
+  - REORG
+  - SPIN
+  - SPLIT
+  - FOPT
+  - OCT
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v1/events/accounts/status -> get -> description
+        issue: Endpoint description for GET /v1/events/accounts/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v1/events/journals/status -> get -> description
+        issue: Endpoint description for GET /v1/events/journals/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v1/events/transfers/status -> get -> description
+        issue: Endpoint description for GET /v1/events/transfers/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/admin-actions -> get -> description
+        issue: Endpoint description for GET /v2/events/admin-actions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/funding/status -> get -> description
+        issue: Endpoint description for GET /v2/events/funding/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/ipos -> get -> description
+        issue: Endpoint description for GET /v2/events/ipos contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/journals/status -> get -> description
+        issue: Endpoint description for GET /v2/events/journals/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/system -> get -> description
+        issue: Endpoint description for GET /v2/events/system contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2/events/trades -> get -> description
+        issue: Endpoint description for GET /v2/events/trades contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /v2beta1/events/activities -> get -> description
+        issue: Endpoint description for GET /v2beta1/events/activities contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+Found 12 errors and 19 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

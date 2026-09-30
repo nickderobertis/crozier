@@ -1,0 +1,100 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 24 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> createACheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> createASingleUseEnrollmentToken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> deleteAnUnusedSecret
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> encryptAndStoreASecret
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> idempotentlyReportACheckResult
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listChecks
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listDiscoveredExecutionRegions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listEncryptedSecretMetadata
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listEnrollmentTokensWithoutSecretValues
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listIncidents
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listProbes
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> longPollForOneLeasedJob
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> overrideAProbeLocation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> queueAOneProbeTestExecutionWithoutAdvancingAlertState
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> readACheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> readBucketedRegionalLatency
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> readCurrentAdministrator
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> readPerRegionAvailability
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> readTheRegionalArbitrationMatrix
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> recordProbeHeartbeat
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceACheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceASecretValue
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> signOut
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> softDeleteACheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 24 errors and 0 warnings in <n> seconds.

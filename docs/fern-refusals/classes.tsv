@@ -1,1 +1,24 @@
 class	family	fern_stage	fern_exit	diagnostic	documents	status	crozier_diagnostic	population_strict
+default-not-valid-integer	documents	check	1	Default value <…> is not a valid integer	0	unevaluated	—	—
+duplicate-example-name	documents	check	1	Duplicate example name: <…>	0	unevaluated	—	—
+duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <…>.	0	unevaluated	—	—
+endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	0	unevaluated	—	—
+enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	0	unevaluated	—	—
+enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	0	unevaluated	—	—
+example-missing-required-property	documents	check	1	Example is missing required property <…>	0	unevaluated	—	—
+example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	0	unevaluated	—	—
+example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	0	unevaluated	—	—
+example-unexpected-property	documents	check	1	Unexpected property <…>	0	unevaluated	—	—
+list-default-not-array	documents	check	1	Default value for list type must be an array	0	unevaluated	—	—
+missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	0	unevaluated	—	—
+object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	0	unevaluated	—	—
+object-property-name-collision	names	check	1	Object has multiple properties named <…>:	0	unevaluated	—	—
+path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	0	unevaluated	—	—
+request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	0	unevaluated	—	—
+request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	0	unevaluated	—	—
+service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	0	unevaluated	—	—
+type-name-collision	names	check	1	<…> is already declared in <…>	0	unevaluated	—	—
+type-name-not-letter-led	names	check	1	Type name must begin with a letter	0	unevaluated	—	—
+type-not-defined	documents	check	1	<…> is not defined.	0	unevaluated	—	—
+unresolved-reference	documents	check	0	Failed to resolve <…>	0	unevaluated	—	—
+unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	0	unevaluated	—	—

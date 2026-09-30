@@ -1,0 +1,90 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[api]: No error name found for status code 480
+[sdk] 12 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultipartUploads
+        issue: Multiple request properties resolve to the same generated name keyMarker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "key-marker" (name: "key-marker")
+  - Query Parameter "KeyMarker" (name: "KeyMarker")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultipartUploads
+        issue: Multiple request properties resolve to the same generated name maxUploads after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "max-uploads" (name: "max-uploads")
+  - Query Parameter "MaxUploads" (name: "MaxUploads")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultipartUploads
+        issue: Multiple request properties resolve to the same generated name uploadIdMarker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "upload-id-marker" (name: "upload-id-marker")
+  - Query Parameter "UploadIdMarker" (name: "UploadIdMarker")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjects
+        issue: Multiple request properties resolve to the same generated name marker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marker" (name: "marker")
+  - Query Parameter "Marker" (name: "Marker")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjects
+        issue: Multiple request properties resolve to the same generated name maxKeys after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "max-keys" (name: "max-keys")
+  - Query Parameter "MaxKeys" (name: "MaxKeys")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjectsV2
+        issue: Multiple request properties resolve to the same generated name maxKeys after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "max-keys" (name: "max-keys")
+  - Query Parameter "MaxKeys" (name: "MaxKeys")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjectsV2
+        issue: Multiple request properties resolve to the same generated name continuationToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "continuation-token" (name: "continuation-token")
+  - Query Parameter "ContinuationToken" (name: "ContinuationToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjectVersions
+        issue: Multiple request properties resolve to the same generated name keyMarker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "key-marker" (name: "key-marker")
+  - Query Parameter "KeyMarker" (name: "KeyMarker")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjectVersions
+        issue: Multiple request properties resolve to the same generated name maxKeys after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "max-keys" (name: "max-keys")
+  - Query Parameter "MaxKeys" (name: "MaxKeys")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListObjectVersions
+        issue: Multiple request properties resolve to the same generated name versionIdMarker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "version-id-marker" (name: "version-id-marker")
+  - Query Parameter "VersionIdMarker" (name: "VersionIdMarker")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListParts
+        issue: Multiple request properties resolve to the same generated name maxParts after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "max-parts" (name: "max-parts")
+  - Query Parameter "MaxParts" (name: "MaxParts")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListParts
+        issue: Multiple request properties resolve to the same generated name partNumberMarker after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "part-number-marker" (name: "part-number-marker")
+  - Query Parameter "PartNumberMarker" (name: "PartNumberMarker")
+
+Found 12 errors and 88 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

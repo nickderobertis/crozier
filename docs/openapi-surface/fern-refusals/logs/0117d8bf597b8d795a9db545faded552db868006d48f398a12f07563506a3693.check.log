@@ -1,0 +1,19 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+
+<--- Last few GCs --->
+
+[1588918:0x39242000]   234763 ms: Scavenge (during sweeping) 4081.5 (4093.1) -> 4074.9 (4094.1) MB, pooled: 0.0 MB, 21.55 / 0.00 ms (average mu = 0.216, current mu = 0.156) allocation failure; 
+[1588918:0x39242000]   238239 ms: Incremental Mark-Compact (reduce) 4076.2 (4094.1) -> 4074.2 (4079.4) MB, pooled: 0.0 MB, 3239.46 / 0.00 ms (+ 115.9 ms in 21 steps since start of marking, biggest step 7.8 ms, walltime since start of marking 3403 ms) (ave
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x8256d0  [node]
+ 2: 0x82593d node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 3: 0xc91bbb  [node]
+ 4: 0xf02b05  [node]
+ 5: 0xf00d0c  [node]
+ 6: 0xe4160f  [node]
+ 7: 0x138c7a5  [node]
+ 8: 0x7537f5e3ea76 
+Aborted (core dumped)

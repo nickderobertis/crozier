@@ -1,0 +1,5 @@
+fern_cli_version: 5.67.1
+fern_python_sdk_version: 5.20.0
+generate_exit: 1
+diagnostic: Multiple request properties resolve to the same generated name accountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+output_tree: none
