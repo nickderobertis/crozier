@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document API Setu
+[api]: Failed to resolve #/components/responses/BAD_REQUEST 
+       CliError: Failed to resolve #/components/responses/BAD_REQUEST
+Found 0 errors and 34 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

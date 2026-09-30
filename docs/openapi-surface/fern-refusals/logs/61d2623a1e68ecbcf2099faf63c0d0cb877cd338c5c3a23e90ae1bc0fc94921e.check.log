@@ -1,0 +1,2634 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 526 errors
+    [error]
+        path: accountActiveAdSummaries.yml -> service -> endpoints -> dfareporting.accountActiveAdSummaries.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountActiveAdSummaries.yml -> service -> endpoints -> dfareporting.accountActiveAdSummaries.get
+        issue: Path parameter is unreferenced in endpoint: summaryAccountId.
+
+    [error]
+        path: accountActiveAdSummaries.yml -> service -> endpoints -> dfareporting.accountActiveAdSummaries.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountActiveAdSummaries.yml -> service -> endpoints -> dfareporting.accountActiveAdSummaries.get
+        issue: Multiple request properties resolve to the same generated name summaryAccountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+summaryAccountId" (name: "+summaryAccountId")
+  - Path parameter "summaryAccountId" (name: "summaryAccountId")
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountPermissionGroups.yml -> service -> endpoints -> dfareporting.accountPermissionGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountPermissions.yml -> service -> endpoints -> dfareporting.accountPermissions.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> dfareporting.accounts.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: accountUserProfiles.yml -> service -> endpoints -> dfareporting.accountUserProfiles.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: ads.yml -> service -> endpoints -> dfareporting.ads.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserGroups.yml -> service -> endpoints -> dfareporting.advertiserGroups.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserInvoices.yml -> service -> endpoints -> dfareporting.advertiserInvoices.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserInvoices.yml -> service -> endpoints -> dfareporting.advertiserInvoices.list
+        issue: Path parameter is unreferenced in endpoint: advertiserId.
+
+    [error]
+        path: advertiserInvoices.yml -> service -> endpoints -> dfareporting.advertiserInvoices.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserInvoices.yml -> service -> endpoints -> dfareporting.advertiserInvoices.list
+        issue: Multiple request properties resolve to the same generated name advertiserId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+advertiserId" (name: "+advertiserId")
+  - Path parameter "advertiserId" (name: "advertiserId")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertiserLandingPages.yml -> service -> endpoints -> dfareporting.advertiserLandingPages.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: advertisers.yml -> service -> endpoints -> dfareporting.advertisers.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.insert
+        issue: Path parameter is unreferenced in endpoint: billingProfileId.
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.insert
+        issue: Multiple request properties resolve to the same generated name billingProfileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+billingProfileId" (name: "+billingProfileId")
+  - Path parameter "billingProfileId" (name: "billingProfileId")
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.list
+        issue: Path parameter is unreferenced in endpoint: billingProfileId.
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingAssignments.yml -> service -> endpoints -> dfareporting.billingAssignments.list
+        issue: Multiple request properties resolve to the same generated name billingProfileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+billingProfileId" (name: "+billingProfileId")
+  - Path parameter "billingProfileId" (name: "billingProfileId")
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingProfiles.yml -> service -> endpoints -> dfareporting.billingProfiles.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingRates.yml -> service -> endpoints -> dfareporting.billingRates.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: billingRates.yml -> service -> endpoints -> dfareporting.billingRates.list
+        issue: Path parameter is unreferenced in endpoint: billingProfileId.
+
+    [error]
+        path: billingRates.yml -> service -> endpoints -> dfareporting.billingRates.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: billingRates.yml -> service -> endpoints -> dfareporting.billingRates.list
+        issue: Multiple request properties resolve to the same generated name billingProfileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+billingProfileId" (name: "+billingProfileId")
+  - Path parameter "billingProfileId" (name: "billingProfileId")
+
+    [error]
+        path: browsers.yml -> service -> endpoints -> dfareporting.browsers.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: browsers.yml -> service -> endpoints -> dfareporting.browsers.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.insert
+        issue: Path parameter is unreferenced in endpoint: campaignId.
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.insert
+        issue: Multiple request properties resolve to the same generated name campaignId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+campaignId" (name: "+campaignId")
+  - Path parameter "campaignId" (name: "campaignId")
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.list
+        issue: Path parameter is unreferenced in endpoint: campaignId.
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaignCreativeAssociations.yml -> service -> endpoints -> dfareporting.campaignCreativeAssociations.list
+        issue: Multiple request properties resolve to the same generated name campaignId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+campaignId" (name: "+campaignId")
+  - Path parameter "campaignId" (name: "campaignId")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: campaigns.yml -> service -> endpoints -> dfareporting.campaigns.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: changeLogs.yml -> service -> endpoints -> dfareporting.changeLogs.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: cities.yml -> service -> endpoints -> dfareporting.cities.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: cities.yml -> service -> endpoints -> dfareporting.cities.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: connectionTypes.yml -> service -> endpoints -> dfareporting.connectionTypes.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: contentCategories.yml -> service -> endpoints -> dfareporting.contentCategories.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.get
+        issue: Path parameter is unreferenced in endpoint: dartId.
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.get
+        issue: Multiple request properties resolve to the same generated name dartId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+dartId" (name: "+dartId")
+  - Path parameter "dartId" (name: "dartId")
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: countries.yml -> service -> endpoints -> dfareporting.countries.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeAssets.yml -> service -> endpoints -> dfareporting.creativeAssets.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeAssets.yml -> service -> endpoints -> dfareporting.creativeAssets.insert
+        issue: Path parameter is unreferenced in endpoint: advertiserId.
+
+    [error]
+        path: creativeAssets.yml -> service -> endpoints -> dfareporting.creativeAssets.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeAssets.yml -> service -> endpoints -> dfareporting.creativeAssets.insert
+        issue: Multiple request properties resolve to the same generated name advertiserId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+advertiserId" (name: "+advertiserId")
+  - Path parameter "advertiserId" (name: "advertiserId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFields.yml -> service -> endpoints -> dfareporting.creativeFields.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.insert
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.insert
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.list
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.list
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.patch
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.patch
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.update
+        issue: Path parameter is unreferenced in endpoint: creativeFieldId.
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeFieldValues.yml -> service -> endpoints -> dfareporting.creativeFieldValues.update
+        issue: Multiple request properties resolve to the same generated name creativeFieldId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+creativeFieldId" (name: "+creativeFieldId")
+  - Path parameter "creativeFieldId" (name: "creativeFieldId")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creativeGroups.yml -> service -> endpoints -> dfareporting.creativeGroups.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: creatives.yml -> service -> endpoints -> dfareporting.creatives.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: directorySites.yml -> service -> endpoints -> dfareporting.directorySites.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.delete
+        issue: Path parameter is unreferenced in endpoint: objectId.
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.delete
+        issue: Multiple request properties resolve to the same generated name objectId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+objectId" (name: "+objectId")
+  - Path parameter "objectId" (name: "objectId")
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: dynamicTargetingKeys.yml -> service -> endpoints -> dfareporting.dynamicTargetingKeys.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: eventTags.yml -> service -> endpoints -> dfareporting.eventTags.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.generatetag
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.generatetag
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivities.yml -> service -> endpoints -> dfareporting.floodlightActivities.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightActivityGroups.yml -> service -> endpoints -> dfareporting.floodlightActivityGroups.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: floodlightConfigurations.yml -> service -> endpoints -> dfareporting.floodlightConfigurations.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: inventoryItems.yml -> service -> endpoints -> dfareporting.inventoryItems.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: languages.yml -> service -> endpoints -> dfareporting.languages.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: languages.yml -> service -> endpoints -> dfareporting.languages.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: metros.yml -> service -> endpoints -> dfareporting.metros.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: metros.yml -> service -> endpoints -> dfareporting.metros.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: mobileApps.yml -> service -> endpoints -> dfareporting.mobileApps.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: mobileCarriers.yml -> service -> endpoints -> dfareporting.mobileCarriers.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.get
+        issue: Path parameter is unreferenced in endpoint: dartId.
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.get
+        issue: Multiple request properties resolve to the same generated name dartId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+dartId" (name: "+dartId")
+  - Path parameter "dartId" (name: "dartId")
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: operatingSystems.yml -> service -> endpoints -> dfareporting.operatingSystems.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: operatingSystemVersions.yml -> service -> endpoints -> dfareporting.operatingSystemVersions.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: orders.yml -> service -> endpoints -> dfareporting.orders.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementGroups.yml -> service -> endpoints -> dfareporting.placementGroups.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.generatetags
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.generatetags
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placements.yml -> service -> endpoints -> dfareporting.placements.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: placementStrategies.yml -> service -> endpoints -> dfareporting.placementStrategies.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: platformTypes.yml -> service -> endpoints -> dfareporting.platformTypes.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.get
+        issue: Path parameter is unreferenced in endpoint: code.
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.get
+        issue: Multiple request properties resolve to the same generated name code after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+code" (name: "+code")
+  - Path parameter "code" (name: "code")
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: postalCodes.yml -> service -> endpoints -> dfareporting.postalCodes.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> dfareporting.projects.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: regions.yml -> service -> endpoints -> dfareporting.regions.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: regions.yml -> service -> endpoints -> dfareporting.regions.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingLists.yml -> service -> endpoints -> dfareporting.remarketingLists.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.get
+        issue: Path parameter is unreferenced in endpoint: remarketingListId.
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.get
+        issue: Multiple request properties resolve to the same generated name remarketingListId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+remarketingListId" (name: "+remarketingListId")
+  - Path parameter "remarketingListId" (name: "remarketingListId")
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: remarketingListShares.yml -> service -> endpoints -> dfareporting.remarketingListShares.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sites.yml -> service -> endpoints -> dfareporting.sites.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: sizes.yml -> service -> endpoints -> dfareporting.sizes.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: subaccounts.yml -> service -> endpoints -> dfareporting.subaccounts.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetableRemarketingLists.yml -> service -> endpoints -> dfareporting.targetableRemarketingLists.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: targetingTemplates.yml -> service -> endpoints -> dfareporting.targetingTemplates.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: tvCampaignDetails.yml -> service -> endpoints -> dfareporting.tvCampaignDetails.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: tvCampaignDetails.yml -> service -> endpoints -> dfareporting.tvCampaignDetails.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: tvCampaignDetails.yml -> service -> endpoints -> dfareporting.tvCampaignDetails.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: tvCampaignDetails.yml -> service -> endpoints -> dfareporting.tvCampaignDetails.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: tvCampaignSummaries.yml -> service -> endpoints -> dfareporting.tvCampaignSummaries.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: tvCampaignSummaries.yml -> service -> endpoints -> dfareporting.tvCampaignSummaries.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRolePermissionGroups.yml -> service -> endpoints -> dfareporting.userRolePermissionGroups.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRolePermissions.yml -> service -> endpoints -> dfareporting.userRolePermissions.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.delete
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.delete
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.delete
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.delete
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.insert
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.insert
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.patch
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.patch
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.update
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: userRoles.yml -> service -> endpoints -> dfareporting.userRoles.update
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.get
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.get
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.get
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.get
+        issue: Multiple request properties resolve to the same generated name id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+id" (name: "+id")
+  - Path parameter "id" (name: "id")
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.list
+        issue: Path parameter is unreferenced in endpoint: profileId.
+
+    [error]
+        path: videoFormats.yml -> service -> endpoints -> dfareporting.videoFormats.list
+        issue: Multiple request properties resolve to the same generated name profileId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+profileId" (name: "+profileId")
+  - Path parameter "profileId" (name: "profileId")
+
+Found 526 errors and 0 warnings in <n> seconds.

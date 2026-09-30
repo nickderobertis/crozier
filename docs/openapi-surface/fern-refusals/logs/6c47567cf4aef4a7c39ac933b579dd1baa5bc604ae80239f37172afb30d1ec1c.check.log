@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: recurring.yml -> service -> endpoints -> post-storedPaymentMethods
+        issue: Duplicate example name: Store encrypted card details for subscription payments
+
+    [error]
+        path: recurring.yml -> service -> endpoints -> post-storedPaymentMethods
+        issue: Duplicate example name: Card details stored
+
+    [error]
+        path: utility.yml -> service -> endpoints -> post-paypal-updateOrder
+        issue: Duplicate example name: Order updated with delivery methods in an Advanced flow integration
+
+Found 3 errors and 0 warnings in <n> seconds.

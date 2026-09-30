@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document External API
+[api]: #/components/examples/JSONEXAMPLES/value/COMPANIES_GET is undefined 
+       CliError: #/components/examples/JSONEXAMPLES/value/COMPANIES_GET is undefined
+All checks passed

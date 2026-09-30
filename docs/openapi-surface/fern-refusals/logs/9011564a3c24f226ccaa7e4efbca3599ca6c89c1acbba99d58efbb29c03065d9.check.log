@@ -1,0 +1,60 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 14 errors
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 100000 for value +1000.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 50000 for value +500.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 20000 for value +200.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 10000 for value +100.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 5000 for value +50.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 2000 for value +20.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 1000 for value +10.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 500 for value +5.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 200 for value +2.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 100 for value +1.00 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 050 for value +0.50 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 020 for value +0.20 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PropertyBookingRulesPriceRounding
+        issue: Enum name 010 for value +0.10 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> alphaTheWebhookPayloadSentToYourUrl
+        issue: Path must start with a slash.
+
+Found 14 errors and 1 warning in <n> seconds. Run fern check --warnings to print out the warnings not shown.

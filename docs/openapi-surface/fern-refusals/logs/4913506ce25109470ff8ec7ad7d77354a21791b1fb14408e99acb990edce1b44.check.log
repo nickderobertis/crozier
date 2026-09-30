@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> ImportsFormatOptionsCsvSeparator
+        issue: Enum name  for value , is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 1 error and 18 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

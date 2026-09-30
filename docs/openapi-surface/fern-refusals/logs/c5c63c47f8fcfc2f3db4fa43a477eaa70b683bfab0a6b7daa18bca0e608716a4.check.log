@@ -1,0 +1,619 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 119 errors
+    [error]
+        path: agreements.yml -> service -> endpoints -> dp_agreement_list_listAgreements
+        issue: Multiple request properties resolve to the same generated name marketplaceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.id" (name: "marketplace.id")
+  - Query Parameter "marketplace__id" (name: "marketplace__id")
+
+    [error]
+        path: agreements.yml -> service -> endpoints -> dp_agreement_list_listAgreements
+        issue: Multiple request properties resolve to the same generated name marketplaceName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.name" (name: "marketplace.name")
+  - Query Parameter "marketplace__name" (name: "marketplace__name")
+
+    [error]
+        path: agreements.yml -> service -> endpoints -> dp_agreement_list_listAgreements
+        issue: Multiple request properties resolve to the same generated name ownerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "owner.id" (name: "owner.id")
+  - Query Parameter "owner__id" (name: "owner__id")
+
+    [error]
+        path: agreements.yml -> service -> endpoints -> dp_agreement_list_listAgreements
+        issue: Multiple request properties resolve to the same generated name ownerName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "owner.name" (name: "owner.name")
+  - Query Parameter "owner__name" (name: "owner__name")
+
+    [error]
+        path: agreements.yml -> service -> endpoints -> dp_agreement_partners_list_listContracts
+        issue: Multiple request properties resolve to the same generated name agreementId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "agreement_id" (name: "agreement_id")
+  - Query Parameter "agreement.id" (name: "agreement.id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionEnvironment after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.environment" (name: "asset.connection.environment")
+  - Query Parameter "asset__connection__environment" (name: "asset__connection__environment")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionHubId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.hub.id" (name: "asset.connection.hub.id")
+  - Query Parameter "asset__connection__hub__id" (name: "asset__connection__hub__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionHubName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.hub.name" (name: "asset.connection.hub.name")
+  - Query Parameter "asset__connection__hub__name" (name: "asset__connection__hub__name")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionProviderId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.provider.id" (name: "asset.connection.provider.id")
+  - Query Parameter "asset__connection__provider__id" (name: "asset__connection__provider__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionProviderName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.provider.name" (name: "asset.connection.provider.name")
+  - Query Parameter "asset__connection__provider__name" (name: "asset__connection__provider__name")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionType after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.type" (name: "asset.connection.type")
+  - Query Parameter "asset__connection__type" (name: "asset__connection__type")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionVendorId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.vendor.id" (name: "asset.connection.vendor.id")
+  - Query Parameter "asset__connection__vendor__id" (name: "asset__connection__vendor__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetConnectionVendorName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.connection.vendor.name" (name: "asset.connection.vendor.name")
+  - Query Parameter "asset__connection__vendor__name" (name: "asset__connection__vendor__name")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetExternalId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.external.id" (name: "asset.external.id")
+  - Query Parameter "asset.external_id" (name: "asset.external_id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.id" (name: "asset.id")
+  - Query Parameter "asset__id" (name: "asset__id")
+  - Query Parameter "asset_id" (name: "asset_id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetProductId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.product.id" (name: "asset.product.id")
+  - Query Parameter "asset__product__id" (name: "asset__product__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetProductName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.product.name" (name: "asset.product.name")
+  - Query Parameter "asset__product__name" (name: "asset__product__name")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetTiersCustomerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.tiers.customer.id" (name: "asset.tiers.customer.id")
+  - Query Parameter "asset__tiers__customer__id" (name: "asset__tiers__customer__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetTiersTier1Id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.tiers.tier1.id" (name: "asset.tiers.tier1.id")
+  - Query Parameter "asset__tiers__tier1__id" (name: "asset__tiers__tier1__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assetTiersTier2Id after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.tiers.tier2.id" (name: "asset.tiers.tier2.id")
+  - Query Parameter "asset__tiers__tier2__id" (name: "asset__tiers__tier2__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name assigneeEmail after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "assignee.email" (name: "assignee.email")
+  - Query Parameter "assignee__email" (name: "assignee__email")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name contractId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "contract.id" (name: "contract.id")
+  - Query Parameter "contract__id" (name: "contract__id")
+
+    [error]
+        path: assets.yml -> service -> endpoints -> dp_request_list_listRequests
+        issue: Multiple request properties resolve to the same generated name marketplaceName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.name" (name: "marketplace.name")
+  - Query Parameter "marketplace__name" (name: "marketplace__name")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name agreementId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "agreement.id" (name: "agreement.id")
+  - Query Parameter "agreement__id" (name: "agreement__id")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name agreementName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "agreement.name" (name: "agreement.name")
+  - Query Parameter "agreement__name" (name: "agreement__name")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name agreementOwnerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "agreement.owner.id" (name: "agreement.owner.id")
+  - Query Parameter "agreement__owner__id" (name: "agreement__owner__id")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name marketplaceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.id" (name: "marketplace.id")
+  - Query Parameter "marketplace__id" (name: "marketplace__id")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name marketplaceName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.name" (name: "marketplace.name")
+  - Query Parameter "marketplace__name" (name: "marketplace__name")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name ownerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "owner.id" (name: "owner.id")
+  - Query Parameter "owner__id" (name: "owner__id")
+
+    [error]
+        path: contracts.yml -> service -> endpoints -> dp_contract_list_listContracts
+        issue: Multiple request properties resolve to the same generated name ownerName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "owner.name" (name: "owner.name")
+  - Query Parameter "owner__name" (name: "owner__name")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hub_connections_list_listConnectionReferences
+        issue: Multiple request properties resolve to the same generated name productName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.name" (name: "product.name")
+  - Query Parameter "product__name" (name: "product__name")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_detail_retrieveHub -> examples[0] -> response
+        issue: "OA" is not a valid example for this enum. Enum values are:
+  - oa
+  - api
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_detail_updateHub -> examples[0] -> response
+        issue: "OA" is not a valid example for this enum. Enum values are:
+  - oa
+  - api
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_createHub -> examples[0] -> response
+        issue: "OA" is not a valid example for this enum. Enum values are:
+  - oa
+  - api
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs -> examples[0] -> response
+        issue: "OA" is not a valid example for this enum. Enum values are:
+  - oa
+  - api
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name eventsCreatedAt after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "events.created.at" (name: "events.created.at")
+  - Query Parameter "events__created__at" (name: "events__created__at")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name eventsUpdatedAt after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "events.updated.at" (name: "events.updated.at")
+  - Query Parameter "events__updated__at" (name: "events__updated__at")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name instanceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "instance.id" (name: "instance.id")
+  - Query Parameter "instance__id" (name: "instance__id")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name instanceType after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "instance.type" (name: "instance.type")
+  - Query Parameter "instance__type" (name: "instance__type")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name statsConnections after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "stats.connections" (name: "stats.connections")
+  - Query Parameter "stats__connections" (name: "stats__connections")
+
+    [error]
+        path: hubs.yml -> service -> endpoints -> dp_hubs_list_listHubs
+        issue: Multiple request properties resolve to the same generated name statsMarketplaces after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "stats.marketplaces" (name: "stats.marketplaces")
+  - Query Parameter "stats__marketplaces" (name: "stats__marketplaces")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name contractId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "contract.id" (name: "contract.id")
+  - Query Parameter "contract__id" (name: "contract__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name marketplaceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.id" (name: "marketplace.id")
+  - Query Parameter "marketplace__id" (name: "marketplace__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name marketplaceName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.name" (name: "marketplace.name")
+  - Query Parameter "marketplace__name" (name: "marketplace__name")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.id" (name: "product.id")
+  - Query Parameter "product__id" (name: "product__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name productName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.name" (name: "product.name")
+  - Query Parameter "product__name" (name: "product__name")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listing_list_listListings
+        issue: Multiple request properties resolve to the same generated name providerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "provider.id" (name: "provider.id")
+  - Query Parameter "provider__id" (name: "provider__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listingrequest_list_listListingRequests
+        issue: Multiple request properties resolve to the same generated name listingId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "listing.id" (name: "listing.id")
+  - Query Parameter "listing__id" (name: "listing__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listingrequest_list_listListingRequests
+        issue: Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.id" (name: "product.id")
+  - Query Parameter "product__id" (name: "product__id")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listingrequest_list_listListingRequests
+        issue: Multiple request properties resolve to the same generated name productName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.name" (name: "product.name")
+  - Query Parameter "product__name" (name: "product__name")
+
+    [error]
+        path: listings.yml -> service -> endpoints -> dp_listingrequest_list_listListingRequests
+        issue: Multiple request properties resolve to the same generated name productVersion after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.version" (name: "product.version")
+  - Query Parameter "product__version" (name: "product__version")
+
+    [error]
+        path: marketplaces.yml -> service -> endpoints -> dp_marketplace_list_listMarketplaces
+        issue: Multiple request properties resolve to the same generated name ownerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "owner.id" (name: "owner.id")
+  - Query Parameter "owner__id" (name: "owner__id")
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "events"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> request
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> request
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansDetailUpdateplanversion -> examples[0] -> response
+        issue: Unexpected property "events"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> request
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> request
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListCreateplanversion -> examples[0] -> response
+        issue: Unexpected property "events"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offersPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansDetailRetrieveplanversion -> examples[0] -> response
+        issue: Unexpected property "events"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "color"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "periods"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "commitments"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "external_id"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "position"
+
+    [error]
+        path: offers.yml -> service -> endpoints -> offerversionPlansListListplanversions -> examples[0] -> response
+        issue: Unexpected property "gravity"
+
+    [error]
+        path: pim.yml -> service -> endpoints -> groupAttributesListListattributes
+        issue: Multiple request properties resolve to the same generated name groupId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "group_id" (name: "group_id")
+  - Query Parameter "group.id" (name: "group.id")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name assigneeId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "assignee.id" (name: "assignee.id")
+  - Query Parameter "assignee__id" (name: "assignee__id")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationAccountExternalUid after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.account.external_uid" (name: "configuration.account.external_uid")
+  - Query Parameter "configuration__account__external_uid" (name: "configuration__account__external_uid")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationAccountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.account.id" (name: "configuration.account.id")
+  - Query Parameter "configuration__account__id" (name: "configuration__account__id")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.id" (name: "configuration.id")
+  - Query Parameter "configuration__id" (name: "configuration__id")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationProductId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.product.id" (name: "configuration.product.id")
+  - Query Parameter "configuration__product__id" (name: "configuration__product__id")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationProductName after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.product.name" (name: "configuration.product.name")
+  - Query Parameter "configuration__product__name" (name: "configuration__product__name")
+
+    [error]
+        path: settings.yml -> service -> endpoints -> dp_tier_config_request_list_listTierConfigRequests
+        issue: Multiple request properties resolve to the same generated name configurationTierLevel after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "configuration.tier_level" (name: "configuration.tier_level")
+  - Query Parameter "configuration__tier_level" (name: "configuration__tier_level")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_file_list_listUsageFiles
+        issue: Multiple request properties resolve to the same generated name marketplaceId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "marketplace.id" (name: "marketplace.id")
+  - Query Parameter "marketplace_id" (name: "marketplace_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_file_list_listUsageFiles
+        issue: Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.id" (name: "product.id")
+  - Query Parameter "product_id" (name: "product_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_file_list_listUsageFiles
+        issue: Multiple request properties resolve to the same generated name providerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "provider.id" (name: "provider.id")
+  - Query Parameter "provider_id" (name: "provider_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_file_list_listUsageFiles
+        issue: Multiple request properties resolve to the same generated name vendorId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "vendor.id" (name: "vendor.id")
+  - Query Parameter "vendor_id" (name: "vendor_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_records_list_listUsageRecords
+        issue: Multiple request properties resolve to the same generated name assetExternalId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.external_id" (name: "asset.external_id")
+  - Query Parameter "asset_external_id" (name: "asset_external_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_records_list_listUsageRecords
+        issue: Multiple request properties resolve to the same generated name assetExternalUid after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.external_uid" (name: "asset.external_uid")
+  - Query Parameter "asset_external_uid" (name: "asset_external_uid")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_records_list_listUsageRecords
+        issue: Multiple request properties resolve to the same generated name assetId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "asset.id" (name: "asset.id")
+  - Query Parameter "asset_id" (name: "asset_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_records_list_listUsageRecords
+        issue: Multiple request properties resolve to the same generated name itemId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "item.id" (name: "item.id")
+  - Query Parameter "item_id" (name: "item_id")
+
+    [error]
+        path: usageReporting.yml -> service -> endpoints -> usage_usage_records_list_listUsageRecords
+        issue: Multiple request properties resolve to the same generated name productId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "product.id" (name: "product.id")
+  - Query Parameter "product_id" (name: "product_id")
+
+Found 119 errors and 18 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

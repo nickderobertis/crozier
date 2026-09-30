@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Sync for Expenses (v1)
+[api]: Unexpected error: Failed to resolve schema reference: Connection/definitions/dataConnectionStatus 
+       CliError: Unexpected error: Failed to resolve schema reference: Connection/definitions/dataConnectionStatus
+All checks passed

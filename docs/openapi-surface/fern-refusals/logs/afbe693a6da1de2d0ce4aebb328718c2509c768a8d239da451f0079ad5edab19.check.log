@@ -1,0 +1,170 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 34 errors
+    [error]
+        path: __package__.yml -> types -> BuildingUnitPlaceIndex -> extends -> BuildingUnitPlace
+        issue: Objects can only extend other objects, and BuildingUnitPlace is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BuildingUnitPlaceShow -> extends -> BuildingUnitPlace
+        issue: Objects can only extend other objects, and BuildingUnitPlace is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BuildingunitplacespropertiesCreateNewResponse
+        issue: BuildingunitplacespropertiesCreateNewResponse is already declared in buildingUnitPlacesProperties.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildingUnitPlacesPropertieshow -> extends -> BuildingUnitPlacesProperty
+        issue: Objects can only extend other objects, and BuildingUnitPlacesProperty is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BuildingunitplacespropertiesReturnPropertiesResponse
+        issue: BuildingunitplacespropertiesReturnPropertiesResponse is already declared in buildingUnitPlacesProperties.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildingUnitPlacesPropertyIndex -> extends -> BuildingUnitPlacesProperty
+        issue: Objects can only extend other objects, and BuildingUnitPlacesProperty is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BuildingUnitRetailIndex -> extends -> BuildingUnitRetail
+        issue: Objects can only extend other objects, and BuildingUnitRetail is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BuildingUnitRetailShow -> extends -> BuildingUnitRetail
+        issue: Objects can only extend other objects, and BuildingUnitRetail is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CsvImportIndex
+        issue: Object has multiple properties named "metadata":
+  - CsvImportIndex -> metadata
+  - CsvImportIndex -> (extends) CsvImport -> metadata
+
+    [error]
+        path: __package__.yml -> types -> ScorecardAssignersIndex -> extends -> ScorecardAssigner
+        issue: Objects can only extend other objects, and ScorecardAssigner is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ScorecardAssignersShow -> extends -> ScorecardAssigner
+        issue: Objects can only extend other objects, and ScorecardAssigner is not an object.
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createmembershiptocategory
+        issue: Path parameter is unreferenced in endpoint: app_category_membership_id.
+
+    [error]
+        path: apps.yml -> service -> endpoints -> deletecategorymembership
+        issue: Path parameter is unreferenced in endpoint: app_category_membership_id.
+
+    [error]
+        path: appSubscriptions.yml -> service -> endpoints -> Appsubscriptions_createSubscription -> request -> body
+        issue: Object has multiple properties named "name":
+  - <Inlined Request> -> name
+  - <Inlined Request> -> (extends) root.AppSubscription -> name
+
+    [error]
+        path: appSubscriptions.yml -> service -> endpoints -> Appsubscriptions_createSubscription -> request -> body
+        issue: Object has multiple properties named "periodicity":
+  - <Inlined Request> -> periodicity
+  - <Inlined Request> -> (extends) root.AppSubscription -> periodicity
+
+    [error]
+        path: appSubscriptions.yml -> service -> endpoints -> Appsubscriptions_createSubscription
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> name
+  - Body property: <Request Body> -> (extends) root.AppSubscription -> name
+
+    [error]
+        path: appSubscriptions.yml -> service -> endpoints -> Appsubscriptions_createSubscription
+        issue: Multiple request properties have the name periodicity. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> periodicity
+  - Body property: <Request Body> -> (extends) root.AppSubscription -> periodicity
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> createnewbuilding -> request -> body
+        issue: Object has multiple properties named "customer_attributes_schema_id":
+  - <Inlined Request> -> customer_attributes_schema_id
+  - <Inlined Request> -> (extends) root.Building -> customer_attributes_schema_id
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> createnewbuilding
+        issue: Multiple request properties have the name customer_attributes_schema_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> customer_attributes_schema_id
+  - Body property: <Request Body> -> (extends) root.Building -> customer_attributes_schema_id
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> updatebuildingtimedependentattributes -> request -> body
+        issue: Object has multiple properties named "organisation_id":
+  - <Inlined Request> -> organisation_id
+  - <Inlined Request> -> (extends) root.Building -> organisation_id
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> updatebuildingtimedependentattributes -> request -> body
+        issue: Object has multiple properties named "customer_attributes_schema_id":
+  - <Inlined Request> -> customer_attributes_schema_id
+  - <Inlined Request> -> (extends) root.Building -> customer_attributes_schema_id
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> updatebuildingtimedependentattributes
+        issue: Multiple request properties have the name organisation_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> organisation_id
+  - Body property: <Request Body> -> (extends) root.Building -> organisation_id
+
+    [error]
+        path: buildings.yml -> service -> endpoints -> updatebuildingtimedependentattributes
+        issue: Multiple request properties have the name customer_attributes_schema_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> customer_attributes_schema_id
+  - Body property: <Request Body> -> (extends) root.Building -> customer_attributes_schema_id
+
+    [error]
+        path: buildingUnitPlaces.yml -> service -> endpoints -> Buildingunitplaces_createPlace -> request -> body -> extends -> root.BuildingUnitPlace
+        issue: Objects can only extend other objects, and root.BuildingUnitPlace is not an object.
+
+    [error]
+        path: buildingUnitPlaces.yml -> service -> endpoints -> Buildingunitplaces_updatePlace -> request -> body -> extends -> root.BuildingUnitPlace
+        issue: Objects can only extend other objects, and root.BuildingUnitPlace is not an object.
+
+    [error]
+        path: buildingUnitPlacesProperties.yml -> service -> endpoints -> Buildingunitplacesproperties_createNew -> request -> body -> extends -> root.BuildingUnitPlacesProperty
+        issue: Objects can only extend other objects, and root.BuildingUnitPlacesProperty is not an object.
+
+    [error]
+        path: buildingUnitPlacesProperties.yml -> service -> endpoints -> Buildingunitplacesproperties_updateProperty -> request -> body -> extends -> root.BuildingUnitPlacesProperty
+        issue: Objects can only extend other objects, and root.BuildingUnitPlacesProperty is not an object.
+
+    [error]
+        path: buildingUnitRetails.yml -> service -> endpoints -> Buildingunitretails_createRetailUnit -> request -> body -> extends -> root.BuildingUnitRetail
+        issue: Objects can only extend other objects, and root.BuildingUnitRetail is not an object.
+
+    [error]
+        path: buildingUnitRetails.yml -> service -> endpoints -> Buildingunitretails_updateUnitRetail -> request -> body -> extends -> root.BuildingUnitRetail
+        issue: Objects can only extend other objects, and root.BuildingUnitRetail is not an object.
+
+    [error]
+        path: buildingUnits.yml -> service -> endpoints -> Buildingunits_createUnit -> request -> body
+        issue: Object has multiple properties named "building_id":
+  - <Inlined Request> -> building_id
+  - <Inlined Request> -> (extends) root.BuildingUnit -> building_id
+
+    [error]
+        path: buildingUnits.yml -> service -> endpoints -> Buildingunits_createUnit
+        issue: Multiple request properties have the name building_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> building_id
+  - Body property: <Request Body> -> (extends) root.BuildingUnit -> building_id
+
+    [error]
+        path: customerAccountConfigs.yml -> service -> endpoints -> Customeraccountconfigs_updateConfiguration -> request -> body
+        issue: Object has multiple properties named "demo_data_uploaded":
+  - <Inlined Request> -> demo_data_uploaded
+  - <Inlined Request> -> (extends) root.CustomerAccountConfig -> demo_data_uploaded
+
+    [error]
+        path: customerAccountConfigs.yml -> service -> endpoints -> Customeraccountconfigs_updateConfiguration
+        issue: Multiple request properties have the name demo_data_uploaded. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> demo_data_uploaded
+  - Body property: <Request Body> -> (extends) root.CustomerAccountConfig -> demo_data_uploaded
+
+    [error]
+        path: dataCatalogs.yml -> service -> endpoints -> Datacatalogs_getAll
+        issue: Path parameter is unreferenced in endpoint: app_ids.
+
+Found 34 errors and 17 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,856 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 212 errors
+    [error]
+        path: __package__.yml -> errors -> NotImplementedError -> type
+        issue: Unexpected property "errors"
+
+    [error]
+        path: __package__.yml -> errors -> NotImplementedError -> type
+        issue: Unexpected property "faultId"
+
+    [error]
+        path: __package__.yml -> errors -> NotImplementedError -> type
+        issue: Unexpected property "traceId"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "errors"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "faultId"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "traceId"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "errors"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "faultId"
+
+    [error]
+        path: __package__.yml -> errors -> UnprocessableEntityError -> type
+        issue: Unexpected property "traceId"
+
+    [error]
+        path: __package__.yml -> types -> CheckoutResponseResult
+        issue: Enum value 20000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CheckoutResponseResult
+        issue: Enum value 40000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CheckoutResponseResult
+        issue: Enum value 50000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> LateOrderCompensationQuery
+        issue: LateOrderCompensationQuery is already declared in consumerQueriesWebhooks.yml
+
+    [error]
+        path: __package__.yml -> types -> OrderCancelled
+        issue: OrderCancelled is already declared in orderAcceptanceWebhooks.yml
+
+    [error]
+        path: __package__.yml -> types -> UpdateOrderTimeRequest
+        issue: UpdateOrderTimeRequest is already declared in publiclyAccessible.yml
+
+    [error]
+        path: consumerQueries.yml -> service -> endpoints -> updateLateOrderCompensationRequestWithRestaurantResponse
+        issue: Multiple request properties have the name orderId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "orderId"
+  - Body property: <Request Body> -> orderId
+
+    [error]
+        path: orderWebhooks.yml -> service -> endpoints -> orderReadyForPreparationAsync -> examples[0] -> request
+        issue: Expected example to be an integer. Example is: 7.25
+
+    [error]
+        path: orderWebhooks.yml -> service -> endpoints -> orderReadyForPreparationSync -> examples[0] -> request
+        issue: Expected example to be an integer. Example is: 7.25
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getClaims -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "additionalContext"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "decision"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "quantity"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "totalClaimed"
+
+    [error]
+        path: restaurantClaims.yml -> service -> endpoints -> getOrderClaim -> examples[0] -> response
+        issue: Unexpected property "unitPrice"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOfflineStatus -> examples[0] -> request
+        issue: Unexpected property "AllowRestaurantOverride"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOfflineStatus -> examples[0] -> request
+        issue: Unexpected property "IsOffline"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOfflineStatus -> examples[0] -> request
+        issue: Unexpected property "RestaurantId"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOfflineStatus -> examples[0] -> request
+        issue: Unexpected property "Tenant"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOnlineStatus -> examples[0] -> request
+        issue: Unexpected property "AllowRestaurantOverride"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOnlineStatus -> examples[0] -> request
+        issue: Unexpected property "IsOffline"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOnlineStatus -> examples[0] -> request
+        issue: Unexpected property "RestaurantId"
+
+    [error]
+        path: restaurantEventsWebhooks.yml -> service -> endpoints -> restaurantOnlineStatus -> examples[0] -> request
+        issue: Unexpected property "Tenant"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> createOrUpdateRestaurantFees -> examples[0] -> request
+        issue: Unexpected property "description"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> createOrUpdateRestaurantFees -> examples[0] -> request
+        issue: Unexpected property "serviceTypes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> createOrUpdateRestaurantFees -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> createOrUpdateRestaurantFees -> examples[0] -> response
+        issue: Unexpected property "serviceTypes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> getRestaurantFees -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> getRestaurantFees -> examples[0] -> response
+        issue: Unexpected property "serviceTypes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> putMenuForIngestion
+        issue: Multiple request properties have the name restaurantId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "restaurantId"
+  - Body property: <Request Body> -> (extends) root.MenuBase -> restaurantId
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Badges"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "BrandName"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "City"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "CuisineTypes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Cuisines"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Deals"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DefaultDisplayRank"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryChargeBands"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryCost"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryMenuId"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryOpeningTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryOpeningTimeLocal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryStartTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "DeliveryWorkingTimeMinutes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Description"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsBrand"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsCloseBy"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsCollection"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsDelivery"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsFreeDelivery"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsHalal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsNew"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsOpenNow"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsOpenNowForCollection"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsOpenNowForPreorder"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsPremier"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsSponsored"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsTemporarilyOffline"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsTemporaryBoost"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "IsTestRestaurant"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "LastUpdated"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Latitude"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Logo"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "LogoUrl"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Longitude"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "MinimumDeliveryValue"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "NewnessDate"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "NumberOfRatings"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "OfferPercent"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Offers"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "OpeningTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "OpeningTimeIso"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "OpeningTimeLocal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "OpeningTimes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Postcode"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Rating"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "RatingAverage"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "RatingStars"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "ReasonWhyTemporarilyOffline"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Score"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "ScoreMetaData"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "SecondDateRank"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "SecondDateRanking"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "SendsOnItsWayNotifications"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "ServiceableAreas"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "ShowSmiley"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "SmileyElite"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "SponsoredPosition"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByLocation -> examples[0] -> response
+        issue: Unexpected property "Tags"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Badges"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "BrandName"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "City"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "CuisineTypes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Cuisines"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Deals"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DefaultDisplayRank"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryChargeBands"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryCost"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryMenuId"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryOpeningTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryOpeningTimeLocal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryStartTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "DeliveryWorkingTimeMinutes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Description"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsBrand"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsCloseBy"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsCollection"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsDelivery"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsFreeDelivery"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsHalal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsNew"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsOpenNow"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsOpenNowForCollection"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsOpenNowForPreorder"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsPremier"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsSponsored"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsTemporarilyOffline"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsTemporaryBoost"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "IsTestRestaurant"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "LastUpdated"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Latitude"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Logo"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "LogoUrl"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Longitude"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "MinimumDeliveryValue"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "NewnessDate"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "NumberOfRatings"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "OfferPercent"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Offers"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "OpeningTime"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "OpeningTimeIso"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "OpeningTimeLocal"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "OpeningTimes"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Postcode"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Rating"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "RatingAverage"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "RatingStars"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "ReasonWhyTemporarilyOffline"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Score"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "ScoreMetaData"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "SecondDateRank"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "SecondDateRanking"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "SendsOnItsWayNotifications"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "ServiceableAreas"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "ShowSmiley"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "SmileyElite"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "SponsoredPosition"
+
+    [error]
+        path: restaurants.yml -> service -> endpoints -> SearchByPostcode -> examples[0] -> response
+        issue: Unexpected property "Tags"
+
+Found 212 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

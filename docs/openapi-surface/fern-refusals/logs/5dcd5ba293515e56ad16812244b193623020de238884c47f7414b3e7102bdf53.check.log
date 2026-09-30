@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: posts.yml -> service -> endpoints -> getallkeys -> request -> query-parameters -> count -> type
+        issue: Default value '' is not a valid integer
+
+    [error]
+        path: posts.yml -> service -> endpoints -> getallkeys -> request -> query-parameters -> skip -> type
+        issue: Default value '' is not a valid integer
+
+    [error]
+        path: posts.yml -> service -> endpoints -> getlatest -> request -> query-parameters -> count -> type
+        issue: Default value '' is not a valid integer
+
+    [error]
+        path: posts.yml -> service -> endpoints -> getlatest -> request -> query-parameters -> skip -> type
+        issue: Default value '' is not a valid integer
+
+Found 4 errors and 0 warnings in <n> seconds.
