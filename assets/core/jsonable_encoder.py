@@ -43,9 +43,9 @@ def jsonable_encoder(obj: Any, custom_encoder: Optional[Dict[Any, Callable[[Any]
                     return encoder_instance(obj)
     if isinstance(obj, pydantic.BaseModel):
         if IS_PYDANTIC_V2:
-            encoder = getattr(obj.model_config, "json_encoders", {})
+            encoder = getattr(obj.model_config, "json_encoders", {})  # type: ignore # Pydantic v2
         else:
-            encoder = getattr(obj.__config__, "json_encoders", {})
+            encoder = getattr(obj.__config__, "json_encoders", {})  # type: ignore # Pydantic v1
         if custom_encoder:
             encoder.update(custom_encoder)
         obj_dict = obj.dict(by_alias=True)
@@ -55,7 +55,7 @@ def jsonable_encoder(obj: Any, custom_encoder: Optional[Dict[Any, Callable[[Any]
             obj_dict = obj_dict["root"]
         return jsonable_encoder(obj_dict, custom_encoder=encoder)
     if dataclasses.is_dataclass(obj):
-        obj_dict = dataclasses.asdict(obj)
+        obj_dict = dataclasses.asdict(obj)  # type: ignore
         return jsonable_encoder(obj_dict, custom_encoder=custom_encoder)
     if isinstance(obj, bytes):
         return base64.b64encode(obj).decode("utf-8")
