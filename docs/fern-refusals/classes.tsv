@@ -12,12 +12,14 @@ example-missing-required-query-parameter	documents	check	1	Example is missing re
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	0	unevaluated	—	—
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	0	unevaluated	—	—
 example-unexpected-property	documents	check	1	Unexpected property <…>	0	unevaluated	—	—
+extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	0	unevaluated	—	—
 list-default-not-array	documents	check	1	Default value for list type must be an array	0	unevaluated	—	—
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	0	unevaluated	—	—
 named-type-default	documents	check	1	Default values are not supported for the named type	0	unevaluated	—	—
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	0	unevaluated	—	—
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	0	unevaluated	—	—
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	0	unevaluated	—	—
+path-without-leading-slash	documents	check	1	Path must start with a slash.	0	unevaluated	—	—
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	0	unevaluated	—	—
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	0	unevaluated	—	—
 service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	0	unevaluated	—	—

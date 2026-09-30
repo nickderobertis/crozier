@@ -57,6 +57,17 @@ files:
     - "docs/openapi-surface/golden-reach-witnesses/**/*.tsv"
     - "docs/openapi-surface/golden-reach-witnesses/**/*.jsonl"
     - "docs/openapi-surface/golden-reach-witnesses/**/*.gz"
+    # The Fern refusal population's evidence, written by scripts/fern-refusals.py
+    # `measure`/`probe`/`build`: Fern's own logs, the per-document measurements,
+    # and the three machine-written tables. None is authored source and the logs
+    # alone overflow the judge; the script, its test, classes.tsv, findings.tsv,
+    # the probes and the README stay linted.
+    - "docs/openapi-surface/fern-refusals/logs/**"
+    - "docs/openapi-surface/fern-refusals/probe-logs/**"
+    - "docs/openapi-surface/fern-refusals/measurements.jsonl"
+    - "docs/fern-refusals/documents.tsv"
+    - "docs/fern-refusals/generated.tsv"
+    - "docs/fern-refusals/unretrievable.tsv"
     # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
     # scripts/llmlint-plugins.py): someone else's authored configs, judged in
     # their own repository, not crozier's code.

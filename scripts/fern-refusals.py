@@ -533,7 +533,7 @@ def diagnostics(log: str) -> list[str]:
         elif "[error] " in text:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
-                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |\w*(Error|Exception)\b.*:", api.group(1)):
+                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack|\w*(Error|Exception)\b.*:", api.group(1)):
             message = api.group(1)
         message = message.strip()
         if message and message not in found:
@@ -632,7 +632,9 @@ def tables() -> tuple[dict[str, str], list[str]]:
         identity = {"source": entry["source"], "locator": entry["locator"] or EMPTY,
                     "revision": entry["revision"] or EMPTY, "recorded_by": records}
         if result["unretrievable"]:
-            unretrievable.append(dict(identity, digest=entry["digest"] or EMPTY, reason=result["unretrievable"]))
+            # A record that never located its document is named by the record itself.
+            unretrievable.append(dict(identity, locator=entry["locator"] or entry["key"],
+                                      digest=entry["digest"] or EMPTY, reason=result["unretrievable"]))
             continue
         for log in (result["check_log"], result["generate_log"]):
             if log and not (REPO / log).is_file():
