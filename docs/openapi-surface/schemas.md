@@ -1633,8 +1633,9 @@ Five keys read `exhausted`: `annotated-ref-target-string-const`,
 `oneof-array-variant-anyof-discriminated-union-item`,
 `oneof-array-variant-anyof-nullable-item` and
 `oneof-bare-object-example-variant`.
-Every candidate the six sources returned for them is decided. The 3,942 documents the census's standard-library YAML
-loader refused were read again by the full YAML parser (`just
+Every candidate the six sources returned for them is decided. The 4,380
+documents the census's standard-library YAML loader refused, across every key
+searched here, were read again by the full YAML parser (`just
 test-census-fallback` covers the
 [re-census script](../../scripts/witness-search-recensus.py)), and each is
 censused or recorded `census-refused` with the parser's error. Of the

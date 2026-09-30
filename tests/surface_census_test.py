@@ -8176,17 +8176,19 @@ class RankedBacklogTests(unittest.TestCase):
         return [row for row in rows if row["walk"] in named]
 
     def test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly(self) -> None:
-        """A `gap` row admitted after the witness-search-redo contract froze.
+        """A row admitted as a `gap` after the witness-search-redo contract froze.
 
         Its search is recorded once, as its line of the compact grammar under
         `### Witness search (exhaustive)`, and never on its own evidence cell: a
         second copy there is a record the compact reconciliation never reads. An
         entry cell the frozen contract does not own carries no `search outcome`.
+        The rule holds after the search registers a witness and the row turns
+        `golden`: its line stays the search's record.
         """
         frozen = frozen_search_keys(FROZEN_SEARCH_CONTRACT.read_text(encoding="utf-8"))
         checked = []
         for key, (region, cells) in sorted(self.entries.items()):
-            if cells[3].strip("`") != "gap" or key in frozen:
+            if cells[3].strip("`") not in ("gap", "golden") or key in frozen:
                 continue
             record = compact_search_lines(
                 (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
