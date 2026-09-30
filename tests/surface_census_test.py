@@ -636,6 +636,16 @@ FROZEN_SEARCH_CONTRACT = (
 HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
 
 
+def load_script(name: str):
+    """A `scripts/` module by file name, as the scripts load one another."""
+    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", REPO / "scripts" / name)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
 def handwritten_covers(base: Path = HANDWRITTEN) -> list[tuple[str, str, str | None]]:
     """`(fixture, key, arm or None)` for every cover a hand-written fixture declares.
 
@@ -6857,6 +6867,27 @@ class RankedBacklogTests(unittest.TestCase):
                     for settlement in self.SETTLEMENTS
                 ]
                 self.assertEqual(counts, numbers)
+
+    def test_every_region_row_parser_reads_the_documented_categories(self) -> None:
+        """One category vocabulary: the entry table's, in precedence order.
+
+        Each script that parses region rows keeps its own copy, so a category
+        added to the index but not to a parser would leave that parser silently
+        skipping the new rows.
+        """
+        stated = re.search(r"^\| `category` \| exactly one of ((?:`[a-z]+`(?:, )?)+) \|$", self.doc, re.M)
+        self.assertIsNotNone(stated, "the entry table no longer states the category vocabulary")
+        documented = tuple(re.findall(r"`([a-z]+)`", stated.group(1)))
+        rules = re.findall(r"^\d+\. \*\*`([a-z]+)`\*\*", self.section("## The category rules", "## The settlement classes"), re.M)
+        self.assertEqual(documented, tuple(rules), "the category rules' precedence is not the entry table's order")
+        for name, categories in (
+            ("RankedBacklogTests", self.CATEGORIES),
+            ("scripts/golden-reach.py", self.golden_reach().CATEGORIES),
+            ("scripts/handwritten-fixtures.py", load_script("handwritten-fixtures.py").CATEGORIES),
+            ("scripts/witness-search-redo.py", load_script("witness-search-redo.py").CATEGORIES),
+        ):
+            with self.subTest(parser=name):
+                self.assertEqual(documented, tuple(categories))
 
     def test_the_prose_totals_are_the_summary_tables_own_column_sums(self) -> None:
         """The narrated per-category and per-settlement totals are the table's own."""

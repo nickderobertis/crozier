@@ -26,6 +26,9 @@ FIELDS = (
 )
 ALL_SOURCES = sum(SOURCES.values(), ())
 EMPTY = {"", "—"}
+# The region-row categories, in the index's precedence order; RankedBacklogTests
+# holds every parser's copy to the one the index documents.
+CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 
 
 def table(text: str, heading: str) -> list[list[str]]:
@@ -52,7 +55,7 @@ def schema_rows(text: str) -> dict[str, list[list[str]]]:
         if (
             len(cells) == 8
             and value(cells[0]) != "key"
-            and value(cells[3]) in {"golden", "limitations", "handwritten", "gap"}
+            and value(cells[3]) in CATEGORIES
         ):
             found.setdefault(value(cells[0]), []).append(cells)
     return found

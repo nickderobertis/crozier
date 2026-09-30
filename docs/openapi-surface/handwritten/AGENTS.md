@@ -12,13 +12,10 @@ search. It never counts as a real-specification match, anywhere: it is never a
 source, a witness in [`../golden-reach.tsv`](../golden-reach.tsv) or part of the
 golden-only tier. A real specification found later supersedes it.
 
-This file states the contract every fixture here is written to. The category a
-fixture puts a region row in, its precedence and the row's cells are stated
-once, in
-[the category rules](../../openapi-surface-coverage.md#the-category-rules). Where
-the report counts fixtures is stated in
-[*What it says today*](../../openapi-surface-coverage.md#openapi-surface-coverage)
-and [the unreached-arm table](../../openapi-surface-coverage.md#every-unreached-arm-and-its-search-verdict).
+This file states the contract every fixture here is written to. The
+`handwritten` category a fixture puts a region row in, its precedence and the
+row's cells are stated in
+[the category rules](../../openapi-surface-coverage.md#the-category-rules).
 
 ## Layout
 
@@ -114,28 +111,11 @@ read a fixture.
 
 `handwritten_fixtures_match_fern_goldens` in
 [`../../../tests/e2e.rs`](../../../tests/e2e.rs), in `just check`, finds its
-fixtures by listing this directory and nothing else, and fails, naming the
-fixture and the condition, when any of these fails:
-
-- the two version fields equal the pin, and `fern-expected/`'s digest equals
-  `digest`;
-- crozier's output over `openapi.yml` byte-matches `fern-expected/` under the
-  normalization a corpus golden gets;
-- each cover's `key` exists. A feature-level cover's row is `handwritten` and
-  the key's selector declares a site in `openapi.yml`. An arm-level cover's row
-  is `golden`, its `arm` is a site the site table lists for that key,
-  `handwritten-reach.tsv` has its row with `regions_executed` of at least 1, and
-  `golden-reach.tsv` still reports the arm unreached — a real specification that
-  reaches it supersedes the fixture, and the cover must then go;
-- the `search` anchor resolves, the record states `verdict` for the key (and
-  names the arm), and a `search-incomplete` cover's `renewed` record names the
-  key `none-registrable`;
-- both directions: every fixture directory has a valid `evidence.toml` with at
-  least one cover; every `handwritten` row has a feature-level cover and the
-  cells the category rules fix; every `handwritten-reach.tsv` row names a live
-  cover; and nothing here is a `CORPUS.md` row, a corpus golden, a census source
-  or a `golden-reach.tsv` witness.
-
+fixtures by listing this directory and nothing else, and holds each to every
+rule above, naming the fixture and the rule it breaks. It also holds the two
+directions: every `handwritten` row has a feature-level cover, every
+`handwritten-reach.tsv` row names a live cover, and an arm-level cover goes once
+`golden-reach.tsv` reports its arm reached by a real specification.
 `scripts/handwritten-fixtures.py gate` reads the documents; the test adds the
 digest, the pin and crozier's byte-match. A divergence is repaired in `src/`,
 never by editing `fern-expected/`.

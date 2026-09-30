@@ -355,7 +355,7 @@ def gate(root: Path) -> dict[str, Any]:
         for extra in sorted(set(present) - set(LAYOUT)):
             failures.append(f"{name}: {extra} is not part of a fixture; it holds exactly {', '.join(LAYOUT)}")
         if (entry / "fern-expected").exists() and not (entry / "fern-expected").is_dir():
-            failures.append(f"{name}: fern-expected is not a directory")
+            failures.append(f"{name}: fern-expected is not a directory — replace it with the tree Fern generated")
         if not (entry / "evidence.toml").is_file():
             continue
         fixture, found = read_evidence(entry)
@@ -405,7 +405,11 @@ def gate(root: Path) -> dict[str, Any]:
                     )
                 selector = selectors.get(cover.key)
                 if selector is None:
-                    failures.append(f"{where}: witness-search-keys.tsv records no selector for this key")
+                    failures.append(
+                        f"{where}: witness-search-keys.tsv records no selector for this key — a feature-level "
+                        "cover needs a key its real-specification search ran on; re-derive the file with "
+                        "`scripts/witness-search-region-keys.py`, or cover a searched key"
+                    )
                     continue
                 spec = root / HANDWRITTEN / name / "openapi.yml"
                 if not spec.is_file():
@@ -443,7 +447,10 @@ def gate(root: Path) -> dict[str, Any]:
             golden = ledger.get(cover.key)
             spec_counts = {spec: hit for spec, hit, _total in golden.sites} if golden else {}
             if cover.arm not in spec_counts:
-                failures.append(f"{where}: golden-reach.tsv measures no such site for this key")
+                failures.append(
+                    f"{where}: golden-reach.tsv measures no such site for this key — re-run "
+                    "`just golden-reach-report` if the site table changed, or spell the arm as it does"
+                )
             elif spec_counts[cover.arm] > 0:
                 failures.append(
                     f"{where}: golden-reach.tsv now reports the arm reached by a real specification, "

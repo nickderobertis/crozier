@@ -1518,7 +1518,8 @@ class PostFreezeGapRowTests(unittest.TestCase):
         Its row carries no inline outcome any more, so the shards decide its
         membership: a `search-incomplete` key stays in the baseline with its
         tracked selector, a `witness-found` one stays out, and the committed
-        wide report still validates over the flipped regions.
+        wide report still validates over the flipped regions, which it can only
+        do by reading the flipped row's selector from the tracked file.
         """
         sys.path.insert(0, str(REPO / "tests"))
         from region_flip import flipped_regions

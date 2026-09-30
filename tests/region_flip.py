@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this helper sits in tests/ beside the suites that import it, which run under `just check`.
 """Move one region row to `handwritten` in a copy of the region files.
 
 A node that admits a hand-written fixture moves its row out of `gap` exactly

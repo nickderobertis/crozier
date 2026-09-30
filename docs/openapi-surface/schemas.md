@@ -1629,9 +1629,8 @@ It is not the key's search record and settles nothing. The two sources it names
 that Contract B excludes, SwaggerHub and Postman, appear in no line below.
 
 **The redo contract, as amended by the `handwritten-evidence` node.** A row of a
-key that contract owns may become `handwritten`
-([the category rules](../openapi-surface-coverage.md#the-category-rules)), and
-its evidence cell then carries no inline history. For such a row the reconciler,
+key that contract owns may become `handwritten`, and its evidence cell then
+carries no inline history. For such a row the reconciler,
 `scripts/witness-search-redo.py --reconcile`, still requires exactly one row for
 the key. It reads the row's `search:` link in place of the history, and requires
 that link to resolve to the key's line below and that line to state the verdict

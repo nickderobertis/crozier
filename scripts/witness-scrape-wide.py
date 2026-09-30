@@ -65,8 +65,8 @@ ROWS = load(
 REGION_KEYS = load("wide_region_keys", REPO / "scripts/witness-search-region-keys.py")
 
 
-def handwritten_outcome(contract: Path) -> dict[str, str]:
-    """The frozen outcome of each owned key, taken off the shards beside `contract`.
+def shard_outcomes(contract: Path) -> dict[str, str]:
+    """The frozen outcome of every owned key, taken off the shards beside `contract`.
 
     A `handwritten` row carries no inline history for `authoritative_details` to
     read, so its key keeps the baseline membership the shards themselves decide.
@@ -94,7 +94,7 @@ def baseline(regions: Path, contract: Path) -> dict[str, dict]:
                 # Still no real-specification witness: its search evidence stays
                 # reconciled, with the selector the search ran on.
                 if outcomes is None:
-                    outcomes = handwritten_outcome(contract)
+                    outcomes = shard_outcomes(contract)
                 if outcomes.get(key) != "search-incomplete":
                     continue
                 selector = tracked.get(key)

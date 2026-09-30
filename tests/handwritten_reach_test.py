@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside fixtures_coverage_test.py and runs under `just test-fixtures-coverage`.
 """Drive the real `just handwritten-reach` recipe over temporary fixtures.
 
 The recipe builds crozier instrumented and runs it over each hand-written

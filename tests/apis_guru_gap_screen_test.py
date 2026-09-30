@@ -15,7 +15,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from region_flip import flipped_regions  # noqa: E402
+from region_flip import flipped_regions  # noqa: E402 - the tests directory must enter sys.path first
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts/apis-guru-gap-screen.py"

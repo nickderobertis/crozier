@@ -2045,7 +2045,22 @@ fn the_handwritten_gate_is_outside_the_golden_only_tier() {
             "{script} no longer selects the golden-only tier by {selector}; re-read this check"
         );
     }
-    assert!(!"handwritten_fixtures_match_fern_goldens".contains("matches_fern_output"));
+    let source = std::fs::read_to_string(root.join("tests/e2e.rs")).expect("this suite's source");
+    let declared: Vec<&str> = source
+        .lines()
+        .filter_map(|line| line.strip_prefix("fn "))
+        .filter_map(|rest| rest.split('(').next())
+        .collect();
+    assert!(
+        declared.contains(&"handwritten_fixtures_match_fern_goldens"),
+        "the hand-written gate is no longer declared under the name the contract gives it"
+    );
+    for name in declared.iter().filter(|name| name.contains("handwritten")) {
+        assert!(
+            !name.contains("matches_fern_output"),
+            "{name} would join the golden-only tier, which never reads a hand-written fixture"
+        );
+    }
 }
 
 /// A scratch repository laid out as the real one is, holding one valid
@@ -2437,6 +2452,106 @@ fn handwritten_gate_keeps_fixtures_out_of_every_real_specification_count() {
         HANDWRITTEN_FIXTURE,
         "golden-reach.tsv counts it as a witness",
     );
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.path("tests/fixtures/CORPUS.md"),
+        format!("| # | name | source |\n|---|---|---|\n| 1 | copied | {HANDWRITTEN_DIR}/{HANDWRITTEN_FIXTURE}/openapi.yml |\n"),
+    )
+    .expect("CORPUS.md");
+    fixture.assert_refused("CORPUS.md", "a hand-written fixture is never a corpus row");
+}
+
+#[test]
+fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(fixture.evidence(), "digest = [unterminated\n").expect("broken evidence");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "evidence.toml is not TOML");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "verdict `witness-found` is not `exhausted` or",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence(
+        "verdict = \"exhausted\"\n\n",
+        "verdict = \"exhausted\"\nrenewed = \"docs/openapi-surface/sample-renewed.md\"\n\n",
+    );
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "`renewed` is required exactly when");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("digest = ", "extra = \"field\"\ndigest = ");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "the contract admits exactly");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(fixture.fixture_dir().join("notes.md"), "notes\n").expect("stray entry");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "notes.md is not part of a fixture");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::rename(
+        fixture.fixture_dir(),
+        fixture.path(&format!("{HANDWRITTEN_DIR}/Sample_Fixture")),
+    )
+    .expect("renamed fixture");
+    fixture.assert_refused("Sample_Fixture", "a fixture name is lower-kebab");
+}
+
+#[test]
+fn handwritten_gate_refuses_a_row_its_covers_do_not_describe() {
+    let region = "docs/openapi-surface/sample.md";
+    for (from, to, message) in [
+        (
+            "handwritten: sample-fixture;",
+            "handwritten: other-fixture;",
+            "its evidence cell names ['other-fixture']",
+        ),
+        (
+            "search: exhausted ([record](sample-search.md#witness-search-exhaustive))",
+            "search: exhausted ([record](sample-renewed.md#witness-search-exhaustive))",
+            "its evidence cell cites `exhausted` at `docs/openapi-surface/sample-renewed.md",
+        ),
+        (
+            "#witness-search-exhaustive)) |  |  |  |",
+            "#witness-search-exhaustive)) | 1 site |  |  |",
+            "`settlement` cells are empty",
+        ),
+        (
+            "| handwritten | handwritten: sample-fixture; search: exhausted",
+            "| handwritten | handwritten sample-fixture, search exhausted",
+            "its evidence cell must read",
+        ),
+    ] {
+        let fixture = HandwrittenFixture::new();
+        let text = std::fs::read_to_string(fixture.path(region)).expect("region file");
+        assert!(text.contains(from), "fixture region file has no {from:?}");
+        std::fs::write(fixture.path(region), text.replacen(from, to, 1)).expect("region file");
+        fixture.assert_refused("sample-shape", message);
+    }
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::create_dir_all(fixture.path(PROBE_EXPECTED_DIR)).expect("probe directory");
+    std::fs::write(
+        fixture.path(&format!("{PROBE_EXPECTED_DIR}/MANIFEST.tsv")),
+        format!("{PROBE_MANIFEST_HEADER}\nsample-shape\tabsent-tree\tdiscards\tx\t—\tx\n"),
+    )
+    .expect("fixture manifest");
+    fixture.assert_refused(
+        "sample-shape",
+        "a committed non-generation proof settles it",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    let record = fixture.path("docs/openapi-surface/sample-search.md");
+    let text = std::fs::read_to_string(&record).expect("search record");
+    std::fs::write(
+        &record,
+        text.replace(&format!("`{HANDWRITTEN_ARM}`"), "an arm"),
+    )
+    .expect("search record");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "does not name the arm");
 }
 
 /// A census source read from inside the fixture directory — here a vendored
