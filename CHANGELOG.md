@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.85](https://github.com/nickderobertis/crozier/compare/v0.0.84...v0.0.85) - 2026-09-30
+
+### Added
+
+- *(settings)* add a layout setting that writes Fern's flat SDK tree ([#320](https://github.com/nickderobertis/crozier/pull/320))
+
 ## [0.0.84](https://github.com/nickderobertis/crozier/compare/v0.0.83...v0.0.84) - 2026-09-30
 
 ### Added
