@@ -96,7 +96,7 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
                 continue
             key = cells[0].strip("` ")
             category = cells[3].strip("` ") if len(cells) == 8 else ""
-            if key == CASE_11_KEY and category in {"gap", "limitations", "golden"}:
+            if key == CASE_11_KEY and category in {"gap", "limitations", "golden", "handwritten"}:
                 case_11_is_owned = True
                 wanted.add(key)
             if key not in wanted:
