@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Jumpseller API
+[api]: #/components/parameters/CartIDParam is undefined 
+       CliError: #/components/parameters/CartIDParam is undefined
+All checks passed

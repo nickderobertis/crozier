@@ -1,0 +1,9 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse an OpenAPI schema at the following location: Shift->start_time. Coercing to unknown.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> PoolData
+        issue: Discriminant value $_type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 1 error and 0 warnings in <n> seconds.

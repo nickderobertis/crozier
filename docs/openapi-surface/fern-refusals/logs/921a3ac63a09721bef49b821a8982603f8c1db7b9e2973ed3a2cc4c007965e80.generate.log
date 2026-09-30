@@ -129,3 +129,5 @@ Warnings for generators.yml:
                                             File "/src/fern_python/cli/publisher.py", line 131, in _run_command
                                               raise Exception("Failed to run command", safe_command)
                                           Exception: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

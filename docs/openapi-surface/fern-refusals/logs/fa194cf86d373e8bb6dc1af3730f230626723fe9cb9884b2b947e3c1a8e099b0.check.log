@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: orders.yml -> service -> endpoints -> all -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 27.5
+
+    [error]
+        path: orders.yml -> service -> endpoints -> all -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 2.75
+
+    [error]
+        path: orders.yml -> service -> endpoints -> one -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 27.5
+
+    [error]
+        path: orders.yml -> service -> endpoints -> one -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 2.75
+
+Found 4 errors and 0 warnings in <n> seconds.

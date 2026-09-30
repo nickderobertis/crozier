@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 6 errors
+    [error]
+        path: mtree.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: repset.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: schema.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: spock.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: table.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: tasks.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 6 errors and 0 warnings in <n> seconds.

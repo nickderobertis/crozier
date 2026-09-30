@@ -414,6 +414,15 @@ def read_measurements() -> dict[str, dict[str, str]]:
     return {row["key"]: upgraded(row) for row in map(json.loads, path.read_text(encoding="utf-8").splitlines())}
 
 
+def ran_out_below_the_heap(log: str) -> bool:
+    """Whether `log` records Node running out of memory under a heap smaller than
+    `NODE_HEAP` grants — its garbage-collection trace names the heap in MB."""
+    if "heap out of memory" not in log:
+        return False
+    sizes = [float(size) for size in re.findall(r"\((\d+(?:\.\d+)?)\) -> ", log)]
+    return not sizes or max(sizes) < int(NODE_HEAP.rsplit("=", 1)[1]) * 0.9
+
+
 def check_blocks(row: dict[str, str]) -> bool:
     """Whether the document's `fern check` names a refusal class. Every class's
     probe shows its phrase stopping `fern generate` too, so such a document's
@@ -431,8 +440,9 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
         return set()
     missing = set()
     log = row.get("check_log")
-    if not row.get("check_exit") or (log and "heap out of memory" in read_log(log)):
-        # A run that ran out of memory reported the host, not Fern: take it again.
+    if not row.get("check_exit") or (log and ran_out_below_the_heap(read_log(log))):
+        # A run that ran out of Node's default heap reported the host, not Fern:
+        # take it again. One that exhausts `NODE_HEAP` is Fern's own verdict.
         missing.add("check")
     elif not row.get("generate_files") and not check_blocks(row):
         missing.add("generate")
@@ -516,16 +526,23 @@ def diagnostics(log: str) -> list[str]:
     `fern check` prints each error as an `issue:` line (the lines under it only
     list where);
     a generation prints it after `[error]`; a document Fern never parsed is an
-    `[api]:` line naming what it could not resolve or the exception it hit. The
-    bare `Failed to parse openapi document <title>` that heads such a failure
+    `[api]:` line naming what it could not resolve or the exception it hit; and
+    a generator container that exits non-zero prints, under `Container execution
+    failed`, the Python exception or the formatting or lint command it died in.
+    The bare `Failed to parse openapi document <title>` that heads such a failure
     counts only when nothing more specific follows it, and a schema Fern merely
     coerces to `unknown` is a warning, not a refusal.
     """
     found: list[str] = []
     lines = log.splitlines()
+    in_container = False
     for line in lines:
         text = line.strip()
         message = ""
+        if text.startswith("[api]:"):
+            in_container = "Container execution failed" in text
+        elif in_container and re.match(r"(\w+(Error|Exception): |Failed to format |Failed to run command: )", text):
+            message = text
         if text.startswith("issue: "):
             message = text[len("issue: "):]
         elif "JavaScript heap out of memory" in text:

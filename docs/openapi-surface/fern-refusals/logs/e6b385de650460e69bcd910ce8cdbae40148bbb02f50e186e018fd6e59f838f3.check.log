@@ -1,0 +1,130 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 31 errors
+    [error]
+        path: agent.yml -> service -> endpoints -> getConfig
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: agent.yml -> service -> endpoints -> registerAgent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: agent.yml -> service -> endpoints -> reportState
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: audit.yml -> service -> endpoints -> queryAudit
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: auth.yml -> service -> endpoints -> getMe
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: auth.yml -> service -> endpoints -> negotiate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: evtspike.yml -> service -> endpoints -> getEvtSpikeSpikes
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: evtspike.yml -> service -> endpoints -> getEvtSpikeStatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: history.yml -> service -> endpoints -> getHistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: maintenance.yml -> service -> endpoints -> getMaintenanceStatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: metrics.yml -> service -> endpoints -> getMetrics
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: metrics.yml -> service -> endpoints -> getMetrics
+        issue: Multiple request properties have the name host. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "host"
+  - Query Parameter "host"
+
+    [error]
+        path: notifications.yml -> service -> endpoints -> testNotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /metrics/{host} -> get
+        issue: Parameters path parameter 'host', query parameter 'host' all normalize to 'host' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> deleteServer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> forceUpdateServer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> getServer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> listRemovedServers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> listServers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> permanentRemoveBatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> permanentRemoveServer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> restoreBatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> restoreServer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: servers.yml -> service -> endpoints -> streamEvents
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> addNotificationTarget
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> deleteNotificationTarget
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> getNotificationExclusions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> getSettings
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> toggleNotificationExclusion
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> updateNotificationTarget
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settings.yml -> service -> endpoints -> updateSettings
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 31 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

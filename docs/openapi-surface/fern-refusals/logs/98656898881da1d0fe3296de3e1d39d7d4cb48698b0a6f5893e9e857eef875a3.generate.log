@@ -1,0 +1,14 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document Cvent REST APIs
+[api]: python-sdk Failed to resolve #/components/schemas/segments-error-response 
+                  CliError: Failed to resolve #/components/schemas/segments-error-response
+[api]: python-sdk Found 0 errors and 1 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
