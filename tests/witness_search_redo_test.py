@@ -1547,6 +1547,12 @@ class PostFreezeGapRowTests(unittest.TestCase):
         refused = self.cli('derive', '--report', self.work / 'refused', '--regions', regions)
         self.assertNotEqual(0, refused.returncode)
         self.assertIn(f'schemas/{kept}: selector disagrees with frozen authority', refused.stderr)
+        (regions / 'witness-search-keys.tsv').write_text(
+            ''.join(line for line in tracked.splitlines(keepends=True) if not line.startswith(f'{kept}\t')),
+            encoding='utf-8')
+        missing = self.cli('derive', '--report', self.work / 'missing', '--regions', regions)
+        self.assertNotEqual(0, missing.returncode)
+        self.assertIn(f'schemas/{kept}: handwritten, and no selector in witness-search-keys.tsv', missing.stderr)
 
     def test_a_frozen_key_whose_row_leaves_its_census_selector_still_fails(self) -> None:
         key, line = self.frozen_row()

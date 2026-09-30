@@ -1,21 +1,15 @@
 # Hand-written generation fixtures
 
 OpenAPI documents written for the purpose, each with the tree Fern generated
-from it, that crozier is byte-gated against. **A hand-written fixture is a lower
-level of proof than a real specification.** It shows that crozier matches Fern on
-a document somebody wrote to exercise a shape. It does not show that the shape
-occurs in a real API, or that crozier matches Fern on the way a real API writes
-it. So a fixture is admitted as generation evidence only where the
-real-specification search for its shape has already failed, and it cites that
-search. It never counts as a real-specification match, anywhere: it is never a
-[`CORPUS.md`](../../../tests/fixtures/CORPUS.md) row, a corpus golden, a census
-source, a witness in [`../golden-reach.tsv`](../golden-reach.tsv) or part of the
-golden-only tier. A real specification found later supersedes it.
+from it, that crozier is byte-gated against. It shows that crozier matches Fern
+on a document somebody wrote to exercise a shape, not that the shape occurs in a
+real API — which is why it is weaker proof, and never a `CORPUS.md` row, a
+corpus golden, a census source or a `golden-reach.tsv` witness.
 
 <!-- llmlint: ignore[no_redundant_instruction_pointers] A folder AGENTS.md is loaded on its own by an agent working in this folder, not reached through the coverage index, and the acceptance criteria require the category to be written once, in the index's category rules, and linked from here rather than restated. -->
-This file states the contract every fixture here is written to. The
-`handwritten` category a fixture puts a region row in, its precedence and the
-row's cells are stated in
+This file states the contract every fixture here is written to. When a fixture
+is admitted, what it counts toward, and the `handwritten` category's precedence
+and cells are stated in
 [the category rules](../../openapi-surface-coverage.md#the-category-rules).
 
 ## Layout
@@ -35,7 +29,7 @@ three entries:
 A `measured` tree in
 [`../probe-expected/MANIFEST.tsv`](../probe-expected/MANIFEST.tsv) is already a
 hand-written document Fern generated from, and may be copied here as a fixture;
-the manifest row stays until the reconciliation retires it.
+its manifest row stays where it is.
 
 ## `evidence.toml`
 
@@ -52,14 +46,10 @@ These keys, and nothing else:
   - `key` (string): a region-row key, spelled as its region file spells it.
   - `arm` (string, optional): a handling site exactly as
     [`../golden-reach-sites.tsv`](../golden-reach-sites.tsv) spells it for that
-    key. Absent, the cover is **feature-level**: it proves the feature itself,
-    and its row is `handwritten`. Present, it is **arm-level**: it proves one
-    handling site of a `golden` row, which stays `golden`; the fixture then
-    appears only in the report's hand-written column and in
-    [`../handwritten-reach.tsv`](../handwritten-reach.tsv), and the arm is still
-    counted as unreached by real specifications. A site spec's regex usually
-    holds backslashes, so write it as a TOML literal string (`'…'`), which
-    keeps them verbatim.
+    key. Absent, the cover is **feature-level** and proves the feature itself;
+    present, it is **arm-level** and proves one handling site of a `golden` row.
+    A site spec's regex usually holds backslashes, so write it as a TOML literal
+    string (`'…'`), which keeps them verbatim.
   - `search` (string): `<repo-relative path>#<anchor>` of the committed search
     record whose verdict the cover cites. The anchor is GitHub's for a heading of
     that file, and the record is that heading's section.

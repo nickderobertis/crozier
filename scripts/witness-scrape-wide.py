@@ -98,6 +98,11 @@ def baseline(regions: Path, contract: Path) -> dict[str, dict]:
                 if outcomes.get(key) != "search-incomplete":
                     continue
                 selector = tracked.get(key)
+                if selector is None:
+                    raise ValueError(
+                        f"{name}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
+                        "restore that file from git, where the key's search recorded it"
+                    )
             elif (
                 REDO.value(row[3]) != "gap"
                 or REDO.authoritative_details(row)[0] != "search-incomplete"
