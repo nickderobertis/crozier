@@ -1876,6 +1876,903 @@ fn sha256_matches_the_fips_180_4_test_vectors() {
     );
 }
 
+const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+
+/// Every hand-written generation fixture, found by listing
+/// `docs/openapi-surface/handwritten/` and nothing else, held to the contract
+/// that directory's `AGENTS.md` states. A hand-written fixture is a lower level
+/// of proof than a real specification: it is admitted only after a failed
+/// real-specification search it cites, and never counts as a corpus golden, so
+/// this is not a `*matches_fern_output*` test and the golden-only tier never
+/// runs it. `scripts/handwritten-fixtures.py gate` checks what the committed
+/// documents say; this adds Contract A's digest, the pin, and crozier's
+/// byte-match against each fixture's `fern-expected/`.
+// llmlint: ignore[names_match_behavior] The name is the one the contract in docs/openapi-surface/handwritten/AGENTS.md and this node's acceptance criteria give the gate, and the `cargo nextest -E 'test(handwritten_fixtures_match_fern_goldens)'` check selects it by; renaming it would silently empty that filter.
+#[test]
+fn handwritten_fixtures_match_fern_goldens() {
+    let failures = handwritten_fixture_failures(Path::new(env!("CARGO_MANIFEST_DIR")));
+    assert!(
+        failures.is_empty(),
+        "the hand-written fixtures break their contract \
+         (docs/openapi-surface/handwritten/AGENTS.md):\n{}",
+        failures.join("\n")
+    );
+}
+
+/// Every way the hand-written fixtures under `root` fail their contract, each
+/// naming the fixture (or row, or ledger) it is about. `root` is the repository
+/// for the real gate and a scratch tree laid out the same way for the tests
+/// below, so both go through this one path.
+fn handwritten_fixture_failures(root: &Path) -> Vec<String> {
+    let (evidence, mut failures) = handwritten_documents(root);
+    let Ok(entries) = std::fs::read_dir(root.join(HANDWRITTEN_DIR)) else {
+        // The document check has already said the directory is missing.
+        return failures;
+    };
+    let mut fixtures: Vec<PathBuf> = entries
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .collect();
+    fixtures.sort();
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    for fixture in fixtures {
+        let name = fixture
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let expected = fixture.join("fern-expected");
+        let spec = fixture.join("openapi.yml");
+        if let Some(declared) = evidence.get(&name) {
+            for (field, pin) in [
+                ("fern_cli_version", cli_pin.as_str()),
+                ("fern_python_sdk_version", sdk_pin.as_str()),
+            ] {
+                let found = declared[field].as_str().unwrap_or_default();
+                if found != pin {
+                    failures.push(format!(
+                        "{name}: evidence.toml {field} is `{found}`, but the corpus pins `{pin}` \
+                         — regenerate fern-expected/ at the pin"
+                    ));
+                }
+            }
+            if expected.is_dir() {
+                let digest = declared["digest"].as_str().unwrap_or_default();
+                match probe_artifact_digest(&expected) {
+                    Ok(actual) if actual == digest => {}
+                    Ok(actual) => failures.push(format!(
+                        "{name}: fern-expected/ hashes to {actual}, but evidence.toml declares \
+                         `{digest}` — a committed Fern tree changed; restore it, never re-declare \
+                         it to match"
+                    )),
+                    Err(error) => failures.push(format!("{name}: {error}")),
+                }
+            }
+        }
+        if expected.is_dir() && spec.is_file() {
+            failures.extend(probe_tree_failures(&name, &spec, &expected));
+        }
+    }
+    failures
+}
+
+/// The document half of the gate: each fixture's parsed pins and digest, and
+/// every failure `scripts/handwritten-fixtures.py gate` reports over `root`.
+fn handwritten_documents(
+    root: &Path,
+) -> (
+    std::collections::BTreeMap<String, serde_json::Value>,
+    Vec<String>,
+) {
+    let Some(python) = python_interpreter() else {
+        return (
+            Default::default(),
+            vec!["no python3/python on PATH to read the hand-written fixtures' documents".into()],
+        );
+    };
+    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("scripts/handwritten-fixtures.py");
+    let output = match std::process::Command::new(python)
+        .arg(script)
+        .arg("--repo-root")
+        .arg(root)
+        .arg("gate")
+        .output()
+    {
+        Ok(output) => output,
+        Err(error) => {
+            return (
+                Default::default(),
+                vec![format!(
+                    "could not run the hand-written fixture check: {error}"
+                )],
+            )
+        }
+    };
+    let parsed: serde_json::Value = match serde_json::from_slice(&output.stdout) {
+        Ok(parsed) if output.status.success() => parsed,
+        _ => {
+            return (
+                Default::default(),
+                vec![format!(
+                    "the hand-written fixture check failed ({}): {}",
+                    output.status,
+                    String::from_utf8_lossy(&output.stderr)
+                )],
+            )
+        }
+    };
+    let failures = parsed["failures"]
+        .as_array()
+        .map(|failures| {
+            failures
+                .iter()
+                .filter_map(|failure| failure.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default();
+    let evidence = parsed["fixtures"]
+        .as_object()
+        .map(|fixtures| {
+            fixtures
+                .iter()
+                .map(|(name, declared)| (name.clone(), declared.clone()))
+                .collect()
+        })
+        .unwrap_or_default();
+    (evidence, failures)
+}
+
+/// The gate's name keeps it out of the golden-only tier, which selects every
+/// `*matches_fern_output*` test in `scripts/fixtures-coverage.sh` and
+/// `scripts/golden-reach.py`: a hand-written fixture never counts as a corpus
+/// golden.
+#[test]
+fn the_handwritten_gate_is_outside_the_golden_only_tier() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for (script, selector) in [
+        (
+            "scripts/fixtures-coverage.sh",
+            "test(/matches_fern_output/)",
+        ),
+        (
+            "scripts/golden-reach.py",
+            "re.compile(r\"matches_fern_output\")",
+        ),
+    ] {
+        let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
+        assert!(
+            text.contains(selector),
+            "{script} no longer selects the golden-only tier by {selector}; re-read this check"
+        );
+    }
+    let source = std::fs::read_to_string(root.join("tests/e2e.rs")).expect("this suite's source");
+    let declared: Vec<&str> = source
+        .lines()
+        .filter_map(|line| line.strip_prefix("fn "))
+        .filter_map(|rest| rest.split('(').next())
+        .collect();
+    assert!(
+        declared.contains(&"handwritten_fixtures_match_fern_goldens"),
+        "the hand-written gate is no longer declared under the name the contract gives it"
+    );
+    for name in declared.iter().filter(|name| name.contains("handwritten")) {
+        assert!(
+            !name.contains("matches_fern_output"),
+            "{name} would join the golden-only tier, which never reads a hand-written fixture"
+        );
+    }
+}
+
+/// The contract states the pin in prose and in its `evidence.toml` example; the
+/// gate holds each fixture to `assets/scaffolding/metadata.json`, so this holds
+/// the prose to it too. Every version the contract names is one of the two pins.
+#[test]
+fn the_handwritten_contract_states_the_corpus_pin() {
+    let contract = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join(format!("{HANDWRITTEN_DIR}/AGENTS.md")),
+    )
+    .expect("the hand-written fixture contract");
+    let (cli_pin, sdk_pin) = probe_fern_pins();
+    for (field, pin) in [
+        ("fern_cli_version", &cli_pin),
+        ("fern_python_sdk_version", &sdk_pin),
+    ] {
+        assert!(
+            contract.contains(&format!("{field} = \"{pin}\"")),
+            "the contract's evidence.toml example does not pin {field} to {pin}"
+        );
+    }
+    let versions: Vec<&str> = contract
+        .split(|c: char| !(c.is_ascii_digit() || c == '.'))
+        .filter(|token| {
+            token.split('.').count() == 3 && token.split('.').all(|part| !part.is_empty())
+        })
+        .collect();
+    assert!(
+        !versions.is_empty(),
+        "the contract no longer states the pin"
+    );
+    for version in versions {
+        assert!(
+            version == cli_pin || version == sdk_pin,
+            "the contract names version {version}, which is neither pin ({cli_pin}, {sdk_pin})"
+        );
+    }
+}
+
+/// A scratch repository laid out as the real one is, holding one valid
+/// hand-written fixture with a feature-level and an arm-level cover, and the
+/// region row, ledgers and search records they cite, for the gate to be driven
+/// over through the same [`handwritten_fixture_failures`] the real tree takes.
+/// Its `fern-expected/` is crozier's own comment-stripped output standing in for
+/// Fern's: this exercises the gate's reading of a fixture, not any Fern verdict.
+struct HandwrittenFixture {
+    dir: tempfile::TempDir,
+}
+
+const HANDWRITTEN_FIXTURE: &str = "sample-fixture";
+const HANDWRITTEN_ARM: &str = "src/ir.rs::scalar_body[=^ {12}_ => return None]";
+const HANDWRITTEN_SPEC: &str = "openapi: 3.0.3
+info:
+  title: sample
+  version: 1.0.0
+paths:
+  /probe:
+    post:
+      operationId: probe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              format: email
+      responses:
+        \"200\":
+          description: ok
+";
+
+impl HandwrittenFixture {
+    fn new() -> Self {
+        let dir = tempfile::tempdir().expect("fixture repository");
+        let fixture = Self { dir };
+        let regions = fixture.path("docs/openapi-surface");
+        std::fs::create_dir_all(fixture.fixture_dir()).expect("fixture directory");
+        std::fs::create_dir_all(fixture.path("tests/fixtures")).expect("corpus directory");
+        std::fs::write(
+            fixture.path(&format!("{HANDWRITTEN_DIR}/AGENTS.md")),
+            "# fixtures\n",
+        )
+        .expect("fixture AGENTS.md");
+        std::fs::write(
+            fixture.path("tests/fixtures/CORPUS.md"),
+            "| # | name | source |\n|---|---|---|\n| 1 | registered-spec | https://example.com/openapi.yml |\n",
+        )
+        .expect("fixture CORPUS.md");
+        std::fs::write(
+            regions.join("sample.md"),
+            "| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |\n\
+             |---|---|---|---|---|---|---|---|\n\
+             | `sample-shape` | both | Schema Object.sample | handwritten | handwritten: sample-fixture; search: exhausted ([record](sample-search.md#witness-search-exhaustive)) |  |  |  |\n\
+             | `sample-golden` | both | Schema Object.format | golden | census `schema.format=email` | reach: sample |  |  |\n",
+        )
+        .expect("fixture region file");
+        std::fs::write(
+            regions.join("sample-search.md"),
+            format!(
+                "# Searches\n\n### Witness search (exhaustive)\n\n\
+                 The arm searched for: `{HANDWRITTEN_ARM}`.\n\n\
+                 | key | outcome |\n|---|---|\n\
+                 | `sample-shape` | `exhausted` |\n| `sample-golden` | `exhausted` |\n\n\
+                 ### Incomplete search\n\n| key | outcome |\n|---|---|\n\
+                 | `sample-shape` | `search-incomplete` |\n"
+            ),
+        )
+        .expect("fixture search record");
+        std::fs::write(
+            regions.join("sample-renewed.md"),
+            "| key | outcome |\n|---|---|\n| `sample-shape` | `none-registrable` |\n",
+        )
+        .expect("fixture renewed record");
+        std::fs::write(
+            regions.join("witness-search-keys.tsv"),
+            "key\tselector\tregion\tcensus_status\nsample-shape\tschema.format=email\tsample.md\tsupported\n",
+        )
+        .expect("fixture key set");
+        std::fs::write(
+            regions.join("golden-reach-sites.tsv"),
+            format!("key\tselectors\tsites\tnote\nsample-golden\tschema.format=email\t{HANDWRITTEN_ARM}\t\n"),
+        )
+        .expect("fixture site table");
+        std::fs::write(
+            regions.join("golden-reach.tsv"),
+            format!(
+                "# golden-reach ledger — fixture\n\
+                 rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites\tnote\n\
+                 1\tsample-golden\tsample\t1\t1\t1\tregistered-spec\t-\t{HANDWRITTEN_ARM}=0/1\t-\n"
+            ),
+        )
+        .expect("fixture golden-reach ledger");
+        fixture.write_reach(&format!(
+            "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n"
+        ));
+        std::fs::write(fixture.fixture_dir().join("openapi.yml"), HANDWRITTEN_SPEC)
+            .expect("fixture document");
+        write_stripped_crozier_tree(
+            &fixture.fixture_dir().join("openapi.yml"),
+            &fixture.fixture_dir().join("fern-expected"),
+        );
+        fixture.declare(
+            "[[covers]]\nkey = \"sample-shape\"\n\
+             search = \"docs/openapi-surface/sample-search.md#witness-search-exhaustive\"\n\
+             verdict = \"exhausted\"\n\n\
+             [[covers]]\nkey = \"sample-golden\"\n\
+             arm = \"src/ir.rs::scalar_body[=^ {12}_ => return None]\"\n\
+             search = \"docs/openapi-surface/sample-search.md#witness-search-exhaustive\"\n\
+             verdict = \"exhausted\"\n",
+        );
+        fixture
+    }
+
+    fn root(&self) -> &Path {
+        self.dir.path()
+    }
+
+    fn path(&self, rel: &str) -> PathBuf {
+        self.root().join(rel)
+    }
+
+    fn fixture_dir(&self) -> PathBuf {
+        self.path(&format!("{HANDWRITTEN_DIR}/{HANDWRITTEN_FIXTURE}"))
+    }
+
+    fn evidence(&self) -> PathBuf {
+        self.fixture_dir().join("evidence.toml")
+    }
+
+    fn write_reach(&self, rows: &str) {
+        std::fs::write(
+            self.path("docs/openapi-surface/handwritten-reach.tsv"),
+            format!("fixture\tkey\tsite\tregions_executed\tregions\n{rows}"),
+        )
+        .expect("fixture reach ledger");
+    }
+
+    /// Write `evidence.toml` at the pin and the tree's current digest, with `covers`.
+    fn declare(&self, covers: &str) {
+        let (cli_pin, sdk_pin) = probe_fern_pins();
+        let digest = probe_artifact_digest(&self.fixture_dir().join("fern-expected"))
+            .expect("fixture tree digest");
+        std::fs::write(
+            self.evidence(),
+            format!(
+                "fern_cli_version = \"{cli_pin}\"\nfern_python_sdk_version = \"{sdk_pin}\"\n\
+                 digest = \"{digest}\"\n\n{covers}"
+            ),
+        )
+        .expect("fixture evidence");
+    }
+
+    fn edit_evidence(&self, from: &str, to: &str) {
+        let text = std::fs::read_to_string(self.evidence()).expect("fixture evidence");
+        assert!(text.contains(from), "fixture evidence has no {from:?}");
+        std::fs::write(self.evidence(), text.replacen(from, to, 1)).expect("fixture evidence");
+    }
+
+    fn failures(&self) -> Vec<String> {
+        handwritten_fixture_failures(self.root())
+    }
+
+    /// The failure an induced case must produce, naming `subject` and `message`.
+    fn assert_refused(&self, subject: &str, message: &str) {
+        let failures = self.failures();
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.starts_with(&format!("{subject}: "))
+                    && failure.contains(message)),
+            "expected a failure naming {subject} and saying {message:?}; got:\n{}",
+            failures.join("\n")
+        );
+    }
+}
+
+/// crozier's output for `spec`, comment-stripped the way a Fern golden is.
+fn write_stripped_crozier_tree(spec: &Path, tree: &Path) {
+    probe_command(spec, tree).assert().success();
+    for rel in walk_files(tree) {
+        if rel.ends_with(".py") {
+            let path = tree.join(&rel);
+            let text = std::fs::read_to_string(&path).expect("generated module");
+            std::fs::write(&path, crozier::strip_python_comments(&text)).expect("stripped module");
+        }
+    }
+}
+
+#[test]
+fn handwritten_gate_accepts_a_well_formed_fixture() {
+    let fixture = HandwrittenFixture::new();
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+    // A `search-incomplete` cover is admitted with its renewed record.
+    fixture.edit_evidence(
+        "#witness-search-exhaustive\"\nverdict = \"exhausted\"\n\n",
+        "#incomplete-search\"\nverdict = \"search-incomplete\"\n\
+         renewed = \"docs/openapi-surface/sample-renewed.md\"\n\n",
+    );
+    std::fs::write(
+        fixture.path("docs/openapi-surface/sample.md"),
+        std::fs::read_to_string(fixture.path("docs/openapi-surface/sample.md"))
+            .expect("region file")
+            .replace(
+                "search: exhausted ([record](sample-search.md#witness-search-exhaustive))",
+                "search: search-incomplete ([record](sample-search.md#incomplete-search))",
+            ),
+    )
+    .expect("region file");
+    assert_eq!(Vec::<String>::new(), fixture.failures());
+}
+
+#[test]
+fn handwritten_gate_refuses_a_fixture_whose_fern_tree_is_missing_or_moved() {
+    let fixture = HandwrittenFixture::new();
+    std::fs::remove_dir_all(fixture.fixture_dir().join("fern-expected")).expect("remove tree");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "fern-expected is missing");
+
+    let fixture = HandwrittenFixture::new();
+    let readme = fixture.fixture_dir().join("fern-expected/README.md");
+    let text = std::fs::read_to_string(&readme).expect("tree README");
+    std::fs::write(&readme, format!("{text}\ntouched\n")).expect("touched README");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "but evidence.toml declares");
+
+    for field in ["fern_cli_version", "fern_python_sdk_version"] {
+        let fixture = HandwrittenFixture::new();
+        fixture.edit_evidence(&format!("{field} = \""), &format!("{field} = \"0."));
+        fixture.assert_refused(HANDWRITTEN_FIXTURE, &format!("{field} is `0."));
+    }
+}
+
+#[test]
+fn handwritten_gate_refuses_a_tree_crozier_diverges_from() {
+    let fixture = HandwrittenFixture::new();
+    let readme = fixture.fixture_dir().join("fern-expected/README.md");
+    let text = std::fs::read_to_string(&readme).expect("tree README");
+    std::fs::write(&readme, format!("{text}\ndrift\n")).expect("drifted README");
+    fixture.edit_evidence("digest = \"", "digest = \"stale");
+    let digest =
+        probe_artifact_digest(&fixture.fixture_dir().join("fern-expected")).expect("digest");
+    let evidence = std::fs::read_to_string(fixture.evidence()).expect("evidence");
+    let stale = evidence
+        .lines()
+        .find(|line| line.starts_with("digest = "))
+        .expect("digest line")
+        .to_string();
+    fixture.edit_evidence(&stale, &format!("digest = \"{digest}\""));
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "differs from the committed Fern measurement",
+    );
+}
+
+#[test]
+fn handwritten_gate_refuses_a_cover_its_search_record_does_not_support() {
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("#witness-search-exhaustive", "#no-such-heading");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "its search anchor does not resolve");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"search-incomplete\"");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "states ['exhausted'] for `sample-shape`",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence(
+        "#witness-search-exhaustive\"\nverdict = \"exhausted\"\n\n",
+        "#incomplete-search\"\nverdict = \"search-incomplete\"\n\n",
+    );
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "without a `renewed` record");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence(
+        "#witness-search-exhaustive\"\nverdict = \"exhausted\"\n\n",
+        "#incomplete-search\"\nverdict = \"search-incomplete\"\n\
+         renewed = \"docs/openapi-surface/sample-search.md\"\n\n",
+    );
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "with the outcome `none-registrable`");
+}
+
+#[test]
+fn handwritten_gate_refuses_an_arm_cover_the_reach_ledgers_do_not_support() {
+    let fixture = HandwrittenFixture::new();
+    fixture.write_reach("");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "handwritten-reach.tsv has no row for it",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.write_reach(&format!(
+        "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t0\t1\n"
+    ));
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "measures 0 of its 1 regions executed");
+
+    let fixture = HandwrittenFixture::new();
+    let ledger = fixture.path("docs/openapi-surface/golden-reach.tsv");
+    let text = std::fs::read_to_string(&ledger).expect("golden-reach ledger");
+    std::fs::write(&ledger, text.replace("=0/1", "=1/1")).expect("golden-reach ledger");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "reached by a real specification");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence(
+        "arm = \"src/ir.rs::scalar_body",
+        "arm = \"src/ir.rs::base_type_ref",
+    );
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "golden-reach-sites.tsv lists no such site",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.write_reach(&format!(
+        "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n\
+         {HANDWRITTEN_FIXTURE}\tsample-shape\t{HANDWRITTEN_ARM}\t1\t1\n"
+    ));
+    fixture.assert_refused("handwritten-reach.tsv", "names no live arm-level cover");
+}
+
+#[test]
+fn handwritten_gate_holds_fixtures_and_rows_to_each_other() {
+    let fixture = HandwrittenFixture::new();
+    let text = std::fs::read_to_string(fixture.evidence()).expect("evidence");
+    std::fs::write(
+        fixture.evidence(),
+        &text[..text.find("[[covers]]").expect("covers")],
+    )
+    .expect("coverless evidence");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "has no cover");
+    // With the cover gone, the row it named has none either.
+    fixture.assert_refused("sample-shape", "no fixture's feature-level cover names it");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.fixture_dir().join("openapi.yml"),
+        HANDWRITTEN_SPEC.replace("format: email", "format: uuid"),
+    )
+    .expect("document without the shape");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "declares no site of `schema.format=email`",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("key = \"sample-shape\"", "key = \"sample-golden\"");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "must read `handwritten`, and it reads `golden`",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.path("docs/openapi-surface/witness-search-keys.tsv"),
+        "name\tshape\nsample-shape\tschema.format=email\n",
+    )
+    .expect("malformed key set");
+    fixture.assert_refused(
+        "witness-search-keys.tsv",
+        "has no `key` and `selector` columns",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("key = \"sample-shape\"", "key = \"no-such-row\"");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "no region row carries this key");
+}
+
+#[test]
+fn handwritten_gate_keeps_fixtures_out_of_every_real_specification_count() {
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.path("tests/fixtures/CORPUS.md"),
+        format!("| # | name | source |\n|---|---|---|\n| 1 | {HANDWRITTEN_FIXTURE} | https://example.com/openapi.yml |\n"),
+    )
+    .expect("CORPUS.md");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "is also a CORPUS.md row");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::create_dir_all(fixture.path(&format!("tests/fixtures/{HANDWRITTEN_FIXTURE}")))
+        .expect("corpus golden directory");
+    std::fs::copy(
+        fixture.fixture_dir().join("openapi.yml"),
+        fixture.path(&format!("tests/fixtures/{HANDWRITTEN_FIXTURE}/openapi.yml")),
+    )
+    .expect("vendored copy");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "is never a corpus golden");
+
+    let fixture = HandwrittenFixture::new();
+    let ledger = fixture.path("docs/openapi-surface/golden-reach.tsv");
+    let text = std::fs::read_to_string(&ledger).expect("golden-reach ledger");
+    std::fs::write(
+        &ledger,
+        text.replace("\tregistered-spec\t", &format!("\t{HANDWRITTEN_FIXTURE}\t")),
+    )
+    .expect("golden-reach ledger");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "golden-reach.tsv counts it as a witness",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(
+        fixture.path("tests/fixtures/CORPUS.md"),
+        format!("| # | name | source |\n|---|---|---|\n| 1 | copied | {HANDWRITTEN_DIR}/{HANDWRITTEN_FIXTURE}/openapi.yml |\n"),
+    )
+    .expect("CORPUS.md");
+    fixture.assert_refused("CORPUS.md", "a hand-written fixture is never a corpus row");
+}
+
+#[test]
+fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(fixture.evidence(), "digest = [unterminated\n").expect("broken evidence");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "evidence.toml is not TOML");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "verdict `witness-found` is not `exhausted` or",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence(
+        "verdict = \"exhausted\"\n\n",
+        "verdict = \"exhausted\"\nrenewed = \"docs/openapi-surface/sample-renewed.md\"\n\n",
+    );
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "`renewed` is required exactly when");
+
+    let fixture = HandwrittenFixture::new();
+    fixture.edit_evidence("digest = ", "extra = \"field\"\ndigest = ");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "the contract admits exactly");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::write(fixture.fixture_dir().join("notes.md"), "notes\n").expect("stray entry");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "notes.md is not part of a fixture");
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::rename(
+        fixture.fixture_dir(),
+        fixture.path(&format!("{HANDWRITTEN_DIR}/Sample_Fixture")),
+    )
+    .expect("renamed fixture");
+    fixture.assert_refused("Sample_Fixture", "a fixture name is lower-kebab");
+}
+
+#[test]
+fn handwritten_gate_refuses_a_row_its_covers_do_not_describe() {
+    let region = "docs/openapi-surface/sample.md";
+    for (from, to, message) in [
+        (
+            "handwritten: sample-fixture;",
+            "handwritten: other-fixture;",
+            "its evidence cell names ['other-fixture']",
+        ),
+        (
+            "search: exhausted ([record](sample-search.md#witness-search-exhaustive))",
+            "search: exhausted ([record](sample-renewed.md#witness-search-exhaustive))",
+            "its evidence cell cites `exhausted` at `docs/openapi-surface/sample-renewed.md",
+        ),
+        (
+            "#witness-search-exhaustive)) |  |  |  |",
+            "#witness-search-exhaustive)) | 1 site |  |  |",
+            "`settlement` cells are empty",
+        ),
+        (
+            "| handwritten | handwritten: sample-fixture; search: exhausted",
+            "| handwritten | handwritten sample-fixture, search exhausted",
+            "its evidence cell must read",
+        ),
+    ] {
+        let fixture = HandwrittenFixture::new();
+        let text = std::fs::read_to_string(fixture.path(region)).expect("region file");
+        assert!(text.contains(from), "fixture region file has no {from:?}");
+        std::fs::write(fixture.path(region), text.replacen(from, to, 1)).expect("region file");
+        fixture.assert_refused("sample-shape", message);
+    }
+
+    let fixture = HandwrittenFixture::new();
+    std::fs::create_dir_all(fixture.path(PROBE_EXPECTED_DIR)).expect("probe directory");
+    std::fs::write(
+        fixture.path(&format!("{PROBE_EXPECTED_DIR}/MANIFEST.tsv")),
+        format!("{PROBE_MANIFEST_HEADER}\nsample-shape\tabsent-tree\tdiscards\tx\t—\tx\n"),
+    )
+    .expect("fixture manifest");
+    fixture.assert_refused(
+        "sample-shape",
+        "a committed non-generation proof settles it",
+    );
+
+    let fixture = HandwrittenFixture::new();
+    let record = fixture.path("docs/openapi-surface/sample-search.md");
+    let text = std::fs::read_to_string(&record).expect("search record");
+    std::fs::write(
+        &record,
+        text.replace(&format!("`{HANDWRITTEN_ARM}`"), "an arm"),
+    )
+    .expect("search record");
+    fixture.assert_refused(HANDWRITTEN_FIXTURE, "does not name the arm");
+}
+
+/// One induced breakage per remaining rule of the contract, each on a fresh
+/// well-formed fixture, each refused with the fixture (or file) and the rule named.
+#[test]
+fn handwritten_gate_refuses_each_remaining_contract_breakage() {
+    type Breakage = fn(&HandwrittenFixture);
+    let cases: [(&str, &str, Breakage); 18] = [
+        (HANDWRITTEN_FIXTURE, "evidence.toml cannot be read", |f| {
+            std::fs::write(f.evidence(), [0xff, 0xfe, 0x00]).expect("undecodable evidence")
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "evidence.toml `digest` is not a string",
+            |f| {
+                let text = std::fs::read_to_string(f.evidence()).expect("evidence");
+                let line = text
+                    .lines()
+                    .find(|l| l.starts_with("digest = "))
+                    .expect("digest")
+                    .to_string();
+                f.edit_evidence(&line, "digest = 5");
+            },
+        ),
+        (HANDWRITTEN_FIXTURE, "is not a `[[covers]]` table", |f| {
+            let text = std::fs::read_to_string(f.evidence()).expect("evidence");
+            let head = &text[..text.find("[[covers]]").expect("covers")];
+            std::fs::write(f.evidence(), format!("{head}covers = [\"x\"]\n")).expect("evidence");
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "carries unknown field(s) ['note']",
+            |f| {
+                f.edit_evidence(
+                    "key = \"sample-shape\"",
+                    "key = \"sample-shape\"\nnote = \"x\"",
+                )
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "every field is a non-empty string",
+            |f| f.edit_evidence("key = \"sample-shape\"", "key = \"\""),
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "its `renewed` record `docs/none.md` does not exist",
+            |f| {
+                f.edit_evidence(
+                "#witness-search-exhaustive\"\nverdict = \"exhausted\"\n\n",
+                "#incomplete-search\"\nverdict = \"search-incomplete\"\nrenewed = \"docs/none.md\"\n\n",
+            )
+            },
+        ),
+        ("handwritten-reach.tsv", "missing — restore it", |f| {
+            std::fs::remove_file(f.path("docs/openapi-surface/handwritten-reach.tsv"))
+                .expect("ledger")
+        }),
+        (
+            "handwritten-reach.tsv",
+            "the header line must be exactly",
+            |f| {
+                std::fs::write(
+                    f.path("docs/openapi-surface/handwritten-reach.tsv"),
+                    "fixture\tkey\n",
+                )
+                .expect("ledger")
+            },
+        ),
+        (
+            "handwritten-reach.tsv line 2",
+            "not five tab-separated fields",
+            |f| f.write_reach("sample-fixture\tsample-golden\n"),
+        ),
+        ("handwritten-reach.tsv", "rows are not sorted", |f| {
+            f.write_reach(&format!(
+                "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n\
+                 {HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n"
+            ))
+        }),
+        (
+            HANDWRITTEN_DIR,
+            "missing — the fixture directory must exist",
+            |f| std::fs::remove_dir_all(f.path(HANDWRITTEN_DIR)).expect("fixture directory"),
+        ),
+        ("stray.txt", "is not a fixture directory", |f| {
+            std::fs::write(f.path(&format!("{HANDWRITTEN_DIR}/stray.txt")), "x\n").expect("stray")
+        }),
+        (
+            HANDWRITTEN_FIXTURE,
+            "fern-expected is not a directory",
+            |f| {
+                let tree = f.fixture_dir().join("fern-expected");
+                std::fs::remove_dir_all(&tree).expect("tree");
+                std::fs::write(&tree, "x\n").expect("tree as a file");
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "records no selector for this key",
+            |f| {
+                std::fs::write(
+                    f.path("docs/openapi-surface/witness-search-keys.tsv"),
+                    "key\tselector\tregion\tcensus_status\n",
+                )
+                .expect("key set")
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "the census cannot read openapi.yml",
+            |f| {
+                std::fs::write(
+                    f.fixture_dir().join("openapi.yml"),
+                    "openapi: 3.0.3\n\tinfo: [\n",
+                )
+                .expect("unreadable document")
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "an arm-level cover's row must read `golden`",
+            |f| {
+                f.edit_evidence(
+                    "key = \"sample-golden\"\narm",
+                    "key = \"sample-shape\"\narm",
+                )
+            },
+        ),
+        (
+            HANDWRITTEN_FIXTURE,
+            "golden-reach.tsv measures no such site",
+            |f| {
+                let ledger = f.path("docs/openapi-surface/golden-reach.tsv");
+                let text = std::fs::read_to_string(&ledger).expect("golden-reach ledger");
+                std::fs::write(
+                    &ledger,
+                    text.replace(&format!("{HANDWRITTEN_ARM}=0/1"), "src/ir.rs::other=0/1"),
+                )
+                .expect("golden-reach ledger");
+            },
+        ),
+        ("sample-shape", "golden-reach-sites.tsv lists it", |f| {
+            let table = f.path("docs/openapi-surface/golden-reach-sites.tsv");
+            let text = std::fs::read_to_string(&table).expect("site table");
+            std::fs::write(
+                &table,
+                format!("{text}sample-shape\tschema.format=email\tnone\t\n"),
+            )
+            .expect("site table");
+        }),
+    ];
+    for (subject, message, breakage) in cases {
+        let fixture = HandwrittenFixture::new();
+        breakage(&fixture);
+        fixture.assert_refused(subject, message);
+    }
+}
+
+/// A census source read from inside the fixture directory — here a vendored
+/// corpus directory that is a link to one — is refused whatever it is named.
+#[cfg(unix)]
+#[test]
+fn handwritten_gate_refuses_a_census_source_read_from_a_fixture() {
+    let fixture = HandwrittenFixture::new();
+    std::os::unix::fs::symlink(
+        fixture.fixture_dir(),
+        fixture.path("tests/fixtures/linked-spec"),
+    )
+    .expect("linked corpus directory");
+    fixture.assert_refused("linked-spec", "is never a census source");
+}
+
 /// A scratch repository laid out as the real one is, holding one valid
 /// `differential` pair and one valid `refusal`, for the gate to be driven over
 /// through the same [`probe_manifest_failures`] the real manifest takes. The
@@ -1979,24 +2876,13 @@ impl ProbeManifestFixture {
 
     /// crozier's output for `key`'s probe, stripped the way a Fern golden is.
     fn write_stripped_tree(&self, key: &str) {
-        let tree = self.tree(key);
-        probe_command(
+        write_stripped_crozier_tree(
             &self
                 .root()
                 .join(PROBE_DOCUMENTS_DIR)
                 .join(format!("{key}.yml")),
-            &tree,
-        )
-        .assert()
-        .success();
-        for rel in walk_files(&tree) {
-            if rel.ends_with(".py") {
-                let path = tree.join(&rel);
-                let text = std::fs::read_to_string(&path).expect("generated module");
-                std::fs::write(&path, crozier::strip_python_comments(&text))
-                    .expect("stripped module");
-            }
-        }
+            &self.tree(key),
+        );
     }
 
     /// Write `MANIFEST.tsv` declaring the two proofs at their current digests.

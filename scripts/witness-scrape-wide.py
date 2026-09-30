@@ -62,32 +62,67 @@ LOCAL = load("wide_local", REPO / "scripts/witness-search-local-census.py")
 ROWS = load(
     "wide_rows", REPO / "tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
+REGION_KEYS = load("wide_region_keys", REPO / "scripts/witness-search-region-keys.py")
+
+
+def shard_outcomes(contract: Path) -> dict[str, str]:
+    """The frozen outcome of every owned key, taken off the shards beside `contract`.
+
+    A `handwritten` row carries no inline history for `authoritative_details` to
+    read, so its key keeps the baseline membership the shards themselves decide.
+    """
+    keys = REDO.contract_keys(contract)
+    records = REDO.shard_records(
+        [contract.with_name("catalogue-portals.md"), contract.with_name("code-platforms.md")]
+    )
+    supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
+    return REDO.frozen_outcomes(
+        keys, records, contract.with_name("candidates.md"),
+        (supplement,) if supplement.is_file() else (),
+    )
 
 
 def baseline(regions: Path, contract: Path) -> dict[str, dict]:
     frozen = REDO.contract_keys(contract)
+    tracked = REGION_KEYS.tracked_selectors(regions)
+    outcomes: dict[str, str] | None = None
     result = {}
     for name in REGIONS:
         for row in ROWS((regions / f"{name}.md").read_text(encoding="utf-8")):
-            if (
+            key = REDO.value(row[0])
+            if REDO.value(row[3]) == "handwritten" and key in frozen:
+                # Still no real-specification witness: its search evidence stays
+                # reconciled, with the selector the search ran on.
+                if outcomes is None:
+                    outcomes = shard_outcomes(contract)
+                if outcomes.get(key) != "search-incomplete":
+                    continue
+                selector = tracked.get(key)
+                if selector is None:
+                    raise ValueError(
+                        f"{name}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
+                        "restore that file from git, where the key's search recorded it"
+                    )
+            elif (
                 REDO.value(row[3]) != "gap"
                 or REDO.authoritative_details(row)[0] != "search-incomplete"
             ):
                 continue
-            key = REDO.value(row[0])
+            else:
+                match = re.search(r"census `([^`]+)`", " ".join(row))
+                selector = match[1] if match else None
             if key not in frozen:
                 # Admitted after this contract froze: its own region row records
                 # its search, under docs/openapi-surface-coverage.md's search rules.
                 continue
-            match = re.search(r"census `([^`]+)`", " ".join(row))
-            if not match or frozen[key] != match[1]:
+            if selector is None or frozen[key] != selector:
                 raise ValueError(
                     f"{name}/{key}: selector disagrees with frozen authority"
                 )
-            error = LOCAL.CENSUS.selector_error(match[1])
+            error = LOCAL.CENSUS.selector_error(selector)
             if error:
                 raise ValueError(error)
-            item = {"selector": match[1], "region": name}
+            item = {"selector": selector, "region": name}
             if key in result and result[key] != item:
                 raise ValueError(f"conflicting authoritative rows for {key}")
             result[key] = item
@@ -346,10 +381,13 @@ def validate(args) -> None:
     authority = baseline(args.regions, args.contract)
     # Frozen keys may later become golden; selectors remain tied to entry rows.
     all_selectors = {}
+    tracked = REGION_KEYS.tracked_selectors(args.regions)
     for name in REGIONS:
         for row in ROWS((args.regions / f"{name}.md").read_text(encoding="utf-8")):
             match = re.search(r"census `([^`]+)`", " ".join(row))
-            if match:
+            if REDO.value(row[3]) == "handwritten" and REDO.value(row[0]) in tracked:
+                all_selectors[REDO.value(row[0])] = tracked[REDO.value(row[0])]
+            elif match:
                 all_selectors[REDO.value(row[0])] = match[1]
     keys = dict(LOCAL.contract_keys(root / "keys.md"))
     expected = {k: v["selector"] for k, v in stored["keys"].items()}

@@ -638,6 +638,42 @@ class WitnessSearchRedoTests(unittest.TestCase):
         result = subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
         self.assertEqual(0, result.returncode, result.stderr)
 
+    def test_a_handwritten_row_is_held_to_its_contract_b_record(self) -> None:
+        """The amendment to the frozen contract: a row a hand-written fixture
+        covers keeps no inline history; its `search:` link must resolve to the
+        key's Contract B record and state that record's verdict."""
+        sys.path.insert(0, str(REPO / "tests"))
+        from region_flip import flipped_regions
+
+        supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
+        key = "annotated-ref-target-string-const"
+
+        def reconcile(schemas: Path) -> subprocess.CompletedProcess[str]:
+            command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in SHARDS),
+                       "--reconcile", "--schemas", str(schemas),
+                       "--candidates", str(ROOT / "candidates.md")]
+            if supplement.is_file():
+                command += ["--supplement-candidates", str(supplement)]
+            return subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
+
+        directory = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, directory)
+        schemas = flipped_regions(directory / "regions", key) / "schemas.md"
+        accepted = reconcile(schemas)
+        self.assertEqual(0, accepted.returncode, accepted.stderr)
+        flipped = schemas.read_text(encoding="utf-8")
+        for old, new, message in (
+            ("search: exhausted", "search: search-incomplete", "states ['exhausted'] for"),
+            ("(schemas.md#witness-search-exhaustive))", "(schemas.md#no-such-heading))", "no heading of `schemas.md` has the anchor"),
+            ("search: exhausted (", "search: exhausted, ", "its evidence cell must read"),
+        ):
+            with self.subTest(message=message):
+                schemas.write_text(flipped.replace(old, new, 1), encoding="utf-8")
+                refused = reconcile(schemas)
+                self.assertNotEqual(0, refused.returncode)
+                self.assertIn(f"reconciliation: schemas.md row {key}: ", refused.stderr)
+                self.assertIn(message, refused.stderr)
+
     def test_screened_witness_overrides_unanswered_sources_and_requires_retention(self) -> None:
         shards, schemas = self.completed_documents()
         key = self.contract_keys()[0][0]
@@ -1475,6 +1511,48 @@ class PostFreezeGapRowTests(unittest.TestCase):
         keys = json.loads((self.work / 'report' / 'baseline.json').read_text(encoding='utf-8'))['keys']
         self.assertIn(key, keys)
         self.assertNotIn('admitted-after-freeze', keys)
+
+    def test_a_flip_to_handwritten_keeps_the_baseline_the_shards_decide(self) -> None:
+        """A frozen key whose row a hand-written fixture moved stays reconciled.
+
+        Its row carries no inline outcome any more, so the shards decide its
+        membership: a `search-incomplete` key stays in the baseline with its
+        tracked selector, a `witness-found` one stays out, and the committed
+        wide report still validates over the flipped regions, which it can only
+        do by reading the flipped row's selector from the tracked file.
+        """
+        sys.path.insert(0, str(REPO / "tests"))
+        from region_flip import flipped_regions
+
+        before = self.derive()
+        self.assertEqual(0, before.returncode, before.stderr)
+        baseline = (self.work / 'report' / 'baseline.json').read_bytes()
+        kept, excluded = "annotated-ref-target-string-const", "oneof-bare-object-example-variant"
+        self.assertIn(kept, json.loads(baseline)['keys'])
+        self.assertNotIn(excluded, json.loads(baseline)['keys'])
+        for key in (kept, excluded):
+            with self.subTest(key=key):
+                regions = flipped_regions(self.work / f'flipped-{key}', key)
+                derived = self.cli('derive', '--report', self.work / f'report-{key}', '--regions', regions)
+                self.assertEqual(0, derived.returncode, derived.stderr)
+                self.assertEqual(baseline, (self.work / f'report-{key}' / 'baseline.json').read_bytes())
+                committed = REPO / 'docs/openapi-surface/witness-scrape-wide'
+                validated = self.cli('validate', '--report', committed, '--inventory',
+                                     committed / 'inventory.json.gz', '--regions', regions)
+                self.assertEqual(0, validated.returncode, validated.stderr)
+        regions = self.work / f'flipped-{kept}'
+        tracked = (regions / 'witness-search-keys.tsv').read_text(encoding='utf-8')
+        (regions / 'witness-search-keys.tsv').write_text(
+            tracked.replace(f'{kept}\t{self.frozen[kept]}', f'{kept}\tschema.oneOf', 1), encoding='utf-8')
+        refused = self.cli('derive', '--report', self.work / 'refused', '--regions', regions)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn(f'schemas/{kept}: selector disagrees with frozen authority', refused.stderr)
+        (regions / 'witness-search-keys.tsv').write_text(
+            ''.join(line for line in tracked.splitlines(keepends=True) if not line.startswith(f'{kept}\t')),
+            encoding='utf-8')
+        missing = self.cli('derive', '--report', self.work / 'missing', '--regions', regions)
+        self.assertNotEqual(0, missing.returncode)
+        self.assertIn(f'schemas/{kept}: handwritten, and no selector in witness-search-keys.tsv', missing.stderr)
 
     def test_a_frozen_key_whose_row_leaves_its_census_selector_still_fails(self) -> None:
         key, line = self.frozen_row()

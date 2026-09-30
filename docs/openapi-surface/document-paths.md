@@ -637,7 +637,7 @@ REGIONS = Path("docs/openapi-surface")
 region = (REGIONS / "document-paths.md").read_text()
 
 # --- the six region files hold one classification per feature -----------------
-CATEGORIES = {"golden", "limitations", "gap"}
+CATEGORIES = {"golden", "limitations", "handwritten", "gap"}
 
 
 def entries(text):

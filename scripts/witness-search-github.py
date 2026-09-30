@@ -136,6 +136,7 @@ INDEX = load("witness_github_index", REPO / "scripts/witness-search-github-index
 REGION_ROWS = load(
     "witness_github_rows", REPO / "tests/surface_census_test.py"
 ).RankedBacklogTests.region_rows
+REGION_KEYS = load("witness_github_region_keys", REPO / "scripts/witness-search-region-keys.py")
 
 
 def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
@@ -144,18 +145,30 @@ def derive_keys(regions: Path) -> dict[str, dict[str, str]]:
     paths = sorted(regions.glob("*.md"))
     if not paths:
         raise ValueError(f"no region files under {regions}")
+    # A `handwritten` row still has no real-specification witness, so it stays
+    # a search target, with the selector its failed search ran on.
+    tracked = REGION_KEYS.tracked_selectors(regions)
     for path in paths:
         region = path.stem
         for row in REGION_ROWS(path.read_text(encoding="utf-8")):
-            if row[3].strip("`") != "gap" or not re.search(r"\bFIXTURE\b", row[7]):
-                continue
             key = row[0].strip("`")
-            match = re.search(r"census `([^`]+)`", " ".join(row))
-            if match is None:
-                match = re.search(r"Shape read `([^`]+)`", " ".join(row))
-            if match is None:
-                raise ValueError(f"{region}/{key}: no selector in its own row")
-            selector = match.group(1)
+            if row[3].strip("`") == "handwritten":
+                if key not in tracked:
+                    raise ValueError(
+                        f"{region}/{key}: handwritten, and no selector in witness-search-keys.tsv; "
+                        "restore that file from git, or regenerate it with "
+                        "`scripts/witness-search-region-keys.py`"
+                    )
+                selector = tracked[key]
+            elif row[3].strip("`") != "gap" or not re.search(r"\bFIXTURE\b", row[7]):
+                continue
+            else:
+                match = re.search(r"census `([^`]+)`", " ".join(row))
+                if match is None:
+                    match = re.search(r"Shape read `([^`]+)`", " ".join(row))
+                if match is None:
+                    raise ValueError(f"{region}/{key}: no selector in its own row")
+                selector = match.group(1)
             keys[key] = {
                 "region": region,
                 "selector": selector,
@@ -1724,7 +1737,7 @@ def _main() -> int:
             encoding="utf-8",
         )
     if args.derive_only:
-        print(f"derived {len(keys)} FIXTURE gap keys")
+        print(f"derived {len(keys)} FIXTURE gap keys and handwritten keys")
         return 0
     if not args.source or not args.stage:
         parser.error("--source and --stage are required except for --derive-only")
