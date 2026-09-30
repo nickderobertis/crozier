@@ -455,10 +455,11 @@ fn enum_words(value: &str) -> String {
     // which the template `${words}_${rest}` writes literally — People Data Labs'
     // `10001+` is the member `UNDEFINED`.
     let value_leads_with_digit = value.starts_with(|c: char| c.is_ascii_digit());
-    // A value whose *first* word is a zero-led digit run it does not start with
-    // names a member Fern refuses (`_01_00_AM` would lead with a digit), so
-    // crozier's legal fallback keeps it as written. Started with, the run is
-    // spelled above and collapses like any other: `01_00_AM` is `ONE00AM`.
+    // Whether the member *name* leads with a zero-led digit run: the value's
+    // first word is one and the value does not start with it, so nothing below
+    // spells it. Fern refuses such a name (`_01_00_AM` would lead with a digit),
+    // and crozier's legal fallback keeps it as written. A run the value starts
+    // with is spelled, so that name leads with a word: `01_00_AM` is `ONE00AM`.
     let leads_with_zero_led_digits = !value_leads_with_digit
         && value.contains('_')
         && words.first().is_some_and(|word| {
