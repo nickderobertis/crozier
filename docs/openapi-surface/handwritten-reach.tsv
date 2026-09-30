@@ -23,6 +23,7 @@ nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Bui
 nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
+ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
 ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11
 ref-pointer-walk	array-item-pointer-walk-anyof	src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	7	11
 ref-pointer-walk	array-item-pointer-walk-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
@@ -34,4 +35,3 @@ ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]
 ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
-ref-pointer-walk	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]	35	50

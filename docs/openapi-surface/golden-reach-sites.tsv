@@ -339,7 +339,7 @@ ref-pointer-nested-properties	schema.$ref:nested-properties	src/ir.rs::ref_to_cl
 ref-pointer-nested-items	schema.$ref:nested-items	src/ir.rs::ref_to_class["items" => \{],src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	
 ref-pointer-composition-index	schema.$ref:composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{],src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{],src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]	
 ref-pointer-unnamed-segment	schema.$ref:unnamed-segment	src/ir.rs::ref_to_class[=_ => index \+= 1],src/ir.rs::resolve_schema_pointer[=_ => return None]	
-ref-pointer-undeclared-component-head	schema.$ref:undeclared-component-head	src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]	
+ref-pointer-undeclared-component-head	schema.$ref:undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	
 annotated-ref-property	schema.properties>schema.allOf:annotated-ref	src/ir.rs::InlineHoister::prop_type_ref[^ {8}\{$],src/ir.rs::described_all_of_ref	
 annotated-ref-target-string-enum	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued	src/ir.rs::InlineHoister::prop_type_ref[string_enum_values\(&target\) \{]	
 annotated-ref-target-anyof	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)],src/ir.rs::InlineHoister::hoist_named_copy	

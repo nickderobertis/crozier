@@ -1,0 +1,18 @@
+# The branch this fixture proves is the head-miss early return of
+# `resolve_schema_pointer`: the trailing `?` of `schemas.get(parts.next()?)?`,
+# the one region its covered site holds (`src/ir.rs` 11377:48-49 when
+# measured). `Hidden` is declared but `x-fern-ignore`d, so `filter_ignored`
+# removes it after `normalize_unresolvable_schema_refs` has run, and the
+# pointer in `parts` walks to a head that is gone. Measured on the site: this
+# fixture 1/1; the same document without `x-fern-ignore` (quoted in the cited
+# record) 0/1; `ref-pointer-walk` 0/1; the goldens 0/1. The record's
+# `exhausted` verdict rests on that structural argument, not on its probes.
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "452fe88929436bb183c7705ad0813ff737ca47b5df6347ca61ce5738b1813b4a"
+
+[[covers]]
+key = "ref-pointer-undeclared-component-head"
+arm = 'src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md#witness-search-exhaustive"
+verdict = "exhausted"

@@ -45,12 +45,6 @@ search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-neste
 verdict = "exhausted"
 
 [[covers]]
-key = "ref-pointer-undeclared-component-head"
-arm = 'src/ir.rs::resolve_schema_pointer[let mut schema = schemas\.get\(parts\.next\(\)\?\)\?]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md#witness-search-exhaustive"
-verdict = "exhausted"
-
-[[covers]]
 key = "array-item-pointer-walk-allof"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-allof.md#witness-search-exhaustive"
