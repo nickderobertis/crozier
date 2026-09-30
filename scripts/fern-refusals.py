@@ -520,7 +520,7 @@ def diagnostics(log: str) -> list[str]:
         elif "[error] " in text:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
-                r"Failed to (resolve|parse openapi document)|Unsupported |\w*(Error|Exception)\b.*:", api.group(1)):
+                r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |\w*(Error|Exception)\b.*:", api.group(1)):
             message = api.group(1)
         message = message.strip()
         if message and message not in found:

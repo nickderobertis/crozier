@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /assets:
+    get:
+      operationId: getAsset
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Asset'}
+components:
+  schemas:
+    Asset:
+      type: object
+      required: [_t]
+      oneOf:
+        - $ref: '#/components/schemas/ImageAsset'
+        - $ref: '#/components/schemas/TextAsset'
+      discriminator:
+        propertyName: _t
+        mapping:
+          ImageAsset: '#/components/schemas/ImageAsset'
+          TextAsset: '#/components/schemas/TextAsset'
+    ImageAsset:
+      type: object
+      required: [_t]
+      properties:
+        _t: {type: string}
+        width: {type: integer}
+    TextAsset:
+      type: object
+      required: [_t]
+      properties:
+        _t: {type: string}
+        text: {type: string}

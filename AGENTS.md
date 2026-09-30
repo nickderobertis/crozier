@@ -100,6 +100,10 @@ Use the `just` recipes; do not hand-roll equivalents.
   `link-ok` corpus specs (not vendored) and byte-compare crozier's output against
   the committed Fern goldens. Needs network; runs in the CI live-e2e leg, and the
   byte-diff tests skip when a spec is unfetched (so `check` stays offline).
+- `just test-corpus-match-strict` — the same byte-match with `fern-strict` on,
+  so a refusal class that refuses a document Fern generates from fails it. The
+  classes, their probes and the refused-document population live in
+  [`docs/fern-refusals/`](docs/fern-refusals/README.md).
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fern-goldens` / `just fern-goldens-generate` / `just
   fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;

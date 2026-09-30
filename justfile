@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard test-fern-refusals fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -513,6 +513,12 @@ lint-licence-rescreening:
 # discriminating fails here instead of passing silently. Part of `check`.
 test-licence-rescreening:
     python3 tests/licence_rescreening_test.py
+
+# The Fern refusal registry's population tables (docs/fern-refusals/) against
+# the committed records they are built from: scripts/fern-refusals.py `check`
+# over the real tree, `build` reproducing it, and drift cases that must fail.
+test-fern-refusals:
+    python3 tests/fern_refusals_test.py
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
