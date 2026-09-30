@@ -450,20 +450,22 @@ fn enum_words(value: &str) -> String {
         }
     }
     let mut words = split_words(&spaced);
-    // A value whose *first* word is a zero-led digit run names a member Fern
-    // refuses (`_01_00_AM` would lead with a digit), so crozier's legal
-    // fallback keeps it as written.
-    let leads_with_zero_led_digits = value.contains('_')
-        && words.first().is_some_and(|word| {
-            word.len() > 1
-                && word.starts_with('0')
-                && word.bytes().all(|byte| byte.is_ascii_digit())
-        });
     // Fern spells the value's own leading digit run (`VFt`): `parseFloat` reads
     // its leading zeros away, and past 9,999 its speller returns `undefined`,
     // which the template `${words}_${rest}` writes literally — People Data Labs'
     // `10001+` is the member `UNDEFINED`.
     let value_leads_with_digit = value.starts_with(|c: char| c.is_ascii_digit());
+    // A value whose *first* word is a zero-led digit run it does not start with
+    // names a member Fern refuses (`_01_00_AM` would lead with a digit), so
+    // crozier's legal fallback keeps it as written. Started with, the run is
+    // spelled above and collapses like any other: `01_00_AM` is `ONE00AM`.
+    let leads_with_zero_led_digits = !value_leads_with_digit
+        && value.contains('_')
+        && words.first().is_some_and(|word| {
+            word.len() > 1
+                && word.starts_with('0')
+                && word.bytes().all(|byte| byte.is_ascii_digit())
+        });
     if let Some(first) = words.first_mut() {
         let digits = first.bytes().take_while(u8::is_ascii_digit).count();
         if digits > 0 {
@@ -1235,6 +1237,11 @@ mod tests {
         );
         // Fern refuses a name led by one; crozier keeps it as written.
         assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
+        // A value that *starts* with the run has it spelled, so nothing is left
+        // leading and the rest collapses: Fern 5.20.0 names `01_00_AM`'s member
+        // `ONE00AM` (the `enum-leading-zero-member-refused-control` probe).
+        assert_eq!(enum_member_name("01_00_AM"), "ONE00AM");
+        assert_eq!(enum_visit_param("01_00_AM"), "one00am");
         // A zero-led value that is a number whole is spelled as that number
         // (Adyen's challenge indicators, corpus row 229's golden).
         assert_eq!(enum_member_name("01"), "ONE");
