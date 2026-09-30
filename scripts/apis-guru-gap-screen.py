@@ -103,7 +103,11 @@ def selectors_from_regions(regions: Path) -> dict[str, str]:
                 continue
             if category == "handwritten":
                 if key not in tracked:
-                    raise ValueError(f"{path}: handwritten row {key!r} has no selector in witness-search-keys.tsv")
+                    raise ValueError(
+                        f"{path}: handwritten row {key!r} has no selector in witness-search-keys.tsv; "
+                        "restore that file from git, or regenerate it with "
+                        "`scripts/witness-search-region-keys.py`"
+                    )
                 found[key] = tracked[key]
                 continue
             open_fixture = category == "gap" and "FIXTURE" in cells[7]
