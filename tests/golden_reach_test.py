@@ -967,6 +967,8 @@ class ArmSearchStageTests(_StageScratch):
                 ["walk", "--source", "jentic", "--root", str(self.root), "--key", self.KEY, "--jobs", "1"]))
         unread = golden_reach_search.local_copies("jentic", self.root, fetch=False)
         self.assertEqual({"jentic-public-apis:c.yaml", "other-tree:c.yaml"}, set(unread))
+        if importlib.util.find_spec("ruamel") is None:
+            self.skipTest("ruamel.yaml, the YAML 1.2 parser `refuse` reads YAML with, is not installed")
         (self.root / "c.yaml").write_bytes((other / "c.yaml").read_bytes())
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["refuse", "--source", "jentic", "--root", str(self.root)]))
