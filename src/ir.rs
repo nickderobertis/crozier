@@ -11215,15 +11215,6 @@ impl Builder<'_> {
     }
 }
 
-/// Collapse duplicate union members, keeping the *last* occurrence's position.
-///
-/// Fern renders each alternative and then folds equal renderings together where
-/// the final one stood: probed at 5.20.0, `oneOf: [string, integer, string/uri]`
-/// generates `typing.Union[int, str]` — the surviving `str` sits at the `uri`
-/// member's index, not the bare `string`'s. Eozilla's twelve-member `InlineValue`
-/// is the same rule at scale: its `binary`, `uri` and bare `string` alternatives
-/// all render `str`, and the ten-member union Fern emits carries one `str`,
-/// after `dt.datetime`.
 /// The one type a union's alternatives all convert to, where Fern's
 /// `processSubtypes` makes the union that type rather than an alias of it.
 /// Alternatives that merely *render* alike as `Any` stay a union, unless the
@@ -11239,6 +11230,15 @@ fn collapsed_union(members: &[Schema], variants: &[TypeRef]) -> Option<TypeRef> 
     (written_twice || *only != TypeRef::Primitive(Prim::Any)).then(|| only.clone())
 }
 
+/// Collapse duplicate union members, keeping the *last* occurrence's position.
+///
+/// Fern renders each alternative and then folds equal renderings together where
+/// the final one stood: probed at 5.20.0, `oneOf: [string, integer, string/uri]`
+/// generates `typing.Union[int, str]` — the surviving `str` sits at the `uri`
+/// member's index, not the bare `string`'s. Eozilla's twelve-member `InlineValue`
+/// is the same rule at scale: its `binary`, `uri` and bare `string` alternatives
+/// all render `str`, and the ten-member union Fern emits carries one `str`,
+/// after `dt.datetime`.
 fn dedupe_union_members(members: Vec<TypeRef>) -> Vec<TypeRef> {
     let mut out = Vec::with_capacity(members.len());
     for (index, member) in members.iter().enumerate() {
