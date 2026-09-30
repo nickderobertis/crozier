@@ -1,0 +1,19 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Open Build Service API
+[api]: Failed to resolve #/paths/~1architectures/get/responses/401 
+       CliError: Failed to resolve #/paths/~1architectures/get/responses/401
+           at bkt.resolveResponseReference (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:37157)
+           at Ewf (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:118800)
+           at N1r (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:114735)
+           at kue (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:122958)
+           at Hro (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:136726)
+           at gsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:137996)
+           at /home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147167
+           at Array.forEach (<anonymous>)
+           at Wsc (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:147122)
+           at ZNe (/home/whoop/.npm/_npx/cabd989ada0defb0/node_modules/fern-api/cli.cjs:210:154518)
+All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+exit 0
