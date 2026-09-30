@@ -59,6 +59,13 @@
           ],
           "description": "How generated pydantic models treat unknown fields (Fern's\n`pydantic_config.extra_fields`). Python-generator-specific, so it lives\nhere and not among the shared top-level defaults. Defaults to\n[`ExtraFields::Allow`] when unset."
         },
+        "fern-strict": {
+          "description": "Strict Fern compatibility: refuse to generate from a document Fern\nrefuses, even where crozier's own output would be valid. Never changes a\nbyte of an SDK that is written.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "output": {
           "description": "Directory to write the generated SDK into.",
           "type": [
@@ -138,6 +145,13 @@
       "description": "Shared default root client class name.",
       "type": [
         "string",
+        "null"
+      ]
+    },
+    "fern-strict": {
+      "description": "Shared default strict-Fern-compatibility flag.",
+      "type": [
+        "boolean",
         "null"
       ]
     },

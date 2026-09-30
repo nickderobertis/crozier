@@ -34,12 +34,13 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
   `--client-class-name`, `--audience` (repeatable), `--audience-strict`,
-  `--extra-fields`. These apply to a *single* generator; passing them while more
+  `--fern-strict`, `--extra-fields`. These apply to a *single* generator; passing them while more
   than one would run is an error (name one, or move the values into the config
   file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
   `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
-  (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`. Empty
+  (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`,
+  `CROZIER_EXTRA_FIELDS`. Empty
   values count as unset. These are a global override layer applied to every
   selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
@@ -49,7 +50,8 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
   title; `project-name` defaults to the package name; `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
-  whole API); `extra-fields` defaults to `allow`. `spec` and `output` have no
+  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to
+  `allow`. `spec` and `output` have no
   default — a generator resolved without either is an actionable error.
 
 ## The config file
@@ -78,6 +80,7 @@ package-name: my_api
 project-name: my-api
 audiences: [public]
 audience-strict: false
+fern-strict: false        # see "Strict Fern compatibility" below
 
 generators:
   python:
@@ -89,6 +92,7 @@ generators:
     client-class-name: MyApi   # defaults to {PascalCase(package-name)}Api
     audiences: [public]
     audience-strict: false
+    fern-strict: false
     extra-fields: allow        # allow|ignore|forbid — pydantic behavior for unknown
                                # response fields (Python-generator-specific; not a
                                # shared top-level field)
@@ -97,6 +101,19 @@ generators:
     output: ./sdks/admin
     package-name: admin_api
 ```
+
+### Strict Fern compatibility
+
+Fern refuses some documents outright — its `fern check` fails, its generator
+exits non-zero, or it reports success over a document it could not parse —
+where crozier can still emit an SDK. By default crozier generates wherever its
+output is valid and useful; `fern-strict: true` (or `--fern-strict`, or
+`CROZIER_FERN_STRICT=true`) makes it refuse those documents too, matching Fern.
+A refusal exits 1, writes nothing to the output directory, and prints one line
+naming the refusal class, the offending element, and that `fern-strict` caused
+it. The setting only ever decides *whether* an SDK is written, never a byte of
+one that is. The classes of input it governs, and how each was measured, are
+registered in [`fern-refusals/`](fern-refusals/README.md).
 
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.

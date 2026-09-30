@@ -10766,6 +10766,7 @@ const CROZIER_ENV_VARS: &[&str] = &[
     "CROZIER_CLIENT_CLASS_NAME",
     "CROZIER_AUDIENCES",
     "CROZIER_AUDIENCE_STRICT",
+    "CROZIER_FERN_STRICT",
     "CROZIER_EXTRA_FIELDS",
 ];
 
@@ -11399,6 +11400,7 @@ fn config_labels_the_layer_every_field_came_from() {
         // Also set at the shared top level: the generator's list wins.
         ("audiences", "public", "generator"),
         ("audience-strict", "true", "env"),
+        ("fern-strict", "false", "default"),
         ("extra-fields", "forbid", "generator"),
     ];
     assert_eq!(rows.len(), expected.len(), "{stdout}");
@@ -11429,7 +11431,13 @@ fn config_labels_the_layer_every_field_came_from() {
             source, "default",
             "{field} should fall to the default layer"
         );
-        let expected = if field == "type" { "python" } else { "(unset)" };
+        let expected = match field.as_str() {
+            "type" => "python",
+            // Strict Fern compatibility is off unless a layer turns it on, and
+            // `config` shows the `false` a run would use.
+            "fern-strict" => "false",
+            _ => "(unset)",
+        };
         assert_eq!(value, expected, "{field}");
     }
 }
@@ -11584,6 +11592,182 @@ fn init_writes_a_config_a_later_run_generates_from() {
             .is_file(),
         "the starter config's `output`/defaults should generate as written"
     );
+}
+
+/// The `fern-strict` row `crozier config` prints for `generator` in `dir`, with
+/// exactly the environment `env` sets, as `(value, source)`.
+fn fern_strict_row(dir: &Path, env: &[(&str, &str)], args: &[&str]) -> (String, String) {
+    let mut command = crozier_clean_env();
+    command.current_dir(dir);
+    for (name, value) in env {
+        command.env(name, value);
+    }
+    let out = command
+        .args(args)
+        .arg("config")
+        .output()
+        .expect("run crozier config");
+    let stdout = String::from_utf8(out.stdout).expect("utf-8 stdout");
+    assert!(
+        out.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    config_rows(&stdout, "python")
+        .into_iter()
+        .find(|(field, _, _)| field == "fern-strict")
+        .map(|(_, value, source)| (value, source))
+        .unwrap_or_else(|| panic!("`crozier config` printed no fern-strict row:\n{stdout}"))
+}
+
+#[test]
+fn fern_strict_resolves_through_every_layer_through_the_binary() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    std::fs::write(dir.path().join("api.yml"), TINY_SPEC_WITH_OP).unwrap();
+    let pair = |value: &str, source: &str| (value.to_string(), source.to_string());
+
+    // No layer sets it: off, from the built-in default.
+    assert_eq!(
+        fern_strict_row(dir.path(), &[], &[]),
+        pair("false", "default")
+    );
+
+    // The shared top level, then the generator's own entry over it.
+    let config = dir.path().join("crozier.yml");
+    std::fs::write(
+        &config,
+        "spec: ./api.yml\nfern-strict: true\ngenerators:\n  python:\n    output: ./out\n",
+    )
+    .unwrap();
+    assert_eq!(
+        fern_strict_row(dir.path(), &[], &[]),
+        pair("true", "shared")
+    );
+    std::fs::write(
+        &config,
+        "spec: ./api.yml\nfern-strict: true\ngenerators:\n  python:\n    output: ./out\n    fern-strict: false\n",
+    )
+    .unwrap();
+    assert_eq!(
+        fern_strict_row(dir.path(), &[], &[]),
+        pair("false", "generator")
+    );
+
+    // The environment beats both config layers, and `--no-config` drops it with
+    // them rather than carrying it silently.
+    let env_on = [("CROZIER_FERN_STRICT", "true")];
+    assert_eq!(
+        fern_strict_row(dir.path(), &env_on, &[]),
+        pair("true", "env")
+    );
+    assert_eq!(
+        fern_strict_row(dir.path(), &env_on, &["--no-config"]),
+        pair("false", "default")
+    );
+
+    // A value that is not a boolean is refused before anything is written.
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .env("CROZIER_FERN_STRICT", "sometimes")
+        .args(["generate", "python"])
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicate::str::contains(
+            "`CROZIER_FERN_STRICT` must be `true` or `false`",
+        ));
+    assert!(!dir.path().join("out").exists());
+
+    // The CLI flag is the top layer. Strict mode only decides whether an SDK is
+    // written, so over a document no refusal class covers it writes the very
+    // bytes the default mode does.
+    for (label, flag, env) in [
+        ("default", None, "false"),
+        ("flag", Some("--fern-strict"), "false"),
+        ("env", None, "true"),
+    ] {
+        crozier_clean_env()
+            .current_dir(dir.path())
+            .env("CROZIER_FERN_STRICT", env)
+            .args(["generate", "python", "--output"])
+            .arg(format!("./{label}"))
+            .args(flag)
+            .assert()
+            .success()
+            .stderr(predicate::str::contains("generated"));
+    }
+    let tree = |label: &str| {
+        let root = dir.path().join(label);
+        let mut files = walk_files(&root);
+        files.sort();
+        files
+            .into_iter()
+            .map(|rel| {
+                let bytes = std::fs::read(root.join(&rel)).expect("read generated file");
+                (rel, bytes)
+            })
+            .collect::<Vec<_>>()
+    };
+    let default_tree = tree("default");
+    assert!(!default_tree.is_empty());
+    assert_eq!(default_tree, tree("flag"), "--fern-strict changed the SDK");
+    assert_eq!(
+        default_tree,
+        tree("env"),
+        "CROZIER_FERN_STRICT changed the SDK"
+    );
+}
+
+#[test]
+fn init_starter_carries_fern_strict_and_the_schema_documents_it() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    crozier_clean_env()
+        .current_dir(dir.path())
+        .arg("init")
+        .assert()
+        .success();
+    let starter = std::fs::read_to_string(dir.path().join("crozier.yml")).expect("init wrote");
+    assert!(
+        starter
+            .lines()
+            .any(|line| line.starts_with("# fern-strict: false")),
+        "the starter should show fern-strict at its shared top level:\n{starter}"
+    );
+    // As written, the starter leaves it off...
+    assert_eq!(
+        fern_strict_row(dir.path(), &[], &[]),
+        ("false".into(), "default".into())
+    );
+    // ...and uncommenting the line turns it on for every generator.
+    std::fs::write(
+        dir.path().join("crozier.yml"),
+        starter.replace("# fern-strict: false", "fern-strict: true"),
+    )
+    .unwrap();
+    assert_eq!(
+        fern_strict_row(dir.path(), &[], &[]),
+        ("true".into(), "shared".into())
+    );
+
+    let schema = crozier_clean_env()
+        .arg("schema")
+        .output()
+        .expect("run crozier schema");
+    assert!(schema.status.success());
+    let printed: serde_json::Value =
+        serde_json::from_slice(&schema.stdout).expect("schema stdout is valid JSON");
+    for at in [
+        &printed["properties"]["fern-strict"],
+        &printed["$defs"]["GeneratorSettings"]["properties"]["fern-strict"],
+    ] {
+        assert!(
+            at["description"].as_str().is_some_and(|d| !d.is_empty())
+                && at["type"]
+                    .as_array()
+                    .is_some_and(|t| t.contains(&"boolean".into())),
+            "`crozier schema` should document fern-strict as a boolean: {at}"
+        );
+    }
 }
 
 /// A local HTTP server for the remote-`$ref` journeys.

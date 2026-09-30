@@ -22,6 +22,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds");
@@ -44,6 +45,7 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds")
@@ -64,6 +66,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds")
@@ -585,6 +588,7 @@ fn generate_writes_files_to_disk() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("generate succeeds");
@@ -609,6 +613,7 @@ fn default_package_name_derives_from_title() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .unwrap();
@@ -1294,6 +1299,7 @@ fn empty_title_falls_back_to_client_package() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .unwrap();
@@ -1906,6 +1912,7 @@ fn api_key_scheme_without_name_is_rejected() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect_err("missing apiKey name must fail");
@@ -1969,6 +1976,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         client_class_name: Some("AcmeSdk".to_string()),
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds")
@@ -2094,6 +2102,7 @@ fn render_with_audiences_mode(
         client_class_name: None,
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
         audience_strict: strict,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds");
@@ -6332,6 +6341,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
     })
     .expect("render succeeds");

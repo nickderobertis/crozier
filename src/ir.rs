@@ -17014,6 +17014,7 @@ mod tests {
             client_class_name: None,
             audiences: Vec::new(),
             audience_strict: false,
+            fern_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
         })
         .expect("render succeeds");

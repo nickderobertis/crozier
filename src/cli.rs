@@ -135,6 +135,12 @@ struct GenerateCmd {
     #[arg(long = "audience-strict")]
     audience_strict: bool,
 
+    /// Strict Fern compatibility: refuse to generate from a document Fern
+    /// refuses, even where crozier's own output would be valid. Never changes a
+    /// byte of an SDK that is written.
+    #[arg(long = "fern-strict")]
+    fern_strict: bool,
+
     /// How generated pydantic models treat unknown fields on a response (Fern's
     /// `pydantic_config.extra_fields`). `allow` (default) keeps them, `ignore`
     /// drops them silently, `forbid` rejects them.
@@ -155,6 +161,7 @@ impl GenerateCmd {
             client_class_name: self.client_class_name.clone(),
             audiences: (!self.audiences.is_empty()).then(|| self.audiences.clone()),
             audience_strict: self.audience_strict.then_some(true),
+            fern_strict: self.fern_strict.then_some(true),
             extra_fields: self.extra_fields,
         }
     }
@@ -260,6 +267,7 @@ const STARTER_CONFIG: &str = "\
 #
 # Top-level keys are shared defaults inherited by every generator.
 spec: ./openapi.yml
+# fern-strict: false  # true refuses, as Fern does, documents Fern cannot generate from
 
 generators:
   # The built-in Python generator. `crozier generate python` runs this;

@@ -63,6 +63,12 @@ pub struct GenerateArgs {
     /// `pydantic_config.extra_fields`) — drives every model's `model_config` /
     /// `Config` `extra`.
     pub extra_fields: settings::ExtraFields,
+    /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
+    /// document crozier would otherwise generate from. It only ever decides
+    /// whether an SDK is written, never a byte of one that is. The classes it
+    /// refuses are registered in `docs/fern-refusals/`; none is evaluated yet,
+    /// so today it refuses nothing crozier's default mode generates.
+    pub fern_strict: bool,
 }
 
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
