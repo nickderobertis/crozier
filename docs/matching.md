@@ -44,7 +44,9 @@ strips comments from crozier's output with the **same** stripper that produced
 the committed fixtures (`crozier::strip_python_comments`, exposed as
 `crozier internal-strip`), and asserts equality against
 `tests/fixtures/<api>/expected/**`. Comment stripping is the *only* normalization
-— everything else must match exactly.
+— everything else must match exactly. The flat goldens (`expected-flat/`, see
+[The flat layout](#the-flat-layout)) are compared the same way against
+`crozier generate --layout flat`.
 
 ## Parity status and the residual manifest
 
@@ -1446,6 +1448,121 @@ OpenAPI document, so pinning one needs no new spec, only a second corpus name
 over a registered source with its own `fern-generator-config.txt` entry. Its
 four models carry `extra="forbid"` in the v2 `model_config` and
 `pydantic.Extra.forbid` in the v1 `Config`, and all 42 files byte-match.
+
+## The flat layout
+
+Fern writes two different trees. `fern generate --preview --output <dir>` writes
+the **packaged** SDK every `expected/` golden holds. A generator whose `output` is
+`location: local-file-system` with a `path`, run with `fern generate --local` and
+no `--preview`, writes a **flat** module tree. crozier writes the second with
+`layout: flat` (`--layout flat`, `CROZIER_LAYOUT=flat`; see
+[`configuration.md`](configuration.md#output-layout)). Everything below was
+measured with real Fern at the certified pair (CLI 5.67.1,
+`fernapi/fern-python-sdk` 5.20.0) and is pinned by the flat goldens.
+
+**The tree.** At the output root Fern's flat run writes:
+
+- the package's modules, as the packaged form has them under `src/<package>/`,
+  except `py.typed` and `version.py`, which it omits;
+- `README.md`, `CONTRIBUTING.md`, `reference.md` and `.fern/metadata.json`,
+  byte-identical to the packaged ones;
+- `tests/conftest.py` and `tests/test_aiohttp_autodetect.py`;
+- no `pyproject.toml` and no `requirements.txt`.
+
+**The code.** The flat modules differ from their packaged form in these places,
+and crozier's flat output reproduces each:
+
+1. `__init__.py` has no `__version__`: no `from .version import __version__`, no
+   lazy-import entry for it, and no `__all__` member.
+2. The aiohttp install hint in `_default_clients.py`, and the matching assertion
+   in `tests/test_aiohttp_autodetect.py`, name the **package** (module) name
+   where the packaged form names the **project** (distribution) name:
+   `pip install fern[aiohttp]` flat against `pip install
+   default_package_name[aiohttp]` packaged, for the default names. Ruff lays the
+   hint's `raise` out by the name's length: on one line when it fits in 120
+   columns (a flat `fern`), split over three lines otherwise, with the string
+   itself split when even that overflows. crozier joins the short form only in
+   the flat layout. Fern's packaged `my_pkg` measured one line too, but the
+   packaged output is held byte-for-byte to what it was before `layout` existed,
+   and no packaged golden has a name that short.
+3. `core/client_wrapper.py` sends no `X-Fern-SDK-Name` or `X-Fern-SDK-Version`
+   header. The gate normalizes those two lines off both sides
+   ([SDK-identity headers](#crozier-vs-fern-sdk-identity-headers)), so crozier's
+   flat wrapper is pinned by the in-process test
+   `flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging` instead.
+4. Fern's isort pass gives the SDK's own import in
+   `tests/test_aiohttp_autodetect.py` a first-party section only when ruff can
+   find the package. That is always true in the packaged tree (`src/<package>/`),
+   but in the flat tree it holds only for a package named `fern`, which ruff
+   resolves inside Fern's `/fern` container. A flat `acme` or `my_pkg` joins
+   `import httpx_aiohttp` with no blank line between them.
+
+One further difference is an artifact of where Fern runs rather than of the
+layout. Fern stamps `originGitCommit` and `originGitCommitIsDirty` into
+`.fern/metadata.json` when its workspace sits inside a git repository.
+`scripts/generate-fern-fixture.sh` runs Fern in a temporary directory outside
+any repository in both modes, so no golden carries either key.
+
+**Names.** Fern names the module, the `{Organization}Api` client class and the
+README heading (`# Acme Python Library`, and the shield's `utm_source`) from
+the workspace **organization** in `fern.config.json`. crozier derives all three
+from `--package-name`, so the Fern input matching crozier's package name is the
+organization. The flat README's shield `utm_source` follows that
+package-derived organization, as the `acme` golden below measured. The packaged
+README keeps the fixed `Fern` it has always carried, which every
+`fern`-organization golden matches. The seed golden's `Seed%2FPython` shows
+Fern's packaged shield follows the organization too, but aligning it would move
+packaged output, which the setting leaves untouched. Fern's own
+`package_name` option is a different knob. With `package_name: my_pkg` it
+renamed the module and the distribution, but the client stayed `FernApi` and
+the README heading stayed `# Fern Python Library`. crozier cannot set the
+README heading apart from the package name, so a Fern setup whose
+`package_name` differs from its organization is outside what crozier
+reproduces, in either layout.
+
+No Fern option at the certified pair sets the **project** (distribution) name
+apart from the package name:
+
+- `package_name: my_pkg` set both (`name = "my_pkg"` in the packaged
+  `pyproject.toml`, `metadata.version("my_pkg")`).
+- A `location: pypi` output with `package-name: my-project` left the packaged
+  distribution `my_pkg` under `--preview`.
+- The flat run refuses a `pypi` output outright without a real `FERN_TOKEN`.
+
+Fern's default distribution name is `default_package_name`. The flat tree has no
+distribution at all: its README installs the package name, and nothing else in
+it names the project. So crozier's flat output is identical whatever
+`project-name` says (`flat_output_carries_no_project_name`), and the
+custom-package-name golden, driven with project name `acme-dist`, stands for a
+custom project name too. A non-`fern` organization also gets only the flat tree
+from the dummy `FERN_TOKEN` (`--preview` falls back to it), so the packaged
+goldens keep the `fern` organization.
+
+**The flat goldens.** A fixture's flat golden sits beside its packaged one as
+`tests/fixtures/<fixture>/expected-flat/`. It is produced by
+`scripts/generate-fern-fixture.sh --layout flat` (or by the Fern goldens
+workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
+as `expected/` is, with `"layout": "flat"` added to its
+`.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
+declares every one. Between them they exercise every setting that changes the
+flat tree:
+
+| Flat golden | Setting it pins |
+| --- | --- |
+| `exhaustive` | the default names (`fern`, `default_package_name`) over the broadest spec |
+| `client-class-name` | `client-class-name: AcmeClient` |
+| `audience-filter-strict` | `audiences: [public]` with `audience-strict: true` |
+| `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |
+| `exhaustive-package-name` | package `acme` (Fern organization `acme`) and project `acme-dist`, over `exhaustive`'s spec |
+
+`exhaustive-package-name` has no spec of its own: its `flat-goldens.txt` row
+names `exhaustive`, whose vendored document it generates from. That keeps it
+out of the source census, which counts documents, not goldens. The corpus gate
+runs one `*_flat_matches_fern` test per golden (`tests/e2e.rs::FLAT_GOLDENS`,
+held to the table and to the directories on disk). `just fixtures-gaps` and
+`just fixtures-diff` report the flat goldens after the packaged ones, labelled
+`(expected-flat)`. A flat golden has no `unmatched` list: every difference is a
+regression.
 
 ## Cross-document `$ref` resolution (issue #77)
 

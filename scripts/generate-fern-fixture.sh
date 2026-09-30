@@ -2,9 +2,13 @@
 # Generate Fern's Python SDK output for a fixture's OpenAPI spec, strip comments,
 # and install it as that fixture's golden `expected/` tree.
 #
-# Produces the *packaged* SDK (a pip package: `src/<pkg>/…` + pyproject.toml +
-# README.md/reference.md + .fern/) via `fern generate --preview`, which is the form
-# the committed corpus vendors and needs no publishing credentials. String enums
+# By default produces the *packaged* SDK (a pip package: `src/<pkg>/…` +
+# pyproject.toml + README.md/reference.md + .fern/) via `fern generate --preview`,
+# which is the form the committed corpus vendors and needs no publishing
+# credentials. `--layout flat` instead produces Fern's *flat* module tree — what
+# `fern generate --local` writes to a `local-file-system` output path without
+# `--preview` — and installs it as the fixture's `expected-flat/` golden. A flat
+# golden must be declared in tests/fixtures/flat-goldens.txt. String enums
 # render as real `enum.Enum` classes (`pydantic_config.enum_type: python_enums`) to
 # match crozier — see docs/matching.md.
 #
@@ -18,22 +22,44 @@
 #   - fern CLI:  npm i -g fern-api    (invoked as `fern`)
 #   - crozier built (for the comment stripper):  cargo build --release
 #
-# Usage:  scripts/generate-fern-fixture.sh [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
+# Usage:  scripts/generate-fern-fixture.sh [--layout packaged|flat] [FIXTURE] [FERN_PYTHON_VERSION] [SPEC_PATH] [DEST_PATH]
+#   --layout            `packaged` (default) installs expected/; `flat` installs
+#                       expected-flat/ from Fern's local-file-system output.
 #   FIXTURE             fixture dir under tests/fixtures/ (default: exhaustive).
 #                       e.g. auth-schemes, inline-request-response, integer-enums.
 #   FERN_PYTHON_VERSION defaults to the latest stable tag resolved by the same
 #                       Docker Hub distribution lookup as `fern-goldens`.
 #   SPEC_PATH           optional OpenAPI file to generate from instead of
-#                       tests/fixtures/<fixture>/openapi.yml; useful for fetched,
-#                       unvendored source specs.
+#                       tests/fixtures/<fixture>/openapi.yml (or, for a flat
+#                       golden, the spec its flat-goldens.txt row names); useful
+#                       for fetched, unvendored source specs.
 #   DEST_PATH           optional automation-only destination. It must be an
-#                       `expected` directory below this fixture; the default is
-#                       tests/fixtures/<fixture>/expected.
+#                       `expected` (packaged) or `expected-flat` (flat) directory
+#                       below this fixture; the default is
+#                       tests/fixtures/<fixture>/expected[-flat].
 set -euo pipefail
 
 . "$(cd "$(dirname "$0")" && pwd)/lib.sh"
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+
+LAYOUT=packaged
+if [ "${1:-}" = "--layout" ]; then
+  [ "$#" -ge 2 ] || {
+    echo "generate-fern-fixture: --layout needs a value: packaged or flat" >&2
+    exit 1
+  }
+  LAYOUT="$2"
+  shift 2
+fi
+case "$LAYOUT" in
+  packaged) golden_name=expected ;;
+  flat) golden_name=expected-flat ;;
+  *)
+    echo "generate-fern-fixture: invalid layout '$LAYOUT' — use packaged or flat" >&2
+    exit 1
+    ;;
+esac
 
 FIXTURE="${1:-exhaustive}"
 # FIXTURE is spliced into paths that are later `rm -rf`'d, so hold it to a single
@@ -57,11 +83,37 @@ SPEC_OVERRIDE="${3:-}"
 # consistent; a `*` here would float to the latest CLI and can drift the output.
 FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
 
-spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$FIXTURE/openapi.yml}"
+# A flat golden is declared in one table, which also names the fixture whose
+# vendored spec it generates from when the golden's own directory has none (a
+# second flat golden over an already-vendored document, differing by a setting).
+spec_fixture="$FIXTURE"
+if [ "$LAYOUT" = flat ]; then
+  flat_table="$repo_root/tests/fixtures/flat-goldens.txt"
+  declared=""
+  if [ -f "$flat_table" ]; then
+    while IFS='|' read -r flat_fixture flat_spec; do
+      case "$flat_fixture" in ""|\#*) continue ;; esac
+      [ "$flat_fixture" = "$FIXTURE" ] || continue
+      declared=1
+      [ -z "$flat_spec" ] || spec_fixture="$flat_spec"
+    done < "$flat_table"
+  fi
+  [ -n "$declared" ] || {
+    echo "generate-fern-fixture: '$FIXTURE' is not a declared flat golden — add it to" \
+         "tests/fixtures/flat-goldens.txt first" >&2
+    exit 1
+  }
+  valid_fixture_name "$spec_fixture" || {
+    echo "generate-fern-fixture: invalid spec fixture '$spec_fixture' for '$FIXTURE' in $flat_table" >&2
+    exit 1
+  }
+fi
+
+spec="${SPEC_OVERRIDE:-$repo_root/tests/fixtures/$spec_fixture/openapi.yml}"
 fixture_dir="$repo_root/tests/fixtures/$FIXTURE"
-dest="${4:-$fixture_dir/expected}"
-[ "$(basename "$dest")" = expected ] || {
-  echo "generate-fern-fixture: invalid destination '$dest' — its final path segment must be expected" >&2
+dest="${4:-$fixture_dir/$golden_name}"
+[ "$(basename "$dest")" = "$golden_name" ] || {
+  echo "generate-fern-fixture: invalid destination '$dest' — its final path segment must be $golden_name" >&2
   exit 1
 }
 fixture_dir="$(cd "$fixture_dir" 2>/dev/null && pwd -P)" || {
@@ -73,7 +125,7 @@ dest_parent="$(cd "$(dirname "$dest")" 2>/dev/null && pwd -P)" || {
   exit 1
 }
 case "$dest_parent" in
-  "$fixture_dir" | "$fixture_dir"/*) dest="$dest_parent/expected" ;;
+  "$fixture_dir" | "$fixture_dir"/*) dest="$dest_parent/$golden_name" ;;
   *)
     echo "generate-fern-fixture: invalid destination '$dest' — it must stay below $fixture_dir" >&2
     exit 1
@@ -88,8 +140,9 @@ configured_audiences=""
 configured_audience_strict=""
 configured_client_class_name=""
 configured_extra_fields=""
+configured_organization=""
 if [ -f "$fixture_config" ]; then
-  while IFS='|' read -r configured_fixture audiences strict client extra; do
+  while IFS='|' read -r configured_fixture audiences strict client extra organization; do
     case "$configured_fixture" in ""|\#*) continue ;; esac
     [ "$configured_fixture" = "$FIXTURE" ] || continue
     [ -z "$configured_audience_strict" ] || {
@@ -100,12 +153,14 @@ if [ -f "$fixture_config" ]; then
     configured_audience_strict="$strict"
     configured_client_class_name="$client"
     configured_extra_fields="$extra"
+    configured_organization="$organization"
   done < "$fixture_config"
 fi
 FERN_AUDIENCES="${FERN_AUDIENCES:-$configured_audiences}"
 AUDIENCE_STRICT="${AUDIENCE_STRICT:-$configured_audience_strict}"
 CLIENT_CLASS_NAME="${CLIENT_CLASS_NAME:-$configured_client_class_name}"
 EXTRA_FIELDS="${EXTRA_FIELDS:-$configured_extra_fields}"
+ORGANIZATION="${ORGANIZATION:-$configured_organization}"
 case "$AUDIENCE_STRICT" in ""|true|false) ;; *)
   echo "generate-fern-fixture: invalid audience_strict '$AUDIENCE_STRICT' for '$FIXTURE'" >&2
   exit 1
@@ -114,6 +169,10 @@ case "$EXTRA_FIELDS" in ""|allow|ignore|forbid) ;; *)
   echo "generate-fern-fixture: invalid extra_fields '$EXTRA_FIELDS' for '$FIXTURE'" >&2
   exit 1
 esac
+[ -z "$ORGANIZATION" ] || [[ "$ORGANIZATION" =~ ^[a-z][a-z0-9]*$ ]] || {
+  echo "generate-fern-fixture: invalid organization '$ORGANIZATION' for '$FIXTURE' — use lowercase letters and digits" >&2
+  exit 1
+}
 
 if [ -z "$FERN_PYTHON_VERSION" ]; then
   FERN_PYTHON_VERSION="$("$repo_root/scripts/fern-goldens" latest-version)"
@@ -160,8 +219,16 @@ if [ -n "$SPEC_OVERRIDE" ]; then
 else
   cp "$spec" "$workdir/fern/openapi/openapi.yml"
 fi
+# Optional organization: ORGANIZATION=<name> replaces Fern's `fern` organization,
+# which is what names the SDK's module, its `{Organization}Api` client class and
+# its README heading — the three names crozier derives from `--package-name`
+# (see docs/matching.md). Fern's own `package_name` option instead renames the
+# module and distribution while the client and README keep the organization,
+# which crozier cannot express, so it is deliberately not a knob here. Fern emits
+# the packaged form only for the `fern` organization without a real FERN_TOKEN,
+# so a non-default organization is for flat goldens.
 cat > "$workdir/fern/fern.config.json" <<JSON
-{ "organization": "fern", "version": "${FERN_CLI_VERSION}" }
+{ "organization": "${ORGANIZATION:-fern}", "version": "${FERN_CLI_VERSION}" }
 JSON
 # Optional audience filter (issue #41 gap 3): FERN_AUDIENCES=public[,internal]
 # adds a group-level `audiences:` block so Fern prunes to matching operations plus
@@ -188,6 +255,7 @@ extra_fields_block=""
 if [ -n "${EXTRA_FIELDS:-}" ]; then
   extra_fields_block="            extra_fields: ${EXTRA_FIELDS}"$'\n'
 fi
+
 cat > "$workdir/fern/generators.yml" <<YAML
 api:
   path: ${api_path}
@@ -210,7 +278,7 @@ ${extra_fields_block}
           path: ../generated/python
 YAML
 
-echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) locally..." >&2
+echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}, $LAYOUT) locally..." >&2
 # `--preview --output` writes the full *packaged* SDK (a pip package with
 # `src/<pkg>/…` + `pyproject.toml` + `README.md`/`reference.md` + `.fern/`) under
 # `<output>/fern-python-sdk/`. A plain `--local` with `location: local-file-system`
@@ -222,8 +290,13 @@ echo "generate-fern-fixture: running Fern (python-sdk@${FERN_PYTHON_VERSION}) lo
 # `--preview` only emits the full package when Fern considers itself authenticated;
 # with no FERN_TOKEN it silently falls back to the flat module tree. We never
 # publish (local `--preview`), so any non-empty token unlocks the packaged form —
-# a dummy is sufficient and carries no credential.
-export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"
+# a dummy is sufficient and carries no credential. The flat layout is exactly
+# that token-less `--local` run, so it runs with no token at all, as measured.
+if [ "$LAYOUT" = packaged ]; then
+  export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"
+else
+  unset FERN_TOKEN
+fi
 
 # Fern stamps how it was invoked into `.fern/metadata.json` (`invokedBy` +
 # `ciProvider`), detected from the environment. Every committed golden is
@@ -288,24 +361,35 @@ SHIM
 }
 setup_docker_shim
 
-mkdir -p "$workdir/preview"
-( cd "$workdir/fern" && fern generate --group python-sdk --local --preview --output "$workdir/preview" --force )
+if [ "$LAYOUT" = packaged ]; then
+  mkdir -p "$workdir/preview"
+  ( cd "$workdir/fern" && fern generate --group python-sdk --local --preview --output "$workdir/preview" --force )
 
-# The packaged tree lands under `<output>/fern-python-sdk/`; it is already the
-# `src/…` + `.fern/` layout the committed corpus uses, so no path remapping.
-src="$workdir/preview/fern-python-sdk"
-prefix=""
-if [ ! -d "$src/src" ]; then
-  echo "generate-fern-fixture: Fern produced no packaged SDK under $src" >&2
-  exit 1
+  # The packaged tree lands under `<output>/fern-python-sdk/`; it is already the
+  # `src/…` + `.fern/` layout the committed corpus uses, so no path remapping.
+  src="$workdir/preview/fern-python-sdk"
+  if [ ! -d "$src/src" ]; then
+    echo "generate-fern-fixture: Fern produced no packaged SDK under $src" >&2
+    exit 1
+  fi
+else
+  # Without `--preview`, Fern writes to the `local-file-system` path the
+  # generators.yml above names: the package's modules at its root, no `src/`.
+  ( cd "$workdir/fern" && fern generate --group python-sdk --local --force )
+  src="$workdir/generated/python"
+  if [ ! -f "$src/__init__.py" ] || [ -e "$src/src" ]; then
+    echo "generate-fern-fixture: Fern produced no flat module tree under $src" >&2
+    exit 1
+  fi
 fi
+prefix=""
 
 # Strip comments from every generated .py, mirroring the offline corpus, into a
 # same-filesystem staging directory. Only a complete tree is renamed into place;
 # a failed strip/copy therefore cannot damage the prior valid golden.
 mkdir -p "$(dirname "$dest")"
 publish_stage="$(mktemp -d "$(dirname "$dest")/.fern-output.XXXXXX")"
-staged_dest="$publish_stage/expected"
+staged_dest="$publish_stage/$golden_name"
 mkdir -p "$staged_dest"
 ( cd "$src" && find . -type f -print0 ) | while IFS= read -r -d '' rel; do
   rel="${rel#./}"
@@ -325,13 +409,18 @@ done
 # writes its own corpus-form record (name/ref/URL) whenever it drives this
 # script, which is exactly when a spec override is supplied — so only the
 # vendored path writes one here. Any non-default generator knob is part of the
-# golden's identity and is recorded alongside the versions.
+# golden's identity and is recorded alongside the versions — the layout too, for
+# a flat golden (a packaged record stays exactly the form it always had).
 if [ -z "$SPEC_OVERRIDE" ]; then
   settings=""
+  flat_layout=""
+  [ "$LAYOUT" = packaged ] || flat_layout="$LAYOUT"
   for pair in "audiences=${FERN_AUDIENCES:-}" \
     "audience_strict=${AUDIENCE_STRICT:-}" \
     "client_class_name=${CLIENT_CLASS_NAME:-}" \
-    "extra_fields=${EXTRA_FIELDS:-}"; do
+    "extra_fields=${EXTRA_FIELDS:-}" \
+    "organization=${ORGANIZATION:-}" \
+    "layout=$flat_layout"; do
     value="${pair#*=}"
     [ -n "$value" ] || continue
     settings="$settings,
@@ -341,12 +430,12 @@ if [ -z "$SPEC_OVERRIDE" ]; then
 {
   "fern_python_sdk_version": "$FERN_PYTHON_VERSION",
   "fern_cli_version": "$FERN_CLI_VERSION",
-  "vendored_spec_path": "tests/fixtures/$FIXTURE/openapi.yml"$settings
+  "vendored_spec_path": "tests/fixtures/$spec_fixture/openapi.yml"$settings
 }
 JSON
 fi
 
-backup="$(dirname "$dest")/.expected.backup.$$"
+backup="$(dirname "$dest")/.$golden_name.backup.$$"
 [ ! -e "$backup" ] || {
   echo "generate-fern-fixture: stale backup blocks atomic install: $backup" >&2
   exit 1

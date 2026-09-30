@@ -189,6 +189,8 @@ pub struct Ir {
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`); drives every model's `extra` config.
     pub extra_fields: crate::settings::ExtraFields,
+    /// Which tree to emit: Fern's packaged SDK or its flat module tree.
+    pub layout: crate::settings::Layout,
 }
 
 /// The generated server-environment enum (`environment.py`). Fern's OpenAPI
@@ -2072,6 +2074,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         global_headers: global,
         environment,
         extra_fields: config.extra_fields,
+        layout: config.layout,
     }
 }
 
@@ -17015,6 +17018,7 @@ mod tests {
             audiences: Vec::new(),
             audience_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
+            layout: crate::settings::Layout::Packaged,
         })
         .expect("render succeeds");
         let client = files
