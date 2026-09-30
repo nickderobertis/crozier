@@ -51,8 +51,10 @@ TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
 VERDICTS = ("exhausted", "search-incomplete")
 # Every word a search record states as an outcome, so a key row stating a
-# different one than the cover cites is read as a disagreement.
-OUTCOMES = ("exhausted", "search-incomplete", "witness-found", "none-found", "witness-blocked")
+# different one than the cover cites is read as a disagreement, and the
+# non-generation verdicts that make a row `limitations`. RankedBacklogTests holds
+# both to the vocabularies the census suite gates.
+OUTCOMES = ("witness-found", "witness-blocked", "fern-rejected", "none-found", "search-incomplete", "exhausted")
 NON_GENERATION = ("discards", "ignores", "refuses", "crashes", "coincidence")
 FIXTURE_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 EVIDENCE_CELL = re.compile(

@@ -6889,6 +6889,12 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(parser=name):
                 self.assertEqual(documented, tuple(categories))
 
+    def test_the_handwritten_gate_reads_the_gated_verdict_vocabularies(self) -> None:
+        """The hand-written gate's outcome and non-generation words are this suite's."""
+        gate = load_script("handwritten-fixtures.py")
+        self.assertEqual(set(SEARCH_OUTCOMES), set(gate.OUTCOMES))
+        self.assertEqual(NON_GENERATION_VERDICTS, gate.NON_GENERATION)
+
     def test_the_prose_totals_are_the_summary_tables_own_column_sums(self) -> None:
         """The narrated per-category and per-settlement totals are the table's own."""
         rows = list(self.entries.values())

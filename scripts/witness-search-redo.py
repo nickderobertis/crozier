@@ -267,7 +267,8 @@ def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path
             )
             continue
         if value(owned_rows[0][3]) == "handwritten":
-            # The amendment `contract.md` records: a row a hand-written fixture
+            # The amendment schemas.md states beside the frozen record (this
+            # contract's own files are byte-pinned): a row a hand-written fixture
             # covers carries no inline history. Its `search:` link must resolve
             # to the key's Contract B record and state that record's verdict;
             # the shard records above stay reconciled as for every key.

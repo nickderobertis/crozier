@@ -12,6 +12,7 @@ search. It never counts as a real-specification match, anywhere: it is never a
 source, a witness in [`../golden-reach.tsv`](../golden-reach.tsv) or part of the
 golden-only tier. A real specification found later supersedes it.
 
+<!-- llmlint: ignore[no_redundant_instruction_pointers] A folder AGENTS.md is loaded on its own by an agent working in this folder, not reached through the coverage index, and the acceptance criteria require the category to be written once, in the index's category rules, and linked from here rather than restated. -->
 This file states the contract every fixture here is written to. The
 `handwritten` category a fixture puts a region row in, its precedence and the
 row's cells are stated in
@@ -41,6 +42,7 @@ These keys, and nothing else:
 
 - `fern_cli_version` (string, `"5.67.1"`) and `fern_python_sdk_version` (string,
   `"5.20.0"`).
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The contract defines the digest as Contract A's tree digest; linking Contract A keeps one definition of the canonical stream instead of restating it, and this folder file is loaded without the index. -->
 - `digest` (string): the lower-case hex SHA-256 of `fern-expected/`'s canonical
   stream, computed exactly as
   [Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is)
