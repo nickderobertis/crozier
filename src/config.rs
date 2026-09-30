@@ -62,6 +62,10 @@ pub struct GenerateConfig {
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`); drives every model's `extra` config.
     pub extra_fields: crate::settings::ExtraFields,
+    /// Which tree to write (Fern's packaged SDK or its flat module tree). Set
+    /// after construction; [`GenerateConfig::new`] starts from the default
+    /// [`Layout::Packaged`](crate::settings::Layout::Packaged).
+    pub layout: crate::settings::Layout,
 }
 
 impl GenerateConfig {
@@ -91,6 +95,7 @@ impl GenerateConfig {
             project_name,
             client_class_name,
             extra_fields,
+            layout: crate::settings::Layout::default(),
         })
     }
 }

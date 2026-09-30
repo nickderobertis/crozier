@@ -102,6 +102,41 @@ impl ExtraFields {
     }
 }
 
+/// Which tree a generator writes — the two output modes Fern has, so a team
+/// migrating from Fern sets the one that matches how it ran Fern:
+///
+/// - [`Packaged`](Layout::Packaged) (default) writes a pip-installable package:
+///   `pyproject.toml`, `requirements.txt`, `README.md`, `reference.md`, `.fern/`,
+///   `tests/`, and the modules under `src/<package>/`. It matches
+///   `fern generate --preview --output`.
+/// - [`Flat`](Layout::Flat) writes the package's modules at the output root, with
+///   `README.md`, `CONTRIBUTING.md`, `reference.md`, `.fern/` and `tests/` beside
+///   them and no packaging (no `pyproject.toml`, `requirements.txt`, `py.typed`, or
+///   `version.py`). It matches Fern writing to a `local-file-system` output path.
+///
+/// See `docs/matching.md` for every way the flat form differs.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, JsonSchema, clap::ValueEnum)]
+#[serde(rename_all = "lowercase")]
+pub enum Layout {
+    /// A pip-installable package (Fern's `--preview --output`).
+    #[default]
+    Packaged,
+    /// The bare module tree at the output root (Fern's `local-file-system` output).
+    Flat,
+}
+
+impl Layout {
+    /// The canonical lowercase name (`packaged`/`flat`), matching the config value,
+    /// the CLI value, and `CROZIER_LAYOUT`.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Layout::Packaged => "packaged",
+            Layout::Flat => "flat",
+        }
+    }
+}
+
 /// One generator's settings, as written under `generators.<name>` (or as the
 /// top-level shared defaults, which share this shape minus `type`). Every field
 /// is optional: an absent field falls through to the next layer down. Unknown
@@ -132,6 +167,9 @@ pub struct GeneratorSettings {
     /// here and not among the shared top-level defaults. Defaults to
     /// [`ExtraFields::Allow`] when unset.
     pub extra_fields: Option<ExtraFields>,
+    /// Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`
+    /// (Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].
+    pub layout: Option<Layout>,
 }
 
 /// A parsed `crozier.yml`: the shared top-level defaults plus the named
@@ -156,6 +194,8 @@ pub struct FileConfig {
     pub audiences: Option<Vec<String>>,
     /// Shared default strict-audience flag.
     pub audience_strict: Option<bool>,
+    /// Shared default output layout (`packaged` or `flat`).
+    pub layout: Option<Layout>,
     /// The named generator instances (one SDK each), in declaration order.
     // Described to `schemars` as a plain string-keyed map (same JSON shape) so
     // the schema does not depend on the indexmap feature; serde keeps the
@@ -186,6 +226,8 @@ pub struct CliOverrides {
     pub audience_strict: Option<bool>,
     /// `--extra-fields`; `None` when the flag was absent.
     pub extra_fields: Option<ExtraFields>,
+    /// `--layout`; `None` when the flag was absent.
+    pub layout: Option<Layout>,
 }
 
 impl CliOverrides {
@@ -201,6 +243,7 @@ impl CliOverrides {
             && self.audiences.is_none()
             && self.audience_strict.is_none()
             && self.extra_fields.is_none()
+            && self.layout.is_none()
     }
 }
 
@@ -250,6 +293,7 @@ pub fn merge(base: FileConfig, over: FileConfig) -> FileConfig {
         client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
+        layout: over.layout.or(base.layout),
         generators,
     }
 }
@@ -266,6 +310,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
         extra_fields: over.extra_fields.or(base.extra_fields),
+        layout: over.layout.or(base.layout),
     }
 }
 
@@ -279,7 +324,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
 /// `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`, `CROZIER_PROJECT_NAME`,
 /// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
 /// `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`
-/// (`allow`/`ignore`/`forbid`).
+/// (`allow`/`ignore`/`forbid`), `CROZIER_LAYOUT` (`packaged`/`flat`).
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
@@ -302,6 +347,13 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         ),
     };
 
+    let layout = match read("CROZIER_LAYOUT") {
+        None => None,
+        Some(v) => Some(parse_layout(&v).ok_or_else(|| Error::InvalidEnvOverride {
+            message: format!("`CROZIER_LAYOUT` must be `packaged` or `flat`, got `{v}`"),
+        })?),
+    };
+
     Ok(GeneratorSettings {
         generator_type: None,
         spec: read("CROZIER_SPEC").map(PathBuf::from),
@@ -312,7 +364,17 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         audiences,
         audience_strict,
         extra_fields,
+        layout,
     })
+}
+
+/// Parse a case-insensitive `layout` value (`packaged`/`flat`).
+fn parse_layout(v: &str) -> Option<Layout> {
+    match v.to_ascii_lowercase().as_str() {
+        "packaged" => Some(Layout::Packaged),
+        "flat" => Some(Layout::Flat),
+        _ => None,
+    }
 }
 
 /// Parse a case-insensitive `extra-fields` value (`allow`/`ignore`/`forbid`).
@@ -447,6 +509,12 @@ pub fn resolve(
         .or(env.extra_fields)
         .or(per.and_then(|p| p.extra_fields))
         .unwrap_or_default();
+    let layout = cli
+        .layout
+        .or(env.layout)
+        .or(per.and_then(|p| p.layout))
+        .or(config.layout)
+        .unwrap_or_default();
 
     Ok(GenerateArgs {
         spec,
@@ -457,6 +525,7 @@ pub fn resolve(
         audiences,
         audience_strict,
         extra_fields,
+        layout,
     })
 }
 
@@ -635,7 +704,30 @@ pub fn explain(
                 .map(|e| e.as_str().to_string()),
             None,
         ),
+        layout_field(cli, env, per, config),
     ]
+}
+
+/// How `layout` resolves for `crozier config`. Unlike the other optional fields it
+/// is never unset: with no layer supplying it, it shows the built-in `packaged`.
+fn layout_field(
+    cli: &CliOverrides,
+    env: &GeneratorSettings,
+    per: Option<&GeneratorSettings>,
+    config: &FileConfig,
+) -> FieldSource {
+    let show = |l: Layout| l.as_str().to_string();
+    let mut resolved = field(
+        "layout",
+        cli.layout.map(show),
+        env.layout.map(show),
+        per.and_then(|p| p.layout).map(show),
+        config.layout.map(show),
+    );
+    if resolved.value.is_none() {
+        resolved.value = Some(show(Layout::default()));
+    }
+    resolved
 }
 
 /// The first config file present in `dir`, by [`CONFIG_NAMES`] priority. No walk
@@ -950,6 +1042,116 @@ mod tests {
         // Env beats the per-generator value; there is no shared layer to consult.
         assert_eq!(ef.value.as_deref(), Some("ignore"));
         assert_eq!(ef.source, Source::Env);
+    }
+
+    #[test]
+    fn layout_layers_cli_over_env_over_generator_over_shared() {
+        let config = parsed(
+            "layout: flat\ngenerators:\n  python:\n    spec: ./a.yml\n    output: ./o\n  other:\n    spec: ./a.yml\n    output: ./o\n    layout: packaged",
+        );
+        let none = GeneratorSettings::default();
+        let no_cli = CliOverrides::default();
+        // Shared top-level applies to a generator that does not set its own.
+        let args = resolve("python", &config, &none, &no_cli).unwrap();
+        assert_eq!(args.layout, Layout::Flat);
+        // The generator's own value beats the shared one.
+        let args = resolve("other", &config, &none, &no_cli).unwrap();
+        assert_eq!(args.layout, Layout::Packaged);
+        // `CROZIER_LAYOUT` beats the generator's value; the flag beats the env.
+        let env = env_overrides(env_get(&[("CROZIER_LAYOUT", "flat")])).unwrap();
+        let args = resolve("other", &config, &env, &no_cli).unwrap();
+        assert_eq!(args.layout, Layout::Flat);
+        let cli = CliOverrides {
+            layout: Some(Layout::Packaged),
+            ..CliOverrides::default()
+        };
+        let args = resolve("other", &config, &env, &cli).unwrap();
+        assert_eq!(args.layout, Layout::Packaged);
+        // Unset everywhere → the built-in `packaged`.
+        let bare = parsed("spec: ./a.yml\noutput: ./o");
+        let args = resolve("python", &bare, &none, &no_cli).unwrap();
+        assert_eq!(args.layout, Layout::Packaged);
+    }
+
+    #[test]
+    fn env_layout_parses_case_insensitively_and_empty_is_unset() {
+        for (raw, expected) in [
+            ("packaged", Some(Layout::Packaged)),
+            ("FLAT", Some(Layout::Flat)),
+            ("", None),
+        ] {
+            let e = env_overrides(env_get(&[("CROZIER_LAYOUT", raw)])).unwrap();
+            assert_eq!(e.layout, expected, "{raw:?}");
+        }
+    }
+
+    #[test]
+    fn env_bad_layout_is_rejected_naming_the_variable_and_value() {
+        let err = env_overrides(env_get(&[("CROZIER_LAYOUT", "nested")]))
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("CROZIER_LAYOUT"), "{err}");
+        assert!(err.contains("`nested`"), "{err}");
+    }
+
+    #[test]
+    fn bad_layout_in_a_file_is_rejected_naming_the_value() {
+        for text in [
+            "layout: nested",
+            "generators:\n  python:\n    layout: nested",
+        ] {
+            let err = parse(text).unwrap_err();
+            assert!(err.contains("nested"), "{err}");
+            assert!(err.contains("packaged") && err.contains("flat"), "{err}");
+        }
+    }
+
+    #[test]
+    fn layout_merges_per_field_across_files() {
+        let merged = merge(
+            parsed("layout: flat\ngenerators:\n  python:\n    layout: flat"),
+            parsed("generators:\n  python:\n    layout: packaged"),
+        );
+        assert_eq!(merged.layout, Some(Layout::Flat));
+        assert_eq!(merged.generators["python"].layout, Some(Layout::Packaged));
+        assert!(!CliOverrides {
+            layout: Some(Layout::Flat),
+            ..CliOverrides::default()
+        }
+        .is_empty());
+    }
+
+    #[test]
+    fn explain_reports_layout_and_its_source() {
+        let config = parsed("layout: flat\ngenerators:\n  python:\n    spec: ./a.yml");
+        let none = GeneratorSettings::default();
+        let report = explain("python", &config, &none, &CliOverrides::default());
+        let layout = field_of(&report, "layout");
+        assert_eq!(layout.value.as_deref(), Some("flat"));
+        assert_eq!(layout.source, Source::Shared);
+
+        let cli = CliOverrides {
+            layout: Some(Layout::Packaged),
+            ..CliOverrides::default()
+        };
+        let layout = explain("python", &config, &none, &cli)
+            .into_iter()
+            .find(|f| f.field == "layout")
+            .unwrap();
+        assert_eq!(layout.value.as_deref(), Some("packaged"));
+        assert_eq!(layout.source, Source::Cli);
+
+        // Unset everywhere, it still shows the value a run would use.
+        let report = explain(
+            "python",
+            &FileConfig::default(),
+            &none,
+            &CliOverrides::default(),
+        );
+        let layout = field_of(&report, "layout");
+        assert_eq!(layout.value.as_deref(), Some("packaged"));
+        assert_eq!(layout.source, Source::Default);
+        assert_eq!(Layout::Flat.as_str(), "flat");
     }
 
     #[test]

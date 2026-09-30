@@ -42,7 +42,7 @@ out-of-the-box open-`Literal`-union enum shape.
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the
 whole corpus keyed by fixture name (`fixture|audiences|audience_strict|
-client_class_name|extra_fields`), not a file per fixture directory. Both routes
+client_class_name|extra_fields|organization`), not a file per fixture directory. Both routes
 otherwise use Fern's standard corpus generator configuration, and both load that
 table by fixture name whether the spec is vendored or fetched, so a fixture
 needing a non-default audience, client-class-name, or extra-fields setting adds

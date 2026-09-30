@@ -33,6 +33,17 @@ Each `<api>/` directory holds:
   the manifest name/ref/URL on a workflow-managed corpus golden or the vendored
   spec path and any non-default generator knob on a vendored one. It is automation
   provenance, not Fern output, so the comparison excludes it.
+- `expected-flat/` — for the fixtures [`flat-goldens.txt`](flat-goldens.txt)
+  declares, Fern's **flat** output for the same spec and settings: what
+  `fern generate --local` writes to a `local-file-system` output path, which
+  crozier reproduces with `--layout flat`. Produced by
+  `scripts/generate-fern-fixture.sh --layout flat <fixture>` (or, for a
+  `CORPUS.md` row, by the Fern goldens workflow beside its packaged golden). It
+  follows the same comment-stripping and provenance rules as `expected/`, and its
+  `.crozier-fern-golden.json` adds `"layout": "flat"`. A flat golden may sit in a
+  directory with no spec of its own (`exhaustive-package-name/`), generating from
+  the fixture its `flat-goldens.txt` row names. See
+  [`../../docs/matching.md`](../../docs/matching.md#the-flat-layout).
 - `known-fern-failure.json` only when an exact generator/version/spec-bound
   upstream failure prevents a current golden. Its fingerprint is revalidated on
   every generation retry; it never makes an arbitrary Fern failure non-fatal.
@@ -57,6 +68,10 @@ known failures, provenance, and the final green/no-change rerun.
   [`../../docs/matching.md`](../../docs/matching.md)). `FEATURE_TARGETS` in
   `tests/e2e.rs` is the list; those entries also provide compile/smoke coverage
   independently of the byte comparison.
+
+Five fixtures also carry a flat golden (`FLAT_GOLDENS` in `tests/e2e.rs`, one
+`*_flat_matches_fern` test each), chosen so that between them they exercise every
+setting that changes the flat tree.
 
 Every `Corpus` in `tests/e2e.rs` carries an empty `unmatched` residual list: the
 whole corpus reproduces its Fern goldens byte-for-byte, apart from the one

@@ -1,0 +1,119 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .types_mixed_type import TypesMixedType
+    from .types_cat import TypesCat
+    from .types_dog import TypesDog
+    from .types_animal import TypesAnimal
+    from .types_animal_one import TypesAnimalOne
+    from .types_animal_one_animal import TypesAnimalOneAnimal
+    from .types_animal_zero import TypesAnimalZero
+    from .types_animal_zero_animal import TypesAnimalZeroAnimal
+    from .types_map_of_documented_unknown_type import TypesMapOfDocumentedUnknownType
+    from .types_documented_unknown_type import TypesDocumentedUnknownType
+    from .types_object_with_documented_unknown_type import TypesObjectWithDocumentedUnknownType
+    from .types_object_with_unknown_field import TypesObjectWithUnknownField
+    from .types_object_with_datetime_like_string import TypesObjectWithDatetimeLikeString
+    from .types_optional_alias import TypesOptionalAlias
+    from .types_double_optional import TypesDoubleOptional
+    from .types_nested_object_with_required_field import TypesNestedObjectWithRequiredField
+    from .types_nested_object_with_optional_field import TypesNestedObjectWithOptionalField
+    from .types_object_with_map_of_map import TypesObjectWithMapOfMap
+    from .types_object_with_required_field import TypesObjectWithRequiredField
+    from .types_object_with_optional_field import TypesObjectWithOptionalField
+    from .types_weather_report import TypesWeatherReport
+    from .types_object_with_docs import TypesObjectWithDocs
+    from .bad_object_request_info import BadObjectRequestInfo
+    from .endpoints_error import EndpointsError
+    from .endpoints_error_category import EndpointsErrorCategory
+    from .endpoints_error_code import EndpointsErrorCode
+    from .endpoints_paginated_response import EndpointsPaginatedResponse
+    from .endpoints_put_response import EndpointsPutResponse
+_dynamic_imports: typing.Dict[str, str] = {
+    "BadObjectRequestInfo": ".bad_object_request_info",
+    "EndpointsError": ".endpoints_error",
+    "EndpointsErrorCategory": ".endpoints_error_category",
+    "EndpointsErrorCode": ".endpoints_error_code",
+    "EndpointsPaginatedResponse": ".endpoints_paginated_response",
+    "EndpointsPutResponse": ".endpoints_put_response",
+    "TypesAnimal": ".types_animal",
+    "TypesAnimalOne": ".types_animal_one",
+    "TypesAnimalOneAnimal": ".types_animal_one_animal",
+    "TypesAnimalZero": ".types_animal_zero",
+    "TypesAnimalZeroAnimal": ".types_animal_zero_animal",
+    "TypesCat": ".types_cat",
+    "TypesDocumentedUnknownType": ".types_documented_unknown_type",
+    "TypesDog": ".types_dog",
+    "TypesDoubleOptional": ".types_double_optional",
+    "TypesMapOfDocumentedUnknownType": ".types_map_of_documented_unknown_type",
+    "TypesMixedType": ".types_mixed_type",
+    "TypesNestedObjectWithOptionalField": ".types_nested_object_with_optional_field",
+    "TypesNestedObjectWithRequiredField": ".types_nested_object_with_required_field",
+    "TypesObjectWithDatetimeLikeString": ".types_object_with_datetime_like_string",
+    "TypesObjectWithDocs": ".types_object_with_docs",
+    "TypesObjectWithDocumentedUnknownType": ".types_object_with_documented_unknown_type",
+    "TypesObjectWithMapOfMap": ".types_object_with_map_of_map",
+    "TypesObjectWithOptionalField": ".types_object_with_optional_field",
+    "TypesObjectWithRequiredField": ".types_object_with_required_field",
+    "TypesObjectWithUnknownField": ".types_object_with_unknown_field",
+    "TypesOptionalAlias": ".types_optional_alias",
+    "TypesWeatherReport": ".types_weather_report",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "BadObjectRequestInfo",
+    "EndpointsError",
+    "EndpointsErrorCategory",
+    "EndpointsErrorCode",
+    "EndpointsPaginatedResponse",
+    "EndpointsPutResponse",
+    "TypesAnimal",
+    "TypesAnimalOne",
+    "TypesAnimalOneAnimal",
+    "TypesAnimalZero",
+    "TypesAnimalZeroAnimal",
+    "TypesCat",
+    "TypesDocumentedUnknownType",
+    "TypesDog",
+    "TypesDoubleOptional",
+    "TypesMapOfDocumentedUnknownType",
+    "TypesMixedType",
+    "TypesNestedObjectWithOptionalField",
+    "TypesNestedObjectWithRequiredField",
+    "TypesObjectWithDatetimeLikeString",
+    "TypesObjectWithDocs",
+    "TypesObjectWithDocumentedUnknownType",
+    "TypesObjectWithMapOfMap",
+    "TypesObjectWithOptionalField",
+    "TypesObjectWithRequiredField",
+    "TypesObjectWithUnknownField",
+    "TypesOptionalAlias",
+    "TypesWeatherReport",
+]
