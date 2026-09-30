@@ -6914,6 +6914,260 @@ fn every_feature_target_has_its_own_golden_test() {
     );
 }
 
+// --- Flat-layout goldens -----------------------------------------------------
+// Fern writes two trees: the packaged SDK (`--preview --output`, the `expected/`
+// goldens above) and a flat module tree (a `local-file-system` output path).
+// crozier reproduces the second with `--layout flat`; these goldens are Fern's
+// own flat output, produced by `scripts/generate-fern-fixture.sh --layout flat`
+// and compared under exactly the rules the packaged goldens are.
+
+/// The directory holding a fixture's flat golden, beside its packaged `expected/`.
+const FLAT_GOLDEN_DIR: &str = "expected-flat";
+
+/// One committed flat Fern golden, `tests/fixtures/<fixture>/expected-flat/`.
+struct FlatGolden {
+    /// The fixture directory holding the golden.
+    fixture: &'static str,
+    /// The spec and settings crozier is driven with. `None` reuses the registered
+    /// corpus of the same name — the flat golden shares its packaged sibling's
+    /// settings. `Some` is a golden whose directory has no spec of its own: `api`
+    /// names the fixture whose vendored document it generates from.
+    corpus: Option<&'static Corpus>,
+}
+
+/// Every flat golden, one per row of `tests/fixtures/flat-goldens.txt` (held to
+/// it by `flat_goldens_are_the_declared_set`). Between them they exercise every
+/// setting that changes the flat tree: the default names (`exhaustive`), a
+/// client class name, audiences with strictness, a non-default `extra-fields`,
+/// and a custom package and project name. Fern's `organization` is what names
+/// the module, client and README the way crozier's `--package-name` does, and a
+/// flat tree carries no distribution, so the project name reaches no file of it
+/// (see docs/matching.md).
+const FLAT_GOLDENS: &[FlatGolden] = &[
+    FlatGolden {
+        fixture: "exhaustive",
+        corpus: None,
+    },
+    FlatGolden {
+        fixture: "client-class-name",
+        corpus: None,
+    },
+    FlatGolden {
+        fixture: "audience-filter-strict",
+        corpus: None,
+    },
+    FlatGolden {
+        fixture: "eos.local-extra-fields-forbid",
+        corpus: None,
+    },
+    FlatGolden {
+        fixture: "exhaustive-package-name",
+        corpus: Some(&Corpus {
+            api: "exhaustive",
+            package_name: "acme",
+            project_name: "acme-dist",
+            audiences: &[],
+            audience_strict: false,
+            client_class_name: None,
+            extra_fields: None,
+            unmatched: &[],
+        }),
+    },
+];
+
+/// The spec and settings a flat golden drives crozier with.
+fn flat_golden_corpus(golden: &FlatGolden) -> &'static Corpus {
+    golden.corpus.unwrap_or_else(|| {
+        registered_diff_corpora()
+            .into_iter()
+            .find(|corpus| corpus.api == golden.fixture)
+            .unwrap_or_else(|| panic!("{} is not a registered corpus", golden.fixture))
+    })
+}
+
+/// Generate a flat golden's crozier side, or say why it could not be generated.
+/// `Ok(None)` is a fetched-spec golden whose spec has not been fetched.
+fn try_generate_flat(golden: &FlatGolden) -> Result<Option<tempfile::TempDir>, String> {
+    let corpus = flat_golden_corpus(golden);
+    if corpus_spec(corpus.api).is_none() {
+        return Ok(None);
+    }
+    let out = tempfile::tempdir().map_err(|error| format!("tempdir: {error}"))?;
+    let result = corpus_command(corpus, out.path())
+        .args(["--layout", "flat"])
+        .output()
+        .map_err(|error| format!("could not run crozier: {error}"))?;
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    if !result.status.success() || !stderr.contains("generated") {
+        return Err(format!(
+            "crozier --layout flat exited {:?}: {}",
+            result.status.code(),
+            stderr.trim()
+        ));
+    }
+    Ok(Some(out))
+}
+
+/// Require crozier's `--layout flat` output to equal the flat golden file for
+/// file, in both directions, under the packaged goldens' normalization.
+fn assert_flat_golden_matches(fixture: &str) {
+    let golden = FLAT_GOLDENS
+        .iter()
+        .find(|golden| golden.fixture == fixture)
+        .unwrap_or_else(|| panic!("{fixture} is not a FLAT_GOLDENS entry"));
+    let expected_root = fixture_dir(fixture).join(FLAT_GOLDEN_DIR);
+    assert!(
+        expected_root.is_dir() && !expected_root.is_symlink(),
+        "{fixture} has no {FLAT_GOLDEN_DIR}/ golden"
+    );
+    let Some(out) = try_generate_flat(golden).unwrap_or_else(|error| panic!("{fixture}: {error}"))
+    else {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the {fixture} corpus spec is not fetched; run scripts/fetch-corpus.sh first"
+        );
+        return;
+    };
+    let differences = fixture_differences(&expected_root, out.path(), None, true)
+        .unwrap_or_else(|error| panic!("{fixture}: {error}"));
+    let report: Vec<String> = differences
+        .iter()
+        .map(|(rel, difference)| match difference {
+            FixtureDifference::Text(Some(diff)) => format!("--- {rel} ---\n{diff}"),
+            other => format!("--- {rel} --- {other:?}"),
+        })
+        .collect();
+    assert!(
+        report.is_empty(),
+        "{fixture}: crozier's flat output does not match Fern's flat golden \
+         (normalized; `-` = Fern golden, `+` = crozier). Reproduce with \
+         `just fixtures-diff {fixture}`; fix the generator, never the golden.\n{}",
+        report.join("\n")
+    );
+}
+
+macro_rules! flat_goldens {
+    ($($test:ident => $fixture:literal),* $(,)?) => {
+        $(
+            #[test]
+            fn $test() {
+                assert_flat_golden_matches($fixture);
+            }
+        )*
+
+        /// The fixture of every flat golden a test above drives.
+        const FLAT_GOLDEN_TESTS: &[(&str, &str)] = &[$((stringify!($test), $fixture)),*];
+    };
+}
+
+flat_goldens! {
+    exhaustive_flat_matches_fern => "exhaustive",
+    client_class_name_flat_matches_fern => "client-class-name",
+    audience_filter_strict_flat_matches_fern => "audience-filter-strict",
+    eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
+    exhaustive_package_name_flat_matches_fern => "exhaustive-package-name",
+}
+
+/// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec
+/// column empty when the golden uses its own fixture's spec.
+fn declared_flat_goldens() -> Vec<(String, String)> {
+    let table = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/flat-goldens.txt"),
+    )
+    .expect("read tests/fixtures/flat-goldens.txt");
+    table
+        .lines()
+        .filter(|line| !line.trim().is_empty() && !line.starts_with('#'))
+        .map(|line| {
+            let (fixture, spec) = line
+                .split_once('|')
+                .unwrap_or_else(|| panic!("flat-goldens.txt row without `|`: {line}"));
+            (fixture.to_string(), spec.to_string())
+        })
+        .collect()
+}
+
+#[test]
+fn flat_goldens_are_the_declared_set() {
+    // The table the scripts read, the registry the gate reads, the tests that
+    // drive it, and the directories on disk must all name the same goldens, so a
+    // golden cannot be generated that nothing compares, or compared from a spec
+    // the scripts would not generate it from.
+    let declared = declared_flat_goldens();
+    let registry: Vec<(String, String)> = FLAT_GOLDENS
+        .iter()
+        .map(|golden| {
+            let spec = golden
+                .corpus
+                .map_or(String::new(), |corpus| corpus.api.to_string());
+            (golden.fixture.to_string(), spec)
+        })
+        .collect();
+    assert_eq!(
+        declared, registry,
+        "FLAT_GOLDENS drifted from tests/fixtures/flat-goldens.txt"
+    );
+
+    let driven: Vec<&str> = FLAT_GOLDEN_TESTS
+        .iter()
+        .map(|(_, fixture)| *fixture)
+        .collect();
+    let registered: Vec<&str> = FLAT_GOLDENS.iter().map(|golden| golden.fixture).collect();
+    assert_eq!(
+        driven, registered,
+        "every flat golden needs exactly one test"
+    );
+
+    let on_disk: std::collections::BTreeSet<String> =
+        std::fs::read_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures"))
+            .expect("read tests/fixtures")
+            .map(|entry| entry.expect("fixture entry").path())
+            .filter(|path| path.join(FLAT_GOLDEN_DIR).exists())
+            .map(|path| path.file_name().unwrap().to_string_lossy().into_owned())
+            .collect();
+    let registered: std::collections::BTreeSet<String> = registered
+        .iter()
+        .map(|fixture| fixture.to_string())
+        .collect();
+    assert_eq!(
+        on_disk, registered,
+        "a fixture's {FLAT_GOLDEN_DIR}/ is not in FLAT_GOLDENS, or a listed one is missing"
+    );
+
+    for golden in FLAT_GOLDENS {
+        let corpus = flat_golden_corpus(golden);
+        // A spec-less golden rides a vendored document; any other uses its own.
+        if golden.corpus.is_some() {
+            assert!(
+                !fixture_dir(golden.fixture).join("openapi.yml").exists(),
+                "{}: a golden with its own spec must not name another",
+                golden.fixture
+            );
+            assert!(fixture_dir(corpus.api).join("openapi.yml").is_file());
+        }
+        // Provenance names the layout, so a flat golden is never mistaken for
+        // (or refreshed as) a packaged one.
+        let state = fixture_dir(golden.fixture)
+            .join(FLAT_GOLDEN_DIR)
+            .join(".crozier-fern-golden.json");
+        let state: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(&state)
+                .unwrap_or_else(|error| panic!("{}: {error}", state.display())),
+        )
+        .expect("flat provenance is JSON");
+        assert_eq!(
+            state["layout"], "flat",
+            "{}: flat provenance must record its layout",
+            golden.fixture
+        );
+        assert_eq!(
+            state["fern_python_sdk_version"], "5.20.0",
+            "{}",
+            golden.fixture
+        );
+    }
+}
+
 /// Measurement aid — generate every available corpus and print the exact residual
 /// `unmatched` task list. Run via `just fixtures-gaps`.
 #[test]
@@ -6933,16 +7187,17 @@ fn report_fixture_gaps() {
             .join("\n")
     );
     corpora.retain(|corpus| corpus_spec(corpus.api).is_some());
+    let flat_goldens = select_flat_goldens(None, corpus_filter.as_deref());
 
     if let Some(filter) = &corpus_filter {
         corpora.retain(|corpus| corpus.api == filter);
         assert!(
-            !corpora.is_empty(),
+            !corpora.is_empty() || !flat_goldens.is_empty(),
             "CROZIER_GAPS_CORPUS={filter:?} matched no corpus (or its spec is unfetched)"
         );
     }
 
-    let corpus_count = corpora.len();
+    let corpus_count = corpora.len() + flat_goldens.len();
     let mut total_expected = 0usize;
     let mut total_unmatched = 0usize;
     for corpus in corpora {
@@ -7014,6 +7269,30 @@ fn report_fixture_gaps() {
 
         total_expected += expected_files.len();
         total_unmatched += divergent.len();
+    }
+    for golden in flat_goldens {
+        let expected_root = fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR);
+        let out = try_generate_flat(golden)
+            .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
+            .expect("only flat goldens with an available spec are selected");
+        let differences = fixture_differences(&expected_root, out.path(), None, false)
+            .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
+        let expected_files = walk_files(&expected_root).len();
+        println!("\n=== {} ({FLAT_GOLDEN_DIR}) ===", golden.fixture);
+        println!("  {expected_files} expected file(s).");
+        if differences.is_empty() {
+            println!("  no unmatched files.");
+        } else {
+            println!(
+                "  {} file(s) differ — a flat golden has no `unmatched` list, so fix the generator:",
+                differences.len()
+            );
+            for (rel, _) in &differences {
+                println!("        \"{rel}\",");
+            }
+        }
+        total_expected += expected_files;
+        total_unmatched += differences.len();
     }
     println!(
         "\n{total_unmatched} file(s) still unmatched across all corpora; \
@@ -7204,11 +7483,24 @@ fn report_fixture_diffs() {
     let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
 
     let requested = std::env::var("CROZIER_DIFF_CORPORA").ok();
-    let (mut corpora, selection_failures) = select_diff_corpora(requested.as_deref());
+    // A flat golden with no packaged sibling is not a registered corpus, so it is
+    // selected by name here rather than through `select_diff_corpora`.
+    let requested_corpora = requested.as_deref().map(|value| {
+        value
+            .split(',')
+            .filter(|name| !is_flat_only_golden(name))
+            .collect::<Vec<_>>()
+            .join(",")
+    });
+    let (mut corpora, selection_failures) = match requested_corpora.as_deref() {
+        Some("") => (Vec::new(), Vec::new()),
+        other => select_diff_corpora(other),
+    };
+    let flat_goldens = select_flat_goldens(requested.as_deref(), corpus_filter.as_deref());
     if let Some(f) = &corpus_filter {
         corpora.retain(|c| c.api == f.as_str());
         assert!(
-            !corpora.is_empty(),
+            !corpora.is_empty() || !flat_goldens.is_empty(),
             "CROZIER_DIFF_CORPUS={f:?} matched no corpus (or its spec is unfetched)"
         );
     }
@@ -7260,44 +7552,44 @@ fn report_fixture_diffs() {
                 continue;
             }
         };
-        for (rel, difference) in &differences {
-            // A difference outside `unmatched` is a regression; explicit gaps
-            // remain ordinary task-list entries.
-            let tag = if unmatched.contains(rel.as_str()) {
-                ""
-            } else {
-                " [REGRESSION — not in `unmatched`]"
-            };
-            println!("\n--- {rel}{tag} ---");
-            match difference {
-                FixtureDifference::MissingGenerated => {
-                    println!("  Crozier did not emit this Fern file.");
-                }
-                FixtureDifference::UnexpectedGenerated => {
-                    println!("  Crozier emitted this file, but Fern did not.");
-                }
-                FixtureDifference::Text(Some(diff)) => {
-                    println!("  (`-` Fern golden, `+` crozier)\n{diff}");
-                }
-                FixtureDifference::Text(None) => {
-                    println!("  Normalized text differs; unified diff omitted in summary mode.");
-                }
-                FixtureDifference::Binary {
-                    expected,
-                    generated,
-                } => {
-                    println!(
-                        "  Binary bytes differ (Fern: {expected} bytes; Crozier: {generated} bytes)."
-                    );
-                }
-                FixtureDifference::Processing(error) => {
-                    println!("  Could not normalize/compare this file: {error}");
-                }
+        print_fixture_differences(&differences, &unmatched);
+        total += differences.len();
+    }
+    for golden in flat_goldens {
+        let label = format!("{} ({FLAT_GOLDEN_DIR})", golden.fixture);
+        let out = match try_generate_flat(golden) {
+            Ok(Some(out)) => out,
+            Ok(None) => {
+                println!("\n=== {label} ===");
+                println!(
+                    "  Comparison setup failed: fixture spec is unavailable after the fetch phase"
+                );
+                processing_failures += 1;
+                continue;
             }
-        }
-        if differences.is_empty() {
-            println!("  no differences.");
-        }
+            Err(error) => {
+                println!("\n=== {label} ===");
+                println!("  Crozier generation failed: {error}");
+                generation_failures += 1;
+                continue;
+            }
+        };
+        println!("\n=== {label} ===");
+        let differences = match fixture_differences(
+            &fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR),
+            out.path(),
+            file_filter.as_deref(),
+            include_text_diffs,
+        ) {
+            Ok(differences) => differences,
+            Err(error) => {
+                println!("  Comparison processing failed: {error}");
+                processing_failures += 1;
+                continue;
+            }
+        };
+        // A flat golden has no `unmatched` list: every difference is a regression.
+        print_fixture_differences(&differences, &std::collections::HashSet::new());
         total += differences.len();
     }
     println!(
@@ -7305,6 +7597,74 @@ fn report_fixture_diffs() {
     );
     println!("{processing_failures} comparison processing failure(s) across the reported corpora.");
     println!("\n{total} differing file(s) across the reported corpora.");
+}
+
+/// Print one golden's differences for `report_fixture_diffs`, tagging each one
+/// outside `unmatched` as a regression.
+fn print_fixture_differences(
+    differences: &[(String, FixtureDifference)],
+    unmatched: &std::collections::HashSet<&str>,
+) {
+    for (rel, difference) in differences {
+        // A difference outside `unmatched` is a regression; explicit gaps
+        // remain ordinary task-list entries.
+        let tag = if unmatched.contains(rel.as_str()) {
+            ""
+        } else {
+            " [REGRESSION — not in `unmatched`]"
+        };
+        println!("\n--- {rel}{tag} ---");
+        match difference {
+            FixtureDifference::MissingGenerated => {
+                println!("  Crozier did not emit this Fern file.");
+            }
+            FixtureDifference::UnexpectedGenerated => {
+                println!("  Crozier emitted this file, but Fern did not.");
+            }
+            FixtureDifference::Text(Some(diff)) => {
+                println!("  (`-` Fern golden, `+` crozier)\n{diff}");
+            }
+            FixtureDifference::Text(None) => {
+                println!("  Normalized text differs; unified diff omitted in summary mode.");
+            }
+            FixtureDifference::Binary {
+                expected,
+                generated,
+            } => {
+                println!(
+                    "  Binary bytes differ (Fern: {expected} bytes; Crozier: {generated} bytes)."
+                );
+            }
+            FixtureDifference::Processing(error) => {
+                println!("  Could not normalize/compare this file: {error}");
+            }
+        }
+    }
+    if differences.is_empty() {
+        println!("  no differences.");
+    }
+}
+
+/// Whether `name` is a flat golden with no registered corpus of its own.
+fn is_flat_only_golden(name: &str) -> bool {
+    FLAT_GOLDENS
+        .iter()
+        .any(|golden| golden.fixture == name && golden.corpus.is_some())
+}
+
+/// The flat goldens a reporter covers: those named by `requested` (a
+/// comma-separated list) and `filter` when given, and otherwise every one whose
+/// spec is available. An explicitly requested golden is kept even when its spec
+/// is unfetched, so the reporter can say so.
+fn select_flat_goldens(requested: Option<&str>, filter: Option<&str>) -> Vec<&'static FlatGolden> {
+    FLAT_GOLDENS
+        .iter()
+        .filter(|golden| {
+            requested.is_none_or(|value| value.split(',').any(|name| name == golden.fixture))
+                && filter.is_none_or(|name| name == golden.fixture)
+                && (requested.is_some() || corpus_spec(flat_golden_corpus(golden).api).is_some())
+        })
+        .collect()
 }
 
 /// [`unified_diff`] correctness — a real self-test so the diff the reporters and the
@@ -7508,6 +7868,25 @@ fn every_registered_corpus_is_wired_into_the_gate() {
             corpus.api
         );
         enforced.insert(test);
+    }
+    // A flat golden over a fetched spec needs the same CI wiring as its
+    // packaged sibling, or the corpus leg would skip it too.
+    for (test, fixture) in FLAT_GOLDEN_TESTS {
+        let golden = FLAT_GOLDENS
+            .iter()
+            .find(|golden| golden.fixture == *fixture)
+            .expect("a flat test drives a registered flat golden");
+        if fixture_dir(flat_golden_corpus(golden).api)
+            .join("openapi.yml")
+            .exists()
+        {
+            continue;
+        }
+        assert!(
+            recipe.iter().any(|listed| listed == test),
+            "{fixture}: {test} is missing from `just test-corpus-match`, so CI would skip its fetched spec"
+        );
+        enforced.insert((*test).to_string());
     }
 
     let listed: std::collections::BTreeSet<String> = recipe.iter().cloned().collect();

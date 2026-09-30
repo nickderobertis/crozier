@@ -13367,3 +13367,45 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
     assert!(err.to_string().contains("could not write"), "{err}");
     assert!(err.to_string().contains("locked"), "{err}");
 }
+
+#[test]
+fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
+    use crozier::settings::Layout;
+    let test_file = "tests/test_aiohttp_autodetect.py";
+    // Packaged: `src/<pkg>/` makes the package first-party, a section of its own.
+    let packaged = render_layout("acme", "acme", Layout::Packaged);
+    assert!(
+        packaged[test_file].contains("        import httpx_aiohttp\n\n        from acme.client")
+    );
+    // Flat: any package but `fern` is third-party to Fern's ruff, so no blank line.
+    let flat = render_layout("acme", "acme", Layout::Flat);
+    assert!(flat[test_file].contains("        import httpx_aiohttp\n        from acme.client"));
+    assert!(!flat[test_file].contains("        import httpx_aiohttp\n\n"));
+    // Flat `fern` is the exception Fern's `/fern` container makes resolvable.
+    let flat_fern = render_layout("fern", "fern", Layout::Flat);
+    assert!(
+        flat_fern[test_file].contains("        import httpx_aiohttp\n\n        from fern.client")
+    );
+}
+
+#[test]
+fn readme_shield_names_the_organization_crozier_derives_from_the_package() {
+    let readme = &render_package(
+        "openapi: 3.0.0\ninfo:\n  title: T\npaths:\n  /thing:\n    get:\n      operationId: getThing\n      responses:\n        '200':\n          description: OK\n",
+        "acme",
+    )["README.md"];
+    assert!(readme.starts_with("# Acme Python Library\n"), "{readme}");
+    assert!(readme.contains("utm_source=Acme%2FPython)"), "{readme}");
+    assert!(!readme.contains("Fern%2FPython"), "{readme}");
+}
+
+#[test]
+fn flat_output_carries_no_project_name() {
+    // A flat tree has no distribution: nothing in it may name the project, so two
+    // runs that differ only by project name write identical trees.
+    use crozier::settings::Layout;
+    let one = render_layout("acme", "acme-dist", Layout::Flat);
+    let other = render_layout("acme", "other-dist", Layout::Flat);
+    assert_eq!(one, other);
+    assert!(one.values().all(|contents| !contents.contains("acme-dist")));
+}

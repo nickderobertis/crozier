@@ -2,10 +2,14 @@
 # scripts/generate-fern-fixture.sh. Not listed here: `pydantic_config.enum_type:
 # python_enums`, which that script applies to EVERY fixture unconditionally (see
 # tests/fixtures/AGENTS.md); a fixture cannot opt out of it from this table.
-# fixture|audiences|audience_strict|client_class_name|extra_fields
+# `organization` replaces the Fern workspace's `fern` organization, which names
+# the module, the `{Organization}Api` client and the README heading — the names
+# crozier derives from `--package-name` (see docs/matching.md).
+# fixture|audiences|audience_strict|client_class_name|extra_fields|organization
 audience-filter|public|false||
 audience-filter-strict|public|true||
 client-class-name||false|AcmeClient|
 pydantic-extra-fields||false||ignore
 eos.local-extra-fields-forbid||false||forbid
 ziptax-node|v60|false||
+exhaustive-package-name||false|||acme

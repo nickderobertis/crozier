@@ -1,0 +1,471 @@
+
+
+from __future__ import annotations
+
+import typing
+
+import httpx
+from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from .core.logging import LogConfig, Logger
+
+if typing.TYPE_CHECKING:
+    from .endpoints_container.client import AsyncEndpointsContainerClient, EndpointsContainerClient
+    from .endpoints_content_type.client import AsyncEndpointsContentTypeClient, EndpointsContentTypeClient
+    from .endpoints_enum.client import AsyncEndpointsEnumClient, EndpointsEnumClient
+    from .endpoints_http_methods.client import AsyncEndpointsHttpMethodsClient, EndpointsHttpMethodsClient
+    from .endpoints_object.client import AsyncEndpointsObjectClient, EndpointsObjectClient
+    from .endpoints_pagination.client import AsyncEndpointsPaginationClient, EndpointsPaginationClient
+    from .endpoints_params.client import AsyncEndpointsParamsClient, EndpointsParamsClient
+    from .endpoints_primitive.client import AsyncEndpointsPrimitiveClient, EndpointsPrimitiveClient
+    from .endpoints_put.client import AsyncEndpointsPutClient, EndpointsPutClient
+    from .endpoints_union.client import AsyncEndpointsUnionClient, EndpointsUnionClient
+    from .endpoints_urls.client import AsyncEndpointsUrlsClient, EndpointsUrlsClient
+    from .inlinedrequests.client import AsyncInlinedrequestsClient, InlinedrequestsClient
+    from .noauth.client import AsyncNoauthClient, NoauthClient
+    from .noreqbody.client import AsyncNoreqbodyClient, NoreqbodyClient
+    from .reqwithheaders.client import AsyncReqwithheadersClient, ReqwithheadersClient
+
+
+class AcmeApi:
+    """
+    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
+
+    Parameters
+    ----------
+    base_url : str
+        The base url to use for requests from the client.
+
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    headers : typing.Optional[typing.Dict[str, str]]
+        Additional headers to send with every request.
+
+    timeout : typing.Optional[float]
+        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
+
+    max_retries : typing.Optional[int]
+        The default maximum number of retries for failed requests. Defaults to 2. Per-request `max_retries` in `request_options` takes precedence over this value.
+
+    stream_reconnection_enabled : typing.Optional[bool]
+        Whether to automatically reconnect on stream disconnection for resumable streaming endpoints. Defaults to True. Per-request `stream_reconnection_enabled` in `request_options` takes precedence over this value.
+
+    max_stream_reconnection_attempts : typing.Optional[int]
+        The maximum number of reconnection attempts for resumable streaming endpoints. Defaults to no limit. Per-request `max_stream_reconnection_attempts` in `request_options` takes precedence over this value.
+
+    follow_redirects : typing.Optional[bool]
+        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
+
+    httpx_client : typing.Optional[httpx.Client]
+        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
+
+    logging : typing.Optional[typing.Union[LogConfig, Logger]]
+        Configure logging for the SDK. Accepts a LogConfig dict with 'level' (debug/info/warn/error), 'logger' (custom logger implementation), and 'silent' (boolean, defaults to True) fields. You can also pass a pre-configured Logger instance.
+
+    Examples
+    --------
+    from acme import AcmeApi
+
+    client = AcmeApi(
+        token="YOUR_TOKEN",
+        base_url="https://yourhost.com/path/to/api",
+    )
+    """
+
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        max_retries: typing.Optional[int] = None,
+        stream_reconnection_enabled: typing.Optional[bool] = None,
+        max_stream_reconnection_attempts: typing.Optional[int] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
+    ):
+        _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        _defaulted_max_retries = max_retries if max_retries is not None else 2
+        self._client_wrapper = SyncClientWrapper(
+            base_url=base_url,
+            token=token,
+            headers=headers,
+            httpx_client=httpx_client
+            if httpx_client is not None
+            else httpx.Client(timeout=_defaulted_timeout, follow_redirects=follow_redirects)
+            if follow_redirects is not None
+            else httpx.Client(timeout=_defaulted_timeout),
+            timeout=_defaulted_timeout,
+            max_retries=_defaulted_max_retries,
+            stream_reconnection_enabled=stream_reconnection_enabled,
+            max_stream_reconnection_attempts=max_stream_reconnection_attempts,
+            logging=logging,
+        )
+        self._endpoints_container: typing.Optional[EndpointsContainerClient] = None
+        self._endpoints_content_type: typing.Optional[EndpointsContentTypeClient] = None
+        self._endpoints_enum: typing.Optional[EndpointsEnumClient] = None
+        self._endpoints_http_methods: typing.Optional[EndpointsHttpMethodsClient] = None
+        self._endpoints_object: typing.Optional[EndpointsObjectClient] = None
+        self._endpoints_pagination: typing.Optional[EndpointsPaginationClient] = None
+        self._endpoints_params: typing.Optional[EndpointsParamsClient] = None
+        self._endpoints_primitive: typing.Optional[EndpointsPrimitiveClient] = None
+        self._endpoints_put: typing.Optional[EndpointsPutClient] = None
+        self._endpoints_union: typing.Optional[EndpointsUnionClient] = None
+        self._endpoints_urls: typing.Optional[EndpointsUrlsClient] = None
+        self._inlinedrequests: typing.Optional[InlinedrequestsClient] = None
+        self._noauth: typing.Optional[NoauthClient] = None
+        self._noreqbody: typing.Optional[NoreqbodyClient] = None
+        self._reqwithheaders: typing.Optional[ReqwithheadersClient] = None
+
+    @property
+    def endpoints_container(self):
+        if self._endpoints_container is None:
+            from .endpoints_container.client import EndpointsContainerClient
+
+            self._endpoints_container = EndpointsContainerClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_container
+
+    @property
+    def endpoints_content_type(self):
+        if self._endpoints_content_type is None:
+            from .endpoints_content_type.client import EndpointsContentTypeClient
+
+            self._endpoints_content_type = EndpointsContentTypeClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_content_type
+
+    @property
+    def endpoints_enum(self):
+        if self._endpoints_enum is None:
+            from .endpoints_enum.client import EndpointsEnumClient
+
+            self._endpoints_enum = EndpointsEnumClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_enum
+
+    @property
+    def endpoints_http_methods(self):
+        if self._endpoints_http_methods is None:
+            from .endpoints_http_methods.client import EndpointsHttpMethodsClient
+
+            self._endpoints_http_methods = EndpointsHttpMethodsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_http_methods
+
+    @property
+    def endpoints_object(self):
+        if self._endpoints_object is None:
+            from .endpoints_object.client import EndpointsObjectClient
+
+            self._endpoints_object = EndpointsObjectClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_object
+
+    @property
+    def endpoints_pagination(self):
+        if self._endpoints_pagination is None:
+            from .endpoints_pagination.client import EndpointsPaginationClient
+
+            self._endpoints_pagination = EndpointsPaginationClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_pagination
+
+    @property
+    def endpoints_params(self):
+        if self._endpoints_params is None:
+            from .endpoints_params.client import EndpointsParamsClient
+
+            self._endpoints_params = EndpointsParamsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_params
+
+    @property
+    def endpoints_primitive(self):
+        if self._endpoints_primitive is None:
+            from .endpoints_primitive.client import EndpointsPrimitiveClient
+
+            self._endpoints_primitive = EndpointsPrimitiveClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_primitive
+
+    @property
+    def endpoints_put(self):
+        if self._endpoints_put is None:
+            from .endpoints_put.client import EndpointsPutClient
+
+            self._endpoints_put = EndpointsPutClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_put
+
+    @property
+    def endpoints_union(self):
+        if self._endpoints_union is None:
+            from .endpoints_union.client import EndpointsUnionClient
+
+            self._endpoints_union = EndpointsUnionClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_union
+
+    @property
+    def endpoints_urls(self):
+        if self._endpoints_urls is None:
+            from .endpoints_urls.client import EndpointsUrlsClient
+
+            self._endpoints_urls = EndpointsUrlsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_urls
+
+    @property
+    def inlinedrequests(self):
+        if self._inlinedrequests is None:
+            from .inlinedrequests.client import InlinedrequestsClient
+
+            self._inlinedrequests = InlinedrequestsClient(client_wrapper=self._client_wrapper)
+        return self._inlinedrequests
+
+    @property
+    def noauth(self):
+        if self._noauth is None:
+            from .noauth.client import NoauthClient
+
+            self._noauth = NoauthClient(client_wrapper=self._client_wrapper)
+        return self._noauth
+
+    @property
+    def noreqbody(self):
+        if self._noreqbody is None:
+            from .noreqbody.client import NoreqbodyClient
+
+            self._noreqbody = NoreqbodyClient(client_wrapper=self._client_wrapper)
+        return self._noreqbody
+
+    @property
+    def reqwithheaders(self):
+        if self._reqwithheaders is None:
+            from .reqwithheaders.client import ReqwithheadersClient
+
+            self._reqwithheaders = ReqwithheadersClient(client_wrapper=self._client_wrapper)
+        return self._reqwithheaders
+
+
+def _make_default_async_client(
+    timeout: typing.Optional[float],
+    follow_redirects: typing.Optional[bool],
+) -> httpx.AsyncClient:
+    try:
+        import httpx_aiohttp
+    except ImportError:
+        pass
+    else:
+        if follow_redirects is not None:
+            return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout, follow_redirects=follow_redirects)
+        return httpx_aiohttp.HttpxAiohttpClient(timeout=timeout)
+
+    if follow_redirects is not None:
+        return httpx.AsyncClient(timeout=timeout, follow_redirects=follow_redirects)
+    return httpx.AsyncClient(timeout=timeout)
+
+
+class AsyncAcmeApi:
+    """
+    Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
+
+    Parameters
+    ----------
+    base_url : str
+        The base url to use for requests from the client.
+
+    token : typing.Optional[typing.Union[str, typing.Callable[[], str]]]
+    headers : typing.Optional[typing.Dict[str, str]]
+        Additional headers to send with every request.
+
+    async_token : typing.Optional[typing.Callable[[], typing.Awaitable[str]]]
+        An async callable that returns a bearer token. Use this when token acquisition involves async I/O (e.g., refreshing tokens via an async HTTP client). When provided, this is used instead of the synchronous token for async requests.
+
+    timeout : typing.Optional[float]
+        The timeout to be used, in seconds, for requests. By default the timeout is 60 seconds, unless a custom httpx client is used, in which case this default is not enforced.
+
+    max_retries : typing.Optional[int]
+        The default maximum number of retries for failed requests. Defaults to 2. Per-request `max_retries` in `request_options` takes precedence over this value.
+
+    stream_reconnection_enabled : typing.Optional[bool]
+        Whether to automatically reconnect on stream disconnection for resumable streaming endpoints. Defaults to True. Per-request `stream_reconnection_enabled` in `request_options` takes precedence over this value.
+
+    max_stream_reconnection_attempts : typing.Optional[int]
+        The maximum number of reconnection attempts for resumable streaming endpoints. Defaults to no limit. Per-request `max_stream_reconnection_attempts` in `request_options` takes precedence over this value.
+
+    follow_redirects : typing.Optional[bool]
+        Whether the default httpx client follows redirects or not, this is irrelevant if a custom httpx client is passed in.
+
+    httpx_client : typing.Optional[httpx.AsyncClient]
+        The httpx client to use for making requests, a preconfigured client is used by default, however this is useful should you want to pass in any custom httpx configuration.
+
+    logging : typing.Optional[typing.Union[LogConfig, Logger]]
+        Configure logging for the SDK. Accepts a LogConfig dict with 'level' (debug/info/warn/error), 'logger' (custom logger implementation), and 'silent' (boolean, defaults to True) fields. You can also pass a pre-configured Logger instance.
+
+    Examples
+    --------
+    from acme import AsyncAcmeApi
+
+    client = AsyncAcmeApi(
+        token="YOUR_TOKEN",
+        base_url="https://yourhost.com/path/to/api",
+    )
+    """
+
+    def __init__(
+        self,
+        *,
+        base_url: str,
+        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
+        timeout: typing.Optional[float] = None,
+        max_retries: typing.Optional[int] = None,
+        stream_reconnection_enabled: typing.Optional[bool] = None,
+        max_stream_reconnection_attempts: typing.Optional[int] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
+    ):
+        _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
+        _defaulted_max_retries = max_retries if max_retries is not None else 2
+        self._client_wrapper = AsyncClientWrapper(
+            base_url=base_url,
+            token=token,
+            headers=headers,
+            async_token=async_token,
+            httpx_client=httpx_client
+            if httpx_client is not None
+            else _make_default_async_client(timeout=_defaulted_timeout, follow_redirects=follow_redirects),
+            timeout=_defaulted_timeout,
+            max_retries=_defaulted_max_retries,
+            stream_reconnection_enabled=stream_reconnection_enabled,
+            max_stream_reconnection_attempts=max_stream_reconnection_attempts,
+            logging=logging,
+        )
+        self._endpoints_container: typing.Optional[AsyncEndpointsContainerClient] = None
+        self._endpoints_content_type: typing.Optional[AsyncEndpointsContentTypeClient] = None
+        self._endpoints_enum: typing.Optional[AsyncEndpointsEnumClient] = None
+        self._endpoints_http_methods: typing.Optional[AsyncEndpointsHttpMethodsClient] = None
+        self._endpoints_object: typing.Optional[AsyncEndpointsObjectClient] = None
+        self._endpoints_pagination: typing.Optional[AsyncEndpointsPaginationClient] = None
+        self._endpoints_params: typing.Optional[AsyncEndpointsParamsClient] = None
+        self._endpoints_primitive: typing.Optional[AsyncEndpointsPrimitiveClient] = None
+        self._endpoints_put: typing.Optional[AsyncEndpointsPutClient] = None
+        self._endpoints_union: typing.Optional[AsyncEndpointsUnionClient] = None
+        self._endpoints_urls: typing.Optional[AsyncEndpointsUrlsClient] = None
+        self._inlinedrequests: typing.Optional[AsyncInlinedrequestsClient] = None
+        self._noauth: typing.Optional[AsyncNoauthClient] = None
+        self._noreqbody: typing.Optional[AsyncNoreqbodyClient] = None
+        self._reqwithheaders: typing.Optional[AsyncReqwithheadersClient] = None
+
+    @property
+    def endpoints_container(self):
+        if self._endpoints_container is None:
+            from .endpoints_container.client import AsyncEndpointsContainerClient
+
+            self._endpoints_container = AsyncEndpointsContainerClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_container
+
+    @property
+    def endpoints_content_type(self):
+        if self._endpoints_content_type is None:
+            from .endpoints_content_type.client import AsyncEndpointsContentTypeClient
+
+            self._endpoints_content_type = AsyncEndpointsContentTypeClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_content_type
+
+    @property
+    def endpoints_enum(self):
+        if self._endpoints_enum is None:
+            from .endpoints_enum.client import AsyncEndpointsEnumClient
+
+            self._endpoints_enum = AsyncEndpointsEnumClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_enum
+
+    @property
+    def endpoints_http_methods(self):
+        if self._endpoints_http_methods is None:
+            from .endpoints_http_methods.client import AsyncEndpointsHttpMethodsClient
+
+            self._endpoints_http_methods = AsyncEndpointsHttpMethodsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_http_methods
+
+    @property
+    def endpoints_object(self):
+        if self._endpoints_object is None:
+            from .endpoints_object.client import AsyncEndpointsObjectClient
+
+            self._endpoints_object = AsyncEndpointsObjectClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_object
+
+    @property
+    def endpoints_pagination(self):
+        if self._endpoints_pagination is None:
+            from .endpoints_pagination.client import AsyncEndpointsPaginationClient
+
+            self._endpoints_pagination = AsyncEndpointsPaginationClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_pagination
+
+    @property
+    def endpoints_params(self):
+        if self._endpoints_params is None:
+            from .endpoints_params.client import AsyncEndpointsParamsClient
+
+            self._endpoints_params = AsyncEndpointsParamsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_params
+
+    @property
+    def endpoints_primitive(self):
+        if self._endpoints_primitive is None:
+            from .endpoints_primitive.client import AsyncEndpointsPrimitiveClient
+
+            self._endpoints_primitive = AsyncEndpointsPrimitiveClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_primitive
+
+    @property
+    def endpoints_put(self):
+        if self._endpoints_put is None:
+            from .endpoints_put.client import AsyncEndpointsPutClient
+
+            self._endpoints_put = AsyncEndpointsPutClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_put
+
+    @property
+    def endpoints_union(self):
+        if self._endpoints_union is None:
+            from .endpoints_union.client import AsyncEndpointsUnionClient
+
+            self._endpoints_union = AsyncEndpointsUnionClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_union
+
+    @property
+    def endpoints_urls(self):
+        if self._endpoints_urls is None:
+            from .endpoints_urls.client import AsyncEndpointsUrlsClient
+
+            self._endpoints_urls = AsyncEndpointsUrlsClient(client_wrapper=self._client_wrapper)
+        return self._endpoints_urls
+
+    @property
+    def inlinedrequests(self):
+        if self._inlinedrequests is None:
+            from .inlinedrequests.client import AsyncInlinedrequestsClient
+
+            self._inlinedrequests = AsyncInlinedrequestsClient(client_wrapper=self._client_wrapper)
+        return self._inlinedrequests
+
+    @property
+    def noauth(self):
+        if self._noauth is None:
+            from .noauth.client import AsyncNoauthClient
+
+            self._noauth = AsyncNoauthClient(client_wrapper=self._client_wrapper)
+        return self._noauth
+
+    @property
+    def noreqbody(self):
+        if self._noreqbody is None:
+            from .noreqbody.client import AsyncNoreqbodyClient
+
+            self._noreqbody = AsyncNoreqbodyClient(client_wrapper=self._client_wrapper)
+        return self._noreqbody
+
+    @property
+    def reqwithheaders(self):
+        if self._reqwithheaders is None:
+            from .reqwithheaders.client import AsyncReqwithheadersClient
+
+            self._reqwithheaders = AsyncReqwithheadersClient(client_wrapper=self._client_wrapper)
+        return self._reqwithheaders

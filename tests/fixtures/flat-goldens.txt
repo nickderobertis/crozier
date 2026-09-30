@@ -1,0 +1,18 @@
+# The fixtures carrying a flat Fern golden (`expected-flat/`): Fern's output for a
+# `local-file-system` output path, which crozier reproduces with `layout: flat`.
+# Read by scripts/generate-fern-fixture.sh (`--layout flat` refuses an undeclared
+# fixture), scripts/fern-goldens (refreshes the flat golden of every listed
+# CORPUS.md row beside its packaged one) and tests/e2e.rs (`FLAT_GOLDENS` must
+# list exactly these). A flat golden takes its fixture's settings from
+# fern-generator-config.txt.
+#
+# `spec` names the fixture whose vendored openapi.yml the golden generates from,
+# for a golden directory with no spec of its own — a second flat golden over an
+# already-vendored document, differing only by a setting. Empty means the
+# fixture's own spec (vendored, or fetched for a CORPUS.md row).
+# fixture|spec
+exhaustive|
+client-class-name|
+audience-filter-strict|
+eos.local-extra-fields-forbid|
+exhaustive-package-name|exhaustive

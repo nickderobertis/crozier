@@ -3130,6 +3130,20 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
             ),
         );
     }
+    let mut aiohttp_test = substitute_names(include_str!(
+        "../assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
+    ));
+    // Fern's isort pass files the SDK's own import in a first-party section of
+    // its own when ruff can find the package: always in the packaged tree
+    // (`src/<pkg>/`), and in the flat tree only for a package named `fern`, which
+    // ruff resolves inside Fern's `/fern` container. Any other flat package is
+    // third-party to it and joins `import httpx_aiohttp` with no blank line.
+    if layout == Layout::Flat && pkg != "fern" {
+        aiohttp_test = aiohttp_test.replace(
+            &format!("        import httpx_aiohttp\n\n        from {pkg}."),
+            &format!("        import httpx_aiohttp\n        from {pkg}."),
+        );
+    }
     let mut files = Vec::new();
     if layout == Layout::Packaged {
         files.push(GeneratedFile {
@@ -3160,9 +3174,7 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
         },
         GeneratedFile {
             path: PathBuf::from("tests/test_aiohttp_autodetect.py"),
-            contents: substitute_names(include_str!(
-                "../assets/scaffolding/test_aiohttp_autodetect.py.tmpl"
-            )),
+            contents: aiohttp_test,
         },
     ]);
     files
