@@ -26,6 +26,7 @@ enum Class {
     NamedTypeDefault,
     ExtensionReferenceCycle,
     UnresolvedSchemaReference,
+    HeapExhausted,
 }
 
 impl Class {
@@ -45,6 +46,7 @@ impl Class {
             Self::NamedTypeDefault => "named-type-default",
             Self::ExtensionReferenceCycle => "extension-reference-cycle",
             Self::UnresolvedSchemaReference => "unresolved-schema-reference",
+            Self::HeapExhausted => "heap-exhausted",
         }
     }
 }
@@ -870,6 +872,74 @@ fn check_schema_resolution(
     Ok(())
 }
 
+fn expanding_union_cycle(
+    schema: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    extends: bool,
+    expansions: usize,
+    active: &mut std::collections::HashMap<String, usize>,
+) -> bool {
+    if ignored_reference_node(schema) {
+        return false;
+    }
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        let Some(pointer) = reference.strip_prefix('#') else {
+            return false;
+        };
+        let Some(target) = yaml_pointer(root, pointer) else {
+            return false;
+        };
+        let partial = reference
+            .strip_prefix("#/components/schemas/")
+            .is_some_and(|suffix| suffix.split('/').count() > 1);
+        let union_base = extends
+            && ["oneOf", "anyOf"].iter().any(|key| {
+                target
+                    .get(key)
+                    .and_then(serde_yaml_ng::Value::as_sequence)
+                    .is_some_and(|variants| variants.len() > 1)
+            })
+            && !schema_is_model(target, root, &mut Vec::new());
+        let expansions = expansions + usize::from(partial || union_base);
+        if let Some(previous) = active.get(reference) {
+            return expansions > *previous;
+        }
+        active.insert(reference.to_owned(), expansions);
+        let cycle = expanding_union_cycle(target, root, false, expansions, active);
+        active.remove(reference);
+        return cycle;
+    }
+    if let Some(properties) = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        if properties
+            .values()
+            .any(|property| expanding_union_cycle(property, root, false, expansions, active))
+        {
+            return true;
+        }
+    }
+    for key in ["items", "additionalProperties"] {
+        if let Some(child) = schema.get(key) {
+            if expanding_union_cycle(child, root, false, expansions, active) {
+                return true;
+            }
+        }
+    }
+    for key in ["allOf", "oneOf", "anyOf"] {
+        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            if children
+                .iter()
+                .any(|child| expanding_union_cycle(child, root, key == "allOf", expansions, active))
+            {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 fn check_schema(
     schema: &serde_yaml_ng::Value,
     context: &SchemaContext<'_>,
@@ -894,6 +964,20 @@ fn check_schema(
                 }
             }
         }
+    }
+    if ["oneOf", "anyOf"].iter().any(|key| {
+        schema
+            .get(key)
+            .and_then(serde_yaml_ng::Value::as_sequence)
+            .is_some_and(|variants| variants.len() > 1)
+    }) && expanding_union_cycle(
+        schema,
+        context.root,
+        false,
+        0,
+        &mut std::collections::HashMap::new(),
+    ) {
+        return refusal(context.path, context.strict, Class::HeapExhausted, element);
     }
     check_object_extension(schema, context, element)?;
     if let Some(default) = schema

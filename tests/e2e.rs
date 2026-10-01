@@ -16457,3 +16457,58 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
         }
     }
 }
+
+#[test]
+fn recursive_inline_union_refusal_preserves_named_recursion() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("heap-exhausted");
+    for case in [
+        "probe.yml",
+        "single-child-control.yml",
+        "recursive-union-allof-control.json",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("heap-exhausted", &run, "components/schemas", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            probe.replace(
+                "        composition:\n",
+                &format!("        composition:\n          {spelling}: true\n"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{spelling}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for case in [
+        "named-object-recursion-control.yml",
+        "nonrecursive-union-control.yml",
+        "named-binary-recursion-control.json",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}

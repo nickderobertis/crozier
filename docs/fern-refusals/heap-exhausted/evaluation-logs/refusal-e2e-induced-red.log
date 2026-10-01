@@ -1,0 +1,30 @@
+Induced earlier state: only heap-exhausted predicate disabled; restored after run.
+   Compiling crozier v0.0.87 (/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.15s
+────────────
+ Nextest run ID 87a9545a-d1c5-49c4-bcf0-de004e849d40 with nextest profile: default
+    Starting 1 test across 1 binary (446 tests and 6 binaries skipped)
+        FAIL [   0.114s] (1/1) crozier::e2e recursive_inline_union_refusal_preserves_named_recursion
+  stdout ───
+
+    running 1 test
+    test recursive_inline_union_refusal_preserves_named_recursion ... FAILED
+
+    failures:
+
+    failures:
+        recursive_inline_union_refusal_preserves_named_recursion
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 446 filtered out; finished in 0.11s
+
+  stderr ───
+
+    thread 'recursive_inline_union_refusal_preserves_named_recursion' (705653) panicked at tests/e2e.rs:16474:13:
+    probe.yml: heap-exhausted: crozier generated from the probe in its mode; the class says it is refused (44 file(s) written)
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.116s] 1 test run: 0 passed, 1 failed, 446 skipped
+        FAIL [   0.114s] (1/1) crozier::e2e recursive_inline_union_refusal_preserves_named_recursion
+error: test run failed
