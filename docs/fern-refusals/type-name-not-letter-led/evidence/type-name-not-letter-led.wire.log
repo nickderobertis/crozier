@@ -1,0 +1,2 @@
+exit=0
+Declared schema 123456 parses/serializes id exactly; generated class One23456 inserts One absent from document
