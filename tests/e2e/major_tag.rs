@@ -397,3 +397,53 @@ fn the_tag_points_at_the_release_commit_not_the_checked_out_head() {
         "v0 followed the checkout's HEAD instead of the release tag"
     );
 }
+
+/// A well-formed tag that was never released has no commit to point at: an
+/// error, and the floating tag stays where the last release put it.
+#[test]
+fn a_tag_missing_from_origin_is_an_error() {
+    let origin = Origin::new();
+    let released = origin.release("v0.1.10");
+    origin.update("v0.1.10");
+
+    let error = fails(&origin.update("v0.1.11"));
+    assert!(
+        error.contains("no commit for tag 'v0.1.11'") && error.contains("ACTION:"),
+        "{error}"
+    );
+    assert_eq!(origin.commit_of("v0").as_deref(), Some(released.as_str()));
+}
+
+/// Origin refusing the tag (a protected tag, a token without
+/// `contents: write`) fails the job and says what it needs, rather than
+/// reporting a move that never reached consumers.
+#[test]
+fn a_refused_push_is_an_error() {
+    let origin = Origin::new();
+    let released = origin.release("v0.1.10");
+    origin.update("v0.1.10");
+    let newer = origin.release("v0.1.11");
+    assert_ne!(newer, released);
+
+    let hook = origin.bare.path().join("hooks/pre-receive");
+    std::fs::write(
+        &hook,
+        "#!/bin/sh\necho 'refs/tags/v0 is protected' >&2\nexit 1\n",
+    )
+    .expect("write the hook");
+    std::fs::set_permissions(&hook, std::os::unix::fs::PermissionsExt::from_mode(0o755))
+        .expect("make the hook executable");
+
+    let error = fails(&origin.update("v0.1.11"));
+    assert!(
+        error.contains("cannot update 'v0' on 'origin'")
+            && error.contains("contents: write")
+            && error.contains("ACTION:"),
+        "{error}"
+    );
+    assert_eq!(
+        origin.commit_of("v0").as_deref(),
+        Some(released.as_str()),
+        "the refused push still moved v0"
+    );
+}

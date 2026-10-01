@@ -1,5 +1,6 @@
 # The crozier GitHub Action
 
+<!-- llmlint: ignore[no_redundant_instruction_pointers] This page is what a GitHub Marketplace or README reader lands on, before any AGENTS.md: it must name the command the Action wraps, and compare.md is that command's one reference. -->
 `nickderobertis/crozier` is a GitHub Action that runs
 [`crozier compare`](compare.md) in a workflow and reports what it found in the
 job's step summary, its outputs and its exit status. It wraps the CLI and adds
@@ -24,7 +25,7 @@ produces the reference. For a team moving from Fern, the
 | Input | Default | Meaning |
 | --- | --- | --- |
 | `paths` | empty: the whole repository | Whitespace-separated crozier config files, or directories to search for them, as `crozier compare [PATHS...]` takes. |
-| `reference-command` | empty: each config's `reference.command` | The command that writes each generator's reference SDK, used for every generator found (`--reference-command`). It runs under `sh -c` from each config file's directory, with the `CROZIER_REFERENCE_*` environment [`compare.md`](compare.md#the-reference-command-contract) describes. |
+| `reference-command` | empty: each config's `reference.command` | The command that writes each generator's reference SDK, used for every generator found (`--reference-command`). It runs under `sh -c` from each config file's directory, with the `CROZIER_REFERENCE_*` environment `crozier compare` gives every reference command. |
 | `diff-artifact-name` | `crozier-compare-diffs` | Name of the artifact the per-generator diffs are uploaded as when anything mismatched. |
 | `version` | empty: the release the action's own ref names | Empty installs `v<version>` for the `[package] version` in the action's own `Cargo.toml` — at `@vX.Y.Z` that is `vX.Y.Z`, at `@v0` the release `v0` points at — and fails, naming this input, when that file cannot be read; it never falls back to the latest release. Otherwise a release tag such as `v0.1.0`, `latest` for the newest release, or `local` to build the action's own source with `cargo`. |
 
@@ -82,14 +83,13 @@ signal; in the step log the CLI and the Action print `matched` in green,
 
 **Colour.** The Action sets `CLICOLOR_FORCE=1`, so the log is coloured even
 though it is not a terminal. Set `NO_COLOR` (to any non-empty value) in your
-workflow's `env` to turn colour off; it wins, by the CLI's own
-[rule](compare.md#colour).
+workflow's `env` to turn colour off; it wins, by the CLI's own colour rule.
 
 **Artifact.** When anything mismatched, the per-generator unified diffs
 (`crozier compare --diff-dir`) are uploaded as one artifact named by
 `diff-artifact-name`. Nothing is uploaded otherwise.
 
-**Timings.** Every figure is the CLI's own ([`compare.md`](compare.md#timings)):
+**Timings.** Every figure is the CLI's own:
 
 - **reference time** — the wall time of that generator's one reference-command
   invocation, everything the command does included. A first invocation may

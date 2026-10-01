@@ -77,10 +77,19 @@ impl ActionRun {
     }
 }
 
+/// The `bash` on this process's PATH, as an absolute path.
+fn bash() -> PathBuf {
+    std::env::split_paths(&std::env::var_os("PATH").unwrap())
+        .map(|dir| dir.join("bash"))
+        .find(|candidate| candidate.is_file())
+        .expect("bash is on PATH")
+}
+
 /// The step environment: a fresh runner directory, the colour variables cleared
 /// so only what the action and `env` set reaches the scripts, then `env`.
 fn step(script: &str, cwd: &Path, runner_temp: &Path, env: &[(&str, &str)]) -> Command {
-    let mut command = Command::new("bash");
+    // Resolved here, so a step whose PATH a test narrows still starts.
+    let mut command = Command::new(bash());
     command
         .arg(repo_root().join("scripts/action").join(script))
         .current_dir(cwd)
@@ -496,119 +505,212 @@ fn finish_refuses_a_missing_exit_code() {
     assert!(String::from_utf8_lossy(&out.stderr).contains("is not an exit status"));
 }
 
-// ---------------------------------------------------------------------------
-// The install step. `scripts/install.sh` downloads a published release, which
-// no offline test can reach, so the action's own checkout is stood in for by a
-// directory holding a recording stand-in for that installer (and for `cargo`
-// under `local`). What is under test is the action's choice of what to install,
-// made by the real scripts/action/install.sh.
-
-/// A stand-in action checkout: the given `Cargo.toml` (when any), the real
-/// `install-ruff.sh` and `.ruff-version`, and an `install.sh` that records its
-/// arguments and installs an executable `crozier` where `--to` says.
-fn action_checkout(manifest: Option<&str>) -> tempfile::TempDir {
-    let dir = tempfile::tempdir().unwrap();
-    if let Some(manifest) = manifest {
-        write(dir.path(), "Cargo.toml", manifest);
-    }
-    write_executable(
-        dir.path(),
-        "scripts/install-ruff.sh",
-        &std::fs::read_to_string(repo_root().join("scripts/install-ruff.sh")).unwrap(),
-    );
-    std::fs::copy(
-        repo_root().join(".ruff-version"),
-        dir.path().join(".ruff-version"),
+/// The compare step refuses to run outside a runner rather than write its
+/// outputs nowhere, and says what is missing.
+#[test]
+fn compare_refuses_a_missing_runner_environment() {
+    let runner_temp = tempfile::tempdir().unwrap();
+    let output_file = runner_temp.path().join("github-output");
+    std::fs::write(&output_file, "").unwrap();
+    // Only `dirname` (to find lib.sh) on PATH: no jq.
+    let bin = tempfile::tempdir().unwrap();
+    let dirname = Command::new("sh")
+        .args(["-c", "command -v dirname"])
+        .output()
+        .unwrap();
+    std::os::unix::fs::symlink(
+        String::from_utf8(dirname.stdout).unwrap().trim(),
+        bin.path().join("dirname"),
     )
     .unwrap();
-    write_executable(
-        dir.path(),
-        "scripts/install.sh",
-        "#!/bin/sh\nset -eu\nprintf '%s\\n' \"$@\" > \"$RECORD/install-args\"\n\
-         while [ $# -gt 0 ]; do case \"$1\" in --to) to=\"$2\"; shift 2 ;; *) shift ;; esac; done\n\
-         mkdir -p \"$to\"\nprintf '#!/bin/sh\\n' > \"$to/crozier\"\nchmod +x \"$to/crozier\"\n",
-    );
-    dir
+
+    for (missing, env, named) in [
+        (
+            "RUNNER_TEMP",
+            vec![("GITHUB_OUTPUT", output_file.as_path())],
+            "RUNNER_TEMP is not set",
+        ),
+        ("GITHUB_OUTPUT", vec![], "GITHUB_OUTPUT is not set"),
+        (
+            "jq",
+            vec![
+                ("GITHUB_OUTPUT", output_file.as_path()),
+                ("PATH", bin.path()),
+            ],
+            "jq is not on PATH",
+        ),
+    ] {
+        let mut command = step("compare.sh", repo_root(), runner_temp.path(), &[]);
+        if missing == "RUNNER_TEMP" {
+            command.env_remove("RUNNER_TEMP");
+        }
+        for (key, value) in env {
+            command.env(key, value);
+        }
+        let out = command.output().unwrap();
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(1), "{missing}: {stderr}");
+        assert!(
+            stderr.contains(named) && stderr.contains("ACTION:"),
+            "{missing}: {stderr}"
+        );
+    }
+    assert_eq!(std::fs::read_to_string(&output_file).unwrap(), "");
+}
+
+// The install step, run by the real scripts/action/install.sh with the real
+// scripts/install.sh it calls. A published release is out of an offline test's
+// reach, so the release is served from a local mirror laid out as the release
+// workflow publishes one (`CROZIER_RELEASE_BASE_URL`, with the checksum under a
+// separate root, `CROZIER_CHECKSUM_BASE_URL`), holding the crozier binary these
+// tests built.
+
+/// The release-asset target `scripts/install.sh` detects on this host.
+fn host_target() -> String {
+    let os = match std::env::consts::OS {
+        "linux" => "unknown-linux-gnu",
+        "macos" => "apple-darwin",
+        other => panic!("no release target for {other}"),
+    };
+    format!("{}-{os}", std::env::consts::ARCH)
+}
+
+/// A local release mirror holding `tags`, each archive the real `crozier`.
+struct Mirror {
+    dir: tempfile::TempDir,
+}
+
+impl Mirror {
+    fn new(tags: &[&str]) -> Self {
+        let dir = tempfile::tempdir().unwrap();
+        let staging = dir.path().join("staging");
+        std::fs::create_dir_all(&staging).unwrap();
+        std::fs::copy(env!("CARGO_BIN_EXE_crozier"), staging.join("crozier")).unwrap();
+        for tag in tags {
+            let base = format!("crozier-{tag}-{}", host_target());
+            let releases = dir.path().join("releases").join(tag);
+            let sums = dir.path().join("sums").join(tag);
+            std::fs::create_dir_all(&releases).unwrap();
+            std::fs::create_dir_all(&sums).unwrap();
+            // The archive and its `.sha256` as the release workflow names them
+            // (gzip's fastest level: the binary is large and only its bytes
+            // matter here).
+            let status = Command::new("sh")
+                .arg("-c")
+                .arg(
+                    "set -e; tar -cf - -C \"$1\" crozier | gzip -1 > \"$2/$4.tar.gz\"; \
+                     cd \"$2\"; if command -v sha256sum >/dev/null; then sha256sum \"$4.tar.gz\"; \
+                     else shasum -a 256 \"$4.tar.gz\"; fi > \"$3/$4.sha256\"",
+                )
+                .arg("sh")
+                .arg(&staging)
+                .arg(&releases)
+                .arg(&sums)
+                .arg(&base)
+                .status()
+                .unwrap();
+            assert!(status.success());
+        }
+        Mirror { dir }
+    }
+
+    fn env(&self) -> [(&'static str, String); 2] {
+        [
+            (
+                "CROZIER_RELEASE_BASE_URL",
+                format!("file://{}", self.dir.path().join("releases").display()),
+            ),
+            (
+                "CROZIER_CHECKSUM_BASE_URL",
+                format!("file://{}", self.dir.path().join("sums").display()),
+            ),
+        ]
+    }
 }
 
 struct Install {
     status: i32,
     stderr: String,
     outputs: BTreeMap<String, String>,
-    installer_args: Option<Vec<String>>,
-    record: PathBuf,
-    runner_temp: PathBuf,
-    _dirs: [tempfile::TempDir; 2],
+    runner_temp: tempfile::TempDir,
 }
 
-fn install(action: &Path, version: &str, path: Option<&str>) -> Install {
+impl Install {
+    fn root(&self) -> PathBuf {
+        self.runner_temp.path().join("crozier-action")
+    }
+
+    /// The `bin` output, checked to be the installed binary's path.
+    fn bin(&self) -> PathBuf {
+        let bin = self.root().join("bin/crozier");
+        assert_eq!(
+            self.outputs.get("bin").map(String::as_str),
+            Some(bin.to_str().unwrap()),
+            "{}",
+            self.stderr
+        );
+        bin
+    }
+}
+
+/// Run the install step with `version` from `action` (its own checkout), with
+/// the mirror's variables and any `env`.
+fn install(action: &Path, version: &str, mirror: Option<&Mirror>, env: &[(&str, &str)]) -> Install {
     let runner_temp = tempfile::tempdir().unwrap();
-    let scratch = tempfile::tempdir().unwrap();
-    let record = scratch.path().join("record");
-    std::fs::create_dir_all(&record).unwrap();
     let output_file = runner_temp.path().join("github-output");
     std::fs::write(&output_file, "").unwrap();
-    let mut command = step("install.sh", action, runner_temp.path(), &[]);
+    let mut command = step("install.sh", action, runner_temp.path(), env);
     command
         .env("GITHUB_ACTION_PATH", action)
         .env("GITHUB_OUTPUT", &output_file)
         .env("VERSION", version)
-        .env("RECORD", &record)
-        .env("HOME", scratch.path())
         .env_remove("GITHUB_PATH")
-        .env_remove("RUNNER_OS");
-    if let Some(path) = path {
-        command.env("PATH", path);
+        .env_remove("CROZIER_VERSION")
+        .env_remove("CROZIER_RELEASE_BASE_URL")
+        .env_remove("CROZIER_CHECKSUM_BASE_URL");
+    if !env.iter().any(|(key, _)| *key == "RUNNER_OS") {
+        command.env_remove("RUNNER_OS");
+    }
+    for (key, value) in mirror.map(Mirror::env).into_iter().flatten() {
+        command.env(key, value);
     }
     let out = command.output().unwrap();
-    let args = record.join("install-args");
     Install {
         status: out.status.code().unwrap(),
         stderr: String::from_utf8_lossy(&out.stderr).into_owned(),
         outputs: parse_outputs(&std::fs::read_to_string(&output_file).unwrap()),
-        installer_args: args.exists().then(|| {
-            std::fs::read_to_string(&args)
-                .unwrap()
-                .lines()
-                .map(str::to_string)
-                .collect()
-        }),
-        record,
-        runner_temp: runner_temp.path().to_path_buf(),
-        _dirs: [runner_temp, scratch],
+        runner_temp,
     }
 }
 
-fn installed_bin(run: &Install) -> PathBuf {
-    run.runner_temp.join("crozier-action/bin")
+fn version_of(bin: &Path) -> String {
+    let out = Command::new(bin).arg("--version").output().unwrap();
+    assert!(out.status.success());
+    String::from_utf8(out.stdout).unwrap().trim().to_string()
 }
 
 /// Empty `version` installs `v` + the `[package] version` of the action's own
-/// `Cargo.toml` — here this repository's real manifest, whose version Cargo
-/// itself read for this build (`CARGO_PKG_VERSION`), so the expectation does not
-/// share the action's own reading of it.
+/// `Cargo.toml` — here this repository itself is the action's checkout, whose
+/// version Cargo read for this build (`CARGO_PKG_VERSION`), so the expectation
+/// does not share the action's own reading of the manifest. The mirror holds
+/// only that release, so nothing else could have been installed.
 #[test]
 fn an_empty_version_installs_the_release_the_action_ref_names() {
-    let manifest = std::fs::read_to_string(repo_root().join("Cargo.toml")).unwrap();
-    let action = action_checkout(Some(&manifest));
-    let run = install(action.path(), "", None);
+    let own = format!("v{}", env!("CARGO_PKG_VERSION"));
+    let mirror = Mirror::new(&[&own]);
+    let run = install(repo_root(), "", Some(&mirror), &[]);
 
     assert_eq!(run.status, 0, "{}", run.stderr);
-    let bin = installed_bin(&run);
-    assert_eq!(
-        run.installer_args.as_deref(),
-        Some(
-            &[
-                "--to".to_string(),
-                bin.display().to_string(),
-                "--version".to_string(),
-                format!("v{}", env!("CARGO_PKG_VERSION")),
-            ][..]
-        )
+    assert!(
+        run.stderr
+            .contains(&format!("crozier-{own}-{}.tar.gz", host_target())),
+        "{}",
+        run.stderr
     );
+    assert!(run.stderr.contains("checksum OK."), "{}", run.stderr);
     assert_eq!(
-        run.outputs.get("bin").map(String::as_str),
-        Some(bin.join("crozier").to_str().unwrap())
+        version_of(&run.bin()),
+        format!("crozier {}", env!("CARGO_PKG_VERSION"))
     );
 }
 
@@ -617,14 +719,27 @@ fn an_empty_version_installs_the_release_the_action_ref_names() {
 /// the latest release.
 #[test]
 fn an_unreadable_own_version_fails_naming_the_version_input() {
+    // A mirror holding every version named here: a fallback would have
+    // something to install.
+    let mirror = Mirror::new(&["v1.2.3"]);
     for manifest in [
         None,
         Some("[dependencies]\nversion = \"1.2.3\"\n"),
         Some("[package]\nname = \"crozier\"\nversion = \"main\"\n"),
         Some("[package]\nversion = \"1.2.3\" trailing\n"),
     ] {
-        let action = action_checkout(manifest);
-        let run = install(action.path(), "", None);
+        // The real installer beside the manifest.
+        let action = tempfile::tempdir().unwrap();
+        if let Some(manifest) = manifest {
+            write(action.path(), "Cargo.toml", manifest);
+        }
+        std::fs::create_dir_all(action.path().join("scripts")).unwrap();
+        std::fs::copy(
+            repo_root().join("scripts/install.sh"),
+            action.path().join("scripts/install.sh"),
+        )
+        .unwrap();
+        let run = install(action.path(), "", Some(&mirror), &[]);
         assert_eq!(run.status, 1, "{manifest:?}: {}", run.stderr);
         assert!(
             run.stderr
@@ -633,108 +748,170 @@ fn an_unreadable_own_version_fails_naming_the_version_input() {
             "{manifest:?}: {}",
             run.stderr
         );
-        assert_eq!(run.installer_args, None, "{manifest:?} installed something");
+        assert!(!run.stderr.contains("downloading"), "{}", run.stderr);
         assert!(!run.outputs.contains_key("bin"));
+        assert!(!run.root().join("bin/crozier").exists());
     }
 }
 
-/// `latest` and an exact tag install what they name.
+/// An exact tag installs that release; one that was never published fails the
+/// step, with no binary and no `bin` output.
 #[test]
-fn latest_and_an_exact_tag_install_what_they_name() {
-    let action = action_checkout(Some("[package]\nversion = \"9.9.9\"\n"));
-    let latest = install(action.path(), "latest", None);
-    assert_eq!(latest.status, 0, "{}", latest.stderr);
-    let bin = installed_bin(&latest).display().to_string();
-    assert_eq!(latest.installer_args, Some(vec!["--to".to_string(), bin]));
+fn an_exact_tag_installs_that_release() {
+    let mirror = Mirror::new(&["v0.0.80"]);
+    let run = install(repo_root(), "v0.0.80", Some(&mirror), &[]);
+    assert_eq!(run.status, 0, "{}", run.stderr);
+    assert!(
+        run.stderr
+            .contains(&format!("crozier-v0.0.80-{}.tar.gz", host_target())),
+        "{}",
+        run.stderr
+    );
+    assert!(version_of(&run.bin()).starts_with("crozier "));
 
-    let tagged = install(action.path(), "v0.0.80", None);
-    assert_eq!(tagged.status, 0, "{}", tagged.stderr);
-    let bin = installed_bin(&tagged).display().to_string();
+    let missing = install(repo_root(), "v0.0.81", Some(&mirror), &[]);
+    assert_ne!(missing.status, 0);
+    assert!(
+        missing.stderr.contains("download failed"),
+        "{}",
+        missing.stderr
+    );
+    assert!(!missing.outputs.contains_key("bin"));
+}
+
+/// `latest` asks the installer for its newest release, which it resolves from
+/// GitHub's API.
+#[test]
+fn latest_installs_the_newest_release() {
+    let action = tempfile::tempdir().unwrap();
+    // llmlint: ignore[e2e_not_mocked] `latest` is resolved by scripts/install.sh from api.github.com, which an offline test cannot reach and a live one would make depend on whatever was released last; the stand-in records that the step asked for no particular version, which is the whole of the action's part. The real installer is driven over a local mirror by the tests above.
+    write_executable(
+        action.path(),
+        "scripts/install.sh",
+        "#!/bin/sh\nset -eu\nprintf '%s\\n' \"$@\" > \"$RECORD\"\n\
+         while [ $# -gt 0 ]; do case \"$1\" in --to) to=\"$2\"; shift 2 ;; *) shift ;; esac; done\n\
+         mkdir -p \"$to\"\nprintf '#!/bin/sh\\n' > \"$to/crozier\"\nchmod +x \"$to/crozier\"\n",
+    );
+    let record = action.path().join("args");
+    let run = install(
+        action.path(),
+        "latest",
+        None,
+        &[("RECORD", record.to_str().unwrap())],
+    );
+    assert_eq!(run.status, 0, "{}", run.stderr);
+    let bin_dir = run.root().join("bin");
     assert_eq!(
-        tagged.installer_args,
-        Some(vec![
-            "--to".to_string(),
-            bin,
-            "--version".to_string(),
-            "v0.0.80".to_string()
-        ])
+        std::fs::read_to_string(&record).unwrap(),
+        format!("--to\n{}\n", bin_dir.display())
+    );
+    run.bin();
+}
+
+/// A minimal crate standing in for the action's own source: `cargo install`
+/// builds it for real, offline, in seconds.
+fn local_source(bin_name: &str) -> tempfile::TempDir {
+    let dir = tempfile::tempdir().unwrap();
+    write(
+        dir.path(),
+        "Cargo.toml",
+        &format!("[package]\nname = \"{bin_name}\"\nversion = \"9.9.9\"\nedition = \"2021\"\n"),
+    );
+    write(
+        dir.path(),
+        "Cargo.lock",
+        &format!("version = 3\n\n[[package]]\nname = \"{bin_name}\"\nversion = \"9.9.9\"\n"),
+    );
+    write(
+        dir.path(),
+        "src/main.rs",
+        "fn main() { println!(\"crozier 9.9.9 (built from the action's source)\"); }\n",
+    );
+    dir
+}
+
+/// `local` builds the action's own checkout with `cargo install` — never a
+/// published release, so no mirror is offered.
+#[test]
+fn local_builds_the_action_source_with_cargo() {
+    let source = local_source("crozier");
+    let run = install(source.path(), "local", None, &[]);
+    assert_eq!(run.status, 0, "{}", run.stderr);
+    assert_eq!(
+        version_of(&run.bin()),
+        "crozier 9.9.9 (built from the action's source)"
     );
 }
 
-/// `local` builds the action's own checkout with `cargo install`.
+/// An install that leaves no `crozier` binary fails the step rather than hand
+/// the compare step a path to nothing.
 #[test]
-fn local_builds_the_action_source_with_cargo() {
-    let action = action_checkout(None);
-    let stubs = tempfile::tempdir().unwrap();
-    write_executable(
-        stubs.path(),
-        "cargo",
-        "#!/bin/sh\nset -eu\nprintf '%s\\n' \"$@\" > \"$RECORD/cargo-args\"\n\
-         while [ $# -gt 0 ]; do case \"$1\" in --root) root=\"$2\"; shift 2 ;; *) shift ;; esac; done\n\
-         mkdir -p \"$root/bin\"\nprintf '#!/bin/sh\\n' > \"$root/bin/crozier\"\nchmod +x \"$root/bin/crozier\"\n",
+fn an_install_without_a_crozier_binary_fails() {
+    let source = local_source("not-crozier");
+    let run = install(source.path(), "local", None, &[]);
+    assert_eq!(run.status, 1, "{}", run.stderr);
+    assert!(
+        run.stderr.contains("no crozier binary at") && run.stderr.contains("ACTION:"),
+        "{}",
+        run.stderr
     );
-    let path = format!(
-        "{}:{}",
-        stubs.path().display(),
-        std::env::var("PATH").unwrap()
+    assert!(!run.outputs.contains_key("bin"));
+}
+
+/// The action runs on Linux and macOS runners only, and says so on Windows
+/// before installing anything.
+#[test]
+fn a_windows_runner_is_refused() {
+    let run = install(repo_root(), "v0.0.80", None, &[("RUNNER_OS", "Windows")]);
+    assert_eq!(run.status, 1);
+    assert!(
+        run.stderr
+            .contains("the crozier action runs on Linux and macOS runners only"),
+        "{}",
+        run.stderr
     );
-    let run = install(action.path(), "local", Some(&path));
-    assert_eq!(run.status, 0, "{}", run.stderr);
-    assert_eq!(run.installer_args, None, "local downloaded a release");
-    let cargo_args: Vec<String> = std::fs::read_to_string(run.record.join("cargo-args"))
-        .unwrap()
-        .lines()
-        .map(str::to_string)
-        .collect();
-    let root = run.runner_temp.join("crozier-action");
-    assert_eq!(
-        cargo_args,
-        [
-            "install",
-            "--path",
-            action.path().to_str().unwrap(),
-            "--locked",
-            "--root",
-            root.to_str().unwrap(),
-            "--quiet"
-        ]
-    );
-    assert_eq!(
-        run.outputs.get("bin").map(String::as_str),
-        Some(root.join("bin/crozier").to_str().unwrap())
-    );
+    assert!(!run.root().exists());
 }
 
 /// `ruff` is crozier's own dependency: absent, the action installs the version
-/// `.ruff-version` pins (through the real `install-ruff.sh`); present, it is
+/// `.ruff-version` pins, through the real `install-ruff.sh`; present, it is
 /// left alone.
 #[test]
 fn ruff_is_installed_at_its_pinned_version_only_when_absent() {
     let pinned = std::fs::read_to_string(repo_root().join(".ruff-version")).unwrap();
-    let action = action_checkout(Some("[package]\nversion = \"9.9.9\"\n"));
+    let mirror = Mirror::new(&["v0.0.80"]);
+    let scratch = tempfile::tempdir().unwrap();
+    let record = scratch.path().join("pipx-args");
     let stubs = tempfile::tempdir().unwrap();
+    // llmlint: ignore[e2e_not_mocked] installing ruff means downloading it from PyPI, which an offline test cannot reach; the stand-in pipx records the package the real install-ruff.sh asked for, which is what the action decides. Everything before it — the action step, install-ruff.sh, .ruff-version — is real.
     write_executable(
         stubs.path(),
         "pipx",
-        "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$RECORD/pipx-args\"\n",
+        "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$RECORD\"\n",
     );
     // PATH without any `ruff`, the stand-in pipx first.
-    let without_ruff: Vec<PathBuf> = std::env::split_paths(&std::env::var("PATH").unwrap())
+    let without_ruff = std::env::split_paths(&std::env::var("PATH").unwrap())
         .filter(|dir| !dir.join("ruff").exists())
-        .collect();
+        .collect::<Vec<_>>();
     let path =
         std::env::join_paths(std::iter::once(stubs.path().to_path_buf()).chain(without_ruff))
             .unwrap();
-    let run = install(action.path(), "v0.0.80", Some(path.to_str().unwrap()));
+    let env = [
+        ("PATH", path.to_str().unwrap()),
+        ("RECORD", record.to_str().unwrap()),
+        ("HOME", scratch.path().to_str().unwrap()),
+    ];
+    let run = install(repo_root(), "v0.0.80", Some(&mirror), &env);
     assert_eq!(run.status, 0, "{}", run.stderr);
     assert_eq!(
-        std::fs::read_to_string(run.record.join("pipx-args")).unwrap(),
+        std::fs::read_to_string(&record).unwrap(),
         format!("install\nruff=={}\n", pinned.trim())
     );
 
     // With `ruff` on PATH, nothing is installed for it.
+    std::fs::remove_file(&record).unwrap();
     write_executable(stubs.path(), "ruff", "#!/bin/sh\n");
-    let run = install(action.path(), "v0.0.80", Some(path.to_str().unwrap()));
+    let run = install(repo_root(), "v0.0.80", Some(&mirror), &env);
     assert_eq!(run.status, 0, "{}", run.stderr);
-    assert!(!run.record.join("pipx-args").exists());
+    assert!(!record.exists());
 }

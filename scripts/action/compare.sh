@@ -44,16 +44,15 @@ args+=(-- ${paths[@]+"${paths[@]}"})
 status=0
 "$crozier" "${args[@]}" || status=$?
 
+# Exit 1 before any reference ran (a path that does not exist, an unwritable
+# --json target) leaves no report, and then no counts or figures either.
+report_path=""
 if jq -e '.schema_version == 1' "$report" >/dev/null 2>&1; then
-  have_report=true
   report_path="$report"
-else
-  have_report=false
-  report_path=""
 fi
 
 field() {
-  if $have_report; then
+  if [ -n "$report_path" ]; then
     jq -r "$1 | if . == null then \"\" else tostring end" "$report"
   fi
 }
@@ -78,7 +77,7 @@ if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
   REPORT="$report_path" EXIT_CODE="$status" bash "$here/summary.sh" >>"$GITHUB_STEP_SUMMARY"
 fi
 
-if $have_report; then
+if [ -n "$report_path" ]; then
   printf 'crozier-action: %s, %s, %s\n' \
     "$(paint green "$matched matched")" \
     "$(paint red "$mismatched mismatched")" \

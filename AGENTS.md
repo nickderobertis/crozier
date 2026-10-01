@@ -199,9 +199,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   Release — each then runs `scripts/smoke.sh`, which asserts the version and
   drives a real `crozier generate`, so "published" means "installs AND runs," not
   just "the version string is right." Last, `release.yml`'s `major-tag` job moves
-  the floating `v0` the GitHub Action's consumers pin (`action.yml`,
-  [`docs/github-action.md`](docs/github-action.md)), only once no publish or
-  verify job failed. **First publish reserves the name:** an
+  the floating `v0` the GitHub Action's (`action.yml`) consumers pin, only once
+  no publish or verify job failed. **First publish reserves the name:** an
   early `0.0.x`/`0.1.0` release claims `crozier` on both registries.
 
 ## Invariants (non-negotiable)
