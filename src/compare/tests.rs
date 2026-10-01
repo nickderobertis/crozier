@@ -298,6 +298,18 @@ fn the_reference_command_receives_resolved_settings_with_defaults() {
 }
 
 #[test]
+fn the_documented_missing_command_reason_is_the_one_crozier_reports() {
+    let page =
+        std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/compare.md"))
+            .unwrap();
+    let flat = page.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flat.contains(&format!("the reason \"{NO_REFERENCE_COMMAND}\"")),
+        "docs/compare.md must quote NO_REFERENCE_COMMAND verbatim"
+    );
+}
+
+#[test]
 fn the_documented_reference_variables_are_the_ones_crozier_exports() {
     let page =
         std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/compare.md"))
@@ -509,11 +521,15 @@ fn the_command_itself_failing_writes_no_report() {
 }
 
 #[test]
-fn diff_file_names_are_unique_and_safe() {
+fn a_diff_file_name_is_numbered_and_filesystem_safe() {
     assert_eq!(
         diff_file_name(7, "a b/crozier.yml", "py:thon"),
         "007-a_b_crozier.yml-py_thon.diff"
     );
+}
+
+#[test]
+fn a_rendered_diff_describes_each_kind_of_difference() {
     let body = render_diff(
         "c.yml",
         "g",
@@ -532,6 +548,10 @@ fn diff_file_names_are_unique_and_safe() {
     assert!(body.contains("Binary files differ: bin (reference 1 bytes, crozier 2 bytes)"));
     assert!(body.contains("Could not compare x: boom"));
     assert!(body.contains("--- reference/t\n+++ crozier/t\n"));
+}
+
+#[test]
+fn clean_join_resolves_the_directory_and_drops_dot_segments() {
     assert_eq!(
         clean_join(Path::new("/no/such"), Path::new("./b/./c.yml")),
         PathBuf::from("/no/such/b/c.yml")

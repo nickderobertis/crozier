@@ -202,6 +202,7 @@ impl ComparedLayout {
 }
 
 /// One generator's result (or one unreadable config's, with `generator` null).
+// llmlint: ignore[invalid_states_unrepresentable] This struct is the `--json` contract the GitHub Action consumes, fixed field by field (a flat `status` beside always-present nullable payloads) and derived into the committed schema; a status enum carrying its payload would serialize a different shape. Outside its unit tests, only `could_not_check` and `check_generator` in compare/mod.rs build it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GeneratorResult {
@@ -266,6 +267,7 @@ pub struct Comparison {
 }
 
 /// One generator's two wall-time measurements and the figures derived from them.
+// llmlint: ignore[invalid_states_unrepresentable] This struct is the `--json` contract's `timing` object, fixed as four nullable numbers and derived into the committed schema; it is built only by `from_measurements` (which derives `speedup` and `saved_seconds` from the two measurements, and leaves both null unless both sides ran), and its unit tests hold that rule.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Timing {
