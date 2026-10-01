@@ -4,7 +4,7 @@
     {
       "name": "config",
       "toggles": {},
-      "hash": "bad062e404d9f64a23c6ecba7f9c6f098e3e03a99a03330772b3aa9636477f42"
+      "hash": "2a110ee664b04553e62449034907385185051e35058423d03181f89298a663fc"
     },
     {
       "name": "error",
@@ -21,19 +21,19 @@
       "toggles": {
         "command": "generate"
       },
-      "hash": "909902aa58dba39de477bd0272a8be26e7efe7278decc81c6a8a8ec79060e7fd"
+      "hash": "3c819ba6e451a4ea4bfeea5d462e6226e7984e890b7b7e1faac93fc1cd34f66a"
     },
     {
       "name": "help",
       "toggles": {
         "command": "main"
       },
-      "hash": "a2f6a4fd1719519ec1f261ede40072057f1a13f940a669d80c9de4fa80fce579"
+      "hash": "df805c4ff5839cd30689f399120cb5d2e3bc02b19d3bf8b31af18af5f01b2800"
     },
     {
       "name": "init",
       "toggles": {},
-      "hash": "5846d7ec1d8eb1b05a1c1178725254f8b99f9059c426916cbd2af7053c4abac8"
+      "hash": "53b2f9391c2456eb75d5c314149eb1c158b3b7f7d7a0e7655f95b7b2deddfb76"
     },
     {
       "name": "model",

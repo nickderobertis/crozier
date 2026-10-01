@@ -2048,12 +2048,10 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
 
     // The root client class name is Fern's `client_class_name` when given
     // (issue #61), else derived from the package name as `{PascalCase}Api`.
-    let client_name = config.client_class_name.clone().unwrap_or_else(|| {
-        format!(
-            "{}Api",
-            naming::to_pascal_case(config.package_name.as_str())
-        )
-    });
+    let client_name = config
+        .client_class_name
+        .clone()
+        .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
     Ir {
@@ -17079,6 +17077,7 @@ mod tests {
             client_class_name: None,
             audiences: Vec::new(),
             audience_strict: false,
+            fern_strict: false,
             extra_fields: crate::settings::ExtraFields::Allow,
             layout: crate::settings::Layout::Packaged,
         })

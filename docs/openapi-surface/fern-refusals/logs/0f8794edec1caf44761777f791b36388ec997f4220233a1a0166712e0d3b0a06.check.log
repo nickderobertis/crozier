@@ -1,0 +1,620 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 153 errors
+    [error]
+        path: __package__.yml -> types -> FileConflict
+        issue: Object has multiple properties named "sha1":
+  - FileConflict -> sha1
+  - FileConflict -> (extends) FileMini -> sha1
+
+    [error]
+        path: __package__.yml -> types -> FileConflict
+        issue: Object has multiple properties named "file_version":
+  - FileConflict -> file_version
+  - FileConflict -> (extends) FileMini -> file_version
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.signing_log.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.signing_log.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.sign_files.files.0.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.sign_files.files.0.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests_id_cancel -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests_id_cancel -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests_id_cancel -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests_id_cancel -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.signing_log.type"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.id"
+
+    [error]
+        path: boxSignRequests.yml -> service -> endpoints -> post_sign_requests -> examples[0] -> response
+        issue: Example is missing required property "response.body.sign_files.files.0.type"
+
+    [error]
+        path: boxSignTemplates.yml -> service -> endpoints -> get_sign_templates_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.source_files.0.id"
+
+    [error]
+        path: boxSignTemplates.yml -> service -> endpoints -> get_sign_templates_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.source_files.0.type"
+
+    [error]
+        path: boxSignTemplates.yml -> service -> endpoints -> get_sign_templates -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source_files.0.id"
+
+    [error]
+        path: boxSignTemplates.yml -> service -> endpoints -> get_sign_templates -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source_files.0.type"
+
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> get_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> post_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFiles.yml -> service -> endpoints -> put_files_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> get_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> post_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: classificationsOnFolders.yml -> service -> endpoints -> put_folders_id_metadata_enterprise_securityClassification-6VMVochwUWo -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "securityClassification-6VMVochwUWo"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> get_collaborations_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> get_collaborations_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> post_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> post_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> put_collaborations_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: collaborations.yml -> service -> endpoints -> put_collaborations_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_files_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_files_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_folders_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_folders_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_groups_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: collaborationsList.yml -> service -> endpoints -> get_groups_id_collaborations -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: collections.yml -> service -> endpoints -> get_collections_id_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: collections.yml -> service -> endpoints -> get_collections_id_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_type"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_id"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.source.item_name"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "type"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "login"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "modified_at"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "language"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "timezone"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "space_amount"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "space_used"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "max_upload_size"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "job_title"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "phone"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "address"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "avatar_url"
+
+    [error]
+        path: events.yml -> service -> endpoints -> get_events -> examples[0] -> response
+        issue: Unexpected property "notification_email"
+
+    [error]
+        path: files.yml -> service -> endpoints -> get_files_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: files.yml -> service -> endpoints -> get_files_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: files.yml -> service -> endpoints -> post_files_id_copy -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: files.yml -> service -> endpoints -> post_files_id_copy -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: files.yml -> service -> endpoints -> put_files_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: files.yml -> service -> endpoints -> put_files_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: fileVersionLegalHolds.yml -> service -> endpoints -> get_file_version_legal_holds_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.file.id"
+
+    [error]
+        path: fileVersionLegalHolds.yml -> service -> endpoints -> get_file_version_legal_holds_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.file.type"
+
+    [error]
+        path: fileVersionLegalHolds.yml -> service -> endpoints -> get_file_version_legal_holds -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.file.id"
+
+    [error]
+        path: fileVersionLegalHolds.yml -> service -> endpoints -> get_file_version_legal_holds -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.file.type"
+
+    [error]
+        path: fileVersionRetentions.yml -> service -> endpoints -> get_file_version_retentions_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.file.id"
+
+    [error]
+        path: fileVersionRetentions.yml -> service -> endpoints -> get_file_version_retentions_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.file.type"
+
+    [error]
+        path: fileVersionRetentions.yml -> service -> endpoints -> get_file_version_retentions -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.file.id"
+
+    [error]
+        path: fileVersionRetentions.yml -> service -> endpoints -> get_file_version_retentions -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.file.type"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> get_folders_id_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> get_folders_id_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> get_folders_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> get_folders_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> post_folders_id_copy -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> post_folders_id_copy -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> post_folders -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> post_folders -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> put_folders_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: folders.yml -> service -> endpoints -> put_folders_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: legalHoldPolicyAssignments.yml -> service -> endpoints -> get_legal_hold_policy_assignments_id_files_on_hold -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: legalHoldPolicyAssignments.yml -> service -> endpoints -> get_legal_hold_policy_assignments_id_files_on_hold -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: recentItems.yml -> service -> endpoints -> get_recent_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: recentItems.yml -> service -> endpoints -> get_recent_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: retentionPolicyAssignments.yml -> service -> endpoints -> get_retention_policy_assignments_id_file_versions_under_retention -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: retentionPolicyAssignments.yml -> service -> endpoints -> get_retention_policy_assignments_id_file_versions_under_retention -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: retentionPolicyAssignments.yml -> service -> endpoints -> get_retention_policy_assignments_id_files_under_retention -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: retentionPolicyAssignments.yml -> service -> endpoints -> get_retention_policy_assignments_id_files_under_retention -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: search.yml -> service -> endpoints -> get_search -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: search.yml -> service -> endpoints -> get_search -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: search.yml -> service -> endpoints -> post_metadata_queries_execute_read -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: search.yml -> service -> endpoints -> post_metadata_queries_execute_read -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> get_files_id#get_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> get_files_id#get_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> get_shared_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> get_shared_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#add_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#add_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#remove_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#remove_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#update_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: sharedLinksFiles.yml -> service -> endpoints -> put_files_id#update_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.type"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> get_folders_id#get_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> get_folders_id#get_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> get_shared_items#folders -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> get_shared_items#folders -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#add_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#add_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#remove_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#remove_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#update_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: sharedLinksFolders.yml -> service -> endpoints -> put_folders_id#update_shared_link -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> get_task_assignments_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> get_task_assignments_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> get_tasks_id_assignments -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> get_tasks_id_assignments -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> post_task_assignments -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> post_task_assignments -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> put_task_assignments_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: taskAssignments.yml -> service -> endpoints -> put_task_assignments_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_files_id_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_files_id_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_files_id_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.task_assignment_collection.entries.0.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_files_id_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.task_assignment_collection.entries.0.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> get_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> post_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> post_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> post_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> post_tasks -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> put_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> put_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.item.type"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> put_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.id"
+
+    [error]
+        path: tasks.yml -> service -> endpoints -> put_tasks_id -> examples[0] -> response
+        issue: Example is missing required property "response.body.task_assignment_collection.entries.0.item.type"
+
+    [error]
+        path: transferFolders.yml -> service -> endpoints -> put_users_id_folders_0 -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.id"
+
+    [error]
+        path: transferFolders.yml -> service -> endpoints -> put_users_id_folders_0 -> examples[0] -> response
+        issue: Example is missing required property "response.body.item_collection.entries.0.type"
+
+    [error]
+        path: trashedItems.yml -> service -> endpoints -> get_folders_trash_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: trashedItems.yml -> service -> endpoints -> get_folders_trash_items -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: uploads.yml -> service -> endpoints -> post_files_content -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: uploads.yml -> service -> endpoints -> post_files_content -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: uploads.yml -> service -> endpoints -> post_files_id_content -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: uploads.yml -> service -> endpoints -> post_files_id_content -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+    [error]
+        path: uploadsChunked.yml -> service -> endpoints -> post_files_upload_sessions_id_commit -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.id"
+
+    [error]
+        path: uploadsChunked.yml -> service -> endpoints -> post_files_upload_sessions_id_commit -> examples[0] -> response
+        issue: Example is missing required property "response.body.entries.0.type"
+
+Found 153 errors and 68 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

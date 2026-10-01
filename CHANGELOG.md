@@ -6,6 +6,16 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.88](https://github.com/nickderobertis/crozier/compare/v0.0.87...v0.0.88) - 2026-10-01
+
+### Added
+
+- *(cli)* add a fern-strict mode and a gated registry of Fern refusal classes ([#328](https://github.com/nickderobertis/crozier/pull/328))
+
+### Fixed
+
+- *(fixtures)* replace the disputed codat-assess witness with a clearly licensed one ([#330](https://github.com/nickderobertis/crozier/pull/330))
+
 ## [0.0.87](https://github.com/nickderobertis/crozier/compare/v0.0.86...v0.0.87) - 2026-10-01
 
 ### Added

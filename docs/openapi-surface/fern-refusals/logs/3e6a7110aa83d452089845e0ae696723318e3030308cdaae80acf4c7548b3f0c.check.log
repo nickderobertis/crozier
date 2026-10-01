@@ -1,0 +1,10 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: organizationContacts.yml -> service -> endpoints -> requestOrganizationContactRemoval
+        issue: Multiple request properties resolve to the same generated name organizationId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "organizationID" (name: "organizationID")
+  - Body property: <Request Body> -> organization_id (name: "organization_id")
+
+Found 1 error and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

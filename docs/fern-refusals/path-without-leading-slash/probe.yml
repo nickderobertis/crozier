@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  things:
+    get:
+      operationId: listThings
+      responses:
+        '204':
+          description: No Content

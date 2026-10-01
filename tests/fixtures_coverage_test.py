@@ -119,7 +119,7 @@ class TierSelectionTests(unittest.TestCase):
         # Deliberately NOT golden: the runtime-behavior comparison is a wire test,
         # not a byte comparison against a committed golden, and the CalorieNinjas
         # boundary asserts a Fern *failure* — there is no golden to reach.
-        self.assertNotIn("crozier_matches_fern_runtime_behavior", golden)
+        self.assertNotIn("sdk_env_crozier_matches_fern_runtime_behavior", golden)
         self.assertNotIn(
             "calorieninjas_reproduces_the_exact_known_fern_failure_boundary", golden
         )

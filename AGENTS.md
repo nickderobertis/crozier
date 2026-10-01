@@ -45,6 +45,10 @@ The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** The whole registered corpus reaches it today.
 See [`docs/matching.md`](docs/matching.md) for the strategy, the fixture corpus,
 and why each shape generates the way it does.
+The byte-match rules are defined once, in `src/parity.rs`: the corpus gate and
+`crozier compare` (a user's migration check against their own reference SDK,
+[`docs/compare.md`](docs/compare.md)) both call them, so change a rule there or
+nowhere.
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
 per-node ignore, …). The standing **dual-header policy**: read *both* the
@@ -96,12 +100,20 @@ Use the `just` recipes; do not hand-roll equivalents.
   typed responses come back. Spec-driven; separate from `check` (keeps the gate
   Node-free) but a required CI leg. Needs Node/Prism + uv. See
   [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
+- `just test-sdk-env` — the e2e journeys (`sdk_env_*`, `#[ignore]`d out of
+  `check`) that build a generated SDK's venv from PyPI and run mypy/pytest in it:
+  the runtime wire suite and the fern-refusals gate's `wire_test.py` among them.
+  Separate from the offline `check`; CI's `sdk-env` matrix job runs it, gated.
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves the real recipe and
   census with sockets denied and no cache; CI runs this in its live-e2e leg.
 - `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
   pinned URLs are provenance. `just lint-corpus-sources` checks every committed
   file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.
+- `just test-corpus-match-strict` — the same byte-match with `fern-strict` on,
+  so a refusal class that refuses a document Fern generates from fails it. The
+  classes, their probes and the refused-document population live in
+  [`docs/fern-refusals/`](docs/fern-refusals/README.md).
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fern-goldens` / `just fern-goldens-generate` / `just
   fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;
@@ -149,8 +161,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   protected: merge/rebase disabled, so one PR is one squash commit whose subject
   is the PR title. Queue with `gh pr merge --auto --squash`; merged branches
   auto-delete. Admins may break-glass.
-- **All gating checks required:** `gate` (aggregates the e2e-inclusive `check`
-  and `install` matrix legs plus the `package` and `live-e2e` legs), `commitlint`
+- **All gating checks required:** `gate` (aggregates the e2e-inclusive `check`,
+  `sdk-env` and `install` matrix legs plus the `package` and `live-e2e` legs), `commitlint`
   (PR-title Conventional Commits), and
   `llmlint` — plus linear history, conversation resolution, no
   force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`

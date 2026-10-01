@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: vectorTiles.yml -> service -> endpoints -> tiles.collection.getTileSetsList
+        issue: Path parameter is unreferenced in endpoint: tileMatrixSetId.
+
+Found 1 error and 0 warnings in <n> seconds.

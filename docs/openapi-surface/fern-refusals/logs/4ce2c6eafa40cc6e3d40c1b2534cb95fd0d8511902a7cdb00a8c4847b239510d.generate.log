@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> AddFollowersRequest
+                  __package__.yml
+                  [error] AddFollowersRequest is already declared in goals.yml
+                  
+[api]: python-sdk __package__.yml -> types -> ProjectSaveAsTemplateRequest
+                  __package__.yml
+                  [error] ProjectSaveAsTemplateRequest is already declared in projects.yml
+                  
+[api]: python-sdk __package__.yml -> types -> RemoveFollowersRequest
+                  __package__.yml
+                  [error] RemoveFollowersRequest is already declared in goals.yml
+                  
+[api]: python-sdk Found 3 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

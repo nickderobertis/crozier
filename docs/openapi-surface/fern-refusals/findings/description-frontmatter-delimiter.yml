@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      description: |
+        Reads the probe.
+        ---
+        Returns nothing.
+      responses:
+        '204': {description: No Content}

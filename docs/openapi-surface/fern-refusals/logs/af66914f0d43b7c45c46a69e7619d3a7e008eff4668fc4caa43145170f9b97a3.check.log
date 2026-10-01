@@ -1,0 +1,19 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: GET /rest/api/3/configuration/timetracking: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[sdk] 3 errors
+    [error]
+        path: __package__.yml -> types -> FieldValueClauseOperator
+        issue: Enum name  for value ~ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProjectFeatureState
+        issue: ProjectFeatureState is already declared in projectFeatures.yml
+
+    [error]
+        path: jiraSettings.yml -> service -> endpoints -> setApplicationProperty
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+Found 3 errors and 78 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

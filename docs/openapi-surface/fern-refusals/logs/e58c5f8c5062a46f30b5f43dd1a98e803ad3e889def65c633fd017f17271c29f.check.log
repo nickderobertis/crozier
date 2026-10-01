@@ -1,0 +1,10 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping cookie parameter, debug_token, in GET /v1/lab/search
+[api]: Skipping cookie parameter, csrf_token, in GET /v1/lab/mutation/header-cookie
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> NoContentCandidate
+        issue: Path parameter is unreferenced in endpoint: item_id.
+
+Found 1 error and 0 warnings in <n> seconds.

@@ -1,0 +1,15 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /things -> get
+                  openapi/openapi.yml
+                  [error] Parameters header parameter 'page-size', query parameter 'page_size' all normalize to 'pageSize' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

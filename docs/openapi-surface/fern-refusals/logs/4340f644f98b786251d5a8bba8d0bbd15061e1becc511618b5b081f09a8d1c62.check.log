@@ -1,0 +1,848 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 210 errors
+    [error]
+        path: __package__.yml -> types -> Account -> extends -> DataAccessControlField
+        issue: Objects can only extend other objects, and DataAccessControlField is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ActionSubscribeInvoiceItem -> extends -> InvoiceItemObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> AmendmentRatePlanChargeDataRatePlanCharge -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BatchInvoiceType -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BillToContactPostOrder -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CreateOrderCreateSubscriptionNewSubscriptionOwnerAccount -> extends -> DataAccessControlField
+        issue: Objects can only extend other objects, and DataAccessControlField is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CreditMemoFromChargeDetailType -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CreditMemoItemFromInvoiceItemType -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CreditMemoItemFromWriteOffInvoice -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CustomObjectAllFieldsDefinition -> extends -> CustomObjectCustomFieldsDefinition
+        issue: Objects can only extend other objects, and CustomObjectCustomFieldsDefinition is not an object.
+
+    [error]
+        path: __package__.yml -> types -> CustomObjectRecordWithAllFields -> extends -> CustomObjectRecordWithOnlyCustomFields
+        issue: Objects can only extend other objects, and CustomObjectRecordWithOnlyCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> DebitMemoFromChargeDetailType -> extends -> DebitMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> DebitMemoItemFromInvoiceItemType -> extends -> DebitMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> EventRevenueItemType -> extends -> RevenueEventItemObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountingCodeItemType -> extends -> AccountingCodeObjectCustomFields
+        issue: Objects can only extend other objects, and AccountingCodeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountingCodeItemWithoutSuccessType -> extends -> AccountingCodeObjectCustomFields
+        issue: Objects can only extend other objects, and AccountingCodeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountingPeriodType -> extends -> AccountingPeriodObjectCustomFields
+        issue: Objects can only extend other objects, and AccountingPeriodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountingPeriodWithoutSuccessType -> extends -> AccountingPeriodObjectCustomFields
+        issue: Objects can only extend other objects, and AccountingPeriodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountSummarySubscriptionType -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountSummaryTypeBasicInfo -> extends -> AccountObjectCustomFields
+        issue: Objects can only extend other objects, and AccountObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountSummaryTypeBillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountSummaryTypeSoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountTypeBasicInfo -> extends -> AccountObjectCustomFields
+        issue: Objects can only extend other objects, and AccountObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountTypeBillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetAccountTypeSoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetarPaymentType -> extends -> PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetarPaymentTypewithSuccess -> extends -> PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetcmTaxItemType -> extends -> CreditTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetcmTaxItemTypeNew -> extends -> CreditTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetCreditMemoItemType -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetCreditMemoItemTypewithSuccess -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetCreditMemoType -> extends -> CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetCreditMemoTypewithSuccess -> extends -> CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetDebitMemoItemType -> extends -> DebitMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetDebitMemoItemTypewithSuccess -> extends -> DebitMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetDebitMemoType -> extends -> DebitMemoObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetDebitMemoTypewithSuccess -> extends -> DebitMemoObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetdmTaxItemType -> extends -> DebitTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetdmTaxItemTypeNew -> extends -> DebitTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetInvoiceType -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetJournalEntryDetailType -> extends -> JournalEntryObjectCustomFields
+        issue: Objects can only extend other objects, and JournalEntryObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetJournalEntryDetailTypeWithoutSuccess -> extends -> JournalEntryObjectCustomFields
+        issue: Objects can only extend other objects, and JournalEntryObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetJournalEntryItemType -> extends -> JournalEntryItemObjectCustomFields
+        issue: Objects can only extend other objects, and JournalEntryItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetPaymentMethodResponse -> extends -> PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetPaymentType -> extends -> PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetProductFeatureType -> extends -> ProductFeatureObjectCustomFields
+        issue: Objects can only extend other objects, and ProductFeatureObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetProductRatePlanChargeType -> extends -> ProductRatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and ProductRatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetProductRatePlanType -> extends -> ProductRatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and ProductRatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetProductType -> extends -> ProductObjectCustomFields
+        issue: Objects can only extend other objects, and ProductObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRefundCreditMemoType -> extends -> RefundObjectCustomFields
+        issue: Objects can only extend other objects, and RefundObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRefundPaymentType -> extends -> RefundObjectCustomFields
+        issue: Objects can only extend other objects, and RefundObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRefundType -> extends -> RefundObjectCustomFields
+        issue: Objects can only extend other objects, and RefundObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRefundTypewithSuccess -> extends -> RefundObjectCustomFields
+        issue: Objects can only extend other objects, and RefundObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRevenueEventDetailType -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRevenueEventDetailWithoutSuccessType -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRevenueItemType -> extends -> RevenueEventItemObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetrsDetailForProductChargeType -> extends -> RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetrsDetailType -> extends -> RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetrsDetailWithoutSuccessType -> extends -> RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetRsRevenueItemType -> extends -> RevenueScheduleItemObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetSubscriptionRatePlanChargesType -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetSubscriptionRatePlanType -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetSubscriptionType -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetSubscriptionTypeWithSuccess -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetTaxationItemType -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetTaxationItemTypewithSuccess -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> GetUsageType -> extends -> UsageObjectCustomFields
+        issue: Objects can only extend other objects, and UsageObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> InvoiceDataInvoice -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> InvoiceItem -> extends -> InvoiceItemObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PaymentMethod -> extends -> PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostAccountTypeBillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostAccountTypeCreditCard -> extends -> PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostAccountTypePaymentMethod -> extends -> PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostAccountTypeSoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostAccountTypeSubscription -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostInvoiceItemType -> extends -> InvoiceItemObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostInvoiceResponse -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostJournalEntryItemType -> extends -> JournalEntryItemObjectCustomFields
+        issue: Objects can only extend other objects, and JournalEntryItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByChargeTypeRevenueEvent -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByDateRangeType -> extends -> RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByDateRangeTypeRevenueEvent -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByTransactionRatablyTypeRevenueEvent -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByTransactionType -> extends -> RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostRevenueScheduleByTransactionTypeRevenueEvent -> extends -> RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostScCreateType -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostSrpCreateType -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostSubscriptionPreviewTypePreviewAccountInfo -> extends -> AccountObjectCustomFields
+        issue: Objects can only extend other objects, and AccountObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostTaxationItemForCmType -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostTaxationItemForDmType -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PostTaxationItemType -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetAccount -> extends -> AccountObjectCustomFields
+        issue: Objects can only extend other objects, and AccountObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetAmendment -> extends -> AmendmentObjectCustomFields
+        issue: Objects can only extend other objects, and AmendmentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetCreditBalanceAdjustment -> extends -> CreditBalanceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and CreditBalanceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetFeature -> extends -> FeatureObjectCustomFields
+        issue: Objects can only extend other objects, and FeatureObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetInvoice -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetInvoiceAdjustment -> extends -> InvoiceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetInvoiceItem -> extends -> InvoiceItemObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetInvoiceItemAdjustment -> extends -> InvoiceItemAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetPayment -> extends -> PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetProduct -> extends -> ProductObjectCustomFields
+        issue: Objects can only extend other objects, and ProductObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetProductFeature -> extends -> ProductFeatureObjectCustomFields
+        issue: Objects can only extend other objects, and ProductFeatureObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetProductRatePlan -> extends -> ProductRatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and ProductRatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetProductRatePlanCharge -> extends -> ProductRatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and ProductRatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetRatePlan -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetRatePlanCharge -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetRefund -> extends -> RefundObjectCustomFields
+        issue: Objects can only extend other objects, and RefundObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetSubscription -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetSubscriptionProductFeature -> extends -> SubscriptionProductFeatureObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionProductFeatureObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetTaxationItem -> extends -> TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ProxyGetUsage -> extends -> UsageObjectCustomFields
+        issue: Objects can only extend other objects, and UsageObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutAccountTypeBillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutAccountTypeSoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutCreditMemoItemType -> extends -> CreditMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutCreditMemoTaxItemType -> extends -> CreditTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and CreditTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutDebitMemoItemType -> extends -> DebitMemoItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitMemoItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutDebitMemoTaxItemType -> extends -> DebitTaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and DebitTaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutInvoiceItemType -> extends -> InvoiceItemObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutInvoiceResponseType -> extends -> InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutJournalEntryItemType -> extends -> JournalEntryItemObjectCustomFields
+        issue: Objects can only extend other objects, and JournalEntryItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutScAddType -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutScUpdateType -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutSrpAddType -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> PutSrpUpdateType -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> RatePlanChargeDataRatePlanCharge -> extends -> RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> RatePlanDataRatePlan -> extends -> RatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and RatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> RevenueScheduleItemType -> extends -> RevenueScheduleItemObjectCustomFields
+        issue: Objects can only extend other objects, and RevenueScheduleItemObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SoldToContactPostOrder -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SubscribeRequestAccount -> extends -> AccountObjectCustomFields
+        issue: Objects can only extend other objects, and AccountObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SubscribeRequestBillToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SubscribeRequestSoldToContact -> extends -> ContactObjectCustomFields
+        issue: Objects can only extend other objects, and ContactObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SubscribeRequestSubscriptionDataSubscription -> extends -> SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SubscriptionProductFeature -> extends -> SubscriptionProductFeatureObjectCustomFields
+        issue: Objects can only extend other objects, and SubscriptionProductFeatureObjectCustomFields is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ZObjectUpdate -> extends -> ZObject
+        issue: Objects can only extend other objects, and ZObject is not an object.
+
+    [error]
+        path: accountingCodes.yml -> service -> endpoints -> POST_AccountingCode -> request -> body -> extends -> root.AccountingCodeObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountingCodeObjectCustomFields is not an object.
+
+    [error]
+        path: accountingCodes.yml -> service -> endpoints -> PUT_AccountingCode -> request -> body -> extends -> root.AccountingCodeObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountingCodeObjectCustomFields is not an object.
+
+    [error]
+        path: accountingPeriods.yml -> service -> endpoints -> POST_AccountingPeriod -> request -> body -> extends -> root.AccountingPeriodObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountingPeriodObjectCustomFields is not an object.
+
+    [error]
+        path: accountingPeriods.yml -> service -> endpoints -> PUT_UpdateAccountingPeriod -> request -> body -> extends -> root.AccountingPeriodObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountingPeriodObjectCustomFields is not an object.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> Object_POSTAccount -> request -> body -> extends -> root.AccountObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountObjectCustomFields is not an object.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> Object_PUTAccount -> request -> body -> extends -> root.AccountObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountObjectCustomFields is not an object.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> POST_Account -> request -> body -> extends -> root.AccountObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountObjectCustomFields is not an object.
+
+    [error]
+        path: accounts.yml -> service -> endpoints -> PUT_Account -> request -> body -> extends -> root.AccountObjectCustomFields
+        issue: Objects can only extend other objects, and root.AccountObjectCustomFields is not an object.
+
+    [error]
+        path: amendments.yml -> service -> endpoints -> Object_PUTAmendment -> request -> body -> extends -> root.AmendmentObjectCustomFields
+        issue: Objects can only extend other objects, and root.AmendmentObjectCustomFields is not an object.
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> Object_POSTContact -> request -> body -> extends -> root.ContactObjectCustomFields
+        issue: Objects can only extend other objects, and root.ContactObjectCustomFields is not an object.
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> Object_PUTContact -> request -> body -> extends -> root.ContactObjectCustomFields
+        issue: Objects can only extend other objects, and root.ContactObjectCustomFields is not an object.
+
+    [error]
+        path: creditBalanceAdjustments.yml -> service -> endpoints -> Object_POSTCreditBalanceAdjustment -> request -> body -> extends -> root.CreditBalanceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditBalanceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: creditBalanceAdjustments.yml -> service -> endpoints -> Object_PUTCreditBalanceAdjustment -> request -> body -> extends -> root.CreditBalanceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditBalanceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: creditMemos.yml -> service -> endpoints -> POST_CreditMemoFromPrpc -> request -> body -> extends -> root.CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: creditMemos.yml -> service -> endpoints -> POST_RefundCreditMemo -> request -> body -> extends -> root.RefundObjectCustomFields
+        issue: Objects can only extend other objects, and root.RefundObjectCustomFields is not an object.
+
+    [error]
+        path: creditMemos.yml -> service -> endpoints -> PUT_UpdateCreditMemo -> request -> body -> extends -> root.CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: debitMemos.yml -> service -> endpoints -> POST_DebitMemoFromPrpc -> request -> body -> extends -> root.DebitMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.DebitMemoObjectCustomFields is not an object.
+
+    [error]
+        path: debitMemos.yml -> service -> endpoints -> PUT_DebitMemo -> request -> body -> extends -> root.DebitMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.DebitMemoObjectCustomFields is not an object.
+
+    [error]
+        path: features.yml -> service -> endpoints -> Object_POSTFeature -> request -> body -> extends -> root.FeatureObjectCustomFields
+        issue: Objects can only extend other objects, and root.FeatureObjectCustomFields is not an object.
+
+    [error]
+        path: features.yml -> service -> endpoints -> Object_PUTFeature -> request -> body -> extends -> root.FeatureObjectCustomFields
+        issue: Objects can only extend other objects, and root.FeatureObjectCustomFields is not an object.
+
+    [error]
+        path: invoiceAdjustments.yml -> service -> endpoints -> Object_POSTInvoiceAdjustment -> request -> body -> extends -> root.InvoiceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and root.InvoiceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: invoiceAdjustments.yml -> service -> endpoints -> Object_PUTInvoiceAdjustment -> request -> body -> extends -> root.InvoiceAdjustmentObjectCustomFields
+        issue: Objects can only extend other objects, and root.InvoiceAdjustmentObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> Object_PUTInvoice -> request -> body -> extends -> root.InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and root.InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> POST_CreditMemoFromInvoice -> request -> body -> extends -> root.CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> POST_CreditMemoFromInvoice
+        issue: Multiple request properties have the name invoiceId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "invoiceId"
+  - Body property: <Request Body> -> invoiceId
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> POST_DebitMemoFromInvoice -> request -> body -> extends -> root.DebitMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.DebitMemoObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> POST_DebitMemoFromInvoice
+        issue: Multiple request properties have the name invoiceId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "invoiceId"
+  - Body property: <Request Body> -> invoiceId
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> POST_StandaloneInvoice -> request -> body -> extends -> root.InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and root.InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> PUT_UpdateInvoice -> request -> body -> extends -> root.InvoiceObjectCustomFields
+        issue: Objects can only extend other objects, and root.InvoiceObjectCustomFields is not an object.
+
+    [error]
+        path: invoices.yml -> service -> endpoints -> PUT_WriteOffInvoice -> request -> body -> extends -> root.CreditMemoObjectCustomFields
+        issue: Objects can only extend other objects, and root.CreditMemoObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> Object_POSTPaymentMethod -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> Object_PUTPaymentMethod -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> POST_PaymentMethods -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> POST_PaymentMethodsCreditCard -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> PUT_PaymentMethod -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: paymentMethods.yml -> service -> endpoints -> PUT_PaymentMethodsCreditCard -> request -> body -> extends -> root.PaymentMethodObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentMethodObjectCustomFields is not an object.
+
+    [error]
+        path: payments.yml -> service -> endpoints -> Object_POSTPayment -> request -> body -> extends -> root.PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: payments.yml -> service -> endpoints -> Object_PUTPayment -> request -> body -> extends -> root.PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: payments.yml -> service -> endpoints -> POST_CreatePayment -> request -> body -> extends -> root.PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: payments.yml -> service -> endpoints -> POST_RefundPayment -> request -> body -> extends -> root.RefundObjectCustomFields
+        issue: Objects can only extend other objects, and root.RefundObjectCustomFields is not an object.
+
+    [error]
+        path: payments.yml -> service -> endpoints -> PUT_UpdatePayment -> request -> body -> extends -> root.PaymentObjectCustomFields
+        issue: Objects can only extend other objects, and root.PaymentObjectCustomFields is not an object.
+
+    [error]
+        path: productRatePlanCharges.yml -> service -> endpoints -> Object_POSTProductRatePlanCharge -> request -> body -> extends -> root.ProductRatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductRatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: productRatePlanCharges.yml -> service -> endpoints -> Object_PUTProductRatePlanCharge -> request -> body -> extends -> root.ProductRatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductRatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: productRatePlans.yml -> service -> endpoints -> Object_POSTProductRatePlan -> request -> body -> extends -> root.ProductRatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductRatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: productRatePlans.yml -> service -> endpoints -> Object_PUTProductRatePlan -> request -> body -> extends -> root.ProductRatePlanObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductRatePlanObjectCustomFields is not an object.
+
+    [error]
+        path: products.yml -> service -> endpoints -> Object_POSTProduct -> request -> body -> extends -> root.ProductObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductObjectCustomFields is not an object.
+
+    [error]
+        path: products.yml -> service -> endpoints -> Object_PUTProduct -> request -> body -> extends -> root.ProductObjectCustomFields
+        issue: Objects can only extend other objects, and root.ProductObjectCustomFields is not an object.
+
+    [error]
+        path: ratePlanCharges.yml -> service -> endpoints -> Object_PUTRatePlanCharge -> request -> body -> extends -> root.RatePlanChargeObjectCustomFields
+        issue: Objects can only extend other objects, and root.RatePlanChargeObjectCustomFields is not an object.
+
+    [error]
+        path: refunds.yml -> service -> endpoints -> Object_POSTRefund -> request -> body -> extends -> root.RefundObjectCustomFields
+        issue: Objects can only extend other objects, and root.RefundObjectCustomFields is not an object.
+
+    [error]
+        path: refunds.yml -> service -> endpoints -> Object_PUTRefund -> request -> body -> extends -> root.RefundObjectCustomFields
+        issue: Objects can only extend other objects, and root.RefundObjectCustomFields is not an object.
+
+    [error]
+        path: refunds.yml -> service -> endpoints -> PUT_UpdateRefund -> request -> body -> extends -> root.RefundObjectCustomFields
+        issue: Objects can only extend other objects, and root.RefundObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> POST_RSforCreditMemoItem_DistributeByDateRange -> request -> body -> extends -> root.RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> POST_RSforDebitMemoItem_DistributeByDateRange -> request -> body -> extends -> root.RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> POST_RSforInvoiceItem_DistributeByDateRange -> examples[0] -> request
+        issue: Expected example to be a date. Example is: "2016-12-1"
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> POST_RSforInvoiceItemAdjustment_DistributeByDateRange -> examples[0] -> request
+        issue: Expected example to be a date. Example is: "2016-12-1"
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> POST_RSforSubscCharge -> request -> body -> extends -> root.RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> PUT_RevenueAcrossAP -> request -> body -> extends -> root.RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> PUT_RevenueByRecognitionStartandEndDates -> request -> body -> extends -> root.RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> PUT_RevenueByRecognitionStartandEndDates -> examples[0] -> request
+        issue: Expected example to be a date. Example is: "2015-12-1"
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> PUT_RevenueSpecificDate -> request -> body -> extends -> root.RevenueEventObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueEventObjectCustomFields is not an object.
+
+    [error]
+        path: revenueSchedules.yml -> service -> endpoints -> PUT_RSBasicInfo -> request -> body -> extends -> root.RevenueScheduleObjectCustomFields
+        issue: Objects can only extend other objects, and root.RevenueScheduleObjectCustomFields is not an object.
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> Object_PUTSubscription -> request -> body -> extends -> root.SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and root.SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> POST_PreviewSubscription -> request -> body -> extends -> root.SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and root.SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> POST_PreviewSubscription -> examples[0] -> request
+        issue: Expected example to be a date. Example is: "2013-1-15"
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> POST_Subscription -> request -> body -> extends -> root.SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and root.SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> POST_Subscription -> examples[0] -> request
+        issue: Expected example to be a date. Example is: "2015-02-1"
+
+    [error]
+        path: subscriptions.yml -> service -> endpoints -> PUT_Subscription -> request -> body -> extends -> root.SubscriptionObjectCustomFields
+        issue: Objects can only extend other objects, and root.SubscriptionObjectCustomFields is not an object.
+
+    [error]
+        path: summaryJournalEntries.yml -> service -> endpoints -> POST_SummaryJournalEntry -> request -> body -> extends -> root.JournalEntryObjectCustomFields
+        issue: Objects can only extend other objects, and root.JournalEntryObjectCustomFields is not an object.
+
+    [error]
+        path: summaryJournalEntries.yml -> service -> endpoints -> PUT_BasicSummaryJournalEntry -> request -> body -> extends -> root.JournalEntryObjectCustomFields
+        issue: Objects can only extend other objects, and root.JournalEntryObjectCustomFields is not an object.
+
+    [error]
+        path: taxationItems.yml -> service -> endpoints -> Object_POSTTaxationItem -> request -> body -> extends -> root.TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and root.TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: taxationItems.yml -> service -> endpoints -> Object_PUTTaxationItem -> request -> body -> extends -> root.TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and root.TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: taxationItems.yml -> service -> endpoints -> PUT_TaxationItem -> request -> body -> extends -> root.TaxationItemObjectCustomFields
+        issue: Objects can only extend other objects, and root.TaxationItemObjectCustomFields is not an object.
+
+    [error]
+        path: usage.yml -> service -> endpoints -> Object_POSTUsage -> request -> body -> extends -> root.UsageObjectCustomFields
+        issue: Objects can only extend other objects, and root.UsageObjectCustomFields is not an object.
+
+    [error]
+        path: usage.yml -> service -> endpoints -> Object_PUTUsage -> request -> body -> extends -> root.UsageObjectCustomFields
+        issue: Objects can only extend other objects, and root.UsageObjectCustomFields is not an object.
+
+Found 210 errors and 16 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

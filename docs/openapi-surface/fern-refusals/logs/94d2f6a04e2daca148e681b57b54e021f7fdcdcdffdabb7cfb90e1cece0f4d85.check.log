@@ -1,0 +1,40 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 9 errors
+    [error]
+        path: __package__.yml -> types -> CustomsDeclarationBaseDutiesPayor
+        issue: CustomsDeclarationBaseDutiesPayor is already declared in customsDeclarations.yml
+
+    [error]
+        path: __package__.yml -> types -> CustomsDeclarationBaseDutiesPayorAddress
+        issue: CustomsDeclarationBaseDutiesPayorAddress is already declared in customsDeclarations.yml
+
+    [error]
+        path: __package__.yml -> types -> CustomsDeclarationBaseDutiesPayorType
+        issue: CustomsDeclarationBaseDutiesPayorType is already declared in customsDeclarations.yml
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 10001200 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 12001400 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 14001600 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 16001800 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 18002000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipments.yml -> types -> ShipmentExtraPreferredDeliveryTimeframe
+        issue: Enum value 19002100 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 9 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

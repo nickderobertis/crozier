@@ -1,0 +1,54 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 10 errors
+    [error]
+        path: dialByNameDirectory.yml -> service -> endpoints -> AddUsersToDirectoryBySite
+        issue: Multiple request properties resolve to the same generated name siteId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "siteId" (name: "siteId")
+  - Body property: <Request Body> -> site_id (name: "site_id")
+
+    [error]
+        path: dialByNameDirectory.yml -> service -> endpoints -> DeleteUsersFromDirectoryBySite
+        issue: Multiple request properties resolve to the same generated name siteId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "siteId" (name: "siteId")
+  - Query Parameter "site_id" (name: "site_id")
+
+    [error]
+        path: dialByNameDirectory.yml -> service -> endpoints -> ListUsersFromDirectoryBySite
+        issue: Multiple request properties resolve to the same generated name siteId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "siteId" (name: "siteId")
+  - Query Parameter "site_id" (name: "site_id")
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /phone/sites/{siteId}/dial_by_name_directory/extensions -> delete
+        issue: Parameters path parameter 'siteId', query parameter 'site_id' all normalize to 'siteId' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /phone/sites/{siteId}/dial_by_name_directory/extensions -> get
+        issue: Parameters path parameter 'siteId', query parameter 'site_id' all normalize to 'siteId' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /phone/sites/{siteId}/outbound_caller_id/customized_numbers -> get
+        issue: Parameters path parameter 'siteId', query parameter 'site_id' all normalize to 'siteId' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: phoneRoles.yml -> service -> endpoints -> AddRoleMembers
+        issue: Multiple request properties resolve to the same generated name roleId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "roleId" (name: "roleId")
+  - Body property: <Request Body> -> role_id (name: "role_id")
+
+    [error]
+        path: sites.yml -> service -> endpoints -> listSiteCustomizeOutboundCallerNumbers
+        issue: Multiple request properties resolve to the same generated name siteId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "siteId" (name: "siteId")
+  - Query Parameter "site_id" (name: "site_id")
+
+    [error]
+        path: smsCampaign.yml -> types -> GetSmsCampaignResponseStatus
+        issue: Enum name  for value -- is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: smsCampaign.yml -> types -> ListAccountSmsCampaignsResponseSmsCampaignsItemStatus
+        issue: Enum name  for value -- is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 10 errors and 7 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> listContacts -> request -> body -> properties -> sort -> type
+                  __package__.yml
+                  [error] Default value '-createdAt' is not a valid enum value
+                  
+[api]: python-sdk __package__.yml -> types -> ListRequestSort
+                  __package__.yml
+                  [error] Default value '-createdAt' is not a valid enum value
+                  
+[api]: python-sdk Found 2 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

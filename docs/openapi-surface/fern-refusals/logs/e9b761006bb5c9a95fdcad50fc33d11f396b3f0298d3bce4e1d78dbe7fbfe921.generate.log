@@ -1,0 +1,42 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk users.yml -> service -> endpoints -> addUser -> examples[0] -> request
+                  users.yml
+                  [error] Expected example to be an object. Example is: 2
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> getUser -> examples[0] -> response
+                  users.yml
+                  [error] Expected example to be an object. Example is: 2
+                  
+[api]: python-sdk myUser.yml -> service -> endpoints -> getUserInfo -> examples[0] -> response
+                  myUser.yml
+                  [error] Expected example to be an object. Example is: 2
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> getUsers -> examples[0] -> response
+                  users.yml
+                  [error] Expected example to be an object. Example is: 2
+                  
+[api]: python-sdk video.yml -> service -> endpoints -> uploadResumableInit -> request -> body
+                  video.yml
+                  [error] Object has multiple properties named "thumbnailfile":
+                    - <Inlined Request> -> thumbnailfile
+                    - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
+                  [error] Object has multiple properties named "previewfile":
+                    - <Inlined Request> -> previewfile
+                    - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> previewfile
+                  
+[api]: python-sdk video.yml -> service -> endpoints -> uploadResumableInit
+                  video.yml
+                  [error] Multiple request properties have the name thumbnailfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> thumbnailfile
+                    - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
+                  [error] Multiple request properties have the name previewfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> previewfile
+                    - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> previewfile
+                  
+[api]: python-sdk Found 8 errors and 47 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

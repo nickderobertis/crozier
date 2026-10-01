@@ -137,6 +137,30 @@ impl Layout {
     }
 }
 
+/// The `reference:` block: how `crozier compare` produces the reference SDK it
+/// checks a generator's output against. `crozier generate` ignores it. There is no
+/// default command and no environment variable for it; see `docs/compare.md`.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ReferenceSettings {
+    /// Shell command (`sh -c`, run from the config file's directory) that writes
+    /// the reference SDK into the output directory `crozier compare` names in
+    /// its environment.
+    pub command: Option<String>,
+}
+
+impl ReferenceSettings {
+    /// Per-field merge (`over` wins), keeping an absent block absent.
+    fn merge(base: Option<Self>, over: Option<Self>) -> Option<Self> {
+        match (base, over) {
+            (Some(base), Some(over)) => Some(Self {
+                command: over.command.or(base.command),
+            }),
+            (base, over) => over.or(base),
+        }
+    }
+}
+
 /// One generator's settings, as written under `generators.<name>` (or as the
 /// top-level shared defaults, which share this shape minus `type`). Every field
 /// is optional: an absent field falls through to the next layer down. Unknown
@@ -162,6 +186,10 @@ pub struct GeneratorSettings {
     pub audiences: Option<Vec<String>>,
     /// Strict audience subsetting (exclude un-annotated operations).
     pub audience_strict: Option<bool>,
+    /// Strict Fern compatibility: refuse to generate from a document Fern
+    /// refuses, even where crozier's own output would be valid. Never changes a
+    /// byte of an SDK that is written.
+    pub fern_strict: Option<bool>,
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`). Python-generator-specific, so it lives
     /// here and not among the shared top-level defaults. Defaults to
@@ -170,6 +198,9 @@ pub struct GeneratorSettings {
     /// Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`
     /// (Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].
     pub layout: Option<Layout>,
+    /// How `crozier compare` produces this generator's reference SDK; overrides
+    /// the shared top-level block. Ignored by `crozier generate`.
+    pub reference: Option<ReferenceSettings>,
 }
 
 /// A parsed `crozier.yml`: the shared top-level defaults plus the named
@@ -194,8 +225,13 @@ pub struct FileConfig {
     pub audiences: Option<Vec<String>>,
     /// Shared default strict-audience flag.
     pub audience_strict: Option<bool>,
+    /// Shared default strict-Fern-compatibility flag.
+    pub fern_strict: Option<bool>,
     /// Shared default output layout (`packaged` or `flat`).
     pub layout: Option<Layout>,
+    /// Shared default for how `crozier compare` produces each generator's
+    /// reference SDK. Ignored by `crozier generate`.
+    pub reference: Option<ReferenceSettings>,
     /// The named generator instances (one SDK each), in declaration order.
     // Described to `schemars` as a plain string-keyed map (same JSON shape) so
     // the schema does not depend on the indexmap feature; serde keeps the
@@ -224,6 +260,8 @@ pub struct CliOverrides {
     pub audiences: Option<Vec<String>>,
     /// `--audience-strict`; `None` when the flag was absent.
     pub audience_strict: Option<bool>,
+    /// `--fern-strict`; `None` when the flag was absent.
+    pub fern_strict: Option<bool>,
     /// `--extra-fields`; `None` when the flag was absent.
     pub extra_fields: Option<ExtraFields>,
     /// `--layout`; `None` when the flag was absent.
@@ -242,6 +280,7 @@ impl CliOverrides {
             && self.client_class_name.is_none()
             && self.audiences.is_none()
             && self.audience_strict.is_none()
+            && self.fern_strict.is_none()
             && self.extra_fields.is_none()
             && self.layout.is_none()
     }
@@ -293,7 +332,9 @@ pub fn merge(base: FileConfig, over: FileConfig) -> FileConfig {
         client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
+        fern_strict: over.fern_strict.or(base.fern_strict),
         layout: over.layout.or(base.layout),
+        reference: ReferenceSettings::merge(base.reference, over.reference),
         generators,
     }
 }
@@ -309,31 +350,40 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         client_class_name: over.client_class_name.or(base.client_class_name),
         audiences: over.audiences.or(base.audiences),
         audience_strict: over.audience_strict.or(base.audience_strict),
+        fern_strict: over.fern_strict.or(base.fern_strict),
         extra_fields: over.extra_fields.or(base.extra_fields),
         layout: over.layout.or(base.layout),
+        reference: ReferenceSettings::merge(base.reference, over.reference),
     }
 }
 
 /// Build the environment-override layer from the `CROZIER_*` variables, read
 /// through `get` (injected so this stays pure and unit-testable). Empty values
-/// count as unset. A malformed value (a non-boolean `CROZIER_AUDIENCE_STRICT`)
+/// count as unset. A malformed value (a non-boolean `CROZIER_AUDIENCE_STRICT` or
+/// `CROZIER_FERN_STRICT`)
 /// fails loudly, exactly like a malformed file. The overrides are shared across
 /// every selected generator — there is no per-generator env form by design.
 ///
 /// Names mirror the config fields and CLI flags: `CROZIER_SPEC`,
 /// `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`, `CROZIER_PROJECT_NAME`,
 /// `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES` (comma-separated),
-/// `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`
+/// `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`, `CROZIER_EXTRA_FIELDS`
 /// (`allow`/`ignore`/`forbid`), `CROZIER_LAYOUT` (`packaged`/`flat`).
 pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSettings> {
     let read = |name: &str| get(name).filter(|v| !v.is_empty());
 
-    let audience_strict = match read("CROZIER_AUDIENCE_STRICT") {
-        None => None,
-        Some(v) => Some(parse_bool(&v).ok_or_else(|| Error::InvalidEnvOverride {
-            message: format!("`CROZIER_AUDIENCE_STRICT` must be `true` or `false`, got `{v}`"),
-        })?),
+    let flag = |name: &str| -> Result<Option<bool>> {
+        match read(name) {
+            None => Ok(None),
+            Some(v) => parse_bool(&v)
+                .map(Some)
+                .ok_or_else(|| Error::InvalidEnvOverride {
+                    message: format!("`{name}` must be `true` or `false`, got `{v}`"),
+                }),
+        }
     };
+    let audience_strict = flag("CROZIER_AUDIENCE_STRICT")?;
+    let fern_strict = flag("CROZIER_FERN_STRICT")?;
     let audiences = read("CROZIER_AUDIENCES").map(|v| split_list(&v));
 
     let extra_fields = match read("CROZIER_EXTRA_FIELDS") {
@@ -363,8 +413,10 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         client_class_name: read("CROZIER_CLIENT_CLASS_NAME"),
         audiences,
         audience_strict,
+        fern_strict,
         extra_fields,
         layout,
+        reference: None,
     })
 }
 
@@ -502,6 +554,12 @@ pub fn resolve(
         .or(per.and_then(|p| p.audience_strict))
         .or(config.audience_strict)
         .unwrap_or(false);
+    let fern_strict = cli
+        .fern_strict
+        .or(env.fern_strict)
+        .or(per.and_then(|p| p.fern_strict))
+        .or(config.fern_strict)
+        .unwrap_or(false);
     // `extra-fields` is Python-generator-specific: no shared top-level layer, so
     // the chain is CLI > env > per-generator > the built-in `allow` default.
     let extra_fields = cli
@@ -524,6 +582,7 @@ pub fn resolve(
         client_class_name,
         audiences,
         audience_strict,
+        fern_strict,
         extra_fields,
         layout,
     })
@@ -694,6 +753,19 @@ pub fn explain(
             per.and_then(|p| p.audience_strict).map(|b| b.to_string()),
             config.audience_strict.map(|b| b.to_string()),
         ),
+        // Unset everywhere, strict Fern compatibility is off: show the `false`
+        // the run will use rather than `(unset)`.
+        {
+            let mut fern_strict = field(
+                "fern-strict",
+                cli.fern_strict.map(|b| b.to_string()),
+                env.fern_strict.map(|b| b.to_string()),
+                per.and_then(|p| p.fern_strict).map(|b| b.to_string()),
+                config.fern_strict.map(|b| b.to_string()),
+            );
+            fern_strict.value.get_or_insert_with(|| false.to_string());
+            fern_strict
+        },
         // Python-generator-specific: no shared top-level layer, so the shared
         // column is always empty and the built-in default is `allow`.
         field(
@@ -705,7 +777,43 @@ pub fn explain(
             None,
         ),
         layout_field(cli, env, per, config),
+        // `crozier compare`'s reference command: no env layer and no default, and
+        // its flag belongs to `compare`, so `crozier config` shows the file layers.
+        field(
+            "reference.command",
+            None,
+            None,
+            per.and_then(|p| p.reference.as_ref())
+                .and_then(|r| r.command.clone()),
+            config.reference.as_ref().and_then(|r| r.command.clone()),
+        ),
     ]
+}
+
+/// Resolve one generator's `reference.command` for `crozier compare`:
+/// `--reference-command` > `generators.<name>.reference.command` > the shared
+/// top-level `reference.command`. There is no environment layer and no default,
+/// so `None` means nothing configures one.
+#[must_use]
+pub fn resolve_reference_command(
+    name: &str,
+    config: &FileConfig,
+    flag: Option<&str>,
+) -> Option<(String, Source)> {
+    let per = config
+        .generators
+        .get(name)
+        .and_then(|p| p.reference.as_ref())
+        .and_then(|r| r.command.clone());
+    let shared = config.reference.as_ref().and_then(|r| r.command.clone());
+    match pick(&[
+        (Source::Cli, flag.map(str::to_string)),
+        (Source::Generator, per),
+        (Source::Shared, shared),
+    ]) {
+        (Some(command), source) => Some((command, source)),
+        (None, _) => None,
+    }
 }
 
 /// How `layout` resolves for `crozier config`. Unlike the other optional fields it
@@ -1155,6 +1263,81 @@ mod tests {
     }
 
     #[test]
+    fn reference_command_layers_flag_over_generator_over_shared_with_no_default() {
+        let config = parsed(
+            "reference:\n  command: ./shared.sh\ngenerators:\n  a:\n    spec: ./a.yml\n  b:\n    spec: ./b.yml\n    reference:\n      command: ./b.sh\n",
+        );
+        assert_eq!(
+            resolve_reference_command("a", &config, None),
+            Some(("./shared.sh".to_string(), Source::Shared))
+        );
+        assert_eq!(
+            resolve_reference_command("b", &config, None),
+            Some(("./b.sh".to_string(), Source::Generator))
+        );
+        assert_eq!(
+            resolve_reference_command("b", &config, Some("./flag.sh")),
+            Some(("./flag.sh".to_string(), Source::Cli))
+        );
+        // No layer configures one: no default.
+        let bare = parsed("generators:\n  a:\n    spec: ./a.yml");
+        assert_eq!(resolve_reference_command("a", &bare, None), None);
+        // A block without a command is the same as no block.
+        let empty = parsed("reference: {}\n");
+        assert_eq!(resolve_reference_command("python", &empty, None), None);
+
+        // `crozier config` attributes it to its layer, and shows it unset otherwise.
+        let none = GeneratorSettings::default();
+        let cli = CliOverrides::default();
+        let report = explain("b", &config, &none, &cli);
+        let shown = field_of(&report, "reference.command");
+        assert_eq!(shown.value.as_deref(), Some("./b.sh"));
+        assert_eq!(shown.source, Source::Generator);
+        let report = explain("a", &bare, &none, &cli);
+        assert_eq!(field_of(&report, "reference.command").value, None);
+    }
+
+    #[test]
+    fn reference_block_merges_per_field_rejects_unknown_keys_and_is_ignored_by_resolve() {
+        let merged = merge(
+            parsed("reference:\n  command: ./base.sh\ngenerators:\n  a:\n    reference:\n      command: ./a.sh"),
+            parsed("generators:\n  a:\n    spec: ./a.yml\n    output: ./o\n    reference: {}"),
+        );
+        assert_eq!(
+            merged.reference.as_ref().and_then(|r| r.command.as_deref()),
+            Some("./base.sh")
+        );
+        assert_eq!(
+            merged.generators["a"]
+                .reference
+                .as_ref()
+                .and_then(|r| r.command.as_deref()),
+            Some("./a.sh")
+        );
+        let err = parse("reference:\n  comand: x").unwrap_err();
+        assert!(err.contains("comand"), "{err}");
+        // `crozier generate`'s resolution carries nothing of it.
+        let with = resolve(
+            "a",
+            &merged,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        let mut without_config = merged.clone();
+        without_config.reference = None;
+        without_config.generators["a"].reference = None;
+        let without = resolve(
+            "a",
+            &without_config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        assert_eq!(format!("{with:?}"), format!("{without:?}"));
+    }
+
+    #[test]
     fn resolve_uses_top_level_for_builtin_python() {
         let config = parsed("spec: ./top.yml\noutput: ./top-out");
         let args = resolve(
@@ -1373,5 +1556,105 @@ mod tests {
         // Every source has a stable label.
         assert_eq!(Source::Cli.label(), "cli");
         assert_eq!(Source::Shared.label(), "shared");
+    }
+
+    #[test]
+    fn fern_strict_layers_like_audience_strict_and_defaults_off() {
+        let bare = parsed("spec: ./a.yml\noutput: ./o");
+        let none = GeneratorSettings::default();
+        let no_cli = CliOverrides::default();
+        assert!(
+            !resolve("python", &bare, &none, &no_cli)
+                .unwrap()
+                .fern_strict
+        );
+
+        // Shared top level, then the generator's own entry over it.
+        let shared = parsed("spec: ./a.yml\noutput: ./o\nfern-strict: true");
+        assert!(
+            resolve("python", &shared, &none, &no_cli)
+                .unwrap()
+                .fern_strict
+        );
+        let per = parsed(
+            "spec: ./a.yml\noutput: ./o\nfern-strict: true\ngenerators:\n  python:\n    fern-strict: false",
+        );
+        assert!(!resolve("python", &per, &none, &no_cli).unwrap().fern_strict);
+
+        // Env beats the generator's entry; the CLI flag beats env.
+        let env = env_overrides(env_get(&[("CROZIER_FERN_STRICT", "1")])).unwrap();
+        assert_eq!(env.fern_strict, Some(true));
+        assert!(resolve("python", &per, &env, &no_cli).unwrap().fern_strict);
+        let env_off = env_overrides(env_get(&[("CROZIER_FERN_STRICT", "false")])).unwrap();
+        let cli = CliOverrides {
+            fern_strict: Some(true),
+            ..CliOverrides::default()
+        };
+        assert!(!cli.is_empty());
+        assert!(
+            resolve("python", &shared, &env_off, &cli)
+                .unwrap()
+                .fern_strict
+        );
+        assert!(
+            !resolve("python", &shared, &env_off, &no_cli)
+                .unwrap()
+                .fern_strict
+        );
+
+        // Merging config files layers it per field, top level and per generator.
+        let merged = merge(
+            parsed("fern-strict: true\ngenerators:\n  python:\n    fern-strict: true"),
+            parsed("generators:\n  python:\n    output: ./o"),
+        );
+        assert_eq!(merged.fern_strict, Some(true));
+        assert_eq!(merged.generators["python"].fern_strict, Some(true));
+    }
+
+    #[test]
+    fn env_bad_fern_strict_is_rejected() {
+        let err = env_overrides(env_get(&[("CROZIER_FERN_STRICT", "yes")])).unwrap_err();
+        assert!(err.to_string().contains("CROZIER_FERN_STRICT"), "{err}");
+    }
+
+    #[test]
+    fn explain_reports_fern_strict_value_and_source() {
+        let report = explain(
+            "python",
+            &FileConfig::default(),
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        );
+        let fs = field_of(&report, "fern-strict");
+        assert_eq!(fs.value.as_deref(), Some("false"));
+        assert_eq!(fs.source, Source::Default);
+
+        let config = parsed("fern-strict: true\ngenerators:\n  python:\n    fern-strict: false");
+        let report = explain(
+            "python",
+            &config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        );
+        let fs = field_of(&report, "fern-strict");
+        assert_eq!(fs.value.as_deref(), Some("false"));
+        assert_eq!(fs.source, Source::Generator);
+        let report = explain(
+            "admin",
+            &config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        );
+        assert_eq!(field_of(&report, "fern-strict").source, Source::Shared);
+        let cli = CliOverrides {
+            fern_strict: Some(true),
+            ..CliOverrides::default()
+        };
+        let report = explain("python", &config, &GeneratorSettings::default(), &cli);
+        let fs = field_of(&report, "fern-strict");
+        assert_eq!(
+            (fs.value.as_deref(), fs.source),
+            (Some("true"), Source::Cli)
+        );
     }
 }

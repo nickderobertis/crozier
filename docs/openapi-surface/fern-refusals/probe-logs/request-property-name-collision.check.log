@@ -1,0 +1,10 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> updateRepo
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+Found 1 error and 0 warnings in <n> seconds.

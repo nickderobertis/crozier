@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> addCertificate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listCertificates
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> reloadCertbot
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> removeCertificate
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 4 errors and 0 warnings in <n> seconds.

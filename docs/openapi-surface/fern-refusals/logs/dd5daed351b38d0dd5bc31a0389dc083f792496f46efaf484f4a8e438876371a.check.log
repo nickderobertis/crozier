@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 6 errors
+    [error]
+        path: aiMl.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: health.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: mapeK.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: mesh.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: monitoring.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: recovery.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 6 errors and 0 warnings in <n> seconds.

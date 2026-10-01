@@ -1,0 +1,12 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> listContacts -> request -> body -> properties -> sort -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> ListRequestSort
+        issue: Default value '-createdAt' is not a valid enum value
+
+Found 2 errors and 0 warnings in <n> seconds.

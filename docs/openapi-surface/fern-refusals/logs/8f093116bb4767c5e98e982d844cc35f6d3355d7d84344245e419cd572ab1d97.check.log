@@ -1,0 +1,134 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 26 errors
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.get
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.get
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.projects.create
+        issue: Path parameter is unreferenced in endpoint: parent.
+
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.projects.create
+        issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+parent" (name: "+parent")
+  - Path parameter "parent" (name: "parent")
+
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.projects.delete
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: locations.yml -> service -> endpoints -> monitoring.locations.global.metricsScopes.projects.delete
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.create
+        issue: Path parameter is unreferenced in endpoint: parent.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.create
+        issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+parent" (name: "+parent")
+  - Path parameter "parent" (name: "parent")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.list
+        issue: Path parameter is unreferenced in endpoint: parent.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.list
+        issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+parent" (name: "+parent")
+  - Path parameter "parent" (name: "parent")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.patch
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.dashboards.patch
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.label.values
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.label.values
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.labels
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.labels
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.metadata.list
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.metadata.list
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query_exemplars
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query_exemplars
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query_range
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query_range
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.query
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.series
+        issue: Path parameter is unreferenced in endpoint: name.
+
+    [error]
+        path: projects.yml -> service -> endpoints -> monitoring.projects.location.prometheus.api.v1.series
+        issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "+name" (name: "+name")
+  - Path parameter "name" (name: "name")
+
+Found 26 errors and 0 warnings in <n> seconds.

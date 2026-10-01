@@ -1,0 +1,10 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> FileConflict
+        issue: Object has multiple properties named "sha1":
+  - FileConflict -> sha1
+  - FileConflict -> (extends) FileMini -> sha1
+
+Found 1 error and 0 warnings in <n> seconds.

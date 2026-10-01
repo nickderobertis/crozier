@@ -1,0 +1,22 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: administrations.yml -> service -> endpoints -> create_administration
+        issue: Multiple request properties have the name legal_entity_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "legal_entity_id"
+  - Body property: <Request Body> -> legal_entity_id
+
+    [error]
+        path: purchaseInvoices.yml -> service -> endpoints -> get_invoice_json -> examples[0] -> response
+        issue: Unexpected property "iban"
+
+    [error]
+        path: purchaseInvoices.yml -> service -> endpoints -> get_invoice_json -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: receivedDocuments.yml -> service -> endpoints -> get_received_document
+        issue: Path parameter is unreferenced in endpoint: syntax.
+
+Found 4 errors and 0 warnings in <n> seconds.

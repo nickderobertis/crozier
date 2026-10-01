@@ -4,7 +4,7 @@ import pytest
 def _has_httpx_aiohttp() -> bool:
     """Check if httpx_aiohttp is importable."""
     try:
-        import httpx_aiohttp
+        import httpx_aiohttp  # type: ignore[import-not-found]  # noqa: F401
 
         return True
     except ImportError:

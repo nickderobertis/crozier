@@ -23,6 +23,7 @@ built-in's defaults.
 | `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
 | `crozier config [<name>]` | Print the effective config and the layer each value came from. |
 | `crozier schema` | Print the config JSON Schema to stdout. |
+| `crozier compare [PATHS...]` | Check every configured generator's output against a reference SDK your `reference.command` produces, and time both sides. |
 
 ## Precedence
 
@@ -34,15 +35,15 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 
 - **CLI flags** — `--spec`, `--output`, `--package-name`, `--project-name`,
   `--client-class-name`, `--audience` (repeatable), `--audience-strict`,
-  `--extra-fields`, `--layout`. These apply to a *single* generator; passing them while more
+  `--fern-strict`, `--extra-fields`, `--layout`. These apply to a *single* generator; passing them while more
   than one would run is an error (name one, or move the values into the config
   file).
 - **Environment** — `CROZIER_SPEC`, `CROZIER_OUTPUT`, `CROZIER_PACKAGE_NAME`,
   `CROZIER_PROJECT_NAME`, `CROZIER_CLIENT_CLASS_NAME`, `CROZIER_AUDIENCES`
-  (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_EXTRA_FIELDS`,
-  `CROZIER_LAYOUT`. Empty values count as unset; a value outside a field's set
-  (`CROZIER_LAYOUT=nested`) is an error naming the variable. These are a global
-  override layer applied to every selected generator.
+  (comma-separated), `CROZIER_AUDIENCE_STRICT`, `CROZIER_FERN_STRICT`,
+  `CROZIER_EXTRA_FIELDS`, `CROZIER_LAYOUT`. Empty values count as unset; a value
+  outside a field's set (`CROZIER_LAYOUT=nested`) is an error naming the variable.
+  These are a global override layer applied to every selected generator.
 - **Config file** — a `generators.<name>` value beats the shared top-level value
   of the same field. `extra-fields` is **Python-generator-specific**: it lives
   only under a generator, never at the shared top level (a top-level
@@ -50,7 +51,7 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
   title; `project-name` defaults to the package name; `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
-  whole API); `extra-fields` defaults to `allow`; `layout` defaults to
+  whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to `allow`; `layout` defaults to
   `packaged`. `spec` and `output` have no default — a generator resolved without
   either is an actionable error.
 
@@ -107,7 +108,10 @@ package-name: my_api
 project-name: my-api
 audiences: [public]
 audience-strict: false
+fern-strict: false        # see "Strict Fern compatibility" below
 layout: packaged          # packaged|flat — see "Output layout"
+reference:                # used only by `crozier compare`
+  command: ./scripts/reference-sdk.sh
 
 generators:
   python:
@@ -119,19 +123,41 @@ generators:
     client-class-name: MyApi   # defaults to {PascalCase(package-name)}Api
     audiences: [public]
     audience-strict: false
+    fern-strict: false
     extra-fields: allow        # allow|ignore|forbid — pydantic behavior for unknown
                                # response fields (Python-generator-specific; not a
                                # shared top-level field)
     layout: flat               # packaged (Fern's --preview --output) | flat
                                # (Fern's local-file-system output)
+    reference:
+      command: ./scripts/reference-sdk.sh   # overrides the shared block
   admin:
     spec: ./admin-openapi.yml
     output: ./sdks/admin
     package-name: admin_api
 ```
 
+### Strict Fern compatibility
+
+Fern refuses some documents outright — its `fern check` fails, its generator
+exits non-zero, or it reports success over a document it could not parse —
+where crozier can still emit an SDK. By default crozier generates wherever its
+output is valid and useful; `fern-strict: true` (or `--fern-strict`, or
+`CROZIER_FERN_STRICT=true`) makes it refuse those documents too, matching Fern.
+A refusal exits 1, writes nothing to the output directory, and prints one line
+naming the refusal class, the offending element, and that `fern-strict` caused
+it. The setting only ever decides *whether* an SDK is written, never a byte of
+one that is.
+
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
+
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires this page to link the compare reference; human readers reach configuration.md from the README, not through AGENTS.md, and this is the one place the page sends them to the command's own reference. -->
+Only [`crozier compare`](compare.md) reads the `reference` block (one key,
+`command`): it names the command that produces each
+generator's reference SDK. It resolves as `--reference-command` >
+`generators.<name>.reference.command` > top-level `reference.command`, with no
+environment variable and no default, and `crozier generate` ignores it.
 
 ### Editor support (JSON Schema)
 
@@ -169,6 +195,8 @@ generator `python`
 ```
 
 `layout` always shows the value a run would use, `packaged` when no layer sets it.
+`reference.command` shows the command `crozier compare` would run (its
+`--reference-command` flag aside), or `(unset)`.
 
 ## Examples
 

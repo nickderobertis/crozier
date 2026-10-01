@@ -1,0 +1,1846 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 459 errors
+    [error]
+        path: advancedParameters.yml -> service -> endpoints -> get-databases-postgresql-config -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 41.5
+
+    [error]
+        path: backups.yml -> service -> endpoints -> post-restore-backup
+        issue: Multiple request properties resolve to the same generated name linodeId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "linodeId" (name: "linodeId")
+  - Body property: <Request Body> -> linode_id (name: "linode_id")
+
+    [error]
+        path: linodeInstances.yml -> service -> endpoints -> post-clone-linode-instance
+        issue: Multiple request properties resolve to the same generated name linodeId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "linodeId" (name: "linodeId")
+  - Body property: <Request Body> -> linode_id (name: "linode_id")
+
+    [error]
+        path: managedStatistics.yml -> service -> endpoints -> get-managed-stats -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 29.94
+
+    [error]
+        path: managedStatistics.yml -> service -> endpoints -> get-managed-stats -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 29.94
+
+    [error]
+        path: managedStatistics.yml -> service -> endpoints -> get-managed-stats -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 29.94
+
+    [error]
+        path: managedStatistics.yml -> service -> endpoints -> get-managed-stats -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 29.94
+
+    [error]
+        path: managedStatistics.yml -> service -> endpoints -> get-managed-stats -> examples[0] -> response
+        issue: Expected example to be an integer. Example is: 29.94
+
+    [error]
+        path: metrics.yml -> types -> GetDashboardsAllResponseDataItemWidgetsItemUnit
+        issue: Enum name  for value % is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: metrics.yml -> types -> GetDashboardsByIdResponseWidgetsItemUnit
+        issue: Enum name  for value % is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: metrics.yml -> types -> GetDashboardsResponseDataItemWidgetsItemUnit
+        issue: Enum name  for value % is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: metrics.yml -> types -> GetMonitorInformationResponseDataItemUnit
+        issue: Enum name  for value % is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/agreements -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/agreements contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/agreements -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/agreements contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/availability -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/availability contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/availability/{regionId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/availability/{regionId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/betas -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/betas contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/betas -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/betas contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/betas/{betaId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/betas/{betaId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/cancel -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/cancel contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/child-accounts -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/child-accounts contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/child-accounts/{euuId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/child-accounts/{euuId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/child-accounts/{euuId}/token -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/child-accounts/{euuId}/token contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/credit-card -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/credit-card contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/entity-transfers -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/entity-transfers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/entity-transfers -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/entity-transfers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/entity-transfers/{token} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/account/entity-transfers/{token} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/entity-transfers/{token} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/entity-transfers/{token} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/entity-transfers/{token}/accept -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/entity-transfers/{token}/accept contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/events -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/events contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/events/{eventId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/events/{eventId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/events/{eventId}/seen -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/events/{eventId}/seen contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/invoices -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/invoices contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/invoices/{invoiceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/invoices/{invoiceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/invoices/{invoiceId}/items -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/invoices/{invoiceId}/items contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/logins -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/logins contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/logins/{loginId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/logins/{loginId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/maintenance -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/maintenance contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/notifications -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/notifications contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/oauth-clients contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/oauth-clients contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients/{clientId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/account/oauth-clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients/{clientId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/oauth-clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients/{clientId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account/oauth-clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients/{clientId}/reset-secret -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/oauth-clients/{clientId}/reset-secret contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/oauth-clients/{clientId}/thumbnail -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account/oauth-clients/{clientId}/thumbnail contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payment-methods -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/payment-methods contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payment-methods -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/payment-methods contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payment-methods/{paymentMethodId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/account/payment-methods/{paymentMethodId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payment-methods/{paymentMethodId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/payment-methods/{paymentMethodId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payment-methods/{paymentMethodId}/make-default -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/payment-methods/{paymentMethodId}/make-default contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payments -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/payments contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payments -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/payments contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payments/{paymentId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/payments/{paymentId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payments/paypal -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/payments/paypal contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/payments/paypal/execute -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/payments/paypal/execute contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/promo-codes -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/promo-codes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/service-transfers -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/service-transfers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/service-transfers -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/service-transfers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/service-transfers/{token} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/account/service-transfers/{token} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/service-transfers/{token} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/service-transfers/{token} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/service-transfers/{token}/accept -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/service-transfers/{token}/accept contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/settings -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/settings -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/settings/managed-enable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/settings/managed-enable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/transfer -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/transfer contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/users contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/account/users contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users/{username} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/account/users/{username} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users/{username} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/users/{username} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users/{username} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account/users/{username} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users/{username}/grants -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/account/users/{username}/grants contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/account/users/{username}/grants -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/account/users/{username}/grants contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/betas -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/betas contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/betas/{betaId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/betas/{betaId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/engines -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/engines contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/engines/{engineId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/engines/{engineId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/instances -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/config -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/mysql/config contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/mysql/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/mysql/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/databases/mysql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/mysql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/databases/mysql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/credentials -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/mysql/instances/{instanceId}/credentials contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/credentials/reset -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/mysql/instances/{instanceId}/credentials/reset contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/patch -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/mysql/instances/{instanceId}/patch contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/resume -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/mysql/instances/{instanceId}/resume contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/ssl -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/mysql/instances/{instanceId}/ssl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/mysql/instances/{instanceId}/suspend -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/mysql/instances/{instanceId}/suspend contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/config -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/postgresql/config contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/postgresql/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/postgresql/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/databases/postgresql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/postgresql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/databases/postgresql/instances/{instanceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/credentials -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/postgresql/instances/{instanceId}/credentials contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/credentials/reset -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/postgresql/instances/{instanceId}/credentials/reset contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/patch -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/postgresql/instances/{instanceId}/patch contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/resume -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/postgresql/instances/{instanceId}/resume contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/ssl -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/postgresql/instances/{instanceId}/ssl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/postgresql/instances/{instanceId}/suspend -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/databases/postgresql/instances/{instanceId}/suspend contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/databases/types/{typeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/databases/types/{typeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/domains contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/domains contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/domains/{domainId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/domains/{domainId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/domains/{domainId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/clone -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/domains/{domainId}/clone contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/records -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/domains/{domainId}/records contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/records -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/domains/{domainId}/records contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/records/{recordId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/domains/{domainId}/records/{recordId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/records/{recordId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/domains/{domainId}/records/{recordId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/records/{recordId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/domains/{domainId}/records/{recordId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/{domainId}/zone-file -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/domains/{domainId}/zone-file contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/domains/import -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/domains/import contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/{imageId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/images/{imageId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/{imageId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/{imageId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/{imageId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/images/{imageId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/{imageId}/regions -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/{imageId}/regions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/{imageId}/sharegroups -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/{imageId}/sharegroups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/sharegroups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/images/sharegroups/{sharegroupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/{sharegroupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/images/sharegroups/{sharegroupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/images -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/{sharegroupId}/images contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/images -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/sharegroups/{sharegroupId}/images contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/images/{imageId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/images/sharegroups/{sharegroupId}/images/{imageId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/images/{imageId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/images/sharegroups/{sharegroupId}/images/{imageId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/members -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/{sharegroupId}/members contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/members -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/sharegroups/{sharegroupId}/members contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/images/sharegroups/{sharegroupId}/members/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/tokens contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/sharegroups/tokens contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens/{tokenUuid} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/images/sharegroups/tokens/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens/{tokenUuid} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/tokens/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens/{tokenUuid} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/images/sharegroups/tokens/{tokenUuid} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens/{tokenUuid}/sharegroup -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/tokens/{tokenUuid}/sharegroup contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/sharegroups/tokens/{tokenUuid}/sharegroup/images -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/images/sharegroups/tokens/{tokenUuid}/sharegroup/images contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/images/upload -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/images/upload contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/backups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/backups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups/{backupId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/backups/{backupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups/{backupId}/restore -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/backups/{backupId}/restore contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups/cancel -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/backups/cancel contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/backups/enable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/backups/enable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/boot -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/boot contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/clone -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/clone contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/configs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/configs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/order -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/configs/{configId}/interfaces/order contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/disks contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/disks contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/disks/{diskId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/clone -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/clone contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/password -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/password contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/resize -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/disks/{diskId}/resize contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/firewalls -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/firewalls -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/firewalls/apply -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/firewalls/apply contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/interfaces contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/interfaces contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId}/firewalls -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/interfaces/{interfaceId}/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/history -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/interfaces/history contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/settings -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/interfaces/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/interfaces/settings -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/interfaces/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/ips -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/ips -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/ips/{address} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/instances/{linodeId}/ips/{address} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/ips/{address} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/ips/{address} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/ips/{address} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/instances/{linodeId}/ips/{address} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/migrate -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/migrate contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/mutate -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/mutate contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/nodebalancers -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/nodebalancers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/password -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/password contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/reboot -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/reboot contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/rebuild -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/rebuild contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/rescue -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/rescue contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/resize -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/resize contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/shutdown -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/shutdown contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/stats -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/stats contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/stats/{year}/{month} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/stats/{year}/{month} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/transfer -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/transfer contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/transfer/{year}/{month} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/transfer/{year}/{month} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/upgrade-interfaces -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/instances/{linodeId}/upgrade-interfaces contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/instances/{linodeId}/volumes -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/instances/{linodeId}/volumes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/kernels -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/kernels contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/kernels/{kernelId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/kernels/{kernelId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/stackscripts -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/stackscripts contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/stackscripts -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/linode/stackscripts contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/stackscripts/{stackscriptId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/linode/stackscripts/{stackscriptId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/stackscripts/{stackscriptId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/stackscripts/{stackscriptId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/stackscripts/{stackscriptId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/linode/stackscripts/{stackscriptId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/linode/types/{typeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/linode/types/{typeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/lke/clusters/{clusterId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/api-endpoints -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/api-endpoints contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/lke/clusters/{clusterId}/control_plane_acl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/dashboard -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/dashboard contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/kubeconfig -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId}/kubeconfig contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/kubeconfig -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/kubeconfig contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId}/recycle -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters/{clusterId}/nodes/{nodeId}/recycle contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/pools contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters/{clusterId}/pools contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId}/recycle -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters/{clusterId}/pools/{poolId}/recycle contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/recycle -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters/{clusterId}/recycle contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/regenerate -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/lke/clusters/{clusterId}/regenerate contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/clusters/{clusterId}/servicetoken -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/lke/clusters/{clusterId}/servicetoken contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/tiers/{tier}/versions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/tiers/{tier}/versions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/tiers/{tier}/versions/{version} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/tiers/{tier}/versions/{version} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/versions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/versions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/lke/versions/{version} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/lke/versions/{version} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/clients -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/clients contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/clients -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/longview/clients contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/clients/{clientId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/longview/clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/clients/{clientId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/clients/{clientId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/longview/clients/{clientId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/plan -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/plan contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/plan -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/longview/plan contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/subscriptions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/subscriptions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/subscriptions/{subscriptionId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/subscriptions/{subscriptionId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/longview/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/longview/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/maintenance/policies -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/maintenance/policies contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/contacts -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/contacts contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/contacts -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/contacts contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/contacts/{contactId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/managed/contacts/{contactId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/contacts/{contactId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/contacts/{contactId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/contacts/{contactId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/managed/contacts/{contactId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/credentials contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/credentials contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials/{credentialId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/credentials/{credentialId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials/{credentialId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/managed/credentials/{credentialId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials/{credentialId}/revoke -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/credentials/{credentialId}/revoke contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials/{credentialId}/update -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/credentials/{credentialId}/update contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/credentials/sshkey -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/credentials/sshkey contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/issues -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/issues contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/issues/{issueId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/issues/{issueId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/linode-settings -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/linode-settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/linode-settings/{linodeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/linode-settings/{linodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/linode-settings/{linodeId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/managed/linode-settings/{linodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/services contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/services contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services/{serviceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/managed/services/{serviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services/{serviceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/services/{serviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services/{serviceId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/managed/services/{serviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services/{serviceId}/disable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/services/{serviceId}/disable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/services/{serviceId}/enable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/managed/services/{serviceId}/enable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/managed/stats -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/managed/stats contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/alert-channels -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/alert-channels contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/alert-definitions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/alert-definitions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/dashboards -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/dashboards contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/dashboards/{dashboardId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/dashboards/{dashboardId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services/{serviceType} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/alert-definitions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services/{serviceType}/alert-definitions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/alert-definitions -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/monitor/services/{serviceType}/alert-definitions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/monitor/services/{serviceType}/alert-definitions/{alertId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/dashboards -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services/{serviceType}/dashboards contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/metric-definitions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/monitor/services/{serviceType}/metric-definitions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/monitor/services/{serviceType}/token -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/monitor/services/{serviceType}/token contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/network-transfer/prices -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/network-transfer/prices contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/networking/firewalls/{firewallId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/networking/firewalls/{firewallId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/devices -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId}/devices contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/devices -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/firewalls/{firewallId}/devices contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/devices/{deviceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/networking/firewalls/{firewallId}/devices/{deviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/devices/{deviceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId}/devices/{deviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/history -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId}/history contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/history/rules/{version} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId}/history/rules/{version} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/rules -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/{firewallId}/rules contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/{firewallId}/rules -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/networking/firewalls/{firewallId}/rules contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/settings -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/settings -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/networking/firewalls/settings contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/templates -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/templates contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/firewalls/templates/{slug} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/firewalls/templates/{slug} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips/{address} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/ips/{address} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips/{address} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/networking/ips/{address} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips/assign -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ips/assign contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ips/share -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ips/share contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv4/assign -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ipv4/assign contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv4/share -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ipv4/share contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv6/pools -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/ipv6/pools contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv6/ranges -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/ipv6/ranges contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv6/ranges -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/networking/ipv6/ranges contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv6/ranges/{range} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/networking/ipv6/ranges/{range} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/ipv6/ranges/{range} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/ipv6/ranges/{range} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/vlans -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/networking/vlans contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/networking/vlans/{regionId}/{label} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/networking/vlans/{regionId}/{label} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/nodebalancers contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/nodebalancers/{nodeBalancerId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/nodebalancers/{nodeBalancerId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/configs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/nodebalancers/{nodeBalancerId}/configs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/nodes/{nodeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/rebuild -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/nodebalancers/{nodeBalancerId}/configs/{configId}/rebuild contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/firewalls -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/firewalls -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/nodebalancers/{nodeBalancerId}/firewalls contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/stats -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/stats contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/vpcs -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/vpcs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/{nodeBalancerId}/vpcs/{nodeBalancerVpcConfigId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/{nodeBalancerId}/vpcs/{nodeBalancerVpcConfigId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/nodebalancers/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/nodebalancers/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/buckets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/object-storage/buckets/{regionId}/{bucket} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId}/{bucket} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/access contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-acl -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-acl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-acl -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-acl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-list -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-list contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-url -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/object-url contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/buckets/{regionId}/{bucket}/ssl contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/cancel -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/cancel contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/clusters -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/clusters contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/clusters/{clusterId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/clusters/{clusterId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/endpoints -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/endpoints contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/keys -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/keys contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/keys -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/object-storage/keys contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/keys/{keyId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/object-storage/keys/{keyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/keys/{keyId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/keys/{keyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/keys/{keyId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/object-storage/keys/{keyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/quotas -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/quotas contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/quotas/{objQuotaId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/quotas/{objQuotaId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/quotas/{objQuotaId}/usage -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/quotas/{objQuotaId}/usage contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/transfer -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/transfer contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/object-storage/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/object-storage/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/placement/groups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/placement/groups contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups/{groupId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/placement/groups/{groupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups/{groupId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/placement/groups/{groupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups/{groupId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/placement/groups/{groupId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups/{groupId}/assign -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/placement/groups/{groupId}/assign contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/placement/groups/{groupId}/unassign -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/placement/groups/{groupId}/unassign contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/profile contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/apps -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/apps contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/apps/{appId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/profile/apps/{appId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/apps/{appId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/apps/{appId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/devices -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/devices contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/devices/{deviceId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/profile/devices/{deviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/devices/{deviceId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/devices/{deviceId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/logins -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/logins contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/logins/{loginId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/logins/{loginId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/phone-number -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/profile/phone-number contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/phone-number -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/phone-number contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/phone-number/verify -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/phone-number/verify contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/preferences -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/preferences contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/preferences -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/profile/preferences contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/security-questions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/security-questions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/security-questions -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/security-questions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/sshkeys -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/sshkeys contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/sshkeys -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/sshkeys contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/sshkeys/{sshKeyId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/profile/sshkeys/{sshKeyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/sshkeys/{sshKeyId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/sshkeys/{sshKeyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/sshkeys/{sshKeyId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/profile/sshkeys/{sshKeyId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tfa-disable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/tfa-disable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tfa-enable-confirm -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/tfa-enable-confirm contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tfa-enable -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/tfa-enable contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tokens -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/tokens contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tokens -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/profile/tokens contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tokens/{tokenId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/profile/tokens/{tokenId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tokens/{tokenId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/profile/tokens/{tokenId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/profile/tokens/{tokenId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/profile/tokens/{tokenId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/regions -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/regions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/regions/{regionId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/regions/{regionId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/regions/{regionId}/availability -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/regions/{regionId}/availability contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/regions/availability -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/regions/availability contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/support/tickets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/support/tickets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets/{ticketId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/support/tickets/{ticketId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets/{ticketId}/attachments -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/support/tickets/{ticketId}/attachments contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets/{ticketId}/close -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/support/tickets/{ticketId}/close contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets/{ticketId}/replies -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/support/tickets/{ticketId}/replies contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/support/tickets/{ticketId}/replies -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/support/tickets/{ticketId}/replies contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/tags -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/tags contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/tags -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/tags contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/tags/{tagLabel} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/tags/{tagLabel} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/tags/{tagLabel} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/tags/{tagLabel} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/volumes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/volumes contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/volumes/{volumeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/volumes/{volumeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/volumes/{volumeId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId}/attach -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/volumes/{volumeId}/attach contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId}/clone -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/volumes/{volumeId}/clone contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId}/detach -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/volumes/{volumeId}/detach contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/{volumeId}/resize -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/volumes/{volumeId}/resize contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/volumes/types -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/volumes/types contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/vpcs contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/vpcs/{vpcId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs/{vpcId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/vpcs/{vpcId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/ips -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs/{vpcId}/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/subnets -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs/{vpcId}/subnets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/subnets -> post -> description
+        issue: Endpoint description for POST /{apiVersion}/vpcs/{vpcId}/subnets contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} -> delete -> description
+        issue: Endpoint description for DELETE /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} -> put -> description
+        issue: Endpoint description for PUT /{apiVersion}/vpcs/{vpcId}/subnets/{vpcSubnetId} contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /{apiVersion}/vpcs/ips -> get -> description
+        issue: Endpoint description for GET /{apiVersion}/vpcs/ips contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: users.yml -> service -> endpoints -> put-user
+        issue: Multiple request properties have the name username. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "username"
+  - Body property: <Request Body> -> username
+
+Found 459 errors and 34 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

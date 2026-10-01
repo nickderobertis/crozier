@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: calculate.yml -> service -> endpoints -> annualfootprintbycategories -> request -> query-parameters -> categories -> type
+        issue: Default value '["public","consumption","transport","food","energy"]' is not a valid enum value
+
+Found 1 error and 0 warnings in <n> seconds.

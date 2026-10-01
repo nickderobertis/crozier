@@ -1,0 +1,92 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 22 errors
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> request -> query-parameters -> f -> type
+        issue: Type GetApiRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPI -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> errors -> root.NotFoundError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> request -> query-parameters -> f -> type
+        issue: Type GetApiCollectionsRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> response -> type
+        issue: Type root.Enumeration is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPICollections -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.NotFoundError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> request -> query-parameters -> f -> type
+        issue: Type GetApiStylesRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> response -> type
+        issue: Type root.Enumeration is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPIStyles -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.InternalServerError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.NotAcceptableError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.NotFoundError
+        issue: Error is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> request -> query-parameters -> f -> type
+        issue: Type GetApiTileMatrixSetsRequestF is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> response -> type
+        issue: Type root.Enumeration is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getAPITileMatrixSets -> examples[0] -> query-parameters
+        issue: Example is missing required query parameter "f"
+
+Found 22 errors and 0 warnings in <n> seconds.

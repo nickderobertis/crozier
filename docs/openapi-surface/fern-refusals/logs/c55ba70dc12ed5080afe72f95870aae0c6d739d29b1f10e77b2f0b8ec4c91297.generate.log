@@ -1,0 +1,15 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk POST /merchant/cert/delete: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk merchant.yml -> service -> endpoints -> createMerchant
+                  merchant.yml
+                  [error] Multiple request properties resolve to the same generated name merchantType after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Body property: <Request Body> -> merchantType (name: "merchantType")
+                    - Body property: <Request Body> -> merchant_type (name: "merchant_type")
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

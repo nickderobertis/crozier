@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /carts/{id}:
+    get:
+      operationId: getCart
+      parameters:
+        - $ref: '#/components/parameters/CartIdParam'
+        - $ref: '#/components/parameters/LocaleParam'
+      responses:
+        '204':
+          description: No Content
+components:
+  parameters:
+    LocaleParam:
+      name: locale
+      in: query
+      schema:
+        type: string

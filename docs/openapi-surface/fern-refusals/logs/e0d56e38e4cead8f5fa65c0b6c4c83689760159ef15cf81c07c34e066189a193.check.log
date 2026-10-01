@@ -1,0 +1,12 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: health.yml -> service -> endpoints -> getMetrics
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: operations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 2 errors and 0 warnings in <n> seconds.

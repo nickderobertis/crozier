@@ -1,0 +1,59 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: PATCH /accounts/{accountId}/lock_settings: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[sdk] 13 errors
+    [error]
+        path: dashboards.yml -> service -> endpoints -> dashboardMeetings -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: dashboards.yml -> service -> endpoints -> dashboardMeetings -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: dashboards.yml -> service -> endpoints -> dashboardWebinars -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: dashboards.yml -> service -> endpoints -> dashboardWebinars -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: dashboards.yml -> types -> DashboardMeetingParticipantsResponseParticipantsItemAudioQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: dashboards.yml -> types -> DashboardMeetingParticipantsResponseParticipantsItemScreenShareQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: dashboards.yml -> types -> DashboardMeetingParticipantsResponseParticipantsItemVideoQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: dashboards.yml -> types -> DashboardWebinarParticipantsResponseParticipantsItemAudioQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: dashboards.yml -> types -> DashboardWebinarParticipantsResponseParticipantsItemScreenShareQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: dashboards.yml -> types -> DashboardWebinarParticipantsResponseParticipantsItemVideoQuality
+        issue: Enum name  for value   is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: imChat.yml -> service -> endpoints -> messages -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: imChat.yml -> service -> endpoints -> messages -> examples[0] -> response
+        issue: Expected example to be a date. Example is: "string [date]"
+
+    [error]
+        path: users.yml -> service -> endpoints -> switchUserAccount
+        issue: Multiple request properties resolve to the same generated name accountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "accountId" (name: "accountId")
+  - Body property: <Request Body> -> account_id (name: "account_id")
+
+Found 13 errors and 30 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

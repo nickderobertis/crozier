@@ -1,0 +1,17 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /things:
+    get:
+      operationId: listThings
+      parameters:
+        - name: page-size
+          in: header
+          schema: {type: string}
+        - name: page_size
+          in: query
+          schema: {type: string}
+      responses:
+        '204': {description: No Content}

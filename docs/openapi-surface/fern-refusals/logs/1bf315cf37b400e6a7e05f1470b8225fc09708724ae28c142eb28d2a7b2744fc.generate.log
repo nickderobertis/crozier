@@ -1,0 +1,30 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk authorizations.yml -> service -> endpoints -> capture -> request -> body -> extends -> root.two
+                  authorizations.yml
+                  [error] Objects can only extend other objects, and root.two is not an object.
+                  
+[api]: python-sdk authorizations.yml -> service -> endpoints -> capture -> request -> body
+                  authorizations.yml
+                  [error] Object has multiple properties named "invoice_id":
+                    - <Inlined Request> -> invoice_id
+                    - <Inlined Request> -> (extends) root.SupplementaryPurchaseData -> invoice_id
+                  [error] Object has multiple properties named "note_to_payer":
+                    - <Inlined Request> -> note_to_payer
+                    - <Inlined Request> -> (extends) root.SupplementaryPurchaseData -> note_to_payer
+                  
+[api]: python-sdk authorizations.yml -> service -> endpoints -> capture
+                  authorizations.yml
+                  [error] Multiple request properties have the name invoice_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> invoice_id
+                    - Body property: <Request Body> -> (extends) root.SupplementaryPurchaseData -> invoice_id
+                  [error] Multiple request properties have the name note_to_payer. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> note_to_payer
+                    - Body property: <Request Body> -> (extends) root.SupplementaryPurchaseData -> note_to_payer
+                  
+[api]: python-sdk Found 5 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

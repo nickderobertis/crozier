@@ -1,0 +1,118 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /v1/events/accounts/status -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v1/events/accounts/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v1/events/journals/status -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v1/events/journals/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v1/events/transfers/status -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v1/events/transfers/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/admin-actions -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/admin-actions contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/funding/status -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/funding/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/ipos -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/ipos contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/journals/status -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/journals/status contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/system -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/system contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2/events/trades -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2/events/trades contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v2beta1/events/activities -> get -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for GET /v2beta1/events/activities contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk accounts.yml -> service -> endpoints -> getAccountActivities -> examples[0] -> response
+                  accounts.yml
+                  [error] "fill" is not a valid example for this enum. Enum values are:
+                    - FILL
+                    - ACATC
+                    - ACATS
+                    - CGD
+                    - CIL
+                    - CSD
+                    - CSW
+                    - DIV
+                    - DIVCGL
+                    - DIVCGS
+                    - DIVNRA
+                    - DIVROC
+                    - DIVTXEX
+                    - FEE
+                    - INT
+                    - JNLC
+                    - JNLS
+                    - MA
+                    - OPASN
+                    - OPCA
+                    - OPCSH
+                    - OPEXC
+                    - OPEXP
+                    - OPTRD
+                    - PTC
+                    - REO
+                    - REORG
+                    - SPIN
+                    - SPLIT
+                    - FOPT
+                    - OCT
+                  
+[api]: python-sdk accounts.yml -> service -> endpoints -> getAccountActivitiesByType -> examples[0] -> response
+                  accounts.yml
+                  [error] "fill" is not a valid example for this enum. Enum values are:
+                    - FILL
+                    - ACATC
+                    - ACATS
+                    - CGD
+                    - CIL
+                    - CSD
+                    - CSW
+                    - DIV
+                    - DIVCGL
+                    - DIVCGS
+                    - DIVNRA
+                    - DIVROC
+                    - DIVTXEX
+                    - FEE
+                    - INT
+                    - JNLC
+                    - JNLS
+                    - MA
+                    - OPASN
+                    - OPCA
+                    - OPCSH
+                    - OPEXC
+                    - OPEXP
+                    - OPTRD
+                    - PTC
+                    - REO
+                    - REORG
+                    - SPIN
+                    - SPLIT
+                    - FOPT
+                    - OCT
+                  
+[api]: python-sdk Found 12 errors and 19 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

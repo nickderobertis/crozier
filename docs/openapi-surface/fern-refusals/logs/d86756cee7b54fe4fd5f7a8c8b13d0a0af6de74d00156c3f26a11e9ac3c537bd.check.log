@@ -1,0 +1,210 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 43 errors
+    [error]
+        path: __package__.yml -> types -> EnterpriseRulesetConditionsFive -> extends -> RepositoryRulesetConditions
+        issue: Objects can only extend other objects, and RepositoryRulesetConditions is not an object.
+
+    [error]
+        path: __package__.yml -> types -> OrgRulesetConditionsTwo -> extends -> RepositoryRulesetConditions
+        issue: Objects can only extend other objects, and RepositoryRulesetConditions is not an object.
+
+    [error]
+        path: __package__.yml -> types -> ReactionContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: actions.yml -> service -> endpoints -> updateEnvironmentVariable
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: actions.yml -> service -> endpoints -> updateOrgVariable
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: actions.yml -> service -> endpoints -> updateRepoVariable
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: agents.yml -> service -> endpoints -> updateOrgVariable
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: agents.yml -> service -> endpoints -> updateRepoVariable
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "name"
+  - Body property: <Request Body> -> name
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.node_id"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.owner"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.name"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.external_url"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.html_url"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.created_at"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.updated_at"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.permissions"
+
+    [error]
+        path: apps.yml -> service -> endpoints -> createFromManifest -> examples[0] -> response
+        issue: Example is missing required property "response.body.events"
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[0] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[1] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[2] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[3] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[4] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis -> examples[5] -> response
+        issue: "pending" is not a valid example for this enum. Enum values are:
+  - in_progress
+  - succeeded
+  - failed
+  - cancelled
+
+    [error]
+        path: codeScanning.yml -> service -> endpoints -> createVariantAnalysis
+        issue: Duplicate example name: Response for a successful variant analysis submission
+
+    [error]
+        path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
+        issue: Enum value 100644 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
+        issue: Enum value 100755 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
+        issue: Enum value 040000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
+        issue: Enum value 160000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: git.yml -> types -> GitCreateTreeRequestTreeItemMode
+        issue: Enum value 120000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: orgs.yml -> service -> endpoints -> convertMemberToOutsideCollaborator -> examples[0] -> request
+        issue: Expected example to be an object. Example is: undefined
+
+    [error]
+        path: reactions.yml -> types -> ReactionsCreateForCommitCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsCreateForIssueCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsCreateForIssueRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsCreateForPullRequestReviewCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsCreateForReleaseRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsListForCommitCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsListForIssueCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsListForIssueRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsListForPullRequestReviewCommentRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: reactions.yml -> types -> ReactionsListForReleaseRequestContent
+        issue: Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: repos.yml -> service -> endpoints -> createOrgRuleset -> examples[0] -> request
+        issue: Unexpected property "ref_name"
+
+    [error]
+        path: repos.yml -> service -> endpoints -> updateOrgRuleset -> examples[0] -> request
+        issue: Unexpected property "ref_name"
+
+Found 43 errors and 183 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

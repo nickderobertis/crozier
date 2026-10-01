@@ -1,0 +1,14 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk organizationContacts.yml -> service -> endpoints -> requestOrganizationContactRemoval
+                  organizationContacts.yml
+                  [error] Multiple request properties resolve to the same generated name organizationId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "organizationID" (name: "organizationID")
+                    - Body property: <Request Body> -> organization_id (name: "organization_id")
+                  
+[api]: python-sdk Found 1 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

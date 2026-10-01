@@ -13,7 +13,7 @@ the byte-diff's `tests/e2e.rs::normalize_sdk_headers`.
 
 The two SDKs are both named `fern` and cannot coexist in one process, so each
 recording is produced in its own subprocess (`_recorder` as `__main__`). The Rust
-e2e harness (`tests/e2e.rs::crozier_matches_fern_runtime_behavior`) generates the
+e2e harness (`tests/e2e.rs::sdk_env_crozier_matches_fern_runtime_behavior`) generates the
 crozier SDK, prepares the venv, and runs this suite with `CROZIER_SDK_SRC` /
 `FERN_SDK_SRC` pointing at the two SDKs' `src/` directories.
 """

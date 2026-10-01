@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    post:
+      operationId: probe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id: {type: string}
+            examples:
+              first:
+                summary: Order updated
+                value: {id: a}
+              second:
+                summary: Order updated
+                value: {id: b}
+      responses:
+        '204': {description: No Content}

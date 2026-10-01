@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document PagerDuty API
+[api]: Failed to resolve #/components/requestBodies/OrchestrationCacheVariableDataPutResponse 
+       CliError: Failed to resolve #/components/requestBodies/OrchestrationCacheVariableDataPutResponse
+All checks passed

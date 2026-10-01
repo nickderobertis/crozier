@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: openapi/openapi.yml -> paths -> /probe -> get -> description
+        issue: Endpoint description for GET /probe contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+Found 1 error and 0 warnings in <n> seconds.

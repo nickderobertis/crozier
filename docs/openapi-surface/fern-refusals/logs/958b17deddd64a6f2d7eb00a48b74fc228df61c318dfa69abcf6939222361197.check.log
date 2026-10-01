@@ -1,0 +1,148 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 33 errors
+    [error]
+        path: __package__.yml -> types -> CompanySecurityGrade
+        issue: Enum name  for value ? is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: actionPlans.yml -> service -> endpoints -> patchPlansRemediationByIdItemByRemediationid
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: api.yml -> service -> endpoints -> deleteApiByParentdomainDomainByDomainAssociateTagsByTagid -> response -> type
+        issue: Type DeleteApiByParentdomainDomainByDomainAssociateTagsByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> deleteApiByParentdomainIpByIpAssociateTagsByTagid -> response -> type
+        issue: Type DeleteApiByParentdomainIpByIpAssociateTagsByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> deleteApiGroupsByTaggroupidAssociationByTagid -> response -> type
+        issue: Type DeleteApiGroupsByTaggroupidAssociationByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getApi -> response -> type
+        issue: Type GetApiResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getApiByParentdomainDomainRelatedTags -> response -> type
+        issue: Type GetApiByParentdomainDomainRelatedTagsResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getApiByParentdomainIpRelatedTags -> response -> type
+        issue: Type GetApiByParentdomainIpRelatedTagsResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> getApiTagGroupsById -> response -> type
+        issue: Type GetApiTagGroupsByIdResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> postApi -> response -> type
+        issue: Type PostApiResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> postApiByParentdomainDomainByDomainAssociateTagsByTagid -> response -> type
+        issue: Type PostApiByParentdomainDomainByDomainAssociateTagsByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> postApiByParentdomainIpByIpAssociateTagsByTagid -> response -> type
+        issue: Type PostApiByParentdomainIpByIpAssociateTagsByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> postApiGroupsByTaggroupidAssociationByTagid -> response -> type
+        issue: Type PostApiGroupsByTaggroupidAssociationByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> postApiTagGroups -> response -> type
+        issue: Type PostApiTagGroupsResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> putApiByTagid -> response -> type
+        issue: Type PutApiByTagidResponse is not defined.
+
+    [error]
+        path: api.yml -> service -> endpoints -> putApiTagGroupsById -> response -> type
+        issue: Type PutApiTagGroupsByIdResponse is not defined.
+
+    [error]
+        path: parentDomain.yml -> types -> PostByParentdomainAssetsDomainsRequestFiltersItemCondition
+        issue: Enum name  for value << is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: parentDomain.yml -> types -> PostByParentdomainAssetsIpsRequestFiltersItemCondition
+        issue: Enum name  for value << is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: scores.yml -> service -> endpoints -> getAnIndustrysHistoricalScores -> examples[0] -> query-parameters
+        issue: Expected example to be a date. Example is: "2018-01-14T00:00:00.000Z"
+
+    [error]
+        path: scores.yml -> service -> endpoints -> getAnIndustrysHistoricalScores -> examples[0] -> query-parameters
+        issue: Expected example to be a date. Example is: "2018-02-24T00:00:00.000Z"
+
+    [error]
+        path: tag.yml -> service -> endpoints -> updateAScorecardTag
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1BreachesReportById
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1CustomersByCustomeridManagedQuestionnaire
+        issue: Path parameter is unreferenced in endpoint: customer_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1CustomersByCustomeridManagedQuestionnaire
+        issue: Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "customerId" (name: "customerId")
+  - Path parameter "customer_id" (name: "customer_id")
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1CustomersByOrganizationidAccess
+        issue: Path parameter is unreferenced in endpoint: organization_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1CustomersByOrganizationidUsers
+        issue: Path parameter is unreferenced in endpoint: organization_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1PartnerByCustomeridQuestionnaires
+        issue: Path parameter is unreferenced in endpoint: customer_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1PartnerByCustomeridQuestionnaires
+        issue: Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "customerId" (name: "customerId")
+  - Path parameter "customer_id" (name: "customer_id")
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1PartnerByCustomeridQuestionnairesStatusSummary
+        issue: Path parameter is unreferenced in endpoint: customer_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> getV1PartnerByCustomeridQuestionnairesStatusSummary
+        issue: Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "customerId" (name: "customerId")
+  - Path parameter "customer_id" (name: "customer_id")
+
+    [error]
+        path: v1.yml -> service -> endpoints -> postV1CustomersByOrganizationidAccess
+        issue: Path parameter is unreferenced in endpoint: organization_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> putV1CustomersByCustomeridManagedQuestionnaire
+        issue: Path parameter is unreferenced in endpoint: customer_id.
+
+    [error]
+        path: v1.yml -> service -> endpoints -> putV1CustomersByCustomeridManagedQuestionnaire
+        issue: Multiple request properties resolve to the same generated name customerId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "customerId" (name: "customerId")
+  - Path parameter "customer_id" (name: "customer_id")
+
+Found 33 errors and 26 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

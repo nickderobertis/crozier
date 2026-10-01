@@ -1,0 +1,681 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[api]: No error name found for status code 480
+[api]: No error name found for status code 481
+[api]: No error name found for status code 482
+[api]: No error name found for status code 483
+[api]: No error name found for status code 484
+[api]: No error name found for status code 485
+[api]: No error name found for status code 486
+[api]: No error name found for status code 487
+[api]: No error name found for status code 488
+[sdk] 47 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> BatchDelete
+        issue: BatchDeleteRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> BatchStart
+        issue: BatchStartRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> BatchStop
+        issue: BatchStopRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> BatchUpdateSchedule
+        issue: BatchUpdateScheduleRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ClaimDevice
+        issue: ClaimDeviceRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateChannel
+        issue: CreateChannelRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateInput
+        issue: CreateInputRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateInputSecurityGroup
+        issue: CreateInputSecurityGroupRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplex -> examples[0] -> request
+        issue: Example is missing required property "request.multiplexSettings.TransportStreamBitrate"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplex -> examples[0] -> request
+        issue: Example is missing required property "request.multiplexSettings.TransportStreamId"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplex
+        issue: CreateMultiplexRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplexProgram -> examples[0] -> request
+        issue: Example is missing required property "request.multiplexProgramSettings.ProgramNumber"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateMultiplexProgram
+        issue: CreateMultiplexProgramRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreatePartnerInput
+        issue: CreatePartnerInputRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> CreateTags
+        issue: CreateTagsRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> DescribeSchedule
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> DescribeSchedule
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListChannels
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListChannels
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputDevices
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputDevices
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputDeviceTransfers
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputDeviceTransfers
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputs
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputs
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputSecurityGroups
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListInputSecurityGroups
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexes
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexes
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexPrograms
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListMultiplexPrograms
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListOfferings
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListOfferings
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListReservations
+        issue: Multiple request properties resolve to the same generated name maxResults after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "maxResults" (name: "maxResults")
+  - Query Parameter "MaxResults" (name: "MaxResults")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> ListReservations
+        issue: Multiple request properties resolve to the same generated name nextToken after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "nextToken" (name: "nextToken")
+  - Query Parameter "NextToken" (name: "NextToken")
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PurchaseOffering
+        issue: PurchaseOfferingRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> RebootInputDevice
+        issue: RebootInputDeviceRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> TransferInputDevice
+        issue: TransferInputDeviceRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateAccountConfiguration
+        issue: UpdateAccountConfigurationRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateChannel
+        issue: UpdateChannelRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateChannelClass
+        issue: UpdateChannelClassRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateInput
+        issue: UpdateInputRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateInputDevice
+        issue: UpdateInputDeviceRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateInputSecurityGroup
+        issue: UpdateInputSecurityGroupRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateMultiplex
+        issue: UpdateMultiplexRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateMultiplexProgram
+        issue: UpdateMultiplexProgramRequest is already declared in this file
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> UpdateReservation
+        issue: UpdateReservationRequest is already declared in this file
+
+Found 47 errors and 0 warnings in <n> seconds.

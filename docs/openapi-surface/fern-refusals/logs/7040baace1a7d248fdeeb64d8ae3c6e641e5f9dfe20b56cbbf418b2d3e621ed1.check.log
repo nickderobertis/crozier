@@ -1,0 +1,112 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 27 errors
+    [error]
+        path: garages.yml -> service -> endpoints -> garageCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageGet
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageInviteCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageInviteList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageInviteRedeem
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageInviteRevoke
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageOwnershipAccept
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageRevisionAppend
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageVehicleCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageVehicleGet
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageVehicleList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: garages.yml -> service -> endpoints -> garageVehicleRevisionAppend
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: identity.yml -> service -> endpoints -> clientAppInviteCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: identity.yml -> service -> endpoints -> clientAppInviteList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: identity.yml -> service -> endpoints -> sessionCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeys.yml -> service -> endpoints -> journeyCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeys.yml -> service -> endpoints -> journeyGet
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeys.yml -> service -> endpoints -> telemetryBatchRecord
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> currentDriverGet
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> driverAttestationList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> driverAttestationRecord
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> journeyVehicleACLAppend
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> journeyVehicleCreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> journeyVehicleGet
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> journeyVehicleList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: journeyVehicles.yml -> service -> endpoints -> journeyVehicleRevisionAppend
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 27 errors and 0 warnings in <n> seconds.

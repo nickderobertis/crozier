@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Conjur
+[api]: Failed to resolve #/paths/~1authn~1%7Baccount%7D~1%7Blogin%7D~1authenticate/post/responses/200 
+       CliError: Failed to resolve #/paths/~1authn~1%7Baccount%7D~1%7Blogin%7D~1authenticate/post/responses/200
+All checks passed

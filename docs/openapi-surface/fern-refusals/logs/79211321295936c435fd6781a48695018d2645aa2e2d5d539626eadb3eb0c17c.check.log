@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document API Docs - arm-server
+[api]: Failed to resolve #/$defs/400 
+       CliError: Failed to resolve #/$defs/400
+All checks passed

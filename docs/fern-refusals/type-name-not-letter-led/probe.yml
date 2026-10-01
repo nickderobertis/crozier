@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /things:
+    get:
+      operationId: getThing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/123456'
+components:
+  schemas:
+    '123456':
+      type: object
+      properties:
+        id:
+          type: string
