@@ -532,6 +532,13 @@ test-licence-rescreening:
 test-fern-refusals:
     python3 tests/fern_refusals_test.py
 
+# Measure the Fern refusal population (docs/fern-refusals/): fetch each document,
+# run Fern and crozier over it. Rebuilds the release binary first, so crozier's
+# counts come from the current tree. Network + Fern (`just setup-fern`).
+fern-refusals-measure *args:
+    cargo build --release --locked --bin crozier
+    python3 scripts/fern-refusals.py measure {{args}}
+
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:
     ./scripts/setup-llmlint.sh

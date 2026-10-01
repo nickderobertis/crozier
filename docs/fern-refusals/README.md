@@ -123,8 +123,7 @@ into
 
 ```sh
 scripts/fern-refusals.py select            # the population, offline
-cargo build --release --locked
-scripts/fern-refusals.py measure           # fetch, run Fern and crozier (network, Docker)
+just fern-refusals-measure                 # rebuild the release binary, then measure: fetch, run Fern and crozier (network, Docker)
 scripts/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
 scripts/fern-refusals.py confirm           # sample each class's real documents through fern generate
 scripts/fern-refusals.py check             # offline drift check; tests/fern_refusals_test.py runs it

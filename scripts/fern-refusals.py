@@ -473,7 +473,7 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
 def measure(args: argparse.Namespace) -> int:
     binary = REPO / "target" / "release" / "crozier"
     if not binary.is_file():
-        fail("build crozier's release binary first: cargo build --release --locked")
+        fail("build crozier's release binary first: run `just fern-refusals-measure`, which builds it and measures")
     done = read_measurements()
     todo = [entry for entry in population()
             if entry["key"] not in done or missing_measurements(done[entry["key"]]) or args.again]
