@@ -4,10 +4,7 @@ The README's [Migrating from Fern](../README.md#migrating-from-fern) section is
 the process: crozier config beside the Fern config, `crozier compare` until every
 generator matches, switch the build, remove the generator from `generators.yml`.
 This page is what a migration may need beyond it, and what crozier now does
-itself. The check, its report and the reference-command contract are in
-[`compare.md`](compare.md); the script that produces Fern's side is the
-[Fern reference recipe](fern-reference.md); the CI workflow is in
-[`github-action.md`](github-action.md#migrating-from-fern).
+itself.
 
 ## Steps a migration may still need
 
@@ -119,7 +116,7 @@ the comparison.
 
 The reference time includes everything the command does, so a first `fern` run
 counts the generator image download. Pull it before the comparison, as the
-[example workflow](github-action.md#migrating-from-fern) does:
+Action's example workflow does:
 
 ```sh
 docker pull fernapi/fern-python-sdk:5.20.0

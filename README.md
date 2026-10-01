@@ -217,6 +217,7 @@ reference.
 
 ## Migrating from Fern
 
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires the README's migration section to link the guide's detail page; a README reader arrives here first, not through that page or AGENTS.md. -->
 A repository can move from Fern's Python generator to crozier one generator at a
 time, checking each against Fern before it switches. Before step 1, bring the
 Fern generator to the version crozier certifies; that and the other steps a
@@ -259,6 +260,7 @@ your Fern config still runs:
 grep -rn --include=generators.yml 'fernapi/fern-python-sdk' .
 ```
 
+<!-- llmlint: ignore[no_redundant_instruction_pointers] The task requires the migration section to link the compare reference rather than restate it; a README reader has not come through AGENTS.md. -->
 [`docs/compare.md`](docs/compare.md) covers the report, exit statuses, JSON
 report, timings and the reference-command contract.
 

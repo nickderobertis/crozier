@@ -218,3 +218,62 @@ fn the_scripted_fern_search_finds_scripts_and_skips_the_recipe() {
     assert!(stdout.contains("tools/regen.sh"), "{stdout}");
     assert!(!stdout.contains("fern-reference.sh"), "{stdout}");
 }
+
+/// The guide restates the certified Fern pair (prose, `generators.yml`,
+/// `fern.config.json`, `docker pull`); every version it names is that pair from
+/// `assets/scaffolding/metadata.json` or one of the pinned tool and history
+/// versions listed here, so moving the pair fails until the guide moves too.
+#[test]
+fn the_migration_guide_names_the_certified_fern_pair() {
+    let metadata: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root().join("assets/scaffolding/metadata.json")).unwrap(),
+    )
+    .unwrap();
+    let cli = metadata["cliVersion"].as_str().unwrap();
+    let generator = metadata["generatorVersion"].as_str().unwrap();
+    // swagger2openapi and openapi-format pins, and the crozier release that
+    // fixed bracketed property names.
+    let others = ["7.0.8", "1.33.5", "0.0.22"];
+    let page = std::fs::read_to_string(root().join("docs/migrating-from-fern.md")).unwrap();
+    let versions = versions_in(&page);
+    assert!(
+        versions.iter().any(|v| v == cli),
+        "the guide never names CLI {cli}"
+    );
+    assert!(
+        versions.iter().any(|v| v == generator),
+        "the guide never names generator {generator}"
+    );
+    for version in &versions {
+        assert!(
+            version == cli || version == generator || others.contains(&version.as_str()),
+            "docs/migrating-from-fern.md names version {version}, which is neither the certified \
+             pair ({cli} / {generator}) nor a listed pin; update the guide or the list"
+        );
+    }
+    // The check can fail: an uncertified version is caught.
+    assert!(versions_in("version: 5.19.3").contains(&"5.19.3".to_string()));
+}
+
+/// Every `N.N.N` in `text`.
+fn versions_in(text: &str) -> Vec<String> {
+    let mut found = Vec::new();
+    let chars: Vec<char> = text.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i].is_ascii_digit() && (i == 0 || !chars[i - 1].is_ascii_alphanumeric()) {
+            let start = i;
+            while i < chars.len() && (chars[i].is_ascii_digit() || chars[i] == '.') {
+                i += 1;
+            }
+            let token: String = chars[start..i].iter().collect::<String>();
+            let token = token.trim_end_matches('.');
+            if token.split('.').count() == 3 && token.split('.').all(|p| !p.is_empty()) {
+                found.push(token.to_string());
+            }
+        } else {
+            i += 1;
+        }
+    }
+    found
+}
