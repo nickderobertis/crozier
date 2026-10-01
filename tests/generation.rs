@@ -13152,6 +13152,7 @@ fn render_layout(
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout,
     })
@@ -13306,6 +13307,7 @@ fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13373,6 +13375,7 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13418,6 +13421,7 @@ fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() 
             client_class_name: None,
             audiences: Vec::new(),
             audience_strict: false,
+            fern_strict: false,
             extra_fields: crozier::settings::ExtraFields::Allow,
             layout,
         })
@@ -13490,6 +13494,7 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     });
