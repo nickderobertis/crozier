@@ -43,13 +43,23 @@ test:
 test-e2e:
     cargo nextest run --locked -E 'binary(e2e)'
 
+# SDK Python-environment tier: the e2e journeys (`sdk_env_*`, `#[ignore]`d so the
+# offline `test-e2e`/`check` never runs them) that build a virtualenv from PyPI
+# for a generated SDK and run mypy or pytest in it — the runtime wire suite, the
+# SDK's own-pin type-check, the shared env's concurrent first build, and the
+# fern-refusals gate's `wire_test.py` condition. SEPARATE from `check` because it
+# needs network and Python; CI runs it in the `sdk-env` job, which `gate`
+# requires. Needs Python (uv used when present).
+test-sdk-env:
+    cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env_/)'
+
 # Runtime ("wire") test only: record the compiled client's behavior via an
 # injected httpx.MockTransport (the pytest suite in tests/runtime/) and assert it
 # matches the real Fern fixture SDK's behavior, modulo the normalized SDK-identity
-# headers. Part of `test-e2e`/`check`; this runs it in isolation. Needs Python +
+# headers. Part of `test-sdk-env`; this runs it in isolation. Needs Python +
 # httpx/pydantic/pytest (uv or pip); see tests/runtime/AGENTS.md.
 test-runtime:
-    cargo nextest run --locked -E 'binary(e2e) and test(crozier_matches_fern_runtime_behavior)'
+    cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(sdk_env_crozier_matches_fern_runtime_behavior)'
 
 # Live e2e: boot a Prism OpenAPI mock server from each fixture's spec and drive the
 # generated SDK through every documented endpoint, asserting a value of the method's

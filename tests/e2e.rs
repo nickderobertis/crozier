@@ -9481,9 +9481,10 @@ fn runtime_python_env() -> Result<PathBuf, String> {
 /// exactly. This is the in-process analog of Fern's own WireMock
 /// wire tests (Docker/Enterprise-gated output crozier does not emit). This test
 /// drives the compiled binary and the compiled client, so it lives in the e2e
-/// tier. See docs/matching.md.
+/// binary, in its SDK Python-environment tier. See docs/matching.md.
 #[test]
-fn crozier_matches_fern_runtime_behavior() {
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_crozier_matches_fern_runtime_behavior() {
     let out = tempfile::tempdir().expect("tempdir");
     let spec = fixture_dir("exhaustive").join("openapi.yml");
     crozier()
@@ -9500,19 +9501,8 @@ fn crozier_matches_fern_runtime_behavior() {
         .assert()
         .success();
 
-    let py = match runtime_python_env() {
-        Ok(py) => py,
-        Err(reason) => {
-            // Keep the gate honest in CI (its runners ship Python and have
-            // network) while letting a restricted local sandbox skip — the same
-            // posture as the Python-validity check above.
-            if std::env::var_os("CI").is_some() {
-                panic!("runtime wire tests require a Python env, unavailable in CI: {reason}");
-            }
-            eprintln!("skipping SDK runtime tests: {reason}");
-            return;
-        }
-    };
+    let py = runtime_python_env()
+        .unwrap_or_else(|reason| panic!("runtime wire tests require a Python env: {reason}"));
 
     let runtime_dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/runtime");
     let fern_src = fixture_dir("exhaustive").join("expected/src");
@@ -14101,11 +14091,36 @@ struct RefusalClass {
     crozier_diagnostic: String,
 }
 
+/// Whether the gate runs each `generate` class's `wire_test.py`. Running one
+/// builds the SDK's Python environment from PyPI and runs `mypy` and `pytest`,
+/// so the offline `check` tier skips it and the SDK-env tier runs it.
+#[derive(Clone, Copy, PartialEq)]
+enum WireTests {
+    Skip,
+    Run,
+}
+
 /// Every refusal class the registry declares holds: see [`fern_refusal_failures`].
+/// Every condition but the `wire_test.py` runs, which
+/// [`sdk_env_fern_refusal_wire_tests_hold`] adds.
 #[test]
 fn fern_refusal_classes_hold() {
     let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
-    let failures = fern_refusal_failures(&registry, &crozier);
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    assert!(
+        failures.is_empty(),
+        "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
+        failures.join("\n")
+    );
+}
+
+/// The whole gate over the committed registry, each `generate` class's
+/// `wire_test.py` included.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_fern_refusal_wire_tests_hold() {
+    let registry = Path::new(env!("CARGO_MANIFEST_DIR")).join(FERN_REFUSALS_DIR);
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Run);
     assert!(
         failures.is_empty(),
         "{FERN_REFUSALS_DIR}/ does not hold:\n{}",
@@ -14127,8 +14142,12 @@ fn fern_refusal_classes_hold() {
 /// `wire_test.py` passes against that SDK, and it is refused under
 /// `--fern-strict` with a line saying `fern-strict` caused it. Every
 /// `documents.tsv` class id and every directory under the registry is a
-/// `classes.tsv` row.
-fn fern_refusal_failures(registry: &Path, generator: &dyn Fn() -> Command) -> Vec<String> {
+/// `classes.tsv` row. `wire` says whether the `wire_test.py` runs.
+fn fern_refusal_failures(
+    registry: &Path,
+    generator: &dyn Fn() -> Command,
+    wire: WireTests,
+) -> Vec<String> {
     let text = match std::fs::read_to_string(registry.join("classes.tsv")) {
         Ok(text) => text,
         Err(error) => return vec![format!("classes.tsv: cannot be read: {error}")],
@@ -14166,7 +14185,7 @@ fn fern_refusal_failures(registry: &Path, generator: &dyn Fn() -> Command) -> Ve
                 class.class, class.documents
             ));
         }
-        failures.extend(refusal_class_failures(registry, class, generator));
+        failures.extend(refusal_class_failures(registry, class, generator, wire));
     }
     failures
 }
@@ -14340,6 +14359,7 @@ fn refusal_class_failures(
     registry: &Path,
     class: &RefusalClass,
     generator: &dyn Fn() -> Command,
+    wire: WireTests,
 ) -> Vec<String> {
     let id = class.class.as_str();
     let dir = registry.join(id);
@@ -14387,7 +14407,9 @@ fn refusal_class_failures(
         "generate" => {
             match refusal_run(generator, &probe, false) {
                 Ok(run) if run.code == Some(0) && !run.files.is_empty() => {
-                    failures.extend(wire_test_failures(id, &wire_test, &run.target, &probe));
+                    if wire == WireTests::Run {
+                        failures.extend(wire_test_failures(id, &wire_test, &run.target, &probe));
+                    }
                 }
                 Ok(run) => failures.push(format!(
                     "{id}: a `generate` class's probe is refused by default (exit {}), where \
@@ -14577,14 +14599,10 @@ fn wire_test_failures(id: &str, wire_test: &Path, sdk: &Path, probe: &Path) -> V
     let py = match sdk_python_env(&sdk.join("pyproject.toml")) {
         Ok(py) => py,
         Err(reason) => {
-            if std::env::var_os("CI").is_some() {
-                return vec![format!(
-                    "{id}: wire_test.py cannot run, because the SDK's Python environment is \
-                     unavailable: {reason}"
-                )];
-            }
-            eprintln!("skipping {id}/wire_test.py: {reason}");
-            return Vec::new();
+            return vec![format!(
+                "{id}: wire_test.py cannot run, because the SDK's Python environment is \
+                 unavailable: {reason}"
+            )];
         }
     };
     let (mypy_cache, _cache_lock) = match lock_sdk_mypy_cache(&py) {
@@ -14765,9 +14783,9 @@ fn hold_lock(path: &Path) -> Result<std::fs::File, String> {
 /// raced: several callers asking for the same fresh environment at once (as the
 /// refusal-gate journeys do under the parallel runner) each get a working
 /// interpreter, over both builders.
-// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
-fn sdk_python_env_survives_concurrent_first_use() {
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_survives_concurrent_first_use() {
     let dir = tempfile::tempdir().expect("tempdir");
     let spec = dir.path().join("api.yml");
     std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
@@ -14797,12 +14815,6 @@ fn sdk_python_env_survives_concurrent_first_use() {
                 .map(|caller| caller.join().expect("caller panicked"))
                 .collect()
         });
-        if results.iter().all(Result::is_err) && std::env::var_os("CI").is_none() {
-            if let Some(Err(reason)) = results.first() {
-                eprintln!("skipping the concurrent SDK env build: {reason}");
-            }
-            continue;
-        }
         let builder = if use_uv { "uv" } else { "venv + pip" };
         for result in &results {
             let py = result
@@ -14819,6 +14831,48 @@ fn sdk_python_env_survives_concurrent_first_use() {
             );
         }
     }
+}
+
+/// The `#[ignore]` reason that puts a journey in the SDK Python-environment
+/// tier, which `just test-sdk-env` selects by the `sdk_env_` name prefix.
+const SDK_ENV_TIER_IGNORE: &str = "#[ignore = \"SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`\"]";
+
+/// What a test calls to build the SDK's Python environment or run a wire test in it.
+const SDK_ENV_CALLS: [&str; 4] = [
+    "sdk_python_env(",
+    "sdk_python_env_in(",
+    "runtime_python_env(",
+    "WireTests::Run",
+];
+
+/// The offline tier never builds the SDK's Python environment: every test that
+/// reaches one (or runs the gate's `wire_test.py`) is an `sdk_env_` journey
+/// carrying the tier's `#[ignore]`, and every `sdk_env_` test carries it, so
+/// `just test-sdk-env` runs each of them and `test-e2e` none.
+#[test]
+fn only_the_sdk_env_tier_builds_the_sdk_python_environment() {
+    let source = include_str!("e2e.rs");
+    let mut offending = Vec::new();
+    for chunk in source.split("\n#[test]\n").skip(1) {
+        let Some(name) = chunk
+            .split_once("fn ")
+            .and_then(|(_, rest)| rest.split_once('('))
+            .map(|(name, _)| name)
+        else {
+            continue;
+        };
+        let body = chunk.split_once("\n}\n").map_or(chunk, |(body, _)| body);
+        let ignored = chunk.starts_with(SDK_ENV_TIER_IGNORE);
+        let reaches_env = SDK_ENV_CALLS.iter().any(|call| body.contains(call));
+        if name.starts_with("sdk_env_") != ignored || (reaches_env && !ignored) {
+            offending.push(name);
+        }
+    }
+    assert!(
+        offending.is_empty(),
+        "these tests build the SDK Python environment outside its tier, or are named \
+         `sdk_env_` without its `{SDK_ENV_TIER_IGNORE}`: {offending:?}"
+    );
 }
 
 /// The `mypy` cache kept beside an SDK environment, so repeated runs re-check
@@ -14854,9 +14908,9 @@ fn pyproject_requirements_translate_poetry_constraints() {
 /// a generated SDK type-check: over a minimal one-operation document, crozier's
 /// default SDK reports zero `mypy` errors under its own `pyproject.toml` — its
 /// pinned `mypy`, its configuration, and exactly the dependencies it declares.
-// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
-fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
     let dir = tempfile::tempdir().expect("tempdir");
     let spec = dir.path().join("api.yml");
     std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
@@ -14869,16 +14923,8 @@ fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
         .args(["--package-name", "fern"])
         .assert()
         .success();
-    let py = match sdk_python_env(&sdk.join("pyproject.toml")) {
-        Ok(py) => py,
-        Err(reason) => {
-            if std::env::var_os("CI").is_some() {
-                panic!("the SDK type-check needs a Python env, unavailable in CI: {reason}");
-            }
-            eprintln!("skipping the SDK type-check: {reason}");
-            return;
-        }
-    };
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK type-check needs a Python env: {reason}"));
     let (mypy_cache, _cache_lock) = lock_sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
     let output = std::process::Command::new(&py)
         .args(["-m", "mypy", "."])
@@ -15046,34 +15092,6 @@ fn scratch_strict_crozier(dir: &Path, writes_on_refusal: bool) -> Option<impl Fn
     })
 }
 
-/// Whether a Python environment for a generated SDK can be had here, so a
-/// journey asserting on `wire_test.py` knows the gate actually ran it.
-fn sdk_env_available() -> bool {
-    let dir = tempfile::tempdir().expect("tempdir");
-    let spec = dir.path().join("api.yml");
-    std::fs::write(&spec, TINY_SPEC_WITH_OP).unwrap();
-    let sdk = dir.path().join("sdk");
-    crozier_clean_env()
-        .args(["--no-config", "generate", "python", "--spec"])
-        .arg(&spec)
-        .arg("--output")
-        .arg(&sdk)
-        .args(["--package-name", "fern"])
-        .assert()
-        .success();
-    match sdk_python_env(&sdk.join("pyproject.toml")) {
-        Ok(_) => true,
-        Err(reason) => {
-            assert!(
-                std::env::var_os("CI").is_none(),
-                "the refusal-gate journeys need an SDK Python env, unavailable in CI: {reason}"
-            );
-            eprintln!("the wire-test half is skipped: {reason}");
-            false
-        }
-    }
-}
-
 fn header_array_probe() -> String {
     std::fs::read_to_string(
         Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/probes/header-array.yml"),
@@ -15081,7 +15099,7 @@ fn header_array_probe() -> String {
     .expect("the header-array probe crozier refuses")
 }
 
-// llmlint: ignore[e2e_not_mocked, shell_test_tiers_stay_split] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary. As for the tier: the cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
+// llmlint: ignore[e2e_not_mocked] No class is evaluated yet, so the real binary refuses nothing under --fern-strict and no journey over it can reach the gate's accepting or wrote-output branches; the stand-in emulates only the refusal line the contract fixes and runs the real binary for every generation. The gate under test is real, and the failing journeys drive the real binary.
 #[test]
 fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
     let scratch = tempfile::tempdir().expect("tempdir");
@@ -15089,7 +15107,6 @@ fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
     let Some(generator) = scratch_strict_crozier(scratch.path(), false) else {
         return;
     };
-    let wired = sdk_env_available();
     write_scratch_registry(
         &registry,
         &[
@@ -15120,20 +15137,18 @@ fn fern_refusal_gate_accepts_a_registry_whose_classes_hold() {
         ],
         &[("0".repeat(64).as_str(), "scratch-generate,scratch-refuse")],
     );
-    let failures = fern_refusal_failures(&registry, &generator);
+    let failures = fern_refusal_failures(&registry, &generator, WireTests::Skip);
     assert!(
         failures.is_empty(),
-        "a registry whose classes hold was refused (wire test run: {wired}):\n{}",
+        "a registry whose classes hold was refused:\n{}",
         failures.join("\n")
     );
 }
 
-// llmlint: ignore[shell_test_tiers_stay_split] The cached SDK env is what the gate's wire tests run in; this is the Rust e2e binary, not a shell suite, and the Python-SDK checks belong in `check` by this repo's standing choice (`crozier_matches_fern_runtime_behavior` builds the same cached venv there; tests/runtime/AGENTS.md) and by the fern-refusals contract, which has `just check` run each class's `wire_test.py` and `mypy`. The guard is a capability check, not a tier: it skips only off CI when Python or its install is unavailable, and fails in CI.
 #[test]
 fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
     let scratch = tempfile::tempdir().expect("tempdir");
     let registry = scratch.path().join("fern-refusals");
-    let wired = sdk_env_available();
     let refused = header_array_probe();
     write_scratch_registry(
         &registry,
@@ -15171,14 +15186,6 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
                 record: true,
             },
             ScratchClass {
-                id: "failing-wire-test",
-                status: "generate",
-                crozier_diagnostic: "GET /thing: the scratch element",
-                probe: TINY_SPEC_WITH_OP,
-                wire_test: Some(SCRATCH_FAILING_WIRE_TEST),
-                record: true,
-            },
-            ScratchClass {
                 id: "no-record",
                 status: "unevaluated",
                 crozier_diagnostic: "—",
@@ -15194,9 +15201,9 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
     );
     std::fs::create_dir_all(registry.join("stray-directory")).unwrap();
 
-    let failures = fern_refusal_failures(&registry, &crozier);
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
     let report = failures.join("\n");
-    let mut expected = vec![
+    let expected = [
         (
             "generated-though-refuse:",
             "crozier generated from the probe in its mode",
@@ -15223,16 +15230,6 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
         ),
         ("ghost-class:", "but it is not a classes.tsv row"),
     ];
-    if wired {
-        expected.push((
-            "failing-wire-test:",
-            "wire_test.py failed against crozier's default SDK",
-        ));
-        assert!(
-            report.contains("scratch wire test fails on purpose"),
-            "the failing wire test's own message should reach the report:\n{report}"
-        );
-    }
     for (class, condition) in expected {
         assert!(
             failures
@@ -15241,12 +15238,58 @@ fn fern_refusal_gate_names_each_class_and_condition_it_breaks() {
             "no failure names {class} with {condition:?}:\n{report}"
         );
     }
-    // The classes that hold where it matters are not blamed for what they do right.
+    assert!(
+        !report.contains("wire_test.py failed"),
+        "the offline gate ran a wire test:\n{report}"
+    );
+}
+
+/// The gate's `wire_test.py` condition, over the real binary: a `generate`
+/// class whose wire test fails is named with that condition and the test's own
+/// message, and one whose wire test passes against crozier's SDK is not. (Both
+/// are also reported as not refused under `--fern-strict`, which crozier does
+/// not do yet; that condition is the offline journey's.)
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_fern_refusal_gate_runs_each_wire_test() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    write_scratch_registry(
+        &registry,
+        &[
+            ScratchClass {
+                id: "failing-wire-test",
+                status: "generate",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: Some(SCRATCH_FAILING_WIRE_TEST),
+                record: true,
+            },
+            ScratchClass {
+                id: "passing-wire-test",
+                status: "generate",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: Some(SCRATCH_PASSING_WIRE_TEST),
+                record: true,
+            },
+        ],
+        &[],
+    );
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Run);
+    let report = failures.join("\n");
+    assert!(
+        failures
+            .iter()
+            .any(|line| line.starts_with("failing-wire-test:")
+                && line.contains("wire_test.py failed against crozier's default SDK")
+                && line.contains("scratch wire test fails on purpose")),
+        "no failure names failing-wire-test with its failed wire test:\n{report}"
+    );
     assert!(
         !failures
             .iter()
-            .any(|line| line.starts_with("not-refused-when-strict:")
-                && line.contains("wire_test.py")),
+            .any(|line| line.starts_with("passing-wire-test:") && line.contains("wire_test.py")),
         "a passing wire test was reported:\n{report}"
     );
 }
@@ -15271,7 +15314,7 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
         }],
         &[],
     );
-    let failures = fern_refusal_failures(&registry, &generator);
+    let failures = fern_refusal_failures(&registry, &generator, WireTests::Skip);
     assert!(
         failures
             .iter()

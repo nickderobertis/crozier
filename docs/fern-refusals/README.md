@@ -79,7 +79,10 @@ the record's versions differ from the pin or its `diagnostic` is empty; when a
 class's probe does not generate by default, its `wire_test.py` fails, or it is
 not refused under `--fern-strict` with such a line; and when a `documents.tsv`
 class id or a directory here is no `classes.tsv` row. An `unevaluated` row is
-checked for its files only.
+checked for its files only. `fern_refusal_classes_hold` checks every condition
+but the `wire_test.py` run in the offline `just check`; that one builds the
+SDK's environment from PyPI, so `sdk_env_fern_refusal_wire_tests_hold` runs the
+whole gate in `just test-sdk-env` (CI's `sdk-env` job, required by `gate`).
 
 **No false refusals.** `just test-corpus-match-strict` runs the corpus
 byte-match with `CROZIER_FERN_STRICT=true`, so a class that refuses a document
