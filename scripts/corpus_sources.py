@@ -255,12 +255,26 @@ def check(root: Path) -> int:
     return verified
 
 
+def bash() -> str:
+    """The `bash` PATH names, as an absolute path.
+
+    Never pass a bare `bash` to a subprocess: Windows' CreateProcess searches
+    System32 before PATH, so it runs WSL's launcher ahead of Git Bash, and with
+    no distribution installed that exits 1 with nothing on stderr.
+    """
+    found = shutil.which("bash")
+    if found is None:
+        raise SourcesError("no bash on PATH; install bash (Git Bash on Windows) and put it on PATH to run the rebuild fetch")
+    return found
+
+
 def fetch(root: Path, names: list[str], destination: Path) -> None:
     """Fetch each selected row through the real `scripts/fetch-corpus.sh`."""
     script = root / "scripts" / "fetch-corpus.sh"
+    shell = bash()
     for name in names:
         result = subprocess.run(
-            ["bash", str(script), "--fixture", name, str(destination)],
+            [shell, str(script), "--fixture", name, str(destination)],
             cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
         )
         if result.returncode != 0:

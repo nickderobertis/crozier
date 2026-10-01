@@ -3,12 +3,14 @@
 
 Every registered `tests/fixtures/CORPUS.md` row's source document is committed
 under `tests/fixtures/corpus-sources/`, recorded with the SHA-256 of the bytes
-fetched at its pinned revision in `tests/fixtures/corpus-sources.tsv`. The first
-class holds the real tree to that: every row, every digest. The second drives the
-real `check` over a synthetic root breaking each demand in turn, so a lint that
-had stopped discriminating fails here. The third drives the rebuild tooling —
-`vendor` and `audit` through the real `scripts/fetch-corpus.sh` and real `curl` —
-against a loopback HTTP server this suite starts, the way
+fetched at its pinned revision in `tests/fixtures/corpus-sources.tsv`.
+`TheCommittedTreeHolds` holds the real tree to that: every row, every digest.
+`TheCheckStillDiscriminates` drives the real `check` over a synthetic root
+breaking each demand in turn, so a lint that had stopped discriminating fails
+here. `TheOfflineCommandsRunEverywhere` runs `prepare` and the fetch's bash
+resolution on every platform, Windows included. `TheRebuildToolingFetches`
+drives `vendor` and `audit` through the real `scripts/fetch-corpus.sh` and real
+`curl` against a loopback HTTP server this suite starts, the way
 `tests/corpus_remote_ref_pins_test.py` drives the fetch itself.
 
 Run: `just test-corpus-sources` (part of `just check`).
@@ -16,6 +18,7 @@ Run: `just test-corpus-sources` (part of `just check`).
 
 from __future__ import annotations
 
+import ast
 import hashlib
 import http.server
 import os
@@ -108,11 +111,10 @@ class TheCommittedTreeHolds(unittest.TestCase):
             self.assertTrue(list((staged / "remote").rglob("*.yaml")))
             self.assertEqual(0, run(REPO, "check").returncode)
 
-    @unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
     def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run(
-                ["bash", str(REPO / "scripts/fetch-corpus.sh"), "--dry-run", directory],
+                [corpus_sources.bash(), str(REPO / "scripts/fetch-corpus.sh"), "--dry-run", directory],
                 cwd=REPO, capture_output=True, text=True,
             )
             self.assertEqual(0, result.returncode, result.stderr)
@@ -212,16 +214,25 @@ class SyntheticRoot(unittest.TestCase):
             encoding="utf-8",
         )
 
-    def write_corpus(self, decision: str, *, extra: str = "") -> None:
+    def write_corpus(self, decision: str, *, extra: str = "", remote: bool = True) -> None:
+        remote_row = f"| 2 | `remote` | test | {self.origin}/specs/remote.yaml | `HEAD` | MIT | committed | remote |\n"
         (self.fixtures / "CORPUS.md").write_text(
             "# Corpus\n\n"
             "| # | name | method | source | pinned ref | license | decision | shapes |\n"
             "|---:|---|---|---|---|---|---|---|\n"
             f"| 1 | `plain` | test | {self.origin}/specs/plain.json | `HEAD` | MIT | {decision} | plain |\n"
-            f"| 2 | `remote` | test | {self.origin}/specs/remote.yaml | `HEAD` | MIT | committed | remote |\n"
-            f"{extra}",
+            f"{remote_row if remote else ''}{extra}",
             encoding="utf-8",
         )
+
+    def commit_plain_without_fetching(self) -> None:
+        """Commit the `plain` row from a completed fetch, so no bash or curl runs."""
+        self.write_corpus("committed", remote=False)
+        fetched = self.root / "fetched"
+        (fetched / "plain").mkdir(parents=True)
+        (fetched / "plain" / "openapi.json").write_bytes(PLAIN)
+        completed = self.vendor("--fixture", "plain", "--from", str(fetched))
+        self.assertEqual(0, completed.returncode, completed.stderr)
 
     def vendor(self, *args: str) -> subprocess.CompletedProcess[str]:
         return run(self.root, "vendor", *args, CROZIER_CORPUS_PIN_ORIGIN=self.origin)
@@ -238,12 +249,11 @@ class SyntheticRoot(unittest.TestCase):
             self.assertIn(needle, completed.stderr)
 
 
-@unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
-class TheRebuildToolingFetches(SyntheticRoot):
-    """`vendor` and `audit` through the real fetch, real curl and a loopback server."""
+class TheOfflineCommandsRunEverywhere(SyntheticRoot):
+    """`prepare` and the fetch's preflight, which run without the POSIX fetch scripts."""
 
     def test_prepare_rejects_malformed_aliases(self) -> None:
-        self.assertEqual(0, self.vendor().returncode)
+        self.commit_plain_without_fetching()
         (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8")
         completed = run(self.root, "prepare", "--fixture", "plain",
                         "--output", str(self.root / "staged"))
@@ -252,13 +262,34 @@ class TheRebuildToolingFetches(SyntheticRoot):
         self.assertNotIn("Traceback", completed.stderr)
 
     def test_prepare_reports_missing_bytes_without_a_traceback(self) -> None:
-        self.assertEqual(0, self.vendor().returncode)
+        self.commit_plain_without_fetching()
         self.committed("plain/openapi.json").unlink()
         completed = run(self.root, "prepare", "--fixture", "plain",
                         "--output", str(self.root / "staged"))
         self.assertEqual(1, completed.returncode)
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
+
+    def test_vendor_without_bash_on_path_names_it(self) -> None:
+        empty = self.root / "no-bash"
+        empty.mkdir()
+        completed = run(self.root, "vendor", "--fixture", "plain", PATH=str(empty))
+        self.assert_refused(completed, "no bash on PATH", "Git Bash on Windows")
+        self.assertNotIn("Traceback", completed.stderr)
+        self.assertEqual([], self.server.requests)
+
+    def test_no_subprocess_runs_a_bare_bash(self) -> None:
+        """A bare `bash` argv is WSL's launcher on Windows; resolve it with `corpus_sources.bash()`."""
+        for path in (SCRIPT, Path(__file__).resolve()):
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                if isinstance(node, ast.List) and node.elts and isinstance(node.elts[0], ast.Constant):
+                    with self.subTest(path=path.name, line=node.lineno):
+                        self.assertNotEqual("bash", node.elts[0].value)
+
+
+@unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
+class TheRebuildToolingFetches(SyntheticRoot):
+    """`vendor` and `audit` through the real fetch, real curl and a loopback server."""
 
     def test_vendor_commits_every_resolved_file_with_its_fetched_digest(self) -> None:
         completed = self.vendor()
@@ -290,7 +321,7 @@ class TheRebuildToolingFetches(SyntheticRoot):
         fetched = self.root / "fetched"
         fetched.mkdir()
         result = subprocess.run(
-            ["bash", str(self.root / "scripts/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
+            [corpus_sources.bash(), str(self.root / "scripts/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
             cwd=self.root, capture_output=True, text=True,
         )
         self.assertEqual(0, result.returncode, result.stderr)
