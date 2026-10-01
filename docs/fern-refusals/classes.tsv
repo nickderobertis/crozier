@@ -21,12 +21,12 @@ list-default-not-array	documents	check	1	Default value for list type must be an 
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	unevaluated	—	—
 named-type-default	documents	check	1	Default values are not supported for the named type	10	unevaluated	—	—
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	unevaluated	—	—
-object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	refuse	#/components/schemas/FileConflict property sha1	41/41
+object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	refuse	#/components/schemas/FileConflict property "sha1"	41/41
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	unevaluated	—	—
 path-without-leading-slash	documents	check	1	Path must start with a slash.	4	unevaluated	—	—
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	refuse	GET /accounts parameters "account_id" and "accountId"	29/29
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	refuse	PATCH /repos/{name} body property "name"	296/296
-sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	POST /reports SDK method analytics.create	2/2
+sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	SDK method analytics.create	2/2
 service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	unevaluated	—	—
 type-name-collision	names	check	1	<…> is already declared in <…>	104	unevaluated	—	—
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	unevaluated	—	—

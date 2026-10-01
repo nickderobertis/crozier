@@ -7478,7 +7478,7 @@ fn stripped_suffix_has_acronym(id: &str, tag: Option<&str>) -> bool {
 /// the `operationId` alone — `inlined_search` → `InlinedSearch`, `verify code` →
 /// `VerifyCode` — never prefixing the tag, so a tag-grouped operation's hoisted
 /// type stays `VerifyCodeResponse`, not `WidgetsVerifyCodeResponse`.
-fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
+pub(crate) fn endpoint_pascal_context(op: &Operation, http_method: &str, url: &str) -> String {
     // An SDK-shaped operation names its hoisted types from the shape it declares,
     // not from its `operationId`: Fern joins the `x-fern-sdk-method-name` to the
     // LAST `x-fern-sdk-group-name` segment. Webflow's `time-on-page` under
@@ -7663,7 +7663,7 @@ fn tag_pascal(tag: &str) -> String {
 /// `inlinedrequests`), then the whole id, then the leading path segment. Where the
 /// operationId prefix *does* equal the tag (`widgets_getWidget` under `Widgets`),
 /// both rules agree, so tag-grouped corpora already matched stay byte-identical.
-fn endpoint_module(op: &Operation, url: &str) -> String {
+pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     // An explicit `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` names the
     // sub-client outright and outranks every derivation below: it is the author
     // saying where the method goes, so neither the tag nor the `operationId` is

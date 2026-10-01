@@ -81,7 +81,6 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
-    name_refusals::validate(&doc, &args.spec, args.fern_strict)?;
     // The config constructor validates the package name (a `PackageName`), so an
     // invalid, traversal-prone value can never reach the filesystem below.
     let mut config = GenerateConfig::new(
@@ -95,6 +94,8 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     let files = emit::generate(&ir)?;
     // Regeneration is idempotent: clear the crozier-owned package tree first so a
     // schema or endpoint dropped from the spec does not leave an orphaned module.
@@ -115,7 +116,6 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
-    name_refusals::validate(&doc, &args.spec, args.fern_strict)?;
     let mut config = GenerateConfig::new(
         args.spec.clone(),
         args.output.clone(),
@@ -127,5 +127,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     )?;
     config.layout = args.layout;
     let ir = ir::build(&doc, &config);
+    name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
+    name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
     emit::generate(&ir)
 }

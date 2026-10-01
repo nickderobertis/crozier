@@ -34,3 +34,5 @@ The same check covers inferred selectors and explicit mapping-only selectors,
 using the generator's existing selector inference without changing it.
 All 13 retrievable population documents refuse in strict mode before any file
 is written: [population run](evidence/population-strict.log).
+
+An accepted neighboring shape is retained: [pinned Fern control](evidence/discriminant-anyof.pinned-fern.log).

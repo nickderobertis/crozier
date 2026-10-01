@@ -1,0 +1,3 @@
+baseline=2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+exit=0
+Declared inherited and local invoice_id fields become one invoice_id method argument and one JSON key; the SDK sends invoice and parses capture.id exactly.

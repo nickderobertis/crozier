@@ -52,3 +52,5 @@ The exemption is restricted to that root position; singleton body
 [nested properties](evidence/body-single-enum-nested.pinned-fern.log),
 [array items](evidence/body-single-enum-array.pinned-fern.log) and
 [map values](evidence/body-single-enum-map.pinned-fern.log) still refuse.
+
+A measured lead falls outside this registered refusal class: Fern accepts the enum values 10001+ and 20000+ ([pinned generation](evidence/enum-undefined-duplicate-undefined.pinned-fern-generate.log)) and emits only the first UNDEFINED member ([generated SDK artifact](evidence/accepted-undefined-fern-sdk.log)). The no-Fern-accepted-document-refused contract prevents classifying that accepted shape as enum-value-unnameable. It is left unchanged and reported to the manager; the registered numeric probe and population above determine this class.

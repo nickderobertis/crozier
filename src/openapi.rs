@@ -1465,6 +1465,16 @@ pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str
         })
 }
 
+/// Declared SDK type name, used only to classify measured refusals.
+pub(crate) fn refusal_type_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+    node.get("x-crozier-type-name")
+        .and_then(serde_yaml_ng::Value::as_str)
+        .or_else(|| {
+            node.get("x-fern-type-name")
+                .and_then(serde_yaml_ng::Value::as_str)
+        })
+}
+
 /// Read a source node's ignore flag through the ordinary schema accessor,
 /// without asking the typed parser to lower its possibly malformed shape.
 pub(crate) fn refusal_node_ignored(node: &serde_yaml_ng::Value) -> bool {

@@ -21,9 +21,8 @@ class; differently spelled names such as X-Namespace and namespace belong to
 this exact-name class. Repeated
 properties within an expanded request body also belong to this exact-name class.
 
-All 296 retrievable population documents refuse under strict mode with no
-output: [population measurements](evidence/population-strict.log). The log
-combines the initial population pass with fresh checks of its two misses after
-handling X-prefixed headers and a name collision hidden by a malformed nullable
-flag. The malformed flag is not repaired; source validation retains the measured
-name refusal before returning to the typed parser's other errors.
+All 296 retrievable population documents refuse under strict mode with no output: [population measurements](evidence/population-strict.log). The name collision hidden by a malformed nullable flag is classified from source metadata without repairing that flag.
+
+An accepted neighboring shape is retained: [pinned Fern control](evidence/request-readonly.pinned-fern.log).
+
+Fern also accepts [referenced read-only fields](evidence/request-readonly-reference.pinned-fern.log) and [repeated properties across inline allOf members](evidence/request-inline-allof-duplicates.pinned-fern.log). The detector preserves those cases.
