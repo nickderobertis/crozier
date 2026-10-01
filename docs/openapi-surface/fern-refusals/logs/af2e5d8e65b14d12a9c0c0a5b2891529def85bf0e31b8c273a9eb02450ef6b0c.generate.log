@@ -1,0 +1,92 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openAi格式Chat.yml -> service -> endpoints -> createChatCompletion -> examples[0] -> request
+                  openAi格式Chat.yml
+                  [error] Expected example to be an object. Example is: "content"
+                  
+[api]: python-sdk openAi格式Chat.yml -> service -> endpoints -> createChatCompletion -> examples[0] -> response
+                  openAi格式Chat.yml
+                  [error] Expected example to be an object. Example is: "content"
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> Claude格式(Messages)
+                  openapi/openapi.yml
+                  [error] Tag name "Claude格式(Messages)" contains non-ASCII characters: 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> Gemini格式
+                  openapi/openapi.yml
+                  [error] Tag name "Gemini格式" contains non-ASCII characters: 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> OpenAI格式(Chat)
+                  openapi/openapi.yml
+                  [error] Tag name "OpenAI格式(Chat)" contains non-ASCII characters: 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> OpenAI格式(Embeddings)
+                  openapi/openapi.yml
+                  [error] Tag name "OpenAI格式(Embeddings)" contains non-ASCII characters: 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> OpenAI格式(Responses)
+                  openapi/openapi.yml
+                  [error] Tag name "OpenAI格式(Responses)" contains non-ASCII characters: 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> OpenAI音频(Audio)
+                  openapi/openapi.yml
+                  [error] Tag name "OpenAI音频(Audio)" contains non-ASCII characters: 音, 频. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 图片生成
+                  openapi/openapi.yml
+                  [error] Tag name "图片生成" contains non-ASCII characters: 图, 片, 生, 成. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 图片生成/OpenAI兼容格式
+                  openapi/openapi.yml
+                  [error] Tag name "图片生成/OpenAI兼容格式" contains non-ASCII characters: 图, 片, 生, 成, 兼, 容, 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 图片生成/Qwen千问
+                  openapi/openapi.yml
+                  [error] Tag name "图片生成/Qwen千问" contains non-ASCII characters: 图, 片, 生, 成, 千, 问. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 文本补全(Completions)
+                  openapi/openapi.yml
+                  [error] Tag name "文本补全(Completions)" contains non-ASCII characters: 文, 本, 补, 全. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 未实现
+                  openapi/openapi.yml
+                  [error] Tag name "未实现" contains non-ASCII characters: 未, 实, 现. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 未实现/Files
+                  openapi/openapi.yml
+                  [error] Tag name "未实现/Files" contains non-ASCII characters: 未, 实, 现. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 未实现/Fine-tunes
+                  openapi/openapi.yml
+                  [error] Tag name "未实现/Fine-tunes" contains non-ASCII characters: 未, 实, 现. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 获取模型列表
+                  openapi/openapi.yml
+                  [error] Tag name "获取模型列表" contains non-ASCII characters: 获, 取, 模, 型, 列, 表. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 视频生成
+                  openapi/openapi.yml
+                  [error] Tag name "视频生成" contains non-ASCII characters: 视, 频, 生, 成. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 视频生成/Kling格式
+                  openapi/openapi.yml
+                  [error] Tag name "视频生成/Kling格式" contains non-ASCII characters: 视, 频, 生, 成, 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 视频生成/Sora兼容格式
+                  openapi/openapi.yml
+                  [error] Tag name "视频生成/Sora兼容格式" contains non-ASCII characters: 视, 频, 生, 成, 兼, 容, 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 视频生成/即梦格式
+                  openapi/openapi.yml
+                  [error] Tag name "视频生成/即梦格式" contains non-ASCII characters: 视, 频, 生, 成, 即, 梦, 格, 式. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 重排序(Rerank)
+                  openapi/openapi.yml
+                  [error] Tag name "重排序(Rerank)" contains non-ASCII characters: 重, 排, 序. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk Found 21 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,12 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> types -> IBillingGroup
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ILineItem
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 2 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

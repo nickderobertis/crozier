@@ -1,0 +1,92 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 22 errors
+    [error]
+        path: applications.yml -> service -> endpoints -> application_self
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: applications.yml -> service -> endpoints -> server_self
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: artifacts.yml -> service -> endpoints -> register_artifact
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: artifacts.yml -> service -> endpoints -> register_group_artifact
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: backup.yml -> service -> endpoints -> mint_backup_credentials
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: backup.yml -> service -> endpoints -> register_backup_capabilities
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: backup.yml -> service -> endpoints -> report_backup_progress
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: backup.yml -> service -> endpoints -> report
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: backup.yml -> service -> endpoints -> target
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: certificates.yml -> service -> endpoints -> certificate_request
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: machines.yml -> service -> endpoints -> machine_self
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: names.yml -> service -> endpoints -> name_entitlements
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: names.yml -> service -> endpoints -> name_register
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: restore.yml -> service -> endpoints -> mint_restore_credentials
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: restore.yml -> service -> endpoints -> register_restore_capabilities
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: restore.yml -> service -> endpoints -> verification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: restore.yml -> service -> endpoints -> worklist
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: statuses.yml -> service -> endpoints -> check_severities
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: statuses.yml -> service -> endpoints -> submit_status
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: tags.yml -> service -> endpoints -> get_self
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: versions.yml -> service -> endpoints -> create_version
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: versions.yml -> service -> endpoints -> remove
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 22 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

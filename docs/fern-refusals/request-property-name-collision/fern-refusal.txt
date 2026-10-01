@@ -1,0 +1,5 @@
+fern_cli_version: 5.67.1
+fern_python_sdk_version: 5.20.0
+generate_exit: 1
+diagnostic: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+output_tree: none

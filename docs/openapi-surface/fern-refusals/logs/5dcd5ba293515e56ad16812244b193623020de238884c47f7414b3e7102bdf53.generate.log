@@ -1,0 +1,24 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk posts.yml -> service -> endpoints -> getallkeys -> request -> query-parameters -> count -> type
+                  posts.yml
+                  [error] Default value '' is not a valid integer
+                  
+[api]: python-sdk posts.yml -> service -> endpoints -> getallkeys -> request -> query-parameters -> skip -> type
+                  posts.yml
+                  [error] Default value '' is not a valid integer
+                  
+[api]: python-sdk posts.yml -> service -> endpoints -> getlatest -> request -> query-parameters -> count -> type
+                  posts.yml
+                  [error] Default value '' is not a valid integer
+                  
+[api]: python-sdk posts.yml -> service -> endpoints -> getlatest -> request -> query-parameters -> skip -> type
+                  posts.yml
+                  [error] Default value '' is not a valid integer
+                  
+[api]: python-sdk Found 4 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

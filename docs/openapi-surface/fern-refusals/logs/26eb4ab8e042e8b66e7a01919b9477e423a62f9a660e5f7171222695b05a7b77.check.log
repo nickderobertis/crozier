@@ -1,0 +1,12 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 2 errors
+    [error]
+        path: __package__.yml -> types -> InternalGbpBeneficiaryInfoResponseDto -> extends -> InternalBeneficiaryInfoResponseDto
+        issue: Objects can only extend other objects, and InternalBeneficiaryInfoResponseDto is not an object.
+
+    [error]
+        path: __package__.yml -> types -> InternalSepaBeneficiaryInfoResponseDto -> extends -> InternalBeneficiaryInfoResponseDto
+        issue: Objects can only extend other objects, and InternalBeneficiaryInfoResponseDto is not an object.
+
+Found 2 errors and 0 warnings in <n> seconds.

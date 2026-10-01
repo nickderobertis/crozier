@@ -1,0 +1,144 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 35 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> DeleteSubscriptionsSubscriptionExposedId -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetBalanceTransactions -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetBalanceTransactionsId -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetDisputesDispute -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetFinancialConnectionsAccounts -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetFinancialConnectionsAccountsAccount -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetIssuingAuthorizationsAuthorization -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetIssuingDisputesDispute -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetSubscriptions -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetSubscriptionsSearch -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> GetSubscriptionsSubscriptionExposedId -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostDisputesDispute -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostDisputesDisputeClose -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostFiles
+        issue: file_link_data is exploded and must be a list. Did you mean list<optional<PostFilesRequestFileLinkData>>?
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostFinancialConnectionsAccountsAccountDisconnect -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostFinancialConnectionsAccountsAccountRefresh -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostFinancialConnectionsAccountsAccountSubscribe -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostFinancialConnectionsAccountsAccountUnsubscribe -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ownership"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingAuthorizationsAuthorization -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingAuthorizationsAuthorizationApprove -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingAuthorizationsAuthorizationDecline -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingDisputes -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingDisputesDispute -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostIssuingDisputesDisputeSubmit -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostSubscriptions -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostSubscriptionsSubscriptionExposedId -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostSubscriptionsSubscriptionMigrate -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostSubscriptionsSubscriptionResume -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "schedule"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizations -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationCapture -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationExpire -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationFinalizeAmount -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationFraudChallengesRespond -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationIncrement -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> PostTestHelpersIssuingAuthorizationsAuthorizationReverse -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "source"
+
+Found 35 errors and 20 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

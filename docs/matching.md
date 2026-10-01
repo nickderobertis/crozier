@@ -202,7 +202,7 @@ fixtures:
 - **The generated SDK behaves right at runtime — verified differentially against
   Fern.** Compiling proves the source is legal Python; it does not prove the
   *client* issues the right HTTP request or parses the response. Rather than
-  hand-author the expected behavior, `crozier_matches_fern_runtime_behavior`
+  hand-author the expected behavior, `sdk_env_crozier_matches_fern_runtime_behavior`
   *derives* it from Fern: the committed **pytest** suite
   [`tests/runtime/test_wire.py`](../tests/runtime/test_wire.py) records the
   client's behavior (via a shared recorder, `_recorder.py`) for **both** the
@@ -227,9 +227,9 @@ fixtures:
   `tests/wire/` tree is generated output gated behind an Enterprise
   `enable_wire_tests` flag none of the corpora set, so crozier does not emit it and
   reproduces the behavior without Docker. It runs in a cached venv holding the
-  SDK's runtime deps (`httpx` + `pydantic`) plus `pytest`; like the validity check
-  it skips when Python/venv/deps are unavailable, but is a **hard failure under
-  `CI`** so the gate stays honest.
+  SDK's runtime deps (`httpx` + `pydantic`) plus `pytest`, installed from PyPI, so
+  it runs in the opt-in SDK Python-environment tier (`just test-sdk-env`), not the
+  offline `check`; CI's `sdk-env` job runs that tier and `gate` requires it.
 - **Default naming.** The common bare invocation (no `--package-name` /
   `--project-name`) is exercised: the package directory is `snake_case(title)` and
   `version.py` records the same name.

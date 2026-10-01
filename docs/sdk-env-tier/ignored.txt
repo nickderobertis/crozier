@@ -1,0 +1,9 @@
+crozier::e2e fern_ref_pointer_unnamed_segment_refusal_matches_measurement
+crozier::e2e report_fixture_diffs
+crozier::e2e report_fixture_gaps
+crozier::e2e sdk_env_crozier_matches_fern_runtime_behavior
+crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
+crozier::e2e sdk_env_fern_refusal_wire_tests_hold
+crozier::e2e sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin
+crozier::e2e sdk_env_journeys_survive_concurrent_first_use
+crozier::e2e sdk_env_survives_concurrent_first_use

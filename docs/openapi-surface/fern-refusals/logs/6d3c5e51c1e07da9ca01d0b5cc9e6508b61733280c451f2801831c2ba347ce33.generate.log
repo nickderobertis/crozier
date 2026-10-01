@@ -1,0 +1,24 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk hotspotVouchers.yml -> service -> endpoints -> createVouchers -> request -> body -> properties -> count -> type
+                  hotspotVouchers.yml
+                  [error] Default value '1' is not a valid integer
+                  
+[api]: python-sdk clients.yml -> service -> endpoints -> getConnectedClientDetails -> examples[0] -> response
+                  clients.yml
+                  [error] Missing discriminant property ("type")
+                  
+[api]: python-sdk clients.yml -> service -> endpoints -> getConnectedClientOverviewPage -> examples[0] -> response
+                  clients.yml
+                  [error] Missing discriminant property ("type")
+                  
+[api]: python-sdk __package__.yml -> types -> HotspotVoucherCreationRequest -> properties -> count -> type
+                  __package__.yml
+                  [error] Default value '1' is not a valid integer
+                  
+[api]: python-sdk Found 4 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

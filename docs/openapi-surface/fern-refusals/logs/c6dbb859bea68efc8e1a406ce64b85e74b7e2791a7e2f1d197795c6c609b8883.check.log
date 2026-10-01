@@ -1,0 +1,15 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse an OpenAPI schema at the following location: PageDefinition->appNGVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: PageDefinition->appVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Action->appNGVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Action->appVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Datasource->appNGVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Datasource->appVersion. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Navigation->appNGVersion. Coercing to unknown.
+[sdk] 1 error
+    [error]
+        path: appNg.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 1 error and 0 warnings in <n> seconds.

@@ -1,0 +1,100 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 24 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> createANewFilterPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> createNatPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> createRoute
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> createRoutingPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> deleteAFilterPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> deleteNat
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> deleteRoute
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> deleteRoutingPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getASingleFilterPolicyObject
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getNat
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getRoute
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> getRoutingPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listFilterPolicyObjects
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listNatPolicies
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listRoutes
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listRoutingPolicies
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> patchAFilterPolicyWithAJsonMergePatchOrStrategicMergePatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> patchNat
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> patchRoute
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> patchRoutingPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceAFilterPolicyWithOptimisticConcurrency
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceNat
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceRoute
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> replaceRoutingPolicy
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 24 errors and 0 warnings in <n> seconds.

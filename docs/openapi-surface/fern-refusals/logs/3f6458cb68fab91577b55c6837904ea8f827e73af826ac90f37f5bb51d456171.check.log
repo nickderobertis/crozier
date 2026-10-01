@@ -1,0 +1,44 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 10 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> getWorkspace
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listShipAgents
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> listShipSessions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> mintWorkspaceSession
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> publishCheckpoint
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> publishConsistency
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> publishProof
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> pushArtifact
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> putReceipt
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> revocationList
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 10 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

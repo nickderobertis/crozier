@@ -1,0 +1,20 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: __package__.yml -> types -> ListValue -> extends -> Value
+        issue: Objects can only extend other objects, and Value is not an object.
+
+    [error]
+        path: __package__.yml -> types -> RangeValue -> extends -> Value
+        issue: Objects can only extend other objects, and Value is not an object.
+
+    [error]
+        path: __package__.yml -> types -> Rule -> extends -> Node
+        issue: Objects can only extend other objects, and Node is not an object.
+
+    [error]
+        path: __package__.yml -> types -> SingleValue -> extends -> Value
+        issue: Objects can only extend other objects, and Value is not an object.
+
+Found 4 errors and 0 warnings in <n> seconds.

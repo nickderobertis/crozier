@@ -1,0 +1,14 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk feedback.yml -> service -> endpoints -> create_feedback
+                  feedback.yml
+                  [error] Multiple request properties have the name domain. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "domain"
+                    - Body property: <Request Body> -> domain
+                  
+[api]: python-sdk Found 1 errors and 6 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -36,15 +36,15 @@ if TYPE_CHECKING:
 IS_PYDANTIC_V2 = pydantic.VERSION.startswith("2.")
 
 if IS_PYDANTIC_V2:
-    _datetime_adapter = pydantic.TypeAdapter(dt.datetime)
-    _date_adapter = pydantic.TypeAdapter(dt.date)
+    _datetime_adapter = pydantic.TypeAdapter(dt.datetime)  # type: ignore[attr-defined]
+    _date_adapter = pydantic.TypeAdapter(dt.date)  # type: ignore[attr-defined]
 
-    def parse_datetime(value: Any) -> dt.datetime:
+    def parse_datetime(value: Any) -> dt.datetime:  # type: ignore[misc]
         if isinstance(value, dt.datetime):
             return value
         return _datetime_adapter.validate_python(value)
 
-    def parse_date(value: Any) -> dt.date:
+    def parse_date(value: Any) -> dt.date:  # type: ignore[misc]
         if isinstance(value, dt.datetime):
             return value.date()
         if isinstance(value, dt.date):
@@ -52,14 +52,14 @@ if IS_PYDANTIC_V2:
         return _date_adapter.validate_python(value)
 
 
-    from typing import get_args as get_args
-    from typing import get_origin as get_origin
+    from typing import get_args as get_args  # type: ignore[assignment]
+    from typing import get_origin as get_origin  # type: ignore[assignment]
 
-    def is_literal_type(tp: Optional[Type[Any]]) -> bool:
+    def is_literal_type(tp: Optional[Type[Any]]) -> bool:  # type: ignore[misc]
         return typing_extensions.get_origin(tp) is typing_extensions.Literal
 
-    def is_union(tp: Optional[Type[Any]]) -> bool:
-        return tp is Union or typing_extensions.get_origin(tp) is Union
+    def is_union(tp: Optional[Type[Any]]) -> bool:  # type: ignore[misc]
+        return tp is Union or typing_extensions.get_origin(tp) is Union  # type: ignore[comparison-overlap]
 
 
     import re as _re
@@ -88,14 +88,14 @@ if IS_PYDANTIC_V2:
     from types import GeneratorType as _GeneratorType
     from uuid import UUID as _UUID
 
-    from pydantic.fields import FieldInfo as ModelField
+    from pydantic.fields import FieldInfo as ModelField  # type: ignore[no-redef, assignment]
 
     def _decimal_encoder(dec_value: Any) -> Any:
         if dec_value.as_tuple().exponent >= 0:
             return int(dec_value)
         return float(dec_value)
 
-    encoders_by_type: Dict[Type[Any], Callable[[Any], Any]] = {
+    encoders_by_type: Dict[Type[Any], Callable[[Any], Any]] = {  # type: ignore[no-redef]
         bytes: lambda o: o.decode(),
         dt.date: lambda o: o.isoformat(),
         dt.datetime: lambda o: o.isoformat(),
@@ -118,14 +118,14 @@ if IS_PYDANTIC_V2:
         _UUID: str,
     }
 else:
-    from pydantic.datetime_parse import parse_date as parse_date
-    from pydantic.datetime_parse import parse_datetime as parse_datetime
-    from pydantic.fields import ModelField as ModelField
-    from pydantic.json import ENCODERS_BY_TYPE as encoders_by_type
-    from pydantic.typing import get_args as get_args
-    from pydantic.typing import get_origin as get_origin
-    from pydantic.typing import is_literal_type as is_literal_type
-    from pydantic.typing import is_union as is_union
+    from pydantic.datetime_parse import parse_date as parse_date  # type: ignore[no-redef]
+    from pydantic.datetime_parse import parse_datetime as parse_datetime  # type: ignore[no-redef]
+    from pydantic.fields import ModelField as ModelField  # type: ignore[attr-defined, no-redef, assignment]
+    from pydantic.json import ENCODERS_BY_TYPE as encoders_by_type  # type: ignore[no-redef]
+    from pydantic.typing import get_args as get_args  # type: ignore[no-redef]
+    from pydantic.typing import get_origin as get_origin  # type: ignore[no-redef]
+    from pydantic.typing import is_literal_type as is_literal_type  # type: ignore[no-redef, assignment]
+    from pydantic.typing import is_union as is_union  # type: ignore[no-redef]
 
 from .datetime_utils import serialize_datetime
 from .serialization import convert_and_respect_annotation_metadata
@@ -179,7 +179,7 @@ def _get_type_adapter(type_: Type[Any]) -> Any:
     key = id(type_)
     adapter = _type_adapter_cache.get(key)
     if adapter is None:
-        adapter = pydantic.TypeAdapter(type_)
+        adapter = pydantic.TypeAdapter(type_)  # type: ignore[attr-defined]
         _type_adapter_cache[key] = adapter
     return adapter
 
@@ -195,7 +195,7 @@ def parse_obj_as(type_: Type[T], object_: Any) -> T:
     if inspect.isclass(type_) and issubclass(type_, pydantic.BaseModel):
         has_pydantic_aliases = False
         if IS_PYDANTIC_V2:
-            for field_name, field_info in getattr(type_, "model_fields", {}).items():
+            for field_name, field_info in getattr(type_, "model_fields", {}).items():  # type: ignore[attr-defined]
                 alias = getattr(field_info, "alias", None)
                 if alias is not None and alias != field_name:
                     has_pydantic_aliases = True
@@ -217,7 +217,7 @@ def parse_obj_as(type_: Type[T], object_: Any) -> T:
         dealiased_object = convert_and_respect_annotation_metadata(object_=object_, annotation=type_, direction="read")
     if IS_PYDANTIC_V2:
         adapter = _get_type_adapter(type_)
-        return adapter.validate_python(dealiased_object)
+        return adapter.validate_python(dealiased_object)  # type: ignore[no-any-return]
     return pydantic.parse_obj_as(type_, dealiased_object)
 
 
@@ -231,12 +231,12 @@ def to_jsonable_with_fallback(obj: Any, fallback_serializer: Callable[[Any], Any
 
 class UniversalBaseModel(pydantic.BaseModel):
     if IS_PYDANTIC_V2:
-        model_config: ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(
+        model_config: ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(  # type: ignore[typeddict-unknown-key]
 
             protected_namespaces=(),
         )
 
-        @pydantic.model_validator(mode="before")
+        @pydantic.model_validator(mode="before")  # type: ignore[attr-defined]
         @classmethod
         def _coerce_field_names_to_aliases(cls, data: Any) -> Any:
             """
@@ -246,7 +246,7 @@ class UniversalBaseModel(pydantic.BaseModel):
             if not isinstance(data, Mapping):
                 return data
 
-            fields = getattr(cls, "model_fields", {})
+            fields = getattr(cls, "model_fields", {})  # type: ignore[attr-defined]
             name_to_alias: Dict[str, str] = {}
             alias_to_name: Dict[str, str] = {}
 
@@ -273,9 +273,9 @@ class UniversalBaseModel(pydantic.BaseModel):
 
             return rewritten
 
-        @pydantic.model_serializer(mode="plain", when_used="json")
-        def serialize_model(self) -> Any:
-            serialized = self.dict()
+        @pydantic.model_serializer(mode="plain", when_used="json")  # type: ignore[attr-defined]
+        def serialize_model(self) -> Any:  # type: ignore[name-defined]
+            serialized = self.dict()  # type: ignore[attr-defined]
             data = {k: serialize_datetime(v) if isinstance(v, dt.datetime) else v for k, v in serialized.items()}
             return data
 
@@ -328,7 +328,7 @@ class UniversalBaseModel(pydantic.BaseModel):
     def construct(cls: Type["Model"], _fields_set: Optional[Set[str]] = None, **values: Any) -> "Model":
         dealiased_object = convert_and_respect_annotation_metadata(object_=values, annotation=cls, direction="read")
         if IS_PYDANTIC_V2:
-            return super().model_construct(_fields_set, **dealiased_object)
+            return super().model_construct(_fields_set, **dealiased_object)  # type: ignore[misc]
         return super().construct(_fields_set, **dealiased_object)
 
     def json(self, **kwargs: Any) -> str:
@@ -338,7 +338,7 @@ class UniversalBaseModel(pydantic.BaseModel):
             **kwargs,
         }
         if IS_PYDANTIC_V2:
-            return super().model_dump_json(**kwargs_with_defaults)
+            return super().model_dump_json(**kwargs_with_defaults)  # type: ignore[misc]
         return super().json(**kwargs_with_defaults)
 
     def dict(self, **kwargs: Any) -> Dict[str, Any]:
@@ -365,8 +365,8 @@ class UniversalBaseModel(pydantic.BaseModel):
                 "exclude_unset": False,
             }
             dict_dump = deep_union_pydantic_dicts(
-                super().model_dump(**kwargs_with_defaults_exclude_unset),
-                super().model_dump(**kwargs_with_defaults_exclude_none),
+                super().model_dump(**kwargs_with_defaults_exclude_unset),  # type: ignore[misc]
+                super().model_dump(**kwargs_with_defaults_exclude_none),  # type: ignore[misc]
             )
 
         else:
@@ -432,12 +432,12 @@ def deep_union_pydantic_dicts(source: Dict[str, Any], destination: Dict[str, Any
 
 if IS_PYDANTIC_V2:
 
-    class V2RootModel(UniversalBaseModel, pydantic.RootModel):
+    class V2RootModel(UniversalBaseModel, pydantic.RootModel):  # type: ignore[misc, name-defined, type-arg]
         pass
 
-    UniversalRootModel: TypeAlias = V2RootModel
+    UniversalRootModel: TypeAlias = V2RootModel  # type: ignore[misc]
 else:
-    UniversalRootModel: TypeAlias = UniversalBaseModel
+    UniversalRootModel: TypeAlias = UniversalBaseModel  # type: ignore[misc, no-redef]
 
 
 def encode_by_type(o: Any) -> Any:
@@ -454,7 +454,7 @@ def encode_by_type(o: Any) -> Any:
 
 def update_forward_refs(model: Type["Model"], **localns: Any) -> None:
     if IS_PYDANTIC_V2:
-        model.model_rebuild(raise_errors=False)
+        model.model_rebuild(raise_errors=False)  # type: ignore[attr-defined]
     else:
         model.update_forward_refs(**localns)
 
@@ -470,8 +470,8 @@ def universal_root_validator(
         if IS_PYDANTIC_V2:
 
 
-            return cast(AnyCallable, pydantic.model_validator(mode="before")(func))
-        return cast(AnyCallable, pydantic.root_validator(pre=pre)(func))
+            return cast(AnyCallable, pydantic.model_validator(mode="before")(func))  # type: ignore[attr-defined]
+        return cast(AnyCallable, pydantic.root_validator(pre=pre)(func))  # type: ignore[call-overload]
 
     return decorator
 
@@ -479,7 +479,7 @@ def universal_root_validator(
 def universal_field_validator(field_name: str, pre: bool = False) -> Callable[[AnyCallable], AnyCallable]:
     def decorator(func: AnyCallable) -> AnyCallable:
         if IS_PYDANTIC_V2:
-            return cast(AnyCallable, pydantic.field_validator(field_name, mode="before" if pre else "after")(func))
+            return cast(AnyCallable, pydantic.field_validator(field_name, mode="before" if pre else "after")(func))  # type: ignore[attr-defined]
         return cast(AnyCallable, pydantic.validator(field_name, pre=pre)(func))
 
     return decorator
@@ -490,13 +490,13 @@ PydanticField = Union[ModelField, _FieldInfo]
 
 def _get_model_fields(model: Type["Model"]) -> Mapping[str, PydanticField]:
     if IS_PYDANTIC_V2:
-        return cast(Mapping[str, PydanticField], model.model_fields)
+        return cast(Mapping[str, PydanticField], model.model_fields)  # type: ignore[attr-defined]
     return cast(Mapping[str, PydanticField], model.__fields__)
 
 
 def _get_field_default(field: PydanticField) -> Any:
     try:
-        value = field.get_default()
+        value = field.get_default()  # type: ignore[union-attr]
     except:
         value = field.default
     if IS_PYDANTIC_V2:

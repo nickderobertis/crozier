@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Sellsy API
+[api]: Failed to resolve #/components/schemas/Verify 
+       CliError: Failed to resolve #/components/schemas/Verify
+All checks passed

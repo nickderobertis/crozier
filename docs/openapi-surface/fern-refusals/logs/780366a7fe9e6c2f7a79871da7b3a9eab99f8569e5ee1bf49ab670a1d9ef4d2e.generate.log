@@ -1,0 +1,100 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /v0/legal-persons/{legal-person-id}/verifications -> post -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for POST /v0/legal-persons/{legal-person-id}/verifications contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /v0/organizations/{organization-id}/onboarding/applications -> post -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for POST /v0/organizations/{organization-id}/onboarding/applications contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk __package__.yml -> types -> ClaimsCreateNewClaimRequestSixteen
+                  __package__.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> ClaimsCreateNewClaimResponseSixteen
+                  __package__.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> ClaimsGetAllClaimsResponseClaimsItemSixteen
+                  __package__.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk legalPersons.yml -> types -> LegalPersonsCreateNewLegalPersonRequestClaimsItemSixteen
+                  legalPersons.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk payments.yml -> types -> PaymentsCreateRequestRequestCreditor
+                  payments.yml
+                  [error] Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsCreateRequestResponseCreditor
+                  __package__.yml
+                  [error] Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsGetAdmissionResponseAdmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsGetBankAccountPaymentsResponsePaymentsItemCreditor
+                  __package__.yml
+                  [error] Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsGetDetailsResponseCreditor
+                  __package__.yml
+                  [error] Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsGetSubmissionResponseSubmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsListAdmissionsResponseAdmissionsItemAdmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsListBankAccountAdmissionsResponseAdmissionsItemAdmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsListSubmissions200ResponseSubmissionsItemSubmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsListSubmissionsResponseSubmissionsItemSubmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> PaymentsSubmitPaymentSubmissionResponseSubmissionSchemeInformation
+                  __package__.yml
+                  [error] Discriminant value payment-scheme is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk relianceOnboarding.yml -> types -> RelianceOnboardingCreateApplicationRequestRelatedProfilesItemClaimsItemSixteen
+                  relianceOnboarding.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk relianceOnboarding.yml -> types -> RelianceOnboardingCreateApplicationRequestSubjectProfileClaimsItemSixteen
+                  relianceOnboarding.yml
+                  [error] Discriminant value employment-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> RelianceOnboardingGetApplicationResponse
+                  __package__.yml
+                  [error] Discriminant value onboarding-application-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> TransactionsListBalanceChangesResponseIncludedPaymentsItemCreditor
+                  __package__.yml
+                  [error] Discriminant value creditor-type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> WebhooksGetLatestTestStatusResponse
+                  __package__.yml
+                  [error] Discriminant value webhook-request-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk __package__.yml -> types -> WebhooksSendTestEventResponse
+                  __package__.yml
+                  [error] Discriminant value webhook-request-status is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+[api]: python-sdk Found 23 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,159 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "/src/fern_python/cli/abstract_generator.py", line 177, in generate_project
+                                              self.run(
+                                              ~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<2 lines>...
+                                                  project=project,
+                                                  ^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 278, in run
+                                              self._generate_client_wrapper(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  context=context,
+                                                  ^^^^^^^^^^^^^^^^
+                                              ...<2 lines>...
+                                                  project=project,
+                                                  ^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 494, in _generate_client_wrapper
+                                              ).generate(source_file=source_file, project=project)
+                                                ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 111, in generate
+                                              constructor_info = self._get_constructor_info()
+                                            File "/src/fern_python/generators/sdk/core_utilities/client_wrapper_generator.py", line 840, in _get_constructor_info
+                                              type_hint = self._context.pydantic_generator_context.get_type_hint_for_type_reference(header.value_type)
+                                            File "/src/fern_python/generators/context/pydantic_generator_context_impl.py", line 81, in get_type_hint_for_type_reference
+                                              return self._type_reference_to_type_hint_converter.get_type_hint_for_type_reference(
+                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  type_reference,
+                                                  ^^^^^^^^^^^^^^^
+                                              ...<3 lines>...
+                                                  for_typeddict=for_typeddict,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/context/type_reference_to_type_hint_converter.py", line 27, in get_type_hint_for_type_reference
+                                              return type_reference.visit(
+                                                     ~~~~~~~~~~~~~~~~~~~~^
+                                                  container=lambda container: self._get_type_hint_for_container(
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<13 lines>...
+                                                  unknown=lambda: AST.TypeHint.any(),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/usr/local/lib/python3.13/site-packages/fern/ir/resources/types/type_reference.py", line 92, in visit
+                                              return named(NamedType(**unioned_value.dict(exclude_unset=True, exclude={"_type"})))
+                                            File "/src/fern_python/generators/context/type_reference_to_type_hint_converter.py", line 35, in <lambda>
+                                              named=lambda type_name: self._get_type_hint_for_named(
+                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  type_name=cast(ir_types.DeclaredTypeName, type_name),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<2 lines>...
+                                                  as_if_type_checking_import=as_if_type_checking_import,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ),
+                                              ^
+                                            File "/src/fern_python/generators/context/type_reference_to_type_hint_converter.py", line 212, in _get_type_hint_for_named
+                                              type=self._type_declaration_referencer.get_class_reference(
+                                                  name=type_name,
+                                              ...<2 lines>...
+                                                  as_request=as_request,
+                                              )
+                                            File "/src/fern_python/declaration_referencer/abstract_declaration_referencer.py", line 22, in get_class_reference
+                                              filepath = self.get_filepath(name=name, as_request=as_request)
+                                            File "/src/fern_python/generators/sdk/declaration_referencers/type_declaration_referencer.py", line 25, in get_filepath
+                                              declaration_fern_filepath = self._types[name.type_id].name.fern_filepath
+                                                                          ~~~~~~~~~~~^^^^^^^^^^^^^^
+                                          KeyError: 'type_:ListAgentsRequestApiVersion'
+                                          
+                                          During handling of the above exception, another exception occurred:
+                                          
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 151, in generate_project
+                                              with Project(
+                                                   ~~~~~~~^
+                                                  filepath=generator_config.output.path,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<22 lines>...
+                                                  import_paths=import_paths,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ) as project:
+                                              ^
+                                            File "/src/fern_python/codegen/project.py", line 417, in __exit__
+                                              self.finish()
+                                              ~~~~~~~~~~~^^
+                                            File "/src/fern_python/codegen/project.py", line 317, in finish
+                                              with open(os.path.join(self._project_filepath, "py.typed"), "w") as f:
+                                                   ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                          FileNotFoundError: [Errno 2] No such file or directory: '/fern/output/src/fern/py.typed'
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

@@ -1,0 +1,8 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: staticData.yml -> service -> endpoints -> getStaticCredentialOptions -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "cloud_provider"
+
+Found 1 error and 202 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

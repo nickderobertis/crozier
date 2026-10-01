@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk notaFiscalDeServicoRtc.yml -> service -> endpoints -> downloadDoXmlDoEventoDeCancelamentoDaNfsEAmbienteNacional
+                  notaFiscalDeServicoRtc.yml
+                  [error] Path parameter is unreferenced in endpoint: company_id.
+                  [error] Path parameter is unreferenced in endpoint: id.
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> Nota Fiscal de Serviço (RTC)
+                  openapi/openapi.yml
+                  [error] Tag name "Nota Fiscal de Serviço (RTC)" contains non-ASCII characters: ç. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk Found 3 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

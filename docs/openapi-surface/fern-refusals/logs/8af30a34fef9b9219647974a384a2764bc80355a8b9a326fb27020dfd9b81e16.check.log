@@ -1,0 +1,36 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 8 errors
+    [error]
+        path: __package__.yml -> types -> IAsset
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IAssetInput
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IAudienceFilter
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IExamplePayload
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IExampleTruth
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IGraduationRule
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IMetadata
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IMetadataInput
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 8 errors and 8 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

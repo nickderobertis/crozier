@@ -3151,8 +3151,8 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
     // third-party to it and joins `import httpx_aiohttp` with no blank line.
     if layout == Layout::Flat && pkg != "fern" {
         aiohttp_test = aiohttp_test.replace(
-            &format!("        import httpx_aiohttp\n\n        from {pkg}."),
-            &format!("        import httpx_aiohttp\n        from {pkg}."),
+            &format!("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from {pkg}."),
+            &format!("        import httpx_aiohttp  # type: ignore[import-not-found]\n        from {pkg}."),
         );
     }
     let mut files = Vec::new();

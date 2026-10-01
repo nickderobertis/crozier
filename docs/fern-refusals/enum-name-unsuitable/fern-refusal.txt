@@ -1,0 +1,5 @@
+fern_cli_version: 5.67.1
+fern_python_sdk_version: 5.20.0
+generate_exit: 1
+diagnostic: Enum name 0094Ff for value #0094FF is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+output_tree: none

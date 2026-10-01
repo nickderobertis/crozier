@@ -1,0 +1,32 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 7 errors
+    [error]
+        path: __package__.yml -> types -> GetCampaignByIdEndpointICampaignDetails
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ICampaignFilter
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ICampaignSelection
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> ICooldownDuration
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IProgramAction
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IProgramNode
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+    [error]
+        path: __package__.yml -> types -> IProgramPredicate
+        issue: Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+
+Found 7 errors and 7 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

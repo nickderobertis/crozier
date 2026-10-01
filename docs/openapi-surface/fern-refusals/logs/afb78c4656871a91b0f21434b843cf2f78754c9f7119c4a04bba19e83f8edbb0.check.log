@@ -1,0 +1,944 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 235 errors
+    [error]
+        path: __package__.yml -> types -> AccountAdjustmentNotificationType
+        issue: AccountAdjustmentNotificationType is already declared in webhooks.yml
+
+    [error]
+        path: account.yml -> service -> endpoints -> adjustbalancebyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> closeaccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> createnewaccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> downloadstatement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getbyexternalid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getbyids
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getexceedingcreditaccounts
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> gethistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getinformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getlimitsusage
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getstatement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getstatementbycursor
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> getstatementbydate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> reopenaccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> searchlist
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> transferfunds
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> updatecreditlimit
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> updateexternalid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> updatelimits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> updatename
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> updatetopupdetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: accountAdjustments.yml -> service -> endpoints -> AccountAdjustments_createAccountAdjustment
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: accountAdjustments.yml -> service -> endpoints -> AccountAdjustments_getByExternalId
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: accountAdjustments.yml -> service -> endpoints -> AccountAdjustments_getInformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: authorizations.yml -> service -> endpoints -> getaccountauthorizations
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: authorizations.yml -> service -> endpoints -> getadditionalinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: authorizations.yml -> service -> endpoints -> getauthorizationinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: authorizations.yml -> service -> endpoints -> getcardblockingauthorizations
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: authorizations.yml -> service -> endpoints -> getproductauthorizations
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> activatebycvvpatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> activatecardbyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> blockbatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> blockcard
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> changepin
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> checkrenewalstatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> closebatchcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> closecard
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> createmerchantrules
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> createuser
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> deletemerchantrule
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> deleteusers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> downloadstatement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> enrol3Dsecure
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getbyexternalid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getbylastfourdigits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getbyreferencenumber
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getbyshahashedcardnumber
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getdispatchmethods
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getencrypted3Dspassword
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getencryptedcardnumber
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getencryptedcvv2
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getencryptedpin
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getexpiringcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getfees
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> gethistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getlimitsusage
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getlist
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getmerchantrulebyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getmerchantrules
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getstatement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> getusers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> information
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> linktoaccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> listpendingorders
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> registernewcard
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> renewautomaticallypatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> search
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> unblockbatchcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> unblockcard
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> unenrol3Dsecure
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> update3Dsecuresettings
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatebatchfees
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatecarddata
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatedeliveryaddress
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updateexternalid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatefees
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatefeesbatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatelimits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatenameoperation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: card.yml -> service -> endpoints -> updatesecurity
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> addcorporatedocuments
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> addrepresentatives
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> createnewcompany
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> createuser
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> deactivatecompany
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> deletefcmtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> deleteusers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getaccounts
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getfcmtokenbydeviceid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> gethistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getinformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getrepresentativehistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getrepresentativeinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getrepresentatives
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> getusers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> registerfcmtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> removerepresentative
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> search
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> submitagreement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> updatedetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> updatelimits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> updatepushnotificationsenabled
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> updatepushnotificationsenabledfordevice
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: company.yml -> service -> endpoints -> updaterepresentative
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: extractFiles.yml -> service -> endpoints -> ExtractFiles_downloadFile
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: extractFiles.yml -> service -> endpoints -> ExtractFiles_getFilesList
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: extractFiles.yml -> service -> endpoints -> ExtractFiles_listDirectories
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> deletefeewaiver
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> getbytransactionid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> getcardfeewaivers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> getfeeinformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> getfeesbyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> getfeewaiverbyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fee.yml -> service -> endpoints -> updatewaivers
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fraudCase.yml -> service -> endpoints -> FraudCase_getCardOwners
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fraudCase.yml -> service -> endpoints -> FraudCase_getCase
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fraudCase.yml -> service -> endpoints -> FraudCase_getHistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fraudCase.yml -> service -> endpoints -> FraudCase_listCases
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: fraudCase.yml -> service -> endpoints -> FraudCase_updateCase
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycCheck.yml -> service -> endpoints -> KycCheck_createNew
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycCheck.yml -> service -> endpoints -> KycCheck_deleteCheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycCheck.yml -> service -> endpoints -> KycCheck_getAll
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycCheck.yml -> service -> endpoints -> KycCheck_getDetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycCheck.yml -> service -> endpoints -> KycCheck_initiateProcess
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: kycDocument.yml -> service -> endpoints -> KycDocument_getDetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: paymentDocument.yml -> service -> endpoints -> PaymentDocument_addDocuments
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: paymentDocument.yml -> service -> endpoints -> PaymentDocument_deleteDocument
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: paymentDocument.yml -> service -> endpoints -> PaymentDocument_downloadFiles
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: paymentDocument.yml -> service -> endpoints -> PaymentDocument_getDocument
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: paymentDocument.yml -> service -> endpoints -> PaymentDocument_getThumbnail
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> activatecardbylastfourdigits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> activatepatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> batchdeactivate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> createadditionalinfobatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> createnew
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> createonfidocheck
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> createuser
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> deactivate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> deleteadditionalinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> deleteadditionalinfobatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> deletefcmtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> deleteuser
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> generatesdktoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getaccounts
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getadditionalinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getadditionalinfos
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getbyexternalid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getcardblocklogs
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getcards
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getfcmtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getfeesstatement
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> gethistory
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getinformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> getuserlist
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> registerfcmtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> search
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> togglepushnotifications
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> updateadditionalinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> updatedetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> updatepatch
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: person.yml -> service -> endpoints -> updatepushnotificationsenabled
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getaccountlimits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getallowedcurrencies
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getalloweddeliverycountries
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getcarddesignsbycodes
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getcardlimits
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getcompanyinfo
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getembossingnamesettings
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getfees
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getmobileapplicationsettings
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: product.yml -> service -> endpoints -> getpersonalizationproductcodes
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: reminders.yml -> service -> endpoints -> send3Dspasswordbysms
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: reminders.yml -> service -> endpoints -> sendpinbysms
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: settlement.yml -> service -> endpoints -> getreservedbalance
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: status.yml -> service -> endpoints -> checkapistatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> createnewtemplate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> deletetemplate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getbyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getlist
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updatetemplate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> createauthorization
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> handlenoaccesserror
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> jwttoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> send3Dsotpnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> submittransaction
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: testing.yml -> service -> endpoints -> updatecardstatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> activatetoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> deactivatetoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> getbycardid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> getbyid
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> pushprovisioningapplepay
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> pushprovisioninggooglepay
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> resume
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> suspendtoken
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: token.yml -> service -> endpoints -> syncandupdate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: transactions.yml -> service -> endpoints -> getaccounttransactions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: transactions.yml -> service -> endpoints -> getcardtransactions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: transactions.yml -> service -> endpoints -> getinformation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: transactions.yml -> service -> endpoints -> getproducttransactions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: transactions.yml -> service -> endpoints -> getsummary
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> authorizedecisionrequest
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> authorizeevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> balanceinquiryauthorization
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> cancelfeeevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> cardreplaceeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> completefeeeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> dispatchcardevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> expirecardeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> initiateactionevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> kyccheckeventcreate
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> kycstatuschange
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifyaccountadjustment
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifyaccounttransfer
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifyauthenticationoptions
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardactivation
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardblocked
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardclosingstatus
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardclosure
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardorder
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifycardpersonalization
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> notifynewfee
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> partialauthorizationeventpost
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> releaseauthorizationevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> renewcardeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> reversalauthorization
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> sendapplepayincentivenotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> sendincompleteprovisioningnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> threedsecureotpeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> triggercardeventnotification
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> triggertransactionclearing
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> updatefeeevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: webhooks.yml -> service -> endpoints -> validateevent
+        issue: Endpoint requires auth, but no auth is defined.
+
+Found 235 errors and 7 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

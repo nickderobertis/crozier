@@ -1,0 +1,634 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 151 errors
+    [error]
+        path: __package__.yml -> errors -> BadGatewayError -> type
+        issue: Example is missing required property "response.body.messages"
+
+    [error]
+        path: __package__.yml -> errors -> BadGatewayError -> type
+        issue: Example is missing required property "response.body.messages"
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: __package__.yml -> types -> D1TimeTravelRestoreResponse
+        issue: D1TimeTravelRestoreResponse is already declared in d1.yml
+
+    [error]
+        path: __package__.yml -> types -> DlpEntryUpdateType
+        issue: DlpEntryUpdateType is already declared in dlpEntries.yml
+
+    [error]
+        path: __package__.yml -> types -> HealthchecksHttpConfig -> properties -> expected_codes -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> LoadBalancingSessionAffinityAttributes -> properties -> headers -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "errors":
+  - PreconditionFailedErrorBody -> errors
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "messages":
+  - PreconditionFailedErrorBody -> messages
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "success":
+  - PreconditionFailedErrorBody -> success
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> success
+
+    [error]
+        path: __package__.yml -> types -> R2AddCustomDomainResponse
+        issue: R2AddCustomDomainResponse is already declared in r2Bucket.yml
+
+    [error]
+        path: __package__.yml -> types -> R2ListCustomDomainsResponse
+        issue: R2ListCustomDomainsResponse is already declared in r2Bucket.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in meetings.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in presets.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in recordings.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in smartShieldSettings.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in cacheReserveClear.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldHttpConfig -> properties -> expected_codes -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> VectorizeCreateMetadataIndexResponse
+        issue: VectorizeCreateMetadataIndexResponse is already declared in vectorize.yml
+
+    [error]
+        path: __package__.yml -> types -> VectorizeDeleteMetadataIndexResponse
+        issue: VectorizeDeleteMetadataIndexResponse is already declared in vectorize.yml
+
+    [error]
+        path: __package__.yml -> types -> VectorizeIndexInfoResponse
+        issue: VectorizeIndexInfoResponse is already declared in vectorize.yml
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomApiResponseSingle -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventDetailsResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventIdResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomPreviewResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomSingleResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomStatusResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomWaitingRoomIdResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomZoneSettingsResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> CreateAccountRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: accountRulesets.yml -> types -> UpdateAccountRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: applications.yml -> types -> AlexandriaCreateApplicationRequestHostnames -> extends -> root.AlexandriaApplicationHostnames
+        issue: Objects can only extend other objects, and root.AlexandriaApplicationHostnames is not an object.
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: builds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: buildTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: cacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in smartShieldSettings.yml
+
+    [error]
+        path: cacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in __package__.yml
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> showDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.errors"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> showDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.messages"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> showDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.success"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> showDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Unexpected property "ptr"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> updateDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.errors"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> updateDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.messages"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> updateDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.success"
+
+    [error]
+        path: dnsFirewall.yml -> service -> endpoints -> updateDnsFirewallClusterReverseDns -> examples[0] -> response
+        issue: Unexpected property "ptr"
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: environmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: event.yml -> service -> endpoints -> post_EventCreate
+        issue: Multiple request properties resolve to the same generated name accountId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "account_id" (name: "account_id")
+  - Body property: <Request Body> -> accountId (name: "accountId")
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: gitHubIntegration.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: hyperdrive.yml -> service -> endpoints -> create-hyperdrive -> examples[0] -> response
+        issue: Missing discriminant property ("disabled")
+
+    [error]
+        path: hyperdrive.yml -> service -> endpoints -> get-hyperdrive -> examples[0] -> response
+        issue: Missing discriminant property ("disabled")
+
+    [error]
+        path: hyperdrive.yml -> service -> endpoints -> list-hyperdrive -> examples[0] -> response
+        issue: Missing discriminant property ("disabled")
+
+    [error]
+        path: hyperdrive.yml -> service -> endpoints -> patch-hyperdrive -> examples[0] -> response
+        issue: Missing discriminant property ("disabled")
+
+    [error]
+        path: hyperdrive.yml -> service -> endpoints -> update-hyperdrive -> examples[0] -> response
+        issue: Missing discriminant property ("disabled")
+
+    [error]
+        path: ipAddressManagementAddressMaps.yml -> service -> endpoints -> addAnAccountMembershipToAnAddressMap
+        issue: Endpoint has duplicate path parameter: account_id.
+
+    [error]
+        path: ipAddressManagementAddressMaps.yml -> service -> endpoints -> removeAnAccountMembershipFromAnAddressMap
+        issue: Endpoint has duplicate path parameter: account_id.
+
+    [error]
+        path: organizationMembers.yml -> service -> endpoints -> Members_delete
+        issue: Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "member_id"
+  - Body property: <Request Body> -> member_id
+
+    [error]
+        path: presets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in meetings.yml
+
+    [error]
+        path: presets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in recordings.yml
+
+    [error]
+        path: presets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in __package__.yml
+
+    [error]
+        path: recordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in meetings.yml
+
+    [error]
+        path: recordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in presets.yml
+
+    [error]
+        path: recordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in __package__.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: repositoryConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
+        issue: Object has multiple properties named "errors":
+  - SmartShieldGetSettingsResponse -> errors
+  - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
+        issue: Object has multiple properties named "messages":
+  - SmartShieldGetSettingsResponse -> messages
+  - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
+        issue: Object has multiple properties named "result":
+  - SmartShieldGetSettingsResponse -> result
+  - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldGetSettingsResponse
+        issue: Object has multiple properties named "success":
+  - SmartShieldGetSettingsResponse -> success
+  - SmartShieldGetSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldPatchSettingsResponse
+        issue: Object has multiple properties named "errors":
+  - SmartShieldPatchSettingsResponse -> errors
+  - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldPatchSettingsResponse
+        issue: Object has multiple properties named "messages":
+  - SmartShieldPatchSettingsResponse -> messages
+  - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldPatchSettingsResponse
+        issue: Object has multiple properties named "result":
+  - SmartShieldPatchSettingsResponse -> result
+  - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+
+    [error]
+        path: smartShieldSettings.yml -> types -> SmartShieldPatchSettingsResponse
+        issue: Object has multiple properties named "success":
+  - SmartShieldPatchSettingsResponse -> success
+  - SmartShieldPatchSettingsResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+
+    [error]
+        path: streamVideos.yml -> service -> endpoints -> listVideos -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+
+    [error]
+        path: streamVideos.yml -> service -> endpoints -> retrieveVideoDetails -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+
+    [error]
+        path: streamVideos.yml -> service -> endpoints -> updateVideoDetails -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+
+    [error]
+        path: streamVideos.yml -> service -> endpoints -> uploadVideosFromAUrl -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "fc0a8dc887b16759bfd9ad922230a014"
+
+    [error]
+        path: triggers.yml -> service -> endpoints -> createTrigger -> request -> body -> properties -> path_includes -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workers.yml
+
+    [error]
+        path: triggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: wafPackages.yml -> service -> endpoints -> updateAWafPackage -> examples[0] -> response
+        issue: Example is missing required property "response.body.errors"
+
+    [error]
+        path: wafPackages.yml -> service -> endpoints -> updateAWafPackage -> examples[0] -> response
+        issue: Example is missing required property "response.body.messages"
+
+    [error]
+        path: wafPackages.yml -> service -> endpoints -> updateAWafPackage -> examples[0] -> response
+        issue: Example is missing required property "response.body.success"
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in account.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in builds.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in repositoryConnections.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in gitHubIntegration.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in buildTokens.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in triggers.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in environmentVariables.yml
+
+    [error]
+        path: workers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: zoneRatePlan.yml -> service -> endpoints -> listAvailableRatePlans -> examples[0] -> response
+        issue: Unexpected property "components"
+
+    [error]
+        path: zoneRatePlan.yml -> service -> endpoints -> listAvailableRatePlans -> examples[0] -> response
+        issue: Unexpected property "duration"
+
+    [error]
+        path: zoneRatePlan.yml -> service -> endpoints -> listAvailableRatePlans -> examples[0] -> response
+        issue: Unexpected property "frequency"
+
+    [error]
+        path: zoneRatePlan.yml -> service -> endpoints -> listAvailableRatePlans -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: zoneRulesets.yml -> types -> CreateZoneRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: zoneRulesets.yml -> types -> UpdateZoneRulesetRuleRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+Found 151 errors and 373 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

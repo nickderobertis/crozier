@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Assess API
+[api]: Unexpected error: Failed to resolve schema reference: PagingInfo/definitions/links 
+       CliError: Unexpected error: Failed to resolve schema reference: PagingInfo/definitions/links
+All checks passed

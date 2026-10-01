@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: No error name found for status code 524
+[api]: No error name found for status code 529
+[api]: No error name found for status code 529
+[api]: No error name found for status code 524
+[api]: No error name found for status code 529
+[api]: No error name found for status code 524
+[api]: No error name found for status code 529
+[api]: No error name found for status code 524
+[api]: No error name found for status code 529
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> types -> ListEndpointsResponse
+        issue: ListEndpointsResponse is already declared in endpoints.yml
+
+Found 1 error and 0 warnings in <n> seconds.

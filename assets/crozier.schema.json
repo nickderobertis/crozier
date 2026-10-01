@@ -56,6 +56,13 @@
         "null"
       ]
     },
+    "fern-strict": {
+      "description": "Shared default strict-Fern-compatibility flag.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
     "layout": {
       "description": "Shared default output layout (`packaged` or `flat`).",
       "anyOf": [
@@ -179,6 +186,13 @@
         },
         "audience-strict": {
           "description": "Strict audience subsetting (exclude un-annotated operations).",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "fern-strict": {
+          "description": "Strict Fern compatibility: refuse to generate from a document Fern\nrefuses, even where crozier's own output would be valid. Never changes a\nbyte of an SDK that is written.",
           "type": [
             "boolean",
             "null"

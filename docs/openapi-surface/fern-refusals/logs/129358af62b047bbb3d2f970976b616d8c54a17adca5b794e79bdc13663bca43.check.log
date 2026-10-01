@@ -1,0 +1,11 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Accounting API
+[api]: Unexpected error: Failed to resolve schema reference: PagingInfo/definitions/links 
+       CliError: Unexpected error: Failed to resolve schema reference: PagingInfo/definitions/links
+[sdk] 1 error
+    [error]
+        path: openapi/openapi.yml -> paths -> /companies/{companyId}/connections/{connectionId}/push/billCreditNotes/{billCreditNoteId}/attachment -> post -> description
+        issue: Endpoint description for POST /companies/{companyId}/connections/{connectionId}/push/billCreditNotes/{billCreditNoteId}/attachment contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+Found 1 error and 0 warnings in <n> seconds.

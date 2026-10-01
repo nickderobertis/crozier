@@ -1,0 +1,136 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 33 errors
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationEight -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationEleven -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationFive -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationFour -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationFourteen -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationOne -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationSeven -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationTen -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationThirteen -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationTwelve -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: __package__.yml -> types -> IntegrationViewModelConfigurationZero -> extends -> BaseConfiguration
+        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationEight -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationEleven -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationFive -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationFour -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationFourteen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationOne -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationTen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationThirteen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationTwelve -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationZero -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationEight -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationEleven -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFive -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFour -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFourteen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationOne -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationTen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationThirteen -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationTwelve -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+    [error]
+        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationZero -> extends -> root.BaseConfiguration
+        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
+
+Found 33 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk tariffPriceApi.yml -> service -> endpoints -> tariffSLPH0 -> examples[0] -> response
+                  tariffPriceApi.yml
+                  [error] Expected example to be an integer. Example is: 22.12
+                  [error] Expected example to be an integer. Example is: 7.5
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> GreenPowerIndex (GrünstromIndex)
+                  openapi/openapi.yml
+                  [error] Tag name "GreenPowerIndex (GrünstromIndex)" contains non-ASCII characters: ü. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk Found 3 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

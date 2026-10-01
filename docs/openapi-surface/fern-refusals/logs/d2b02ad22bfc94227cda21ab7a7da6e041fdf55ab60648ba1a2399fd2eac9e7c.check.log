@@ -1,0 +1,42 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping formData parameter, idCliente, in POST /clientes/documento
+[api]: Skipping formData parameter, idTipoDocumento, in POST /clientes/documento
+[api]: Skipping formData parameter, documento, in POST /clientes/documento
+[api]: GET /promesas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: GET /pagos/conciliados: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: GET /v2/reservas/canceladas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[sdk] 8 errors
+    [error]
+        path: __package__.yml -> types -> DescuentoUnidad
+        issue: Enum name  for value % is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: datosFormaPago.yml -> service -> endpoints -> findFormaPagoByRutAndIdProyectoAndApiKey
+        issue: FindFormaPagoByRutAndIdProyectoAndApiKeyRequest is already declared in guia.yml
+
+    [error]
+        path: etapa.yml -> service -> endpoints -> findByEtapaId
+        issue: FindByEtapaIdRequest is already declared in etapas.yml
+
+    [error]
+        path: negocios.yml -> service -> endpoints -> findAll
+        issue: FindAllRequest is already declared in packs.yml
+
+    [error]
+        path: negocios.yml -> service -> endpoints -> findAll
+        issue: FindAllRequest is already declared in v2.yml
+
+    [error]
+        path: openapi/openapi.yml -> tags -> Reserva En Línea
+        issue: Tag name "Reserva En Línea" contains non-ASCII characters: í. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+
+    [error]
+        path: v2.yml -> service -> endpoints -> findAll
+        issue: FindAllRequest is already declared in packs.yml
+
+    [error]
+        path: v2.yml -> service -> endpoints -> findAll
+        issue: FindAllRequest is already declared in negocios.yml
+
+Found 8 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

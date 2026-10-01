@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Bank Feeds API (v2)
+[api]: Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links 
+       CliError: Unexpected error: Failed to resolve schema reference: Companies/allOf/1/definitions/links
+All checks passed

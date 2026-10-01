@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      security:
+        - session: []
+      responses:
+        '204': {description: No Content}
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: SESSION

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "3948c4c05fbd065f3e26cc9e2d2560f8d48796cfb3498cc1a99ebae149fe0746"
+
+[[covers]]
+key = "ref-pointer-composition-index"
+arm = 'src/ir.rs::ref_to_class[while index < parts.len\(\) \{]'
+search = "docs/openapi-surface/withdrawn-witnesses/codat-assess.md#replacement-search"
+verdict = "exhausted"

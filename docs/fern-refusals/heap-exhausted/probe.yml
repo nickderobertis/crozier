@@ -1,0 +1,31 @@
+openapi: 3.1.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /tools:
+    get:
+      operationId: getTool
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tool'
+components:
+  schemas:
+    Tool:
+      type: object
+      properties:
+        composition:
+          anyOf:
+          - type: object
+            properties:
+              name:
+                type: string
+              child0:
+                $ref: '#/components/schemas/Tool/properties/composition'
+              child1:
+                $ref: '#/components/schemas/Tool/properties/composition'
+          - type: string

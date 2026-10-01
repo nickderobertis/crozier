@@ -1,0 +1,198 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 43 errors
+    [error]
+        path: __package__.yml -> types -> CreateInboundIpRequest -> properties -> ani_number_format -> type
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CreateInboundIpRequest -> properties -> dnis_number_format -> type
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CreateInboundIpRequestAniNumberFormat
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CreateInboundIpRequestDnisNumberFormat
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CreateTeXmlSecretResultValue
+        issue: Enum name  for value ***** is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CredentialInbound -> properties -> ani_number_format -> type
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CredentialInbound -> properties -> dnis_number_format -> type
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CredentialInboundAniNumberFormat
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> CredentialInboundDnisNumberFormat
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundFqdn -> properties -> ani_number_format -> type
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundFqdn -> properties -> dnis_number_format -> type
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundFqdnAniNumberFormat
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundFqdnDnisNumberFormat
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundIp -> properties -> ani_number_format -> type
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundIp -> properties -> dnis_number_format -> type
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundIpAniNumberFormat
+        issue: Default value 'E.164-national' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> InboundIpDnisNumberFormat
+        issue: Default value 'e164' is not a valid enum value
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "primary_cloud_ip":
+  - VirtualCrossConnectCombined -> primary_cloud_ip
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> primary_cloud_ip
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "primary_enabled":
+  - VirtualCrossConnectCombined -> primary_enabled
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> primary_enabled
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "secondary_cloud_ip":
+  - VirtualCrossConnectCombined -> secondary_cloud_ip
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> secondary_cloud_ip
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "secondary_enabled":
+  - VirtualCrossConnectCombined -> secondary_enabled
+  - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> secondary_enabled
+
+    [error]
+        path: __package__.yml -> types -> VirtualCrossConnectCombined
+        issue: Object has multiple properties named "region_code":
+  - VirtualCrossConnectCombined -> region_code
+  - VirtualCrossConnectCombined -> (extends) RegionIn -> region_code
+
+    [error]
+        path: addresses.yml -> service -> endpoints -> acceptAddressSuggestions
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: addresses.yml -> service -> endpoints -> ValidateAddress -> examples[0] -> response
+        issue: Expected example to be a boolean. Example is: {"administrative_area":"TX","country_code":"US","extended_address":"14th Floor","locality":"Austin","postal_code":"78701","street_address":"600 Congress Avenue"}
+
+    [error]
+        path: brands.yml -> service -> endpoints -> GetBrands -> request -> query-parameters -> sort -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: brands.yml -> types -> GetBrandsRequestSort
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: callCommands.yml -> service -> endpoints -> BridgeCall
+        issue: Multiple request properties have the name call_control_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "call_control_id"
+  - Body property: <Request Body> -> call_control_id
+
+    [error]
+        path: campaign.yml -> service -> endpoints -> GetCampaigns -> request -> query-parameters -> sort -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: campaign.yml -> types -> GetCampaignsRequestSort
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: globalIPs.yml -> service -> endpoints -> UpdateGlobalIpAssignment
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> (extends) root.GlobalIpAssignment -> id
+
+    [error]
+        path: numberPortout.yml -> service -> endpoints -> GetPortingReport
+        issue: GetPortingReportRequest is already declared in portingOrders.yml
+
+    [error]
+        path: numberPortout.yml -> types -> GetPortingReportResponse
+        issue: GetPortingReportResponse is already declared in portingOrders.yml
+
+    [error]
+        path: phoneNumberCampaigns.yml -> service -> endpoints -> GetAllPhoneNumberCampaigns -> request -> query-parameters -> sort -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: phoneNumberCampaigns.yml -> types -> GetAllPhoneNumberCampaignsRequestSort
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: phoneNumberOrders.yml -> service -> endpoints -> CreateNumberOrder -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"bundle_id":"bc8e4d67-33a0-4cbb-af74-7b58f05bd474","country_code":"US","country_iso_alpha2":"US","id":"dc8e4d67-33a0-4cbb-af74-7b58f05bd494","phone_number":"+19705555098","record_type":"number_order_phone_number","regulatory_requirements":[{"field_type":"address","field_value":"45f45a04-b4be-4592-95b1-9306b9db2b21","record_type":"phone_number_regulatory_requirement","requirement_id":"8ffb3622-7c6b-4ccc-b65f-7a3dc0099576"}],"requirements_met":true,"status":"success"}
+
+    [error]
+        path: phoneNumberOrders.yml -> service -> endpoints -> RetrieveNumberOrder -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"bundle_id":"bc8e4d67-33a0-4cbb-af74-7b58f05bd474","country_code":"US","country_iso_alpha2":"US","id":"dc8e4d67-33a0-4cbb-af74-7b58f05bd494","phone_number":"+19705555098","record_type":"number_order_phone_number","regulatory_requirements":[{"field_type":"address","field_value":"45f45a04-b4be-4592-95b1-9306b9db2b21","record_type":"phone_number_regulatory_requirement","requirement_id":"8ffb3622-7c6b-4ccc-b65f-7a3dc0099576"}],"requirements_met":true,"status":"success"}
+
+    [error]
+        path: phoneNumberOrders.yml -> service -> endpoints -> UpdateNumberOrder -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"bundle_id":"bc8e4d67-33a0-4cbb-af74-7b58f05bd474","country_code":"US","country_iso_alpha2":"US","id":"dc8e4d67-33a0-4cbb-af74-7b58f05bd494","phone_number":"+19705555098","record_type":"number_order_phone_number","regulatory_requirements":[{"field_type":"address","field_value":"45f45a04-b4be-4592-95b1-9306b9db2b21","record_type":"phone_number_regulatory_requirement","requirement_id":"8ffb3622-7c6b-4ccc-b65f-7a3dc0099576"}],"requirements_met":true,"status":"success"}
+
+    [error]
+        path: portingOrders.yml -> types -> CreateCommentResponse
+        issue: CreateCommentResponse is already declared in phoneNumberOrders.yml
+
+    [error]
+        path: sharedCampaigns.yml -> service -> endpoints -> GetSharedCampaigns -> request -> query-parameters -> sort -> type
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: sharedCampaigns.yml -> types -> GetSharedCampaignsRequestSort
+        issue: Default value '-createdAt' is not a valid enum value
+
+    [error]
+        path: teXmlRestCommands.yml -> service -> endpoints -> GetTexmlCalls
+        issue: Multiple request properties resolve to the same generated name startTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "StartTime" (name: "StartTime")
+  - Query Parameter "StartTime>" (name: "StartTime>")
+  - Query Parameter "StartTime<" (name: "StartTime<")
+
+    [error]
+        path: teXmlRestCommands.yml -> service -> endpoints -> GetTexmlCalls
+        issue: Multiple request properties resolve to the same generated name endTime after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Query Parameter "EndTime" (name: "EndTime")
+  - Query Parameter "EndTime>" (name: "EndTime>")
+  - Query Parameter "EndTime<" (name: "EndTime<")
+
+    [error]
+        path: usageReportsBeta.yml -> service -> endpoints -> GetUsageReport
+        issue: GetUsageReportRequest is already declared in mdrUsageReports.yml
+
+Found 43 errors and 395 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

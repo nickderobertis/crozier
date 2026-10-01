@@ -1,0 +1,79 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 18 errors
+    [error]
+        path: admin.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: batches.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: conversations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fileProcessors.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: files.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: inference.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: inspect.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: interactions.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: messages.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: models.yml -> service -> endpoints -> getModel -> examples[0] -> response
+        issue: "model" is not a valid example for this enum. Enum values are:
+  - llm
+  - embedding
+  - rerank
+
+    [error]
+        path: models.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: prompts.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: providers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: responses.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: skills.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: tools.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: vectorIo.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: vectorStores.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 18 errors and 0 warnings in <n> seconds.

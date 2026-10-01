@@ -1,0 +1,56 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 9 errors
+    [error]
+        path: inventories.yml -> service -> endpoints -> givenAPackageIdReturnsTheListOfAssetIDsForThatPackage
+        issue: Path parameter is unreferenced in endpoint: packageID.
+
+    [error]
+        path: inventories.yml -> service -> endpoints -> givenAPackageIdReturnsTheListOfAssetIDsForThatPackage
+        issue: Multiple request properties resolve to the same generated name packageId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "packageId" (name: "packageId")
+  - Path parameter "packageID" (name: "packageID")
+
+    [error]
+        path: matchmaking.yml -> service -> endpoints -> createsAMatchmakingScoringConfigurationSignal
+        issue: Multiple request properties have the name scoringConfigurationId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scoringConfigurationId"
+  - Body property: <Request Body> -> scoringConfigurationId
+
+    [error]
+        path: matchmaking.yml -> service -> endpoints -> updatesAMatchmakingScoringConfiguration
+        issue: Multiple request properties have the name scoringConfigurationId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scoringConfigurationId"
+  - Body property: <Request Body> -> scoringConfigurationId
+
+    [error]
+        path: matchmaking.yml -> service -> endpoints -> updatesAMatchmakingScoringConfigurationSignal
+        issue: Multiple request properties have the name scoringConfigurationId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "scoringConfigurationId"
+  - Body property: <Request Body> -> scoringConfigurationId
+
+    [error]
+        path: matchmaking.yml -> service -> endpoints -> updateThePlayerAttributeDefinitionSpecifiedByAttributeId
+        issue: Multiple request properties have the name attributeId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "attributeId"
+  - Body property: <Request Body> -> attributeId
+
+    [error]
+        path: matchmaking.yml -> service -> endpoints -> updateTheServerAttributeDefinitionSpecifiedByAttributeId
+        issue: Multiple request properties have the name attributeId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "attributeId"
+  - Body property: <Request Body> -> attributeId
+
+    [error]
+        path: thumbnails.yml -> service -> endpoints -> decryptsAndResizesLargerThumbnailsToSpecifiedSizeAndFormat
+        issue: Multiple request properties have the name filterType. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "filterType"
+  - Query Parameter "filterType"
+
+    [error]
+        path: thumbnails.yml -> service -> endpoints -> resizesLargerThumbnailsToSpecifiedSizeAndFormat
+        issue: Multiple request properties have the name filterType. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "filterType"
+  - Query Parameter "filterType"
+
+Found 9 errors and 44 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

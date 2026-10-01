@@ -1,0 +1,8590 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 347 errors
+    [error]
+        path: __package__.yml -> errors -> InternalServerError -> type
+        issue: Example is missing required property "response.body.errors"
+
+    [error]
+        path: __package__.yml -> errors -> InternalServerError -> type
+        issue: Unexpected property "message"
+
+    [error]
+        path: __package__.yml -> types -> CreateTicketRequest
+        issue: CreateTicketRequest is already declared in tickets.yml
+
+    [error]
+        path: __package__.yml -> types -> SingleFilterSearchRequestOperator
+        issue: Enum name  for value ~ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> UpdateTicketRequest
+        issue: UpdateTicketRequest is already declared in tickets.yml
+
+    [error]
+        path: admins.yml -> service -> endpoints -> identifyAdmin -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> listActivityLogEventTypes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> listActivityLogs -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> listAdmins -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> retrieveAdmin -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> searchActivityLogs -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> searchActivityLogs -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> setAwayAdmin -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> setAwayAdmin -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: admins.yml -> service -> endpoints -> setAwayAdmin -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> createContentImportSource -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> createExternalPage -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> deleteContentImportSource -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> deleteExternalPage -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> getContentImportSource -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> getExternalPage -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> listContentImportSources -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> listExternalPages -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> updateContentImportSource -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: aiContent.yml -> service -> endpoints -> updateExternalPage -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> attachTagToArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> createArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> createArticle -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> deleteArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> detachTagFromArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> listArticles -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> listArticleVersions -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> publishArticleDraft -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> retrieveArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> retrieveArticleDraft -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> retrieveArticleVersion -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> searchArticles -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> stageArticleDraft -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> updateArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: articles.yml -> service -> endpoints -> updateArticle -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: audiences.yml -> service -> endpoints -> createAudience -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: audiences.yml -> service -> endpoints -> deleteAudience -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: audiences.yml -> service -> endpoints -> listAudiences -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: audiences.yml -> service -> endpoints -> retrieveAudience -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: audiences.yml -> service -> endpoints -> updateAudience -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: awayStatusReasons.yml -> service -> endpoints -> listAwayStatusReasons -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: banners.yml -> service -> endpoints -> dismissContactBanner -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: banners.yml -> service -> endpoints -> listContactBanners -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: brands.yml -> service -> endpoints -> listBrands -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: brands.yml -> service -> endpoints -> retrieveBrand -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> collectFinVoiceCallByExternalId -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> collectFinVoiceCallById -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> collectFinVoiceCallByPhoneNumber -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> collectFinVoiceCallsByConversationId -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> listCalls -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> listCallsWithTranscripts -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> registerFinVoiceCall -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> showCall -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: calls.yml -> service -> endpoints -> showCallRecording -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> attachContactToACompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> attachContactToACompany -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> attachContactToACompany -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> createOrUpdateCompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> createOrUpdateCompany -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> deleteCompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> detachContactFromACompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> listAllCompanies -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> ListAttachedContacts -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> ListAttachedSegmentsForCompanies -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> RetrieveACompanyById -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> retrieveCompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> scrollOverAllCompanies -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> UpdateCompany -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: companies.yml -> service -> endpoints -> UpdateCompany -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> ArchiveContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> BlockContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> CreateContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> DeleteContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> listCompaniesForAContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> ListContactMergeHistory -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> ListContacts -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> listSegmentsForAContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> listSubscriptionsForAContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> listTagsForAContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> MergeContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> MergeContact -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> SearchContacts -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> ShowContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> ShowContactByExternalId -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> UnarchiveContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> UpdateContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contacts.yml -> service -> endpoints -> UpdateContact -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> bulkContentActions -> examples[5] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: content.yml -> service -> endpoints -> searchContent -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> attachTagToContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> createContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> deleteContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> detachTagFromContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> getContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> listContentSnippets -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: contentSnippets.yml -> service -> endpoints -> updateContentSnippet -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> attachContactToConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> attachContactToConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> convertConversationToTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> convertConversationToTicket -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> convertConversationToTicket -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> convertConversationToTicket -> examples[1] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> createConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> createConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> deleteConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> detachContactFromConversation -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> listConversations -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> listDeletedConversationIds -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> listHandlingEvents -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> listSideConversations -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> manageConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> manageConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> manageConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> manageConversation -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> manageConversation -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> mergeConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> redactConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> redactConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> replyConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> replyConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> replyConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> replyConversation -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> replyConversation -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> retrieveConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> searchConversations -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> updateConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> updateConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversations.yml -> service -> endpoints -> updateConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> createConversationAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> createConversationAttributeOption -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> deleteConversationAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> deleteConversationAttributeOption -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> getConversationAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> listConversationAttributes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> updateConversationAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: conversationsAttributes.yml -> service -> endpoints -> updateConversationAttributeOption -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: customObjectInstances.yml -> service -> endpoints -> createCustomObjectInstances -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: customObjectInstances.yml -> service -> endpoints -> deleteCustomObjectInstancesByExternalId -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: customObjectInstances.yml -> service -> endpoints -> deleteCustomObjectInstancesById -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: customObjectInstances.yml -> service -> endpoints -> getCustomObjectInstancesById -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: customObjectInstances.yml -> service -> endpoints -> listCustomObjectInstances -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> createDataAttribute -> examples[5] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> lisDataAttributes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataAttributes.yml -> service -> endpoints -> updateDataAttribute -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> createDataConnector -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> createDataConnector -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> createDataConnector -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> deleteDataConnector -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> listDataConnectorExecutionResults -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> listDataConnectors -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> RetrieveDataConnector -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> showDataConnectorExecutionResult -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> updateDataConnector -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> updateDataConnector -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> updateDataConnector -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataConnectors.yml -> service -> endpoints -> updateDataConnector -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: dataEvents.yml -> service -> endpoints -> dataEventSummaries -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: emails.yml -> service -> endpoints -> listEmails -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: emails.yml -> service -> endpoints -> retrieveEmail -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> replyToFin -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> replyToFin -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> replyToFin -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> replyToFin -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> startFinConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> startFinConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> startFinConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> startFinConversation -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> startFinConversation -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> submitFinCsat -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: finAgent.yml -> service -> endpoints -> submitFinCsat -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> createCollection -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> createCollection -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> createHelpCenterRedirect -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> deleteCollection -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> deleteHelpCenterRedirect -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> listAllCollections -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> listHelpCenterRedirects -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> listHelpCenters -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> retrieveCollection -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> retrieveHelpCenter -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> retrieveHelpCenterRedirect -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> updateCollection -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: helpCenter.yml -> service -> endpoints -> updateCollection -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> attachTagToInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> createInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> createInternalArticle -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> deleteInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> detachTagFromInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> listInternalArticles -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> retrieveInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> searchInternalArticles -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> updateInternalArticle -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: internalArticles.yml -> service -> endpoints -> updateInternalArticle -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ipAllowlist.yml -> service -> endpoints -> getIpAllowlist -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ipAllowlist.yml -> service -> endpoints -> updateIpAllowlist -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: jobs.yml -> service -> endpoints -> status -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> getMacro -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> getMacro -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> getMacro -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> getMacro -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: macros.yml -> service -> endpoints -> listMacros -> examples[5] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[5] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> createMessage -> examples[6] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> getWhatsAppMessageStatus -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> RetrieveWhatsAppMessageStatus -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: messages.yml -> service -> endpoints -> RetrieveWhatsAppMessageStatus -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> createNewsItem -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> deleteNewsItem -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> listLiveNewsfeedItems -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> listNewsfeeds -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> listNewsItems -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> retrieveNewsfeed -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> retrieveNewsItem -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> updateNewsItem -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: news.yml -> service -> endpoints -> updateNewsItem -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createCompanyNote -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createCompanyNote -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createCompanyNote -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createNote -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createNote -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> createNote -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> listCompanyNotes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> listNotes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: notes.yml -> service -> endpoints -> retrieveNote -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> createOfficeHoursException -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> createOfficeHoursSchedule -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> deleteOfficeHoursException -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> deleteOfficeHoursSchedule -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> getOfficeHoursException -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> getOfficeHoursSchedule -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> listOfficeHoursExceptions -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> listOfficeHoursSchedules -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> updateOfficeHoursException -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: officeHours.yml -> service -> endpoints -> updateOfficeHoursSchedule -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> downloadCompletedExportJobData -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> downloadCompletedExportJobData
+        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "job_identifier"
+  - Query Parameter "job_identifier"
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> enqueueANewReportingDataExportJob -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> getExportJobStatus -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> getExportJobStatus -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> getExportJobStatus
+        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "job_identifier"
+  - Query Parameter "job_identifier"
+
+    [error]
+        path: reportingDataExport.yml -> service -> endpoints -> listAvailableDatasetsAndAttributes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: segments.yml -> service -> endpoints -> listSegments -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: segments.yml -> service -> endpoints -> retrieveSegment -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: subscriptionTypes.yml -> service -> endpoints -> attachSubscriptionTypeToContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: subscriptionTypes.yml -> service -> endpoints -> attachSubscriptionTypeToContact -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: subscriptionTypes.yml -> service -> endpoints -> attachSubscriptionTypeToContact -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: subscriptionTypes.yml -> service -> endpoints -> detachSubscriptionTypeToContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: subscriptionTypes.yml -> service -> endpoints -> listSubscriptionTypes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: switch.yml -> service -> endpoints -> createPhoneSwitch -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: switch.yml -> service -> endpoints -> createPhoneSwitch -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: switch.yml -> service -> endpoints -> createPhoneSwitch -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: switch.yml -> service -> endpoints -> createPhoneSwitch -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToContact -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToContact -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> attachTagToTicket -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> createTag -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> createTag -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> createTag -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> createTag -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> deleteTag -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromContact -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromConversation -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromTicket -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> detachTagFromTicket -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> findTag -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tags.yml -> service -> endpoints -> listTags -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: teams.yml -> service -> endpoints -> getTeamMetrics -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: teams.yml -> service -> endpoints -> listTeams -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: teams.yml -> service -> endpoints -> retrieveTeam -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> changeTicketType -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> changeTicketType -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> createTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> createTicket -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> deleteTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> enqueueCreateTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> getTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> getTicket -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> linkConversationToTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> linkConversationToTicket -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 155.5
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> replyTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> replyTicket -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> replyTicket -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> replyTicket -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> replyTicket -> examples[4] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> searchTickets -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> searchTickets -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> unlinkConversationFromTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> unlinkConversationFromTicket -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 155.5
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[1] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[2] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[2] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[3] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: tickets.yml -> service -> endpoints -> updateTicket -> examples[3] -> response
+        issue: Expected example to be an object. Example is: "ticket"
+
+    [error]
+        path: tickets.yml -> types -> Ticket -> properties -> type -> type
+        issue: Default values are not supported for the named type
+
+    [error]
+        path: ticketStates.yml -> service -> endpoints -> listTicketStates -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypeAttributes.yml -> service -> endpoints -> createTicketTypeAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypeAttributes.yml -> service -> endpoints -> updateTicketTypeAttribute -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypes.yml -> service -> endpoints -> createTicketType -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypes.yml -> service -> endpoints -> getTicketType -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypes.yml -> service -> endpoints -> listTicketTypes -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: ticketTypes.yml -> service -> endpoints -> updateTicketType -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: visitors.yml -> service -> endpoints -> convertVisitor -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: visitors.yml -> service -> endpoints -> retrieveVisitorWithUserId -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: visitors.yml -> service -> endpoints -> updateVisitor -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: visitors.yml -> service -> endpoints -> updateVisitor -> examples[1] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+    [error]
+        path: workflows.yml -> service -> endpoints -> exportWorkflow -> examples[0] -> headers
+        issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+  - 1.4
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - 2.4
+  - 2.5
+  - 2.6
+  - 2.7
+  - 2.8
+  - 2.9
+  - 2.10
+  - 2.11
+  - 2.12
+  - 2.13
+  - 2.14
+  - 2.15
+  - 2.16
+
+Found 347 errors and 25 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

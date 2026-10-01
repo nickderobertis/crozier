@@ -1,0 +1,94 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse an OpenAPI schema at the following location: contents.email.fromFile->Request->file. Coercing to unknown.
+[api]: python-sdk Failed to parse an OpenAPI schema at the following location: contents.email.fromFile->Request->file. Coercing to unknown.
+[api]: python-sdk Failed to parse an OpenAPI schema at the following location: StoreImportFile->import_strategy_settings[file]. Coercing to unknown.
+[api]: python-sdk Failed to parse an OpenAPI schema at the following location: StoreRecipient->email_address_notify. Coercing to unknown.
+[api]: python-sdk consent.yml -> service -> endpoints -> consents.export
+                  consent.yml
+                  [error] Path parameter is unreferenced in endpoint: id.
+                  
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.contact-actitivity -> request -> query-parameters -> limit -> type
+                  campaignReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.domain -> request -> query-parameters -> limit -> type
+                  campaignReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.link -> request -> query-parameters -> limit -> type
+                  campaignReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.contact-actitivity -> request -> query-parameters -> limit -> type
+                  recipientReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.domain -> request -> query-parameters -> limit -> type
+                  recipientReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.link -> request -> query-parameters -> limit -> type
+                  recipientReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk workflowReports.yml -> service -> endpoints -> reports.workflows.contact-actitivity -> request -> query-parameters -> limit -> type
+                  workflowReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk workflowReports.yml -> service -> endpoints -> reports.workflows.link -> request -> query-parameters -> limit -> type
+                  workflowReports.yml
+                  [error] Default value '5' is not a valid integer
+                  
+[api]: python-sdk carts.yml -> service -> endpoints -> stores.carts.update
+                  carts.yml
+                  [error] Multiple request properties resolve to the same generated name cartId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "cartId" (name: "cartId")
+                    - Body property: <Request Body> -> cart_id (name: "cart_id")
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.changeStatus
+                  contacts.yml
+                  [error] Path parameter is unreferenced in endpoint: subscriberId.
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.sendCampaign
+                  contacts.yml
+                  [error] Path parameter is unreferenced in endpoint: subscribedId.
+                  
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.sendWhatsAppMessage
+                  contacts.yml
+                  [error] Path parameter is unreferenced in endpoint: subscriberId.
+                  
+[api]: python-sdk __package__.yml -> types -> Product -> properties -> total_sold -> type
+                  __package__.yml
+                  [error] Default value '1' is not a valid integer
+                  
+[api]: python-sdk __package__.yml -> types -> Recipient -> properties -> last_campaign_sent_timestamp -> type
+                  __package__.yml
+                  [error] Default value '' is not a valid integer
+                  
+[api]: python-sdk __package__.yml -> types -> SenderEmailCsaData -> properties -> telephone -> type
+                  __package__.yml
+                  [error] Default value '+393331234567' is not a valid integer
+                  
+[api]: python-sdk __package__.yml -> types -> SenderSmsData -> properties -> Phone -> type
+                  __package__.yml
+                  [error] Default value '+393331234567' is not a valid integer
+                  
+[api]: python-sdk __package__.yml -> types -> WorkflowMessage -> properties -> priority -> type
+                  __package__.yml
+                  [error] Default value '1' is not a valid integer
+                  
+[api]: python-sdk __package__.yml -> types -> WorkflowMessageTrigger -> properties -> segments -> type
+                  __package__.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk __package__.yml -> types -> WorkflowMessageTriggerScheduler -> properties -> days -> type
+                  __package__.yml
+                  [error] Default value for list type must be an array
+                  
+[api]: python-sdk Found 20 errors and 6 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

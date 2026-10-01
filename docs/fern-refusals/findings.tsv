@@ -1,0 +1,7 @@
+finding	kind	check_exit	generate_exit	diagnostic	probe
+description-frontmatter-delimiter	check-only	1	0	Endpoint description for <…> contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.	docs/openapi-surface/fern-refusals/findings/description-frontmatter-delimiter.yml
+enum-member-digit-led	generates	0	0	—	docs/openapi-surface/fern-refusals/findings/enum-member-digit-led.yml
+enum-member-zero-led-run	generates	0	0	—	docs/openapi-surface/fern-refusals/findings/enum-member-zero-led-run.yml
+exploded-property-not-list	check-only	1	0	<…> is exploded and must be a list. Did you mean <…>?	docs/openapi-surface/fern-refusals/findings/exploded-property-not-list.yml
+parameter-normalization-collision	check-only	1	0	Parameters <…> all normalize to <…> in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.	docs/openapi-surface/fern-refusals/findings/parameter-normalization-collision.yml
+tag-name-non-ascii	check-only	1	0	Tag name <…> contains non-ASCII characters: <…>. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.	docs/openapi-surface/fern-refusals/findings/tag-name-non-ascii.yml

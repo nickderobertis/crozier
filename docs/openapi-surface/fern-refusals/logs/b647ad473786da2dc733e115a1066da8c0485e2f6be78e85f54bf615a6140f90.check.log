@@ -1,0 +1,26 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: schedules.yml -> service -> endpoints -> executeSchedule
+        issue: Multiple request properties have the name namespace. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "X-Namespace"
+  - Query Parameter "namespace"
+
+    [error]
+        path: schedules.yml -> service -> endpoints -> getSchedule
+        issue: Multiple request properties have the name namespace. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "X-Namespace"
+  - Query Parameter "namespace"
+
+    [error]
+        path: schedules.yml -> service -> endpoints -> listSchedules
+        issue: Multiple request properties have the name namespace. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Endpoint header "X-Namespace"
+  - Query Parameter "namespace"
+
+    [error]
+        path: schedules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 4 errors and 0 warnings in <n> seconds.

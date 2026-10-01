@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: notaFiscalDeServicoRtc.yml -> service -> endpoints -> downloadDoXmlDoEventoDeCancelamentoDaNfsEAmbienteNacional
+        issue: Path parameter is unreferenced in endpoint: company_id.
+
+    [error]
+        path: notaFiscalDeServicoRtc.yml -> service -> endpoints -> downloadDoXmlDoEventoDeCancelamentoDaNfsEAmbienteNacional
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: openapi/openapi.yml -> tags -> Nota Fiscal de Serviço (RTC)
+        issue: Tag name "Nota Fiscal de Serviço (RTC)" contains non-ASCII characters: ç. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+
+Found 3 errors and 0 warnings in <n> seconds.

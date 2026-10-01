@@ -22,6 +22,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -45,6 +46,7 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -66,6 +68,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -588,6 +591,7 @@ fn generate_writes_files_to_disk() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -613,6 +617,7 @@ fn default_package_name_derives_from_title() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1299,6 +1304,7 @@ fn empty_title_falls_back_to_client_package() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1912,6 +1918,7 @@ fn api_key_scheme_without_name_is_rejected() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1976,6 +1983,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         client_class_name: Some("AcmeSdk".to_string()),
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -2102,6 +2110,7 @@ fn render_with_audiences_mode(
         client_class_name: None,
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
         audience_strict: strict,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -6341,6 +6350,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -11444,45 +11454,46 @@ fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
     assert!(!snowmonkey.contains("\"content-type\""), "{snowmonkey}");
 }
 
-/// Fragments of Codat Assess 1.0 as APIs.guru pins it (corpus row 224), each
-/// assertion a line of its Fern 5.20.0 golden:
+/// Fragments of the hand-written `composition-index-pointer` fixture
+/// (`docs/openapi-surface/handwritten/`), each assertion a line of the tree Fern
+/// 5.20.0 generated from it:
 /// - a schema `$ref` into a component parameter's schema is that schema, copied
 ///   at the reference with its description;
 /// - a binary download that declares no error response has no worked example,
 ///   where one declaring an error keeps it.
 #[test]
-fn codat_assess_parameter_schema_refs_and_errorless_downloads() {
+fn parameter_schema_refs_and_errorless_downloads() {
     let files = render(
-        r##"{"openapi": "3.0.3", "info": {"title": "Assess API", "version": "1.0"},
+        r##"{"openapi": "3.0.3", "info": {"title": "Ledger API", "version": "1.0.0"},
 "paths": {
-  "/companies/{companyId}/excel/download": {
+  "/companies/{companyId}/reports/download": {
     "parameters": [{"$ref": "#/components/parameters/companyId"}],
-    "get": {"tags": ["Excel reports"], "operationId": "get-excel-report",
+    "get": {"tags": ["Reports"], "operationId": "get-report",
       "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}}}},
-    "post": {"tags": ["Excel reports"], "operationId": "download-excel-report",
+    "post": {"tags": ["Reports"], "operationId": "download-report",
       "responses": {"200": {"description": "OK", "content": {"application/octet-stream": {"schema": {"type": "object"}}}},
         "404": {"description": "Not found"}}}},
-  "/webhooks/categories": {"get": {"tags": ["Webhooks"], "operationId": "categories-updated",
-    "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CategoriesWebhook"}}}}}}}},
+  "/webhooks/accounts": {"get": {"tags": ["Webhooks"], "operationId": "accounts-updated",
+    "responses": {"200": {"description": "OK", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AccountsWebhook"}}}}}}}},
 "components": {
   "parameters": {"companyId": {"in": "path", "name": "companyId", "required": true,
-    "schema": {"description": "Unique identifier for your SMB in Codat.", "format": "uuid", "type": "string"}}},
-  "schemas": {"CategoriesWebhook": {"type": "object", "properties": {
+    "schema": {"description": "Unique identifier for a company.", "format": "uuid", "type": "string"}}},
+  "schemas": {"AccountsWebhook": {"type": "object", "properties": {
     "companyId": {"$ref": "#/components/parameters/companyId/schema"}}}}}}"##,
     );
-    let webhook = &files["src/acme/types/categories_webhook.py"];
+    let webhook = &files["src/acme/types/accounts_webhook.py"];
     assert!(
         webhook.contains("typing.Optional[str],")
-            && webhook.contains("description=\"Unique identifier for your SMB in Codat.\""),
+            && webhook.contains("description=\"Unique identifier for a company.\""),
         "{webhook}"
     );
-    let excel = &files["src/acme/excel_reports/client.py"];
-    let get = &excel[excel.find("def get_excel_report").unwrap()..];
-    let get = &get[..get.find("def download_excel_report").unwrap()];
-    assert!(!get.contains("Examples"), "{excel}");
-    let download = &excel[excel.find("def download_excel_report").unwrap()..];
+    let reports = &files["src/acme/reports/client.py"];
+    let get = &reports[reports.find("def get_report").unwrap()..];
+    let get = &get[..get.find("def download_report").unwrap()];
+    assert!(!get.contains("Examples"), "{reports}");
+    let download = &reports[reports.find("def download_report").unwrap()..];
     let download = &download[..download.find("class ").unwrap()];
-    assert!(download.contains("Examples"), "{excel}");
+    assert!(download.contains("Examples"), "{reports}");
 }
 
 /// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
@@ -13142,6 +13153,7 @@ fn render_layout(
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout,
     })
@@ -13296,6 +13308,7 @@ fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13363,6 +13376,7 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13379,16 +13393,19 @@ fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
     // Packaged: `src/<pkg>/` makes the package first-party, a section of its own.
     let packaged = render_layout("acme", "acme", Layout::Packaged);
     assert!(
-        packaged[test_file].contains("        import httpx_aiohttp\n\n        from acme.client")
+        packaged[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from acme.client")
     );
     // Flat: any package but `fern` is third-party to Fern's ruff, so no blank line.
     let flat = render_layout("acme", "acme", Layout::Flat);
-    assert!(flat[test_file].contains("        import httpx_aiohttp\n        from acme.client"));
-    assert!(!flat[test_file].contains("        import httpx_aiohttp\n\n"));
+    assert!(flat[test_file].contains(
+        "        import httpx_aiohttp  # type: ignore[import-not-found]\n        from acme.client"
+    ));
+    assert!(!flat[test_file]
+        .contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n"));
     // Flat `fern` is the exception Fern's `/fern` container makes resolvable.
     let flat_fern = render_layout("fern", "fern", Layout::Flat);
     assert!(
-        flat_fern[test_file].contains("        import httpx_aiohttp\n\n        from fern.client")
+        flat_fern[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from fern.client")
     );
 }
 
@@ -13408,6 +13425,7 @@ fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() 
             client_class_name: None,
             audiences: Vec::new(),
             audience_strict: false,
+            fern_strict: false,
             extra_fields: crozier::settings::ExtraFields::Allow,
             layout,
         })
@@ -13480,6 +13498,7 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     });

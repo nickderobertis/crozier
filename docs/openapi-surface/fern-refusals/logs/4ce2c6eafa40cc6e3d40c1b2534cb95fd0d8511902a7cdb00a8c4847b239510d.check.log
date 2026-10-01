@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: __package__.yml -> types -> AddFollowersRequest
+        issue: AddFollowersRequest is already declared in goals.yml
+
+    [error]
+        path: __package__.yml -> types -> ProjectSaveAsTemplateRequest
+        issue: ProjectSaveAsTemplateRequest is already declared in projects.yml
+
+    [error]
+        path: __package__.yml -> types -> RemoveFollowersRequest
+        issue: RemoveFollowersRequest is already declared in goals.yml
+
+Found 3 errors and 0 warnings in <n> seconds.

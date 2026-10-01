@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 6 errors
+    [error]
+        path: pso2.yml -> service -> endpoints -> getApiCoatOfArms
+        issue: Path must start with a slash.
+
+    [error]
+        path: pso2.yml -> service -> endpoints -> postApiEmergency
+        issue: Path must start with a slash.
+
+    [error]
+        path: pso2.yml -> types -> EmReqEventType
+        issue: Enum value 緊急 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: pso2.yml -> types -> EmReqEventType
+        issue: Enum value ライブ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: pso2.yml -> types -> EmReqEventType
+        issue: Enum value カジノイベント is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: pso2.yml -> types -> EmReqEventType
+        issue: Enum value アークスリーグ is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 6 errors and 0 warnings in <n> seconds.

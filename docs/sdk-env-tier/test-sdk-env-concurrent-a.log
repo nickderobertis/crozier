@@ -1,0 +1,16 @@
+cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env_/)'
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+────────────
+ Nextest run ID 2b4eb721-cec1-433e-a44b-4569959324de with nextest profile: default
+    Starting 6 tests across 1 binary (419 tests and 6 binaries skipped)
+        PASS [   0.016s] (1/6) crozier::e2e sdk_env_fern_refusal_wire_tests_hold
+        PASS [   4.851s] (2/6) crozier::e2e sdk_env_crozier_matches_fern_runtime_behavior
+        PASS [  18.743s] (3/6) crozier::e2e sdk_env_survives_concurrent_first_use
+        PASS [  46.755s] (4/6) crozier::e2e sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin
+        PASS [  48.959s] (5/6) crozier::e2e sdk_env_journeys_survive_concurrent_first_use
+        PASS [  56.965s] (6/6) crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
+────────────
+     Summary [  56.967s] 6 tests run: 6 passed, 419 skipped
