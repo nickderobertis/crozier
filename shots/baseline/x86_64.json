@@ -4,7 +4,7 @@
     {
       "name": "config",
       "toggles": {},
-      "hash": "bad062e404d9f64a23c6ecba7f9c6f098e3e03a99a03330772b3aa9636477f42"
+      "hash": "7c7b64fe5b0bd93b3dbe1b2621575ef52878df08c5f987966a2980afa44dbabc"
     },
     {
       "name": "error",
@@ -21,14 +21,14 @@
       "toggles": {
         "command": "generate"
       },
-      "hash": "909902aa58dba39de477bd0272a8be26e7efe7278decc81c6a8a8ec79060e7fd"
+      "hash": "3f8406196b2ec9574a317d3c1543a403733ebb82b4908606e8aca63ef93c5fb4"
     },
     {
       "name": "help",
       "toggles": {
         "command": "main"
       },
-      "hash": "a2f6a4fd1719519ec1f261ede40072057f1a13f940a669d80c9de4fa80fce579"
+      "hash": "df805c4ff5839cd30689f399120cb5d2e3bc02b19d3bf8b31af18af5f01b2800"
     },
     {
       "name": "init",
