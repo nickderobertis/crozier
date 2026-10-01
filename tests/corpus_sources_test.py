@@ -108,6 +108,7 @@ class TheCommittedTreeHolds(unittest.TestCase):
             self.assertTrue(list((staged / "remote").rglob("*.yaml")))
             self.assertEqual(0, run(REPO, "check").returncode)
 
+    @unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
     def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run(
@@ -228,6 +229,19 @@ class SyntheticRoot(unittest.TestCase):
     def audit(self, *args: str) -> subprocess.CompletedProcess[str]:
         return run(self.root, "audit", *args, CROZIER_CORPUS_PIN_ORIGIN=self.origin)
 
+    def committed(self, relative: str) -> Path:
+        return self.fixtures / "corpus-sources" / relative
+
+    def assert_refused(self, completed: subprocess.CompletedProcess[str], *needles: str) -> None:
+        self.assertNotEqual(0, completed.returncode, "the command should have failed")
+        for needle in needles:
+            self.assertIn(needle, completed.stderr)
+
+
+@unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
+class TheRebuildToolingFetches(SyntheticRoot):
+    """`vendor` and `audit` through the real fetch, real curl and a loopback server."""
+
     def test_prepare_rejects_malformed_aliases(self) -> None:
         self.assertEqual(0, self.vendor().returncode)
         (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8")
@@ -245,19 +259,6 @@ class SyntheticRoot(unittest.TestCase):
         self.assertEqual(1, completed.returncode)
         self.assertIn("just lint-corpus-sources", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
-
-    def committed(self, relative: str) -> Path:
-        return self.fixtures / "corpus-sources" / relative
-
-    def assert_refused(self, completed: subprocess.CompletedProcess[str], *needles: str) -> None:
-        self.assertNotEqual(0, completed.returncode, "the command should have failed")
-        for needle in needles:
-            self.assertIn(needle, completed.stderr)
-
-
-@unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
-class TheRebuildToolingFetches(SyntheticRoot):
-    """`vendor` and `audit` through the real fetch, real curl and a loopback server."""
 
     def test_vendor_commits_every_resolved_file_with_its_fetched_digest(self) -> None:
         completed = self.vendor()
