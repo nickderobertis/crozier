@@ -108,7 +108,7 @@
       "type": "object",
       "properties": {
         "command": {
-          "description": "Shell command (`sh -c`, run from the config file's directory) that writes\nthe reference SDK into `$CROZIER_REFERENCE_OUTPUT`.",
+          "description": "Shell command (`sh -c`, run from the config file's directory) that writes\nthe reference SDK into the output directory `crozier compare` names in\nits environment.",
           "type": [
             "string",
             "null"
