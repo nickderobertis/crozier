@@ -10,7 +10,9 @@ cases copy the registry to a scratch directory (`CROZIER_FERN_REFUSALS_REGISTRY`
 and break one thing at a time — a header column, a class id a document carries,
 a class count, a row order, a class template the population needs — requiring
 the failure to name it: without that half, "check passes" would be
-indistinguishable from "check reads nothing".
+indistinguishable from "check reads nothing". `StrictMeasurement` drives
+`measure` and `build` from a scratch checkout over one local document with the
+compiled crozier binary, the way `just fern-refusals-measure` runs them.
 
 Run: `just test-fern-refusals` (part of `just check`).
 """
@@ -18,6 +20,8 @@ Run: `just test-fern-refusals` (part of `just check`).
 from __future__ import annotations
 
 import gzip
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -207,6 +211,126 @@ class Drift(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn(f"{dropped}: no real document's generation confirms it", result.stderr)
 
+
+
+@unittest.skipIf(os.name == "nt", "`measure` runs `target/release/crozier`, a path with no `.exe`")
+class StrictMeasurement(unittest.TestCase):
+    """`measure` records crozier's `--fern-strict` exit and `build` writes it
+    into `documents.tsv` for a document carrying an evaluated class. Each case
+    runs the REAL script from a scratch checkout whose whole population is one
+    class's committed probe, screened by its committed `fern check` log (so no
+    Fern runs), with the compiled crozier binary where `measure` looks for it."""
+
+    CLASS = "request-property-name-collision"
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        built = subprocess.run(["cargo", "build", "--locked", "--quiet", "--bin", "crozier",
+                                "--message-format=json-render-diagnostics"],
+                               capture_output=True, text=True, cwd=REPO)
+        if built.returncode != 0:
+            raise AssertionError(f"cargo build --bin crozier failed:\n{built.stderr}")
+        cls.binary = Path(next(message["executable"] for message in map(json.loads, built.stdout.splitlines())
+                               if message.get("reason") == "compiler-artifact" and message.get("executable")))
+
+    def setUp(self) -> None:
+        self.scratch = tempfile.TemporaryDirectory()
+        self.root = root = Path(self.scratch.name)
+        shutil.copytree(REPO / "scripts", root / "scripts")
+        binary = root / "target" / "release" / "crozier"
+        binary.parent.mkdir(parents=True)
+        shutil.copy(self.binary, binary)
+        surface = root / "docs" / "openapi-surface"
+        (root / "tests" / "fixtures").mkdir(parents=True)
+        (root / "tests" / "fixtures" / "CORPUS.md").write_text("", encoding="utf-8")
+        # The fetcher's GitHub module reads the census's region rows from this test at import.
+        for relative in ("tests/surface_census_test.py", "justfile"):
+            shutil.copy(REPO / relative, root / relative)
+        (surface / "fern-refusals").mkdir(parents=True)
+        (surface / "fern-refusals" / "dropped-sources.tsv").write_text(
+            "name\tcorpus_line\tsource\tlocator\trevision\tsha256\tevidence\treason\n", encoding="utf-8")
+        for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            with gzip.open(surface / "golden-reach-witnesses" / source / "enumeration.tsv.gz", "wt",
+                           encoding="utf-8") as handle:
+                handle.write("walk\tdocument\trevision\tsha256\n")
+        for source in ("github-code-search", "sourcegraph"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            (surface / "golden-reach-witnesses" / source / "candidates.jsonl").write_text("", encoding="utf-8")
+        # The one screened document: the class's probe, which Fern's committed check refuses.
+        (root / "documents").mkdir()
+        probe = (REGISTRY / self.CLASS / "probe.yml").read_bytes()
+        (root / "documents" / "probe.yml").write_bytes(probe)
+        self.digest = hashlib.sha256(probe).hexdigest()
+        screens = surface / "scratch"
+        screens.mkdir()
+        shutil.copy(REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs" / f"{self.CLASS}.check.log",
+                    screens / "probe-check.log")
+        (screens / "screens.jsonl").write_text(json.dumps({
+            "fern": "failed: check exit 1", "source": "scratch", "repository": "scratch/probes",
+            "commit": "0" * 40, "path": "probe.yml", "sha256": self.digest,
+            "fern_logs": ["probe-check.log"]}) + "\n", encoding="utf-8")
+        registry = root / "docs" / "fern-refusals"
+        registry.mkdir()
+        classes = rows(REGISTRY / "classes.tsv")
+        self.classes = [classes[0], next(row for row in classes[1:] if row[0] == self.CLASS)]
+        self.assertNotEqual(self.classes[1][6], "unevaluated", f"{self.CLASS} is meant to be an evaluated class")
+        write_rows(registry / "classes.tsv", self.classes)
+        write_rows(registry / "findings.tsv", rows(REGISTRY / "findings.tsv")[:1])
+        self.measurements = surface / "fern-refusals" / "measurements.jsonl"
+        self.documents = registry / "documents.tsv"
+
+    def tearDown(self) -> None:
+        self.scratch.cleanup()
+
+    def script(self, *args: str) -> subprocess.CompletedProcess[str]:
+        env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER")}
+        return subprocess.run([sys.executable, str(self.root / "scripts" / "fern-refusals.py"), *args],
+                              capture_output=True, text=True, env=env, cwd=self.root)
+
+    def measure(self) -> dict[str, str]:
+        result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        [row] = [json.loads(line) for line in self.measurements.read_text(encoding="utf-8").splitlines()]
+        return row
+
+    def built_row(self) -> list[str]:
+        result = self.script("build")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        table = rows(self.documents)
+        self.assertEqual(table[0][11], "crozier_strict_exit")
+        [row] = table[1:]
+        self.assertEqual((row[0], row[8]), (self.digest, self.CLASS))
+        return row
+
+    def test_measure_records_the_strict_exit_and_build_writes_it(self) -> None:
+        measured = self.measure()
+        self.assertEqual(measured["digest"], self.digest)
+        # crozier refuses the probe's colliding `name` in both modes, writing nothing.
+        self.assertEqual((measured["crozier_exit"], measured["crozier_files"]), ("1", "0"))
+        self.assertEqual(measured["crozier_strict_exit"], "1")
+        self.assertEqual(self.built_row()[9:12], ["1", "0", "1"])
+
+    def test_an_unevaluated_class_builds_no_strict_exit(self) -> None:
+        self.measure()
+        self.classes[1][6:9] = ["unevaluated", "—", "—"]
+        write_rows(self.root / "docs" / "fern-refusals" / "classes.tsv", self.classes)
+        self.assertEqual(self.built_row()[11], "—")
+
+    def test_a_missing_strict_measurement_fails_the_build_until_measured(self) -> None:
+        measured = self.measure()
+        measured["crozier_strict_exit"] = ""
+        self.measurements.write_text(json.dumps(measured, sort_keys=True) + "\n", encoding="utf-8")
+        result = self.script("build")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(f"{self.digest}: not measured (crozier-strict); run `just fern-refusals-measure`",
+                      result.stderr)
+        self.assertFalse(self.documents.exists(), "a failed build wrote documents.tsv")
+        # The recovery the message names: `measure` takes only the missing run.
+        remeasured = self.measure()
+        self.assertEqual(remeasured, dict(measured, crozier_strict_exit="1"))
+        self.assertEqual(self.built_row()[11], "1")
 
 
 class MissingInputs(unittest.TestCase):
