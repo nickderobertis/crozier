@@ -1196,6 +1196,45 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
     }
 }
 
+/// The member Fern names for an enum value that starts with a zero-led digit
+/// run: the run is spelled and the rest collapses, so `01_00_AM` is `ONE00AM`.
+/// `FERN` is the module Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0
+/// generated from this probe, comment-stripped (the control of
+/// `docs/fern-limitations.md`'s *Arms only a refused document reaches*).
+#[test]
+fn zero_led_enum_value_names_its_member_as_fern_does() {
+    const FERN: &str = r#"
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class SlotStart(enum.StrEnum):
+    ONE00AM = "01_00_AM"
+    NOON = "noon"
+
+    def visit(self, one00am: typing.Callable[[], T_Result], noon: typing.Callable[[], T_Result]) -> T_Result:
+        if self is SlotStart.ONE00AM:
+            return one00am()
+        if self is SlotStart.NOON:
+            return noon()
+"#;
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(PROBE_DOCUMENTS_DIR)
+        .join("enum-leading-zero-member-refused-control.yml");
+    let out = tempfile::tempdir().expect("probe output tempdir");
+    probe_command(&probe, &out.path().join("sdk"))
+        .assert()
+        .success();
+    let rel = "src/fern/types/slot_start.py";
+    let generated = std::fs::read_to_string(out.path().join("sdk").join(rel)).expect("enum module");
+    let (generated, expected) = normalized_pair(rel, &generated, FERN);
+    assert_eq!(generated, expected);
+}
+
 const PROBE_EXPECTED_DIR: &str = "docs/openapi-surface/probe-expected";
 const PROBE_DOCUMENTS_DIR: &str = "docs/openapi-surface/probes";
 const PROBE_MANIFEST_HEADER: &str = "key\tform\tverdict\tartifact\tcontrol\tdigest";

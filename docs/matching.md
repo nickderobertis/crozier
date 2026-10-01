@@ -1280,10 +1280,11 @@ byte-match target like the rest of the corpus.
   `truefoundry-trueforge-5adde28` golden declares `ImportAgentsRequest`,
   `ImportSessionRequest` and every type they reach although the three ignored
   `/api/internal/import/*` operations are their only references. Ignoring a
-  schema prunes any schema that falls out of the surviving operations' transitive
-  `$ref` closure *as a result*, while standalone schemas are left untouched (so the
-  ignore is inert on a spec that carries no markers, and never perturbs a full
-  generation). An explicit
+  schema removes that schema alone: Fern 5.20.0 keeps `LegacyPart` when its one
+  referrer is ignored (the hand-written fixture
+  [`x-fern-ignore-schema`](openapi-surface/handwritten/x-fern-ignore-schema/)), so
+  the ignore is inert on a spec that carries no markers and never perturbs a full
+  generation. An explicit
   `x-crozier-ignore: false` wins over a sibling `x-fern-ignore: true`, which is what
   makes Fern's Overlay-driven "ignore a broad set, then un-ignore a few" pattern
   work (Overlay 1.0 has `remove` but no un-remove, so a reversible flag is the only

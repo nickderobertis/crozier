@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "22d0612c4fdc221fbbca92432ed0afcad5136949b408fcfcd30726f949d6ca28"
+
+[[covers]]
+key = "http-negotiate"
+arm = 'src/ir.rs::auth_model[=_ => Auth::None,]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/http-negotiate.md#witness-search-exhaustive"
+verdict = "exhausted"
