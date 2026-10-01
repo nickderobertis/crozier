@@ -574,7 +574,8 @@ test-corpus-sources:
 
 # Linux CI proof: run the real byte-match, census, refusal and census-fallback
 # sample recipes with sockets denied and the ignored corpus caches absent. Does
-# not fetch a specification (uv installs the pinned parser first).
+# not fetch a specification (cargo fetches the locked crates and uv the pinned
+# parser first).
 test-corpus-offline:
     python3 tests/corpus_offline_test.py
 

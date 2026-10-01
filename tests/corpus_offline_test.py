@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from collections.abc import Mapping
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -39,9 +40,41 @@ def deny_network() -> None:
         raise OSError(ctypes.get_errno(), "could not disable sockets")
 
 
+def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
+    """Fetch every build dependency (never a specification) while the network is up."""
+    # The recipes compile crozier's tests, so a cold registry (a fresh CI
+    # runner's) needs every locked crate downloaded before sockets go away.
+    fetch = subprocess.run(["cargo", "fetch", "--locked"], cwd=REPO, env=env,
+                           capture_output=True, text=True)
+    case.assertEqual(0, fetch.returncode, fetch.stderr)
+    # The fallback samples need the pinned parser: install that package so
+    # the denied run resolves it from uv's cache alone.
+    pin = REPO / "scripts/golden-reach-search.py"
+    if pin.is_file():
+        dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
+        warm = subprocess.run(
+            ["uv", "run", "--no-project", "--with", dependency.group(1), "python3", "-c", ""],
+            cwd=REPO, env=env, capture_output=True, text=True,
+        )
+        case.assertEqual(0, warm.returncode, warm.stderr)
+
+
 @unittest.skipUnless(sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"},
                      "network-denial proof uses Linux seccomp")
 class OfflineCorpusRecipes(unittest.TestCase):
+    def test_warmed_build_needs_no_network_from_a_cold_registry(self) -> None:
+        # CI's runner starts with no crates cached; a denied recipe then failed
+        # resolving static.crates.io. Reproduce that cold registry here.
+        with tempfile.TemporaryDirectory(dir=REPO / ".local") as cold:
+            env = {**os.environ, "CARGO_HOME": cold, "RUSTC_WRAPPER": ""}
+            warm_dependencies(self, env)
+            build = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve()), "--deny-network",
+                 "cargo", "test", "--locked", "--no-run", "--test", "e2e"],
+                cwd=REPO, env=env, capture_output=True, text=True,
+            )
+            self.assertEqual(0, build.returncode, build.stderr)
+
     def test_real_recipes_without_network_or_cache(self) -> None:
         # The registered corpus cache, and the cache the census-fallback samples
         # were once fetched into: neither may exist or come back.
@@ -61,17 +94,7 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 )
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
-                # The fallback samples need the pinned parser: install that
-                # package (never a specification) while the network is up, so
-                # the denied run below resolves it from uv's cache alone.
-                pin = REPO / "scripts/golden-reach-search.py"
-                if pin.is_file():
-                    dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
-                    warm = subprocess.run(
-                        ["uv", "run", "--no-project", "--with", dependency.group(1), "python3", "-c", ""],
-                        cwd=REPO, capture_output=True, text=True,
-                    )
-                    self.assertEqual(0, warm.returncode, warm.stderr)
+                warm_dependencies(self, os.environ)
                 for recipe in ("test-corpus-match", "test-corpus-match-strict", "surface-census",
                                "test-fern-refusals", "test-census-fallback-samples"):
                     with self.subTest(recipe=recipe):
