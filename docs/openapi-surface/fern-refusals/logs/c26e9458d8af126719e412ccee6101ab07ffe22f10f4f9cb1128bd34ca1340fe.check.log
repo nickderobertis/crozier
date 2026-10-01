@@ -1,0 +1,126 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 30 errors
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 99999 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 20010 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 40030 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 51020 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 51010 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 31000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProductTaxCategoryId
+        issue: Enum value 30070 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCoupon -> examples[0] -> response
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCoupon -> examples[0] -> response
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCoupon -> examples[0] -> response
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCouponCollection -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCouponCollection -> examples[0] -> response
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> GetCouponCollection -> examples[0] -> response
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> request
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> request
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> request
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> response
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> response
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCoupon -> examples[0] -> response
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCouponExpiration -> examples[0] -> response
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCouponExpiration -> examples[0] -> response
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PostCouponExpiration -> examples[0] -> response
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> request
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> request
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> request
+        issue: Unexpected property "currency"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> response
+        issue: Example is missing required property "response.body.discount.value"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> response
+        issue: Unexpected property "amount"
+
+    [error]
+        path: coupons.yml -> service -> endpoints -> PutCoupon -> examples[0] -> response
+        issue: Unexpected property "currency"
+
+    [error]
+        path: kycDocuments.yml -> service -> endpoints -> PatchKycRequest -> examples[0] -> request
+        issue: Example is missing required property "request.customerId"
+
+    [error]
+        path: kycDocuments.yml -> service -> endpoints -> PatchKycRequest
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> (extends) root.KycRequest -> (extends) CommonKycRequest -> id
+
+Found 30 errors and 0 warnings in <n> seconds.

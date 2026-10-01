@@ -1,0 +1,120 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping formData parameter, status, in GET /reviews/{review_id}/webhooks
+[api]: Skipping formData parameter, status, in GET /reviews/{review_id}/workflow/stages
+[api]: Skipping formData parameter, status, in GET /webhooks
+[api]: Skipping formData parameter, status, in GET /workflows
+[api]: Failed to parse an OpenAPI schema at the following location: postReviewsReviewIdFiles->review_file. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: putReviewsReviewIdFilesReviewFileId->review_file. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: postReviewsReviewIdFilesReviewFileIdRemote->details. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Api_Entities_Webhook->body. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: Api_Entities_Webhook->response. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: postMyReviewsReviewIdFiles->review_file. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: putMyReviewsReviewIdFilesReviewFileId->review_file. Coercing to unknown.
+[api]: Failed to parse an OpenAPI schema at the following location: postMyReviewsReviewIdFilesReviewFileIdRemote->details. Coercing to unknown.
+[sdk] 26 errors
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 73Ca9A for value #73CA9A is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 9E8Feb for value #9E8FEB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 43835C for value #43835C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 8E711E for value #8E711E is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 6D5Dc1 for value #6D5DC1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 6D9Afa for value #6D9AFA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 83C0De for value #83C0DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 9Fc755 for value #9FC755 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 8890A2 for value #8890A2 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 3563Df for value #3563DF is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 417A98 for value #417A98 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 637D30 for value #637D30 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PostLabelsColor
+        issue: Enum name 667084 for value #667084 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 73Ca9A for value #73CA9A is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 9E8Feb for value #9E8FEB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 43835C for value #43835C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 8E711E for value #8E711E is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 6D5Dc1 for value #6D5DC1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 6D9Afa for value #6D9AFA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 83C0De for value #83C0DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 9Fc755 for value #9FC755 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 8890A2 for value #8890A2 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 3563Df for value #3563DF is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 417A98 for value #417A98 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 637D30 for value #637D30 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutLabelsIdColor
+        issue: Enum name 667084 for value #667084 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 26 errors and 28 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

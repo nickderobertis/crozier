@@ -19,7 +19,7 @@ bootstrap:
     @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Full quality gate. Fails on any issue. e2e is part of the gate, not opt-in.
-check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
+check: test-witness-search-redo test-witness-search-acquisition test-witness-search-github test-rate-limit-guard test-fern-refusals fmt-check lint test test-e2e test-fern-goldens test-fixtures-coverage test-surface-census test-llmlint-plugins test-llmlint-diff lint-corpus-licensing test-corpus-licensing lint-corpus-remote-ref-pins test-corpus-remote-ref-pins lint-licence-rescreening test-licence-rescreening supply-chain doc
     @echo "check: ok"
 
 # Format check (does not modify files).
@@ -43,13 +43,23 @@ test:
 test-e2e:
     cargo nextest run --locked -E 'binary(e2e)'
 
+# SDK Python-environment tier: the e2e journeys (`sdk_env_*`, `#[ignore]`d so the
+# offline `test-e2e`/`check` never runs them) that build a virtualenv from PyPI
+# for a generated SDK and run mypy or pytest in it — the runtime wire suite, the
+# SDK's own-pin type-check, the shared env's concurrent first build, and the
+# fern-refusals gate's `wire_test.py` condition. SEPARATE from `check` because it
+# needs network and Python; CI runs it in the `sdk-env` job, which `gate`
+# requires. Needs Python (uv used when present).
+test-sdk-env:
+    cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env_/)'
+
 # Runtime ("wire") test only: record the compiled client's behavior via an
 # injected httpx.MockTransport (the pytest suite in tests/runtime/) and assert it
 # matches the real Fern fixture SDK's behavior, modulo the normalized SDK-identity
-# headers. Part of `test-e2e`/`check`; this runs it in isolation. Needs Python +
+# headers. Part of `test-sdk-env`; this runs it in isolation. Needs Python +
 # httpx/pydantic/pytest (uv or pip); see tests/runtime/AGENTS.md.
 test-runtime:
-    cargo nextest run --locked -E 'binary(e2e) and test(crozier_matches_fern_runtime_behavior)'
+    cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(sdk_env_crozier_matches_fern_runtime_behavior)'
 
 # Live e2e: boot a Prism OpenAPI mock server from each fixture's spec and drive the
 # generated SDK through every documented endpoint, asserting a value of the method's
@@ -265,6 +275,14 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e docu_goapiserver_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e onevoice_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e xfsc_oidc_identity_resolver_matches_fern_output
+
+# The corpus byte-match with strict Fern compatibility on (docs/fern-refusals/):
+# a refusal class that refuses a document Fern generates from fails it. The
+# setting travels by `CROZIER_FERN_STRICT`, which every corpus run reads because
+# none passes `--no-config`; the first line proves crozier sees it from here.
+test-corpus-match-strict:
+    CROZIER_FERN_STRICT=true cargo run --locked --quiet -- config python | grep -Eq '^  fern-strict +true +\(env\)$' || { echo "test-corpus-match-strict: crozier config did not report fern-strict true from CROZIER_FERN_STRICT; check that no crozier.yml or CROZIER_CONFIG overrides it here" >&2; exit 1; }
+    CROZIER_FERN_STRICT=true just test-corpus-match
 
 # Format the codebase in place.
 format:
@@ -518,6 +536,19 @@ lint-licence-rescreening:
 # discriminating fails here instead of passing silently. Part of `check`.
 test-licence-rescreening:
     python3 tests/licence_rescreening_test.py
+
+# The Fern refusal registry's population tables (docs/fern-refusals/) against
+# the committed records they are built from: scripts/fern-refusals.py `check`
+# over the real tree, `build` reproducing it, and drift cases that must fail.
+test-fern-refusals:
+    python3 tests/fern_refusals_test.py
+
+# Measure the Fern refusal population (docs/fern-refusals/): fetch each document,
+# run Fern and crozier over it. Rebuilds the release binary first, so crozier's
+# counts come from the current tree. Network + Fern (`just setup-fern`).
+fern-refusals-measure *args:
+    cargo build --release --locked --bin crozier
+    python3 scripts/fern-refusals.py measure {{args}}
 
 # Install/refresh the llmlint toolchain (oneharness + llmlint). Idempotent.
 setup-llmlint:

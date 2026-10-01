@@ -1,0 +1,24 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk procedureController.yml -> service -> endpoints -> com.provoly.event.EventController_closeEvent
+                  procedureController.yml
+                  [error] ComProvolyEventEventControllerCloseEventRequest is already declared in eventController.yml
+                  
+[api]: python-sdk procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> ALERT
+                  procedureController.yml
+                  [error] Type AlertEventWriteDto is not defined.
+                  
+[api]: python-sdk procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> OPERATOR
+                  procedureController.yml
+                  [error] Type OperatorEventWriteDto is not defined.
+                  
+[api]: python-sdk procedureController.yml -> types -> ProcedureWriteDtoEventsItem -> union -> REPORT
+                  procedureController.yml
+                  [error] Type ReportEventWriteDto is not defined.
+                  
+[api]: python-sdk Found 4 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

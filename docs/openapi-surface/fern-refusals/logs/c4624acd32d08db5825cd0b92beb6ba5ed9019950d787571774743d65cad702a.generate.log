@@ -1,0 +1,44 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> Get Participants Profile -> examples[0] -> response
+                  __package__.yml
+                  [error] "_" is not a valid example for this enum. Enum values are:
+                    - !
+                    - .
+                    - >
+                    - /
+                    - <
+                    - *
+                    - -
+                    - |
+                  [error] "_" is not a valid example for this enum. Enum values are:
+                    - !
+                    - .
+                    - >
+                    - /
+                    - <
+                    - *
+                    - -
+                    - =
+                    - |
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> Get Participants Profile
+                  __package__.yml
+                  [error] Path parameter is unreferenced in endpoint: requestordid.
+                  [error] Path parameter is unreferenced in endpoint: counterpartydid.
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk __package__.yml -> types -> DelimiterItem
+                  __package__.yml
+                  [error] Enum name  for value ! is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk __package__.yml -> types -> SpecialCharactersItem
+                  __package__.yml
+                  [error] Enum name  for value ! is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+[api]: python-sdk Found 7 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,28 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 4 errors
+    [error]
+        path: payments.yml -> service -> endpoints -> Confirm a Payment
+        issue: Multiple request properties have the name payment_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "payment_id"
+  - Body property: <Request Body> -> payment_id
+
+    [error]
+        path: payments.yml -> service -> endpoints -> Update a Payment
+        issue: Multiple request properties have the name payment_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "payment_id"
+  - Body property: <Request Body> -> payment_id
+
+    [error]
+        path: payouts.yml -> service -> endpoints -> Cancel a Payout
+        issue: Multiple request properties have the name payout_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "payout_id"
+  - Body property: <Request Body> -> payout_id
+
+    [error]
+        path: payouts.yml -> service -> endpoints -> Fulfill a Payout
+        issue: Multiple request properties have the name payout_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "payout_id"
+  - Body property: <Request Body> -> payout_id
+
+Found 4 errors and 29 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

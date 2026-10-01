@@ -1,0 +1,104 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk maliciousDomain.yml -> service -> endpoints -> GetMalDomainNoteList
+                  maliciousDomain.yml
+                  [error] Path parameter is unreferenced in endpoint: noteId.
+                  
+[api]: python-sdk maliciousDomain.yml -> service -> endpoints -> PostMalDomainNote
+                  maliciousDomain.yml
+                  [error] Path parameter is unreferenced in endpoint: noteId.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.ActorCategory
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.ActorCategory is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Address
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Address is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Confidence
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Confidence is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CreatedAt
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.CreatedAt is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CrimeCategory
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.CrimeCategory is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.CryptoSource
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.CryptoSource is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Currency
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Currency is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Email
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Email is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Price
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Price is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Procedure
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Procedure is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.SiteLink
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.SiteLink is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.Status
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.Status is not an object.
+                  
+[api]: python-sdk cryptocurrencyAddresses.yml -> types -> SearchCryptoRequestBodyFiltersFilters -> extends -> root.UpdatedAt
+                  cryptocurrencyAddresses.yml
+                  [error] Objects can only extend other objects, and root.UpdatedAt is not an object.
+                  
+[api]: python-sdk maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Asn
+                  maliciousIp.yml
+                  [error] Objects can only extend other objects, and root.Asn is not an object.
+                  
+[api]: python-sdk maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Brand
+                  maliciousIp.yml
+                  [error] Objects can only extend other objects, and root.Brand is not an object.
+                  
+[api]: python-sdk maliciousIp.yml -> types -> SearchMalIpRequestBodyFiltersFilters -> extends -> root.Ip
+                  maliciousIp.yml
+                  [error] Objects can only extend other objects, and root.Ip is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Brand
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.Brand is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.CPniReportedNumber
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.CPniReportedNumber is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.CallerIdDisplayedNumber
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.CallerIdDisplayedNumber is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Carrier
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.Carrier is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.LandingTelephoneNumber
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.LandingTelephoneNumber is not an object.
+                  
+[api]: python-sdk maliciousSms.yml -> types -> SearchMalSmsRequestBodyFiltersFilters -> extends -> root.Url
+                  maliciousSms.yml
+                  [error] Objects can only extend other objects, and root.Url is not an object.
+                  
+[api]: python-sdk Found 24 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

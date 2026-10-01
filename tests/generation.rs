@@ -22,6 +22,7 @@ fn render(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -45,6 +46,7 @@ fn render_json(spec: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -66,6 +68,7 @@ fn render_package(spec: &str, package: &str) -> HashMap<String, String> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -588,6 +591,7 @@ fn generate_writes_files_to_disk() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -613,6 +617,7 @@ fn default_package_name_derives_from_title() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1299,6 +1304,7 @@ fn empty_title_falls_back_to_client_package() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1912,6 +1918,7 @@ fn api_key_scheme_without_name_is_rejected() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -1976,6 +1983,7 @@ fn client_class_name_overrides_derived_root_client_name() {
         client_class_name: Some("AcmeSdk".to_string()),
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -2102,6 +2110,7 @@ fn render_with_audiences_mode(
         client_class_name: None,
         audiences: audiences.iter().map(|s| s.to_string()).collect(),
         audience_strict: strict,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -6341,6 +6350,7 @@ fn default_package_name_sanitizes_title_punctuation_in_process() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Packaged,
     })
@@ -13143,6 +13153,7 @@ fn render_layout(
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout,
     })
@@ -13297,6 +13308,7 @@ fn generate_flat(out: &Path) -> Vec<crozier::GeneratedFile> {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13364,6 +13376,7 @@ fn flat_regeneration_surfaces_a_tree_it_cannot_clear() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     })
@@ -13380,16 +13393,19 @@ fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
     // Packaged: `src/<pkg>/` makes the package first-party, a section of its own.
     let packaged = render_layout("acme", "acme", Layout::Packaged);
     assert!(
-        packaged[test_file].contains("        import httpx_aiohttp\n\n        from acme.client")
+        packaged[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from acme.client")
     );
     // Flat: any package but `fern` is third-party to Fern's ruff, so no blank line.
     let flat = render_layout("acme", "acme", Layout::Flat);
-    assert!(flat[test_file].contains("        import httpx_aiohttp\n        from acme.client"));
-    assert!(!flat[test_file].contains("        import httpx_aiohttp\n\n"));
+    assert!(flat[test_file].contains(
+        "        import httpx_aiohttp  # type: ignore[import-not-found]\n        from acme.client"
+    ));
+    assert!(!flat[test_file]
+        .contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n"));
     // Flat `fern` is the exception Fern's `/fern` container makes resolvable.
     let flat_fern = render_layout("fern", "fern", Layout::Flat);
     assert!(
-        flat_fern[test_file].contains("        import httpx_aiohttp\n\n        from fern.client")
+        flat_fern[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from fern.client")
     );
 }
 
@@ -13409,6 +13425,7 @@ fn flat_readme_shield_names_the_organization_crozier_derives_from_the_package() 
             client_class_name: None,
             audiences: Vec::new(),
             audience_strict: false,
+            fern_strict: false,
             extra_fields: crozier::settings::ExtraFields::Allow,
             layout,
         })
@@ -13481,6 +13498,7 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
         client_class_name: None,
         audiences: Vec::new(),
         audience_strict: false,
+        fern_strict: false,
         extra_fields: crozier::settings::ExtraFields::Allow,
         layout: crozier::settings::Layout::Flat,
     });

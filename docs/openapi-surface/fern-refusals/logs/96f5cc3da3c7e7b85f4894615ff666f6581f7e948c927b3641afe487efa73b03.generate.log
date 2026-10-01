@@ -1,0 +1,116 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> chromeDownload
+                  browserRestApIs.yml
+                  [error]  is already declared in this file
+                  [error]  is already declared in __package__.yml
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> chromeFunction
+                  browserRestApIs.yml
+                  [error]  is already declared in this file
+                  [error]  is already declared in __package__.yml
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> chromeScrape -> examples[0] -> response
+                  browserRestApIs.yml
+                  [error] Example is missing required property "response.body.debug.cookies.0.method"
+                  [error] Example is missing required property "response.body.debug.cookies.0.url"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "value"
+                  [error] Unexpected property "domain"
+                  [error] Unexpected property "path"
+                  [error] Unexpected property "expires"
+                  [error] Unexpected property "size"
+                  [error] Unexpected property "httpOnly"
+                  [error] Unexpected property "secure"
+                  [error] Unexpected property "session"
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> chromeUnblock -> examples[0] -> response
+                  browserRestApIs.yml
+                  [error] Example is missing required property "response.body.cookies.0.method"
+                  [error] Example is missing required property "response.body.cookies.0.url"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "value"
+                  [error] Unexpected property "domain"
+                  [error] Unexpected property "path"
+                  [error] Unexpected property "expires"
+                  [error] Unexpected property "size"
+                  [error] Unexpected property "httpOnly"
+                  [error] Unexpected property "secure"
+                  [error] Unexpected property "session"
+                  [error] Unexpected property "sameSite"
+                  [error] Unexpected property "priority"
+                  [error] Unexpected property "sameParty"
+                  [error] Unexpected property "sourceScheme"
+                  [error] Unexpected property "partitionKey"
+                  [error] Unexpected property "partitionKeyOpaque"
+                  
+[api]: python-sdk browserWebSocketApIs.yml -> service -> endpoints -> chromium
+                  browserWebSocketApIs.yml
+                  [error] Path must start with a slash.
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> downloadChromiumDownload
+                  browserRestApIs.yml
+                  [error]  is already declared in this file
+                  [error]  is already declared in __package__.yml
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> functionChromiumFunction
+                  browserRestApIs.yml
+                  [error]  is already declared in this file
+                  [error]  is already declared in __package__.yml
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> jsonList -> examples[0] -> response
+                  browserRestApIs.yml
+                  [error] Example is missing required property "response.body.0.method"
+                  [error] Unexpected property "description"
+                  [error] Unexpected property "devtoolsFrontendUrl"
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "title"
+                  [error] Unexpected property "type"
+                  [error] Unexpected property "webSocketDebuggerUrl"
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> scrapeChromiumScrape -> examples[0] -> response
+                  browserRestApIs.yml
+                  [error] Example is missing required property "response.body.debug.cookies.0.method"
+                  [error] Example is missing required property "response.body.debug.cookies.0.url"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "value"
+                  [error] Unexpected property "domain"
+                  [error] Unexpected property "path"
+                  [error] Unexpected property "expires"
+                  [error] Unexpected property "size"
+                  [error] Unexpected property "httpOnly"
+                  [error] Unexpected property "secure"
+                  [error] Unexpected property "session"
+                  
+[api]: python-sdk browserRestApIs.yml -> service -> endpoints -> unblockChromiumUnblock -> examples[0] -> response
+                  browserRestApIs.yml
+                  [error] Example is missing required property "response.body.cookies.0.method"
+                  [error] Example is missing required property "response.body.cookies.0.url"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "value"
+                  [error] Unexpected property "domain"
+                  [error] Unexpected property "path"
+                  [error] Unexpected property "expires"
+                  [error] Unexpected property "size"
+                  [error] Unexpected property "httpOnly"
+                  [error] Unexpected property "secure"
+                  [error] Unexpected property "session"
+                  [error] Unexpected property "sameSite"
+                  [error] Unexpected property "priority"
+                  [error] Unexpected property "sameParty"
+                  [error] Unexpected property "sourceScheme"
+                  [error] Unexpected property "partitionKey"
+                  [error] Unexpected property "partitionKeyOpaque"
+                  
+[api]: python-sdk browserRestApIs.yml -> types -> 
+                  browserRestApIs.yml
+                  [error] Type name must begin with a letter
+                  [error]  is already declared in browserRestApIs.yml
+                  [error] Type name must begin with a letter
+                  
+[api]: python-sdk Found 75 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

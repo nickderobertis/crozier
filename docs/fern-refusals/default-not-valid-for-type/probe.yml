@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 'one'
+      responses:
+        '204': {description: No Content}

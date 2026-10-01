@@ -1,0 +1,118 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 177, in generate_project
+                                              self.run(
+                                              ~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<2 lines>...
+                                                  project=project,
+                                                  ^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 207, in run
+                                              PydanticModelGenerator().generate_types(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              ...<5 lines>...
+                                                  snippet_writer=snippet_writer,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/pydantic_model/pydantic_model_generator.py", line 122, in generate_types
+                                              self._generate_type(
+                                              ~~~~~~~~~~~~~~~~~~~^
+                                                  project,
+                                                  ^^^^^^^^
+                                              ...<5 lines>...
+                                                  snippet_writer=snippet_writer,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/generators/pydantic_model/pydantic_model_generator.py", line 187, in _generate_type
+                                              project.write_source_file(source_file=source_file, filepath=filepath)
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/codegen/project.py", line 217, in write_source_file
+                                              source_file.write_to_file(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  filepath=self.get_source_file_filepath(
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                      filepath, include_src_root=(include_src_root if include_src_root is not None else True)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  )
+                                                  ^
+                                              )
+                                              ^
+                                            File "/src/fern_python/codegen/source_file.py", line 171, in write_to_file
+                                              writer.write_to_file(filepath=filepath)
+                                              ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/codegen/writer_impl.py", line 131, in write_to_file
+                                              with open(filepath, "w") as file:
+                                                   ~~~~^^^^^^^^^^^^^^^
+                                          OSError: [Errno 36] File name too long: '/fern/output/src/fern/types/thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_level4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_level3xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_level2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_level1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx_level0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.py'
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

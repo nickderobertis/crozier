@@ -1,0 +1,96 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk api.yml -> service -> endpoints -> getAPI -> errors -> root.InternalServerError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPI -> errors -> root.NotAcceptableError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPI -> request -> query-parameters -> f -> type
+                  api.yml
+                  [error] Type GetApiRequestF is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPI -> examples[0] -> query-parameters
+                  api.yml
+                  [error] Example is missing required query parameter "f"
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> errors -> root.InternalServerError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> errors -> root.NotAcceptableError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> errors -> root.NotFoundError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> request -> query-parameters -> f -> type
+                  api.yml
+                  [error] Type GetApiCollectionsRequestF is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> response -> type
+                  api.yml
+                  [error] Type root.Enumeration is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPICollections -> examples[0] -> query-parameters
+                  api.yml
+                  [error] Example is missing required query parameter "f"
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.InternalServerError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.NotAcceptableError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> errors -> root.NotFoundError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> request -> query-parameters -> f -> type
+                  api.yml
+                  [error] Type GetApiStylesRequestF is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> response -> type
+                  api.yml
+                  [error] Type root.Enumeration is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPIStyles -> examples[0] -> query-parameters
+                  api.yml
+                  [error] Example is missing required query parameter "f"
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.InternalServerError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.NotAcceptableError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> errors -> root.NotFoundError
+                  api.yml
+                  [error] Error is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> request -> query-parameters -> f -> type
+                  api.yml
+                  [error] Type GetApiTileMatrixSetsRequestF is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> response -> type
+                  api.yml
+                  [error] Type root.Enumeration is not defined.
+                  
+[api]: python-sdk api.yml -> service -> endpoints -> getAPITileMatrixSets -> examples[0] -> query-parameters
+                  api.yml
+                  [error] Example is missing required query parameter "f"
+                  
+[api]: python-sdk Found 22 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

@@ -1,0 +1,19 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk administrations.yml -> service -> endpoints -> create_administration
+                  administrations.yml
+                  [error] Multiple request properties have the name legal_entity_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "legal_entity_id"
+                    - Body property: <Request Body> -> legal_entity_id
+                  
+[api]: python-sdk purchaseInvoices.yml -> service -> endpoints -> get_invoice_json -> examples[0] -> response
+                  purchaseInvoices.yml
+                  [error] Unexpected property "iban"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk Found 3 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

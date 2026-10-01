@@ -1,0 +1,40 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk kitchensink.yml -> service -> endpoints -> create -> examples[0] -> request
+                  kitchensink.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk kitchensink.yml -> service -> endpoints -> create -> examples[0] -> response
+                  kitchensink.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk kitchenreader.yml -> service -> endpoints -> query -> examples[0] -> response
+                  kitchenreader.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk kitchenreader.yml -> service -> endpoints -> read -> examples[0] -> response
+                  kitchenreader.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk kitchensink.yml -> service -> endpoints -> replace -> examples[0] -> request
+                  kitchensink.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk kitchensink.yml -> service -> endpoints -> replace -> examples[0] -> response
+                  kitchensink.yml
+                  [error] Unexpected property "id"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk Found 14 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

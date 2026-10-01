@@ -255,7 +255,7 @@ def maybe_filter_request_body(
         data_content = jsonable_encoder(data)
     else:
         data_content = {
-            **(jsonable_encoder(remove_omit_from_dict(data, omit))),
+            **(jsonable_encoder(remove_omit_from_dict(data, omit))),  # type: ignore
             **(
                 jsonable_encoder(request_options.get("additional_body_parameters", {})) or {}
                 if request_options is not None

@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /events:
+    get:
+      operationId: getEvent
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+components:
+  schemas:
+    Event:
+      oneOf:
+        - $ref: "#/components/schemas/AccountDeleted"
+        - $ref: "#/components/schemas/UserAccountDeleted"
+      discriminator:
+        propertyName: type
+    AccountDeleted:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: ["user:account_deleted"]
+    UserAccountDeleted:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: ["user_account:deleted"]

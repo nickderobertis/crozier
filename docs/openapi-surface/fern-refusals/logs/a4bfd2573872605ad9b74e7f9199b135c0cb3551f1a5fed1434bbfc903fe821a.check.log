@@ -1,0 +1,552 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 93 errors
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PackageTypeShippingCarrier
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> PutRmaShipMethodShippingCarrier
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodExternalShippingCarrier
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShipMethodShippingCarrier
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingCarrierType
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrier
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceShippingCarrierEnum
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 10CcFreight for value _10CC_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 11DpFreight for value _11DP_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 18AcFreight for value _18AC_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 36IdFreight for value _36ID_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 44BrFreight for value _44BR_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 44ChFreight for value _44CH_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ShippingServiceType
+        issue: Enum name 44SbFreight for value _44SB_FREIGHT is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> getProductCostsCurrentUsingGET -> request -> query-parameters -> productIds -> type
+        issue: Default value '0' is not a valid long
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.destAddress.country"
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 1
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Unexpected property "typeEnum"
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.sourceAddress.country"
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 1
+
+    [error]
+        path: fbaInbound.yml -> service -> endpoints -> getFbaInboundTransfersUsingGET -> examples[0] -> response
+        issue: Unexpected property "typeEnum"
+
+    [error]
+        path: global.yml -> service -> endpoints -> deleteLabelsUsingDELETE -> examples[0] -> response
+        issue: Unexpected property "company"
+
+    [error]
+        path: global.yml -> service -> endpoints -> deleteLabelsUsingDELETE -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: global.yml -> service -> endpoints -> deleteLabelsUsingDELETE -> examples[0] -> response
+        issue: Unexpected property "productId"
+
+    [error]
+        path: inventoryValue.yml -> service -> endpoints -> getInventoryValueCogsUsingGET -> request -> query-parameters -> maxQuantity -> type
+        issue: Default value 'null' is not a valid integer
+
+    [error]
+        path: inventoryValue.yml -> service -> endpoints -> getInventoryValueCogsUsingGET -> request -> query-parameters -> minQuantity -> type
+        issue: Default value 'null' is not a valid integer
+
+    [error]
+        path: inventoryValue.yml -> service -> endpoints -> getInventoryValueUsingGET -> request -> query-parameters -> maxAvailable -> type
+        issue: Default value 'null' is not a valid integer
+
+    [error]
+        path: inventoryValue.yml -> service -> endpoints -> getInventoryValueUsingGET -> request -> query-parameters -> minAvailable -> type
+        issue: Default value 'null' is not a valid integer
+
+    [error]
+        path: order.yml -> service -> endpoints -> getAdditionalPackagesUsingGET -> examples[0] -> response
+        issue: "currency" is not a valid example for this enum. Enum values are:
+  - AFN
+  - AED
+  - ALL
+  - AMD
+  - ANG
+  - AOA
+  - ARS
+  - AUD
+  - AWG
+  - AZN
+  - BAM
+  - BBD
+  - BDT
+  - BGN
+  - BHD
+  - BIF
+  - BMD
+  - BND
+  - BOB
+  - BOV
+  - BRL
+  - BSD
+  - BTN
+  - BWP
+  - BZD
+  - CAD
+  - CDF
+  - CHE
+  - CHF
+  - CHW
+  - CLF
+  - CLP
+  - CNY
+  - COP
+  - COU
+  - CRC
+  - CUC
+  - CUP
+  - CVE
+  - CZK
+  - DJF
+  - DKK
+  - DOP
+  - DZD
+  - EGP
+  - ERN
+  - ETB
+  - EUR
+  - FJD
+  - FKP
+  - GBP
+  - GEL
+  - GHS
+  - GIP
+  - GMD
+  - GNF
+  - GTQ
+  - GYD
+  - HKD
+  - HNL
+  - HRK
+  - HTG
+  - HUF
+  - IDR
+  - ILS
+  - INR
+  - IQD
+  - IRR
+  - ISK
+  - JMD
+  - JOD
+  - JPY
+  - KES
+  - KGS
+  - KHR
+  - KMF
+  - KPW
+  - KRW
+  - KWD
+  - KYD
+  - KZT
+  - LAK
+  - LBP
+  - LKR
+  - LRD
+  - LSL
+  - LYD
+  - MAD
+  - MDL
+  - MGA
+  - MKD
+  - MMK
+  - MNT
+  - MOP
+  - MUR
+  - MVR
+  - MWK
+  - MXN
+  - MXV
+  - MYR
+  - MZN
+  - NAD
+  - NGN
+  - NIO
+  - NOK
+  - NPR
+  - NZD
+  - OMR
+  - PAB
+  - PEN
+  - PGK
+  - PHP
+  - PKR
+  - PLN
+  - PYG
+  - QAR
+  - RON
+  - RSD
+  - RUB
+  - RWF
+  - SAR
+  - SBD
+  - SCR
+  - SDG
+  - SEK
+  - SGD
+  - SHP
+  - SLL
+  - SOS
+  - SRD
+  - SSP
+  - SVC
+  - SYP
+  - SZL
+  - THB
+  - TJS
+  - TMT
+  - TND
+  - TOP
+  - TRY
+  - TTD
+  - TWD
+  - TZS
+  - UAH
+  - UGX
+  - USD
+  - USN
+  - UYI
+  - UYU
+  - UZS
+  - VND
+  - VUV
+  - WST
+  - XAF
+  - XAG
+  - XAU
+  - XBA
+  - XBB
+  - XBC
+  - XBD
+  - XCD
+  - XDR
+  - XOF
+  - XPD
+  - XPF
+  - XPT
+  - XSU
+  - XTS
+  - XUA
+  - XXX
+  - YER
+  - ZAR
+  - ZMW
+  - ZWL
+
+    [error]
+        path: order.yml -> service -> endpoints -> getAdditionalPackagesUsingGET -> examples[0] -> response
+        issue: Unexpected property "roundingMode"
+
+    [error]
+        path: purchaseOrder.yml -> service -> endpoints -> getPurchaseOrdersUsingGET_1 -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "PO_PDF_ATTACHMENT"
+
+    [error]
+        path: purchaseOrder.yml -> service -> endpoints -> getPurchaseOrderUsingGET_1 -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "PO_PDF_ATTACHMENT"
+
+    [error]
+        path: purchaseOrder.yml -> service -> endpoints -> postPurchaseOrderUsingPOST -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "PO_PDF_ATTACHMENT"
+
+    [error]
+        path: purchaseOrder.yml -> service -> endpoints -> putPurchaseOrderOtherCostsUsingPUT -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "PO_PDF_ATTACHMENT"
+
+    [error]
+        path: purchaseOrder.yml -> service -> endpoints -> putPurchaseOrderOtherCostsUsingPUT
+        issue: Multiple request properties have the name purchaseOrderId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "purchaseOrderId"
+  - Query Parameter "purchaseOrderId"
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 11Dp for value _11DP is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 18Ac for value _18AC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 36Id for value _36ID is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Br for value _44BR is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Ch for value _44CH is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
+        issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 93 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document SafeBase API documentation
+[api]: Failed to resolve #/paths/~1document~1%7Bid%7D/get/parameters/0 
+       CliError: Failed to resolve #/paths/~1document~1%7Bid%7D/get/parameters/0
+All checks passed

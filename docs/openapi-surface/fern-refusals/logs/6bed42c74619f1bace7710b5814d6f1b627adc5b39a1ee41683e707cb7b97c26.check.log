@@ -1,0 +1,72 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 17 errors
+    [error]
+        path: accountRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: blockRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: chainRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: finalizationRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: hashLockRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: metadataRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: mosaicRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: multisigRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: namespaceRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: networkRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: nodeRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: receiptRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: restrictionAccountRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: restrictionMosaicRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: secretLockRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: transactionRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: transactionStatusRoutes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 17 errors and 2 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

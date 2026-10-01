@@ -1,0 +1,6 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document UAE Server USS Change Management Service
+[api]: Failed to resolve TS29122_CommonData.yaml#/components/responses/400 
+       CliError: Failed to resolve TS29122_CommonData.yaml#/components/responses/400
+All checks passed

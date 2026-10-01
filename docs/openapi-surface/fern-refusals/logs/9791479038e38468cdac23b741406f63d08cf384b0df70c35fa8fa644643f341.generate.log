@@ -1,0 +1,40 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> 云边协同列表
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 删除规则
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 插件列表
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 查询最新数据
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 获取配置菜单
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 设备不带分组列表
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk __package__.yml -> service -> endpoints -> 设备带分组列表
+                  __package__.yml
+                  [error] Duplicate example name: 成功示例
+                  
+[api]: python-sdk openapi/openapi.yml -> tags -> 系统数据
+                  openapi/openapi.yml
+                  [error] Tag name "系统数据" contains non-ASCII characters: 系, 统, 数, 据. Non-ASCII characters in tag names will be included in URL paths and HTTP headers, which only support ASCII characters. This will cause runtime errors (ERR_INVALID_CHAR). Remove non-ASCII characters from the tag name.
+                  
+[api]: python-sdk Found 8 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

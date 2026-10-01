@@ -1,0 +1,63 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: GET /rest/api/3/configuration/timetracking: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: PUT /rest/api/3/issue/{issueIdOrKey}: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: POST /rest/api/3/jql/function/computation: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[sdk] 13 errors
+    [error]
+        path: __package__.yml -> types -> FieldValueClauseOperator
+        issue: Enum name  for value ~ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ProjectFeatureState
+        issue: ProjectFeatureState is already declared in projectFeatures.yml
+
+    [error]
+        path: issueBulkOperations.yml -> service -> endpoints -> submitBulkMove -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"0":"value-1","1":"value-2"}
+
+    [error]
+        path: issueBulkOperations.yml -> service -> endpoints -> submitBulkMove -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"content":[{"content":[{"text":"New description value","type":"text"}],"type":"paragraph"}],"type":"doc","version":1}
+
+    [error]
+        path: issueBulkOperations.yml -> service -> endpoints -> submitBulkMove -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"0":"10009"}
+
+    [error]
+        path: issueBulkOperations.yml -> service -> endpoints -> submitBulkMove -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"0":"label-1","1":"label-2"}
+
+    [error]
+        path: issueLinks.yml -> service -> endpoints -> getIssueLink -> examples[0] -> response
+        issue: Missing discriminant property ("type")
+
+    [error]
+        path: issueLinks.yml -> service -> endpoints -> getIssueLink -> examples[0] -> response
+        issue: Missing discriminant property ("type")
+
+    [error]
+        path: issues.yml -> service -> endpoints -> exportArchivedIssues -> examples[0] -> request
+        issue: Unexpected property "archivedDate"
+
+    [error]
+        path: issueWorklogs.yml -> service -> endpoints -> bulkMoveWorklogs
+        issue: Multiple request properties have the name issueIdOrKey. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "issueIdOrKey"
+  - Body property: <Request Body> -> issueIdOrKey
+
+    [error]
+        path: jiraSettings.yml -> service -> endpoints -> setApplicationProperty
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+    [error]
+        path: prioritySchemes.yml -> service -> endpoints -> getPrioritySchemes -> request -> query-parameters -> orderBy -> type
+        issue: Default value '+name' is not a valid enum value
+
+    [error]
+        path: prioritySchemes.yml -> types -> GetPrioritySchemesRequestOrderBy
+        issue: Default value '+name' is not a valid enum value
+
+Found 13 errors and 95 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

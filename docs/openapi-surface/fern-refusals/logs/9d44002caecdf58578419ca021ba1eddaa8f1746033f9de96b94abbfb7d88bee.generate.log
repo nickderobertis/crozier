@@ -1,0 +1,140 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationEight -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationEleven -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationFive -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationFour -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationFourteen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationOne -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationTen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationThirteen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationTwelve -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationPostRequestModelConfigurationZero -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationEight -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationEleven -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFive -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFour -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationFourteen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationOne -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationTen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationThirteen -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationTwelve -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk integration.yml -> types -> IntegrationUpdateRequestModelConfigurationZero -> extends -> root.BaseConfiguration
+                  integration.yml
+                  [error] Objects can only extend other objects, and root.BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationEight -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationEleven -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationFive -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationFour -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationFourteen -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationOne -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationSeven -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationTen -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationThirteen -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationTwelve -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk __package__.yml -> types -> IntegrationViewModelConfigurationZero -> extends -> BaseConfiguration
+                  __package__.yml
+                  [error] Objects can only extend other objects, and BaseConfiguration is not an object.
+                  
+[api]: python-sdk Found 33 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

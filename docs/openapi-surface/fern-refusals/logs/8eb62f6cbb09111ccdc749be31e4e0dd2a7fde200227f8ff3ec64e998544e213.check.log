@@ -1,0 +1,36 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 8 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> create_csv_file
+        issue: Path parameter is unreferenced in endpoint: job_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> get_a_canvas
+        issue: Path parameter is unreferenced in endpoint: canvas_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> get_a_connection
+        issue: Path parameter is unreferenced in endpoint: connection_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> get_a_project
+        issue: Path parameter is unreferenced in endpoint: project_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> get_a_query
+        issue: Path parameter is unreferenced in endpoint: job_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> get_catalog
+        issue: Path parameter is unreferenced in endpoint: catalog_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> refresh_connection_metadata
+        issue: Path parameter is unreferenced in endpoint: connection_key.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> refresh_connection_schema
+        issue: Path parameter is unreferenced in endpoint: connection_key.
+
+Found 8 errors and 0 warnings in <n> seconds.

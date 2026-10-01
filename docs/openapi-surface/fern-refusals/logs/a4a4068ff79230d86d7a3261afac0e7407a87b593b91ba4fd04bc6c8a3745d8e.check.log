@@ -1,0 +1,24 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping undefined parameter, undefined, in GET /customers/{customer_id}/credit-balances
+[api]: Skipping undefined parameter, undefined, in GET /customers/{customer_id}
+[api]: Skipping undefined parameter, undefined, in GET /discounts
+[api]: Skipping undefined parameter, undefined, in GET /reports
+[sdk] 4 errors
+    [error]
+        path: v1Reports.yml -> types -> ReportFilters -> extends -> root.ReportFilterAdjustments
+        issue: Objects can only extend other objects, and root.ReportFilterAdjustments is not an object.
+
+    [error]
+        path: v1Reports.yml -> types -> ReportFilters -> extends -> root.ReportFilterTransactions
+        issue: Objects can only extend other objects, and root.ReportFilterTransactions is not an object.
+
+    [error]
+        path: v1Reports.yml -> types -> ReportType -> extends -> root.ReportTypeAdjustments
+        issue: Objects can only extend other objects, and root.ReportTypeAdjustments is not an object.
+
+    [error]
+        path: v1Reports.yml -> types -> ReportType -> extends -> root.ReportTypeTransactions
+        issue: Objects can only extend other objects, and root.ReportTypeTransactions is not an object.
+
+Found 4 errors and 0 warnings in <n> seconds.

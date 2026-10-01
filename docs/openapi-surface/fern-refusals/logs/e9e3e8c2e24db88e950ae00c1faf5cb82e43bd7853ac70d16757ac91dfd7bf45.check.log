@@ -1,0 +1,1108 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 274 errors
+    [error]
+        path: __package__.yml -> errors -> ConflictError
+        issue: ConflictError is already declared in this file
+
+    [error]
+        path: __package__.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: __package__.yml -> types -> ListClientsResponse
+        issue: ListClientsResponse is already declared in fastEdgeResellerClients.yml
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamChangePassword
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamCreateAccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamForgotPassword
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamGetAccountDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.name"
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamGetAccountDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.default_flag"
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamGetAccountDetails -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamGetAccountDetails
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamGetLastLoginTime
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: account.yml -> service -> endpoints -> iamSelectAccount
+        issue: Endpoint requires auth, but no auth is defined.
+
+    [error]
+        path: addendums.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: advancedAnalytics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: advancedRules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: ai.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+        issue: Example is missing required property "response.body.network.name"
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+        issue: Example is missing required property "response.body.network.is_default"
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+        issue: Unexpected property "client_ip"
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+        issue: Unexpected property "country"
+
+    [error]
+        path: analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+        issue: Unexpected property "organization"
+
+    [error]
+        path: analytics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: analyze.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: apiDiscovery.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamCreateApiToken -> examples[0] -> response
+        issue: Example is missing required property "response.body.client_user.role.default_flag"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamCreateApiToken -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamGetApiToken -> examples[0] -> response
+        issue: Example is missing required property "response.body.client_user.role.default_flag"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamGetApiToken -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamGetApiTokens -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.client_user.role.name"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamGetApiTokens -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.client_user.role.default_flag"
+
+    [error]
+        path: apiTokens.yml -> service -> endpoints -> iamGetApiTokens -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: apiTokens.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: apps.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: balancer.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: bareMetal.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: bgpAnnounces.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: billing.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: billingStatistics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: binaries.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: branding.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: broadcasts.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: caCertificates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: calcRules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnActivityLogs.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnResellerAccount.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnResellerFeatures.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnResellerOriginShielding.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnResellerService.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnResources.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnService.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cdnStatistics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: cloudResellerQuotas.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: containerAsAService.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: costReports.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: currencies.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: customPageSets.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: customRules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: dDoSProtection.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: directories.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: dnsLocations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: dnssec.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: domains.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: edgeStorage.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: eventLogs.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: everywhereInference.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: everywhereInferenceApps.yml -> service -> endpoints -> InferenceApplicationDeployment.get -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
+
+    [error]
+        path: everywhereInferenceApps.yml -> service -> endpoints -> InferenceApplicationDeploymentsCollection.get -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
+
+    [error]
+        path: everywhereInferenceApps.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: expenses.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.email"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.companyName"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.currentUser"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.capabilities"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.serviceStatuses"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.paidFeatures"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.freeFeatures"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.bill_type"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.is_test"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Example is missing required property "response.body.has_active_admin"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 1
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "hourly_consumption"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "daily_consumption"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "app_count"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "monthly_consumption"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "networks"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "plan_id"
+
+    [error]
+        path: fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+        issue: Unexpected property "plan"
+
+    [error]
+        path: fastEdgeClients.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastEdgeResellerApps.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.id"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.email"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.companyName"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.currentUser"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.capabilities"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.serviceStatuses"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.paidFeatures"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.freeFeatures"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.bill_type"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.is_test"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Example is missing required property "response.body.has_active_admin"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Expected example to be a string. Example is: 1
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "hourly_consumption"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "daily_consumption"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "app_count"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "monthly_consumption"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "networks"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "plan_id"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+        issue: Unexpected property "plan"
+
+    [error]
+        path: fastEdgeResellerClients.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastedgeResellerOther.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastEdgeSecrets.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Example is missing required property "response.body.code"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Example is missing required property "response.body.name_en"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Unexpected property "binary_id"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Unexpected property "name"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Unexpected property "owned"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+        issue: Unexpected property "params"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Example is missing required property "response.body.code"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Example is missing required property "response.body.name_en"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "binary_id"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "short_descr"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "long_descr"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "api_type"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "owned"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+        issue: Unexpected property "params"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Example is missing required property "response.body.code"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Example is missing required property "response.body.name_en"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Unexpected property "binary_id"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Unexpected property "name"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Unexpected property "owned"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+        issue: Unexpected property "params"
+
+    [error]
+        path: fastEdgeTemplates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fileShares.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: firewallRules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: floatingIPs.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: functionAsAService.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: gpuBareMetal.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: gpuVirtual.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: groups.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: iamResellerAccount.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClients -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.users.0.groups.0.name"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClients -> examples[0] -> response
+        issue: Example is missing required property "response.body.0.users.0.groups.0.default_flag"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClients -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClientsDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.name"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClientsDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.default_flag"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> getClientsDetails -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> updateClientsDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.name"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> updateClientsDetails -> examples[0] -> response
+        issue: Example is missing required property "response.body.users.0.groups.0.default_flag"
+
+    [error]
+        path: iamResellerClients.yml -> service -> endpoints -> updateClientsDetails -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: iamResellerClients.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: iamResellerFeatures.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: iamResellerUsers.yml -> service -> endpoints -> createClientUsers -> examples[0] -> response
+        issue: Example is missing required property "response.body.user_role.user_role.default_flag"
+
+    [error]
+        path: iamResellerUsers.yml -> service -> endpoints -> createClientUsers -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: iamResellerUsers.yml -> service -> endpoints -> iamCreateUser -> examples[0] -> response
+        issue: Example is missing required property "response.body.groups.0.default_flag"
+
+    [error]
+        path: iamResellerUsers.yml -> service -> endpoints -> iamCreateUser -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: iamResellerUsers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: images.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: instances.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: ipReputation.yml -> service -> endpoints -> get_ip_reputation_summary_v1_ip_reputation_get -> request -> query-parameters -> ordering -> type
+        issue: Default value '-date' is not a valid enum value
+
+    [error]
+        path: ipReputation.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: ipReputation.yml -> types -> GetIpReputationSummaryV1IpReputationGetRequestOrdering
+        issue: Default value '-date' is not a valid enum value
+
+    [error]
+        path: ipSpotlight.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: letsEncryptCertificates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: loadBalancers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: logging.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: logsUploader.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: logViewer.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: lookup.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: managedKubernetes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: managedPostgreSql.yml -> service -> endpoints -> DBAASPorstresLimitsHandler.post -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+
+    [error]
+        path: managedPostgreSql.yml -> service -> endpoints -> PGClustersViewSet.post -> examples[0] -> request
+        issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+
+    [error]
+        path: managedPostgreSql.yml -> service -> endpoints -> PGClusterViewSet.get -> examples[0] -> response
+        issue: Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+
+    [error]
+        path: managedPostgreSql.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: metrics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: networkMappings.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: networkOrganizations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: networks.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: notifications.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: notificationSettings.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /dns/v2/network-mappings/import -> post -> description
+        issue: Endpoint description for POST /dns/v2/network-mappings/import contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+
+    [error]
+        path: origins.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: originShielding.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: other.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: overlays.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: pickers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: placementGroups.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: plans.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: players.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: playlists.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: policies.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: products.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: productsAvailability.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: profiles.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: projects.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: protectedNetworks.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: protectionProfiles.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: protectionTemplates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: purgeHistory.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: qualitySets.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: quotas.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: regions.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: registry.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: reports.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: reservations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: reservedIPs.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: resources.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: restreams.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: routers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: rRsets.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: rules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: ruleTemplates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: s3CompatibleStorage.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: secrets.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: securityGroups.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: securityInsights.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: securityTemplates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: sellers.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: services.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: sftpStorage.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: snapshots.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: snapshotSchedules.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: sshKeys.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: sslCertificates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: stats.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: storage.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: storageLocations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: storageStatistics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: streamingStatistics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: streams.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles -> request -> body
+        issue: Object has multiple properties named "name":
+  - <Inlined Request> -> name
+  - <Inlined Request> -> (extends) root.SubtitleBase -> name
+
+    [error]
+        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles -> request -> body
+        issue: Object has multiple properties named "vtt":
+  - <Inlined Request> -> vtt
+  - <Inlined Request> -> (extends) root.SubtitleBase -> vtt
+
+    [error]
+        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles
+        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> name
+  - Body property: <Request Body> -> (extends) root.SubtitleBase -> name
+
+    [error]
+        path: subtitles.yml -> service -> endpoints -> post_api_videos_video_id_subtitles
+        issue: Multiple request properties have the name vtt. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Body property: <Request Body> -> vtt
+  - Body property: <Request Body> -> (extends) root.SubtitleBase -> vtt
+
+    [error]
+        path: subtitles.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: tags.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: tasks.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Example is missing required property "response.body.code"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Example is missing required property "response.body.name_en"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "binary_id"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "short_descr"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "long_descr"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "api_type"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "owned"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+        issue: Unexpected property "params"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Example is missing required property "response.body.code"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Example is missing required property "response.body.name_en"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Unexpected property "binary_id"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Unexpected property "name"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Unexpected property "owned"
+
+    [error]
+        path: templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+        issue: Unexpected property "params"
+
+    [error]
+        path: templates.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: tools.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: trials.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: userActions.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: userRoleAssignments.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetClientUserRole -> examples[0] -> response
+        issue: Example is missing required property "response.body.user_role.default_flag"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetClientUserRole -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetUser -> examples[0] -> response
+        issue: Example is missing required property "response.body.groups.0.default_flag"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetUser -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetUsers -> examples[0] -> response
+        issue: Example is missing required property "response.body.results.0.groups.0.name"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetUsers -> examples[0] -> response
+        issue: Example is missing required property "response.body.results.0.groups.0.default_flag"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamGetUsers -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamInviteUser -> examples[0] -> request
+        issue: Example is missing required property "request.user_role.name"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamInviteUser -> examples[0] -> request
+        issue: Example is missing required property "request.user_role.default_flag"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamUpdateUser -> examples[0] -> response
+        issue: Example is missing required property "response.body.groups.0.default_flag"
+
+    [error]
+        path: users.yml -> service -> endpoints -> iamUpdateUser -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: users.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: videos.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: volumes.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: waapService.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: zones.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 274 errors and 70 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

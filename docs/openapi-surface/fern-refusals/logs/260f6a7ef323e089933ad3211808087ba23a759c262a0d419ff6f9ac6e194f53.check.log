@@ -1,0 +1,46 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 7 errors
+    [error]
+        path: __package__.yml -> types -> EventRestSearchListItemEvent
+        issue: Object has multiple properties named "id":
+  - EventRestSearchListItemEvent -> id
+  - EventRestSearchListItemEvent -> (extends) Event -> id
+
+    [error]
+        path: __package__.yml -> types -> EventRestSearchListItemEvent
+        issue: Object has multiple properties named "timestamp":
+  - EventRestSearchListItemEvent -> timestamp
+  - EventRestSearchListItemEvent -> (extends) Event -> (extends) EventNoId -> timestamp
+
+    [error]
+        path: __package__.yml -> types -> EventRestSearchListItemEvent
+        issue: Object has multiple properties named "sighting_timestamp":
+  - EventRestSearchListItemEvent -> sighting_timestamp
+  - EventRestSearchListItemEvent -> (extends) Event -> (extends) EventNoId -> sighting_timestamp
+
+    [error]
+        path: __package__.yml -> types -> EventRestSearchListItemEvent
+        issue: Object has multiple properties named "published":
+  - EventRestSearchListItemEvent -> published
+  - EventRestSearchListItemEvent -> (extends) Event -> (extends) EventNoId -> published
+
+    [error]
+        path: __package__.yml -> types -> EventRestSearchListItemEvent
+        issue: Object has multiple properties named "uuid":
+  - EventRestSearchListItemEvent -> uuid
+  - EventRestSearchListItemEvent -> (extends) Event -> (extends) EventNoId -> uuid
+
+    [error]
+        path: authKeys.yml -> service -> endpoints -> addAuthKey
+        issue: Multiple request properties resolve to the same generated name userId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Path parameter "userId" (name: "userId")
+  - Body property: <Request Body> -> user_id (name: "user_id")
+
+    [error]
+        path: objects.yml -> service -> endpoints -> restSearchObjects
+        issue: Multiple request properties resolve to the same generated name includeEventUuid after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+  - Body property: <Request Body> -> includeEventUuid (name: "includeEventUuid")
+  - Body property: <Request Body> -> include_event_uuid (name: "include_event_uuid")
+
+Found 7 errors and 0 warnings in <n> seconds.

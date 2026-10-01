@@ -1,0 +1,966 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 234 errors
+    [error]
+        path: __package__.yml -> types -> AaaAuditLogsV2OrgResponseCollection -> extends -> AaaAuditLogsResponseCollection
+        issue: Objects can only extend other objects, and AaaAuditLogsResponseCollection is not an object.
+
+    [error]
+        path: __package__.yml -> types -> AaaAuditLogsV2ResponseCollection -> extends -> AaaAuditLogsResponseCollection
+        issue: Objects can only extend other objects, and AaaAuditLogsResponseCollection is not an object.
+
+    [error]
+        path: __package__.yml -> types -> BadRequestErrorBodyErrorsItemCode
+        issue: Enum value 10001 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BadRequestErrorBodyErrorsItemCode
+        issue: Enum value 10200 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BadRequestErrorBodyErrorsItemCode
+        issue: Enum value 10201 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BadRequestErrorBodyErrorsItemCode
+        issue: Enum value 10202 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BadRequestErrorBodyErrorsItemCode
+        issue: Enum value 10205 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: __package__.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: __package__.yml -> types -> DlpEntryUpdateType
+        issue: DlpEntryUpdateType is already declared in zeroTrustDlpEntries.yml
+
+    [error]
+        path: __package__.yml -> types -> ForbiddenErrorBodyErrorsItemCode
+        issue: Enum value 10203 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> ForbiddenErrorBodyErrorsItemCode
+        issue: Enum value 10204 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> HealthchecksHttpConfig -> properties -> expected_codes -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> LoadBalancingSessionAffinityAttributes -> properties -> headers -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "errors":
+  - PreconditionFailedErrorBody -> errors
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> errors
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "messages":
+  - PreconditionFailedErrorBody -> messages
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> messages
+
+    [error]
+        path: __package__.yml -> types -> PreconditionFailedErrorBody
+        issue: Object has multiple properties named "success":
+  - PreconditionFailedErrorBody -> success
+  - PreconditionFailedErrorBody -> (extends) LoadBalancingApiResponseCommon -> success
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetings.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetingsParticipants.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitPresets.yml
+
+    [error]
+        path: __package__.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitRecordings.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in smartShield.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in smartShieldCacheReserveClear.yml
+
+    [error]
+        path: __package__.yml -> types -> SmartshieldHttpConfig -> properties -> expected_codes -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomApiResponseSingle -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventDetailsResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventIdResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomEventResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomPreviewResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomSingleResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomStatusResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomWaitingRoomIdResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: __package__.yml -> types -> WaitingroomZoneSettingsResponse -> extends -> WaitingroomApiResponseCommon
+        issue: Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
+
+    [error]
+        path: accountsLogsAudit.yml -> service -> endpoints -> list -> examples[0] -> response
+        issue: Unexpected property "errors"
+
+    [error]
+        path: accountsLogsAudit.yml -> service -> endpoints -> list -> examples[0] -> response
+        issue: Unexpected property "result_info"
+
+    [error]
+        path: accountsLogsAudit.yml -> service -> endpoints -> list -> examples[0] -> response
+        issue: Unexpected property "success"
+
+    [error]
+        path: addressingAddressMapsAccounts.yml -> service -> endpoints -> delete
+        issue: Endpoint has duplicate path parameter: account_id.
+
+    [error]
+        path: addressingAddressMapsAccounts.yml -> service -> endpoints -> update
+        issue: Endpoint has duplicate path parameter: account_id.
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.errors"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.messages"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.success"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Unexpected property "ptr"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.errors"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.messages"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Example is missing required property "response.body.result.success"
+
+    [error]
+        path: dnsFirewallReverseDns.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "ptr"
+
+    [error]
+        path: firewallWafPackages.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.errors"
+
+    [error]
+        path: firewallWafPackages.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.messages"
+
+    [error]
+        path: firewallWafPackages.yml -> service -> endpoints -> edit -> examples[0] -> response
+        issue: Example is missing required property "response.body.success"
+
+    [error]
+        path: intelIndicatorFeedsProviders.yml -> service -> endpoints -> create
+        issue: Multiple request properties have the name account_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "account_id"
+  - Body property: <Request Body> -> account_id
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/{dataset}/timeseries -> post
+        issue: SDK method analytics.query.create already exists (x-fern-sdk-group-name: analytics.query, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/{dataset}/top-n -> post
+        issue: SDK method analytics.query.create already exists (x-fern-sdk-group-name: analytics.query, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/data-security/content-findings/top-n -> post
+        issue: SDK method analytics.query.create already exists (x-fern-sdk-group-name: analytics.query, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/data-security/findings/summary -> post
+        issue: SDK method analytics.query.create already exists (x-fern-sdk-group-name: analytics.query, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/analytics/query/data-security/findings/timeseries -> post
+        issue: SDK method analytics.query.create already exists (x-fern-sdk-group-name: analytics.query, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/blob/{hash} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/commit/{hash} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/file -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/fork -> post
+        issue: SDK method artifacts.namespaces.create already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/import -> post
+        issue: SDK method artifacts.namespaces.create already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/log -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/raw/{ref}/{path} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/tokens -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/repos/{name}/tree/{hash} -> get
+        issue: SDK method artifacts.namespaces.get already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/tokens -> post
+        issue: SDK method artifacts.namespaces.create already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/artifacts/namespaces/{namespace}/tokens/{id} -> delete
+        issue: SDK method artifacts.namespaces.delete already exists (x-fern-sdk-group-name: artifacts.namespaces, x-fern-sdk-method-name: delete)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/brand-protection/logos/{logo_id} -> get
+        issue: SDK method logos.get already exists (x-fern-sdk-group-name: logos, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/brand-protection/queries/{query_id}/matches/{domain_id}/undismiss -> post
+        issue: SDK method queries.matches.create already exists (x-fern-sdk-group-name: queries.matches, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/policies -> get
+        issue: SDK method data-security.posture.list already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: list)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/policies -> post
+        issue: SDK method data-security.posture.create already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/policies/{policy_id} -> get
+        issue: SDK method data-security.posture.get already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/policies/logs -> get
+        issue: SDK method data-security.posture.list already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: list)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/webhooks/{webhook_id} -> delete
+        issue: SDK method data-security.posture.delete already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: delete)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/data-security/posture/webhooks/{webhook_id} -> put
+        issue: SDK method data-security.posture.update already exists (x-fern-sdk-group-name: data-security.posture, x-fern-sdk-method-name: update)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{account_id}/mnm/rules/bulk -> put
+        issue: SDK method magic-network-monitoring.rules.edit already exists (x-fern-sdk-group-name: magic-network-monitoring.rules, x-fern-sdk-method-name: edit)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images -> get
+        issue: SDK method images.v1.list already exists (x-fern-sdk-group-name: images.v1, x-fern-sdk-method-name: list)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images -> post
+        issue: SDK method images.create already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: create)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images/{imageId} -> delete
+        issue: SDK method images.delete already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: delete)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images/{imageId} -> get
+        issue: SDK method images.get already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images/{imageId} -> patch
+        issue: SDK method images.edit already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: edit)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v1/images/{imageId}/blob -> get
+        issue: SDK method images.get-blob already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: get-blob)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v2/images -> get
+        issue: SDK method images.list already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: list)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /accounts/{accountId}/v2/images/direct_upload -> post
+        issue: SDK method images.direct-upload already exists (x-fern-sdk-group-name: images, x-fern-sdk-method-name: direct-upload)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /zones/{zone_id}/media/usage -> get
+        issue: SDK method media.usage.get already exists (x-fern-sdk-group-name: media.usage, x-fern-sdk-method-name: get)
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /zones/{zone_id}/stream/usage -> get
+        issue: SDK method stream.usage.get already exists (x-fern-sdk-group-name: stream.usage, x-fern-sdk-method-name: get)
+
+    [error]
+        path: organizationMember.yml -> service -> endpoints -> delete
+        issue: Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "member_id"
+  - Body property: <Request Body> -> member_id
+
+    [error]
+        path: organizationsLogsAudit.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "errors"
+
+    [error]
+        path: organizationsLogsAudit.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "result_info"
+
+    [error]
+        path: organizationsLogsAudit.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "success"
+
+    [error]
+        path: realtimekitMeetingsParticipants.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetings.yml
+
+    [error]
+        path: realtimekitMeetingsParticipants.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitPresets.yml
+
+    [error]
+        path: realtimekitMeetingsParticipants.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitRecordings.yml
+
+    [error]
+        path: realtimekitMeetingsParticipants.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in __package__.yml
+
+    [error]
+        path: realtimekitPresets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetings.yml
+
+    [error]
+        path: realtimekitPresets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetingsParticipants.yml
+
+    [error]
+        path: realtimekitPresets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitRecordings.yml
+
+    [error]
+        path: realtimekitPresets.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in __package__.yml
+
+    [error]
+        path: realtimekitRecordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetings.yml
+
+    [error]
+        path: realtimekitRecordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitMeetingsParticipants.yml
+
+    [error]
+        path: realtimekitRecordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in realtimekitPresets.yml
+
+    [error]
+        path: realtimekitRecordings.yml -> types -> RealtimekitPagingResponsePaging
+        issue: RealtimekitPagingResponsePaging is already declared in __package__.yml
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> CreateRulesetsAccountRulesetsRulesRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> CreateRulesetsAccountRulesetsRulesRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> CreateRulesetsAccountRulesetsRulesRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> UpdateRulesetsAccountRulesetsRulesRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> UpdateRulesetsAccountRulesetsRulesRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsAccountRulesetsRules.yml -> types -> UpdateRulesetsAccountRulesetsRulesRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> CreateRulesetsRulesRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> CreateRulesetsRulesRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> CreateRulesetsRulesRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> UpdateRulesetsRulesRequestPositionOne -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> UpdateRulesetsRulesRequestPositionTwo -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: rulesetsRules.yml -> types -> UpdateRulesetsRulesRequestPositionZero -> extends -> root.RulesetsRulePosition
+        issue: Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
+
+    [error]
+        path: smartShield.yml -> types -> GetSmartShieldResponse
+        issue: Object has multiple properties named "errors":
+  - GetSmartShieldResponse -> errors
+  - GetSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+
+    [error]
+        path: smartShield.yml -> types -> GetSmartShieldResponse
+        issue: Object has multiple properties named "messages":
+  - GetSmartShieldResponse -> messages
+  - GetSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+
+    [error]
+        path: smartShield.yml -> types -> GetSmartShieldResponse
+        issue: Object has multiple properties named "result":
+  - GetSmartShieldResponse -> result
+  - GetSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+
+    [error]
+        path: smartShield.yml -> types -> GetSmartShieldResponse
+        issue: Object has multiple properties named "success":
+  - GetSmartShieldResponse -> success
+  - GetSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+
+    [error]
+        path: smartShield.yml -> types -> UpdateSmartShieldResponse
+        issue: Object has multiple properties named "errors":
+  - UpdateSmartShieldResponse -> errors
+  - UpdateSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> errors
+
+    [error]
+        path: smartShield.yml -> types -> UpdateSmartShieldResponse
+        issue: Object has multiple properties named "messages":
+  - UpdateSmartShieldResponse -> messages
+  - UpdateSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> messages
+
+    [error]
+        path: smartShield.yml -> types -> UpdateSmartShieldResponse
+        issue: Object has multiple properties named "result":
+  - UpdateSmartShieldResponse -> result
+  - UpdateSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> result
+
+    [error]
+        path: smartShield.yml -> types -> UpdateSmartShieldResponse
+        issue: Object has multiple properties named "success":
+  - UpdateSmartShieldResponse -> success
+  - UpdateSmartShieldResponse -> (extends) root.SmartshieldApiResponseSingle -> success
+
+    [error]
+        path: smartShieldCacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in smartShield.yml
+
+    [error]
+        path: smartShieldCacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
+        issue: SmartshieldApiResponseCommonResult is already declared in __package__.yml
+
+    [error]
+        path: streamLiveInputs.yml -> service -> endpoints -> create -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: streamLiveInputs.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: streamLiveInputs.yml -> service -> endpoints -> update -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: streamLiveInputsDisable.yml -> service -> endpoints -> create -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: streamLiveInputsEnable.yml -> service -> endpoints -> create -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: streamLiveInputsRotate.yml -> service -> endpoints -> update -> examples[0] -> response
+        issue: Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsBuilds.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsBuildsLogs.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsDeployHooks.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsReposConfigAutofill.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsReposConnections.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsTokens.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsTriggers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsTriggersEnvironmentVariables.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuilds.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuilds.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsBuildsLogs.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConfigAutofill.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsReposConnections.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTokens.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggers.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsTriggersEnvironmentVariables.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
+
+    [error]
+        path: workersBuildsWorkers.yml -> types -> BuildsApiResponseErrorsItem
+        issue: BuildsApiResponseErrorsItem is already declared in __package__.yml
+
+    [error]
+        path: zonesRatePlans.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "components"
+
+    [error]
+        path: zonesRatePlans.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "duration"
+
+    [error]
+        path: zonesRatePlans.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "frequency"
+
+    [error]
+        path: zonesRatePlans.yml -> service -> endpoints -> get -> examples[0] -> response
+        issue: Unexpected property "name"
+
+Found 234 errors and 467 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

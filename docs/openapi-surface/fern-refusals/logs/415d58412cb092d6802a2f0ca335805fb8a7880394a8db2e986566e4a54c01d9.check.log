@@ -1,0 +1,36 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 8 errors
+    [error]
+        path: audit.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: configuration.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: metrics.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: naDs.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: operations.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: policy.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: sessions.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: status.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 8 errors and 3 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

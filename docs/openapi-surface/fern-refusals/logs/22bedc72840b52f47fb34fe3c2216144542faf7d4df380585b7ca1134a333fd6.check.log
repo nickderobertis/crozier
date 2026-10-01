@@ -1,0 +1,32 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 7 errors
+    [error]
+        path: catalog.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: environments.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: facts.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fileBucket.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: fileServer.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: node.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+    [error]
+        path: report.yml -> service
+        issue: Service requires auth, but no auth is defined.
+
+Found 7 errors and 0 warnings in <n> seconds.

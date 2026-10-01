@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /queries:
+    post:
+      operationId: createQuery
+      x-fern-sdk-group-name: analytics
+      x-fern-sdk-method-name: create
+      responses:
+        '204':
+          description: No Content
+  /reports:
+    post:
+      operationId: createReport
+      x-fern-sdk-group-name: analytics
+      x-fern-sdk-method-name: create
+      responses:
+        '204':
+          description: No Content

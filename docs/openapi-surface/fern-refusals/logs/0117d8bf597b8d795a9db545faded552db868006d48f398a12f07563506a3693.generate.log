@@ -1,0 +1,22 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+
+<--- Last few GCs --->
+
+[3214264:0x45d0c000]  1224844 ms: Scavenge (during sweeping) 16354.0 (16370.4) -> 16347.3 (16370.9) MB, pooled: 0.0 MB, 54.82 / 0.00 ms (average mu = 0.218, current mu = 0.183) allocation failure; 
+[3214264:0x45d0c000]  1243301 ms: Incremental Mark-Compact (reduce) 16349.0 (16370.9) -> 16346.9 (16356.4) MB, pooled: 0.0 MB, 17041.10 / 0.00 ms (+ 232.2 ms in 28 steps since start of marking, biggest step 16.7 ms, walltime since start of marking 17536 m
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x8256d0  [node]
+ 2: 0x82593d node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 3: 0xc91bbb  [node]
+ 4: 0xf02b05  [node]
+ 5: 0xf00d0c  [node]
+ 6: 0xe4160f  [node]
+ 7: 0x138c63e  [node]
+ 8: 0x78957663ea76 
+Aborted (core dumped)

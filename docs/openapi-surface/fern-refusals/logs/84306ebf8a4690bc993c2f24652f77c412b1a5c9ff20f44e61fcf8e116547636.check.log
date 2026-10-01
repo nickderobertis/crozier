@@ -1,0 +1,30 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 5 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> getV2AgentIdTransferRules
+        issue: Path parameter is unreferenced in endpoint: agentId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> postV2AgentAgentIdMcpAdd
+        issue: Path parameter is unreferenced in endpoint: mcpId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> postV2AgentAgentIdTransferRules
+        issue: Multiple request properties have the name agentId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "agentId"
+  - Body property: <Request Body> -> agentId
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> putV2AgentAgentIdTransferRulesTransferRuleId
+        issue: Multiple request properties have the name agentId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "agentId"
+  - Body property: <Request Body> -> agentId
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> putV2ChannelIdConfig
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> id
+
+Found 5 errors and 0 warnings in <n> seconds.

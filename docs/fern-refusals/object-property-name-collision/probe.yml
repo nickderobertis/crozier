@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /files:
+    get:
+      operationId: getFile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileConflict'
+components:
+  schemas:
+    FileConflict:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/FileMini'
+      - properties:
+          sha1:
+            type: string
+    FileMini:
+      type: object
+      nullable: true
+      properties:
+        sha1:
+          type: string

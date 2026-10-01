@@ -32,7 +32,7 @@ class SyncPager(Generic[T, R]):
 
 
 
-    def __iter__(self) -> Iterator[T]:
+    def __iter__(self) -> Iterator[T]:  # type: ignore[override]
         for page in self.iter_pages():
             if page.items is not None:
                 yield from page.items

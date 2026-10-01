@@ -1,0 +1,636 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', character_name='characterName', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', scene_id='sceneId', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:13
+                                              client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', character_name='characterName', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', scene_id='sceneId', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:23
+                                                  await client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', character_name='characterName', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', scene_id='sceneId', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:13
+                                              client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', character_name='characterName', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', scene_id='sceneId', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:23
+                                                  await client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='novel-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='novel-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='novel-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='novel-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:14
+                                              client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:24
+                                                  await client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:14
+                                              client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:24
+                                                  await client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:23
+                                              client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:33
+                                                  await client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:23
+                                              client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:33
+                                                  await client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:15
+                                              client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:15
+                                              client.exports.(id='test-123', )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:25
+                                                  await client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:25
+                                                  await client.exports.(id='test-123', )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:15
+                                              client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:15
+                                              client.exports.(id='test-123', )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:25
+                                                  await client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:25
+                                                  await client.exports.(id='test-123', )
+                                                                      ^
+                                          ParseError: bad input
+                                          Output mode: downloadFiles
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.novels.(id='test-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.novels.(id='test-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', character_name='characterName', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', character_name='characterName', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:13
+                                              client.bible.(id='id', scene_id='sceneId', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:23
+                                                  await client.bible.(id='id', scene_id='sceneId', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:13
+                                              client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:23
+                                                  await client.bible.(id='id', filename='filename', content_type='contentType', scope=BibleUploadRequestScope.CHARACTER, target='target', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', name='战斗模式', description='艾莉娅穿着银白色铠甲，手持魔法剑', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:18
+                                              client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                               ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:28
+                                                  await client.characters.(char_id='test-char-123', config_id='test-config-123', )
+                                                                         ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='novel-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='novel-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:19
+                                              client.storyboards.(id='test-123', )
+                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:29
+                                                  await client.storyboards.(id='test-123', )
+                                                                          ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:14
+                                              client.panels.(panel_id='test-panel-123', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:24
+                                                  await client.panels.(panel_id='test-panel-123', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:14
+                                              client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                           ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:24
+                                                  await client.panels.(panel_id='test-panel-123', edit_mode=PostPanelsPanelIdEditRequestEditMode.INPAINT, instruction='把角色的表情改为微笑', )
+                                                                     ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:23
+                                              client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                    ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:33
+                                                  await client.change_requests.(novel_id='novelId', natural_language='把第 3 页第 2 个面板中艾莉娅的表情改为微笑', )
+                                                                              ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 6:15
+                                              client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 9:25
+                                                  await client.exports.(novel_id='novelId', format=PostExportsRequestFormat.PDF, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:15
+                                              client.exports.(id='test-123', )
+                                                            ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:25
+                                                  await client.exports.(id='test-123', )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+                                          b'fern/output/src/fern/bible/client.py:35:9: SyntaxError: Expected an identifier\n   |\n33 |         return self._raw_client\n34 |     \n35 |     def (self, id: str, *, version: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None) -> Bible:\n   |         ^\n36 |         """\n37 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe6\x9c\x80\xe6\x96\xb0\xe7\x89\x88\xe6\x9c\xac\xe7\x9a\x84\xe8\xa7\x92\xe8\x89\xb2\xe5\x9c\xa3\xe7\xbb\x8f\xe5\x92\x8c\xe5\x9c\xba\xe6\x99\xaf\xe5\x9c\xa3\xe7\xbb\x8f\n   |\n\nfern/output/src/fern/bible/client.py:61:38: SyntaxError: Expected an identifier\n   |\n59 |         client.bible.(id=\'id\', )\n60 |         """\n61 |         _response = self._raw_client.(id, version=version, request_options=request_options)\n   |                                      ^\n62 |         return _response.data\n   |\n\nfern/output/src/fern/bible/client.py:64:9: SyntaxError: Expected an identifier\n   |\n62 |         return _response.data\n63 |     \n64 |     def (self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[BibleHistoryEntry]:\n   |         ^\n65 |         """\n66 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe7\x9a\x84\xe5\x9c\xa3\xe7\xbb\x8f\xe7\x89\x88\xe6\x9c\xac\xe5\x88\x97\xe8\xa1\xa8\n   |\n\nfern/output/src/fern/bible/client.py:87:38: SyntaxError: Expected an identifier\n   |\n85 |         client.bible.(id=\'id\', )\n86 |         """\n87 |         _response = self._raw_client.(id, request_options=request_options)\n   |                                      ^\n88 |         return _response.data\n   |\n\nfern/output/src/fern/bible/client.py:90:9: SyntaxError: Expected an identifier\n   |\n88 |         return _response.data\n89 |     \n90 |     def (self, id: str, character_name: str, *, role: typing.Optional[UpdateBibleCharacterRequestRole] = OMIT, appearance: typing.Opti\xe2\x80\xa6\n   |         ^\n91 |         """\n92 |         Parameters\n   |\n\nfern/output/src/fern/bible/client.py:122:38: SyntaxError: Expected an identifier\n    |\n120 | \xe2\x80\xa6     client.bible.(id=\'id\', character_name=\'characterName\', )\n121 | \xe2\x80\xa6     """\n122 | \xe2\x80\xa6     _response = self._raw_client.(id, character_name, role=role, appearance=appearance, personality=personality, reference_images=r\xe2\x80\xa6\n    |                                    ^\n123 | \xe2\x80\xa6     return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:125:9: SyntaxError: Expected an identifier\n    |\n123 |         return _response.data\n124 |     \n125 |     def (self, id: str, scene_id: str, *, name: typing.Optional[str] = OMIT, description: typing.Optional[str] = OMIT, visual_charact\xe2\x80\xa6\n    |         ^\n126 |         """\n127 |         Parameters\n    |\n\nfern/output/src/fern/bible/client.py:163:38: SyntaxError: Expected an identifier\n    |\n161 | \xe2\x80\xa6     client.bible.(id=\'id\', scene_id=\'sceneId\', )\n162 | \xe2\x80\xa6     """\n163 | \xe2\x80\xa6     _response = self._raw_client.(id, scene_id, name=name, description=description, visual_characteristics=visual_characteristics, \xe2\x80\xa6\n    |                                    ^\n164 | \xe2\x80\xa6     return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:166:9: SyntaxError: Expected an identifier\n    |\n164 |         return _response.data\n165 |     \n166 |     def (self, id: str, *, filename: str, content_type: str, scope: BibleUploadRequestScope, target: str, request_options: typing.Opt\xe2\x80\xa6\n    |         ^\n167 |         """\n168 |         Parameters\n    |\n\nfern/output/src/fern/bible/client.py:198:38: SyntaxError: Expected an identifier\n    |\n196 |         client.bible.(id=\'id\', filename=\'filename\', content_type=\'contentType\', scope=BibleUploadRequestScope.CHARACTER, target=\'targ\xe2\x80\xa6\n197 |         """\n198 |         _response = self._raw_client.(id, filename=filename, content_type=content_type, scope=scope, target=target, request_options=r\xe2\x80\xa6\n    |                                      ^\n199 |         return _response.data\n200 | class AsyncBibleClient:\n    |\n\nfern/output/src/fern/bible/client.py:215:15: SyntaxError: Expected an identifier\n    |\n213 |         return self._raw_client\n214 |     \n215 |     async def (self, id: str, *, version: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None) -> Bi\xe2\x80\xa6\n    |               ^\n216 |         """\n217 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe6\x9c\x80\xe6\x96\xb0\xe7\x89\x88\xe6\x9c\xac\xe7\x9a\x84\xe8\xa7\x92\xe8\x89\xb2\xe5\x9c\xa3\xe7\xbb\x8f\xe5\x92\x8c\xe5\x9c\xba\xe6\x99\xaf\xe5\x9c\xa3\xe7\xbb\x8f\n    |\n\nfern/output/src/fern/bible/client.py:245:44: SyntaxError: Expected an identifier\n    |\n243 |         asyncio.run(main())\n244 |         """\n245 |         _response = await self._raw_client.(id, version=version, request_options=request_options)\n    |                                            ^\n246 |         return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:248:15: SyntaxError: Expected an identifier\n    |\n246 |         return _response.data\n247 |     \n248 |     async def (self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[BibleHistoryEntry]:\n    |               ^\n249 |         """\n250 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe7\x9a\x84\xe5\x9c\xa3\xe7\xbb\x8f\xe7\x89\x88\xe6\x9c\xac\xe5\x88\x97\xe8\xa1\xa8\n    |\n\nfern/output/src/fern/bible/client.py:275:44: SyntaxError: Expected an identifier\n    |\n273 |         asyncio.run(main())\n274 |         """\n275 |         _response = await self._raw_client.(id, request_options=request_options)\n    |                                            ^\n276 |         return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:278:15: SyntaxError: Expected an identifier\n    |\n276 |         return _response.data\n277 |     \n278 |     async def (self, id: str, character_name: str, *, role: typing.Optional[UpdateBibleCharacterRequestRole] = OMIT, appearance: typi\xe2\x80\xa6\n    |               ^\n279 |         """\n280 |         Parameters\n    |\n\nfern/output/src/fern/bible/client.py:314:44: SyntaxError: Expected an identifier\n    |\n312 | \xe2\x80\xa6     asyncio.run(main())\n313 | \xe2\x80\xa6     """\n314 | \xe2\x80\xa6     _response = await self._raw_client.(id, character_name, role=role, appearance=appearance, personality=personality, reference_im\xe2\x80\xa6\n    |                                          ^\n315 | \xe2\x80\xa6     return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:317:15: SyntaxError: Expected an identifier\n    |\n315 |         return _response.data\n316 |     \n317 |     async def (self, id: str, scene_id: str, *, name: typing.Optional[str] = OMIT, description: typing.Optional[str] = OMIT, visual_c\xe2\x80\xa6\n    |               ^\n318 |         """\n319 |         Parameters\n    |\n\nfern/output/src/fern/bible/client.py:359:44: SyntaxError: Expected an identifier\n    |\n357 | \xe2\x80\xa6     asyncio.run(main())\n358 | \xe2\x80\xa6     """\n359 | \xe2\x80\xa6     _response = await self._raw_client.(id, scene_id, name=name, description=description, visual_characteristics=visual_characteris\xe2\x80\xa6\n    |                                          ^\n360 | \xe2\x80\xa6     return _response.data\n    |\n\nfern/output/src/fern/bible/client.py:362:15: SyntaxError: Expected an identifier\n    |\n360 |         return _response.data\n361 |     \n362 |     async def (self, id: str, *, filename: str, content_type: str, scope: BibleUploadRequestScope, target: str, request_options: typi\xe2\x80\xa6\n    |               ^\n363 |         """\n364 |         Parameters\n    |\n\nfern/output/src/fern/bible/client.py:398:44: SyntaxError: Expected an identifier\n    |\n396 | \xe2\x80\xa6     asyncio.run(main())\n397 | \xe2\x80\xa6     """\n398 | \xe2\x80\xa6     _response = await self._raw_client.(id, filename=filename, content_type=content_type, scope=scope, target=target, request_optio\xe2\x80\xa6\n    |                                          ^\n399 | \xe2\x80\xa6     return _response.data\n    |\n\nfern/output/src/fern/bible/raw_client.py:34:9: SyntaxError: Expected an identifier\n   |\n32 |         self._client_wrapper = client_wrapper\n33 |     \n34 |     def (self, id: str, *, version: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None) -> HttpRespo\xe2\x80\xa6\n   |         ^\n35 |         """\n36 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe6\x9c\x80\xe6\x96\xb0\xe7\x89\x88\xe6\x9c\xac\xe7\x9a\x84\xe8\xa7\x92\xe8\x89\xb2\xe5\x9c\xa3\xe7\xbb\x8f\xe5\x92\x8c\xe5\x9c\xba\xe6\x99\xaf\xe5\x9c\xa3\xe7\xbb\x8f\n   |\n\nfern/output/src/fern/bible/raw_client.py:91:9: SyntaxError: Expected an identifier\n   |\n89 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n90 |     \n91 |     def (self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[BibleHistoryEntry]]:\n   |         ^\n92 |         """\n93 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe7\x9a\x84\xe5\x9c\xa3\xe7\xbb\x8f\xe7\x89\x88\xe6\x9c\xac\xe5\x88\x97\xe8\xa1\xa8\n   |\n\nfern/output/src/fern/bible/raw_client.py:127:9: SyntaxError: Expected an identifier\n    |\n125 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n126 |     \n127 |     def (self, id: str, character_name: str, *, role: typing.Optional[UpdateBibleCharacterRequestRole] = OMIT, appearance: typing.Opt\xe2\x80\xa6\n    |         ^\n128 |         """\n129 |         Parameters\n    |\n\nfern/output/src/fern/bible/raw_client.py:198:9: SyntaxError: Expected an identifier\n    |\n196 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n197 |     \n198 |     def (self, id: str, scene_id: str, *, name: typing.Optional[str] = OMIT, description: typing.Optional[str] = OMIT, visual_charact\xe2\x80\xa6\n    |         ^\n199 |         """\n200 |         Parameters\n    |\n\nfern/output/src/fern/bible/raw_client.py:278:9: SyntaxError: Expected an identifier\n    |\n276 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n277 |     \n278 |     def (self, id: str, *, filename: str, content_type: str, scope: BibleUploadRequestScope, target: str, request_options: typing.Opt\xe2\x80\xa6\n    |         ^\n279 |         """\n280 |         Parameters\n    |\n\nfern/output/src/fern/bible/raw_client.py:342:15: SyntaxError: Expected an identifier\n    |\n340 |         self._client_wrapper = client_wrapper\n341 |     \n342 |     async def (self, id: str, *, version: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None) -> As\xe2\x80\xa6\n    |               ^\n343 |         """\n344 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe6\x9c\x80\xe6\x96\xb0\xe7\x89\x88\xe6\x9c\xac\xe7\x9a\x84\xe8\xa7\x92\xe8\x89\xb2\xe5\x9c\xa3\xe7\xbb\x8f\xe5\x92\x8c\xe5\x9c\xba\xe6\x99\xaf\xe5\x9c\xa3\xe7\xbb\x8f\n    |\n\nfern/output/src/fern/bible/raw_client.py:399:15: SyntaxError: Expected an identifier\n    |\n397 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n398 |     \n399 |     async def (self, id: str, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[typing.List[BibleHisto\xe2\x80\xa6\n    |               ^\n400 |         """\n401 |         \xe8\xbf\x94\xe5\x9b\x9e\xe6\x8c\x87\xe5\xae\x9a\xe4\xbd\x9c\xe5\x93\x81\xe7\x9a\x84\xe5\x9c\xa3\xe7\xbb\x8f\xe7\x89\x88\xe6\x9c\xac\xe5\x88\x97\xe8\xa1\xa8\n    |\n\nfern/output/src/fern/bible/raw_client.py:435:15: SyntaxError: Expected an identifier\n    |\n433 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n434 |     \n435 |     async def (self, id: str, character_name: str, *, role: typing.Optional[UpdateBibleCharacterRequestRole] = OMIT, appearance: typi\xe2\x80\xa6\n    |               ^\n436 |         """\n437 |         Parameters\n    |\n\nfern/output/src/fern/bible/raw_client.py:506:15: SyntaxError: Expected an identifier\n    |\n504 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n505 |     \n506 |     async def (self, id: str, scene_id: str, *, name: typing.Optional[str] = OMIT, description: typing.Optional[str] = OMIT, visual_c\xe2\x80\xa6\n    |               ^\n507 |         """\n508 |         Parameters\n    |\n\nfern/output/src/fern/bible/raw_client.py:586:15: SyntaxError: Expected an identifier\n    |\n584 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n585 |     \n586 |     async def (self, id: str, *, filename: str, content_type: str, scope: BibleUploadRequestScope, target: str, request_options: typi\xe2\x80\xa6\n    |               ^\n587 |         """\n588 |         Parameters\n    |\n\nfern/output/src/fern/change_requests/client.py:27:9: SyntaxError: Expected an identifier\n   |\n25 |         return self._raw_client\n26 |     \n27 |     def (self, *, novel_id: str, natural_language: str, request_options: typing.Optional[RequestOptions] = None) -> PostChangeRequests\xe2\x80\xa6\n   |         ^\n28 |         """\n29 |         \xe7\x94\xa8\xe6\x88\xb7\xe7\x94\xa8\xe8\x87\xaa\xe7\x84\xb6\xe8\xaf\xad\xe8\xa8\x80\xe6\x8f\x8f\xe8\xbf\xb0\xe4\xbf\xae\xe6\x94\xb9\xe8\xaf\x89\xe6\xb1\x82\xef\xbc\x8c\xe7\xb3\xbb\xe7\xbb\x9f\xe8\xa7\xa3\xe6\x9e\x90\xe4\xb8\xba CR-DSL \xe5\xb9\xb6\xe6\x89\xa7\xe8\xa1\x8c\n   |\n\nfern/output/src/fern/change_requests/client.py:52:38: SyntaxError: Expected an identifier\n   |\n50 |         client.change_requests.(novel_id=\'novelId\', natural_language=\'\xe6\x8a\x8a\xe7\xac\xac 3 \xe9\xa1\xb5\xe7\xac\xac 2 \xe4\xb8\xaa\xe9\x9d\xa2\xe6\x9d\xbf\xe4\xb8\xad\xe8\x89\xbe\xe8\x8e\x89\xe5\xa8\x85\xe7\x9a\x84\xe8\xa1\xa8\xe6\x83\x85\xe6\x94\xb9\xe4\xb8\xba\xe5\xbe\xae\xe7\xac\x91\', )\n51 |         """\n52 |         _response = self._raw_client.(novel_id=novel_id, natural_language=natural_language, request_options=request_options)\n   |                                      ^\n53 |         return _response.data\n54 | class AsyncChangeRequestsClient:\n   |\n\nfern/output/src/fern/change_request

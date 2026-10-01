@@ -1,0 +1,542 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 134 errors
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 5Da5C7 for value #5DA5C7 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 209412 for value #209412 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 56C4Fc for value #56C4FC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 00B177 for value #00B177 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 50D19B for value #50D19B is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 84Ab3B for value #84AB3B is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 00A5Ca for value #00A5CA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 959Cd0 for value #959CD0 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarBaseLightColor
+        issue: Enum name 7Ba6Cd for value #7BA6CD is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarEntryEventTypeBaseColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 658Cda for value #658CDA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 49B050 for value #49B050 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 8C66Da for value #8C66DA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 64Ad88 for value #64AD88 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 84Aaa5 for value #84AAA5 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 56Bfb3 for value #56BFB3 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 8Bbf3C for value #8BBF3C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 658Cb3 for value #658CB3 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 8897A5 for value #8897A5 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseColor
+        issue: Enum name 93A2Be for value #93A2BE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 5Da5C7 for value #5DA5C7 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 209412 for value #209412 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 56C4Fc for value #56C4FC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 00B177 for value #00B177 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 50D19B for value #50D19B is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 84Ab3B for value #84AB3B is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 00A5Ca for value #00A5CA is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 959Cd0 for value #959CD0 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: __package__.yml -> types -> CalendarVisibilityBaseLightColor
+        issue: Enum name 7Ba6Cd for value #7BA6CD is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeCreateRequestDataColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarEntryEventTypes.yml -> types -> CalendarEntryEventTypeUpdateRequestDataColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarCreateRequestDataColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendars.yml -> types -> CalendarUpdateRequestDataColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 83D17F for value #83D17F is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 8E3F64 for value #8E3F64 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 009Cec for value #009CEC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 62D6B1 for value #62D6B1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 9Eedcb for value #9EEDCB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 616161 for value #616161 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: calendarVisibilities.yml -> types -> CalendarVisibilityUpdateRequestDataColor
+        issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: documentVersions.yml -> service -> endpoints -> DocumentVersion#index
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Query Parameter "id"
+
+    [error]
+        path: openapi/openapi.yml -> paths -> /documents/{id}/versions.json -> get
+        issue: Parameters query parameter 'id', path parameter 'id' all normalize to 'id' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.data"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "etag"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "templates_count"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "updated_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "practice_area"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#copy -> examples[0] -> response
+        issue: Unexpected property "creator"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.data"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "etag"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "templates_count"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "updated_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "practice_area"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#create -> examples[0] -> response
+        issue: Unexpected property "creator"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.0.data"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "etag"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "templates_count"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#index -> examples[0] -> response
+        issue: Unexpected property "updated_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.data"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "etag"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "templates_count"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "updated_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "practice_area"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#show -> examples[0] -> response
+        issue: Unexpected property "creator"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Example is missing required property "response.body.data.data"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "created_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "description"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "id"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "etag"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "name"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "templates_count"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "updated_at"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "practice_area"
+
+    [error]
+        path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
+        issue: Unexpected property "creator"
+
+Found 134 errors and 0 warnings in <n> seconds.
