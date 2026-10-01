@@ -15615,3 +15615,126 @@ fn non_string_and_mixed_enums_generate_without_name_refusals() {
         }
     }
 }
+
+#[test]
+fn discriminant_refusals_recover_with_a_valid_document_name() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.yml");
+    let output = dir.path().join("sdk");
+    let probe = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/discriminant-value-unsuitable/probe.yml"),
+    )
+    .unwrap();
+    for name in ["_t", "kind-name", "1kind"] {
+        std::fs::write(&spec, probe.replace("_t", name)).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            let run = command.output().unwrap();
+            assert_eq!(run.status.code(), Some(1));
+            let stderr = String::from_utf8(run.stderr).unwrap();
+            assert_eq!(stderr.lines().count(), 1, "{stderr}");
+            assert!(stderr.contains("discriminant-value-unsuitable"), "{stderr}");
+            assert!(
+                stderr.contains("Asset") && stderr.contains(name),
+                "{stderr}"
+            );
+            if strict {
+                assert!(stderr.contains("fern-strict"), "{stderr}");
+            }
+            assert!(!output.exists());
+        }
+    }
+    for inferred in [false, true] {
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        if inferred {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("discriminator");
+            for (variant, value) in [("ImageAsset", "image"), ("TextAsset", "text")] {
+                document["components"]["schemas"][variant]["properties"]["_t"]["enum"] =
+                    serde_json::json!([value]);
+            }
+        } else {
+            document["components"]["schemas"]["Asset"]
+                .as_object_mut()
+                .unwrap()
+                .remove("oneOf");
+        }
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .assert()
+            .code(1)
+            .stderr(predicates::str::contains("discriminant-value-unsuitable"));
+        assert!(!output.exists());
+    }
+    std::fs::write(&spec, probe.replace("_t", "kind_name")).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .args(["--package-name", "probe", "--fern-strict"])
+        .assert()
+        .success();
+    let module = std::fs::read_to_string(output.join("src/probe/types/asset.py")).unwrap();
+    assert!(module.contains("kind_name:"), "{module}");
+}
+
+#[test]
+fn scalar_singleton_body_enum_needs_no_member_but_nested_enums_do() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    for nested in [false, true] {
+        let scalar = serde_json::json!({"type": "string", "enum": ["10080"]});
+        let schema = if nested {
+            serde_json::json!({"type": "object", "properties": {"minutes": scalar}})
+        } else {
+            scalar
+        };
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {
+                "required": true, "content": {"application/json": {"schema": schema}}
+            }, "responses": {"204": {"description": "Done"}}}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let output = dir.path().join(format!("sdk-{nested}-{strict}"));
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            if nested {
+                command
+                    .assert()
+                    .code(1)
+                    .stderr(predicates::str::contains("enum-value-unnameable"));
+                assert!(!output.exists());
+            } else {
+                command.assert().success();
+                assert!(output.join("pyproject.toml").is_file());
+            }
+        }
+    }
+}

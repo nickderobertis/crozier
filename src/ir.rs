@@ -7919,7 +7919,8 @@ fn discriminant_value(schema: &Schema) -> Option<String> {
         .or_else(|| schema_example(schema)?.as_str().map(str::to_string))
 }
 
-fn inferred_discriminant_property(
+/// Infer the selector used by generation and by name-refusal validation.
+pub(crate) fn inferred_discriminant_property(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
 ) -> Option<String> {

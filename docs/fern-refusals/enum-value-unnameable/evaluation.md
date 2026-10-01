@@ -44,3 +44,11 @@ value: Fern warns and falls back to the wire value, measured with the pinned CLI
 Pinned controls distinguish non-ASCII unnameable values
 ([CJK](evidence/cjk.fern-check.log), [emoji](evidence/emoji.fern-check.log))
 from punctuation, which is classified as `enum-name-unsuitable`.
+
+Pinned Fern accepts a direct scalar request body singleton as a literal without
+forming an enum member ([control](evidence/single-enum-body.pinned-fern.log)).
+The exemption is restricted to that root position; singleton body
+[properties](evidence/body-single-enum-property.pinned-fern.log),
+[nested properties](evidence/body-single-enum-nested.pinned-fern.log),
+[array items](evidence/body-single-enum-array.pinned-fern.log) and
+[map values](evidence/body-single-enum-map.pinned-fern.log) still refuse.

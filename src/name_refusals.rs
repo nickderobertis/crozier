@@ -18,7 +18,12 @@ pub(crate) fn validate(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
 
 fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
     for (name, schema) in &doc.components.schemas {
-        check_schema(schema, &format!("#/components/schemas/{name}"), path)?;
+        check_schema(
+            schema,
+            &format!("#/components/schemas/{name}"),
+            path,
+            &doc.components.schemas,
+        )?;
     }
     for (route, item) in &doc.paths {
         for (method, op) in item.operations() {
@@ -29,6 +34,7 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
                         schema,
                         &format!("{location} parameter {}", parameter.name),
                         path,
+                        &doc.components.schemas,
                     )?;
                 }
                 for media in parameter.content.values() {
@@ -37,6 +43,7 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
                             schema,
                             &format!("{location} parameter {}", parameter.name),
                             path,
+                            &doc.components.schemas,
                         )?;
                     }
                 }
@@ -44,14 +51,32 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
             if let Some(body) = &op.request_body {
                 for media in body.content.values() {
                     if let Some(schema) = &media.schema {
-                        check_schema(schema, &format!("{location} request body"), path)?;
+                        // Fern emits a direct singleton scalar body as a literal,
+                        // without forming an enum member. Descendants still need names.
+                        let literal_body = schema.reference.is_none()
+                            && schema
+                                .enum_values
+                                .as_ref()
+                                .is_some_and(|values| values.len() == 1);
+                        check_schema_names(
+                            schema,
+                            &format!("{location} request body"),
+                            path,
+                            &doc.components.schemas,
+                            !literal_body,
+                        )?;
                     }
                 }
             }
             for (status, response) in &op.responses {
                 for media in response.content.values() {
                     if let Some(schema) = &media.schema {
-                        check_schema(schema, &format!("{location} response {status}"), path)?;
+                        check_schema(
+                            schema,
+                            &format!("{location} response {status}"),
+                            path,
+                            &doc.components.schemas,
+                        )?;
                     }
                 }
             }
@@ -60,19 +85,48 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
+fn check_schema(
+    schema: &Schema,
+    location: &str,
+    path: &Path,
+    schemas: &indexmap::IndexMap<String, Schema>,
+) -> Result<()> {
+    check_schema_names(schema, location, path, schemas, true)
+}
+
+fn check_schema_names(
+    schema: &Schema,
+    location: &str,
+    path: &Path,
+    schemas: &indexmap::IndexMap<String, Schema>,
+    check_enum: bool,
+) -> Result<()> {
+    let explicit = schema.discriminator.as_ref().filter(|_| {
+        schema
+            .ty
+            .as_ref()
+            .map_or(schema.enum_values.is_none(), |ty| {
+                ty.primary() == Some("object")
+            })
+    });
+    let discriminant = explicit
+        .map(|tag| tag.property_name.clone())
+        .or_else(|| crate::ir::inferred_discriminant_property(schema, schemas));
+    if let Some(discriminant) = discriminant.filter(|name| !usable_name(name)) {
+        return Err(Error::InvalidSpec {
+            path: path.to_owned(),
+            message: format!(
+                "discriminant-value-unsuitable: {location} discriminant {discriminant:?}; use a letter-led identifier containing letters, numbers and underscores"
+            ),
+        });
+    }
     // Measured at Fern 5.67.1: invalid overrides warn and fall back to the
     // original value, so they cannot rescue a value Fern cannot name.
     let names: std::collections::BTreeMap<_, _> = schema
         .enum_member_names()
-        .filter(|(_, name)| {
-            name.starts_with(|ch: char| ch.is_ascii_alphabetic())
-                && name
-                    .bytes()
-                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
-        })
+        .filter(|(_, name)| usable_name(name))
         .collect();
-    if let Some(values) = &schema.enum_values {
+    if let Some(values) = schema.enum_values.as_ref().filter(|_| check_enum) {
         // Integer enums and mixed-kind enums do not declare string enum members
         // in Fern. Bungie's integer bit flags even spell their values as strings.
         let string_enum = schema.ty.as_ref().map_or_else(
@@ -85,7 +139,7 @@ fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
             },
         );
         if !string_enum {
-            return check_children(schema, location, path);
+            return check_children(schema, location, path, schemas);
         }
         for value in values.iter().filter_map(serde_json::Value::as_str) {
             if names.contains_key(value) {
@@ -115,18 +169,40 @@ fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
             }
         }
     }
-    check_children(schema, location, path)
+    check_children(schema, location, path, schemas)
 }
 
-fn check_children(schema: &Schema, location: &str, path: &Path) -> Result<()> {
+fn usable_name(name: &str) -> bool {
+    name.starts_with(|ch: char| ch.is_ascii_alphabetic())
+        && name
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+}
+
+fn check_children(
+    schema: &Schema,
+    location: &str,
+    path: &Path,
+    schemas: &indexmap::IndexMap<String, Schema>,
+) -> Result<()> {
     for (name, child) in &schema.properties {
-        check_schema(child, &format!("{location}/properties/{name}"), path)?;
+        check_schema(
+            child,
+            &format!("{location}/properties/{name}"),
+            path,
+            schemas,
+        )?;
     }
     if let Some(child) = &schema.items {
-        check_schema(child, &format!("{location}/items"), path)?;
+        check_schema(child, &format!("{location}/items"), path, schemas)?;
     }
     if let Some(AdditionalProperties::Schema(child)) = &schema.additional_properties {
-        check_schema(child, &format!("{location}/additionalProperties"), path)?;
+        check_schema(
+            child,
+            &format!("{location}/additionalProperties"),
+            path,
+            schemas,
+        )?;
     }
     for (kind, children) in [
         ("allOf", &schema.all_of),
@@ -135,7 +211,7 @@ fn check_children(schema: &Schema, location: &str, path: &Path) -> Result<()> {
     ] {
         if let Some(children) = children {
             for (index, child) in children.iter().enumerate() {
-                check_schema(child, &format!("{location}/{kind}/{index}"), path)?;
+                check_schema(child, &format!("{location}/{kind}/{index}"), path, schemas)?;
             }
         }
     }
@@ -148,6 +224,7 @@ mod tests {
 
     #[test]
     fn enum_name_refusals_respect_value_shapes_types_and_declared_names() {
+        let schemas = indexmap::IndexMap::new();
         for (value, refused) in [
             ("10080", true),
             ("10001+", false),
@@ -168,7 +245,7 @@ mod tests {
             }))
             .unwrap();
             assert_eq!(
-                check_schema(&schema, "Minutes", Path::new("api.yml")).is_err(),
+                check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err(),
                 refused,
                 "{value}"
             );
@@ -178,19 +255,19 @@ mod tests {
             "x-crozier-enum": {"10080": {"name": "WEEK"}}
         }))
         .unwrap();
-        check_schema(&schema, "Minutes", Path::new("api.yml")).unwrap();
+        check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).unwrap();
         let schema: Schema = serde_json::from_value(serde_json::json!({
             "type": "string", "enum": ["10080"],
             "x-crozier-enum": {"10080": {"name": "2fa"}}
         }))
         .unwrap();
-        assert!(check_schema(&schema, "Minutes", Path::new("api.yml")).is_err());
+        assert!(check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err());
         for ty in ["integer", "number", "boolean"] {
             let schema: Schema = serde_json::from_value(serde_json::json!({
                 "type": ty, "enum": ["10080"]
             }))
             .unwrap();
-            check_schema(&schema, "NonStringEnum", Path::new("api.yml")).unwrap();
+            check_schema(&schema, "NonStringEnum", Path::new("api.yml"), &schemas).unwrap();
         }
     }
 }

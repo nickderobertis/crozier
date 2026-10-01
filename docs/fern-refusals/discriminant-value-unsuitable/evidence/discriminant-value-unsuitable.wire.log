@@ -1,0 +1,2 @@
+exit=0
+Declared _t parses ImageAsset and aliases back to _t; generated field identifier is t
