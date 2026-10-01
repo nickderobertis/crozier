@@ -66,6 +66,9 @@ form crozier always emits, and sets `CI` and `GITHUB_ACTIONS` to `true` only whe
 they are unset (Fern records how it was invoked in `.fern/metadata.json`, and
 crozier emits the form a CI run records).
 
+Each value is written into the workspace quoted, exactly as given; a value
+holding a control character (a line break, say) is refused before `fern` runs.
+
 ### Layouts
 
 | `layout` | Fern run |
@@ -112,6 +115,16 @@ fail() {
   exit 1
 }
 
+# A value as a double-quoted YAML (and JSON) string, so characters YAML gives a
+# meaning to (`:`, `#`, `{`, quotes) reach Fern as written. A control character
+# cannot be carried that way, so it is refused.
+quote() {
+  if [[ "$1" =~ [[:cntrl:]] ]]; then
+    fail "value '$1' holds a control character, which the Fern workspace cannot carry"
+  fi
+  printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
+}
+
 for name in OUTPUT SPEC PACKAGE_NAME PROJECT_NAME CLIENT_CLASS_NAME \
   AUDIENCE_STRICT EXTRA_FIELDS LAYOUT; do
   var="CROZIER_REFERENCE_$name"
@@ -148,8 +161,17 @@ mkdir -p "$work/fern/openapi"
 spec_name="$(basename "$CROZIER_REFERENCE_SPEC")"
 cp "$CROZIER_REFERENCE_SPEC" "$work/fern/openapi/$spec_name"
 
+# Every value written into the workspace, quoted first: a refusal inside a
+# here-document would not stop the script.
+q_package="$(quote "$package")"
+q_cli_version="$(quote "$FERN_CLI_VERSION")"
+q_spec_path="$(quote "openapi/$spec_name")"
+q_sdk_version="$(quote "$FERN_PYTHON_SDK_VERSION")"
+q_client="$(quote "$CROZIER_REFERENCE_CLIENT_CLASS_NAME")"
+q_extra_fields="$(quote "$CROZIER_REFERENCE_EXTRA_FIELDS")"
+
 cat > "$work/fern/fern.config.json" <<JSON
-{ "organization": "$package", "version": "$FERN_CLI_VERSION" }
+{ "organization": $q_package, "version": $q_cli_version }
 JSON
 
 audiences=""
@@ -157,7 +179,7 @@ if [ -n "${CROZIER_REFERENCE_AUDIENCES:-}" ]; then
   audiences="    audiences:"$'\n'
   IFS=',' read -ra names <<<"$CROZIER_REFERENCE_AUDIENCES"
   for audience in "${names[@]}"; do
-    audiences+="      - $audience"$'\n'
+    audiences+="      - $(quote "$audience")"$'\n'
   done
 fi
 
@@ -167,23 +189,24 @@ fi
 # emits a publishable repository: CI workflow, poetry.lock, version 0.0.1).
 output_path="$work/unused"
 [ "$layout" = packaged ] || output_path="$out"
+q_output_path="$(quote "$output_path")"
 
 cat > "$work/fern/generators.yml" <<YAML
 api:
-  path: openapi/$spec_name
+  path: $q_spec_path
 groups:
   crozier-reference:
 ${audiences}    generators:
       - name: fernapi/fern-python-sdk
-        version: $FERN_PYTHON_SDK_VERSION
+        version: $q_sdk_version
         config:
-          client_class_name: $CROZIER_REFERENCE_CLIENT_CLASS_NAME
+          client_class_name: $q_client
           pydantic_config:
             enum_type: python_enums
-            extra_fields: $CROZIER_REFERENCE_EXTRA_FIELDS
+            extra_fields: $q_extra_fields
         output:
           location: local-file-system
-          path: $output_path
+          path: $q_output_path
 YAML
 
 # Fern stamps how it was invoked into .fern/metadata.json; crozier emits the

@@ -202,7 +202,7 @@ impl ComparedLayout {
 }
 
 /// One generator's result (or one unreadable config's, with `generator` null).
-// llmlint: ignore[invalid_states_unrepresentable] This struct is the `--json` contract the GitHub Action consumes, fixed field by field (a flat `status` beside always-present nullable payloads) and derived into the committed schema; a status enum carrying its payload would serialize a different shape. Outside its unit tests, only `could_not_check` and `check_generator` in compare/mod.rs build it.
+// llmlint: ignore[invalid_states_unrepresentable] This struct is the `--json` contract the GitHub Action consumes, fixed field by field (a flat `status` beside always-present nullable payloads) and derived into the committed schema; a status enum carrying its payload would serialize a different shape. Outside its unit tests, only `result_with_reason` and `Checker::check_generator` in compare/mod.rs build it.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct GeneratorResult {

@@ -436,3 +436,43 @@ fn values_the_recipe_cannot_reproduce_exit_without_running_fern() {
     );
     assert!(run.recorded.is_none());
 }
+
+/// Values reach the workspace as written, whatever YAML or JSON would make of
+/// them unquoted; one the workspace cannot carry is refused before `fern` runs.
+#[test]
+fn values_with_yaml_meaning_reach_the_workspace_as_written() {
+    let client = r#"Acme: {x} # "quoted" \ back"#;
+    let quoted = run(
+        &[
+            ("CROZIER_REFERENCE_CLIENT_CLASS_NAME", client),
+            ("CROZIER_REFERENCE_AUDIENCES", "a: b,#c,[d]"),
+            ("FERN_REFERENCE_CLI_VERSION", r#"1", "x": "y"#),
+        ],
+        &[],
+    );
+    assert!(quoted.status.success(), "{}", quoted.stderr);
+    let recorded = quoted.recorded.expect("fern ran");
+    assert_eq!(generator(&recorded)["config"]["client_class_name"], client);
+    let audiences: Vec<&str> = recorded.generators["groups"]["crozier-reference"]["audiences"]
+        .as_sequence()
+        .unwrap()
+        .iter()
+        .map(|a| a.as_str().unwrap())
+        .collect();
+    assert_eq!(audiences, ["a: b", "#c", "[d]"]);
+    assert_eq!(
+        recorded.config,
+        serde_json::json!({"organization": "fern", "version": r#"1", "x": "y"#})
+    );
+
+    let refused = run(&[("CROZIER_REFERENCE_CLIENT_CLASS_NAME", "Acme\nApi")], &[]);
+    assert!(!refused.status.success());
+    assert!(
+        refused
+            .stderr
+            .contains("value 'Acme\nApi' holds a control character"),
+        "{}",
+        refused.stderr
+    );
+    assert!(refused.recorded.is_none(), "fern ran");
+}
