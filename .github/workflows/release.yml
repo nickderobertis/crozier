@@ -5,7 +5,9 @@
 #   * re-gates on the full `just check` (so a tag never ships an unchecked build),
 #   * builds, archives, checksums, and ATTESTS the per-platform binaries,
 #   * publishes the crate to crates.io (when CARGO_REGISTRY_TOKEN is set), and
-#   * builds PyPI wheels + sdist and publishes them (when PYPI_TOKEN is set).
+#   * builds PyPI wheels + sdist and publishes them (when PYPI_TOKEN is set),
+#   * then, last, moves the floating major tag (`v0`) the GitHub Action's
+#     consumers pin onto this release (`major-tag`).
 #
 # Every install surface must construct the SAME archive/.sha256 name this produces
 # (crozier-<tag>-<target>.tar.gz, .zip on Windows); see scripts/install.sh and the
@@ -60,6 +62,7 @@ jobs:
 
   # Gate the release on a passing run of the same full gate CI enforces, so a tag
   # can never publish an artifact that would not pass `just check`.
+  # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] A Release is not tied to a commit ci.yml swept: the header names a Release cut by hand in the GitHub UI as the supported fallback, and it can tag any commit. This job is the only gate such a tag passes before publishing to crates.io and PyPI, which cannot be taken back.
   test:
     runs-on: ubuntu-latest
     steps:
@@ -420,3 +423,38 @@ jobs:
           pip install "crozier==${ver}"
           ./scripts/smoke.sh "$ver"
           echo "PyPI install + smoke test passed for crozier $ver"
+
+  # Move the floating major tag (`v0`, the ref docs/github-action.md tells the
+  # Action's consumers to use) onto this release, LAST: it waits on every publish
+  # and verify job, so `@v0` never resolves to a release whose artifacts failed
+  # to publish. A skipped job (a registry whose token is not set) is fine; a
+  # failed one is not, and neither is a failed upload to the GitHub Release. The
+  # decision itself — derive the major, skip pre-releases and older releases —
+  # is scripts/update-major-tag.sh's, driven over real repositories by
+  # tests/e2e/major_tag.rs. The exact `vX.Y.Z` tag stays as release-plz cut it.
+  major-tag:
+    needs:
+      - upload
+      - verify-attestation
+      - verify-install-script
+      - publish-crate
+      - verify-crate
+      - build-wheels
+      - build-sdist
+      - publish-pypi
+      - verify-pypi
+    if: ${{ !failure() && !cancelled() && needs.upload.result == 'success' }}
+    runs-on: ubuntu-latest
+    # Force-updating a tag is a write to refs/tags, and the only write this job
+    # makes; a tag the GITHUB_TOKEN pushes triggers no workflow, so this cannot
+    # re-enter the release.
+    permissions:
+      contents: write
+    steps:
+      # Full history and every tag: the script decides whether this release is
+      # the newest one with its major, which a shallow checkout cannot answer.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move the floating major tag onto this release
+        run: bash scripts/update-major-tag.sh --tag "$GITHUB_REF_NAME"

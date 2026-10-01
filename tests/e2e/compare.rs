@@ -153,6 +153,45 @@ fn result<'a>(
         .unwrap_or_else(|| panic!("no result for {config} {generator}: {report:#}"))
 }
 
+/// The committed layout the GitHub Action's in-tree journeys run over
+/// (`tests/action-fixture/`): its small reference scripts — copy the golden,
+/// copy it with one file altered, refuse — give exactly one result of each
+/// status, and the mismatch dominates the exit status.
+#[cfg(unix)]
+#[test]
+fn compare_over_the_action_fixture_layout_gives_one_of_each_status() {
+    let out = compare_cmd(Path::new(env!("CARGO_MANIFEST_DIR")))
+        .args(["--json", "-", "tests/action-fixture"])
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8(out.stderr).unwrap();
+    assert_eq!(out.status.code(), Some(3), "{stderr}");
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    validate_against_committed_schema(&report);
+    assert_eq!(
+        report["counts"],
+        serde_json::json!({"matched": 1, "mismatched": 1, "could_not_check": 1})
+    );
+    let config = "tests/action-fixture/crozier.yml";
+    assert_eq!(result(&report, config, "matched")["status"], "matched");
+    let mismatched = result(&report, config, "mismatched");
+    assert_eq!(mismatched["status"], "mismatched");
+    assert_eq!(
+        mismatched["comparison"]["differing"],
+        serde_json::json!(["README.md"])
+    );
+    let refused = result(&report, config, "could-not-check");
+    assert_eq!(refused["status"], "could_not_check");
+    assert_eq!(refused["reference"]["exit_code"], 7);
+    assert!(
+        refused["reason"]
+            .as_str()
+            .unwrap()
+            .contains("reference tool: this document is not supported"),
+        "{refused:#}"
+    );
+}
+
 // Unix only: crozier runs reference commands under `sh` on Linux and macOS;
 // on Windows it runs none (`compare_on_windows_runs_no_reference_command`).
 #[cfg(unix)]

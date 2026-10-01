@@ -1,0 +1,101 @@
+name: crozier compare
+description: Check that crozier's generated SDKs match a reference SDK your own command produces, and time both sides.
+author: nickderobertis
+branding:
+  icon: check-square
+  color: green
+
+inputs:
+  paths:
+    description: >-
+      Whitespace-separated crozier config files, or directories to search for
+      them. Empty (the default) searches the whole repository.
+    required: false
+    default: ""
+  reference-command:
+    description: >-
+      The command that writes each generator's reference SDK into
+      `$CROZIER_REFERENCE_OUTPUT`, used for every generator found. Empty (the
+      default) uses whatever each crozier config's `reference.command` says.
+    required: false
+    default: ""
+  diff-artifact-name:
+    description: >-
+      Name of the artifact the per-generator diffs are uploaded as when anything
+      mismatched.
+    required: false
+    default: crozier-compare-diffs
+  version:
+    description: >-
+      crozier release to install. Empty (the default) installs the release this
+      action's own ref names — the `[package] version` in the action's
+      `Cargo.toml`, as `v<version>` — so pinning the action pins its binary too.
+      Otherwise a tag such as `v0.1.0`, `latest` for the newest release, or
+      `local` to build the source shipped with this action using cargo.
+    required: false
+    default: ""
+
+outputs:
+  matched:
+    description: How many generators matched their reference.
+    value: ${{ steps.compare.outputs.matched }}
+  mismatched:
+    description: How many generators mismatched their reference.
+    value: ${{ steps.compare.outputs.mismatched }}
+  could-not-check:
+    description: How many generators could not be checked.
+    value: ${{ steps.compare.outputs.could-not-check }}
+  exit-code:
+    description: The exit status of `crozier compare` (0, 1, 3 or 4).
+    value: ${{ steps.compare.outputs.exit-code }}
+  report-path:
+    description: Path to the JSON report `crozier compare` wrote; empty when it wrote none.
+    value: ${{ steps.compare.outputs.report-path }}
+  total-reference-seconds:
+    description: Summed reference-command wall time, in seconds, over the generators where both sides ran.
+    value: ${{ steps.compare.outputs.total-reference-seconds }}
+  total-crozier-seconds:
+    description: Summed crozier generation time, in seconds, over the generators where both sides ran.
+    value: ${{ steps.compare.outputs.total-crozier-seconds }}
+  total-speedup:
+    description: The total reference time divided by the total crozier time; empty when no generator was timed on both sides.
+    value: ${{ steps.compare.outputs.total-speedup }}
+  total-saved-seconds:
+    description: The total reference time minus the total crozier time, in seconds.
+    value: ${{ steps.compare.outputs.total-saved-seconds }}
+
+# Every value reaches a `run:` script through `env`, never interpolated into it,
+# where it would be shell source rather than data. The logic lives in
+# scripts/action/, which tests/e2e/action.rs runs outside GitHub.
+runs:
+  using: composite
+  steps:
+    - name: Install crozier
+      id: install
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+      run: bash "$GITHUB_ACTION_PATH/scripts/action/install.sh"
+
+    - name: Run crozier compare
+      id: compare
+      shell: bash
+      env:
+        CROZIER: ${{ steps.install.outputs.bin }}
+        COMPARE_PATHS: ${{ inputs.paths }}
+        REFERENCE_COMMAND: ${{ inputs.reference-command }}
+      run: bash "$GITHUB_ACTION_PATH/scripts/action/compare.sh"
+
+    - name: Upload the diffs
+      if: ${{ steps.compare.outputs.mismatched != '' && steps.compare.outputs.mismatched != '0' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.diff-artifact-name }}
+        path: ${{ steps.compare.outputs.diff-dir }}
+        if-no-files-found: warn
+
+    - name: Report the result
+      shell: bash
+      env:
+        EXIT_CODE: ${{ steps.compare.outputs.exit-code }}
+      run: bash "$GITHUB_ACTION_PATH/scripts/action/finish.sh"

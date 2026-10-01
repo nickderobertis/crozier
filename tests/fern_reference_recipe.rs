@@ -1,6 +1,8 @@
 //! The Fern reference recipe in `docs/fern-reference.md` is documentation, not a
 //! shipped script, so these tests read it straight off the page: its version
-//! defaults must be the pair crozier certifies, it must parse, and — run with a
+//! defaults must be the pair crozier certifies, its one other copy — inline in
+//! the consumer example workflow, which `docs/github-action.md` embeds — must be
+//! identical to it, it must parse, and — run with a
 //! stand-in `fern` first on `PATH` that records what it is handed — it must build
 //! the workspace and make the invocation the page promises. (The real-Fern run of
 //! the same script is evidence gathered outside the suite: Fern needs Docker Hub
@@ -86,6 +88,129 @@ fn the_recipe_defaults_to_the_certified_pair_and_parses() {
         .status()
         .unwrap()
         .success());
+}
+
+/// The consumer example workflow the GitHub Action's docs publish.
+const EXAMPLE: &str = "docs/examples/migrate-from-fern.yml";
+
+/// The recipe a workflow writes inline: the body of its one step's
+/// `cat > <file> <<'RECIPE'` here-document, as the runner's shell receives it
+/// (the YAML block scalar parsed).
+fn inline_recipe(workflow: &str, source: &str) -> String {
+    let workflow: serde_yaml_ng::Value =
+        serde_yaml_ng::from_str(workflow).unwrap_or_else(|e| panic!("{source} is not YAML: {e}"));
+    let bodies: Vec<String> = workflow["jobs"]
+        .as_mapping()
+        .unwrap_or_else(|| panic!("{source} has no jobs"))
+        .values()
+        .flat_map(|job| job["steps"].as_sequence().unwrap())
+        .filter_map(|step| step["run"].as_str())
+        .filter_map(|run| run.split_once("<<'RECIPE'\n").map(|(_, rest)| rest))
+        .map(|rest| {
+            let (body, _) = rest
+                .split_once("\nRECIPE\n")
+                .unwrap_or_else(|| panic!("{source}: the RECIPE here-document is not closed"));
+            format!("{body}\n")
+        })
+        .collect();
+    assert_eq!(
+        bodies.len(),
+        1,
+        "{source} must write the recipe in exactly one step"
+    );
+    bodies.into_iter().next().unwrap()
+}
+
+/// The first line at which `copy` departs from the docs page's script.
+fn first_difference(copy: &str, script: &str) -> Option<String> {
+    if copy == script {
+        return None;
+    }
+    let line = copy
+        .lines()
+        .zip(script.lines())
+        .position(|(a, b)| a != b)
+        .map_or_else(|| "its length".to_string(), |i| format!("line {}", i + 1));
+    Some(line)
+}
+
+/// The recipe's one source is the docs page; its copies are the example
+/// workflow's inline one and, through it, `docs/github-action.md`'s embedded
+/// one. Each is extracted on its own and must equal the page's script.
+#[test]
+fn the_inline_copies_of_the_recipe_equal_the_docs_page() {
+    let script = recipe();
+    let example = std::fs::read_to_string(root().join(EXAMPLE)).unwrap();
+    let action_page = std::fs::read_to_string(root().join("docs/github-action.md")).unwrap();
+    let embedded: Vec<&str> = action_page
+        .split("\n```yaml\n")
+        .skip(1)
+        .map(|rest| rest.split("```\n").next().unwrap())
+        .filter(|block| block.contains("<<'RECIPE'"))
+        .collect();
+    assert_eq!(
+        embedded.len(),
+        1,
+        "docs/github-action.md must embed the recipe-writing workflow once"
+    );
+    for (source, copy) in [
+        (EXAMPLE, inline_recipe(&example, EXAMPLE)),
+        (
+            "docs/github-action.md",
+            inline_recipe(embedded[0], "docs/github-action.md"),
+        ),
+    ] {
+        if let Some(line) = first_difference(&copy, &script) {
+            panic!(
+                "{source}'s copy of the recipe differs from docs/fern-reference.md's script at \
+                 {line}; the docs page is the one source, so copy it unchanged"
+            );
+        }
+    }
+    // The comparison can fail: an altered copy is told apart.
+    assert!(first_difference(&script.replace("5.67.1", "5.67.2"), &script).is_some());
+}
+
+/// The example workflow states, installs and pre-pulls the pair crozier
+/// certifies, and no other pair; `docs/github-action.md` states it too.
+#[test]
+fn the_example_and_the_action_docs_state_the_certified_pair() {
+    let metadata: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root().join("assets/scaffolding/metadata.json")).unwrap(),
+    )
+    .unwrap();
+    let cli = metadata["cliVersion"].as_str().unwrap();
+    let generator = metadata["generatorVersion"].as_str().unwrap();
+
+    let example = std::fs::read_to_string(root().join(EXAMPLE)).unwrap();
+    assert!(example.contains(&format!(
+        "# Fern versions crozier certifies: Fern CLI {cli} with\n# fernapi/fern-python-sdk {generator}."
+    )));
+    assert!(example.contains(&format!("npm install -g fern-api@{cli}\n")));
+    assert!(example.contains(&format!(
+        "docker pull fernapi/fern-python-sdk:{generator}\n"
+    )));
+    let versions = example
+        .split(|c: char| !(c.is_ascii_digit() || c == '.'))
+        .map(|token| token.trim_matches('.'))
+        .filter(|token| token.split('.').count() == 3 && token.split('.').all(|p| !p.is_empty()));
+    for version in versions {
+        assert!(
+            // `0.0.1`: the inline recipe's comment on Fern's publishable
+            // repository, as on the docs page.
+            [cli, generator, "0.0.1"].contains(&version),
+            "{EXAMPLE} states version {version}, not the certified pair {cli} / {generator}"
+        );
+    }
+
+    let action_page = std::fs::read_to_string(root().join("docs/github-action.md")).unwrap();
+    let prose = action_page.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        prose.contains(&format!(
+            "**Fern CLI {cli}** with **`fernapi/fern-python-sdk` {generator}**"
+        )),
+        "docs/github-action.md does not state the certified pair {cli} / {generator}"
+    );
 }
 
 /// Every version the page states outside the script — the certified-pair prose,

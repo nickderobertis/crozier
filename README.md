@@ -144,7 +144,18 @@ after crozier's documented normalizations (comments, SDK-identity headers,
 `__init__.py` import order, generator metadata; see
 [`docs/matching.md`](docs/matching.md#how-the-comparison-works)), and reports the
 time each side took. See
-[`docs/compare.md`](docs/compare.md).
+[`docs/compare.md`](docs/compare.md). Moving from Fern, the
+[Fern reference recipe](docs/fern-reference.md) produces that reference.
+
+In CI, the GitHub Action runs the same check on every pull request and reports
+it in the job summary:
+
+```yaml
+      - uses: nickderobertis/crozier@v0
+```
+
+See [`docs/github-action.md`](docs/github-action.md) for its inputs, outputs and
+versioning, and the one workflow a repository migrating from Fern adds.
 
 ## Configuration
 

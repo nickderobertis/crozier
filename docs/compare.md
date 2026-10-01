@@ -22,7 +22,9 @@ crozier compare --json report.json --diff-dir diffs
 ```
 
 One way to produce a reference is the copy-paste
-[Fern reference recipe](fern-reference.md).
+[Fern reference recipe](fern-reference.md). To run the check in GitHub Actions,
+use the [crozier GitHub Action](github-action.md), which wraps this command; its
+page includes the workflow a repository migrating from Fern adds.
 
 ## Finding configs
 
