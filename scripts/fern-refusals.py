@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by `just`, with no Nx workspace (no nx.json or project.json anywhere); this script sits in scripts/ beside the census scripts whose records it reads, and runs as `just fern-refusals-*` and under `just test-fern-refusals`.
 """Build the refused-document population of `docs/fern-refusals/`.
 
 The registry's population is every document crozier's committed records name as
@@ -85,6 +86,8 @@ EMPTY = "—"
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.
 ENUMERATED = ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees")
 SEARCHED = ("github-code-search", "sourcegraph")
+# The enumeration columns a population entry is built from.
+ENUMERATION_COLUMNS = ("walk", "document", "revision", "sha256")
 
 
 def fail(message: str) -> None:
@@ -104,8 +107,8 @@ def require(path: Path) -> Path:
     return path
 
 
-def lacking(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...]) -> None:
-    """Fail naming the record line of `path` that does not carry every one of `fields`."""
+def require_fields(path: Path, number: int, row: dict[str, Any], fields: tuple[str, ...]) -> None:
+    """Exit naming line `number` of `path` when its record does not carry every one of `fields`."""
     missing = [field for field in fields if field not in row]
     if missing:
         fail(f"{rel(path)} line {number} lacks {', '.join(missing)}; restore it from git")
@@ -122,7 +125,7 @@ def read_jsonl(path: Path, fields: tuple[str, ...]) -> list[tuple[int, dict[str,
             fail(f"{rel(path)} line {number} is not JSON ({error.msg}); restore it from git")
         if not isinstance(row, dict):
             fail(f"{rel(path)} line {number} is not a JSON object; restore it from git")
-        lacking(path, number, row, fields)
+        require_fields(path, number, row, fields)
         rows.append((number, row))
     return rows
 
@@ -175,7 +178,11 @@ def dropped_rows() -> list[tuple[int, str, str]]:
 def enumeration(source: str) -> dict[str, dict[str, str]]:
     path = SURFACE / "golden-reach-witnesses" / source / "enumeration.tsv.gz"
     with gzip.open(require(path), "rt", encoding="utf-8", newline="") as handle:
-        rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        rows = list(reader)
+        missing = [column for column in ENUMERATION_COLUMNS if column not in (reader.fieldnames or [])]
+    if missing:
+        fail(f"{rel(path)}: the header lacks {', '.join(missing)}; restore it from git, or re-walk the source")
     seen: dict[str, int] = {}
     for row in rows:
         seen[row["document"]] = seen.get(row["document"], 0) + 1
@@ -242,7 +249,7 @@ def population() -> list[Entry]:
             if not failed(row["fern"]):
                 continue
             if "candidate" not in row:
-                lacking(screens, number, row, ("source", "repository", "commit", "path"))
+                require_fields(screens, number, row, ("source", "repository", "commit", "path"))
                 logs = [rel(screens.parent / log) for log in row.get("fern_logs", [])]
                 entries.append({"digest": row.get("sha256", ""), "source": row["source"],
                                 "locator": raw_url(row["repository"], row["commit"], row["path"]),
@@ -461,7 +468,7 @@ def read_measurements() -> dict[str, dict[str, str]]:
     rows = read_jsonl(path, ("key",))
     for number, row in rows:
         if "fern_stage" in row:
-            lacking(path, number, row, ("fern_exit", "fern_log"))
+            require_fields(path, number, row, ("fern_exit", "fern_log"))
     return {row["key"]: upgraded(row) for _number, row in rows}
 
 

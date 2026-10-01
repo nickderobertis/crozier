@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier has no Nx workspace; this boundary test sits in tests/ beside the other script tests and runs under `just test-fern-refusals`, part of `check`.
 """Coverage for `scripts/fern-refusals.py`, which builds `docs/fern-refusals/`.
 
 The script derives the refused-document population from committed records and
@@ -16,6 +17,7 @@ Run: `just test-fern-refusals` (part of `just check`).
 
 from __future__ import annotations
 
+import gzip
 import os
 import shutil
 import subprocess
@@ -206,6 +208,22 @@ class MissingInputs(unittest.TestCase):
     def test_a_missing_enumeration_names_it(self) -> None:
         self.assert_select_names_missing(
             "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz")
+
+    def test_an_enumeration_without_its_columns_names_them(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            for relative in ("scripts/fern-refusals.py", *self.INPUTS):
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(REPO / relative, root / relative)
+            broken = "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz"
+            with gzip.open(root / broken, "wt", encoding="utf-8") as handle:
+                handle.write("walk\tdocument\trevision\n")
+            env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
+            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+                                    capture_output=True, text=True, env=env, cwd=root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(f"{broken}: the header lacks sha256", result.stderr)
 
     def test_missing_search_candidates_name_them(self) -> None:
         # Every input before it is present, so `select` reaches the first search.
