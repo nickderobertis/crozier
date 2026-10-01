@@ -137,6 +137,10 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
         rows = list(reader)
     if not rows or tuple(rows[0]) != header:
         fail(f"{rel(path)}: the header must be exactly {chr(9).join(header)!r}; restore it from git")
+    for number, row in enumerate(rows[1:], 2):
+        if len(row) != len(header):
+            fail(f"{rel(path)} line {number}: {len(row)} column(s) where the header has {len(header)}; "
+                 "restore it from git")
     return [dict(zip(header, row)) for row in rows[1:]]
 
 

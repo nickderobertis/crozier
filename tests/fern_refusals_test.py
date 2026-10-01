@@ -124,6 +124,15 @@ class Drift(unittest.TestCase):
                 self.assert_check_fails_naming(f"docs/fern-refusals/{name}: the header must be exactly")
                 (self.registry / name).write_text(original, encoding="utf-8")
 
+    def test_a_row_short_of_the_header_fails_naming_its_line(self) -> None:
+        table = rows(self.registry / "classes.tsv")
+        table[2] = table[2][:-1]
+        write_rows(self.registry / "classes.tsv", table)
+        result = run("check", registry=self.registry)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("classes.tsv line 3: 8 column(s) where the header has 9", result.stderr)
+
     def test_a_document_carrying_an_unknown_class_fails(self) -> None:
         table = rows(self.registry / "documents.tsv")
         table[1][8] = table[1][8] + ",no-such-class"
