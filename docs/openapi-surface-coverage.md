@@ -1916,6 +1916,16 @@ took it from 61 to 60, and each is stated here rather than left to the ledger:
   `recursive-graph` and `mutually-recursive-graph`, carry no fixture. Each has
   a minimal document Fern refuses and a control it generates, recorded in
   [Arms only a refused document reaches](fern-limitations.md#arms-only-a-refused-document-reaches).
+- **Nothing else in the ledger moved because of these changes.** The
+  ledger was re-measured on this tree, and a control was measured on main's
+  `77c5f1535` with the same recipe. The two differ only in the rows above,
+  plus `format`, `type-single` and `operation-id`. Those three declare the
+  `scalar_body` and `endpoint_module` sites this node changed, and each
+  still reaches every site. Sixteen further rows, among them
+  `anyof-discriminated-union`'s 29 unreached regions becoming 45, moved
+  against the ledger main had committed. That ledger was measured at
+  `e8e8dbfb8`, before #322's own changes to `src/ir.rs`. main re-measured
+  on its own source gives the same numbers this tree does.
 
 | rank | key | unreached arm | regions | search verdict | hand-written fixture |
 |---:|---|---|---:|---|---|
