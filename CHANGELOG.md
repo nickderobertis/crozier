@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.89](https://github.com/nickderobertis/crozier/compare/v0.0.88...v0.0.89) - 2026-10-01
+
+### Added
+
+- *(action)* run crozier compare as an Action with a floating v0 tag ([#333](https://github.com/nickderobertis/crozier/pull/333))
+- *(cli)* add compare to prove byte parity with a reference SDK ([#325](https://github.com/nickderobertis/crozier/pull/325))
+
 ## [0.0.88](https://github.com/nickderobertis/crozier/compare/v0.0.87...v0.0.88) - 2026-10-01
 
 ### Added
