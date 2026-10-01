@@ -1,4 +1,20 @@
 fixture	key	site	regions_executed	regions
+format-scalar-bodies	format-duration	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
+format-scalar-bodies	format-hostname	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
+format-scalar-bodies	format-idn-hostname	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-ipv4	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
+format-scalar-bodies	format-iri	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-json-pointer	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-password	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
+format-scalar-bodies	format-regex	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-time	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
+format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
+http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
+http-negotiate-unrequired	http-negotiate	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 inline-anyof-variants	anyof-allof-variant	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	11	11
 inline-anyof-variants	anyof-array-variant-annotated-ref-item	src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]	14	15
 inline-anyof-variants	anyof-array-variant-anyof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
@@ -35,3 +51,4 @@ ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::ref_to_class["items" => \{]
 ref-pointer-walk	ref-pointer-nested-items	src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]	2	3
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properties" if index]	4	4
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
+x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

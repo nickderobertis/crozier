@@ -4284,3 +4284,55 @@ trees, with crozier compared against each.
 | `format-assertion-vocabulary` | ignores | [`format-assertion-vocabulary/`](openapi-surface/probe-expected/format-assertion-vocabulary/) and [`format-assertion-vocabulary-control/`](openapi-surface/probe-expected/format-assertion-vocabulary-control/) |
 | `xml-prefix` | ignores | [`xml-prefix/`](openapi-surface/probe-expected/xml-prefix/) and [`xml-prefix-control/`](openapi-surface/probe-expected/xml-prefix-control/) |
 | `xml-wrapped` | ignores | [`xml-wrapped/`](openapi-surface/probe-expected/xml-wrapped/) and [`xml-wrapped-control/`](openapi-surface/probe-expected/xml-wrapped-control/) **Region row `golden` since the 2026-09-28 walk:** 1 golden-bearing registered source now declares the shape, so [its row](openapi-surface/schemas.md) settles on byte-matching goldens and this measurement is kept as a cross-reference. |
+
+## Arms only a refused document reaches
+
+Five unreached handling sites of `golden` rows are ones a
+[hand-written fixture](openapi-surface/handwritten/AGENTS.md) cannot cover,
+because every document found to reach them is one Fern refuses, and a document
+Fern refuses has no tree to byte-match. Each arm's six-source search reads
+`exhausted` ([the unreached-arm table](openapi-surface-coverage.md#every-unreached-arm-and-its-search-verdict)).
+Each record below rests on a committed pair under
+[`openapi-surface/probes/`](openapi-surface/probes/): a minimal document, and a
+control that differs from it on one line, the one that removes the shape the arm
+requires. Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 ran `fern check`
+and then `fern generate --local --preview` on each, in a workspace built under
+`mktemp -d` the way [`probes/AGENTS.md`](openapi-surface/probes/AGENTS.md#re-running-one)
+prescribes. crozier's reach was measured with the instrumented build of commit
+`63c6be58754e`, the build `just handwritten-reach` uses, with one run per
+document scoped the way `scripts/handwritten-fixtures.py measure` scopes a
+fixture. On every minimal document that run executes the arm (1 of its 1
+region). On every control it executes none of it.
+
+The fern-strict-mode node's refusal registry does not exist in this tree yet, so
+no record names a refusal class id. The two classes below are named by their
+diagnostic only, and the registry should assign ids when it lands.
+
+| key | arm | minimal document | Fern on it | control | Fern on the control |
+|---|---|---|---|---|---|
+| `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | [`enum-leading-zero-member-refused.yml`](openapi-surface/probes/enum-leading-zero-member-refused.yml), member `_01_00_AM` | `check` and `generate` exit 1: `Enum name 0100Am for value _01_00_AM is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores.` | [`…-refused-control.yml`](openapi-surface/probes/enum-leading-zero-member-refused-control.yml), member `01_00_AM` | both exit 0; the member is `ONE00AM` |
+| `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | [`enum-leading-digit-identifier-refused.yml`](openapi-surface/probes/enum-leading-digit-identifier-refused.yml), member `_10000` | `check` and `generate` exit 1: `Enum name 10000 for value _10000 is not suitable for code generation. …` | [`…-refused-control.yml`](openapi-surface/probes/enum-leading-digit-identifier-refused-control.yml), member `10000` | both exit 0; `SlotStart = str` |
+| `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | [`enum-empty-identifier-member-refused.yml`](openapi-surface/probes/enum-empty-identifier-member-refused.yml), member `#` | `check` and `generate` exit 1: `Enum name  for value # is not suitable for code generation. …` | [`…-refused-control.yml`](openapi-surface/probes/enum-empty-identifier-member-refused-control.yml), member `#a` | both exit 0; the member is `A` |
+| `recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | [`recursive-graph-refused.yml`](openapi-surface/probes/recursive-graph-refused.yml), `Node`'s inline-object property `"-"` holding a `$ref` back to `Node` | `check` exits 0; `generate` exits 1: `Container execution failed: Container exited with code 1.`, after the generator's `ruff check` reports `src/fern/types/node.py:12:5: SyntaxError: Expected a statement` on the field Fern wrote as `: typing_extensions.Annotated[typing.Optional["Node"], FieldMetadata(alias="-"), …]` | [`…-refused-control.yml`](openapi-surface/probes/recursive-graph-refused-control.yml), the property named `x` | both exit 0 |
+| `mutually-recursive-graph` | `src/ir.rs::Builder::add_object[if !self\.building_types\.insert]` | [`mutually-recursive-graph-refused.yml`](openapi-surface/probes/mutually-recursive-graph-refused.yml), the same property closing a `Node` → `Peer` → `Node` cycle | as `recursive-graph`, at `node.py:13:5` | [`…-refused-control.yml`](openapi-surface/probes/mutually-recursive-graph-refused-control.yml), the property named `x` | both exit 0 |
+
+**The enum arms** fall in one class: Fern refuses an enum member whose derived
+name does not start with a letter. `_01_00_AM` also executes
+`enum-leading-digit-identifier`'s arm, since its name keeps the digit run. Fern's
+refusal is wider than either arm. `_1_00_AM`, whose first run is not zero-led,
+is refused the same way (`Enum name 100Am …`) without executing
+`enum-leading-zero-member`'s arm, which is why that pair's control removes the
+underscore rather than the zero. The `01_00_AM` control is also where commit
+`35afbf97a` repaired crozier, which named the member `ONE_00_AM` where Fern names
+it `ONE00AM`. That repair narrowed the arm to a zero-led run the value does not
+start with, and only such a value's name leads with a digit.
+
+**The recursion guard** is not reached through recursion. `add_object` re-enters
+the type it is building when an inline object's hoisted name,
+`{Owner}{Property}`, equals its owner's, which happens when the property's name
+has no identifier characters (`"-"`, `"_"` and `"$"` all do it). The cycle in
+each minimal document is the row's shape, carried so the record stands on that
+row's own declaration. Removing it does not stop the arm from executing. Fern
+derives the same empty name, writes it as an empty field name, and its
+generator's own `ruff check` fails. crozier also exits 1 on these two documents
+(`ruff` cannot parse the `node.py` it wrote), after the guard has run.
