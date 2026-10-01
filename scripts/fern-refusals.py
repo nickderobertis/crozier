@@ -334,6 +334,9 @@ NODE_HEAP = "--max-old-space-size=16384"
 
 
 def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, str]:
+    if shutil.which(command[0]) is None:
+        fail(f"`{command[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI and needs Docker "
+             "for `fern generate`)")
     env = dict(os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true",
                NODE_OPTIONS=NODE_HEAP)
     try:
