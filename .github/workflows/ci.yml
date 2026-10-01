@@ -56,6 +56,7 @@ jobs:
   # pytest in it (the runtime wire suite, the own-pin type-check, the shared env's
   # concurrent build, and the fern-refusals gate's `wire_test.py` condition). Same
   # OS matrix as `check`, since the env and mypy-cache locking are per-platform.
+  # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
   sdk-env:
     name: sdk-env (${{ matrix.os }})
     needs: check
@@ -88,10 +89,12 @@ jobs:
   # every gate + install leg succeeded (a skipped/failed `needs` is not success).
   gate:
     name: gate
+    # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
     needs: [check, sdk-env, install, package, live-e2e]
     if: always()
     runs-on: ubuntu-latest
     steps:
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
       - name: Require all gate jobs to have succeeded
         run: |
           if [ "${{ needs.check.result }}" != "success" ] || [ "${{ needs.sdk-env.result }}" != "success" ] || [ "${{ needs.install.result }}" != "success" ] || [ "${{ needs.package.result }}" != "success" ] || [ "${{ needs.live-e2e.result }}" != "success" ]; then
