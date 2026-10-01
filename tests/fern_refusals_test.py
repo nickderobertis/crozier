@@ -159,6 +159,31 @@ class Drift(unittest.TestCase):
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming("no single class or finding matches")
 
+    def test_the_strict_exit_is_built_only_for_an_evaluated_class(self) -> None:
+        table = rows(self.registry / "classes.tsv")
+        evaluated = {row[0] for row in table[1:] if row[6] != "unevaluated"}
+        committed = rows(REGISTRY / "documents.tsv")[1:]
+        # The evaluated class whose withdrawal leaves the most documents with no evaluated class.
+        withdrawn = max(sorted(evaluated), key=lambda name: sum(
+            set(row[8].split(",")) & evaluated == {name} for row in committed))
+        row = next(row for row in table[1:] if row[0] == withdrawn)
+        row[6:9] = ["unevaluated", "—", "—"]
+        write_rows(self.registry / "classes.tsv", table)
+        evaluated.discard(withdrawn)
+        result = run("build", registry=self.registry)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        built = {row[0]: row for row in rows(self.registry / "documents.tsv")[1:]}
+        flipped = 0
+        for before in committed:
+            after = built[before[0]][11]
+            with self.subTest(digest=before[0]):
+                if set(before[8].split(",")) & evaluated:
+                    self.assertEqual(after, before[11])
+                else:
+                    self.assertEqual(after, "—")
+                    flipped += before[11] != "—"
+        self.assertGreater(flipped, 0, f"withdrawing {withdrawn} blanked no measured strict exit")
+
     def test_a_sampled_generation_that_contradicts_its_class_fails(self) -> None:
         confirmations = Path(self.scratch.name) / "confirmations.tsv"
         table = rows(CONFIRMATIONS)

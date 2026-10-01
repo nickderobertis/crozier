@@ -38,8 +38,10 @@ caused it.
   the refusal, `;`-separated), `fern_stage`, `fern_exit`, `fern_log` (the
   committed log holding Fern's complete diagnostic list), `classes`
   (`,`-separated, never empty), `crozier_exit`, `crozier_files` (crozier's
-  release build, default mode), `crozier_strict_exit` (`—` until the class is
-  evaluated).
+  release build, default mode), `crozier_strict_exit` (the same build under
+  `--fern-strict`; `—` until one of the document's classes is evaluated). All
+  three come from `measurements.jsonl`, which `just fern-refusals-measure`
+  fills, so `build` reproduces them.
 - [`unretrievable.tsv`](unretrievable.tsv) — a selected document whose bytes
   could not be read again, with its revision and the reason.
 - [`generated.tsv`](generated.tsv) — a selected document whose `fern check`
