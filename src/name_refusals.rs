@@ -498,12 +498,12 @@ fn collect_property_names<'a>(
             .filter(|(_, property)| {
                 !request_only
                     || (property.read_only != Some(true)
-                        && !property
+                        && property
                             .reference
                             .as_deref()
                             .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
                             .and_then(|name| schemas.get(name))
-                            .is_some_and(|target| target.read_only == Some(true)))
+                            .is_none_or(|target| target.read_only != Some(true)))
             })
             .map(|(name, _)| name.as_str()),
     );
@@ -665,60 +665,6 @@ fn check_children(
         }
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn enum_name_refusals_respect_value_shapes_types_and_declared_names() {
-        let schemas = indexmap::IndexMap::new();
-        for (value, refused) in [
-            ("10080", true),
-            ("10001+", false),
-            ("20000+", false),
-            ("9999", false),
-            ("007", false),
-            ("1st", false),
-            ("UNDEFINED", false),
-            ("緊急", true),
-            ("!!!", true),
-            ("#0094FF", true),
-            ("+1", true),
-            ("_1", true),
-            ("종합-00", true),
-        ] {
-            let schema: Schema = serde_json::from_value(serde_json::json!({
-                "type": "string", "enum": [value]
-            }))
-            .unwrap();
-            assert_eq!(
-                check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err(),
-                refused,
-                "{value}"
-            );
-        }
-        let schema: Schema = serde_json::from_value(serde_json::json!({
-            "type": "string", "enum": ["10080"],
-            "x-crozier-enum": {"10080": {"name": "WEEK"}}
-        }))
-        .unwrap();
-        check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).unwrap();
-        let schema: Schema = serde_json::from_value(serde_json::json!({
-            "type": "string", "enum": ["10080"],
-            "x-crozier-enum": {"10080": {"name": "2fa"}}
-        }))
-        .unwrap();
-        assert!(check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err());
-        for ty in ["integer", "number", "boolean"] {
-            let schema: Schema = serde_json::from_value(serde_json::json!({
-                "type": ty, "enum": ["10080"]
-            }))
-            .unwrap();
-            check_schema(&schema, "NonStringEnum", Path::new("api.yml"), &schemas).unwrap();
-        }
-    }
 }
 
 /// Compare names after lowering, before any output directory is created.
@@ -1012,4 +958,58 @@ fn property_reference_cycle(
         .flat_map(|mapping| mapping.values())
         .any(|property| property_reference_cycle(source, property, stack))
         || (node["items"].is_mapping() && property_reference_cycle(source, &node["items"], stack))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn enum_name_refusals_respect_value_shapes_types_and_declared_names() {
+        let schemas = indexmap::IndexMap::new();
+        for (value, refused) in [
+            ("10080", true),
+            ("10001+", false),
+            ("20000+", false),
+            ("9999", false),
+            ("007", false),
+            ("1st", false),
+            ("UNDEFINED", false),
+            ("緊急", true),
+            ("!!!", true),
+            ("#0094FF", true),
+            ("+1", true),
+            ("_1", true),
+            ("종합-00", true),
+        ] {
+            let schema: Schema = serde_json::from_value(serde_json::json!({
+                "type": "string", "enum": [value]
+            }))
+            .unwrap();
+            assert_eq!(
+                check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err(),
+                refused,
+                "{value}"
+            );
+        }
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "string", "enum": ["10080"],
+            "x-crozier-enum": {"10080": {"name": "WEEK"}}
+        }))
+        .unwrap();
+        check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).unwrap();
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "string", "enum": ["10080"],
+            "x-crozier-enum": {"10080": {"name": "2fa"}}
+        }))
+        .unwrap();
+        assert!(check_schema(&schema, "Minutes", Path::new("api.yml"), &schemas).is_err());
+        for ty in ["integer", "number", "boolean"] {
+            let schema: Schema = serde_json::from_value(serde_json::json!({
+                "type": ty, "enum": ["10080"]
+            }))
+            .unwrap();
+            check_schema(&schema, "NonStringEnum", Path::new("api.yml"), &schemas).unwrap();
+        }
+    }
 }
