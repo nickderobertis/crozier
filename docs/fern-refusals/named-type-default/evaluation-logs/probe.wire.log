@@ -1,0 +1,10 @@
+Baseline 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; generated public model/client boundary.
+declared ticket.type: string enum [ticket], default ticket; declared independent ticket_type: object id
+generated ticket.type annotation: typing.Optional[fern.types.ticket_type.TicketType]
+ValidationError 1 validation error for Ticket
+type
+  Input should be a valid dictionary or instance of TicketType [type=model_type, input_value='ticket', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.13/v/model_type
+independent ticket_type parsed: {'id': 'A'}
+
+exit: 0

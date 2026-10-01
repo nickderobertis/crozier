@@ -23,6 +23,7 @@ enum Class {
     ListDefaultNotArray,
     ObjectExtendsNonObject,
     GeneratorMissingType,
+    NamedTypeDefault,
 }
 
 impl Class {
@@ -39,6 +40,7 @@ impl Class {
             Self::ListDefaultNotArray => "list-default-not-array",
             Self::ObjectExtendsNonObject => "object-extends-non-object",
             Self::GeneratorMissingType => "generator-missing-type",
+            Self::NamedTypeDefault => "named-type-default",
         }
     }
 }
@@ -217,9 +219,14 @@ struct SchemaContext<'a> {
     path: &'a Path,
     strict: bool,
     names: indexmap::IndexMap<String, bool>,
+    default_names: indexmap::IndexMap<String, bool>,
 }
 
-fn schema_declaration_names(root: &serde_yaml_ng::Value) -> indexmap::IndexMap<String, bool> {
+fn schema_declaration_names(
+    root: &serde_yaml_ng::Value,
+    include_literals: bool,
+    declaration_kind: fn(&serde_yaml_ng::Value, &serde_yaml_ng::Value) -> bool,
+) -> indexmap::IndexMap<String, bool> {
     let mut names = indexmap::IndexMap::new();
     if let Some(schemas) = root
         .get("components")
@@ -232,8 +239,15 @@ fn schema_declaration_names(root: &serde_yaml_ng::Value) -> indexmap::IndexMap<S
                     continue;
                 }
                 let name = crate::naming::class_name(key);
-                names.insert(name.clone(), schema_is_model(schema, root, &mut Vec::new()));
-                register_inline_declarations(schema, &name, root, &mut names);
+                names.insert(name.clone(), declaration_kind(schema, root));
+                register_inline_declarations(
+                    schema,
+                    &name,
+                    root,
+                    &mut names,
+                    include_literals,
+                    declaration_kind,
+                );
             }
         }
     }
@@ -245,6 +259,8 @@ fn register_inline_declarations(
     parent: &str,
     root: &serde_yaml_ng::Value,
     names: &mut indexmap::IndexMap<String, bool>,
+    include_literals: bool,
+    declaration_kind: fn(&serde_yaml_ng::Value, &serde_yaml_ng::Value) -> bool,
 ) {
     if ignored_reference_node(schema) {
         return;
@@ -277,17 +293,32 @@ fn register_inline_declarations(
             let enumeration = child
                 .get("enum")
                 .and_then(serde_yaml_ng::Value::as_sequence)
-                .is_some_and(|values| values.len() > 1);
+                .is_some_and(|values| values.len() > usize::from(!include_literals))
+                || include_literals && child.get("const").is_some();
             if union || enumeration {
-                names.insert(name.clone(), schema_is_model(child, root, &mut Vec::new()));
+                names.insert(name.clone(), declaration_kind(child, root));
             }
-            register_inline_declarations(child, &name, root, names);
+            register_inline_declarations(
+                child,
+                &name,
+                root,
+                names,
+                include_literals,
+                declaration_kind,
+            );
         }
     }
     for key in ["oneOf", "anyOf", "allOf"] {
         if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
             for child in children {
-                register_inline_declarations(child, parent, root, names);
+                register_inline_declarations(
+                    child,
+                    parent,
+                    root,
+                    names,
+                    include_literals,
+                    declaration_kind,
+                );
             }
         }
     }
@@ -412,12 +443,99 @@ fn check_object_extension(
     Ok(())
 }
 
+fn named_default_unsupported(schema: &serde_yaml_ng::Value, root: &serde_yaml_ng::Value) -> bool {
+    if schema.get("enum").is_some()
+        || schema.get("const").is_some()
+        || matches!(
+            schema_type(schema)
+                .as_ref()
+                .and_then(crate::openapi::TypeField::primary),
+            Some("string" | "number" | "integer" | "boolean" | "array" | "null")
+        )
+    {
+        return false;
+    }
+    schema_is_model(schema, root, &mut Vec::new())
+        || ["oneOf", "anyOf"].iter().any(|key| {
+            schema
+                .get(key)
+                .and_then(serde_yaml_ng::Value::as_sequence)
+                .is_some_and(|variants| {
+                    variants
+                        .iter()
+                        .filter(|variant| {
+                            variant.get("type").and_then(serde_yaml_ng::Value::as_str)
+                                != Some("null")
+                        })
+                        .count()
+                        > 1
+                })
+        })
+}
+
+fn check_named_type_defaults(
+    schema: &serde_yaml_ng::Value,
+    parent: &str,
+    context: &SchemaContext<'_>,
+    element: &str,
+) -> Result<()> {
+    if ignored_reference_node(schema) {
+        return Ok(());
+    }
+    if let Some(properties) = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        for (key, child) in properties {
+            let Some(key) = key.as_str() else { continue };
+            if ignored_reference_node(child) || child.get("$ref").is_some() {
+                continue;
+            }
+            let name = crate::naming::child_class_name(parent, key);
+            let child_element = format!("{element}/properties/{key}");
+            let enumeration = child
+                .get("enum")
+                .and_then(serde_yaml_ng::Value::as_sequence)
+                .is_some_and(|values| !values.is_empty())
+                || child.get("const").is_some();
+            if child.get("default").is_some_and(|value| !value.is_null())
+                && enumeration
+                && context.default_names.get(&name).copied().unwrap_or(false)
+            {
+                return refusal(
+                    context.path,
+                    context.strict,
+                    Class::NamedTypeDefault,
+                    &format!("{child_element}/default"),
+                );
+            }
+            check_named_type_defaults(child, &name, context, &child_element)?;
+        }
+    }
+    for key in ["oneOf", "anyOf", "allOf"] {
+        if let Some(variants) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            for (index, child) in variants.iter().enumerate() {
+                check_named_type_defaults(
+                    child,
+                    parent,
+                    context,
+                    &format!("{element}/{key}/{index}"),
+                )?;
+            }
+        }
+    }
+    Ok(())
+}
+
 fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
     let context = SchemaContext {
         root,
         path,
         strict,
-        names: schema_declaration_names(root),
+        names: schema_declaration_names(root, false, |schema, root| {
+            schema_is_model(schema, root, &mut Vec::new())
+        }),
+        default_names: schema_declaration_names(root, true, named_default_unsupported),
     };
     if let Some(schemas) = root
         .get("components")
@@ -426,6 +544,12 @@ fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool
     {
         for (name, schema) in schemas {
             if let Some(name) = name.as_str() {
+                check_named_type_defaults(
+                    schema,
+                    &crate::naming::class_name(name),
+                    &context,
+                    &format!("components/schemas/{name}"),
+                )?;
                 check_schema(
                     schema,
                     &context,

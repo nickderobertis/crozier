@@ -19,7 +19,7 @@ generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	unevaluated	—	—
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	unevaluated	—	—
-named-type-default	documents	check	1	Default values are not supported for the named type	10	unevaluated	—	—
+named-type-default	documents	check	1	Default values are not supported for the named type	10	refuse	ticket/properties/type/default	10/10
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	refuse	Tagged/allOf	114/114
 object-property-name-collision	names	check	1	Object has multiple properties named <…>:	41	unevaluated	—	—
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	refuse	GET /things parameter id	29/29
