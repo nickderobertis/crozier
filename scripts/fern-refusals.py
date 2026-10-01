@@ -452,8 +452,10 @@ def upgraded(row: dict[str, str]) -> dict[str, str]:
     return {field: row[field] for field in MEASUREMENT_FIELDS}
 
 
-def crozier_run(binary: Path, document: Path, timeout: int, *flags: str) -> tuple[str, str]:
-    """crozier's exit on `document`, and how many files it wrote."""
+def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: str) -> tuple[str, str]:
+    """crozier's exit on `document`, and how many files it wrote; its stderr is
+    kept in `log`, under the uncommitted cache, to read why it refused."""
+    log.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="fern-refusals-crozier-") as scratch:
         output = Path(scratch) / "sdk"
         try:
@@ -462,18 +464,21 @@ def crozier_run(binary: Path, document: Path, timeout: int, *flags: str) -> tupl
                                   "--project-name", "default_package_name"],
                                  capture_output=True, text=True, timeout=timeout)
         except subprocess.TimeoutExpired:
+            log.write_text(f"timed out after {timeout} seconds\n", encoding="utf-8")
             return "timeout", "0"
+        log.write_text(run.stderr, encoding="utf-8")
         files = sum(1 for path in output.rglob("*") if path.is_file()) if output.is_dir() else 0
     return str(run.returncode), str(files)
 
 
-def crozier_measure(binary: Path, document: Path, timeout: int) -> dict[str, str]:
-    status, files = crozier_run(binary, document, timeout)
+def crozier_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
+    status, files = crozier_run(binary, document, timeout, CACHE / "crozier-logs" / f"{digest}.default.log")
     return {"crozier_exit": status, "crozier_files": files}
 
 
-def crozier_strict_measure(binary: Path, document: Path, timeout: int) -> dict[str, str]:
-    return {"crozier_strict_exit": crozier_run(binary, document, timeout, "--fern-strict")[0]}
+def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
+    log = CACHE / "crozier-logs" / f"{digest}.strict.log"
+    return {"crozier_strict_exit": crozier_run(binary, document, timeout, log, "--fern-strict")[0]}
 
 
 def read_measurements() -> dict[str, dict[str, str]]:
@@ -556,9 +561,9 @@ def measure(args: argparse.Namespace) -> int:
         if "generate" in needed:
             row.update(fern_generate(path, digest, args.timeout))
         if "crozier" in needed:
-            row.update(crozier_measure(binary, path, args.timeout))
+            row.update(crozier_measure(binary, path, digest, args.timeout))
         if "crozier-strict" in needed:
-            row.update(crozier_strict_measure(binary, path, args.timeout))
+            row.update(crozier_strict_measure(binary, path, digest, args.timeout))
         return row
 
     lock = threading.Lock()

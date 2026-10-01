@@ -311,6 +311,19 @@ class StrictMeasurement(unittest.TestCase):
         self.assertEqual(measured["crozier_strict_exit"], "1")
         self.assertEqual(self.built_row()[9:12], ["1", "0", "1"])
 
+    def test_measure_runs_the_strict_exit_under_fern_strict(self) -> None:
+        # Every names class refuses in both modes, so the exits agree; the strict
+        # run is told apart by the cause its refusal line names.
+        self.measure()
+        logs = self.root / ".local" / "fern-refusals" / "crozier-logs"
+        default = (logs / f"{self.digest}.default.log").read_text(encoding="utf-8")
+        strict = (logs / f"{self.digest}.strict.log").read_text(encoding="utf-8")
+        cause = "(fern-strict: Fern refuses this document)"
+        self.assertIn(f"{self.CLASS}: ", default)
+        self.assertNotIn(cause, default)
+        self.assertIn(f"{self.CLASS}: ", strict)
+        self.assertIn(cause, strict)
+
     def test_an_unevaluated_class_builds_no_strict_exit(self) -> None:
         self.measure()
         self.classes[1][6:9] = ["unevaluated", "—", "—"]
