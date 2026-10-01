@@ -175,7 +175,16 @@ fn compare_checks_every_generator_and_reports_each_status() {
     assert!(out.stdout.is_empty());
 
     // crozier's own writes left the searched tree byte-for-byte as it was.
-    assert_eq!(snapshot(root), before, "compare changed the searched tree");
+    let after = snapshot(root);
+    let changed: Vec<&PathBuf> = before
+        .keys()
+        .chain(after.keys())
+        .filter(|path| before.get(*path) != after.get(*path))
+        .collect();
+    assert!(
+        changed.is_empty(),
+        "compare changed the searched tree: {changed:?}"
+    );
 
     let report: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&json).unwrap()).unwrap();
