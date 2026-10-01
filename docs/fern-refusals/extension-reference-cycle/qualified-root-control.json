@@ -1,0 +1,1 @@
+{"openapi": "3.0.3", "info": {"title": "probe", "version": "1"}, "paths": {}, "components": {"schemas": {"My.Node": {"type": "object", "properties": {"id": {"type": "integer", "format": "uint32"}}, "x-link": {"target": {"$ref": "#/components/schemas/My.Node"}}}}}}

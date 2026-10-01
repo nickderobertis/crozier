@@ -45,3 +45,28 @@ of assertion-witness rebuilds.
 The [CLI assertion fails with only the cycle check disabled](evaluation-logs/refusal-e2e-induced-red.log),
 writing 37 files for the probe instead of refusing. This deliberately records
 an induced earlier state; the finished source restores the check.
+
+The corpus comparison exposed an overbroad cycle refusal on Bungie's field
+metadata. Its [pinned full-document check](evaluation-logs/fern-bungie-full.check.log)
+passes without a parser failure. Pinned reduced controls distinguish direct
+references on Property Object extensions: Fern accepts
+[integer mapped fields](evaluation-logs/fern-field-mapped.log),
+[another extension key on an integer field](evaluation-logs/fern-field-direct-link.log),
+[object fields](evaluation-logs/fern-field-object-mapped.log),
+[string fields](evaluation-logs/fern-field-string-mapped.log),
+[qualified schema names](evaluation-logs/fern-qualified-field.log), and
+[unsigned fields](evaluation-logs/fern-unsigned-field.log).
+It still reports parser stack failures for direct extensions on a
+[schema root](evaluation-logs/fern-direct-link.log),
+[a mapped schema root](evaluation-logs/fern-direct-mapped.log),
+[a Stripe extension on a root](evaluation-logs/fern-direct-stripe.log),
+[a qualified root](evaluation-logs/fern-qualified-root.log),
+and nested references on [integer](evaluation-logs/fern-field-integer.log),
+[string](evaluation-logs/fern-field-string.log) or
+[boolean](evaluation-logs/fern-field-boolean.log) fields.
+The corrected detector exempts direct extension Reference Objects on schema
+properties; it keeps nested references and schema-root extensions in the cycle
+check. The CLI controls preserve each accepted SDK's bytes between modes.
+Remeasured with the corrected detector, both population documents still
+refuse in both modes with the unchanged lines in the population refusal log:
+Stripe's `x-stripeProperty` nests its reference under `referenced_resource`.

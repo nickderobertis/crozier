@@ -16300,15 +16300,40 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
     let class = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(FERN_REFUSALS_DIR)
         .join("extension-reference-cycle");
-    for case in [
-        "probe.yml",
-        "other-extension-control.yml",
-        "two-schema-cycle-control.yml",
+    for (case, diagnostic) in [
+        ("probe.yml", "schemas/Node/x-"),
+        ("other-extension-control.yml", "schemas/Node/x-"),
+        ("two-schema-cycle-control.yml", "schemas/Node/x-"),
+        ("direct-link-control.json", "schemas/Node/x-link"),
+        (
+            "direct-mapped-control.json",
+            "schemas/Node/x-mapped-definition",
+        ),
+        (
+            "nested-mapped-control.json",
+            "schemas/Node/x-mapped-definition",
+        ),
+        (
+            "direct-stripe-control.json",
+            "schemas/Node/x-stripeProperty",
+        ),
+        ("qualified-root-control.json", "schemas/My.Node/x-link"),
+        (
+            "field-integer-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
+        (
+            "field-string-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
+        (
+            "field-boolean-control.json",
+            "schemas/Node/properties/id/x-link",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
-            let failures =
-                refused_failures("extension-reference-cycle", &run, "schemas/Node/x-", strict);
+            let failures = refused_failures("extension-reference-cycle", &run, diagnostic, strict);
             assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
             assert_eq!(run.stderr.lines().count(), 1);
         }
@@ -16328,6 +16353,12 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
             "ordinary-recursion-control.yml",
             "acyclic-extension-control.yml",
             "ordinary-return-edge-control.yml",
+            "field-mapped-control.json",
+            "field-direct-link-control.json",
+            "field-object-mapped-control.json",
+            "field-string-mapped-control.json",
+            "qualified-field-control.json",
+            "unsigned-field-control.json",
         ]
         .map(|case| class.join(case)),
     );

@@ -208,7 +208,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
             }
         }
     }
-    if let Some(element) = cyclic_extension(&root, &root, "", &mut ExtensionCycles::default()) {
+    if let Some(element) =
+        cyclic_extension(&root, &root, "", &mut ExtensionCycles::default(), false)
+    {
         return refusal(path, strict, Class::ExtensionReferenceCycle, &element);
     }
     check_document_schemas(&root, path, strict)?;
@@ -237,7 +239,7 @@ fn extension_reference_cycle(
             return true;
         }
         let cycle = yaml_pointer(root, pointer)
-            .is_some_and(|target| cyclic_extension(target, root, "", state).is_some());
+            .is_some_and(|target| cyclic_extension(target, root, "", state, false).is_some());
         state.active.remove(reference);
         if !cycle {
             state.complete.insert(reference.to_owned());
@@ -260,6 +262,7 @@ fn cyclic_extension(
     root: &serde_yaml_ng::Value,
     element: &str,
     state: &mut ExtensionCycles,
+    property_schema: bool,
 ) -> Option<String> {
     if ignored_reference_node(node) {
         return None;
@@ -274,11 +277,29 @@ fn cyclic_extension(
                     format!("{element}/{key}")
                 };
                 if key.starts_with("x-") {
-                    if extension_reference_cycle(value, root, state) {
+                    if !(property_schema && value.get("$ref").is_some())
+                        && extension_reference_cycle(value, root, state)
+                    {
                         return Some(child_element);
                     }
+                } else if key == "properties" {
+                    if let Some(properties) = value.as_mapping() {
+                        for (name, schema) in properties {
+                            let Some(name) = name.as_str() else { continue };
+                            if let Some(cycle) = cyclic_extension(
+                                schema,
+                                root,
+                                &format!("{child_element}/{name}"),
+                                state,
+                                true,
+                            ) {
+                                return Some(cycle);
+                            }
+                        }
+                    }
                 } else if !matches!(key, "example" | "examples" | "default" | "enum" | "const") {
-                    if let Some(cycle) = cyclic_extension(value, root, &child_element, state) {
+                    if let Some(cycle) = cyclic_extension(value, root, &child_element, state, false)
+                    {
                         return Some(cycle);
                     }
                 }
@@ -287,7 +308,7 @@ fn cyclic_extension(
         serde_yaml_ng::Value::Sequence(values) => {
             for (index, value) in values.iter().enumerate() {
                 if let Some(cycle) =
-                    cyclic_extension(value, root, &format!("{element}/{index}"), state)
+                    cyclic_extension(value, root, &format!("{element}/{index}"), state, false)
                 {
                     return Some(cycle);
                 }
