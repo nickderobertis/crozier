@@ -1,0 +1,55 @@
+   Compiling crozier v0.0.87 (<repo>)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.86s
+────────────
+ Nextest run ID d4797916-6b2d-4b06-883d-b0ad64ad0ad1 with nextest profile: default
+    Starting 1 test across 1 binary (424 tests and 6 binaries skipped)
+        FAIL [  38.075s] (1/1) crozier::e2e sdk_env_journeys_survive_concurrent_first_use
+  stdout ───
+
+    running 1 test
+    test sdk_env_journeys_survive_concurrent_first_use ... FAILED
+
+    failures:
+
+    failures:
+        sdk_env_journeys_survive_concurrent_first_use
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 424 filtered out; finished in 38.07s
+
+  stderr ───
+
+    thread 'sdk_env_journeys_survive_concurrent_first_use' (3846546) panicked at tests/e2e.rs:14930:5:
+    sdk_env_crozier_matches_fern_runtime_behavior failed under concurrent first use:
+
+    running 1 test
+    test sdk_env_crozier_matches_fern_runtime_behavior ... FAILED
+
+    failures:
+
+    ---- sdk_env_crozier_matches_fern_runtime_behavior stdout ----
+
+    thread 'sdk_env_crozier_matches_fern_runtime_behavior' (3846554) panicked at tests/e2e.rs:9518:34:
+    runtime wire tests require a Python env: uv venv failed:
+    Using CPython 3.14.7
+    Creating virtual environment at: <tmp>/crozier-runtime-venv-v2
+    error: Failed to create virtual environment
+      cause: A virtual environment already exists at: <tmp>/crozier-runtime-venv-v2
+
+    hint: Use the `--clear` flag or set `UV_VENV_CLEAR=1` to replace the existing virtual environment
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+    failures:
+        sdk_env_crozier_matches_fern_runtime_behavior
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 424 filtered out; finished in 0.74s
+
+
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [  38.077s] 1 test run: 0 passed, 1 failed, 424 skipped
+        FAIL [  38.075s] (1/1) crozier::e2e sdk_env_journeys_survive_concurrent_first_use
+error: test run failed

@@ -1,13 +1,13 @@
 cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env_/)'
    Compiling crozier v0.0.87 (<repo>)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.16s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.33s
 ────────────
- Nextest run ID 362f2a3c-6505-4628-909e-ff83a51b19c0 with nextest profile: default
-    Starting 5 tests across 1 binary (419 tests and 6 binaries skipped)
-        PASS [   0.017s] (1/5) crozier::e2e sdk_env_fern_refusal_wire_tests_hold
-        PASS [   2.670s] (2/5) crozier::e2e sdk_env_crozier_matches_fern_runtime_behavior
-        PASS [   4.601s] (3/5) crozier::e2e sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin
-        FAIL [  12.526s] (4/5) crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
+ Nextest run ID 692e2bdb-de73-46f6-874e-5f591c772d35 with nextest profile: default
+    Starting 6 tests across 1 binary (419 tests and 6 binaries skipped)
+        PASS [   0.018s] (1/6) crozier::e2e sdk_env_fern_refusal_wire_tests_hold
+        PASS [   3.673s] (2/6) crozier::e2e sdk_env_crozier_matches_fern_runtime_behavior
+        PASS [   5.687s] (3/6) crozier::e2e sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin
+        FAIL [  13.774s] (4/6) crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
   stdout ───
 
     running 1 test
@@ -18,11 +18,11 @@ cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env
     failures:
         sdk_env_fern_refusal_gate_runs_each_wire_test
 
-    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 423 filtered out; finished in 12.52s
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 424 filtered out; finished in 13.76s
 
   stderr ───
 
-    thread 'sdk_env_fern_refusal_gate_runs_each_wire_test' (2075371) panicked at tests/e2e.rs:15289:5:
+    thread 'sdk_env_fern_refusal_gate_runs_each_wire_test' (22040) panicked at tests/e2e.rs:15356:5:
     a passing wire test was reported:
     failing-wire-test: wire_test.py failed against crozier's default SDK for the probe:
     F                                                                        [100%]
@@ -34,9 +34,9 @@ cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env
     E       AssertionError: scratch wire test fails on purpose
     E       assert False
 
-    /tmp/.tmpGm9OL4/fern-refusals/failing-wire-test/wire_test.py:2: AssertionError
+    <tmp>/fern-refusals/failing-wire-test/wire_test.py:2: AssertionError
     =========================== short test summary info ============================
-    FAILED ../../../../../../../../tmp/.tmpGm9OL4/fern-refusals/failing-wire-test/wire_test.py::test_the_wire_disagrees
+    FAILED ../../../../../../../..<tmp>/fern-refusals/failing-wire-test/wire_test.py::test_the_wire_disagrees
     1 failed in 0.02s
 
     failing-wire-test: crozier generated from the probe under --fern-strict; the class says it is refused (40 file(s) written)
@@ -60,18 +60,19 @@ cargo nextest run --locked --run-ignored only -E 'binary(e2e) and test(/^sdk_env
     E         
     E         Use -v to get more diff
 
-    /tmp/.tmpGm9OL4/fern-refusals/passing-wire-test/wire_test.py:29: AssertionError
+    <tmp>/fern-refusals/passing-wire-test/wire_test.py:29: AssertionError
     =========================== short test summary info ============================
-    FAILED ../../../../../../../../tmp/.tmpGm9OL4/fern-refusals/passing-wire-test/wire_test.py::test_the_request_and_its_response_round_trip
-    1 failed, 1 passed in 5.23s
+    FAILED ../../../../../../../..<tmp>/fern-refusals/passing-wire-test/wire_test.py::test_the_request_and_its_response_round_trip
+    1 failed, 1 passed in 5.32s
 
     passing-wire-test: crozier generated from the probe under --fern-strict; the class says it is refused (40 file(s) written)
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
-  Cancelling due to test failure: 1 test still running
-        PASS [  15.913s] (5/5) crozier::e2e sdk_env_survives_concurrent_first_use
+  Cancelling due to test failure: 2 tests still running
+        PASS [  19.034s] (5/6) crozier::e2e sdk_env_survives_concurrent_first_use
+        PASS [  43.711s] (6/6) crozier::e2e sdk_env_journeys_survive_concurrent_first_use
 ────────────
-     Summary [  15.916s] 5 tests run: 4 passed, 1 failed, 419 skipped
-        FAIL [  12.526s] (4/5) crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
+     Summary [  43.713s] 6 tests run: 5 passed, 1 failed, 419 skipped
+        FAIL [  13.774s] (4/6) crozier::e2e sdk_env_fern_refusal_gate_runs_each_wire_test
 error: test run failed
 error: recipe `test-sdk-env` failed on line 54 with exit code 100

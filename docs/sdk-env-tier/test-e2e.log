@@ -1,423 +1,423 @@
 cargo nextest run --locked -E 'binary(e2e)'
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
 ────────────
- Nextest run ID d8f9afb2-df5d-4bd5-8902-e7631eaaadd7 with nextest profile: default
-    Starting 416 tests across 1 binary (8 tests and 6 binaries skipped)
-        PASS [   0.011s] (  1/416) crozier::e2e a_known_fern_failure_registration_cannot_excuse_anything_else
-        PASS [   0.032s] (  2/416) crozier::e2e a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message
-        PASS [   0.037s] (  3/416) crozier::e2e a_malformed_env_override_exits_nonzero_with_an_actionable_message
-        PASS [   0.042s] (  4/416) crozier::e2e a_malformed_config_file_exits_nonzero_naming_the_file
-        PASS [   0.043s] (  5/416) crozier::e2e a_bad_layout_is_refused_naming_the_value_and_its_layer
-        PASS [   0.076s] (  6/416) crozier::e2e aggregate_fixture_diff_refuses_to_follow_symlinks
-        PASS [   0.077s] (  7/416) crozier::e2e aggregate_fixture_diff_includes_missing_unexpected_and_changed_files
-        PASS [   0.112s] (  8/416) crozier::e2e a_missing_relative_path_item_is_discarded_without_losing_other_endpoints
-        PASS [   0.160s] (  9/416) crozier::e2e a_remote_url_ref_is_fetched_and_generates_against_the_referenced_document
-        PASS [   0.156s] ( 10/416) crozier::e2e a_generator_overrides_the_shared_top_level_field_by_field
-        PASS [   0.203s] ( 11/416) crozier::e2e a_named_but_missing_config_file_exits_nonzero
-        PASS [   0.187s] ( 12/416) crozier::e2e an_absolute_path_item_ref_fetches_its_relative_parameter_sibling
-        PASS [   0.344s] ( 13/416) crozier::e2e a_security_scheme_reference_emits_the_credential_it_names
-        PASS [   0.348s] ( 14/416) crozier::e2e a_pure_ref_component_names_the_response_it_types
-        PASS [   0.408s] ( 15/416) crozier::e2e a_path_parameter_object_with_a_model_field_documents_no_example_at_all
-        PASS [   0.404s] ( 16/416) crozier::e2e all_of_request_bodies_flatten_inherited_fields
-        PASS [   0.363s] ( 17/416) crozier::e2e an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type
-        PASS [   0.422s] ( 18/416) crozier::e2e adyen_report_notification_matches_fern_output
-        PASS [   0.605s] ( 19/416) crozier::e2e a_field_resolves_cli_then_env_then_generator_then_shared_then_default
-        PASS [   0.660s] ( 20/416) crozier::e2e adyen_acs_notification_matches_fern_output
-        PASS [   0.499s] ( 21/416) crozier::e2e apache_qakka_matches_fern_output
-        PASS [   0.880s] ( 22/416) crozier::e2e adyen_managed_risk_notification_matches_fern_output
-        PASS [   1.174s] ( 23/416) crozier::e2e alma_france_matches_fern_output
-        PASS [   0.973s] ( 24/416) crozier::e2e api_openverse_org_matches_fern_output
-        PASS [   1.383s] ( 25/416) crozier::e2e adyen_capital_matches_fern_output
-        PASS [   1.132s] ( 26/416) crozier::e2e apideck_customer_support_matches_fern_output
-        PASS [   0.988s] ( 27/416) crozier::e2e apideck_ecosystem_matches_fern_output
-        PASS [   1.352s] ( 28/416) crozier::e2e apideck_connector_matches_fern_output
-        PASS [   0.476s] ( 29/416) crozier::e2e apideck_proxy_matches_fern_output
-        PASS [   1.459s] ( 30/416) crozier::e2e apideck_ats_matches_fern_output
-        PASS [   1.665s] ( 31/416) crozier::e2e apideck_ecommerce_matches_fern_output
-        PASS [   1.040s] ( 32/416) crozier::e2e apideck_lead_matches_fern_output
-        PASS [   1.952s] ( 33/416) crozier::e2e apicurio_matches_fern_output
-        PASS [   0.476s] ( 34/416) crozier::e2e apis_guru_matches_fern_output
-        PASS [   0.842s] ( 35/416) crozier::e2e apideck_sms_matches_fern_output
-        PASS [   0.605s] ( 36/416) crozier::e2e apivideo_android_uploader_matches_fern_output
-        PASS [   1.911s] ( 37/416) crozier::e2e apideck_file_storage_matches_fern_output
-        PASS [   0.387s] ( 38/416) crozier::e2e arbitrary_spec_generates_valid_python
-        PASS [   0.377s] ( 39/416) crozier::e2e array_item_enums_hoist_to_tag_types
-        PASS [   0.353s] ( 40/416) crozier::e2e arrays_without_items_use_bare_any_elements
-        PASS [   0.400s] ( 41/416) crozier::e2e array_ref_request_body_generates_single_named_request_argument
-        PASS [   0.174s] ( 42/416) crozier::e2e audience_filter_strict_flat_matches_fern
-        PASS [   0.276s] ( 43/416) crozier::e2e audience_filter_matches_fern_output
-        PASS [   1.683s] ( 44/416) crozier::e2e apideck_issue_tracking_matches_fern_output
-        PASS [   1.156s] ( 45/416) crozier::e2e apideck_webhook_matches_fern_output
-        PASS [   2.538s] ( 46/416) crozier::e2e apideck_crm_matches_fern_output
-        PASS [   2.970s] ( 47/416) crozier::e2e apache_airflow_matches_fern_output
-        PASS [   0.315s] ( 48/416) crozier::e2e audience_filter_strict_matches_fern_output
-        PASS [   0.272s] ( 49/416) crozier::e2e basic_auth_matches_fern_output
-        PASS [   0.450s] ( 50/416) crozier::e2e auth_schemes_matches_fern_output
-        PASS [   3.150s] ( 51/416) crozier::e2e apache_org_airflow_matches_fern_output
-        PASS [   2.477s] ( 52/416) crozier::e2e apideck_hris_matches_fern_output
-        PASS [   0.719s] ( 53/416) crozier::e2e audience_filter_prunes_through_the_binary_and_stays_valid
-        PASS [   1.818s] ( 54/416) crozier::e2e apideck_vault_matches_fern_output
-        PASS [   0.341s] ( 55/416) crozier::e2e binary_request_media_types_are_preserved
-        PASS [   1.389s] ( 56/416) crozier::e2e appwrite_client_matches_fern_output
-        PASS [   0.331s] ( 57/416) crozier::e2e binary_success_responses_stream_bytes
-        PASS [   0.364s] ( 58/416) crozier::e2e binary_response_examples_use_neutral_path_placeholders
-        PASS [   0.407s] ( 59/416) crozier::e2e binary_requests_ignore_declared_operation_headers
-        PASS [   0.867s] ( 60/416) crozier::e2e authentiqio_matches_fern_output
-        PASS [   0.450s] ( 61/416) crozier::e2e bintable_matches_fern_output
-        PASS [   0.800s] ( 62/416) crozier::e2e billie_entry_matches_fern_output
-        PASS [   1.671s] ( 63/416) crozier::e2e appwrite_server_matches_fern_output
-        PASS [   0.361s] ( 64/416) crozier::e2e bracketed_property_names_generate_valid_python
-        PASS [   0.829s] ( 65/416) crozier::e2e billie_matches_fern_output
-        PASS [   0.324s] ( 66/416) crozier::e2e bracketed_property_names_matches_fern_output
-        PASS [   0.118s] ( 67/416) crozier::e2e calorieninjas_reproduces_the_exact_known_fern_failure_boundary
-        PASS [   1.216s] ( 68/416) crozier::e2e auto_agent_protocol_matches_fern_output
-        PASS [   0.148s] ( 69/416) crozier::e2e client_class_name_is_configurable_via_the_config_file
-        PASS [   4.049s] ( 70/416) crozier::e2e anchore_matches_fern_output
-        PASS [   0.195s] ( 71/416) crozier::e2e client_class_name_flat_matches_fern
-        PASS [   0.517s] ( 72/416) crozier::e2e buildrelay_matches_fern_output
-        PASS [   0.386s] ( 73/416) crozier::e2e camel_case_tags_generate_snake_case_client_packages
-        PASS [   0.287s] ( 74/416) crozier::e2e client_class_name_matches_fern_output
-        PASS [   4.016s] ( 75/416) crozier::e2e apideck_accounting_matches_fern_output
-        PASS [   4.418s] ( 76/416) crozier::e2e airbyte_config_matches_fern_output
-        PASS [   0.340s] ( 77/416) crozier::e2e closed_empty_inline_objects_hoist_through_the_cli
-        PASS [   0.131s] ( 78/416) crozier::e2e config_file_is_discovered_in_the_working_directory
-        PASS [   0.352s] ( 79/416) crozier::e2e colliding_query_and_body_fields_serialize_from_query_name
-        PASS [   0.042s] ( 80/416) crozier::e2e config_labels_the_layer_every_field_came_from
-        PASS [   0.336s] ( 81/416) crozier::e2e component_examples_populate_composite_body_fields
-        PASS [   0.047s] ( 82/416) crozier::e2e config_selects_one_generator_and_honors_no_config_through_the_binary
-        PASS [   0.125s] ( 83/416) crozier::e2e config_flag_selects_one_generator_through_the_binary
-        PASS [   0.022s] ( 84/416) crozier::e2e corpus_fixture_aliases_resolve_to_registered_goldens
-        PASS [   1.175s] ( 85/416) crozier::e2e blackadi_oauth2_matches_fern_output
-        PASS [   0.320s] ( 86/416) crozier::e2e component_request_body_refs_generate_through_the_cli
-        PASS [   0.364s] ( 87/416) crozier::e2e component_examples_populate_inlined_body_fields
-        PASS [   0.271s] ( 88/416) crozier::e2e config_flag_beats_crozier_config_env_which_beats_discovery
-        PASS [   0.127s] ( 89/416) crozier::e2e crozier_config_env_var_names_the_file_through_the_binary
-        PASS [   0.567s] ( 90/416) crozier::e2e color_pizza_matches_fern_output
-        PASS [   0.906s] ( 91/416) crozier::e2e byautomata_io_matches_fern_output
-        PASS [   1.879s] ( 92/416) crozier::e2e aws_importexport_matches_fern_output
-        PASS [   0.305s] ( 93/416) crozier::e2e cookie_parameters_matches_fern_output
-        PASS [   0.985s] ( 94/416) crozier::e2e chaingateway_io_matches_fern_output
-        PASS [   0.408s] ( 95/416) crozier::e2e conflicting_error_body_types_downgrade_status_class_to_any
-        PASS [   0.323s] ( 96/416) crozier::e2e cyberark_conjur_api_matches_fern_output
-        PASS [   0.304s] ( 97/416) crozier::e2e date_query_examples_use_dates_while_wire_values_use_str
-        PASS [   0.170s] ( 98/416) crozier::e2e default_naming_derives_package_from_title
-        PASS [   0.331s] ( 99/416) crozier::e2e declared_empty_schema_descriptions_emit_class_docstrings
-        PASS [   0.321s] (100/416) crozier::e2e declared_tag_labels_are_preserved_in_reference_headings
-        PASS [   0.513s] (101/416) crozier::e2e crozier_sdk_extensions_matches_fern_output
-        PASS [   0.238s] (102/416) crozier::e2e descope_authzcache_matches_fern_output
-        PASS [   0.326s] (103/416) crozier::e2e default_naming_sanitizes_title_punctuation
-        PASS [   0.329s] (104/416) crozier::e2e digit_leading_property_matches_fern_output
-        PASS [   0.402s] (105/416) crozier::e2e digit_leading_property_gets_f_prefix_and_alias
-        PASS [   0.398s] (106/416) crozier::e2e discriminated_unions_matches_fern_output
-        PASS [   0.608s] (107/416) crozier::e2e digit_leading_schema_name_generates_valid_python
-        PASS [   2.828s] (108/416) crozier::e2e audiobookshelf_matches_fern_output
-        PASS [   1.581s] (109/416) crozier::e2e codat_assess_matches_fern_output
-        PASS [   0.357s] (110/416) crozier::e2e empty_dotted_operation_namespace_overwrites_the_root_surface
-        PASS [   0.342s] (111/416) crozier::e2e enum_name_sanitization_matches_fern_output
-        PASS [   0.431s] (112/416) crozier::e2e endpoint_docstrings_preserve_literal_backslashes
-        PASS [   0.719s] (113/416) crozier::e2e electric_sql_matches_fern_output
-        PASS [   0.410s] (114/416) crozier::e2e enum_query_param_matches_fern_output
-        PASS [   0.353s] (115/416) crozier::e2e enums_referenced_by_retained_models_remain_root_types
-        PASS [   0.437s] (116/416) crozier::e2e enum_receiver_collision_matches_fern_output
-        PASS [   0.411s] (117/416) crozier::e2e enum_sanitization_generates_valid_python
-        PASS [   1.924s] (118/416) crozier::e2e cyclonedx_transparency_exchange_matches_fern_output
-        PASS [   0.252s] (119/416) crozier::e2e env_var_overrides_config_and_cli_overrides_env
-        PASS [   0.270s] (120/416) crozier::e2e eos_extra_fields_forbid_flat_matches_fern
-        PASS [   0.375s] (121/416) crozier::e2e eos_extra_fields_forbid_matches_fern_output
-        PASS [   0.412s] (122/416) crozier::e2e eos_matches_fern_output
-        PASS [   0.019s] (123/416) crozier::e2e every_existing_manifest_golden_is_registered_for_aggregate_comparison
+ Nextest run ID b9cc3a7c-6df0-4b28-b5cd-304ef8064b3a with nextest profile: default
+    Starting 416 tests across 1 binary (9 tests and 6 binaries skipped)
+        PASS [   0.012s] (  1/416) crozier::e2e a_known_fern_failure_registration_cannot_excuse_anything_else
+        PASS [   0.026s] (  2/416) crozier::e2e aggregate_fixture_diff_includes_missing_unexpected_and_changed_files
+        PASS [   0.030s] (  3/416) crozier::e2e a_malformed_env_override_exits_nonzero_with_an_actionable_message
+        PASS [   0.040s] (  4/416) crozier::e2e a_malformed_config_file_exits_nonzero_naming_the_file
+        PASS [   0.052s] (  5/416) crozier::e2e a_bad_layout_is_refused_naming_the_value_and_its_layer
+        PASS [   0.074s] (  6/416) crozier::e2e aggregate_fixture_diff_refuses_to_follow_symlinks
+        PASS [   0.093s] (  7/416) crozier::e2e a_remote_ref_that_cannot_be_fetched_fails_with_an_actionable_message
+        PASS [   0.099s] (  8/416) crozier::e2e a_generator_overrides_the_shared_top_level_field_by_field
+        PASS [   0.122s] (  9/416) crozier::e2e a_missing_relative_path_item_is_discarded_without_losing_other_endpoints
+        PASS [   0.153s] ( 10/416) crozier::e2e a_named_but_missing_config_file_exits_nonzero
+        PASS [   0.221s] ( 11/416) crozier::e2e a_remote_url_ref_is_fetched_and_generates_against_the_referenced_document
+        PASS [   0.210s] ( 12/416) crozier::e2e an_absolute_path_item_ref_fetches_its_relative_parameter_sibling
+        PASS [   0.399s] ( 13/416) crozier::e2e a_security_scheme_reference_emits_the_credential_it_names
+        PASS [   0.468s] ( 14/416) crozier::e2e adyen_report_notification_matches_fern_output
+        PASS [   0.487s] ( 15/416) crozier::e2e all_of_request_bodies_flatten_inherited_fields
+        PASS [   0.556s] ( 16/416) crozier::e2e a_pure_ref_component_names_the_response_it_types
+        PASS [   0.562s] ( 17/416) crozier::e2e a_path_parameter_object_with_a_model_field_documents_no_example_at_all
+        PASS [   0.477s] ( 18/416) crozier::e2e an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type
+        PASS [   0.753s] ( 19/416) crozier::e2e a_field_resolves_cli_then_env_then_generator_then_shared_then_default
+        PASS [   0.861s] ( 20/416) crozier::e2e adyen_acs_notification_matches_fern_output
+        PASS [   0.676s] ( 21/416) crozier::e2e apache_qakka_matches_fern_output
+        PASS [   1.102s] ( 22/416) crozier::e2e adyen_managed_risk_notification_matches_fern_output
+        PASS [   1.382s] ( 23/416) crozier::e2e alma_france_matches_fern_output
+        PASS [   1.229s] ( 24/416) crozier::e2e api_openverse_org_matches_fern_output
+        PASS [   1.629s] ( 25/416) crozier::e2e adyen_capital_matches_fern_output
+        PASS [   1.242s] ( 26/416) crozier::e2e apideck_customer_support_matches_fern_output
+        PASS [   1.205s] ( 27/416) crozier::e2e apideck_ecosystem_matches_fern_output
+        PASS [   1.601s] ( 28/416) crozier::e2e apideck_ats_matches_fern_output
+        PASS [   0.567s] ( 29/416) crozier::e2e apideck_proxy_matches_fern_output
+        PASS [   1.662s] ( 30/416) crozier::e2e apideck_connector_matches_fern_output
+        PASS [   1.804s] ( 31/416) crozier::e2e apideck_ecommerce_matches_fern_output
+        PASS [   1.051s] ( 32/416) crozier::e2e apideck_lead_matches_fern_output
+        PASS [   0.452s] ( 33/416) crozier::e2e apis_guru_matches_fern_output
+        PASS [   2.322s] ( 34/416) crozier::e2e apicurio_matches_fern_output
+        PASS [   0.988s] ( 35/416) crozier::e2e apideck_sms_matches_fern_output
+        PASS [   0.645s] ( 36/416) crozier::e2e apivideo_android_uploader_matches_fern_output
+        PASS [   2.087s] ( 37/416) crozier::e2e apideck_file_storage_matches_fern_output
+        PASS [   0.351s] ( 38/416) crozier::e2e arbitrary_spec_generates_valid_python
+        PASS [   0.356s] ( 39/416) crozier::e2e array_item_enums_hoist_to_tag_types
+        PASS [   1.737s] ( 40/416) crozier::e2e apideck_issue_tracking_matches_fern_output
+        PASS [   1.078s] ( 41/416) crozier::e2e apideck_webhook_matches_fern_output
+        PASS [   0.394s] ( 42/416) crozier::e2e array_ref_request_body_generates_single_named_request_argument
+        PASS [   0.344s] ( 43/416) crozier::e2e arrays_without_items_use_bare_any_elements
+        PASS [   2.704s] ( 44/416) crozier::e2e apideck_crm_matches_fern_output
+        PASS [   0.322s] ( 45/416) crozier::e2e audience_filter_matches_fern_output
+        PASS [   0.247s] ( 46/416) crozier::e2e audience_filter_strict_flat_matches_fern
+        PASS [   0.300s] ( 47/416) crozier::e2e audience_filter_strict_matches_fern_output
+        PASS [   0.227s] ( 48/416) crozier::e2e basic_auth_matches_fern_output
+        PASS [   3.404s] ( 49/416) crozier::e2e apache_org_airflow_matches_fern_output
+        PASS [   3.455s] ( 50/416) crozier::e2e apache_airflow_matches_fern_output
+        PASS [   0.419s] ( 51/416) crozier::e2e auth_schemes_matches_fern_output
+        PASS [   0.780s] ( 52/416) crozier::e2e audience_filter_prunes_through_the_binary_and_stays_valid
+        PASS [   1.233s] ( 53/416) crozier::e2e appwrite_client_matches_fern_output
+        PASS [   2.818s] ( 54/416) crozier::e2e apideck_hris_matches_fern_output
+        PASS [   0.412s] ( 55/416) crozier::e2e binary_request_media_types_are_preserved
+        PASS [   0.369s] ( 56/416) crozier::e2e binary_response_examples_use_neutral_path_placeholders
+        PASS [   0.410s] ( 57/416) crozier::e2e binary_requests_ignore_declared_operation_headers
+        PASS [   2.007s] ( 58/416) crozier::e2e apideck_vault_matches_fern_output
+        PASS [   0.361s] ( 59/416) crozier::e2e binary_success_responses_stream_bytes
+        PASS [   1.000s] ( 60/416) crozier::e2e authentiqio_matches_fern_output
+        PASS [   0.811s] ( 61/416) crozier::e2e billie_entry_matches_fern_output
+        PASS [   0.475s] ( 62/416) crozier::e2e bintable_matches_fern_output
+        PASS [   1.704s] ( 63/416) crozier::e2e appwrite_server_matches_fern_output
+        PASS [   0.308s] ( 64/416) crozier::e2e bracketed_property_names_matches_fern_output
+        PASS [   0.384s] ( 65/416) crozier::e2e bracketed_property_names_generate_valid_python
+        PASS [   0.140s] ( 66/416) crozier::e2e calorieninjas_reproduces_the_exact_known_fern_failure_boundary
+        PASS [   0.865s] ( 67/416) crozier::e2e billie_matches_fern_output
+        PASS [   4.397s] ( 68/416) crozier::e2e anchore_matches_fern_output
+        PASS [   0.191s] ( 69/416) crozier::e2e client_class_name_flat_matches_fern
+        PASS [   0.153s] ( 70/416) crozier::e2e client_class_name_is_configurable_via_the_config_file
+        PASS [   0.499s] ( 71/416) crozier::e2e buildrelay_matches_fern_output
+        PASS [   1.345s] ( 72/416) crozier::e2e auto_agent_protocol_matches_fern_output
+        PASS [   0.423s] ( 73/416) crozier::e2e camel_case_tags_generate_snake_case_client_packages
+        PASS [   0.288s] ( 74/416) crozier::e2e client_class_name_matches_fern_output
+        PASS [   4.704s] ( 75/416) crozier::e2e airbyte_config_matches_fern_output
+        PASS [   0.149s] ( 76/416) crozier::e2e config_file_is_discovered_in_the_working_directory
+        PASS [   4.416s] ( 77/416) crozier::e2e apideck_accounting_matches_fern_output
+        PASS [   0.327s] ( 78/416) crozier::e2e colliding_query_and_body_fields_serialize_from_query_name
+        PASS [   0.404s] ( 79/416) crozier::e2e closed_empty_inline_objects_hoist_through_the_cli
+        PASS [   0.045s] ( 80/416) crozier::e2e config_labels_the_layer_every_field_came_from
+        PASS [   0.047s] ( 81/416) crozier::e2e config_selects_one_generator_and_honors_no_config_through_the_binary
+        PASS [   0.343s] ( 82/416) crozier::e2e component_examples_populate_composite_body_fields
+        PASS [   0.017s] ( 83/416) crozier::e2e corpus_fixture_aliases_resolve_to_registered_goldens
+        PASS [   0.127s] ( 84/416) crozier::e2e config_flag_selects_one_generator_through_the_binary
+        PASS [   1.163s] ( 85/416) crozier::e2e blackadi_oauth2_matches_fern_output
+        PASS [   0.409s] ( 86/416) crozier::e2e component_examples_populate_inlined_body_fields
+        PASS [   0.400s] ( 87/416) crozier::e2e component_request_body_refs_generate_through_the_cli
+        PASS [   0.149s] ( 88/416) crozier::e2e crozier_config_env_var_names_the_file_through_the_binary
+        PASS [   0.426s] ( 89/416) crozier::e2e config_flag_beats_crozier_config_env_which_beats_discovery
+        PASS [   0.724s] ( 90/416) crozier::e2e color_pizza_matches_fern_output
+        PASS [   1.995s] ( 91/416) crozier::e2e aws_importexport_matches_fern_output
+        PASS [   1.060s] ( 92/416) crozier::e2e byautomata_io_matches_fern_output
+        PASS [   0.388s] ( 93/416) crozier::e2e cookie_parameters_matches_fern_output
+        PASS [   1.159s] ( 94/416) crozier::e2e chaingateway_io_matches_fern_output
+        PASS [   0.577s] ( 95/416) crozier::e2e conflicting_error_body_types_downgrade_status_class_to_any
+        PASS [   0.180s] ( 96/416) crozier::e2e default_naming_derives_package_from_title
+        PASS [   0.441s] ( 97/416) crozier::e2e cyberark_conjur_api_matches_fern_output
+        PASS [   0.354s] ( 98/416) crozier::e2e date_query_examples_use_dates_while_wire_values_use_str
+        PASS [   0.571s] ( 99/416) crozier::e2e crozier_sdk_extensions_matches_fern_output
+        PASS [   0.354s] (100/416) crozier::e2e declared_tag_labels_are_preserved_in_reference_headings
+        PASS [   0.363s] (101/416) crozier::e2e declared_empty_schema_descriptions_emit_class_docstrings
+        PASS [   0.318s] (102/416) crozier::e2e default_naming_sanitizes_title_punctuation
+        PASS [   0.265s] (103/416) crozier::e2e descope_authzcache_matches_fern_output
+        PASS [   0.282s] (104/416) crozier::e2e digit_leading_property_matches_fern_output
+        PASS [   0.376s] (105/416) crozier::e2e digit_leading_property_gets_f_prefix_and_alias
+        PASS [   0.365s] (106/416) crozier::e2e discriminated_unions_matches_fern_output
+        PASS [   2.919s] (107/416) crozier::e2e audiobookshelf_matches_fern_output
+        PASS [   0.541s] (108/416) crozier::e2e digit_leading_schema_name_generates_valid_python
+        PASS [   1.708s] (109/416) crozier::e2e codat_assess_matches_fern_output
+        PASS [   0.367s] (110/416) crozier::e2e endpoint_docstrings_preserve_literal_backslashes
+        PASS [   0.477s] (111/416) crozier::e2e empty_dotted_operation_namespace_overwrites_the_root_surface
+        PASS [   0.425s] (112/416) crozier::e2e enum_name_sanitization_matches_fern_output
+        PASS [   0.852s] (113/416) crozier::e2e electric_sql_matches_fern_output
+        PASS [   0.439s] (114/416) crozier::e2e enum_query_param_matches_fern_output
+        PASS [   0.455s] (115/416) crozier::e2e enum_receiver_collision_matches_fern_output
+        PASS [   0.528s] (116/416) crozier::e2e enum_sanitization_generates_valid_python
+        PASS [   2.152s] (117/416) crozier::e2e cyclonedx_transparency_exchange_matches_fern_output
+        PASS [   0.547s] (118/416) crozier::e2e enums_referenced_by_retained_models_remain_root_types
+        PASS [   0.332s] (119/416) crozier::e2e env_var_overrides_config_and_cli_overrides_env
+        PASS [   0.443s] (120/416) crozier::e2e eos_extra_fields_forbid_flat_matches_fern
+        PASS [   0.457s] (121/416) crozier::e2e eos_matches_fern_output
+        PASS [   0.584s] (122/416) crozier::e2e eos_extra_fields_forbid_matches_fern_output
+        PASS [   0.043s] (123/416) crozier::e2e every_existing_manifest_golden_is_registered_for_aggregate_comparison
         PASS [   0.026s] (124/416) crozier::e2e every_feature_target_has_its_own_golden_test
-        PASS [   0.527s] (125/416) crozier::e2e error_responses_matches_fern_output
-        PASS [   0.037s] (126/416) crozier::e2e every_unmatched_entry_exists_in_its_own_golden
-        PASS [   7.531s] (127/416) crozier::e2e agco_ats_matches_fern_output
-        PASS [   0.016s] (128/416) crozier::e2e exact_comparison_scope_reports_unregistered_managed_fixtures
-        PASS [   1.051s] (129/416) crozier::e2e every_discovered_config_filename_is_loaded_in_priority_order
-        PASS [   0.695s] (130/416) crozier::e2e exa_gate_matches_fern_output
-        PASS [   0.392s] (131/416) crozier::e2e examples_use_one_line_client_constructor_when_no_args_are_needed
-        PASS [   1.556s] (132/416) crozier::e2e eozilla_matches_fern_output
-        PASS [   3.622s] (133/416) crozier::e2e deepsearch_ds_v2_matches_fern_output
-        PASS [   1.734s] (134/416) crozier::e2e etsi_mec010_2_matches_fern_output
-        PASS [   0.026s] (135/416) crozier::e2e fern_refusal_classes_hold
-        PASS [   4.011s] (136/416) crozier::e2e cradl_matches_fern_output
-        PASS [   0.440s] (137/416) crozier::e2e fern_refusal_gate_accepts_a_registry_whose_classes_hold
-        PASS [   0.235s] (138/416) crozier::e2e fern_refusal_gate_reports_a_refusal_that_wrote_output
-        PASS [   0.653s] (139/416) crozier::e2e fern_refusal_gate_names_each_class_and_condition_it_breaks
-        PASS [   1.342s] (140/416) crozier::e2e exhaustive_flat_matches_fern
-        PASS [   1.472s] (141/416) crozier::e2e exhaustive_output_is_valid_python
-        PASS [   1.296s] (142/416) crozier::e2e exhaustive_package_name_flat_matches_fern
-        PASS [   0.017s] (143/416) crozier::e2e flat_goldens_are_the_declared_set
-        PASS [   4.877s] (144/416) crozier::e2e daniweb_connect_matches_fern_output
-        PASS [   0.374s] (145/416) crozier::e2e file_only_multipart_requests_include_empty_data
-        PASS [   1.787s] (146/416) crozier::e2e exhaustive_matches_fern_output_byte_for_byte
-        PASS [   0.548s] (147/416) crozier::e2e fern_strict_resolves_through_every_layer_through_the_binary
-        PASS [   0.471s] (148/416) crozier::e2e first_referenced_request_example_drives_typed_worked_examples
-        PASS [   2.796s] (149/416) crozier::e2e every_registered_corpus_is_wired_into_the_gate
-        PASS [   0.344s] (150/416) crozier::e2e form_bodies_matches_fern_output
-        PASS [   0.661s] (151/416) crozier::e2e fiware_context_generator_matches_fern_output
-        PASS [   4.892s] (152/416) crozier::e2e dnd5eapi_matches_fern_output
-        PASS [   0.243s] (153/416) crozier::e2e generate_all_runs_every_configured_generator_through_the_binary
-        PASS [   0.623s] (154/416) crozier::e2e frankfurter_matches_fern_output
-        PASS [   0.346s] (155/416) crozier::e2e get_request_bodies_are_ignored_through_the_cli
-        PASS [   0.507s] (156/416) crozier::e2e generators_run_in_declaration_order_not_sorted_order
-        PASS [   1.021s] (157/416) crozier::e2e folio_mod_authtoken_matches_fern_output
-        PASS [   0.295s] (158/416) crozier::e2e go_kratos_casbin_admin_matches_fern_output
-        PASS [   0.438s] (159/416) crozier::e2e globally_optional_basic_auth_generates_optional_credentials
-        PASS [   1.789s] (160/416) crozier::e2e flowdapt_matches_fern_output
-        PASS [   6.252s] (161/416) crozier::e2e discourse_matches_fern_output
-        PASS [   1.258s] (162/416) crozier::e2e handwritten_gate_accepts_a_well_formed_fixture
-        PASS [   1.416s] (163/416) crozier::e2e googleapis_servicebroker_matches_fern_output
-        PASS [   6.988s] (164/416) crozier::e2e docu_goapiserver_matches_fern_output
-        PASS [   0.784s] (165/416) crozier::e2e handwritten_gate_refuses_a_census_source_read_from_a_fixture
-        PASS [   2.453s] (166/416) crozier::e2e googleapis_monitoring_v1_matches_fern_output
-        PASS [   3.279s] (167/416) crozier::e2e gambitcomm_mimic_matches_fern_output
-        PASS [   3.458s] (168/416) crozier::e2e free5gc_pdu_session_matches_fern_output
-        PASS [   3.583s] (169/416) crozier::e2e free5gc_namf_communication_matches_fern_output
-        PASS [   7.998s] (170/416) crozier::e2e dot_ai_matches_fern_output
-        PASS [   0.752s] (171/416) crozier::e2e handwritten_gate_refuses_a_tree_crozier_diverges_from
-        PASS [   9.611s] (172/416) crozier::e2e discord_com_matches_fern_output
-        PASS [   2.993s] (173/416) crozier::e2e handwritten_gate_keeps_fixtures_out_of_every_real_specification_count
-        PASS [   2.839s] (174/416) crozier::e2e handwritten_gate_refuses_a_cover_its_search_record_does_not_support
-        PASS [   0.435s] (175/416) crozier::e2e header_parameter_enums_hoist_to_tag_types
-        PASS [   2.573s] (176/416) crozier::e2e handwritten_gate_refuses_a_fixture_whose_fern_tree_is_missing_or_moved
-        PASS [   0.022s] (177/416) crozier::e2e help_lists_generate
-        PASS [   4.048s] (178/416) crozier::e2e handwritten_gate_holds_fixtures_and_rows_to_each_other
-        PASS [   4.274s] (179/416) crozier::e2e handwritten_gate_generates_a_fixture_for_its_declared_audiences
-        PASS [  15.690s] (180/416) crozier::e2e amazonaws_com_cloudformation_matches_fern_output
-        PASS [   2.841s] (181/416) crozier::e2e handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger
-        PASS [   0.844s] (182/416) crozier::e2e helixdb_http_api_matches_fern_output
-        PASS [   0.791s] (183/416) crozier::e2e http_toolkit_matches_fern_output
-        PASS [   0.406s] (184/416) crozier::e2e hubspot_events_matches_fern_output
-        PASS [   0.379s] (185/416) crozier::e2e hyphenated_operation_id_generates_valid_python
-        PASS [   1.265s] (186/416) crozier::e2e huatuo_node_matches_fern_output
-        PASS [   3.494s] (187/416) crozier::e2e handwritten_gate_refuses_an_arm_cover_the_reach_ledgers_do_not_support
-        PASS [   0.563s] (188/416) crozier::e2e ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid
-        PASS [   1.483s] (189/416) crozier::e2e hse_matches_fern_output
-        PASS [   0.047s] (190/416) crozier::e2e init_force_overwrites_and_refuses_without_it_through_the_binary
-        PASS [   0.061s] (191/416) crozier::e2e init_starter_carries_fern_strict_and_the_schema_documents_it
-        PASS [   0.055s] (192/416) crozier::e2e init_then_config_round_trips_through_the_binary
-        PASS [   1.222s] (193/416) crozier::e2e huatuo_server_matches_fern_output
-        PASS [   0.407s] (194/416) crozier::e2e inherited_union_discriminants_are_not_duplicated_in_wrappers
-        PASS [   0.146s] (195/416) crozier::e2e init_writes_a_config_a_later_run_generates_from
-        PASS [   4.216s] (196/416) crozier::e2e handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence
-        PASS [   8.843s] (197/416) crozier::e2e fergus_matches_fern_output
-        PASS [   0.431s] (198/416) crozier::e2e inline_all_of_responses_preserve_component_bases
-        PASS [   0.406s] (199/416) crozier::e2e inline_array_request_matches_fern_output
-        PASS [   0.429s] (200/416) crozier::e2e inline_json_bodies_matching_response_schema_omit_content_type
-        PASS [   0.395s] (201/416) crozier::e2e inline_request_enums_generate_emittable_clients
-        PASS [   6.780s] (202/416) crozier::e2e groupe_psa_matches_fern_output
-        PASS [   4.245s] (203/416) crozier::e2e handwritten_gate_refuses_a_row_its_covers_do_not_describe
-        PASS [   0.486s] (204/416) crozier::e2e inline_request_response_matches_fern_output
-        PASS [   0.374s] (205/416) crozier::e2e integer_enums_matches_fern_output
-        PASS [   0.489s] (206/416) crozier::e2e inline_response_array_objects_hoist_through_the_cli
-        PASS [  13.890s] (207/416) crozier::e2e braintrust_dev_matches_fern_output
-        PASS [  17.580s] (208/416) crozier::e2e amazonaws_com_cloudfront_matches_fern_output
-        PASS [   0.356s] (209/416) crozier::e2e khoainats_matches_fern_output
-        PASS [   2.616s] (210/416) crozier::e2e helios_verifiable_api_matches_fern_output
-        PASS [   1.632s] (211/416) crozier::e2e ideaconsult_enanomapper_matches_fern_output
-        PASS [   0.587s] (212/416) crozier::e2e kytos_sdntrace_cp_matches_fern_output
-        PASS [   0.370s] (213/416) crozier::e2e malformed_property_schema_matches_fern_output
-        PASS [   7.549s] (214/416) crozier::e2e handwritten_fixtures_match_fern_goldens
-        PASS [   0.708s] (215/416) crozier::e2e loris_dataquery_matches_fern_output
-        PASS [   0.863s] (216/416) crozier::e2e layout_resolves_flag_then_env_then_generator_then_shared_then_default
-        PASS [   0.961s] (217/416) crozier::e2e k8s_container_service_provider_matches_fern_output
-        PASS [   0.017s] (218/416) crozier::e2e missing_golden_is_allowed_only_for_a_validated_known_fern_failure
-        PASS [   0.466s] (219/416) crozier::e2e med_anvisa_price_matches_fern_output
-        PASS [   0.940s] (220/416) crozier::e2e livepeer_ai_runner_matches_fern_output
-        PASS [   0.025s] (221/416) crozier::e2e missing_spec_fails_with_actionable_message
-        PASS [   0.250s] (222/416) crozier::e2e missing_operation_id_matches_fern_output
-        PASS [   0.297s] (223/416) crozier::e2e missing_operation_id_generates_valid_python
-        PASS [   1.523s] (224/416) crozier::e2e langchain_agent_protocol_matches_fern_output
-        PASS [   0.430s] (225/416) crozier::e2e mixed_error_body_shapes_downgrade_status_class_to_any
-        PASS [   0.716s] (226/416) crozier::e2e mindee_ocr_matches_fern_output
-        PASS [   0.816s] (227/416) crozier::e2e milvus_vector_operations_matches_fern_output
-        PASS [   0.316s] (228/416) crozier::e2e multiline_parameter_docs_remain_indented
-        PASS [   0.423s] (229/416) crozier::e2e model_field_docs_trim_terminal_line_breaks
-        PASS [   0.323s] (230/416) crozier::e2e multiline_parameter_docs_use_reference_paragraphs
-        PASS [   1.491s] (231/416) crozier::e2e microcks_local_matches_fern_output
-        PASS [   0.121s] (232/416) crozier::e2e multiple_config_files_layer_later_wins_through_the_binary
-        PASS [   0.316s] (233/416) crozier::e2e multiline_path_parameter_docs_remain_indented
-        PASS [   0.318s] (234/416) crozier::e2e multipart_unknown_fields_model_only_field_absence_through_the_cli
-        PASS [   0.383s] (235/416) crozier::e2e multipart_request_enums_hoist_through_the_cli
-        PASS [   0.352s] (236/416) crozier::e2e nested_and_union_nullability_is_preserved
-        PASS [   0.347s] (237/416) crozier::e2e nested_core_imports_matches_fern_output
-        PASS [   2.651s] (238/416) crozier::e2e listennotes_matches_fern_output
-        PASS [   2.185s] (239/416) crozier::e2e milvus_restful_v2_3_matches_fern_output
-        PASS [   0.420s] (240/416) crozier::e2e nimisampo_matches_fern_output
-        PASS [   0.145s] (241/416) crozier::e2e no_config_ignores_the_discovered_file_and_the_env_layer
-        PASS [   1.210s] (242/416) crozier::e2e ndw_accessibility_map_matches_fern_output
-        PASS [   0.336s] (243/416) crozier::e2e non_json_multipart_array_part_keeps_encoded_list_through_the_cli
-        PASS [   0.028s] (244/416) crozier::e2e non_openapi_document_fails_clearly
-        PASS [   0.436s] (245/416) crozier::e2e non_json_multipart_part_serializes_value_through_the_cli
-        PASS [   3.643s] (246/416) crozier::e2e maif_otoroshi_matches_fern_output
-        PASS [  17.767s] (247/416) crozier::e2e bungie_matches_fern_output
-        PASS [   3.830s] (248/416) crozier::e2e marimo_plugins_matches_fern_output
-        PASS [   0.420s] (249/416) crozier::e2e nullable_body_fields_and_array_items_use_optional_annotations
-        PASS [   0.449s] (250/416) crozier::e2e numeric_field_segments_collapse_and_keep_wire_aliases
-        PASS [   3.505s] (251/416) crozier::e2e milvus_restful_v2_4_matches_fern_output
-        PASS [   0.028s] (252/416) crozier::e2e only_the_sdk_env_tier_builds_the_sdk_python_environment
-        PASS [   0.400s] (253/416) crozier::e2e oauth_client_credentials_matches_fern_output
-        PASS [   0.434s] (254/416) crozier::e2e omitted_schema_type_infers_enum_and_open_map_shapes
-        PASS [   0.384s] (255/416) crozier::e2e openapi_31_null_only_array_items_collapse_to_bare_any
-        PASS [  18.398s] (256/416) crozier::e2e bunq_matches_fern_output
-        PASS [   3.764s] (257/416) crozier::e2e mistle_control_plane_matches_fern_output
-        PASS [   2.316s] (258/416) crozier::e2e nexmo_conversation_matches_fern_output
-        PASS [   0.385s] (259/416) crozier::e2e openapi_31_null_types_generate_optional_fields
-        PASS [   8.037s] (260/416) crozier::e2e hasura_metadata_matches_fern_output
-        PASS [   0.642s] (261/416) crozier::e2e openfigi_com_matches_fern_output
-        PASS [   2.975s] (262/416) crozier::e2e nexmo_messages_matches_fern_output
-        PASS [   0.403s] (263/416) crozier::e2e operation_id_equal_to_tag_generates_on_root_client
-        PASS [   1.243s] (264/416) crozier::e2e openepcis_dpp_ready_matches_fern_output
-        PASS [   6.267s] (265/416) crozier::e2e komga_matches_fern_output
-        PASS [   2.565s] (266/416) crozier::e2e npq_registration_matches_fern_output
-        PASS [   0.350s] (267/416) crozier::e2e operation_id_non_identifier_matches_fern_output
-        PASS [   0.808s] (268/416) crozier::e2e openlinksw_osdb_matches_fern_output
-        PASS [   1.294s] (269/416) crozier::e2e openintegrationhub_secret_service_matches_fern_output
-        PASS [   0.355s] (270/416) crozier::e2e overlapping_all_of_fields_flatten_the_base_model
-        PASS [   0.598s] (271/416) crozier::e2e osparc_payments_matches_fern_output
-        PASS [   5.444s] (272/416) crozier::e2e mosip_esignet_matches_fern_output
-        PASS [   6.992s] (273/416) crozier::e2e marimo_matches_fern_output
-        PASS [   0.665s] (274/416) crozier::e2e paloalto_code_technologies_matches_fern_output
-        PASS [   3.109s] (275/416) crozier::e2e openaire_graph_matches_fern_output
-        PASS [   0.328s] (276/416) crozier::e2e path_parameter_enums_hoist_to_tag_types
-        PASS [   0.691s] (277/416) crozier::e2e paloalto_cspm_search_manager_matches_fern_output
-        PASS [   0.311s] (278/416) crozier::e2e path_parameters_preserve_declaration_order
-        PASS [  11.086s] (279/416) crozier::e2e handwritten_gate_refuses_each_remaining_contract_breakage
-        PASS [   5.099s] (280/416) crozier::e2e nextgen_matches_fern_output
-        PASS [   1.142s] (281/416) crozier::e2e paloalto_cspm_reports_matches_fern_output
-        PASS [   0.029s] (282/416) crozier::e2e per_generation_flags_with_multiple_generators_exit_nonzero
-        PASS [   3.697s] (283/416) crozier::e2e onevoice_matches_fern_output
-        PASS [   0.329s] (284/416) crozier::e2e pathless_all_of_bodies_omit_explicit_content_type
-        PASS [   0.337s] (285/416) crozier::e2e paths_level_extension_generates_valid_python
-        PASS [   1.838s] (286/416) crozier::e2e outreach_matches_fern_output
-        PASS [   3.934s] (287/416) crozier::e2e openbankingproject_ch_kundenbeziehung_matches_fern_output
-        PASS [   2.292s] (288/416) crozier::e2e paloalto_cspm_alerts_matches_fern_output
-        PASS [   1.298s] (289/416) crozier::e2e probe_manifest_accepts_a_valid_differential_pair_and_refusal
-        PASS [   1.586s] (290/416) crozier::e2e paypal_catalog_products_recovers_from_missing_and_malformed_source
-        PASS [   4.908s] (291/416) crozier::e2e openbanking_brasil_directory_matches_fern_output
-        PASS [   8.440s] (292/416) crozier::e2e mockserver_matches_fern_output
-        PASS [   2.396s] (293/416) crozier::e2e paloalto_remote_networks_matches_fern_output
-        PASS [   1.955s] (294/416) crozier::e2e paypal_catalog_products_matches_fern_output
-        PASS [   0.012s] (295/416) crozier::e2e pyproject_requirements_translate_poetry_constraints
-        PASS [   0.295s] (296/416) crozier::e2e pydantic_extra_fields_matches_fern_output
-        PASS [   0.293s] (297/416) crozier::e2e pydantic_model_api_fields_are_aliased
-        PASS [   1.253s] (298/416) crozier::e2e probe_manifest_refuses_a_tree_crozier_diverges_from
-        PASS [   0.614s] (299/416) crozier::e2e prometheus_x_edge_computing_matches_fern_output
-        PASS [   2.306s] (300/416) crozier::e2e peopledatalabs_matches_fern_output
-        PASS [   0.333s] (301/416) crozier::e2e query_parameters_matches_fern_output_byte_for_byte
-        PASS [   5.518s] (302/416) crozier::e2e opencodeui_matches_fern_output
-        PASS [   1.228s] (303/416) crozier::e2e probe_manifest_refuses_an_implements_verdict
-        PASS [   0.330s] (304/416) crozier::e2e readme_marks_referenced_object_bodies_as_complex
-        PASS [   0.392s] (305/416) crozier::e2e readme_marks_composed_object_bodies_as_complex
-        PASS [   0.326s] (306/416) crozier::e2e readme_skips_binary_endpoints_for_worked_examples
-        PASS [   0.381s] (307/416) crozier::e2e recursive_types_matches_fern_output
-        PASS [   0.339s] (308/416) crozier::e2e reference_preserves_terminal_description_paragraphs
-        PASS [   0.366s] (309/416) crozier::e2e referenced_binary_success_responses_stream_bytes
-        PASS [   0.347s] (310/416) crozier::e2e referenced_parameter_examples_populate_worked_calls
-        PASS [   0.357s] (311/416) crozier::e2e referenced_query_examples_populate_worked_calls
-        PASS [   0.056s] (312/416) crozier::e2e refused_probe_inputs_report_the_unsupported_shape
-        PASS [   0.826s] (313/416) crozier::e2e redocly_com_museum_matches_fern_output
-        PASS [   0.348s] (314/416) crozier::e2e referenced_request_examples_force_json_content_type_for_composed_bodies
-        PASS [   0.036s] (315/416) crozier::e2e relative_parameter_refs_report_missing_pointers_and_wrong_shapes
-        PASS [   0.037s] (316/416) crozier::e2e relative_path_item_refs_report_missing_pointers_and_wrong_shapes
-        PASS [   0.308s] (317/416) crozier::e2e referenced_unknown_response_keeps_empty_body_guard
-        PASS [   0.066s] (318/416) crozier::e2e relative_schema_refs_report_missing_files_pointers_and_wrong_shapes
-        PASS [   1.460s] (319/416) crozier::e2e ramu_shogi_matches_fern_output
-        PASS [   0.349s] (320/416) crozier::e2e relative_server_paths_use_the_default_environment_member
-        PASS [   0.337s] (321/416) crozier::e2e request_array_examples_are_used_through_the_cli
-        PASS [   3.516s] (322/416) crozier::e2e probe_manifest_refuses_a_refusal_crozier_does_not_share
-        PASS [   0.340s] (323/416) crozier::e2e request_media_examples_populate_optional_body_fields
-        PASS [   0.458s] (324/416) crozier::e2e regeneration_prunes_stale_modules_and_stays_valid
-        PASS [   0.022s] (325/416) crozier::e2e schema_command_prints_the_config_json_schema
-        PASS [   0.300s] (326/416) crozier::e2e schema_constraints_matches_fern_output
-        PASS [   0.330s] (327/416) crozier::e2e server_url_variables_are_exposed_by_the_root_client
-        PASS [   0.344s] (328/416) crozier::e2e schema_examples_arrays_populate_worked_calls
-        PASS [   1.631s] (329/416) crozier::e2e redhat_catalog_inventory_matches_fern_output
-        PASS [   0.019s] (330/416) crozier::e2e sha256_matches_the_fips_180_4_test_vectors
-        PASS [   2.802s] (331/416) crozier::e2e probe_manifest_refuses_an_undeclared_or_missing_artifact
-        PASS [   0.730s] (332/416) crozier::e2e responses_extension_beside_status_code_is_ignored_through_the_cli
-        PASS [   2.549s] (333/416) crozier::e2e qredence_fleet_rlm_matches_fern_output
-        PASS [   0.323s] (334/416) crozier::e2e servers_webhooks_matches_fern_output
-        PASS [   0.398s] (335/416) crozier::e2e shared_request_component_enums_remain_root_types
-        PASS [   6.212s] (336/416) crozier::e2e otoroshi_matches_fern_output
-        PASS [   0.384s] (337/416) crozier::e2e short_multiple_request_enum_imports_stay_flat
-        PASS [   0.827s] (338/416) crozier::e2e sac_backend_matches_fern_output
-        PASS [   3.574s] (339/416) crozier::e2e probe_manifest_refuses_an_artifact_whose_digest_moved
-        PASS [   0.364s] (340/416) crozier::e2e single_use_request_component_enums_move_to_tag_types
-        PASS [   0.332s] (341/416) crozier::e2e slash_only_server_url_generates_empty_default_environment
-        PASS [   2.946s] (342/416) crozier::e2e raybot_matches_fern_output
-        PASS [   0.371s] (343/416) crozier::e2e spaced_operation_id_generates_valid_python
-        PASS [   0.977s] (344/416) crozier::e2e sim_logs_matches_fern_output
-        PASS [   8.580s] (345/416) crozier::e2e openbanking_org_uk_account_info_openapi_matches_fern_output
-        PASS [   0.966s] (346/416) crozier::e2e skool_entry_matches_fern_output
-        PASS [   0.316s] (347/416) crozier::e2e sse_streaming_matches_fern_output
-        PASS [   1.007s] (348/416) crozier::e2e skool_matches_fern_output
-        PASS [   1.759s] (349/416) crozier::e2e sigstore_rekor_matches_fern_output
-        PASS [   1.188s] (350/416) crozier::e2e spendesk_matches_fern_output
-        PASS [   0.764s] (351/416) crozier::e2e strict_audience_excludes_unannotated_ops_through_the_binary
-        PASS [   6.383s] (352/416) crozier::e2e probe_manifest_refuses_a_differential_pair_that_does_not_isolate_its_feature
-        PASS [   6.516s] (353/416) crozier::e2e portfoliooptimizer_io_matches_fern_output
-        PASS [   0.467s] (354/416) crozier::e2e tag_based_grouping_matches_fern_output
-        PASS [   1.058s] (355/416) crozier::e2e strapi_rest_api_matches_fern_output
-        PASS [   0.020s] (356/416) crozier::e2e the_cleared_env_list_covers_every_variable_the_settings_surface_reads
-        PASS [   0.353s] (357/416) crozier::e2e tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment
-        PASS [   0.799s] (358/416) crozier::e2e swagger_petstore_matches_fern_output
-        PASS [   0.014s] (359/416) crozier::e2e the_handwritten_contract_states_the_corpus_pin
-        PASS [   3.047s] (360/416) crozier::e2e reverb_com_matches_fern_output
-        PASS [   0.030s] (361/416) crozier::e2e the_handwritten_gate_is_outside_the_golden_only_tier
-        PASS [   0.152s] (362/416) crozier::e2e the_env_layer_supplies_the_naming_and_output_settings
-        PASS [   2.306s] (363/416) crozier::e2e slurmdb_rest_matches_fern_output
-        PASS [   0.351s] (364/416) crozier::e2e the_env_layer_filters_audiences_like_the_flags_do
-        PASS [   0.407s] (365/416) crozier::e2e text_plain_request_bodies_are_ignored_for_python_generation
-        PASS [   1.871s] (366/416) crozier::e2e steaminputdb_matches_fern_output
-        PASS [   3.120s] (367/416) crozier::e2e short_io_matches_fern_output
-        PASS [   0.383s] (368/416) crozier::e2e top_level_inline_response_array_items_hoist_through_the_cli
-        PASS [   1.883s] (369/416) crozier::e2e svix_webhooks_matches_fern_output
-        PASS [   1.211s] (370/416) crozier::e2e torrentarr_matches_fern_output
-        PASS [   1.598s] (371/416) crozier::e2e thrivecart_matches_fern_output
-        PASS [   0.015s] (372/416) crozier::e2e unified_diff_reports_only_real_changes
-        PASS [  10.166s] (373/416) crozier::e2e osparc_simcore_webserver_matches_fern_output
-        PASS [   0.034s] (374/416) crozier::e2e unknown_generator_exits_nonzero_with_an_actionable_message
-        PASS [   1.603s] (375/416) crozier::e2e tlon_notes_matches_fern_output
-        PASS [   0.025s] (376/416) crozier::e2e unsupported_extension_fails
-        PASS [   1.109s] (377/416) crozier::e2e twilio_messaging_v1_matches_fern_output
-        PASS [   0.025s] (378/416) crozier::e2e unsupported_openapi_version_fails
-        PASS [  16.520s] (379/416) crozier::e2e letta_matches_fern_output
-        PASS [   0.019s] (380/416) crozier::e2e version_flag_reports_crate_version
-        PASS [   0.366s] (381/416) crozier::e2e unknown_array_items_are_bare_any_elements
-        PASS [   0.351s] (382/416) crozier::e2e unknown_metadata_fields_are_single_optional
-        PASS [   0.438s] (383/416) crozier::e2e vendor_json_bare_object_request_body_is_open_map
-        PASS [   4.953s] (384/416) crozier::e2e sftpgo_matches_fern_output
-        PASS [   0.940s] (385/416) crozier::e2e twilio_voice_v1_matches_fern_output
-        PASS [   1.984s] (386/416) crozier::e2e traccar_matches_fern_output
-        PASS [   2.811s] (387/416) crozier::e2e tamoss_matches_fern_output
-        PASS [   4.888s] (388/416) crozier::e2e sim_tables_matches_fern_output
-        PASS [   0.372s] (389/416) crozier::e2e wildcard_binary_requests_with_path_params_omit_json_content_type
-        PASS [   0.337s] (390/416) crozier::e2e writeonly_fields_matches_fern_output
-        PASS [   1.169s] (391/416) crozier::e2e vtex_pricing_matches_fern_output
-        PASS [   0.852s] (392/416) crozier::e2e withsecure_gdpr_subject_rights_matches_fern_output
-        PASS [   0.741s] (393/416) crozier::e2e worldcoin_signup_sequencer_matches_fern_output
-        PASS [   0.479s] (394/416) crozier::e2e xfsc_oidc_identity_resolver_matches_fern_output
-        PASS [   0.160s] (395/416) crozier::e2e zero_led_enum_value_names_its_member_as_fern_does
-        PASS [   1.560s] (396/416) crozier::e2e volview_backend_contract_matches_fern_output
-        PASS [  10.331s] (397/416) crozier::e2e probe_manifest_refuses_a_malformed_refusal_record
-        PASS [   4.574s] (398/416) crozier::e2e tally_matches_fern_output
-        PASS [   1.743s] (399/416) crozier::e2e xero_payroll_au_matches_fern_output
-        PASS [  16.905s] (400/416) crozier::e2e netbox_dev_matches_fern_output
-        PASS [   3.065s] (401/416) crozier::e2e vellum_gateway_matches_fern_output
-        PASS [   3.276s] (402/416) crozier::e2e viskit_studio_matches_fern_output
-        PASS [   5.367s] (403/416) crozier::e2e timelyapp_matches_fern_output
-        PASS [   5.493s] (404/416) crozier::e2e timelyapp_entry_matches_fern_output
-        PASS [   4.975s] (405/416) crozier::e2e truefoundry_trueforge_matches_fern_output
-        PASS [   2.362s] (406/416) crozier::e2e ziptax_node_matches_fern_output
-        PASS [   5.699s] (407/416) crozier::e2e truefoundry_trueforge_5adde28_matches_fern_output
-        PASS [   3.520s] (408/416) crozier::e2e zoonk_matches_fern_output
-        PASS [  11.493s] (409/416) crozier::e2e squareup_com_matches_fern_output
-        PASS [  13.900s] (410/416) crozier::e2e standrig_matches_fern_output
-        PASS [  40.257s] (411/416) crozier::e2e embedpdf_cloudpdf_matches_fern_output
-        PASS [  10.720s] (412/416) crozier::e2e zulip_jentic_entry_matches_fern_output
-        PASS [  10.736s] (413/416) crozier::e2e zulip_jentic_matches_fern_output
-        PASS [  11.412s] (414/416) crozier::e2e zulip_matches_fern_output
-        PASS [  16.351s] (415/416) crozier::e2e webflow_v2_matches_fern_output
-        PASS [  29.945s] (416/416) crozier::e2e witness_supply_probes_match_fern_measurements
+        PASS [   0.578s] (125/416) crozier::e2e error_responses_matches_fern_output
+        PASS [   0.016s] (126/416) crozier::e2e every_unmatched_entry_exists_in_its_own_golden
+        PASS [   8.658s] (127/416) crozier::e2e agco_ats_matches_fern_output
+        PASS [   0.023s] (128/416) crozier::e2e exact_comparison_scope_reports_unregistered_managed_fixtures
+        PASS [   0.849s] (129/416) crozier::e2e exa_gate_matches_fern_output
+        PASS [   1.098s] (130/416) crozier::e2e every_discovered_config_filename_is_loaded_in_priority_order
+        PASS [   0.438s] (131/416) crozier::e2e examples_use_one_line_client_constructor_when_no_args_are_needed
+        PASS [   1.864s] (132/416) crozier::e2e eozilla_matches_fern_output
+        PASS [   4.554s] (133/416) crozier::e2e cradl_matches_fern_output
+        PASS [   2.061s] (134/416) crozier::e2e etsi_mec010_2_matches_fern_output
+        PASS [   0.029s] (135/416) crozier::e2e fern_refusal_classes_hold
+        PASS [   4.422s] (136/416) crozier::e2e deepsearch_ds_v2_matches_fern_output
+        PASS [   0.583s] (137/416) crozier::e2e fern_refusal_gate_accepts_a_registry_whose_classes_hold
+        PASS [   1.445s] (138/416) crozier::e2e exhaustive_flat_matches_fern
+        PASS [   0.240s] (139/416) crozier::e2e fern_refusal_gate_reports_a_refusal_that_wrote_output
+        PASS [   0.720s] (140/416) crozier::e2e fern_refusal_gate_names_each_class_and_condition_it_breaks
+        PASS [   1.448s] (141/416) crozier::e2e exhaustive_package_name_flat_matches_fern
+        PASS [   1.643s] (142/416) crozier::e2e exhaustive_output_is_valid_python
+        PASS [   0.023s] (143/416) crozier::e2e flat_goldens_are_the_declared_set
+        PASS [   0.621s] (144/416) crozier::e2e fern_strict_resolves_through_every_layer_through_the_binary
+        PASS [   0.436s] (145/416) crozier::e2e file_only_multipart_requests_include_empty_data
+        PASS [   3.036s] (146/416) crozier::e2e every_registered_corpus_is_wired_into_the_gate
+        PASS [   2.100s] (147/416) crozier::e2e exhaustive_matches_fern_output_byte_for_byte
+        PASS [   0.512s] (148/416) crozier::e2e first_referenced_request_example_drives_typed_worked_examples
+        PASS [   5.846s] (149/416) crozier::e2e daniweb_connect_matches_fern_output
+        PASS [   0.415s] (150/416) crozier::e2e form_bodies_matches_fern_output
+        PASS [   0.744s] (151/416) crozier::e2e fiware_context_generator_matches_fern_output
+        PASS [   0.209s] (152/416) crozier::e2e generate_all_runs_every_configured_generator_through_the_binary
+        PASS [   5.739s] (153/416) crozier::e2e dnd5eapi_matches_fern_output
+        PASS [   0.683s] (154/416) crozier::e2e frankfurter_matches_fern_output
+        PASS [   0.864s] (155/416) crozier::e2e folio_mod_authtoken_matches_fern_output
+        PASS [   0.402s] (156/416) crozier::e2e generators_run_in_declaration_order_not_sorted_order
+        PASS [   0.212s] (157/416) crozier::e2e go_kratos_casbin_admin_matches_fern_output
+        PASS [   0.342s] (158/416) crozier::e2e get_request_bodies_are_ignored_through_the_cli
+        PASS [   0.363s] (159/416) crozier::e2e globally_optional_basic_auth_generates_optional_credentials
+        PASS [   1.630s] (160/416) crozier::e2e flowdapt_matches_fern_output
+        PASS [   6.894s] (161/416) crozier::e2e discourse_matches_fern_output
+        PASS [   1.285s] (162/416) crozier::e2e handwritten_gate_accepts_a_well_formed_fixture
+        PASS [   1.466s] (163/416) crozier::e2e googleapis_servicebroker_matches_fern_output
+        PASS [   7.585s] (164/416) crozier::e2e docu_goapiserver_matches_fern_output
+        PASS [   0.692s] (165/416) crozier::e2e handwritten_gate_refuses_a_census_source_read_from_a_fixture
+        PASS [   8.471s] (166/416) crozier::e2e dot_ai_matches_fern_output
+        PASS [   2.665s] (167/416) crozier::e2e googleapis_monitoring_v1_matches_fern_output
+        PASS [   3.389s] (168/416) crozier::e2e free5gc_pdu_session_matches_fern_output
+        PASS [   3.376s] (169/416) crozier::e2e gambitcomm_mimic_matches_fern_output
+        PASS [   3.803s] (170/416) crozier::e2e free5gc_namf_communication_matches_fern_output
+        PASS [   0.961s] (171/416) crozier::e2e handwritten_gate_refuses_a_tree_crozier_diverges_from
+        PASS [   3.239s] (172/416) crozier::e2e handwritten_gate_keeps_fixtures_out_of_every_real_specification_count
+        PASS [  11.008s] (173/416) crozier::e2e discord_com_matches_fern_output
+        PASS [   3.511s] (174/416) crozier::e2e handwritten_gate_refuses_a_cover_its_search_record_does_not_support
+        PASS [   3.157s] (175/416) crozier::e2e handwritten_gate_refuses_a_fixture_whose_fern_tree_is_missing_or_moved
+        PASS [   0.499s] (176/416) crozier::e2e header_parameter_enums_hoist_to_tag_types
+        PASS [   4.615s] (177/416) crozier::e2e handwritten_gate_holds_fixtures_and_rows_to_each_other
+        PASS [   0.028s] (178/416) crozier::e2e help_lists_generate
+        PASS [   4.888s] (179/416) crozier::e2e handwritten_gate_generates_a_fixture_for_its_declared_audiences
+        PASS [  17.547s] (180/416) crozier::e2e amazonaws_com_cloudformation_matches_fern_output
+        PASS [   3.395s] (181/416) crozier::e2e handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger
+        PASS [   0.819s] (182/416) crozier::e2e http_toolkit_matches_fern_output
+        PASS [   1.055s] (183/416) crozier::e2e helixdb_http_api_matches_fern_output
+        PASS [   0.507s] (184/416) crozier::e2e hubspot_events_matches_fern_output
+        PASS [   0.374s] (185/416) crozier::e2e hyphenated_operation_id_generates_valid_python
+        PASS [   1.399s] (186/416) crozier::e2e huatuo_node_matches_fern_output
+        PASS [   0.076s] (187/416) crozier::e2e init_force_overwrites_and_refuses_without_it_through_the_binary
+        PASS [   0.561s] (188/416) crozier::e2e ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid
+        PASS [   1.703s] (189/416) crozier::e2e hse_matches_fern_output
+        PASS [   0.096s] (190/416) crozier::e2e init_starter_carries_fern_strict_and_the_schema_documents_it
+        PASS [   0.080s] (191/416) crozier::e2e init_then_config_round_trips_through_the_binary
+        PASS [   0.526s] (192/416) crozier::e2e inherited_union_discriminants_are_not_duplicated_in_wrappers
+        PASS [   1.433s] (193/416) crozier::e2e huatuo_server_matches_fern_output
+        PASS [   4.320s] (194/416) crozier::e2e handwritten_gate_refuses_an_arm_cover_the_reach_ledgers_do_not_support
+        PASS [   9.522s] (195/416) crozier::e2e fergus_matches_fern_output
+        PASS [   0.243s] (196/416) crozier::e2e init_writes_a_config_a_later_run_generates_from
+        PASS [   4.987s] (197/416) crozier::e2e handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence
+        PASS [   5.035s] (198/416) crozier::e2e handwritten_gate_refuses_a_row_its_covers_do_not_describe
+        PASS [   0.548s] (199/416) crozier::e2e inline_array_request_matches_fern_output
+        PASS [   0.485s] (200/416) crozier::e2e inline_request_enums_generate_emittable_clients
+        PASS [   0.644s] (201/416) crozier::e2e inline_all_of_responses_preserve_component_bases
+        PASS [   0.636s] (202/416) crozier::e2e inline_json_bodies_matching_response_schema_omit_content_type
+        PASS [   0.572s] (203/416) crozier::e2e inline_response_array_objects_hoist_through_the_cli
+        PASS [   0.631s] (204/416) crozier::e2e integer_enums_matches_fern_output
+        PASS [   0.727s] (205/416) crozier::e2e inline_request_response_matches_fern_output
+        PASS [   0.467s] (206/416) crozier::e2e khoainats_matches_fern_output
+        PASS [   8.130s] (207/416) crozier::e2e groupe_psa_matches_fern_output
+        PASS [  15.998s] (208/416) crozier::e2e braintrust_dev_matches_fern_output
+        PASS [  20.174s] (209/416) crozier::e2e amazonaws_com_cloudfront_matches_fern_output
+        PASS [   2.352s] (210/416) crozier::e2e ideaconsult_enanomapper_matches_fern_output
+        PASS [   1.081s] (211/416) crozier::e2e kytos_sdntrace_cp_matches_fern_output
+        PASS [   0.621s] (212/416) crozier::e2e malformed_property_schema_matches_fern_output
+        PASS [   1.338s] (213/416) crozier::e2e k8s_container_service_provider_matches_fern_output
+        PASS [   3.816s] (214/416) crozier::e2e helios_verifiable_api_matches_fern_output
+        PASS [   1.286s] (215/416) crozier::e2e layout_resolves_flag_then_env_then_generator_then_shared_then_default
+        PASS [   9.173s] (216/416) crozier::e2e handwritten_fixtures_match_fern_goldens
+        PASS [   1.131s] (217/416) crozier::e2e loris_dataquery_matches_fern_output
+        PASS [   0.038s] (218/416) crozier::e2e missing_golden_is_allowed_only_for_a_validated_known_fern_failure
+        PASS [   1.479s] (219/416) crozier::e2e livepeer_ai_runner_matches_fern_output
+        PASS [   0.762s] (220/416) crozier::e2e med_anvisa_price_matches_fern_output
+        PASS [   0.066s] (221/416) crozier::e2e missing_spec_fails_with_actionable_message
+        PASS [   0.509s] (222/416) crozier::e2e missing_operation_id_generates_valid_python
+        PASS [   0.411s] (223/416) crozier::e2e missing_operation_id_matches_fern_output
+        PASS [   2.448s] (224/416) crozier::e2e langchain_agent_protocol_matches_fern_output
+        PASS [   0.643s] (225/416) crozier::e2e mixed_error_body_shapes_downgrade_status_class_to_any
+        PASS [   1.392s] (226/416) crozier::e2e milvus_vector_operations_matches_fern_output
+        PASS [   1.342s] (227/416) crozier::e2e mindee_ocr_matches_fern_output
+        PASS [   0.643s] (228/416) crozier::e2e model_field_docs_trim_terminal_line_breaks
+        PASS [   0.621s] (229/416) crozier::e2e multiline_parameter_docs_remain_indented
+        PASS [   0.558s] (230/416) crozier::e2e multiline_parameter_docs_use_reference_paragraphs
+        PASS [   0.567s] (231/416) crozier::e2e multiline_path_parameter_docs_remain_indented
+        PASS [   2.647s] (232/416) crozier::e2e microcks_local_matches_fern_output
+        PASS [   0.177s] (233/416) crozier::e2e multiple_config_files_layer_later_wins_through_the_binary
+        PASS [   0.530s] (234/416) crozier::e2e multipart_unknown_fields_model_only_field_absence_through_the_cli
+        PASS [   0.665s] (235/416) crozier::e2e multipart_request_enums_hoist_through_the_cli
+        PASS [   0.471s] (236/416) crozier::e2e nested_and_union_nullability_is_preserved
+        PASS [   0.589s] (237/416) crozier::e2e nested_core_imports_matches_fern_output
+        PASS [   4.367s] (238/416) crozier::e2e listennotes_matches_fern_output
+        PASS [   3.630s] (239/416) crozier::e2e milvus_restful_v2_3_matches_fern_output
+        PASS [   0.709s] (240/416) crozier::e2e nimisampo_matches_fern_output
+        PASS [   0.236s] (241/416) crozier::e2e no_config_ignores_the_discovered_file_and_the_env_layer
+        PASS [   2.198s] (242/416) crozier::e2e ndw_accessibility_map_matches_fern_output
+        PASS [   0.498s] (243/416) crozier::e2e non_json_multipart_array_part_keeps_encoded_list_through_the_cli
+        PASS [   0.037s] (244/416) crozier::e2e non_openapi_document_fails_clearly
+        PASS [   0.558s] (245/416) crozier::e2e non_json_multipart_part_serializes_value_through_the_cli
+        PASS [   6.098s] (246/416) crozier::e2e maif_otoroshi_matches_fern_output
+        PASS [   5.506s] (247/416) crozier::e2e milvus_restful_v2_4_matches_fern_output
+        PASS [   0.531s] (248/416) crozier::e2e nullable_body_fields_and_array_items_use_optional_annotations
+        PASS [   0.537s] (249/416) crozier::e2e numeric_field_segments_collapse_and_keep_wire_aliases
+        PASS [   0.561s] (250/416) crozier::e2e oauth_client_credentials_matches_fern_output
+        PASS [   6.295s] (251/416) crozier::e2e marimo_plugins_matches_fern_output
+        PASS [   0.039s] (252/416) crozier::e2e only_the_sdk_env_tier_builds_the_sdk_python_environment
+        PASS [  22.923s] (253/416) crozier::e2e bungie_matches_fern_output
+        PASS [  22.934s] (254/416) crozier::e2e bunq_matches_fern_output
+        PASS [   0.603s] (255/416) crozier::e2e omitted_schema_type_infers_enum_and_open_map_shapes
+        PASS [   5.992s] (256/416) crozier::e2e mistle_control_plane_matches_fern_output
+        PASS [   0.653s] (257/416) crozier::e2e openapi_31_null_only_array_items_collapse_to_bare_any
+        PASS [   0.546s] (258/416) crozier::e2e openapi_31_null_types_generate_optional_fields
+        PASS [   4.103s] (259/416) crozier::e2e nexmo_conversation_matches_fern_output
+        PASS [  11.697s] (260/416) crozier::e2e hasura_metadata_matches_fern_output
+        PASS [   4.680s] (261/416) crozier::e2e nexmo_messages_matches_fern_output
+        PASS [   1.042s] (262/416) crozier::e2e openfigi_com_matches_fern_output
+        PASS [   0.555s] (263/416) crozier::e2e operation_id_equal_to_tag_generates_on_root_client
+        PASS [   1.945s] (264/416) crozier::e2e openepcis_dpp_ready_matches_fern_output
+        PASS [  10.184s] (265/416) crozier::e2e komga_matches_fern_output
+        PASS [   4.053s] (266/416) crozier::e2e npq_registration_matches_fern_output
+        PASS [   1.300s] (267/416) crozier::e2e openlinksw_osdb_matches_fern_output
+        PASS [   0.542s] (268/416) crozier::e2e operation_id_non_identifier_matches_fern_output
+        PASS [   2.178s] (269/416) crozier::e2e openintegrationhub_secret_service_matches_fern_output
+        PASS [   0.935s] (270/416) crozier::e2e osparc_payments_matches_fern_output
+        PASS [   0.487s] (271/416) crozier::e2e overlapping_all_of_fields_flatten_the_base_model
+        PASS [   8.969s] (272/416) crozier::e2e mosip_esignet_matches_fern_output
+        PASS [   1.131s] (273/416) crozier::e2e paloalto_code_technologies_matches_fern_output
+        PASS [   4.664s] (274/416) crozier::e2e openaire_graph_matches_fern_output
+        PASS [  11.280s] (275/416) crozier::e2e marimo_matches_fern_output
+        PASS [  16.288s] (276/416) crozier::e2e handwritten_gate_refuses_each_remaining_contract_breakage
+        PASS [   7.829s] (277/416) crozier::e2e nextgen_matches_fern_output
+        PASS [   0.516s] (278/416) crozier::e2e path_parameter_enums_hoist_to_tag_types
+        PASS [   0.479s] (279/416) crozier::e2e path_parameters_preserve_declaration_order
+        PASS [   0.479s] (280/416) crozier::e2e pathless_all_of_bodies_omit_explicit_content_type
+        PASS [   1.625s] (281/416) crozier::e2e paloalto_cspm_reports_matches_fern_output
+        PASS [   0.034s] (282/416) crozier::e2e per_generation_flags_with_multiple_generators_exit_nonzero
+        PASS [   5.756s] (283/416) crozier::e2e onevoice_matches_fern_output
+        PASS [   1.161s] (284/416) crozier::e2e paloalto_cspm_search_manager_matches_fern_output
+        PASS [   0.514s] (285/416) crozier::e2e paths_level_extension_generates_valid_python
+        PASS [   3.078s] (286/416) crozier::e2e outreach_matches_fern_output
+        PASS [   6.482s] (287/416) crozier::e2e openbankingproject_ch_kundenbeziehung_matches_fern_output
+        PASS [   3.536s] (288/416) crozier::e2e paloalto_cspm_alerts_matches_fern_output
+        PASS [   1.933s] (289/416) crozier::e2e probe_manifest_accepts_a_valid_differential_pair_and_refusal
+        PASS [   2.658s] (290/416) crozier::e2e paypal_catalog_products_recovers_from_missing_and_malformed_source
+        PASS [   2.953s] (291/416) crozier::e2e paypal_catalog_products_matches_fern_output
+        PASS [   7.773s] (292/416) crozier::e2e openbanking_brasil_directory_matches_fern_output
+        PASS [   3.743s] (293/416) crozier::e2e paloalto_remote_networks_matches_fern_output
+        PASS [  13.690s] (294/416) crozier::e2e mockserver_matches_fern_output
+        PASS [   0.021s] (295/416) crozier::e2e pyproject_requirements_translate_poetry_constraints
+        PASS [   0.478s] (296/416) crozier::e2e pydantic_extra_fields_matches_fern_output
+        PASS [   0.352s] (297/416) crozier::e2e pydantic_model_api_fields_are_aliased
+        PASS [   3.430s] (298/416) crozier::e2e peopledatalabs_matches_fern_output
+        PASS [   1.712s] (299/416) crozier::e2e probe_manifest_refuses_a_tree_crozier_diverges_from
+        PASS [   0.936s] (300/416) crozier::e2e prometheus_x_edge_computing_matches_fern_output
+        PASS [   0.511s] (301/416) crozier::e2e query_parameters_matches_fern_output_byte_for_byte
+        PASS [   8.559s] (302/416) crozier::e2e opencodeui_matches_fern_output
+        PASS [   1.772s] (303/416) crozier::e2e probe_manifest_refuses_an_implements_verdict
+        PASS [   0.539s] (304/416) crozier::e2e readme_marks_composed_object_bodies_as_complex
+        PASS [   0.504s] (305/416) crozier::e2e readme_marks_referenced_object_bodies_as_complex
+        PASS [   0.482s] (306/416) crozier::e2e readme_skips_binary_endpoints_for_worked_examples
+        PASS [   0.659s] (307/416) crozier::e2e recursive_types_matches_fern_output
+        PASS [   0.475s] (308/416) crozier::e2e reference_preserves_terminal_description_paragraphs
+        PASS [   0.475s] (309/416) crozier::e2e referenced_binary_success_responses_stream_bytes
+        PASS [   0.584s] (310/416) crozier::e2e referenced_parameter_examples_populate_worked_calls
+        PASS [   1.136s] (311/416) crozier::e2e redocly_com_museum_matches_fern_output
+        PASS [   0.517s] (312/416) crozier::e2e referenced_query_examples_populate_worked_calls
+        PASS [   0.485s] (313/416) crozier::e2e referenced_request_examples_force_json_content_type_for_composed_bodies
+        PASS [   0.089s] (314/416) crozier::e2e refused_probe_inputs_report_the_unsupported_shape
+        PASS [   0.067s] (315/416) crozier::e2e relative_parameter_refs_report_missing_pointers_and_wrong_shapes
+        PASS [   0.048s] (316/416) crozier::e2e relative_path_item_refs_report_missing_pointers_and_wrong_shapes
+        PASS [   0.096s] (317/416) crozier::e2e relative_schema_refs_report_missing_files_pointers_and_wrong_shapes
+        PASS [   0.475s] (318/416) crozier::e2e referenced_unknown_response_keeps_empty_body_guard
+        PASS [   2.340s] (319/416) crozier::e2e ramu_shogi_matches_fern_output
+        PASS [   0.492s] (320/416) crozier::e2e relative_server_paths_use_the_default_environment_member
+        PASS [   0.591s] (321/416) crozier::e2e regeneration_prunes_stale_modules_and_stays_valid
+        PASS [   0.476s] (322/416) crozier::e2e request_array_examples_are_used_through_the_cli
+        PASS [   0.036s] (323/416) crozier::e2e schema_command_prints_the_config_json_schema
+        PASS [   5.107s] (324/416) crozier::e2e probe_manifest_refuses_a_refusal_crozier_does_not_share
+        PASS [   0.463s] (325/416) crozier::e2e request_media_examples_populate_optional_body_fields
+        PASS [   0.474s] (326/416) crozier::e2e schema_constraints_matches_fern_output
+        PASS [   2.531s] (327/416) crozier::e2e redhat_catalog_inventory_matches_fern_output
+        PASS [   0.447s] (328/416) crozier::e2e schema_examples_arrays_populate_worked_calls
+        PASS [   0.030s] (329/416) crozier::e2e sha256_matches_the_fips_180_4_test_vectors
+        PASS [   8.969s] (330/416) crozier::e2e otoroshi_matches_fern_output
+        PASS [   0.597s] (331/416) crozier::e2e server_url_variables_are_exposed_by_the_root_client
+        PASS [   1.028s] (332/416) crozier::e2e responses_extension_beside_status_code_is_ignored_through_the_cli
+        PASS [   0.542s] (333/416) crozier::e2e servers_webhooks_matches_fern_output
+        PASS [   4.451s] (334/416) crozier::e2e probe_manifest_refuses_an_undeclared_or_missing_artifact
+        PASS [   3.778s] (335/416) crozier::e2e qredence_fleet_rlm_matches_fern_output
+        PASS [   0.552s] (336/416) crozier::e2e shared_request_component_enums_remain_root_types
+        PASS [   1.439s] (337/416) crozier::e2e sac_backend_matches_fern_output
+        PASS [   0.674s] (338/416) crozier::e2e short_multiple_request_enum_imports_stay_flat
+        PASS [   0.573s] (339/416) crozier::e2e single_use_request_component_enums_move_to_tag_types
+        PASS [   5.737s] (340/416) crozier::e2e probe_manifest_refuses_an_artifact_whose_digest_moved
+        PASS [   0.628s] (341/416) crozier::e2e slash_only_server_url_generates_empty_default_environment
+        PASS [   4.549s] (342/416) crozier::e2e raybot_matches_fern_output
+        PASS [  13.012s] (343/416) crozier::e2e openbanking_org_uk_account_info_openapi_matches_fern_output
+        PASS [   0.639s] (344/416) crozier::e2e spaced_operation_id_generates_valid_python
+        PASS [   0.438s] (345/416) crozier::e2e sse_streaming_matches_fern_output
+        PASS [   1.683s] (346/416) crozier::e2e sim_logs_matches_fern_output
+        PASS [   1.742s] (347/416) crozier::e2e skool_entry_matches_fern_output
+        PASS [   1.736s] (348/416) crozier::e2e skool_matches_fern_output
+        PASS [   1.633s] (349/416) crozier::e2e spendesk_matches_fern_output
+        PASS [   9.650s] (350/416) crozier::e2e probe_manifest_refuses_a_differential_pair_that_does_not_isolate_its_feature
+        PASS [   3.172s] (351/416) crozier::e2e sigstore_rekor_matches_fern_output
+        PASS [   1.151s] (352/416) crozier::e2e strict_audience_excludes_unannotated_ops_through_the_binary
+        PASS [   9.900s] (353/416) crozier::e2e portfoliooptimizer_io_matches_fern_output
+        PASS [   1.627s] (354/416) crozier::e2e strapi_rest_api_matches_fern_output
+        PASS [   4.720s] (355/416) crozier::e2e reverb_com_matches_fern_output
+        PASS [   0.027s] (356/416) crozier::e2e the_cleared_env_list_covers_every_variable_the_settings_surface_reads
+        PASS [   0.655s] (357/416) crozier::e2e tag_prefixed_multi_segment_operation_ids_drop_the_tag_segment
+        PASS [   0.742s] (358/416) crozier::e2e tag_based_grouping_matches_fern_output
+        PASS [   0.026s] (359/416) crozier::e2e the_handwritten_contract_states_the_corpus_pin
+        PASS [   0.046s] (360/416) crozier::e2e the_handwritten_gate_is_outside_the_golden_only_tier
+        PASS [   0.555s] (361/416) crozier::e2e text_plain_request_bodies_are_ignored_for_python_generation
+        PASS [   1.228s] (362/416) crozier::e2e swagger_petstore_matches_fern_output
+        PASS [   0.248s] (363/416) crozier::e2e the_env_layer_supplies_the_naming_and_output_settings
+        PASS [   0.482s] (364/416) crozier::e2e the_env_layer_filters_audiences_like_the_flags_do
+        PASS [   4.602s] (365/416) crozier::e2e short_io_matches_fern_output
+        PASS [   3.755s] (366/416) crozier::e2e slurmdb_rest_matches_fern_output
+        PASS [   2.906s] (367/416) crozier::e2e steaminputdb_matches_fern_output
+        PASS [   0.612s] (368/416) crozier::e2e top_level_inline_response_array_items_hoist_through_the_cli
+        PASS [   3.021s] (369/416) crozier::e2e svix_webhooks_matches_fern_output
+        PASS [  15.457s] (370/416) crozier::e2e osparc_simcore_webserver_matches_fern_output
+        PASS [   1.791s] (371/416) crozier::e2e torrentarr_matches_fern_output
+        PASS [   0.018s] (372/416) crozier::e2e unified_diff_reports_only_real_changes
+        PASS [  25.651s] (373/416) crozier::e2e letta_matches_fern_output
+        PASS [   2.510s] (374/416) crozier::e2e thrivecart_matches_fern_output
+        PASS [   0.062s] (375/416) crozier::e2e unknown_generator_exits_nonzero_with_an_actionable_message
+        PASS [   0.033s] (376/416) crozier::e2e unsupported_extension_fails
+        PASS [   0.053s] (377/416) crozier::e2e unsupported_openapi_version_fails
+        PASS [   2.703s] (378/416) crozier::e2e tlon_notes_matches_fern_output
+        PASS [   0.539s] (379/416) crozier::e2e unknown_array_items_are_bare_any_elements
+        PASS [   0.039s] (380/416) crozier::e2e version_flag_reports_crate_version
+        PASS [   0.558s] (381/416) crozier::e2e unknown_metadata_fields_are_single_optional
+        PASS [   1.878s] (382/416) crozier::e2e twilio_messaging_v1_matches_fern_output
+        PASS [   0.594s] (383/416) crozier::e2e vendor_json_bare_object_request_body_is_open_map
+        PASS [   4.197s] (384/416) crozier::e2e tamoss_matches_fern_output
+        PASS [   7.383s] (385/416) crozier::e2e sim_tables_matches_fern_output
+        PASS [   7.969s] (386/416) crozier::e2e sftpgo_matches_fern_output
+        PASS [   1.425s] (387/416) crozier::e2e twilio_voice_v1_matches_fern_output
+        PASS [   3.153s] (388/416) crozier::e2e traccar_matches_fern_output
+        PASS [   0.486s] (389/416) crozier::e2e wildcard_binary_requests_with_path_params_omit_json_content_type
+        PASS [   0.510s] (390/416) crozier::e2e writeonly_fields_matches_fern_output
+        PASS [  24.041s] (391/416) crozier::e2e netbox_dev_matches_fern_output
+        PASS [   1.032s] (392/416) crozier::e2e worldcoin_signup_sequencer_matches_fern_output
+        PASS [   1.180s] (393/416) crozier::e2e withsecure_gdpr_subject_rights_matches_fern_output
+        PASS [   1.646s] (394/416) crozier::e2e vtex_pricing_matches_fern_output
+        PASS [   0.558s] (395/416) crozier::e2e xfsc_oidc_identity_resolver_matches_fern_output
+        PASS [   0.201s] (396/416) crozier::e2e zero_led_enum_value_names_its_member_as_fern_does
+        PASS [   2.224s] (397/416) crozier::e2e volview_backend_contract_matches_fern_output
+        PASS [  15.891s] (398/416) crozier::e2e probe_manifest_refuses_a_malformed_refusal_record
+        PASS [   6.659s] (399/416) crozier::e2e tally_matches_fern_output
+        PASS [   2.228s] (400/416) crozier::e2e xero_payroll_au_matches_fern_output
+        PASS [   4.288s] (401/416) crozier::e2e vellum_gateway_matches_fern_output
+        PASS [   4.468s] (402/416) crozier::e2e viskit_studio_matches_fern_output
+        PASS [   7.494s] (403/416) crozier::e2e timelyapp_entry_matches_fern_output
+        PASS [   7.603s] (404/416) crozier::e2e timelyapp_matches_fern_output
+        PASS [   7.063s] (405/416) crozier::e2e truefoundry_trueforge_matches_fern_output
+        PASS [   3.311s] (406/416) crozier::e2e ziptax_node_matches_fern_output
+        PASS [   8.165s] (407/416) crozier::e2e truefoundry_trueforge_5adde28_matches_fern_output
+        PASS [   4.958s] (408/416) crozier::e2e zoonk_matches_fern_output
+        PASS [  15.456s] (409/416) crozier::e2e squareup_com_matches_fern_output
+        PASS [  19.382s] (410/416) crozier::e2e standrig_matches_fern_output
+        PASS [  55.073s] (411/416) crozier::e2e embedpdf_cloudpdf_matches_fern_output
+        PASS [  14.518s] (412/416) crozier::e2e zulip_jentic_entry_matches_fern_output
+        PASS [  14.622s] (413/416) crozier::e2e zulip_jentic_matches_fern_output
+        PASS [  15.193s] (414/416) crozier::e2e zulip_matches_fern_output
+        PASS [  21.343s] (415/416) crozier::e2e webflow_v2_matches_fern_output
+        PASS [  38.319s] (416/416) crozier::e2e witness_supply_probes_match_fern_measurements
 ────────────
-     Summary [  64.468s] 416 tests run: 416 passed, 8 skipped
+     Summary [  84.843s] 416 tests run: 416 passed, 9 skipped
