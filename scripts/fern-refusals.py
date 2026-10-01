@@ -687,7 +687,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
         missing = missing_measurements(result) if result is not None else {"any"}
         if missing:
             problems.append(f"{entry['key']}: not measured ({', '.join(sorted(missing))}); "
-                            "run `scripts/fern-refusals.py measure`")
+                            "run `just fern-refusals-measure`")
             continue
         identity = {"source": entry["source"], "locator": entry["locator"] or EMPTY,
                     "revision": entry["revision"] or EMPTY, "recorded_by": records}
