@@ -1552,6 +1552,280 @@ def exhaustive_line_failures(
     return failures
 
 
+CONFIG_GATED = "config-gated"
+CONFIG_GATE_HEADING = "### Configuration gate"
+# The CLI flag each configuration field reaches crozier as. A `config-gated`
+# record names the field; its probe is shown to set no such field by the flag
+# being absent from the arm search's script.
+CONFIG_FLAGS = {"audiences": "--audience"}
+
+
+def is_config_gated(text: str) -> bool:
+    """A record whose arm only a generation setting reaches: no Contract B search ran."""
+    return CONFIG_GATE_HEADING in text.splitlines()
+
+
+def config_gated_verdict(text: str, key: str) -> str | None:
+    """The verdict a `config-gated` record states for `key`, off its gate table."""
+    if not is_config_gated(text):
+        return None
+    body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
+    stated = {cells[3].strip("`") for cells in map(lambda line: table_cells(line, 4), body.splitlines())
+              if cells and cells[0].strip("`") == key}
+    return stated.pop() if len(stated) == 1 else None
+
+
+def config_gated_record_failures(
+    key: str,
+    text: str,
+    evidence: Path,
+    root: Path,
+    capabilities: dict[str, tuple[bool, bool, str]],
+) -> list[str]:
+    """Every way a `config-gated` arm-search record falls short of the manager's ruling.
+
+    No Contract B search ran for such an arm, so the record owes three things in
+    its place, each checked against the tree rather than its prose: (1) the
+    configuration field that gates the arm and the crozier code path that shows
+    it; (2) the measured gate, the hand-written fixture's instrumented runs with
+    and without the field, as `handwritten-config-gates.tsv` records them; and
+    (3) for each declared source, that its probe sets no such field and that the
+    committed files it names show the selector was never walked or queried for
+    this key. `evidence` is the `golden-reach-witnesses/` directory and `root`
+    the repository the scripts, schema and fixtures sit in.
+    """
+    if not is_config_gated(text):
+        return [f"{key}: has no `{CONFIG_GATE_HEADING}` section"]
+    failures: list[str] = []
+    section = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0]
+    parts = re.split(r"(?m)^#### ", section)
+    head = parts[0]
+    sub = {part.split("\n", 1)[0].strip(): part for part in parts[1:]}
+
+    # (1) The setting and its code path.
+    rows = [cells for cells in (table_cells(line, 4) for line in head.splitlines())
+            if cells and cells[0].strip("`") == key]
+    setting = ""
+    if len(rows) != 1 or rows[0][3].strip("`") != CONFIG_GATED:
+        failures.append(f"{key}: its gate table states no one `{CONFIG_GATED}` line for the key")
+    else:
+        setting = rows[0][1].strip("`")
+        schema = json.loads((root / "assets" / "crozier.schema.json").read_text(encoding="utf-8"))
+        if f'"{setting}"' not in json.dumps(schema) or setting not in CONFIG_FLAGS:
+            failures.append(
+                f"{key}: gates on `{setting}`, which is not a configuration field the schema "
+                f"and this gate's CONFIG_FLAGS both name"
+            )
+        paths = re.findall(r"`([^`]+)`", rows[0][2])
+        if not paths:
+            failures.append(f"{key}: names no code path that shows the gate")
+        reach = load_script("golden-reach.py")
+        for spec in paths:
+            try:
+                reach.resolve_site(spec, root)
+            except SystemExit as error:
+                failures.append(f"{key}: its gate's code path `{spec}` does not resolve: {error}")
+
+    # (2) The measured gate.
+    measured = sub.get("Measured gate")
+    ledger = root / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
+    if measured is None:
+        failures.append(f"{key}: has no `#### Measured gate` table")
+    else:
+        stated = [
+            (cells[0].strip("`"), cells[1].strip("`").replace("—", "-"), cells[2], cells[3])
+            for cells in (table_cells(line, 4) for line in measured.splitlines())
+            if cells and cells[0].startswith("`")
+        ]
+        with ledger.open(encoding="utf-8", newline="") as handle:
+            recorded = [row for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+                        if row["key"] == key]
+        rows_of = [(r["fixture"], r["setting"], r["regions_executed"], r["regions"]) for r in recorded]
+        if sorted(stated) != sorted(rows_of):
+            failures.append(
+                f"{key}: its measured gate states {sorted(stated)}, but {ledger.name} records "
+                f"{sorted(rows_of)} — run `just handwritten-reach` and restate the table"
+            )
+        with_setting = [r for r in recorded if r["setting"].startswith(f"{setting}=")]
+        without = [r for r in recorded if r["setting"] == "-"]
+        if not with_setting or not all(int(r["regions_executed"]) >= 1 for r in with_setting):
+            failures.append(f"{key}: no instrumented run with `{setting}` executes the arm")
+        if not without or any(int(r["regions_executed"]) for r in without):
+            failures.append(f"{key}: the run without `{setting}` is missing or executes the arm, so it is not gated")
+        for row in recorded:
+            if f"`{row['site']}`" not in text:
+                failures.append(f"{key}: its measured gate's site `{row['site']}` is not the arm the record names")
+
+    # (3) Each declared source: its probe sets nothing, and its evidence shows no search.
+    sources = sub.get("Each declared source")
+    if sources is None:
+        return failures + [f"{key}: has no `#### Each declared source` table"]
+    lines = [cells for cells in (table_cells(line, 3) for line in sources.splitlines())
+             if cells and cells[0].startswith("`")]
+    named = [cells[0].strip("`") for cells in lines]
+    if sorted(named) != sorted(DECLARED_SOURCES):
+        failures.append(f"{key}: names sources {sorted(named)}, not each of {sorted(DECLARED_SOURCES)} once")
+    script = (root / "scripts" / "golden-reach-search.py").read_text(encoding="utf-8")
+    flag = CONFIG_FLAGS.get(setting)
+    for cells in lines:
+        source = cells[0].strip("`")
+        if cells[1].strip("`") != "none" or (flag and flag in script):
+            failures.append(
+                f"{key}: `{source}`'s probe must read `none` for `{setting}`, and "
+                f"scripts/golden-reach-search.py must pass no `{flag}`"
+            )
+        cited = re.findall(r"`([^`]+)`", cells[2])
+        text_query, enumerable, _how = capabilities.get(source, (False, False, ""))
+        owed = [f"{source}/records.tsv"]
+        owed += [f"{source}/enumeration.tsv.gz"] if enumerable else []
+        owed += ["queries.tsv"] if text_query else []
+        for path in owed:
+            if path not in cited:
+                failures.append(f"{key}: `{source}` cites no `{path}`, which shows whether the key was searched")
+        for path in cited:
+            target = evidence / path
+            if not target.is_file():
+                failures.append(f"{key}: `{source}` cites `{path}`, which does not exist")
+            elif path.endswith("records.tsv"):
+                with target.open(encoding="utf-8", newline="") as handle:
+                    if any(r["key"] == key for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)):
+                        failures.append(f"{key}: `{path}` records a search for the key, so it was searched")
+            elif path.endswith("enumeration.tsv.gz"):
+                with gzip.open(target, "rt", encoding="utf-8", newline="") as handle:
+                    if any(key in r["matched_keys"].split(",") for r in csv.DictReader(handle, dialect="excel-tab")):
+                        failures.append(f"{key}: `{path}` matched documents for the key, so it was walked")
+            elif path == "queries.tsv":
+                with target.open(encoding="utf-8", newline="") as handle:
+                    if any(r["key"] == key and r["source"] == source
+                           for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)):
+                        failures.append(f"{key}: `queries.tsv` holds a `{source}` phrasing for the key, so it was queried")
+    return failures
+
+
+class ConfigGatedRecordTests(unittest.TestCase):
+    """`config_gated_record_failures`, driven both ways over a scratch tree.
+
+    The tree holds the real schema, scripts and `src/openapi.rs`, six source
+    directories whose evidence never names the key, and a gate ledger measuring
+    a fixture with and without its audience; each case breaks one of the
+    record's three parts and expects the failure that names it.
+    """
+
+    KEY = "discriminator-mapping"
+    ARM = r"src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]"
+
+    def setUp(self) -> None:
+        self.root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.root)
+        for rel in ("assets/crozier.schema.json", "scripts/golden-reach-search.py", "src/openapi.rs"):
+            (self.root / rel).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(REPO / rel, self.root / rel)
+        self.evidence = self.root / "golden-reach-witnesses"
+        self.capabilities = source_capabilities(
+            (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8"))
+        for source in DECLARED_SOURCES:
+            directory = self.evidence / source
+            directory.mkdir(parents=True)
+            (directory / "records.tsv").write_text(
+                "key\tkind\tsubject\tresult\tfile\nother\tdocument\ta.yaml\tcensus 1\tenumeration.tsv.gz\n",
+                encoding="utf-8")
+            with gzip.open(directory / "enumeration.tsv.gz", "wt", encoding="utf-8") as handle:
+                handle.write("walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
+                             f"tree\ta.yaml\t{'0' * 40}\t{'0' * 64}\tother\treadable\n")
+        (self.evidence / "queries.tsv").write_text("key\tsource\tphrasing\nother\tsourcegraph\tq\n", encoding="utf-8")
+        self.ledger = self.root / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
+        self.ledger.parent.mkdir(parents=True)
+        self.write_ledger(9, 0)
+
+    def write_ledger(self, executed_with: int, executed_without: int) -> None:
+        self.ledger.write_text(
+            "fixture\tkey\tsite\tsetting\tregions_executed\tregions\n"
+            f"fx\t{self.KEY}\t{self.ARM}\t-\t{executed_without}\t9\n"
+            f"fx\t{self.KEY}\t{self.ARM}\taudiences=public\t{executed_with}\t9\n",
+            encoding="utf-8")
+
+    def record(self, executed_without: int = 0) -> str:
+        def cited(source: str) -> str:
+            text_query, enumerable, _how = self.capabilities[source]
+            files = [f"{source}/records.tsv"] + ([f"{source}/enumeration.tsv.gz"] if enumerable else [])
+            return ", ".join(f"`{f}`" for f in files + (["queries.tsv"] if text_query else []))
+        sources = "\n".join(f"| `{source}` | none | {cited(source)} |" for source in DECLARED_SOURCES)
+        return (
+            f"# Arm search: `{self.KEY}`\n\nThe arm: `{self.ARM}`.\n\n{CONFIG_GATE_HEADING}\n\n"
+            "| key | setting | gate | verdict |\n|---|---|---|---|\n"
+            f"| `{self.KEY}` | `audiences` | `src/openapi.rs::filter_by_audience` | `{CONFIG_GATED}` |\n\n"
+            "#### Measured gate\n\n| fixture | setting | regions executed | regions |\n|---|---|---:|---:|\n"
+            "| `fx` | `audiences=public` | 9 | 9 |\n"
+            f"| `fx` | — | {executed_without} | 9 |\n\n"
+            "#### Each declared source\n\n| source | probe setting | evidence |\n|---|---|---|\n"
+            f"{sources}\n"
+        )
+
+    def failures(self, text: str) -> list[str]:
+        return config_gated_record_failures(self.KEY, text, self.evidence, self.root, self.capabilities)
+
+    def assert_refused(self, text: str, message: str) -> None:
+        found = self.failures(text)
+        self.assertTrue(any(message in failure for failure in found), f"no failure says {message!r}: {found}")
+
+    def test_the_heading_is_the_arm_search_scripts_own(self) -> None:
+        self.assertEqual(golden_reach_search().CONFIG_GATE_HEADING, CONFIG_GATE_HEADING)
+
+    def test_each_config_flag_is_the_one_crozier_declares_for_its_field(self) -> None:
+        """CONFIG_FLAGS restates a CLI flag; this holds it to `src/cli.rs`, so a
+        renamed flag fails here rather than making the probe check pass vacuously."""
+        cli = (REPO / "src" / "cli.rs").read_text(encoding="utf-8")
+        for setting, flag in CONFIG_FLAGS.items():
+            with self.subTest(setting=setting):
+                self.assertTrue(flag.startswith("--"))
+                self.assertRegex(cli, rf'#\[arg\(long = "{re.escape(flag[2:])}"\)\]\s*{re.escape(setting)}:',
+                                 f"src/cli.rs declares no `{flag}` for the field `{setting}`")
+
+    def test_a_well_formed_record_is_accepted(self) -> None:
+        self.assertEqual([], self.failures(self.record()))
+        self.assertEqual(CONFIG_GATED, config_gated_verdict(self.record(), self.KEY))
+
+    def test_a_record_without_its_setting_or_code_path_is_refused(self) -> None:
+        self.assert_refused(self.record().replace(f"| `{self.KEY}` | `audiences` |", "| `other` | `audiences` |"),
+                            f"states no one `{CONFIG_GATED}` line")
+        self.assert_refused(self.record().replace("| `audiences` |", "| `colour` |"),
+                            "which is not a configuration field")
+        self.assert_refused(self.record().replace("filter_by_audience", "filter_by_colour"),
+                            "does not resolve")
+
+    def test_a_record_without_its_measured_gate_is_refused(self) -> None:
+        self.assert_refused(self.record().replace("#### Measured gate", "#### Something else"),
+                            "has no `#### Measured gate` table")
+        self.write_ledger(9, 2)
+        self.assert_refused(self.record(executed_without=2), "is missing or executes the arm, so it is not gated")
+        self.write_ledger(0, 0)
+        self.assert_refused(self.record(), "no instrumented run with `audiences` executes the arm")
+        self.write_ledger(9, 0)
+        self.assert_refused(self.record(executed_without=3), "run `just handwritten-reach` and restate the table")
+
+    def test_a_record_without_each_sources_statement_is_refused(self) -> None:
+        self.assert_refused(self.record().replace("#### Each declared source", "#### Sources"),
+                            "has no `#### Each declared source` table")
+        self.assert_refused(self.record().replace("| `jentic` | none |", "| `postman` | none |"),
+                            "not each of")
+        self.assert_refused(self.record().replace("| `jentic` | none |", "| `jentic` | audiences |"),
+                            "must read `none`")
+        self.assert_refused(self.record().replace(" `jentic/enumeration.tsv.gz`", " `jentic/missing.tsv`"),
+                            "cites no `jentic/enumeration.tsv.gz`")
+        with (self.evidence / "jentic" / "records.tsv").open("a", encoding="utf-8") as handle:
+            handle.write(f"{self.KEY}\tdocument\tb.yaml\tcensus 1\tenumeration.tsv.gz\n")
+        self.assert_refused(self.record(), "`jentic/records.tsv` records a search for the key")
+        with (self.evidence / "queries.tsv").open("a", encoding="utf-8") as handle:
+            handle.write(f"{self.KEY}\tsourcegraph\tq\n")
+        self.assert_refused(self.record(), "holds a `sourcegraph` phrasing for the key")
+        with gzip.open(self.evidence / "apis.guru" / "enumeration.tsv.gz", "at", encoding="utf-8") as handle:
+            handle.write(f"tree\tb.yaml\t{'0' * 40}\t{'0' * 64}\t{self.KEY}\treadable\n")
+        self.assert_refused(self.record(), "matched documents for the key, so it was walked")
+        script = self.root / "scripts" / "golden-reach-search.py"
+        script.write_text(script.read_text(encoding="utf-8") + "\n# --audience\n", encoding="utf-8")
+        self.assert_refused(self.record(), "must pass no `--audience`")
+
+
 class RecipeWiringTests(unittest.TestCase):
     """The gate must run this file, and this file must test the recipe's script."""
 
@@ -8329,6 +8603,10 @@ class RankedBacklogTests(unittest.TestCase):
             checked += 1
             with self.subTest(key=key):
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                if is_config_gated(text):
+                    self.assertIsNone(re.search(r"\| search incomplete, ", line),
+                                      "a configuration-gated record owes no item")
+                    continue
                 owed = {
                     source: int(cells.split("|")[-2])
                     for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M)
@@ -8363,6 +8641,10 @@ class RankedBacklogTests(unittest.TestCase):
         owed: dict[tuple[str, str], int] = {}
         records = sorted((self.ARM_SEARCHES / "searches").glob("*.md"))
         counted = 0
+        gated = [path for path in records if is_config_gated(path.read_text(encoding="utf-8"))]
+        records = [path for path in records if path not in gated]
+        self.assertEqual(set(), {row["key"] for row in rows} & {path.stem for path in gated},
+                         "a configuration-gated record ran no search, so it owes no item")
         for path in records:
             text = path.read_text(encoding="utf-8")
             build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
@@ -8398,6 +8680,12 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertEqual(key, found.group(1))
                 linked.add(key)
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
+                if is_config_gated(text):
+                    # No search ran: the record owes the gate, measured, in its place.
+                    self.assertEqual(
+                        [], config_gated_record_failures(key, text, self.ARM_SEARCHES, REPO, capabilities)
+                    )
+                    continue
                 lines = [
                     [cell.replace("\\|", "|") for cell in line]
                     for line in exhaustive_search_lines(text).get(key, [])
@@ -8520,13 +8808,14 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
             if record.is_file():
+                text = record.read_text(encoding="utf-8")
                 outcomes = {
                     line[2].strip("`")
-                    for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
-                }
+                    for line in exhaustive_search_lines(text).get(reach.key, [])
+                } if not is_config_gated(text) else {config_gated_verdict(text, reach.key)}
                 self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
                 verdict = outcomes.pop()
-                self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE), reach.key)
+                self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), reach.key)
                 cell = f"`{verdict}`"
             else:
                 # No record is no search: the arm reads incomplete, and says why.

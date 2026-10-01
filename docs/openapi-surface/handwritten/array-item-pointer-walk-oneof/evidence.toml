@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "c318e3a2ea7e12732c5dfb71b1c351c760f70e6c20c11b2f8ddbdd0e7e6d4b70"
+
+[[covers]]
+key = "array-item-pointer-walk-oneof"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-renewed/README.md"

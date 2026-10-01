@@ -452,9 +452,11 @@ golden-reach-report:
 # Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md):
 # how many regions of its arm an instrumented crozier run over that fixture's
 # openapi.yml alone executes, one run per fixture as `golden-reach` scopes one
-# golden test. Writes docs/openapi-surface/handwritten-reach.tsv. Outside
-# `check`, like `golden-reach`: it builds and runs crozier instrumented.
-# `--handwritten-dir DIR --ledger PATH` measure another tree into another file.
+# golden test. Writes docs/openapi-surface/handwritten-reach.tsv, and for a
+# fixture declaring a setting, its arms with and without it into
+# handwritten-config-gates.tsv. Outside `check`, like `golden-reach`: it builds
+# and runs crozier instrumented. `--handwritten-dir DIR --ledger PATH --gates
+# PATH` measure another tree into other files.
 handwritten-reach *args:
     python3 scripts/handwritten-fixtures.py measure "$@"
 

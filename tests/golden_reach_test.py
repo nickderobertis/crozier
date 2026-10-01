@@ -1081,6 +1081,12 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(["outstanding"])
         self.assertIn("names no build its probes were counted on", str(refused.exception))
+        # A configuration-gated record counts no probe build and owes no item.
+        (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").write_text(
+            f"# no build\n\n{golden_reach_search.CONFIG_GATE_HEADING}\n", encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            golden_reach_search.main(["outstanding"])
+        self.assertEqual("golden-reach-search: 0 outstanding item(s) across 0 arm search(es)\n", printed.getvalue())
 
     def test_a_document_a_full_parser_rejects_is_census_refused_and_not_outstanding(self) -> None:
         """`refuse` files a syntax rejection with its parser; the record and the list drop it."""
@@ -1326,6 +1332,13 @@ class ArmSearchStageTests(_StageScratch):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(0, golden_reach_search.main(["retire"]))
         self.assertIn(("candidate", "a.yaml", "census 0"), rows())
+        # A configuration-gated record counts no build, so `retire` passes it by
+        # rather than refusing it for naming none.
+        (golden_reach_search.EVIDENCE / "searches" / "gated.md").write_text(
+            f"# gated\n\n{golden_reach_search.CONFIG_GATE_HEADING}\n", encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(0, golden_reach_search.main(["retire"]))
+        self.assertIn(("candidate", "a.yaml", "census 0"), rows())
 
     # Fern's own CLI resolves its pinned version over the network and generates in
     # Docker, so an offline test runs `fern-rescreen` against an executable `fern`
@@ -1391,6 +1404,18 @@ class ArmSearchStageTests(_StageScratch):
         # No probe of this build reaches the arm, so no declarer is a candidate.
         self.assertEqual(summary.format(0, 0, 0), rescreen("refuse"))
         self.assertEqual([], calls())
+        # With no `--key`, the keys are the records counted on this build; a
+        # configuration-gated record counts none and is passed by, not refused.
+        (golden_reach_search.EVIDENCE / "searches").mkdir(parents=True, exist_ok=True)
+        (golden_reach_search.EVIDENCE / "searches" / "gated.md").write_text(
+            f"# gated\n\n{golden_reach_search.CONFIG_GATE_HEADING}\n", encoding="utf-8")
+        with mock.patch.dict(os.environ, {"PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+                                          "FERN_STUB": "refuse", "FERN_STUB_LOG": str(log)}), \
+                contextlib.redirect_stdout(io.StringIO()) as printed:
+            self.assertEqual(0, golden_reach_search.main(
+                ["fern-rescreen", "--source", "jentic", "--root", str(self.root), "--jobs", "1"]))
+        self.assertEqual(summary.format(0, 0, 0), printed.getvalue())
+        (golden_reach_search.EVIDENCE / "searches" / "gated.md").unlink()
 
         golden_reach_search.file_probes("jentic", self.KEY, [
             {"key": self.KEY, "candidate": "a.yaml", "status": "generated", "build": self.head[:12],
