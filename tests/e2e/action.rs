@@ -66,7 +66,7 @@ struct ActionRun {
     /// The finish step's log line and the status the action ends with.
     finish_log: String,
     final_status: i32,
-    _runner_temp: tempfile::TempDir,
+    runner_temp: tempfile::TempDir,
 }
 
 impl ActionRun {
@@ -138,7 +138,7 @@ fn run_action(cwd: &Path, env: &[(&str, &str)]) -> ActionRun {
         compare_log,
         finish_log: String::from_utf8_lossy(&finish.stderr).into_owned(),
         final_status: finish.status.code().expect("finish.sh exited"),
-        _runner_temp: runner_temp,
+        runner_temp,
     }
 }
 
@@ -503,6 +503,72 @@ fn finish_refuses_a_missing_exit_code() {
     .unwrap();
     assert_eq!(out.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&out.stderr).contains("is not an exit status"));
+}
+
+/// A mismatch touching many files lists the first twenty of each kind in its
+/// row and counts the rest, which the diff artifact holds in full.
+#[test]
+fn a_long_mismatch_lists_twenty_paths_and_counts_the_rest() {
+    let reference = format!(
+        "#!/usr/bin/env bash\nset -euo pipefail\ncp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n\
+         mkdir \"$CROZIER_REFERENCE_OUTPUT/extra\"\n\
+         for i in $(seq -w 1 25); do echo \"$i\" > \"$CROZIER_REFERENCE_OUTPUT/extra/file-$i.txt\"; done\n",
+        golden("expected").display(),
+    );
+    let repo = layout(&[
+        ("reference.sh", &reference),
+        (
+            "crozier.yml",
+            &format!("spec: ./openapi.yml\n{NAMING}reference:\n  command: ./reference.sh\n"),
+        ),
+    ]);
+    let run = run_action(repo.path(), &[]);
+
+    assert_eq!(run.output("mismatched"), "1");
+    let row = run
+        .summary
+        .lines()
+        .find(|line| line.starts_with("| ❌ mismatched |"))
+        .unwrap_or_else(|| panic!("no mismatched row:\n{}", run.summary));
+    let listed: Vec<&str> = row.matches("<code>extra/file-").collect();
+    assert_eq!(listed.len(), 20, "{row}");
+    assert!(
+        row.contains("only in reference: <code>extra/file-01.txt</code>"),
+        "{row}"
+    );
+    assert!(row.contains("<code>extra/file-20.txt</code>"), "{row}");
+    assert!(!row.contains("extra/file-21.txt"), "{row}");
+    assert!(row.contains("(5 more; see the diff artifact)"), "{row}");
+    assert_eq!(run.final_status, 3);
+}
+
+/// When the CLI's own status is not the report's — a `--diff-dir` file it could
+/// not write exits 1 over a report whose results say 3 — the summary says so
+/// beside the result the report gives. Rendered from a real report.
+#[test]
+fn the_summary_states_a_cli_status_the_report_does_not_carry() {
+    let run = run_action(repo_root(), &[("COMPARE_PATHS", FIXTURE_LAYOUT)]);
+    let out = step("summary.sh", repo_root(), run.runner_temp.path(), &[])
+        .env("REPORT", run.output("report-path"))
+        .env("EXIT_CODE", "1")
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let summary = String::from_utf8(out.stdout).unwrap();
+    assert!(
+        summary.contains("❌ **1 generator(s) mismatched the reference.**"),
+        "{summary}"
+    );
+    assert!(
+        summary.contains("❌ **crozier compare exited 1**, not 3: see the step log for its error."),
+        "{summary}"
+    );
+    // The run whose statuses agree carries no such line.
+    assert!(
+        !run.summary.contains("**crozier compare exited"),
+        "{}",
+        run.summary
+    );
 }
 
 /// The compare step refuses to run outside a runner rather than write its
@@ -871,6 +937,36 @@ fn a_windows_runner_is_refused() {
         run.stderr
     );
     assert!(!run.root().exists());
+}
+
+/// Outside a runner the install step says what is missing and installs
+/// nothing.
+#[test]
+fn install_refuses_a_missing_runner_environment() {
+    for (missing, named) in [
+        ("GITHUB_ACTION_PATH", "GITHUB_ACTION_PATH is not set"),
+        ("RUNNER_TEMP", "RUNNER_TEMP is not set"),
+    ] {
+        let runner_temp = tempfile::tempdir().unwrap();
+        let output_file = runner_temp.path().join("github-output");
+        std::fs::write(&output_file, "").unwrap();
+        let mut command = step("install.sh", repo_root(), runner_temp.path(), &[]);
+        command
+            .env("GITHUB_ACTION_PATH", repo_root())
+            .env("GITHUB_OUTPUT", &output_file)
+            .env("VERSION", "v0.0.80")
+            .env_remove("RUNNER_OS")
+            .env_remove(missing);
+        let out = command.output().unwrap();
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(out.status.code(), Some(1), "{missing}: {stderr}");
+        assert!(
+            stderr.contains(named) && stderr.contains("ACTION:"),
+            "{missing}: {stderr}"
+        );
+        assert!(!stderr.contains("downloading"), "{stderr}");
+        assert_eq!(std::fs::read_to_string(&output_file).unwrap(), "");
+    }
 }
 
 /// `ruff` is crozier's own dependency: absent, the action installs the version

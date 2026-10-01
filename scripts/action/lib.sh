@@ -4,9 +4,7 @@
 #
 # The colour rule is `crozier compare`'s own (docs/compare.md#colour), so a
 # result line the Action prints and the CLI's report beside it in the same log
-# agree on when colour is on: NO_COLOR non-empty turns it off; otherwise
-# CLICOLOR_FORCE non-empty and not `0` turns it on; otherwise it follows whether
-# stderr is a terminal. The Action's scripts print to stderr, as the CLI does.
+# agree on when colour is on. The scripts print to stderr, as the CLI does.
 #
 # A GitHub Actions log is not a terminal, so without help neither would print
 # colour there: the Action sets CLICOLOR_FORCE=1 for its scripts and the CLI

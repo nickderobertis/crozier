@@ -326,9 +326,9 @@ jobs:
 
 **What to adjust.** The `paths:` filters under both triggers: replace the
 OpenAPI globs with the paths of your own documents, and keep the four crozier
-config names. Each generator's [`layout`](configuration.md#output-layout) and
-names must be ones the recipe can reproduce (see the recipe's
-[Names](fern-reference.md#names)).
+config names. Each generator's `layout` and names must be ones the recipe can
+reproduce; it exits non-zero naming any it cannot, which the Action reports as
+could not check.
 
 **Blocking or not.** The job fails on a mismatch or a generator it could not
 check. To make that block merging, mark the `compare` job as a required status
