@@ -16577,3 +16577,94 @@ fn recursive_inline_union_refusal_preserves_named_recursion() {
         }
     }
 }
+
+#[test]
+fn enum_default_refusal_recovers_with_a_retained_default() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("default-not-enum-value");
+    let probe = class.join("probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "default-not-enum-value",
+            &run,
+            "ListRequest/properties/sort",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let repaired = dir.path().join("repaired.yml");
+    let text = std::fs::read_to_string(&probe).unwrap();
+    std::fs::write(
+        &repaired,
+        text.replace("default: -createdAt", "default: createdAt"),
+    )
+    .unwrap();
+    let normal = refusal_run(&crozier, &repaired, false).unwrap();
+    let strict = refusal_run(&crozier, &repaired, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    for case in [
+        "operation-scalar-collision",
+        "operation-array",
+        "unused-schema-collision",
+        "unused-object-property-collision",
+        "response-root-collision",
+        "request-root-collision",
+        "shared-parameter-collision",
+    ] {
+        let spec = class.join(format!("{case}-probe.yml"));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("default-not-enum-value", &run, "default", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+        let recovered = dir.path().join(format!("{case}.yml"));
+        let text = std::fs::read_to_string(&spec).unwrap();
+        std::fs::write(
+            &recovered,
+            text.replace("default: -createdAt", "default: createdAt")
+                .replace("default: third", "default: first"),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &recovered, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{case}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for control in [
+        "declared-members-control.yml",
+        "canonical-empty-members-control.yml",
+        "shared-parameter-control.yml",
+        "unused-object-control.yml",
+        "response-root-control.yml",
+        "request-root-control.yml",
+    ] {
+        let spec = class.join(control);
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(normal.code, Some(0), "{control}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{control}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}

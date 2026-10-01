@@ -1,5 +1,5 @@
 class	family	fern_stage	fern_exit	diagnostic	documents	status	crozier_diagnostic	population_strict
-default-not-enum-value	documents	check	1	Default value <…> is not a valid enum value	5	unevaluated	—	—
+default-not-enum-value	documents	check	1	Default value <…> is not a valid enum value	5	refuse	ListRequest/properties/sort	5/5
 default-not-valid-for-type	documents	check	1	Default value <…> is not a valid <…>	15	refuse	page/schema	15/15
 discriminant-value-unsuitable	names	check	1	Discriminant value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.	13	unevaluated	—	—
 duplicate-example-name	documents	check	1	Duplicate example name: <…>	109	unevaluated	—	—

@@ -1,0 +1,9 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths: {}
+components:
+  schemas:
+    Unused:
+      type: object
+      properties:
+        key: {type: string, enum: [createdAt, -createdAt], default: -createdAt}

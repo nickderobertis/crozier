@@ -27,6 +27,7 @@ enum Class {
     ExtensionReferenceCycle,
     UnresolvedSchemaReference,
     HeapExhausted,
+    DefaultNotEnumValue,
 }
 
 impl Class {
@@ -47,6 +48,7 @@ impl Class {
             Self::ExtensionReferenceCycle => "extension-reference-cycle",
             Self::UnresolvedSchemaReference => "unresolved-schema-reference",
             Self::HeapExhausted => "heap-exhausted",
+            Self::DefaultNotEnumValue => "default-not-enum-value",
         }
     }
 }
@@ -1107,6 +1109,35 @@ fn check_schema(
             );
         }
     }
+    if let Some(default) = schema.get("default").and_then(serde_yaml_ng::Value::as_str) {
+        let query_array = matches!(location, SchemaLocation::Query)
+            && schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array");
+        let candidate = if query_array {
+            schema.get("items").unwrap_or(schema)
+        } else {
+            schema
+        };
+        if let Some(values) = candidate
+            .get("enum")
+            .and_then(serde_yaml_ng::Value::as_sequence)
+        {
+            // Fern ignores scalar defaults outside the declared enum. Query
+            // arrays become an enum-or-list union and validate their scalar default.
+            let declared = values.iter().any(|value| value.as_str() == Some(default));
+            if !values.is_empty()
+                && values.iter().all(|value| value.as_str().is_some())
+                && ((query_array && !declared)
+                    || (declared && !retained_enum_default(candidate, default, context.path)?))
+            {
+                return refusal(
+                    context.path,
+                    context.strict,
+                    Class::DefaultNotEnumValue,
+                    &format!("{element} default {default:?}"),
+                );
+            }
+        }
+    }
     if let Some(properties) = schema
         .get("properties")
         .and_then(serde_yaml_ng::Value::as_mapping)
@@ -1148,6 +1179,51 @@ fn check_schema(
         }
     }
     Ok(())
+}
+
+/// Whether the IR's own enum builder keeps the member a declared default
+/// names. It reads the schema as pinned Fern does: `x-crozier-*` extensions,
+/// which Fern ignores, are dropped first, so a canonical extension never makes
+/// a document Fern accepts into a refusal.
+fn retained_enum_default(
+    schema: &serde_yaml_ng::Value,
+    default: &str,
+    path: &Path,
+) -> Result<bool> {
+    let mut schema = schema.clone();
+    if let Some(mapping) = schema.as_mapping_mut() {
+        mapping.retain(|key, _| {
+            !key.as_str()
+                .is_some_and(|key| key.starts_with("x-crozier-"))
+        });
+        mapping.insert("type".into(), "string".into());
+    }
+    let mut schemas = serde_yaml_ng::Mapping::new();
+    schemas.insert("EnumDefaultProbe".into(), schema);
+    let mut components = serde_yaml_ng::Mapping::new();
+    components.insert("schemas".into(), schemas.into());
+    let mut document = serde_yaml_ng::Mapping::new();
+    document.insert("openapi".into(), "3.0.3".into());
+    document.insert("components".into(), components.into());
+    let Ok(doc) = serde_yaml_ng::from_value::<OpenApi>(document.into()) else {
+        return Ok(true);
+    };
+    let config = crate::config::GenerateConfig::new(
+        path.to_path_buf(),
+        Default::default(),
+        Some("enum_probe".into()),
+        None,
+        None,
+        crate::settings::ExtraFields::default(),
+        "Enum probe",
+    )?;
+    Ok(crate::ir::build(&doc, &config)
+        .types
+        .iter()
+        .any(|declaration| {
+            matches!(declaration, crate::ir::TypeDecl::Enum(enum_type)
+            if enum_type.members.iter().any(|member| member.value == default))
+        }))
 }
 
 // Schema numeric bounds can exceed u64 in refused documents. Preserve the

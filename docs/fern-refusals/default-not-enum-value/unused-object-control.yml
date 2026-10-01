@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '204': {description: OK}
+components:
+  schemas:
+    Unused:
+      type: object
+      properties:
+        key: {type: string, enum: [first, second], default: third}
