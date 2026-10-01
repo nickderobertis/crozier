@@ -97,9 +97,15 @@ def rel(path: Path) -> str:
     return path.relative_to(REPO).as_posix() if path.is_relative_to(REPO) else path.as_posix()
 
 
-def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
+def require(path: Path) -> Path:
+    """`path`, once it is known to exist: a committed input that is gone fails with the fix."""
     if not path.is_file():
         fail(f"{rel(path)} is missing; restore it from git")
+    return path
+
+
+def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
+    require(path)
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
         rows = list(reader)
@@ -128,7 +134,7 @@ def raw_url(repository: str, commit: str, path: str) -> str:
 def dropped_rows() -> list[tuple[int, str, str]]:
     """`(line, name, reason)` of every CORPUS.md `DROPPED` row whose reason is a Fern failure."""
     found = []
-    for number, line in enumerate(CORPUS.read_text(encoding="utf-8").splitlines(), start=1):
+    for number, line in enumerate(require(CORPUS).read_text(encoding="utf-8").splitlines(), start=1):
         if "DROPPED" not in line or not line.startswith("|"):
             continue
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
@@ -145,7 +151,7 @@ def dropped_rows() -> list[tuple[int, str, str]]:
 
 def enumeration(source: str) -> dict[str, dict[str, str]]:
     path = SURFACE / "golden-reach-witnesses" / source / "enumeration.tsv.gz"
-    with gzip.open(path, "rt", encoding="utf-8", newline="") as handle:
+    with gzip.open(require(path), "rt", encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
     seen: dict[str, int] = {}
     for row in rows:
@@ -167,7 +173,7 @@ def searched_candidates(source: str) -> dict[str, dict[str, Any]]:
     # commit and sha256 are read.
     path = SURFACE / "golden-reach-witnesses" / source / "candidates.jsonl"
     found = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in require(path).read_text(encoding="utf-8").splitlines():
         row = json.loads(line)
         found[f"{row['repository']}:{row['path']}@{row['commit']}"] = row
     return found

@@ -172,5 +172,46 @@ class Drift(unittest.TestCase):
         self.assertIn(f"{dropped}: no real document's generation confirms it", result.stderr)
 
 
+
+class MissingInputs(unittest.TestCase):
+    """A committed input the population is read from that has gone missing
+    fails `select` naming the file and its fix, never with a traceback. The
+    script reads its inputs relative to its own checkout, so it runs from a
+    scratch one holding only what `select` reads up to the removed file."""
+
+    INPUTS = (
+        "tests/fixtures/CORPUS.md",
+        "docs/openapi-surface/fern-refusals/dropped-sources.tsv",
+        *(f"docs/openapi-surface/golden-reach-witnesses/{source}/enumeration.tsv.gz"
+          for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees")),
+    )
+
+    def assert_select_names_missing(self, missing: str) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            for relative in ("scripts/fern-refusals.py", *self.INPUTS):
+                (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                if relative != missing:
+                    shutil.copy(REPO / relative, root / relative)
+            env = {key: value for key, value in os.environ.items() if not key.startswith("CROZIER_FERN_REFUSALS")}
+            result = subprocess.run([sys.executable, str(root / "scripts" / "fern-refusals.py"), "select"],
+                                    capture_output=True, text=True, env=env, cwd=root)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn(f"{missing} is missing; restore it from git", result.stderr)
+
+    def test_a_missing_corpus_table_names_it(self) -> None:
+        self.assert_select_names_missing("tests/fixtures/CORPUS.md")
+
+    def test_a_missing_enumeration_names_it(self) -> None:
+        self.assert_select_names_missing(
+            "docs/openapi-surface/golden-reach-witnesses/jentic/enumeration.tsv.gz")
+
+    def test_missing_search_candidates_name_them(self) -> None:
+        # Every input before it is present, so `select` reaches the first search.
+        self.assert_select_names_missing(
+            "docs/openapi-surface/golden-reach-witnesses/github-code-search/candidates.jsonl")
+
+
 if __name__ == "__main__":
     unittest.main()
