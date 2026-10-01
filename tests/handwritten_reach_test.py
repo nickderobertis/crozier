@@ -91,8 +91,8 @@ digest = "{zero}"
 [[covers]]
 key = "discriminator-mapping"
 arm = '{arm}'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md#witness-search-exhaustive"
-verdict = "exhausted"
+search = "docs/openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md#configuration-gate"
+verdict = "config-gated"
 """
 
 
@@ -107,8 +107,10 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
         )
 
     def run_recipe(self, base: Path, ledger: Path) -> subprocess.CompletedProcess[str]:
+        gates = ledger.with_name("gates.tsv")
         return subprocess.run(
-            ["just", "handwritten-reach", "--handwritten-dir", str(base), "--ledger", str(ledger)],
+            ["just", "handwritten-reach", "--handwritten-dir", str(base), "--ledger", str(ledger),
+             "--gates", str(gates)],
             cwd=REPO, capture_output=True, text=True, timeout=3600,
         )
 
@@ -156,6 +158,16 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                 ["0", str(total)], measured["unfiltered"][3:],
                 "a fixture declaring no audience was measured with a filter",
             )
+            # The configuration gate: the fixture declaring the audience is
+            # measured both ways, and only it — the unfiltered one has no setting.
+            with ledger.with_name("gates.tsv").open(encoding="utf-8", newline="") as handle:
+                gates = list(csv.reader(handle, delimiter="\t"))
+            self.assertEqual(["fixture", "key", "site", "setting", "regions_executed", "regions"], gates[0])
+            self.assertEqual(
+                [["for-public", "discriminator-mapping", AUDIENCE_ARM, "-", "0", str(total)],
+                 ["for-public", "discriminator-mapping", AUDIENCE_ARM, "audiences=public", str(total), str(total)]],
+                gates[1:],
+            )
 
     def test_a_cover_naming_an_unlisted_site_is_refused(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -165,6 +177,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertNotEqual(0, run.returncode)
             self.assertIn("wrong-arm: cover `format-email` arm `src/ir.rs::base_type_ref` is not a site", run.stderr)
             self.assertFalse(ledger.exists(), "a refused measurement wrote a ledger")
+            self.assertFalse(ledger.with_name("gates.tsv").exists(), "a refused measurement wrote a gate ledger")
 
 
 if __name__ == "__main__":

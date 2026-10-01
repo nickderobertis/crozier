@@ -2261,6 +2261,7 @@ impl HandwrittenFixture {
         fixture.write_reach(&format!(
             "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t1\t1\n"
         ));
+        fixture.write_gates("");
         std::fs::write(fixture.fixture_dir().join("openapi.yml"), HANDWRITTEN_SPEC)
             .expect("fixture document");
         write_stripped_crozier_tree(
@@ -2301,6 +2302,14 @@ impl HandwrittenFixture {
             format!("fixture\tkey\tsite\tregions_executed\tregions\n{rows}"),
         )
         .expect("fixture reach ledger");
+    }
+
+    fn write_gates(&self, rows: &str) {
+        std::fs::write(
+            self.path("docs/openapi-surface/handwritten-config-gates.tsv"),
+            format!("fixture\tkey\tsite\tsetting\tregions_executed\tregions\n{rows}"),
+        )
+        .expect("fixture configuration-gate ledger");
     }
 
     /// Write `evidence.toml` at the pin and the tree's current digest, with `covers`.
@@ -2424,6 +2433,15 @@ components:
     let covers = std::fs::read_to_string(fixture.evidence()).expect("evidence");
     let covers = &covers[covers.find("[[covers]]").expect("a cover")..];
     fixture.declare(&format!("audiences = [\"public\"]\n\n{covers}"));
+    // Its arm-level cover owes the measured pair, with the setting and without.
+    fixture.assert_refused(
+        "handwritten-config-gates.tsv",
+        "with setting `audiences=public` — run `just handwritten-reach`",
+    );
+    fixture.write_gates(&format!(
+        "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t1\t1\n\
+         {HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\taudiences=public\t1\t1\n"
+    ));
     assert_eq!(Vec::<String>::new(), fixture.failures());
 
     fixture.edit_evidence("audiences = [\"public\"]\n", "");
@@ -2433,6 +2451,13 @@ components:
         fixture.declare(&format!("audiences = {malformed}\n\n{covers}"));
         fixture.assert_refused(HANDWRITTEN_FIXTURE, "evidence.toml `audiences` is");
     }
+
+    // A `config-gated` cover rests on a setting its fixture must declare.
+    fixture.declare(&covers.replace("verdict = \"exhausted\"", "verdict = \"config-gated\""));
+    fixture.assert_refused(
+        HANDWRITTEN_FIXTURE,
+        "a `config-gated` cover is arm-level and its fixture declares the setting",
+    );
 }
 
 #[test]
@@ -2643,7 +2668,7 @@ fn handwritten_gate_refuses_a_malformed_fixture_directory_or_evidence() {
     fixture.edit_evidence("verdict = \"exhausted\"", "verdict = \"witness-found\"");
     fixture.assert_refused(
         HANDWRITTEN_FIXTURE,
-        "verdict `witness-found` is not `exhausted` or",
+        "verdict `witness-found` is not `exhausted`, `search-incomplete` or `config-gated`",
     );
 
     let fixture = HandwrittenFixture::new();

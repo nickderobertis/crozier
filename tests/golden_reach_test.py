@@ -1081,6 +1081,12 @@ class ArmSearchStageTests(_StageScratch):
         with self.assertRaises(SystemExit) as refused:
             golden_reach_search.main(["outstanding"])
         self.assertIn("names no build its probes were counted on", str(refused.exception))
+        # A configuration-gated record counts no probe build and owes no item.
+        (golden_reach_search.EVIDENCE / "searches" / f"{self.KEY}.md").write_text(
+            f"# no build\n\n{golden_reach_search.CONFIG_GATE_HEADING}\n", encoding="utf-8")
+        with contextlib.redirect_stdout(io.StringIO()) as printed:
+            golden_reach_search.main(["outstanding"])
+        self.assertEqual("golden-reach-search: 0 outstanding item(s) across 0 arm search(es)\n", printed.getvalue())
 
     def test_a_document_a_full_parser_rejects_is_census_refused_and_not_outstanding(self) -> None:
         """`refuse` files a syntax rejection with its parser; the record and the list drop it."""
