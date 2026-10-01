@@ -37,8 +37,9 @@ and [header generation](evaluation-logs/fern-header-array-generate.log) both
 succeed in Fern, whereas [baseline crozier](evaluation-logs/baseline-header-array.log)
 already refuses array headers as unsupported. The CLI control proves this
 new detector preserves that existing diagnostic rather than masking it with
-`list-default-not-array`. This pre-existing parity gap was raised with the
-manager; no SDK repair or broader refusal was made here.
+`list-default-not-array`. The manager ruled that this pre-existing parity
+gap is no new refusal: the baseline refusal stays, and generating array
+headers is a follow-up. No SDK repair or broader refusal was made here.
 
 [All seven population documents](evaluation-logs/population-refusals.jsonl)
 were retrieved and refused in both modes: exit 1, no files and one diagnostic
