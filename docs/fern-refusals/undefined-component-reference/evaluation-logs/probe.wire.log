@@ -1,0 +1,3 @@
+AttributeError: 'FernApi' object has no attribute 'get_cart'
+requests sent: 0
+declared GET /carts/{id} with missing CartIdParam is dropped; locale cannot be sent and 204 cannot be parsed

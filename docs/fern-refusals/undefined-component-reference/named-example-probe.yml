@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info: {title: Named example probe, version: '1'}
+paths:
+  /companies:
+    get:
+      operationId: listCompanies
+      responses:
+        '200':
+          description: Companies
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [companies]
+                properties:
+                  companies: {type: array, items: {type: string}}
+              examples:
+                companies:
+                  $ref: '#/components/examples/JSONEXAMPLES/value/COMPANIES_GET'
+components:
+  examples:
+    JSONEXAMPLES:
+      value:
+        COMPANIES_GET: {companies: [ACME]}
+    COMPANIES_GET:
+      value: {companies: [ACME]}

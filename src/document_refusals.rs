@@ -16,6 +16,7 @@ enum Class {
     UnresolvedReference,
     PathWithoutLeadingSlash,
     PathParameterUnreferenced,
+    UndefinedComponentReference,
 }
 
 impl Class {
@@ -27,6 +28,7 @@ impl Class {
             Self::UnresolvedReference => "unresolved-reference",
             Self::PathWithoutLeadingSlash => "path-without-leading-slash",
             Self::PathParameterUnreferenced => "path-parameter-unreferenced",
+            Self::UndefinedComponentReference => "undefined-component-reference",
         }
     }
 }
@@ -60,9 +62,9 @@ pub fn check_version_file(path: &Path, strict: bool) -> Result<()> {
     Ok(())
 }
 
-/// Inspect Reference Objects before normalization can replace or discard them.
+/// Check document structure before normalization can replace or discard it.
 /// Schema and Path Item references have separate Fern behavior and are excluded.
-pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
+pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     if !path.extension().and_then(|s| s.to_str()).is_some_and(|s| {
         ["json", "yaml", "yml"]
             .iter()
@@ -100,6 +102,42 @@ pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
             }
         }
     }
+    if let Some(components) = root.get("components") {
+        for name in ["securitySchemes", "requestBodies", "headers"] {
+            if let Some(value) = components.get(name) {
+                check_reference_objects(value, &root, path, strict, &format!("components/{name}"))?;
+            }
+        }
+    }
+    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+        for (route, item) in paths {
+            let Some(route) = route.as_str() else {
+                continue;
+            };
+            for name in [
+                "get",
+                "put",
+                "post",
+                "delete",
+                "options",
+                "head",
+                "patch",
+                "trace",
+                "parameters",
+            ] {
+                if let Some(value) = item.get(name) {
+                    check_reference_objects(
+                        value,
+                        &root,
+                        path,
+                        strict,
+                        &format!("paths/{route}/{name}"),
+                    )?;
+                }
+            }
+        }
+    }
+    // Resolve missing Reference Objects before checking their parameter uses.
     if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
         for (route, item) in paths {
             let Some(route) = route.as_str() else {
@@ -148,47 +186,6 @@ pub fn check_reference_file(path: &Path, strict: bool) -> Result<()> {
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-    if let Some(components) = root.get("components") {
-        for name in [
-            "securitySchemes",
-            "responses",
-            "requestBodies",
-            "parameters",
-            "headers",
-        ] {
-            if let Some(value) = components.get(name) {
-                check_reference_objects(value, &root, path, strict, &format!("components/{name}"))?;
-            }
-        }
-    }
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
-        for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
-            for name in [
-                "get",
-                "put",
-                "post",
-                "delete",
-                "options",
-                "head",
-                "patch",
-                "trace",
-                "parameters",
-            ] {
-                if let Some(value) = item.get(name) {
-                    check_reference_objects(
-                        value,
-                        &root,
-                        path,
-                        strict,
-                        &format!("paths/{route}/{name}"),
-                    )?;
                 }
             }
         }
@@ -302,6 +299,38 @@ fn ignored_reference_node(value: &serde_yaml_ng::Value) -> bool {
         .is_ok_and(|schema| schema.ignored())
 }
 
+fn check_named_examples(
+    examples: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    path: &Path,
+    strict: bool,
+    element: &str,
+) -> Result<()> {
+    let Some(examples) = examples.as_mapping() else {
+        return Ok(());
+    };
+    for (name, example) in examples {
+        let Some(name) = name.as_str() else {
+            continue;
+        };
+        let Some(reference) = example.get("$ref").and_then(serde_yaml_ng::Value::as_str) else {
+            continue;
+        };
+        if let Some(target) = reference.strip_prefix("#/components/examples/") {
+            if target.contains('/') || yaml_pointer(root, &reference[1..]).is_none() {
+                return refusal(
+                    path,
+                    strict,
+                    Class::UndefinedComponentReference,
+                    &format!("{element}/{name}: {reference}"),
+                );
+            }
+        }
+        // `value` is example data, so a $ref inside it is never traversed.
+    }
+    Ok(())
+}
+
 fn check_reference_objects(
     value: &serde_yaml_ng::Value,
     root: &serde_yaml_ng::Value,
@@ -329,10 +358,20 @@ fn check_reference_objects(
                 .max_by_key(|(index, _)| *index)
                 .map(|(_, kind)| kind);
                 let missing = if let Some(pointer) = reference.strip_prefix('#') {
-                    !reference.starts_with("#/components/parameters/")
-                        && (expected.is_some_and(|kind| {
-                            !reference.starts_with(&format!("#/components/{kind}/"))
-                        }) || yaml_pointer(root, pointer).is_none())
+                    if expected == Some("parameters")
+                        && reference.starts_with("#/components/parameters/")
+                        && yaml_pointer(root, pointer).is_none()
+                    {
+                        return refusal(
+                            path,
+                            strict,
+                            Class::UndefinedComponentReference,
+                            &format!("{element}: {reference}"),
+                        );
+                    }
+                    expected.is_some_and(|kind| {
+                        !reference.starts_with(&format!("#/components/{kind}/"))
+                    }) || yaml_pointer(root, pointer).is_none()
                 } else if let Some((file, _)) = reference.split_once('#') {
                     !file.contains("://")
                         && !path
@@ -360,6 +399,16 @@ fn check_reference_objects(
                 } else {
                     continue;
                 };
+                if key == "examples" {
+                    check_named_examples(
+                        child,
+                        root,
+                        path,
+                        strict,
+                        &format!("{element}/examples"),
+                    )?;
+                    continue;
+                }
                 if matches!(
                     key.as_str(),
                     "schema" | "schemas" | "example" | "examples" | "default" | "enum" | "const"
@@ -515,10 +564,10 @@ mod tests {
             "components: {securitySchemes: {Bearer: {x-crozier-ignore: true, $ref: 'absent.yml#/Bearer'}}}",
         ] {
             std::fs::write(&file, content).unwrap();
-            check_reference_file(&file, true).unwrap();
+            check_structure_file(&file, true).unwrap();
         }
         std::fs::write(&file, "components: {securitySchemes: {Bearer: {x-crozier-ignore: false, x-fern-ignore: true, $ref: 'absent.yml#/Bearer'}}}").unwrap();
-        let error = check_reference_file(&file, true).unwrap_err().to_string();
+        let error = check_structure_file(&file, true).unwrap_err().to_string();
         assert!(error.contains("unresolved-reference: components/securitySchemes/Bearer"));
         assert!(error.contains("fern-strict"));
         std::fs::write(
@@ -526,9 +575,9 @@ mod tests {
             "Bearer: {type: http, scheme: bearer}",
         )
         .unwrap();
-        check_reference_file(&file, false).unwrap();
+        check_structure_file(&file, false).unwrap();
         std::fs::write(&file, "paths: {/probe: {get: {responses: {401: {$ref: '#/$defs/Denied'}}}}}\n$defs: {Denied: {description: Unauthorized}}\ncomponents: {schemas: {Bound: {maximum: 18446744073709552000}}}").unwrap();
-        let error = check_reference_file(&file, false).unwrap_err().to_string();
+        let error = check_structure_file(&file, false).unwrap_err().to_string();
         assert!(error.contains("unresolved-reference: paths//probe/get/responses/401"));
     }
 

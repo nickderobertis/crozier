@@ -53,3 +53,18 @@ The auth predicate remains reconciled to the actual IR importer without
 changing emitted SDKs. Service classification deliberately follows Fern
 importer groups, rather than IR module flattening; the site-scoped lint
 rationale at that grouping loop states this distinction.
+
+A response Reference Object naming a parameter component is also a reference
+into the wrong component collection, even when that parameter exists. Its
+CLI recovery journey refuses it and generates when the response is inlined;
+the [refusal assertion failed against the preserved starting binary](evaluation-logs/response-parameter-reference-e2e-red.log).
+
+The accepted Groupe PSA corpus supplies a component-only response alias into
+`#/x-fragment/general_error_fragment`. The [isolated Fern measurements](evaluation-logs/fern-response-fragment.log)
+and [description-free control](evaluation-logs/fern-response-fragment-pure.log)
+both pass check and generation. Unused response definitions are therefore not
+eagerly traversed; operation response Reference Objects retain their checks.
+The [CLI assertion failed before this restriction](evaluation-logs/response-component-fragment-e2e-red.log).
+The accepted control generates identical bytes in both modes, while moving the
+fragment reference onto the operation refuses. After this restriction, all 42
+retrievable unresolved-reference documents still refuse in both modes.

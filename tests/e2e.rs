@@ -15728,3 +15728,182 @@ fn shared_referenced_path_parameter_recovers_with_placeholder() {
         assert!(!run.files.is_empty());
     }
 }
+
+#[test]
+fn missing_parameter_component_recovers_when_definition_is_added() {
+    let probe = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("undefined-component-reference/probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures =
+            refused_failures("undefined-component-reference", &run, "CartIdParam", strict);
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = std::fs::read_to_string(probe).unwrap();
+    std::fs::write(&spec, format!("{text}    CartIdParam:\n      name: id\n      in: path\n      required: true\n      schema: {{type: string}}\n")).unwrap();
+    let unused = dir.path().join("unused.yml");
+    let repaired = std::fs::read_to_string(&spec).unwrap();
+    std::fs::write(
+        &unused,
+        format!("{repaired}    UnusedAlias:\n      $ref: '#/components/parameters/AbsentUnused'\n"),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &unused, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let normal = refusal_run(&crozier, &spec, false).unwrap();
+    let strict = refusal_run(&crozier, &spec, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+}
+
+#[test]
+fn nested_named_example_reference_recovers_with_example_component() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("undefined-component-reference");
+    let probe = class.join("named-example-probe.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &probe, strict).unwrap();
+        let failures = refused_failures(
+            "undefined-component-reference",
+            &run,
+            "JSONEXAMPLES/value/COMPANIES_GET",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let missing_dir = tempfile::tempdir().unwrap();
+    let missing = missing_dir.path().join("missing.yml");
+    std::fs::write(
+        &missing,
+        std::fs::read_to_string(&probe).unwrap().replace(
+            "#/components/examples/JSONEXAMPLES/value/COMPANIES_GET",
+            "#/components/examples/AbsentExample",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &missing, strict).unwrap();
+        let failures = refused_failures(
+            "undefined-component-reference",
+            &run,
+            "AbsentExample",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    let control = class.join("named-example-control.yml");
+    let normal = refusal_run(&crozier, &control, false).unwrap();
+    let strict = refusal_run(&crozier, &control, true).unwrap();
+    assert_eq!(normal.code, Some(0), "{}", normal.stderr);
+    assert_eq!(strict.code, Some(0), "{}", strict.stderr);
+    assert!(!normal.files.is_empty());
+    assert_eq!(normal.files, strict.files);
+    for file in &normal.files {
+        assert_eq!(
+            std::fs::read(normal.target.join(file)).unwrap(),
+            std::fs::read(strict.target.join(file)).unwrap()
+        );
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let data = dir.path().join("data.yml");
+    let text = std::fs::read_to_string(control).unwrap().replace(
+        "                  companies:",
+        "                  opaque: {type: object, additionalProperties: true}\n                  companies:");
+    std::fs::write(
+        &data,
+        text.replace(
+            "value: {companies: [ACME]}",
+            "value: {companies: [ACME], opaque: {$ref: '#/components/parameters/Absent'}}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &data, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn response_parameter_reference_recovers_with_inline_response() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let text = "openapi: 3.0.3\ninfo: {title: Probe, version: '1'}\npaths:\n  /probe:\n    get:\n      operationId: probe\n      responses:\n        '204': {$ref: '#/components/parameters/ID'}\ncomponents:\n  parameters:\n    ID: {name: id, in: query, schema: {type: string}}\n";
+    std::fs::write(&spec, text).unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/204",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        text.replace(
+            "{$ref: '#/components/parameters/ID'}",
+            "{description: Empty}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &spec, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+}
+
+#[test]
+fn response_component_fragment_is_not_an_operation_reference() {
+    let control = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("unresolved-reference/response-fragment-control.yml");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &control, strict).unwrap();
+        assert_eq!(run.code, Some(0), "{}", run.stderr);
+        assert!(!run.files.is_empty());
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let direct = dir.path().join("direct.yml");
+    let text = std::fs::read_to_string(control).unwrap();
+    std::fs::write(
+        &direct,
+        text.replace(
+            "'204': {$ref: '#/components/responses/Empty'}",
+            "'204': {$ref: '#/x-fragment/base'}",
+        ),
+    )
+    .unwrap();
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &direct, strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "paths//probe/get/responses/204",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+}
