@@ -14449,7 +14449,7 @@ fn wire_test_failures(id: &str, wire_test: &Path, sdk: &Path, probe: &Path) -> V
             return Vec::new();
         }
     };
-    let (mypy_cache, _cache_lock) = match sdk_mypy_cache(&py) {
+    let (mypy_cache, _cache_lock) = match lock_sdk_mypy_cache(&py) {
         Ok(cache) => cache,
         Err(reason) => return vec![format!("{id}: wire_test.py cannot run: {reason}")],
     };
@@ -14686,7 +14686,7 @@ fn sdk_python_env_survives_concurrent_first_use() {
 /// only what changed rather than the whole standard library and pydantic, and
 /// the lock a run holds while it uses it: concurrent `mypy` runs replacing the
 /// same cache files fail on Windows, so they take turns.
-fn sdk_mypy_cache(py: &Path) -> Result<(PathBuf, std::fs::File), String> {
+fn lock_sdk_mypy_cache(py: &Path) -> Result<(PathBuf, std::fs::File), String> {
     let env = py
         .parent()
         .and_then(Path::parent)
@@ -14739,7 +14739,7 @@ fn a_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
             return;
         }
     };
-    let (mypy_cache, _cache_lock) = sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
+    let (mypy_cache, _cache_lock) = lock_sdk_mypy_cache(&py).expect("lock the SDK's mypy cache");
     let output = std::process::Command::new(&py)
         .args(["-m", "mypy", "."])
         .current_dir(&sdk)
