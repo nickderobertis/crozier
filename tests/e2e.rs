@@ -9399,25 +9399,42 @@ fn can_import_sdk_deps(py: &Path) -> bool {
         .unwrap_or(false)
 }
 
+/// Where the cached Python environments are built: the system temp dir, or
+/// `CROZIER_TEST_ENV_ROOT` where a test needs a root no run has built in yet
+/// (see [`sdk_env_journeys_survive_concurrent_first_use`]).
+fn python_env_root() -> PathBuf {
+    std::env::var_os("CROZIER_TEST_ENV_ROOT").map_or_else(std::env::temp_dir, PathBuf::from)
+}
+
 /// Prepare (creating and caching if needed) a virtualenv holding the generated
 /// SDK's runtime dependencies (`httpx`, `pydantic`) and `pytest`, and return its
 /// interpreter, so the runtime wire suite can import and drive a generated
 /// client. Returns an `Err` describing why the env could not be prepared — no
 /// base interpreter, no venv support, or a failed dependency install (e.g.
-/// offline) — which the caller turns into a skip locally / a hard failure in CI.
+/// offline) — which fails the journey.
 ///
-/// The venv is cached under the system temp dir and reused whenever it already
-/// imports the dependencies, so repeated `just check` runs pay the install once.
-/// `uv` is used when present (seconds); otherwise the stdlib `venv` + `pip`.
+/// The venv is cached under [`python_env_root`] and reused once marked ready,
+/// so repeated runs pay the install once. `uv` is used when present (seconds);
+/// otherwise the stdlib `venv` + `pip`. Concurrent runs share it the way they
+/// share [`sdk_python_env_in`]'s: whoever holds the lock builds, the rest wait
+/// and find it ready, and a directory without the marker is a build that died
+/// part-way, so it is cleared rather than built over.
 fn runtime_python_env() -> Result<PathBuf, String> {
     // The SDK's own runtime deps plus the wire suite's test runner.
     const DEPS: [&str; 3] = ["httpx", "pydantic", "pytest"];
     let base = python_interpreter().ok_or("no python3/python on PATH")?;
-    let venv = std::env::temp_dir().join("crozier-runtime-venv-v2");
+    let root = python_env_root();
+    let venv = root.join("crozier-runtime-venv-v2");
     let venv_py = venv_python(&venv);
+    let ready = venv.join(".crozier-ready");
 
-    if venv_py.exists() && can_import_sdk_deps(&venv_py) {
+    let lock = hold_lock(&root.join("crozier-runtime-venv-v2.lock"))?;
+    if venv_py.exists() && ready.is_file() && can_import_sdk_deps(&venv_py) {
         return Ok(venv_py);
+    }
+    if venv.exists() {
+        std::fs::remove_dir_all(&venv)
+            .map_err(|error| format!("cannot clear partial {}: {error}", venv.display()))?;
     }
 
     let run = |mut cmd: std::process::Command, what: &str| -> Result<(), String> {
@@ -9452,11 +9469,13 @@ fn runtime_python_env() -> Result<PathBuf, String> {
         run(install, "pip install")?;
     }
 
-    if can_import_sdk_deps(&venv_py) {
-        Ok(venv_py)
-    } else {
-        Err("venv prepared but httpx/pydantic/pytest still not importable".into())
+    if !can_import_sdk_deps(&venv_py) {
+        return Err("venv prepared but httpx/pydantic/pytest still not importable".into());
     }
+    std::fs::write(&ready, DEPS.join("\n"))
+        .map_err(|error| format!("cannot mark {} ready: {error}", venv.display()))?;
+    drop(lock);
+    Ok(venv_py)
 }
 
 /// Runtime ("wire") behavior of a generated SDK, verified **differentially
@@ -14697,10 +14716,10 @@ fn pip_constraint(constraint: &str) -> String {
 
 /// Prepare (creating and caching) a virtualenv holding what a generated SDK's
 /// `pyproject.toml` declares, and return its interpreter. Cached under the
-/// system temp dir by a digest of the requirement list, so a change to the
+/// [`python_env_root`] by a digest of the requirement list, so a change to the
 /// pins builds a fresh one. `uv` is used when present, else `venv` + `pip`.
 fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
-    sdk_python_env_in(&std::env::temp_dir(), pyproject, uv_available())
+    sdk_python_env_in(&python_env_root(), pyproject, uv_available())
 }
 
 /// [`sdk_python_env`] under `root`, building with `uv` or with `venv` + `pip`.
@@ -14872,6 +14891,54 @@ fn only_the_sdk_env_tier_builds_the_sdk_python_environment() {
         offending.is_empty(),
         "these tests build the SDK Python environment outside its tier, or are named \
          `sdk_env_` without its `{SDK_ENV_TIER_IGNORE}`: {offending:?}"
+    );
+}
+
+/// The journeys that build or reuse a cached Python environment, run as
+/// concurrent processes of this test binary the way the parallel runner and
+/// two checkouts on one host run them, over a root no run has built in yet: two
+/// copies each of the runtime wire suite and the SDK type-check race to build
+/// the runtime venv and the SDK env, and every one passes.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_journeys_survive_concurrent_first_use() {
+    const JOURNEYS: [&str; 2] = [
+        "sdk_env_crozier_matches_fern_runtime_behavior",
+        "sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin",
+    ];
+    let root = tempfile::tempdir().expect("env root");
+    let binary = std::env::current_exe().expect("the e2e test binary");
+    let runs: Vec<(&str, std::process::Child)> = JOURNEYS
+        .iter()
+        .chain(JOURNEYS.iter())
+        .map(|journey| {
+            let child = std::process::Command::new(&binary)
+                .args([*journey, "--exact", "--ignored", "--test-threads", "1"])
+                .env("CROZIER_TEST_ENV_ROOT", root.path())
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .expect("spawn a journey");
+            (*journey, child)
+        })
+        .collect();
+    let mut failures = Vec::new();
+    for (journey, child) in runs {
+        let output = child.wait_with_output().expect("wait for a journey");
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        if !output.status.success() || !stdout.contains("1 passed") {
+            failures.push(format!(
+                "{journey} failed under concurrent first use:\n{stdout}{}",
+                String::from_utf8_lossy(&output.stderr)
+            ));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    assert!(
+        root.path()
+            .join("crozier-runtime-venv-v2/.crozier-ready")
+            .is_file(),
+        "the journeys did not build the runtime venv under the fresh root"
     );
 }
 
