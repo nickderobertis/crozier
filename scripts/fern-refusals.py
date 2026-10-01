@@ -513,7 +513,8 @@ def check_blocks(row: dict[str, str]) -> bool:
 
 
 def missing_measurements(row: dict[str, str]) -> set[str]:
-    """Which of `check`, `generate` and `crozier` a retrievable document still needs."""
+    """Which of `check`, `generate`, `crozier` and `crozier-strict` a retrievable
+    document still needs."""
     if row.get("unretrievable"):
         return set()
     missing = set()

@@ -15603,6 +15603,109 @@ fn parameters_in_different_locations_refuse_and_declared_names_recover_classific
     }
 }
 
+/// Runs `crozier generate python` over `document` in both modes, asserting each
+/// refusal exits 1, writes nothing, prints one line naming `class` and
+/// `element`, and names `fern-strict` only in strict mode.
+fn assert_name_refusal_in_both_modes(document: &serde_json::Value, class: &str, element: &str) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(stderr.contains(class), "{stderr}");
+        assert!(stderr.contains(element), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!output.exists());
+    }
+}
+
+fn assert_generates_under_fern_strict(document: &serde_json::Value) {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    std::fs::write(&spec, serde_json::to_string(document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("sdk"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    assert!(dir.path().join("sdk/pyproject.toml").is_file());
+}
+
+#[test]
+fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_collisions() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "q", "in": "query", "x-fern-parameter-name": "filter",
+             "schema": {"type": "string"}},
+            {"name": "F", "in": "header", "x-crozier-parameter-name": "filter",
+             "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(&document, "request-property-name-collision", "\"filter\"");
+    document["paths"]["/probe"]["get"]["parameters"][1]["x-crozier-parameter-name"] =
+        serde_json::json!("headerFilter");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
+            {"name": "requestId", "in": "query", "schema": {"type": "string"}},
+            {"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}
+        ], "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "\"X-Request-Id\"",
+    );
+    document["paths"]["/probe"]["get"]["parameters"][0]["name"] = serde_json::json!("traceId");
+    assert_generates_under_fern_strict(&document);
+}
+
+#[test]
+fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
+    let mut document = serde_json::json!({
+        "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+        "components": {"schemas": {
+            "Base": {"type": "object", "properties": {"name": {"type": "string"}}}
+        }},
+        "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
+            "application/json": {"schema": {"allOf": [
+                {"$ref": "#/components/schemas/Base"},
+                {"type": "object", "properties": {"name": {"type": "string"}}}
+            ]}}
+        }}, "responses": {"204": {"description": "Done"}}}}}
+    });
+    assert_name_refusal_in_both_modes(
+        &document,
+        "request-property-name-collision",
+        "body property \"name\"",
+    );
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+    assert_generates_under_fern_strict(&document);
+}
+
 #[test]
 fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery() {
     let dir = tempfile::tempdir().unwrap();
