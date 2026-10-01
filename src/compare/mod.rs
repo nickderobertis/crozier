@@ -1102,7 +1102,7 @@ mod tests {
         root,
         "crozier.yml",
         &format!(
-            "generators:\n  refused:\n    spec: {}\n    reference:\n      command: touch \"$CROZIER_REFERENCE_OUTPUT/x\"\n{}  badtitle:\n    spec: {}\n    package-name: ../escape\n",
+            "generators:\n  refused:\n    spec: {}\n    reference:\n      command: touch \"$CROZIER_REFERENCE_OUTPUT/x\"\n{}  badpackage:\n    spec: {}\n    package-name: ../escape\n",
             refused.display(),
             linked_generator(),
             fixture("openapi.yml").display(),
@@ -1126,7 +1126,7 @@ mod tests {
         assert!(reason_of("refused").contains("unsupported array schema"));
         #[cfg(unix)]
         assert!(reason_of("linked").contains("the trees could not be compared"));
-        assert!(reason_of("badtitle").contains("could not read the generator's settings"));
+        assert!(reason_of("badpackage").contains("could not read the generator's settings"));
 
         // Without `sh`, every generator with a command is could-not-check, unrun.
         // Its own repository, with a generator whose settings resolve on every
