@@ -46,7 +46,7 @@ compared the same way against `crozier generate --layout flat`.
 
 The byte-match rules are defined once, in [`src/parity.rs`](../src/parity.rs)
 (`crozier::parity`), and shared by the corpus gate, its `just fixtures-gaps` /
-`just fixtures-diff` reporters and [`crozier compare`](compare.md). Each rule is
+`just fixtures-diff` reporters and `crozier compare`. Each rule is
 applied to both sides; everything else must match exactly:
 
 - **Python comments** are stripped from every `.py` file with the **same**
