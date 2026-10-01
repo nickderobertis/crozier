@@ -16294,3 +16294,67 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
         }
     }
 }
+
+#[test]
+fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("extension-reference-cycle");
+    for case in [
+        "probe.yml",
+        "other-extension-control.yml",
+        "two-schema-cycle-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures =
+                refused_failures("extension-reference-cycle", &run, "schemas/Node/x-", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let ignored = dir.path().join("ignored.yml");
+    std::fs::write(
+        &ignored,
+        std::fs::read_to_string(class.join("probe.yml"))
+            .unwrap()
+            .replace("    Node:\n", "    Node:\n      x-fern-ignore: true\n"),
+    )
+    .unwrap();
+    let mut accepted = vec![ignored];
+    accepted.extend(
+        [
+            "ordinary-recursion-control.yml",
+            "acyclic-extension-control.yml",
+            "ordinary-return-edge-control.yml",
+        ]
+        .map(|case| class.join(case)),
+    );
+    for spec in accepted {
+        let normal = refusal_run(&crozier, &spec, false).unwrap();
+        let strict = refusal_run(&crozier, &spec, true).unwrap();
+        assert_eq!(
+            normal.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            normal.stderr
+        );
+        assert_eq!(
+            strict.code,
+            Some(0),
+            "{}: {}",
+            spec.display(),
+            strict.stderr
+        );
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}

@@ -12,7 +12,7 @@ example-missing-required-query-parameter	documents	check	1	Example is missing re
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	unevaluated	—	—
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	unevaluated	—	—
 example-unexpected-property	documents	check	1	Unexpected property <…>	196	unevaluated	—	—
-extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	unevaluated	—	—
+extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	unevaluated	—	—
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	unevaluated	—	—
 generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1

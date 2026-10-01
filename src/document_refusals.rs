@@ -24,6 +24,7 @@ enum Class {
     ObjectExtendsNonObject,
     GeneratorMissingType,
     NamedTypeDefault,
+    ExtensionReferenceCycle,
 }
 
 impl Class {
@@ -41,6 +42,7 @@ impl Class {
             Self::ObjectExtendsNonObject => "object-extends-non-object",
             Self::GeneratorMissingType => "generator-missing-type",
             Self::NamedTypeDefault => "named-type-default",
+            Self::ExtensionReferenceCycle => "extension-reference-cycle",
         }
     }
 }
@@ -202,8 +204,94 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
             }
         }
     }
+    if let Some(element) = cyclic_extension(&root, &root, "", &mut ExtensionCycles::default()) {
+        return refusal(path, strict, Class::ExtensionReferenceCycle, &element);
+    }
     check_document_schemas(&root, path, strict)?;
     Ok(())
+}
+
+#[derive(Default)]
+struct ExtensionCycles {
+    active: std::collections::HashSet<String>,
+    complete: std::collections::HashSet<String>,
+}
+
+fn extension_reference_cycle(
+    node: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    state: &mut ExtensionCycles,
+) -> bool {
+    if let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        let Some(pointer) = reference.strip_prefix('#') else {
+            return false;
+        };
+        if state.complete.contains(reference) {
+            return false;
+        }
+        if !state.active.insert(reference.to_owned()) {
+            return true;
+        }
+        let cycle = yaml_pointer(root, pointer)
+            .is_some_and(|target| cyclic_extension(target, root, "", state).is_some());
+        state.active.remove(reference);
+        if !cycle {
+            state.complete.insert(reference.to_owned());
+        }
+        return cycle;
+    }
+    match node {
+        serde_yaml_ng::Value::Mapping(values) => values
+            .values()
+            .any(|value| extension_reference_cycle(value, root, state)),
+        serde_yaml_ng::Value::Sequence(values) => values
+            .iter()
+            .any(|value| extension_reference_cycle(value, root, state)),
+        _ => false,
+    }
+}
+
+fn cyclic_extension(
+    node: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    element: &str,
+    state: &mut ExtensionCycles,
+) -> Option<String> {
+    if ignored_reference_node(node) {
+        return None;
+    }
+    match node {
+        serde_yaml_ng::Value::Mapping(values) => {
+            for (key, value) in values {
+                let Some(key) = key.as_str() else { continue };
+                let child_element = if element.is_empty() {
+                    key.to_owned()
+                } else {
+                    format!("{element}/{key}")
+                };
+                if key.starts_with("x-") {
+                    if extension_reference_cycle(value, root, state) {
+                        return Some(child_element);
+                    }
+                } else if !matches!(key, "example" | "examples" | "default" | "enum" | "const") {
+                    if let Some(cycle) = cyclic_extension(value, root, &child_element, state) {
+                        return Some(cycle);
+                    }
+                }
+            }
+        }
+        serde_yaml_ng::Value::Sequence(values) => {
+            for (index, value) in values.iter().enumerate() {
+                if let Some(cycle) =
+                    cyclic_extension(value, root, &format!("{element}/{index}"), state)
+                {
+                    return Some(cycle);
+                }
+            }
+        }
+        _ => {}
+    }
+    None
 }
 
 #[derive(Clone, Copy)]
