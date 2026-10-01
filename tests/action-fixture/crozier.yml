@@ -1,0 +1,22 @@
+# A repository layout that makes `crozier compare` report exactly one result of
+# each status, for the GitHub Action's in-tree journeys (tests/e2e/action.rs)
+# and the compare e2e. Its reference commands are the small scripts beside it:
+# no reference tool runs, and none is needed.
+#
+# The naming settings are the ones the copied golden was produced under.
+spec: ../fixtures/client-class-name/openapi.yml
+output: ./sdk
+package-name: fern
+project-name: default_package_name
+client-class-name: AcmeClient
+
+generators:
+  matched:
+    reference:
+      command: ./reference/copy-golden.sh
+  mismatched:
+    reference:
+      command: ./reference/copy-golden.sh --alter
+  could-not-check:
+    reference:
+      command: ./reference/refuse.sh
