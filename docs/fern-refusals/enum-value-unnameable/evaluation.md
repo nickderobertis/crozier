@@ -30,3 +30,12 @@ configuration, without additional flags or suppressions.
 The generation logs record immutable source locators; `documents.tsv` supplies
 their revisions and measured Fern diagnostics. These copies were available in
 the host's digest-indexed cache; no Postman or SwaggerHub request was made.
+
+The completed detector refuses all **331/331** retrievable population documents
+under `fern-strict`, exits 1, writes no files, and names the class, offending
+element and strict mode in each diagnostic: [population log](evidence/population-strict.log).
+Integer enums and mixed-kind enums remain scalar aliases, as Fern's accepted
+Bungie golden requires. A single `UNDEFINED` member remains accepted, as Fern's
+People Data Labs golden requires. Invalid name overrides cannot rescue a refused
+value: Fern warns and falls back to the wire value, measured with the pinned CLI
+([override log](evidence/override-fallback.fern.log)).

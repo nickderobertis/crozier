@@ -15417,6 +15417,53 @@ fn unnameable_enum_refusal_preserves_output_and_recovers_with_declared_name() {
             "existing SDK"
         );
     }
+    for (first, second) in [("緊急", "補助"), ("!!!", "???")] {
+        std::fs::write(
+            &spec,
+            probe.replace("10080", first).replace("20160", second),
+        )
+        .unwrap();
+        let run = crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output)
+            .arg("--fern-strict")
+            .output()
+            .unwrap();
+        assert_eq!(run.status.code(), Some(1));
+        let stderr = String::from_utf8(run.stderr).unwrap();
+        assert_eq!(stderr.lines().count(), 1, "{stderr}");
+        assert!(
+            stderr.contains("enum-value-unnameable") && stderr.contains("fern-strict"),
+            "{stderr}"
+        );
+        assert!(
+            stderr.contains(first) && stderr.contains("Minutes"),
+            "{stderr}"
+        );
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
+    }
+    std::fs::write(
+        &spec,
+        probe.replace(
+            "      enum:",
+            "      x-crozier-enum:\n        '10080': {name: 2fa}\n      enum:",
+        ),
+    )
+    .unwrap();
+    let run = crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert_eq!(run.status.code(), Some(1));
+    assert!(String::from_utf8(run.stderr)
+        .unwrap()
+        .contains("enum-value-unnameable"));
+    assert_eq!(std::fs::read_dir(&output).unwrap().count(), 1);
     std::fs::write(
         &spec,
         probe.replace(
@@ -15521,5 +15568,45 @@ fn inline_unnameable_enums_report_their_operation_and_recover() {
             .assert()
             .success();
         assert!(output.join("pyproject.toml").is_file(), "{kind}");
+    }
+}
+
+/// Fern treats integer enums and mixed-kind string enums as scalar aliases,
+/// including Bungie's integer bit flags written with string enum values.
+#[test]
+fn non_string_and_mixed_enums_generate_without_name_refusals() {
+    for (ty, values, alias) in [
+        ("integer", serde_json::json!(["10080", "20160"]), "int"),
+        ("string", serde_json::json!(["10080", false]), "str"),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        let output = dir.path().join("sdk");
+        let document = serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
+            "paths": {"/probe": {"get": {"operationId": "probe", "responses": {
+                "200": {"description": "Scope value", "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Scopes"}
+                }}}
+            }}}},
+            "components": {"schemas": {"Scopes": {"type": ty, "enum": values}}}
+        });
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let mut command = crozier_clean_env();
+            command
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(&spec)
+                .arg("--output")
+                .arg(&output)
+                .args(["--package-name", "probe"]);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command.assert().success();
+            let module = std::fs::read_to_string(output.join("src/probe/types/scopes.py")).unwrap();
+            assert!(module.contains(&format!("Scopes = {alias}")), "{module}");
+            assert!(!module.contains("_10080"), "{module}");
+        }
     }
 }

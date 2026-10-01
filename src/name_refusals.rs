@@ -1,3 +1,4 @@
+// llmlint: ignore[new_code_lands_in_a_project] This Rust module is registered through src/lib.rs in the existing Cargo crate; this repository has no Nx workspace or project definitions.
 //! Refuse name shapes whose baseline SDK fails the refusal registry's bar.
 
 use crate::openapi::{AdditionalProperties, OpenApi, Schema};
@@ -60,18 +61,39 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
 }
 
 fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
-    let names: std::collections::BTreeMap<_, _> = schema.enum_member_names().collect();
+    // Measured at Fern 5.67.1: invalid overrides warn and fall back to the
+    // original value, so they cannot rescue a value Fern cannot name.
+    let names: std::collections::BTreeMap<_, _> = schema
+        .enum_member_names()
+        .filter(|(_, name)| {
+            name.starts_with(|ch: char| ch.is_ascii_alphabetic())
+                && name
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+        })
+        .collect();
     if let Some(values) = &schema.enum_values {
+        // Integer enums and mixed-kind enums do not declare string enum members
+        // in Fern. Bungie's integer bit flags even spell their values as strings.
+        let string_enum = schema.ty.as_ref().map_or_else(
+            || values.iter().all(serde_json::Value::is_string),
+            |ty| {
+                ty.primary() == Some("string")
+                    && values
+                        .iter()
+                        .all(|value| value.is_string() || value.is_null())
+            },
+        );
+        if !string_enum {
+            return check_children(schema, location, path);
+        }
         for value in values.iter().filter_map(serde_json::Value::as_str) {
             if names.contains_key(value) {
                 continue;
             }
             let member = crate::naming::enum_member_name(value);
             let bare_number = !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit());
-            if member == "_"
-                || (bare_number && member.starts_with('_'))
-                || (member == "UNDEFINED" && value.starts_with(|ch: char| ch.is_ascii_digit()))
-            {
+            if member == "_" || (bare_number && member.starts_with('_')) {
                 return Err(Error::InvalidSpec {
                     path: path.to_owned(),
                     message: format!(
@@ -81,6 +103,10 @@ fn check_schema(schema: &Schema, location: &str, path: &Path) -> Result<()> {
             }
         }
     }
+    check_children(schema, location, path)
+}
+
+fn check_children(schema: &Schema, location: &str, path: &Path) -> Result<()> {
     for (name, child) in &schema.properties {
         check_schema(child, &format!("{location}/properties/{name}"), path)?;
     }
@@ -112,8 +138,8 @@ mod tests {
     fn numeric_names_refuse_only_unspellable_values_without_an_override() {
         for (value, refused) in [
             ("10080", true),
-            ("10001+", true),
-            ("20000+", true),
+            ("10001+", false),
+            ("20000+", false),
             ("9999", false),
             ("007", false),
             ("1st", false),
@@ -137,5 +163,18 @@ mod tests {
         }))
         .unwrap();
         check_schema(&schema, "Minutes", Path::new("api.yml")).unwrap();
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": "string", "enum": ["10080"],
+            "x-crozier-enum": {"10080": {"name": "2fa"}}
+        }))
+        .unwrap();
+        assert!(check_schema(&schema, "Minutes", Path::new("api.yml")).is_err());
+        for ty in ["integer", "number", "boolean"] {
+            let schema: Schema = serde_json::from_value(serde_json::json!({
+                "type": ty, "enum": ["10080"]
+            }))
+            .unwrap();
+            check_schema(&schema, "NonStringEnum", Path::new("api.yml")).unwrap();
+        }
     }
 }
