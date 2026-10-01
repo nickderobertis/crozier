@@ -16,8 +16,9 @@
 //!     without disturbing `v0`;
 //!   * re-cutting an older release leaves the floating tag alone, rather than
 //!     walking every consumer backwards;
-//!   * a pre-release, a build-metadata tag, and a tag that is not a version at
-//!     all, move nothing.
+//!   * a Release flagged as a pre-release (whatever its tag), a pre-release or
+//!     build-metadata tag, and a tag that is not a version at all, move
+//!     nothing.
 
 use std::path::Path;
 use std::process::{Command, Output};
@@ -140,9 +141,10 @@ impl Origin {
             .to_string()
     }
 
-    /// Run the release job's script against this origin, from the clone.
+    /// Run the release job's script against this origin, from the clone, for
+    /// a Release not flagged as a pre-release.
     fn update(&self, tag: &str) -> Output {
-        run(self.clone.path(), &["--tag", tag])
+        run(self.clone.path(), &["--tag", tag, "--prerelease", "false"])
     }
 }
 
@@ -152,6 +154,81 @@ fn run(cwd: &Path, args: &[&str]) -> Output {
         .args(args)
         .output()
         .expect("run scripts/update-major-tag.sh")
+}
+
+/// The `run:` and `env:` of the release workflow's `major-tag` step that moves
+/// the tag, exactly as `.github/workflows/release.yml` declares them.
+fn release_step() -> (String, Vec<(String, String)>) {
+    let workflow: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(repo_root().join(".github/workflows/release.yml"))
+            .expect("read release.yml"),
+    )
+    .expect("release.yml is YAML");
+    let steps = workflow["jobs"]["major-tag"]["steps"]
+        .as_sequence()
+        .expect("release.yml has a major-tag job with steps");
+    let mut runs = steps.iter().filter(|step| step.get("run").is_some());
+    let step = runs.next().expect("the major-tag job runs a script");
+    assert!(runs.next().is_none(), "the major-tag job runs one script");
+    let env = step
+        .get("env")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+        .map(|env| {
+            env.iter()
+                .map(|(key, value)| {
+                    let key = key.as_str().expect("env keys are strings").to_string();
+                    let value = value.as_str().expect("env values are strings").to_string();
+                    (key, value)
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    (step["run"].as_str().unwrap().to_string(), env)
+}
+
+/// An `env:` value of that step as GitHub evaluates it for a `release:
+/// published` event whose Release is `tag`, flagged as a pre-release or not.
+/// Only the event fields a release job can read are known; any other
+/// expression fails the test rather than evaluating to an empty string.
+fn evaluate(value: &str, tag: &str, prerelease: bool) -> String {
+    let Some(expression) = value
+        .trim()
+        .strip_prefix("${{")
+        .and_then(|rest| rest.strip_suffix("}}"))
+    else {
+        assert!(!value.contains("${{"), "not one expression: {value}");
+        return value.to_string();
+    };
+    match expression.trim() {
+        // GitHub renders a boolean in `env` as `true` or `false`.
+        "github.event.release.prerelease" => prerelease.to_string(),
+        "github.event.release.tag_name" | "github.ref_name" => tag.to_string(),
+        other => panic!("release.yml's major-tag step reads `{other}`, which a release event does not carry"),
+    }
+}
+
+/// Run the release workflow's own major-tag step, from the clone, for the
+/// Release of `tag`: its `run:` under the shell GitHub gives a `run:` step
+/// (`bash -e -o pipefail`), with its `env:` evaluated for the event and
+/// `GITHUB_REF_NAME` set as the runner sets it. The checkout the job makes
+/// holds the script at the path the step names, so the clone gets it there.
+fn release_job(origin: &Origin, tag: &str, prerelease: bool) -> Output {
+    let (run, env) = release_step();
+    let scripts = origin.clone.path().join("scripts");
+    std::fs::create_dir_all(&scripts).expect("create scripts/");
+    std::fs::copy(
+        repo_root().join("scripts/update-major-tag.sh"),
+        scripts.join("update-major-tag.sh"),
+    )
+    .expect("copy the script into the checkout");
+    let mut command = isolated("bash", origin.clone.path());
+    command
+        .args(["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", &run])
+        .env("GITHUB_REF_NAME", tag);
+    for (key, value) in env {
+        command.env(key, evaluate(&value, tag, prerelease));
+    }
+    command.output().expect("run the major-tag step")
 }
 
 /// The script's own stdout, for the assertions that care what a release log says.
@@ -295,6 +372,46 @@ fn a_pre_release_never_becomes_the_floating_major() {
     );
 }
 
+/// A GitHub Release flagged as a pre-release never moves the floating major,
+/// even under a plain `vX.Y.Z` tag the script's spelling rule would accept:
+/// driven through the release workflow's own step, so the flag has to travel
+/// from the event through the step's `env:` and `run:` to the script. The
+/// same release, published again unflagged, moves it.
+#[test]
+fn the_release_workflow_never_moves_the_major_onto_a_flagged_pre_release() {
+    let origin = Origin::new();
+    let stable = origin.release("v0.1.10");
+    let log = succeeds(&release_job(&origin, "v0.1.10", false));
+    assert!(log.contains("v0 -> v0.1.10"), "{log}");
+    assert_eq!(origin.commit_of("v0").as_deref(), Some(stable.as_str()));
+
+    let flagged = origin.release("v0.2.0");
+    let log = succeeds(&release_job(&origin, "v0.2.0", true));
+    assert!(
+        log.contains("v0.2.0 Release is flagged as a pre-release"),
+        "declining to move has to say why: {log}"
+    );
+    assert_eq!(
+        origin.commit_of("v0").as_deref(),
+        Some(stable.as_str()),
+        "a Release flagged as a pre-release became what @v0 resolves to"
+    );
+
+    let log = succeeds(&release_job(&origin, "v0.2.0", false));
+    assert!(log.contains("v0 -> v0.2.0"), "{log}");
+    assert_eq!(origin.commit_of("v0").as_deref(), Some(flagged.as_str()));
+
+    // The very first release, flagged, creates no floating tag at all.
+    let origin = Origin::new();
+    origin.release("v1.0.0");
+    succeeds(&release_job(&origin, "v1.0.0", true));
+    assert_eq!(
+        origin.commit_of("v1"),
+        None,
+        "a flagged pre-release created a floating major tag"
+    );
+}
+
 /// A Release can be cut by hand with any tag at all, and that tag reaches git as
 /// a revision and origin as a refspec. Anything but a version fails loudly and
 /// moves nothing.
@@ -329,7 +446,14 @@ fn an_unreachable_origin_fails_instead_of_guessing() {
 
     let error = fails(&run(
         origin.clone.path(),
-        &["--tag", "v0.2.0", "--remote", "nowhere"],
+        &[
+            "--tag",
+            "v0.2.0",
+            "--prerelease",
+            "false",
+            "--remote",
+            "nowhere",
+        ],
     ));
     assert!(
         error.contains("cannot fetch tags from 'nowhere'") && error.contains("ACTION:"),
@@ -356,7 +480,10 @@ fn a_directory_that_is_not_a_repository_is_an_error() {
     if output.status.success() {
         return;
     }
-    let error = fails(&run(elsewhere.path(), &["--tag", "v0.1.10"]));
+    let error = fails(&run(
+        elsewhere.path(),
+        &["--tag", "v0.1.10", "--prerelease", "false"],
+    ));
     assert!(
         error.contains("not inside a git repository") && error.contains("ACTION:"),
         "{error}"
@@ -367,7 +494,13 @@ fn a_directory_that_is_not_a_repository_is_an_error() {
 #[test]
 fn an_argument_without_its_value_is_a_usage_error() {
     let origin = Origin::new();
-    for args in [vec!["--tag"], vec!["--remote"], vec![], vec!["--nope"]] {
+    for args in [
+        vec!["--tag"],
+        vec!["--remote"],
+        vec!["--tag", "v0.1.10", "--prerelease"],
+        vec![],
+        vec!["--nope"],
+    ] {
         let error = fails(&run(origin.clone.path(), &args));
         assert!(
             error.contains("update-major-tag.sh --tag vX.Y.Z"),
@@ -375,6 +508,24 @@ fn an_argument_without_its_value_is_a_usage_error() {
         );
     }
     assert!(succeeds(&run(origin.clone.path(), &["--help"])).contains("--tag vX.Y.Z"));
+
+    // The pre-release flag is required and only `true` or `false`: an absent or
+    // garbled flag must not read as "stable" and move the tag.
+    origin.release("v0.1.10");
+    for args in [
+        vec!["--tag", "v0.1.10"],
+        vec!["--tag", "v0.1.10", "--prerelease", ""],
+        vec!["--tag", "v0.1.10", "--prerelease", "yes"],
+    ] {
+        let error = fails(&run(origin.clone.path(), &args));
+        assert!(
+            error.contains("not true or false")
+                && error.contains("github.event.release.prerelease")
+                && error.contains("ACTION:"),
+            "{args:?} was rejected without saying what to pass: {error}"
+        );
+    }
+    assert_eq!(origin.commit_of("v0"), None, "a refused flag still moved v0");
 }
 
 /// The tag the release job moves is the release's own commit: this asserts the script is the only thing that decides it, by running it from

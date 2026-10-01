@@ -49,10 +49,17 @@ its report (`exit-code` `1`).
 ## Versioning
 
 `@v0` is a **floating major tag**: it follows every stable `0.x` release, and
-moves onto one only after that release's archives, crates.io crate and PyPI
-wheels have published and verified, so it never resolves to unreleased work or a
-half-published release. Pre-releases never move it, and it will keep meaning
-`0.x` after a `v1` exists.
+it will keep meaning `0.x` after a `v1` exists. The release workflow moves it as
+its last job, and only when:
+
+- the release's archives uploaded to its GitHub Release, and no publish or
+  verify job failed. The crates.io and PyPI jobs are skipped while their
+  publishing tokens are unset, and a skipped job does not hold `v0` back; when
+  they run, a failure does;
+- the GitHub Release is not flagged as a pre-release, and its tag is a plain
+  `vX.Y.Z` with no pre-release (`-rc.1`) or build-metadata (`+build.3`) suffix;
+- no newer `0.x` release already exists, so re-cutting an older one never moves
+  `v0` backwards.
 
 An exact tag — `nickderobertis/crozier@v0.0.88` — pins the Action **and** its
 binary together: leave `version` unset and the Action installs the release its
