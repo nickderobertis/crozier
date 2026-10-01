@@ -1465,6 +1465,19 @@ pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str
         })
 }
 
+/// Read a source node's ignore flag through the ordinary schema accessor,
+/// without asking the typed parser to lower its possibly malformed shape.
+pub(crate) fn refusal_node_ignored(node: &serde_yaml_ng::Value) -> bool {
+    let mut metadata = serde_yaml_ng::Mapping::new();
+    for (key, value) in node.as_mapping().into_iter().flatten() {
+        if key.as_str().is_some_and(|key| key.starts_with("x-")) {
+            metadata.insert(key.clone(), value.clone());
+        }
+    }
+    serde_yaml_ng::from_value::<Schema>(serde_yaml_ng::Value::Mapping(metadata))
+        .is_ok_and(|schema| schema.ignored())
+}
+
 /// Load and parse an OpenAPI document, dispatching on the file extension.
 pub fn load(path: &Path) -> Result<OpenApi> {
     let text = std::fs::read_to_string(path).map_err(|source| Error::ReadSpec {

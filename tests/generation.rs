@@ -13509,7 +13509,7 @@ fn flat_regeneration_surfaces_an_unreadable_previous_generation() {
 }
 
 #[test]
-fn render_files_refuses_names_and_recovers_with_declared_enum_members() {
+fn render_files_refuses_names_and_recovers_with_nameable_enum_values() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let output = dir.path().join("unused");

@@ -4630,7 +4630,7 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
 /// The stem crozier snake-cases into a header parameter's Python name. Fern drops
 /// the conventional `X-` custom-header prefix (`X-TEST-ENDPOINT-HEADER` becomes
 /// `test_endpoint_header`), while the wire name stays the `headers` dict key.
-fn header_param_stem(wire_name: &str) -> &str {
+pub(crate) fn header_param_stem(wire_name: &str) -> &str {
     wire_name
         .strip_prefix("X-")
         .or_else(|| wire_name.strip_prefix("x-"))

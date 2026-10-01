@@ -67,8 +67,8 @@ pub struct GenerateArgs {
     /// Strict Fern compatibility (`--fern-strict`): refuse, as Fern does, a
     /// document crozier would otherwise generate from. It only ever decides
     /// whether an SDK is written, never a byte of one that is. The classes it
-    /// refuses are registered in `docs/fern-refusals/`; none is evaluated yet,
-    /// so today it refuses nothing crozier's default mode generates.
+    /// refuses and their evaluated generation policies are registered in
+    /// `docs/fern-refusals/`.
     pub fern_strict: bool,
     /// Which tree to write: Fern's packaged SDK (the default) or its flat module
     /// tree (see [`settings::Layout`]).
@@ -78,7 +78,7 @@ pub struct GenerateArgs {
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
 /// Returns the files written so the caller can report a count.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     name_refusals::validate(&doc, &args.spec, args.fern_strict)?;
@@ -112,7 +112,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
 /// Render the files for a spec without writing them — used by tests to compare
 /// generated contents against fixtures in-process.
 pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
-    let mut doc = openapi::load(&args.spec)?;
+    let mut doc = name_refusals::load(&args)?;
     openapi::filter_ignored(&mut doc);
     openapi::filter_by_audience(&mut doc, &args.audiences, args.audience_strict);
     name_refusals::validate(&doc, &args.spec, args.fern_strict)?;

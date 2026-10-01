@@ -7,13 +7,134 @@ use std::path::Path;
 
 /// Validate before rendering or touching the output tree.
 pub(crate) fn validate(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
-    validate_names(doc, path).map_err(|error| match error {
-        Error::InvalidSpec { path, message } if strict => Error::InvalidSpec {
-            path,
-            message: format!("{message} (fern-strict: Fern refuses this document)"),
-        },
+    validate_names(doc, path).map_err(|error| refusal_error(error, strict))
+}
+
+fn refusal_error(error: Error, strict: bool) -> Error {
+    match error {
+        Error::InvalidSpec { path, message } => {
+            let message = message.replace('\n', "\\n").replace('\r', "\\r");
+            Error::InvalidSpec {
+                path,
+                message: if strict {
+                    format!("{message} (fern-strict: Fern refuses this document)")
+                } else {
+                    message
+                },
+            }
+        }
         other => other,
-    })
+    }
+}
+
+/// Retain a measured name refusal when another malformed field prevents lowering.
+/// This classifies the source without making its malformed field valid.
+pub(crate) fn load(args: &crate::GenerateArgs) -> Result<OpenApi> {
+    match crate::openapi::load(&args.spec) {
+        Ok(doc) => Ok(doc),
+        Err(error) => {
+            if let Ok(source) = source_document(&args.spec) {
+                source_body_collisions(&source, args)
+                    .map_err(|error| refusal_error(error, args.fern_strict))?;
+            }
+            Err(error)
+        }
+    }
+}
+
+fn source_body_collisions(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) -> Result<()> {
+    let mut filtered = OpenApi {
+        yaml_unquoted_timestamps: None,
+        openapi: String::new(),
+        info: Default::default(),
+        components: Default::default(),
+        paths: Default::default(),
+        webhooks: Default::default(),
+        security: None,
+        servers: Vec::new(),
+        tags: Vec::new(),
+    };
+    for (route, item) in source["paths"].as_mapping().into_iter().flatten() {
+        let Some(route) = route.as_str() else {
+            continue;
+        };
+        let mut metadata = serde_yaml_ng::Mapping::new();
+        for (method, op) in item.as_mapping().into_iter().flatten() {
+            let Some(fields) = op.as_mapping() else {
+                continue;
+            };
+            let extensions = fields
+                .iter()
+                .filter(|(key, _)| key.as_str().is_some_and(|key| key.starts_with("x-")))
+                .map(|(key, value)| (key.clone(), value.clone()))
+                .collect();
+            metadata.insert(method.clone(), serde_yaml_ng::Value::Mapping(extensions));
+        }
+        if let Ok(item) = serde_yaml_ng::from_value::<crate::openapi::PathItem>(
+            serde_yaml_ng::Value::Mapping(metadata),
+        ) {
+            filtered.paths.insert(route.to_owned(), item);
+        }
+    }
+    crate::openapi::filter_ignored(&mut filtered);
+    crate::openapi::filter_by_audience(&mut filtered, &args.audiences, args.audience_strict);
+    for (route, item) in &filtered.paths {
+        for (method, _) in item.operations() {
+            let op = &source["paths"][route][method.to_ascii_lowercase()];
+            let body = source_target(source, &op["requestBody"]);
+            for media in body["content"]
+                .as_mapping()
+                .into_iter()
+                .flat_map(|mapping| mapping.values())
+            {
+                let mut fields = Vec::new();
+                source_request_properties(
+                    source,
+                    &media["schema"],
+                    &mut std::collections::HashSet::new(),
+                    &mut fields,
+                );
+                let mut names = std::collections::HashSet::new();
+                for (_, name) in fields {
+                    if !names.insert(name.clone()) {
+                        return Err(Error::InvalidSpec { path: args.spec.clone(),
+                            message: format!("request-property-name-collision: {} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase()) });
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+fn source_request_properties(
+    source: &serde_yaml_ng::Value,
+    node: &serde_yaml_ng::Value,
+    visited: &mut std::collections::HashSet<String>,
+    fields: &mut Vec<(String, String)>,
+) {
+    if let Some(reference) = node["$ref"].as_str() {
+        if !visited.insert(reference.to_owned()) {
+            return;
+        }
+    }
+    let node = source_target(source, node);
+    if crate::openapi::refusal_node_ignored(node) {
+        return;
+    }
+    for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
+        if let Some(wire) = key.as_str() {
+            fields.push((
+                wire.to_owned(),
+                crate::openapi::refusal_parameter_name(property)
+                    .unwrap_or(wire)
+                    .to_owned(),
+            ));
+        }
+    }
+    for member in node["allOf"].as_sequence().into_iter().flatten() {
+        source_request_properties(source, member, visited, fields);
+    }
 }
 
 fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
@@ -58,16 +179,55 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
                                 .flatten(),
                         )
                         .map(|node| source_target(&source, node))
-                        .find(|node| node["name"].as_str() == Some(parameter.name.as_str()));
+                        .find(|node| {
+                            node["name"].as_str() == Some(parameter.name.as_str())
+                                && serde_yaml_ng::from_value::<crate::openapi::ParameterLocation>(
+                                    node["in"].clone(),
+                                )
+                                .ok()
+                                    == parameter.location
+                        });
                     raw.and_then(crate::openapi::refusal_parameter_name)
-                        .unwrap_or(&parameter.name)
-                        .to_owned()
+                        .map(str::to_owned)
+                        .unwrap_or_else(|| {
+                            if parameter.location == Some(crate::openapi::ParameterLocation::Header)
+                            {
+                                header_request_name(&parameter.name)
+                            } else {
+                                parameter.name.clone()
+                            }
+                        })
                 })
                 .collect();
+            let mut path_names: std::collections::HashSet<String> = op
+                .parameters
+                .iter()
+                .zip(&names)
+                .filter(|(parameter, _)| {
+                    parameter.location == Some(crate::openapi::ParameterLocation::Path)
+                })
+                .map(|(_, name)| name.clone())
+                .collect();
+            for (index, parameter) in op.parameters.iter().enumerate() {
+                for (other_index, other) in op.parameters.iter().enumerate().take(index) {
+                    if parameter.location != other.location && names[index] == names[other_index] {
+                        let class = if parameter.name == other.name {
+                            "request-property-camelcase-collision"
+                        } else {
+                            "request-property-name-collision"
+                        };
+                        return Err(Error::InvalidSpec {
+                            path: path.to_owned(),
+                            message: format!("{class}: {location} parameters {:?} and {:?} in different locations declare the same request name {:?}; give them distinct names", parameter.name, other.name, names[index]),
+                        });
+                    }
+                }
+            }
             for segment in route.split('{').skip(1) {
                 if let Some((name, _)) = segment.split_once('}') {
                     if !op.parameters.iter().any(|parameter| parameter.name == name) {
                         names.push(name.to_owned());
+                        path_names.insert(name.to_owned());
                     }
                 }
             }
@@ -95,12 +255,20 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
                             &mut std::collections::HashSet::new(),
                             &mut properties,
                         );
-                        names.extend(properties.into_iter().map(|name| {
-                            body_hints
+                        let mut body_names = std::collections::HashSet::new();
+                        for name in properties {
+                            let name = body_hints
                                 .get(name)
                                 .cloned()
-                                .unwrap_or_else(|| name.to_owned())
-                        }));
+                                .unwrap_or_else(|| name.to_owned());
+                            if path_names.contains(&name) || !body_names.insert(name.clone()) {
+                                return Err(Error::InvalidSpec {
+                                    path: path.to_owned(),
+                                    message: format!("request-property-name-collision: {location} body property {name:?} collides with another request property; give the properties distinct declared names"),
+                                });
+                            }
+                            names.push(name);
+                        }
                     }
                 }
             }
@@ -173,6 +341,14 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn header_request_name(wire: &str) -> String {
+    let mut name = crate::naming::to_pascal_case(crate::ir::header_param_stem(wire));
+    if let Some(first) = name.get_mut(..1) {
+        first.make_ascii_lowercase();
+    }
+    name
 }
 
 fn source_document(path: &Path) -> Result<serde_yaml_ng::Value> {
