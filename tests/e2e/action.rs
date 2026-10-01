@@ -66,7 +66,7 @@ struct ActionRun {
     /// The finish step's log line and the status the action ends with.
     finish_log: String,
     final_status: i32,
-    runner_temp: tempfile::TempDir,
+    _runner_temp: tempfile::TempDir,
 }
 
 impl ActionRun {
@@ -138,7 +138,7 @@ fn run_action(cwd: &Path, env: &[(&str, &str)]) -> ActionRun {
         compare_log,
         finish_log: String::from_utf8_lossy(&finish.stderr).into_owned(),
         final_status: finish.status.code().expect("finish.sh exited"),
-        runner_temp,
+        _runner_temp: runner_temp,
     }
 }
 
@@ -544,30 +544,55 @@ fn a_long_mismatch_lists_twenty_paths_and_counts_the_rest() {
 
 /// When the CLI's own status is not the report's — a `--diff-dir` file it could
 /// not write exits 1 over a report whose results say 3 — the summary says so
-/// beside the result the report gives. Rendered from a real report.
+/// beside the result the report gives, and the action ends with the CLI's 1.
+/// The reference command occupies the diff file's path with a directory, so
+/// the write fails for real.
 #[test]
-fn the_summary_states_a_cli_status_the_report_does_not_carry() {
-    let run = run_action(repo_root(), &[("COMPARE_PATHS", FIXTURE_LAYOUT)]);
-    let out = step("summary.sh", repo_root(), run.runner_temp.path(), &[])
-        .env("REPORT", run.output("report-path"))
-        .env("EXIT_CODE", "1")
-        .output()
-        .unwrap();
-    assert!(out.status.success());
-    let summary = String::from_utf8(out.stdout).unwrap();
-    assert!(
-        summary.contains("❌ **1 generator(s) mismatched the reference.**"),
-        "{summary}"
+fn a_diff_the_cli_could_not_write_fails_the_action_with_its_own_status() {
+    let reference = format!(
+        "#!/usr/bin/env bash\nset -euo pipefail\ncp -R '{}/.' \"$CROZIER_REFERENCE_OUTPUT\"\n\
+         echo 'an altered line' >> \"$CROZIER_REFERENCE_OUTPUT/README.md\"\n\
+         mkdir -p \"$RUNNER_TEMP/crozier-compare/diffs/001-crozier.yml-edited.diff\"\n",
+        golden("expected").display(),
     );
+    let repo = layout(&[
+        ("reference.sh", &reference),
+        (
+            "crozier.yml",
+            &format!(
+                "spec: ./openapi.yml\n{NAMING}generators:\n  edited:\n    reference:\n      command: ./reference.sh\n"
+            ),
+        ),
+    ]);
+    let run = run_action(repo.path(), &[]);
+
     assert!(
-        summary.contains("❌ **crozier compare exited 1**, not 3: see the step log for its error."),
-        "{summary}"
+        run.compare_log.contains("could not write --diff-dir file"),
+        "{}",
+        run.compare_log
     );
-    // The run whose statuses agree carries no such line.
+    assert_eq!(run.output("exit-code"), "1");
+    assert_eq!(run.output("mismatched"), "1");
     assert!(
-        !run.summary.contains("**crozier compare exited"),
+        run.summary
+            .contains("❌ **1 generator(s) mismatched the reference.**"),
         "{}",
         run.summary
+    );
+    assert!(
+        run.summary
+            .contains("❌ **crozier compare exited 1**, not 3: see the step log for its error."),
+        "{}",
+        run.summary
+    );
+    assert_eq!(run.final_status, 1);
+
+    // A run whose statuses agree carries no such line.
+    let agreeing = run_action(repo_root(), &[("COMPARE_PATHS", FIXTURE_LAYOUT)]);
+    assert!(
+        !agreeing.summary.contains("**crozier compare exited"),
+        "{}",
+        agreeing.summary
     );
 }
 
