@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.86](https://github.com/nickderobertis/crozier/compare/v0.0.85...v0.0.86) - 2026-10-01
+
+### Added
+
+- *(fixtures)* cover the exhausted schema shapes and arms with hand-written fixtures ([#322](https://github.com/nickderobertis/crozier/pull/322))
+
 ## [0.0.85](https://github.com/nickderobertis/crozier/compare/v0.0.84...v0.0.85) - 2026-09-30
 
 ### Added

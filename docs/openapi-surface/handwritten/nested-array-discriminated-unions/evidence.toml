@@ -1,0 +1,39 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "6fcd097e4c794628c9a552be41b08a8e4ca2dcb0cc9615476ff674e080d79e3e"
+
+[[covers]]
+key = "anyof-discriminated-union"
+arm = 'src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "anyof-discriminated-union"
+arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "array-item-oneof-discriminated-union"
+arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "oneof-discriminated-union"
+arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "array-item-anyof-discriminated-union"
+arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-anyof-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"
+
+[[covers]]
+key = "inheritance-discriminated-union"
+arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
+search = "docs/openapi-surface/golden-reach-witnesses/searches/inheritance-discriminated-union.md#witness-search-exhaustive"
+verdict = "exhausted"

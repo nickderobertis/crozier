@@ -1030,7 +1030,8 @@ PREDICATES = {
         "one per Schema Object whose `example`, or else first `examples` member, "
         "is a non-empty object every value of which is an object declaring at "
         "least one of `type`, `$ref`, `properties`, `allOf`, `oneOf` or `anyOf`, "
-        "which is exactly `example_is_schema_definition` of `src/ir.rs`"
+        "which is the content test `src/ir.rs`'s since-removed "
+        "`example_is_schema_definition` made"
     ),
     "openapi.paths:leading-literal-segment": (
         "one per Paths Object key whose first non-empty `/`-separated segment is not "
@@ -1465,7 +1466,6 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("10b", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
         Case("10c", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
         Case("10d", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
-        Case("11", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object"),
         Case("12a", block="hoist_union_variant/oneOf", residual=(
             "one per Schema Object one of whose `oneOf` members declares none of the "
             "members `hoist_union_variant`'s other cases carry at the variant, which "
@@ -1565,16 +1565,12 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "02d8d8e27d684799",
+    "hoist_union_variant": "d18b44f1eb2c3221",
     "prop_type_ref": "98ec4d7137906c59",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
 
-# The case-11 selector ports this helper's six-key content test as well as the
-# branch that calls it, so its body is pinned independently of the six blind
-# functions above. The same normalized-body drift gate recomputes this value.
-EXAMPLE_IS_SCHEMA_DEFINITION_DIGEST = "9c184c478f5488ed"
 
 # The two descent operators, and the only place either spelling is written.
 #
@@ -1859,6 +1855,20 @@ def case_verdict(function: str, case: Case) -> str:
     if case.residual is not None:
         return RESIDUAL_SELECTORS[(function, case.number)]
     return case.selector if case.hole is None else case.hole
+
+
+# Declared conjunctions no case of the table is read off any more, each with why
+# it is still declared. A case leaves the table when `src/ir.rs` loses the arm it
+# read; its conjunction stays while a region row's key, and the witness search
+# that key ran, are spelled by it.
+RETIRED_CASE_CONJUNCTIONS = {
+    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": (
+        "`hoist_union_variant`'s case 11, removed with the arm it read once Fern was "
+        "shown to type every bare object member a map (the hand-written "
+        "`inline-oneof-variants` fixture); `oneof-bare-object-example-variant` is "
+        "keyed and was searched by it"
+    ),
+}
 
 
 CONJUNCTIONS.update(
@@ -2727,7 +2737,15 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
 
 
 def example_is_schema_definition(example: Any) -> bool:
-    """`example_is_schema_definition` of `src/ir.rs`, condition for condition."""
+    """The content test `src/ir.rs`'s `example_is_schema_definition` made.
+
+    That helper went with the `hoist_union_variant` arm that called it, once Fern
+    was shown to map every bare object member whatever its example; this reading
+    still backs `schema.example:schema-shaped`, which the
+    `oneof-bare-object-example-variant` row's selector composes, and
+    `test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table` pins
+    it to that helper's own unit-test table.
+    """
     if not isinstance(example, dict) or not example:
         return False
     schema_keys = {"type", "$ref", "properties", "allOf", "oneOf", "anyOf"}
@@ -2838,7 +2856,7 @@ def _inferred_discriminant_property(
         if not isinstance(candidate, str):
             continue
         values = _candidate_tag_values(
-            candidate, resolved, references_components, enum_tag
+            candidate, resolved, references_components, enum_tag, _any_of_head(node)
         )
         if values is not None and len(set(values)) == len(values):
             return candidate
@@ -2850,6 +2868,7 @@ def _candidate_tag_values(
     resolved: list[Any],
     references_components: bool,
     enum_tag: bool,
+    any_of_head: bool = False,
 ) -> list[str] | None:
     """The tag every resolved member writes for one candidate property, or `None`.
 
@@ -2866,7 +2885,10 @@ def _candidate_tag_values(
         if not isinstance(field, dict):
             return None
         enum_written = field["enum"] if written(field, "enum") else None
-        singleton_enum = len(string_enum_values(field) or []) == 1
+        singleton_enum = (
+            not (any_of_head and untyped_enum_tag(field))
+            and len(string_enum_values(field) or []) == 1
+        )
         tagged_by_enum = (
             candidate in required_names(variant)
             and singleton_enum
@@ -2929,11 +2951,28 @@ def _inferred_union_discriminant_property(
             return None
         properties = variant.get("properties")
         field = properties.get("type") if isinstance(properties, dict) else None
+        if _any_of_head(node) and untyped_enum_tag(field):
+            return None
         value = discriminant_value(field)
         if value is None:
             return None
         values.append(value)
     return "type" if len(set(values)) == len(values) else None
+
+
+def _any_of_head(node: dict[Any, Any]) -> bool:
+    """Whether a union's members are its `anyOf`: one is written and no `oneOf` is."""
+    return written(node, "anyOf") and not written(node, "oneOf")
+
+
+def untyped_enum_tag(field: Any) -> bool:
+    """`untyped_any_of_enum_tag` of `src/ir.rs`, given an `anyOf` head: an `enum`
+    tag declaring no `type: string`, which Fern does not discriminate on."""
+    return (
+        isinstance(field, dict)
+        and written(field, "enum")
+        and primary_type(field.get("type")) != "string"
+    )
 
 
 def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
@@ -2989,8 +3028,9 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
 
     * a schema declaring neither is not this shape at all — it is the inheritance
       spelling, which `inheritance_union` above decides;
-    * a `discriminator` written beside an `anyOf` with no `oneOf` is **refused**,
-      because Fern applies an explicit discriminator to `oneOf` alone;
+    * a `discriminator` written beside an `anyOf` with no `oneOf` is **ignored**,
+      because Fern applies an explicit discriminator to `oneOf` alone: the union
+      is read as though none were written;
     * the discriminant property is the written `propertyName` where one is
       non-empty, and the *inferred* property otherwise — so a union carrying no
       `discriminator` at all reaches this;
@@ -3002,7 +3042,9 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
         return None
     discriminator = _written_discriminator(node)
     if discriminator is not None and not written(node, "oneOf"):
-        return None
+        return discriminated_union_head(
+            {key: value for key, value in node.items() if key != "discriminator"}, schemas
+        )
     members = union_members(node)
     if members is None:
         return None
