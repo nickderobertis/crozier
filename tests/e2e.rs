@@ -16102,3 +16102,51 @@ fn list_default_refusal_recovers_with_an_array() {
         }
     }
 }
+
+#[test]
+fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("object-extends-non-object");
+    for case in [
+        "probe.yml",
+        "array-base-control.yml",
+        "empty-object-base-control.yml",
+        "map-base-control.yml",
+        "two-scalar-refs-control.yml",
+        "ordered-shadowed-object-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures =
+                refused_failures("object-extends-non-object", &run, "allOf extends", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    for case in [
+        "object-base-control.yml",
+        "empty-properties-base-control.yml",
+        "scalar-alias-control.yml",
+        "scalar-constrained-control.yml",
+        "typed-two-scalar-refs-control.yml",
+        "nullable-typed-two-scalar-refs-control.yml",
+        "inline-scalar-object-control.yml",
+        "object-alias-control.yml",
+        "shadowed-object-control.yml",
+        "ordered-renamed-union-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}

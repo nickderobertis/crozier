@@ -21,6 +21,7 @@ enum Class {
     UndefinedComponentReference,
     DefaultNotValidForType,
     ListDefaultNotArray,
+    ObjectExtendsNonObject,
 }
 
 impl Class {
@@ -35,6 +36,7 @@ impl Class {
             Self::UndefinedComponentReference => "undefined-component-reference",
             Self::DefaultNotValidForType => "default-not-valid-for-type",
             Self::ListDefaultNotArray => "list-default-not-array",
+            Self::ObjectExtendsNonObject => "object-extends-non-object",
         }
     }
 }
@@ -196,7 +198,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
             }
         }
     }
-    check_document_schema_defaults(&root, path, strict)?;
+    check_document_schemas(&root, path, strict)?;
     Ok(())
 }
 
@@ -208,11 +210,213 @@ enum SchemaLocation {
     Query,
 }
 
-fn check_document_schema_defaults(
-    root: &serde_yaml_ng::Value,
-    path: &Path,
+struct SchemaContext<'a> {
+    root: &'a serde_yaml_ng::Value,
+    path: &'a Path,
     strict: bool,
+    names: indexmap::IndexMap<String, bool>,
+}
+
+fn schema_declaration_names(root: &serde_yaml_ng::Value) -> indexmap::IndexMap<String, bool> {
+    let mut names = indexmap::IndexMap::new();
+    if let Some(schemas) = root
+        .get("components")
+        .and_then(|value| value.get("schemas"))
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        for (key, schema) in schemas {
+            if let Some(key) = key.as_str() {
+                if ignored_reference_node(schema) {
+                    continue;
+                }
+                let name = crate::naming::class_name(key);
+                names.insert(name.clone(), schema_is_model(schema, root, &mut Vec::new()));
+                register_inline_declarations(schema, &name, root, &mut names);
+            }
+        }
+    }
+    names
+}
+
+fn register_inline_declarations(
+    schema: &serde_yaml_ng::Value,
+    parent: &str,
+    root: &serde_yaml_ng::Value,
+    names: &mut indexmap::IndexMap<String, bool>,
+) {
+    if ignored_reference_node(schema) {
+        return;
+    }
+    if let Some(properties) = schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+    {
+        for (key, child) in properties {
+            let Some(key) = key.as_str() else { continue };
+            if ignored_reference_node(child) || child.get("$ref").is_some() {
+                continue;
+            }
+            let name = crate::naming::child_class_name(parent, key);
+            let union = ["oneOf", "anyOf"].iter().any(|key| {
+                child
+                    .get(key)
+                    .and_then(serde_yaml_ng::Value::as_sequence)
+                    .is_some_and(|variants| {
+                        variants
+                            .iter()
+                            .filter(|value| {
+                                value.get("type").and_then(serde_yaml_ng::Value::as_str)
+                                    != Some("null")
+                            })
+                            .count()
+                            > 1
+                    })
+            });
+            let enumeration = child
+                .get("enum")
+                .and_then(serde_yaml_ng::Value::as_sequence)
+                .is_some_and(|values| values.len() > 1);
+            if union || enumeration {
+                names.insert(name.clone(), schema_is_model(child, root, &mut Vec::new()));
+            }
+            register_inline_declarations(child, &name, root, names);
+        }
+    }
+    for key in ["oneOf", "anyOf", "allOf"] {
+        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+            for child in children {
+                register_inline_declarations(child, parent, root, names);
+            }
+        }
+    }
+}
+
+fn schema_is_model(
+    schema: &serde_yaml_ng::Value,
+    root: &serde_yaml_ng::Value,
+    seen: &mut Vec<String>,
+) -> bool {
+    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+        if seen.iter().any(|value| value == reference) {
+            return false;
+        }
+        seen.push(reference.into());
+        let result = reference
+            .strip_prefix('#')
+            .and_then(|pointer| yaml_pointer(root, pointer))
+            .is_some_and(|target| schema_is_model(target, root, seen));
+        seen.pop();
+        return result;
+    }
+    let ty = schema_type(schema);
+    if schema.get("enum").is_some()
+        || matches!(
+            ty.as_ref().and_then(crate::openapi::TypeField::primary),
+            Some("string" | "number" | "integer" | "boolean" | "array" | "null")
+        )
+    {
+        return false;
+    }
+    if schema
+        .get("properties")
+        .and_then(serde_yaml_ng::Value::as_mapping)
+        .is_some()
+    {
+        return true;
+    }
+    if schema.get("oneOf").is_some() || schema.get("anyOf").is_some() {
+        return false;
+    }
+    schema
+        .get("allOf")
+        .and_then(serde_yaml_ng::Value::as_sequence)
+        .is_some_and(|children| {
+            children
+                .iter()
+                .any(|child| schema_is_model(child, root, seen))
+        })
+}
+
+fn schema_type(schema: &serde_yaml_ng::Value) -> Option<crate::openapi::TypeField> {
+    schema
+        .get("type")
+        .and_then(|value| serde_yaml_ng::from_value(value.clone()).ok())
+}
+
+fn check_object_extension(
+    schema: &serde_yaml_ng::Value,
+    context: &SchemaContext<'_>,
+    element: &str,
 ) -> Result<()> {
+    let Some(children) = schema
+        .get("allOf")
+        .and_then(serde_yaml_ng::Value::as_sequence)
+    else {
+        return Ok(());
+    };
+    let references = children
+        .iter()
+        .filter_map(|child| child.get("$ref").and_then(serde_yaml_ng::Value::as_str))
+        .collect::<Vec<_>>();
+    let ty = schema_type(schema);
+    let primary = ty.as_ref().and_then(crate::openapi::TypeField::primary);
+    if matches!(
+        primary,
+        Some("string" | "number" | "integer" | "boolean" | "array" | "null")
+    ) {
+        return Ok(());
+    }
+    let object = primary == Some("object")
+        || schema
+            .get("properties")
+            .and_then(serde_yaml_ng::Value::as_mapping)
+            .is_some()
+        || references.len() > 1
+        || children
+            .iter()
+            .filter(|child| child.get("$ref").is_none())
+            .any(|child| schema_is_model(child, context.root, &mut Vec::new()));
+    if !object {
+        return Ok(());
+    }
+    for reference in references {
+        let Some(target) = reference
+            .strip_prefix('#')
+            .and_then(|pointer| yaml_pointer(context.root, pointer))
+        else {
+            continue;
+        };
+        if ignored_reference_node(target) {
+            continue;
+        }
+        let named = reference
+            .strip_prefix("#/components/schemas/")
+            .filter(|key| !key.contains('/'))
+            .map(|key| crate::naming::class_name(&key.replace("~1", "/").replace("~0", "~")));
+        let model = named
+            .as_ref()
+            .and_then(|name| context.names.get(name))
+            .copied()
+            .unwrap_or_else(|| schema_is_model(target, context.root, &mut Vec::new()));
+        if !model {
+            return refusal(
+                context.path,
+                context.strict,
+                Class::ObjectExtendsNonObject,
+                &format!("{element}/allOf extends {reference}"),
+            );
+        }
+    }
+    Ok(())
+}
+
+fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
+    let context = SchemaContext {
+        root,
+        path,
+        strict,
+        names: schema_declaration_names(root),
+    };
     if let Some(schemas) = root
         .get("components")
         .and_then(|value| value.get("schemas"))
@@ -220,11 +424,9 @@ fn check_document_schema_defaults(
     {
         for (name, schema) in schemas {
             if let Some(name) = name.as_str() {
-                check_schema_defaults(
+                check_schema(
                     schema,
-                    root,
-                    path,
-                    strict,
+                    &context,
                     &format!("components/schemas/{name}"),
                     SchemaLocation::Type,
                     &mut std::collections::HashSet::new(),
@@ -248,22 +450,18 @@ fn check_document_schema_defaults(
                 }
                 let mut seen = std::collections::HashSet::new();
                 if let Some(parameters) = item.get("parameters") {
-                    check_bound_schema_defaults(
+                    check_bound_schemas(
                         parameters,
-                        root,
-                        path,
-                        strict,
+                        &context,
                         &format!("paths/{route}/parameters"),
                         &mut seen,
                     )?;
                 }
                 for key in ["parameters", "requestBody", "responses"] {
                     if let Some(value) = operation.get(key) {
-                        check_bound_schema_defaults(
+                        check_bound_schemas(
                             value,
-                            root,
-                            path,
-                            strict,
+                            &context,
                             &format!("paths/{route}/{method}/{key}"),
                             &mut seen,
                         )?;
@@ -275,11 +473,9 @@ fn check_document_schema_defaults(
     Ok(())
 }
 
-fn check_bound_schema_defaults(
+fn check_bound_schemas(
     node: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
-    path: &Path,
-    strict: bool,
+    context: &SchemaContext<'_>,
     element: &str,
     seen: &mut std::collections::HashSet<String>,
 ) -> Result<()> {
@@ -289,8 +485,8 @@ fn check_bound_schema_defaults(
     if let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
         if let Some(pointer) = reference.strip_prefix('#') {
             if seen.insert(reference.to_owned()) {
-                if let Some(target) = yaml_pointer(root, pointer) {
-                    check_bound_schema_defaults(target, root, path, strict, reference, seen)?;
+                if let Some(target) = yaml_pointer(context.root, pointer) {
+                    check_bound_schemas(target, context, reference, seen)?;
                 }
             }
         }
@@ -315,41 +511,19 @@ fn check_bound_schema_defaults(
                         || format!("{element}/schema"),
                         |name| format!("{element}/{name}/schema"),
                     );
-                    check_schema_defaults(
-                        value,
-                        root,
-                        path,
-                        strict,
-                        &schema_element,
-                        location,
-                        seen,
-                    )?;
+                    check_schema(value, context, &schema_element, location, seen)?;
                 } else if !matches!(
                     key.as_str(),
                     "example" | "examples" | "default" | "enum" | "links" | "headers" | "encoding"
                 ) && !key.starts_with("x-")
                 {
-                    check_bound_schema_defaults(
-                        value,
-                        root,
-                        path,
-                        strict,
-                        &format!("{element}/{key}"),
-                        seen,
-                    )?;
+                    check_bound_schemas(value, context, &format!("{element}/{key}"), seen)?;
                 }
             }
         }
         serde_yaml_ng::Value::Sequence(values) => {
             for (index, value) in values.iter().enumerate() {
-                check_bound_schema_defaults(
-                    value,
-                    root,
-                    path,
-                    strict,
-                    &format!("{element}/{index}"),
-                    seen,
-                )?;
+                check_bound_schemas(value, context, &format!("{element}/{index}"), seen)?;
             }
         }
         _ => {}
@@ -357,11 +531,9 @@ fn check_bound_schema_defaults(
     Ok(())
 }
 
-fn check_schema_defaults(
+fn check_schema(
     schema: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
-    path: &Path,
-    strict: bool,
+    context: &SchemaContext<'_>,
     element: &str,
     location: SchemaLocation,
     seen: &mut std::collections::HashSet<String>,
@@ -372,12 +544,10 @@ fn check_schema_defaults(
     if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
         if let Some(pointer) = reference.strip_prefix('#') {
             if seen.insert(reference.to_owned()) {
-                if let Some(target) = yaml_pointer(root, pointer) {
-                    check_schema_defaults(
+                if let Some(target) = yaml_pointer(context.root, pointer) {
+                    check_schema(
                         target,
-                        root,
-                        path,
-                        strict,
+                        context,
                         reference.trim_start_matches("#/"),
                         SchemaLocation::Type,
                         seen,
@@ -386,6 +556,7 @@ fn check_schema_defaults(
             }
         }
     }
+    check_object_extension(schema, context, element)?;
     if let Some(default) = schema
         .get("default")
         .filter(|value| !value.is_null() && !matches!(location, SchemaLocation::Type))
@@ -395,8 +566,8 @@ fn check_schema_defaults(
             && default.as_sequence().is_none()
         {
             return refusal(
-                path,
-                strict,
+                context.path,
+                context.strict,
                 Class::ListDefaultNotArray,
                 &format!("{element} default {default:?}"),
             );
@@ -408,8 +579,8 @@ fn check_schema_defaults(
         };
         if invalid {
             return refusal(
-                path,
-                strict,
+                context.path,
+                context.strict,
                 Class::DefaultNotValidForType,
                 &format!("{element} default {default:?}"),
             );
@@ -421,11 +592,9 @@ fn check_schema_defaults(
     {
         for (name, child) in properties {
             if let Some(name) = name.as_str() {
-                check_schema_defaults(
+                check_schema(
                     child,
-                    root,
-                    path,
-                    strict,
+                    context,
                     &format!("{element}/properties/{name}"),
                     SchemaLocation::Field,
                     seen,
@@ -435,11 +604,9 @@ fn check_schema_defaults(
     }
     for key in ["items", "additionalProperties"] {
         if let Some(child) = schema.get(key) {
-            check_schema_defaults(
+            check_schema(
                 child,
-                root,
-                path,
-                strict,
+                context,
                 &format!("{element}/{key}"),
                 SchemaLocation::Type,
                 seen,
@@ -449,11 +616,9 @@ fn check_schema_defaults(
     for key in ["allOf", "oneOf", "anyOf"] {
         if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
             for (index, child) in children.iter().enumerate() {
-                check_schema_defaults(
+                check_schema(
                     child,
-                    root,
-                    path,
-                    strict,
+                    context,
                     &format!("{element}/{key}/{index}"),
                     SchemaLocation::Type,
                     seen,
