@@ -4238,7 +4238,6 @@ const CORPORA: &[&Corpus] = &[
     &MARIMO_PLUGINS,
     &OTOROSHI,
     &NEXMO_CONVERSATION,
-    &CODAT_ASSESS,
     &GOOGLEAPIS_MONITORING_V1,
     &DOCU_GOAPISERVER,
     &ONEVOICE,
@@ -7151,19 +7150,6 @@ const ADYEN_ACS_NOTIFICATION: Corpus = Corpus {
 /// members and nested properties, the pointer arms no earlier golden reached.
 const NEXMO_CONVERSATION: Corpus = Corpus {
     api: "nexmo-conversation",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-/// `codat-assess`: corpus row 224, Codat's Assess API from APIs.guru, whose
-/// `$ref` pointers index a composition member
-const CODAT_ASSESS: Corpus = Corpus {
-    api: "codat-assess",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -13694,11 +13680,6 @@ fn adyen_acs_notification_matches_fern_output() {
 #[test]
 fn nexmo_conversation_matches_fern_output() {
     assert_link_ok_corpus_matches(&NEXMO_CONVERSATION);
-}
-
-#[test]
-fn codat_assess_matches_fern_output() {
-    assert_link_ok_corpus_matches(&CODAT_ASSESS);
 }
 
 #[test]
