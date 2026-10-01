@@ -945,7 +945,7 @@ mod tests {
         let run = compare(&options, root, false, true);
         assert_eq!(run.code, Ok(4), "{}", run.stderr);
         let dumped = std::fs::read_to_string(&dump_file).unwrap();
-        let svc = std::fs::canonicalize(root.join("svc")).unwrap();
+        let svc = canonicalize(&root.join("svc")).unwrap();
         let mut lines = dumped.lines();
         assert_eq!(lines.next(), Some(svc.display().to_string().as_str()));
         // Sorted here, by byte order: `sort`'s collation varies with the locale.
@@ -1129,6 +1129,18 @@ mod tests {
         assert!(reason_of("badtitle").contains("could not read the generator's settings"));
 
         // Without `sh`, every generator with a command is could-not-check, unrun.
+        // Its own repository, with a generator whose settings resolve on every
+        // platform: the one above whose do (`linked`) exists only on unix.
+        let repo = tempfile::tempdir().unwrap();
+        let root = repo.path();
+        write(
+            root,
+            "crozier.yml",
+            &format!(
+                "generators:\n  unrun:\n{}    reference:\n      command: exit 0\n",
+                golden_settings("packaged")
+            ),
+        );
         let run = compare(&Options::default(), root, false, false);
         assert_eq!(run.code, Ok(4));
         assert!(run.stderr.contains(NO_SHELL), "{}", run.stderr);
@@ -1411,7 +1423,7 @@ mod tests {
             PathBuf::from("/no/such/b/c.yml")
         );
         let dir = tempfile::tempdir().unwrap();
-        let real = std::fs::canonicalize(dir.path()).unwrap();
+        let real = canonicalize(dir.path()).unwrap();
         std::fs::create_dir(real.join("sub")).unwrap();
         assert_eq!(
             clean_join(&real.join("sub"), Path::new("../api.yml")),
