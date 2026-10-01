@@ -884,9 +884,22 @@ class WideWitnessTests(unittest.TestCase):
             shutil.copyfile(shard, root / shard.name)
         # A `handwritten` key's membership follows this very candidates table,
         # so a witness recorded for one would drop it; screen `gap` keys only.
+        # The tree no longer holds a frozen search-incomplete `gap` row, so three
+        # are restored in a copy of the region files the derivations read.
+        sys.path.insert(0, str(REPO / "tests"))
+        from region_flip import restore_gap_row
+
+        regions = self.work / 'regions'
+        regions.mkdir()
+        for region in (REPO / 'docs/openapi-surface').glob('*.md'):
+            shutil.copyfile(region, regions / region.name)
+        shutil.copyfile(REPO / 'docs/openapi-surface/witness-search-keys.tsv', regions / 'witness-search-keys.tsv')
+        for key in ('array-item-inheritance-union', 'property-sole-anyof-composed-member',
+                    'property-sole-oneof-empty-object-member'):
+            restore_gap_row(regions / 'schemas.md', key)
         handwritten = {
             line.split('|')[1].strip() for line in
-            (REPO / 'docs/openapi-surface/schemas.md').read_text(encoding='utf-8').splitlines()
+            (regions / 'schemas.md').read_text(encoding='utf-8').splitlines()
             if line.startswith('| ') and '| handwritten |' in line
         }
         keys = [key for key in json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys']
@@ -900,7 +913,7 @@ class WideWitnessTests(unittest.TestCase):
         table += f'| `publisher/blocked.json` | `{discarded}` | ' + ' | '.join(blocked) + ' | `witness-blocked` | evidence.txt |\n'
         (root / 'candidates.md').write_text(table, encoding='utf-8')
         output = self.work / 'derived'
-        result = self.cli('derive', '--report', output, '--contract', root / 'contract.md')
+        result = self.cli('derive', '--report', output, '--contract', root / 'contract.md', '--regions', regions)
         self.assertEqual(0, result.returncode, result.stderr)
         baseline = json.loads((output / 'baseline.json').read_text(encoding='utf-8'))
         pin = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, encoding='utf-8').strip()
@@ -924,7 +937,7 @@ class WideWitnessTests(unittest.TestCase):
         text = contract.read_text(encoding='utf-8')
         self.assertIn(row, text)
         contract.write_text(text.replace(row, f'| `{retained}` | `unknown.', 1), encoding='utf-8')
-        refused = self.cli('derive', '--report', self.work / 'refused', '--contract', contract)
+        refused = self.cli('derive', '--report', self.work / 'refused', '--contract', contract, '--regions', regions)
         self.assertNotEqual(0, refused.returncode)
         self.assertIn('selector', refused.stderr)
         self.assertFalse((self.work / 'refused').exists())
@@ -1523,12 +1536,22 @@ class PostFreezeGapRowTests(unittest.TestCase):
         return self.cli('derive', '--report', self.work / 'report', '--regions', self.regions)
 
     def frozen_row(self) -> tuple[str, str]:
-        """A search-incomplete gap row the contract owns, and its key."""
+        """A search-incomplete gap row the contract owns, and its key.
+
+        Every such row the tree held has since been moved to `handwritten`, so
+        one is restored in the copy: the derivation of a frozen gap row is still
+        what these tests are about.
+        """
         for line in self.schemas.read_text(encoding='utf-8').splitlines():
             key = line.split('|')[1].strip().strip('`') if line.startswith('| ') else ''
             if key in self.frozen and 'search outcome `search-incomplete`' in line and ' gap ' in line:
                 return key, line
-        raise AssertionError('no frozen search-incomplete gap row in schemas.md')
+        sys.path.insert(0, str(REPO / "tests"))
+        from region_flip import restore_gap_row
+
+        key = 'property-sole-oneof-composed-member'
+        self.assertIn(key, self.frozen)
+        return key, restore_gap_row(self.schemas, key)
 
     def test_a_search_incomplete_gap_row_admitted_after_the_freeze_is_skipped(self) -> None:
         key, line = self.frozen_row()

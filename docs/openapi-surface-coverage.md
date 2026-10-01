@@ -24,7 +24,7 @@ by its `settlement` cell, and the corpus registration rules in
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
 The walk enumerates 542 features. By category, 465 are `golden`, 52
-`limitations`, 5 `handwritten` and 20 `gap`. Taken back from the region files,
+`limitations`, 11 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 542
 split four ways:
@@ -38,7 +38,7 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **5 rest on a hand-written fixture, a weaker proof than a real
+- **11 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
@@ -46,19 +46,21 @@ split four ways:
   match. 36 of the 60 unreached arms below carry an arm-level hand-written
   fixture, and each such arm is still counted as unreached by real
   specifications.
-- **6 remain unproven.** 6 are the `FIXTURE` `gap` rows. Each is a shape Fern
-  generates output from. Six read `search-incomplete`
-  only because GitHub refused 12 candidates at every route there is to them.
-  The other five have a search record that reads `exhausted`:
-  every candidate is decided and none is registrable, so those five are the
-  `handwritten` rows above.
+- **0 remain unproven.** 0 are the `FIXTURE` `gap` rows. The eleven shapes
+  Fern generates output from that had no registrable witness are all
+  `handwritten` rows above. Five have a search record that reads `exhausted`:
+  every candidate is decided and none is registrable.
+  Six read `search-incomplete` only because GitHub refused 12 candidates at
+  every route the first searches took. The
+  [renewed search](openapi-surface/witness-search-renewed/README.md) found
+  each of those six `none-registrable`, and seven of the 12 are still refused.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. The other 0 are `golden`
   rows declared only by `DROPPED` corpus rows that carry no golden: corpus rows
   301 and 302 gave `operation-external-docs` and `xml-attribute`, the last two,
   golden-only witnesses ([the list](#golden-rows-with-no-golden-only-witness)).
 
-465 + 66 + 5 + 6 = 542. `golden` is still not `golden`-exhausted.
+465 + 66 + 11 + 0 = 542. `golden` is still not `golden`-exhausted.
 [Golden reach](#every-unreached-arm-and-its-search-verdict) counts 54 golden
 rows with at least one handling site no golden-only witness executes, 60 arms
 in all. The six-source searches of all 60 arms, across the 54 rows, read
@@ -1246,16 +1248,16 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 70 | 51 | 19 | 0 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 252 | 225 | 14 | 5 | 8 | 6 | 0 | 2 |
+| [`schemas`](openapi-surface/schemas.md) | 252 | 225 | 14 | 11 | 2 | 0 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 47 | 42 | 5 | 0 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 71 | 68 | 3 | 0 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 52 | 38 | 2 | 0 | 12 | 0 | 0 | 12 |
-| **total** | **542** | **465** | **52** | **5** | **20** | **6** | **0** | **14** |
+| **total** | **542** | **465** | **52** | **11** | **14** | **0** | **0** | **14** |
 
 The walk enumerated **542** features and landed each in exactly one category:
-**465** `golden`, **52** `limitations`, **5** `handwritten`, **20** `gap`. The `gap` column splits by
-settlement class into **6** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
+**465** `golden`, **52** `limitations`, **11** `handwritten`, **14** `gap`. The `gap` column splits by
+settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 
 The denominator's previous increase came from the instrument's new selectors.
 The subsequent PayPal registration adds one source (32 vendored plus 138
@@ -1366,31 +1368,27 @@ features carry byte-match evidence: a registered source declares the feature and
 its committed Fern golden byte-matches, so crozier and Fern are compared over
 real bytes there and `just check` fails if they diverge. The other 77 do not. 52
 carry a committed Fern measurement of non-generation that crozier is byte-compared
-against on a locally authored probe, 5 rest on a hand-written fixture, and 20
+against on a locally authored probe, 11 rest on a hand-written fixture, and 14
 are `gap`. Neither
 column is a defect count, and neither 465 nor 542 is a claim of exhaustion —
 [the section below](#golden-classified-is-not-golden-exhausted) states where the
 remaining distance lies, including the part of it this walk cannot enumerate.
 
-**What the `gap` count means.** 20 is the number of OpenAPI shapes no committed
-golden's source declares, so no byte comparison against a real specification
-touches them. `just check` is green over all 20 either way. It is not a defect
-count. 14 of them (`UNREACHABLE`) have no position in a generated Python SDK at
-all, each proved so by a committed differential pair that crozier is
-byte-compared against, and saying so is their settlement. Six more read that way
-until the final reconciliation found golden-bearing sources declaring them, and
-five whose searches read `exhausted` are `handwritten`, each byte-matched on a
-[hand-written fixture](openapi-surface/handwritten/AGENTS.md). That
-leaves 6 for the two backlogs below, every one of them in the fixture one.
-All six are branches of `src/ir.rs` a real document can select and no committed
-golden reaches, named for the first time by the node-local predicate family, by
-the pointer-form one after it, by the annotated-`$ref` pass after that, by the
-discriminated-union pass after that, by the pointer-walk pass after that, and by
-the negation pass after that. **Four of
-them are the negation pass's**, and the
-probe backlog stays empty across all four: each is a shape whose sibling
-spelling a registered golden-bearing source already declares, so what settles it
-is a screened real-world witness rather than a locally authored probe. Twenty-three
+**What the `gap` count means.** 14 is the number of OpenAPI shapes no committed
+golden's source declares and no hand-written fixture covers, so no byte
+comparison touches them. `just check` is green over all 14 either way. It is
+not a defect count. 14 of them (`UNREACHABLE`) have no position in a generated
+Python SDK at all, each proved so by a committed differential pair that crozier
+is byte-compared against, and saying so is their settlement. Six more read that
+way until the final reconciliation found golden-bearing sources declaring them.
+The eleven branches of `src/ir.rs` that the node-local, pointer-form,
+annotated-`$ref`, discriminated-union, pointer-walk and negation passes named,
+and that no registered source declares, are `handwritten`. Each is byte-matched
+on a [hand-written fixture](openapi-surface/handwritten/AGENTS.md). Five of
+them are there because their searches read `exhausted`. The other six read
+`search-incomplete`, and the
+[renewed search](openapi-surface/witness-search-renewed/README.md) found each
+of those `none-registrable`. That leaves 0 for the two backlogs below. Twenty-three
 rows this paragraph once counted have left it on registered witnesses. The
 nested-composition re-derivation of `hoist_union_variant` named two, and both
 are `golden`: `anyof-anyof-variant` on `fergus`, and `oneof-anyof-variant` on
@@ -2066,8 +2064,10 @@ witnesses in corpus rows 301 (`ideaconsult-enanomapper`) and 302
 
 ### The ranked `FIXTURE` backlog
 
-**Where this list stands, and the three ways a row left it.** It carries
-eleven rows; `oneof-anyof-variant` left it on corpus rows 303 to 305, and
+**Where this list stands, and the four ways a row left it.** It carries no
+rows. The last eleven left it as `handwritten`, each on a hand-written fixture.
+Before them it carried thirteen: `oneof-anyof-variant` left it on corpus rows
+303 to 305, and
 `oneof-closed-empty-object-variant` on corpus row 306, the remaining-gap
 searches' registrations. It carried twenty-four — the twenty-three left when corpus rows
 144 to 164 registered witnesses for nine of the thirty-two it carried, and
@@ -2097,7 +2097,7 @@ They are
 [the one that added the next two](#the-two-rows-the-pointer-walk-pass-added)
 and [the one that added the last seven](#the-seven-rows-the-negation-pass-added).
 Everything below them is history: every row that ever stood here left by one of
-three routes, and which route a row took is what decides the evidence the tree
+four routes, and which route a row took is what decides the evidence the tree
 now holds for it. The paragraphs below walk them in the order they happened; this
 is the shape they add up to.
 
@@ -2129,6 +2129,15 @@ is the shape they add up to.
   one expression. Both are `golden`, on goldens that were already committed. What
   moved was the instrument, not the corpus, which is why this route settles a row
   with parity evidence and costs no document at all.
+- **By a hand-written fixture.** The real-specification search failed: five
+  searches read `exhausted`, and six read `search-incomplete` until the
+  [renewed search](openapi-surface/witness-search-renewed/README.md) found them
+  `none-registrable`. So a document written for the purpose was put to Fern at
+  the corpus pin, and crozier is byte-compared against the tree Fern generated
+  from it. The row is `handwritten`. That is crozier-versus-Fern evidence, but
+  weaker than a real specification's, and it never counts as one. The last
+  eleven rows left this way. Each stays a search target, and a registrable
+  witness found later promotes it to `golden`.
 
 **Pinned from this backlog:** [`header-allow-empty-value`](openapi-surface/parameters.md)
 is pinned by corpus row 94, `ndw-accessibility-map`; its two Header Objects declare
@@ -2483,14 +2492,20 @@ which the census already visited, so no count rule changed, no existing row's
 category, settlement or evidence-cell count moved, and no snapshot digest was
 re-pinned.
 
-**All 6 `FIXTURE` gaps remain
-across the six regions: the gate recomputes that total off the region files
-themselves. The rubric and its
-four criteria are how they are ordered, and a row is ranked by [the ranking
-rubric](#the-ranking-rubric) — crozier sites ascending, then blind-spot reach
-descending, then artifact breadth descending, then witness supply descending,
-then key. Each row publishes the measured value of all four, so the order can be
-checked rather than trusted.
+**With the hand-written fixtures the `FIXTURE` backlog is exhausted.**
+All 0 `FIXTURE` gaps remain across the six regions, so the table below carries
+no rows.
+The eleven rows it last held are `handwritten`: five on the fixtures whose
+searches read `exhausted`, and six on the fixtures the
+[renewed search](openapi-surface/witness-search-renewed/README.md) admitted.
+A hand-written fixture is weaker proof than a real specification, so each of
+the eleven stays a search target, and a registered witness would make it
+`golden`. The rubric and its four criteria stay stated because the next
+`FIXTURE` gap the walk enumerates is ranked by them, and a row that returns is
+ranked by [the ranking rubric](#the-ranking-rubric) — crozier sites ascending,
+then blind-spot reach descending, then artifact breadth descending, then
+witness supply descending, then key. Each row publishes the measured value of
+all four, so the order can be checked rather than trusted.
 
 - **Criterion 1**, `crozier sites`: the integer in the row's own `crozier sites`
   cell, re-measured against `src/`.
@@ -2506,37 +2521,28 @@ checked rather than trusted.
 - **Criterion 4**, witness supply: registered sources the census reports
   declaring the shape, read off the row's own `evidence` cell. A `FIXTURE` gap
   can only score above zero here from a source with no committed golden, which
-  is what makes it a gap — 6 of the 6 score zero here, no registered source
-  declaring any of them at all. The one row that scored above zero,
+  is what makes it a gap. The last row to score above zero,
   `annotated-ref-target-composed` (`box.com` and `asana.com`, both documents
   Fern's own check refuses), left this list when corpus row 144 registered a
   witness Fern accepts.
 
-**The median blind-spot count of this list is 429** — all six entries name
-`src/ir.rs` and nothing else, and 0 of the 6 entries name no `src/` file at all,
-which is the mirror image of the list this one replaced. 0 of the 6 ranked
-entries reach no blind region. Criteria 1 to 4 separate none of them — each
-names one `src/ir.rs` place, and `securityscheme-ref` and `oauth2-password`, the
-two rows that named more than one place or another file, left the list on corpus
-rows 177 to 179 — so criterion 5 decides.
+With the list empty there is no median blind-spot count to publish and no
+population to narrate; both return with the first row that returns.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
-| 1 | [`array-item-inheritance-union`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
-| 2 | [`array-item-pointer-walk-oneof`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
-| 3 | [`property-sole-anyof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
-| 4 | [`property-sole-anyof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
-| 5 | [`property-sole-oneof-composed-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
-| 6 | [`property-sole-oneof-empty-object-member`](openapi-surface/schemas.md) | `schemas` | **1** (`src/ir.rs` 1) | **429** (`src/ir.rs` 429) | **1** (types/) | **0** |
 
 ### Generated shapes with no registrable witness
 
 This section is the escalation the amended settlement rule requires. It lists
 every shape Fern generates output from that still has no registrable real-world
-witness. Each one stays a `gap` and carries its full search record, and none is
-settled by a probe or as `limitations`. The set is the eleven `FIXTURE` rows
-of the [ranked backlog](#the-ranked-fixture-backlog), all in
-[`schemas.md`](openapi-surface/schemas.md). Each one names a branch of
+witness, with its full search record. None is settled by a probe or as
+`limitations`. The set is the eleven rows that were the `FIXTURE` rows of the
+[ranked backlog](#the-ranked-fixture-backlog), all in
+[`schemas.md`](openapi-surface/schemas.md). Each is now `handwritten`, on the
+[hand-written fixture](openapi-surface/handwritten/AGENTS.md) its search
+admitted, which is weaker proof than a real specification. Each stays a search
+target until a registrable witness makes it `golden`. Each one names a branch of
 `src/ir.rs` that emits a model, union or alias. For every one of them the branch
 was measured by a committed probe that Fern generates from: each has a
 `measured` `absent-tree` row in
@@ -2584,6 +2590,14 @@ It carries one segment per declared source, counted off that source's
   their blobs. Each refusal, with its status and time, is the `census` cell of
   the candidate's `records.tsv` row and the note of its key's line. Six keys
   carry at least one, so they read `search-incomplete` and are not closed.
+  [The renewed search](openapi-surface/witness-search-renewed/README.md) took
+  the routes those records do not show as tried. Five of the 12 were in the
+  source's own acquisition cache under another key's row, each hashing to its
+  blob, and each reads `census 0`. Every other new route refused the other
+  seven: the repository by its numeric id, the blob and the commit by their
+  hashes, the owner's code search, and Sourcegraph's default branch. Each key
+  reads `none-registrable` there. The ledgers above are unchanged, so the six
+  lines keep their verdict.
 - **Five keys read `exhausted`.** `oneof-array-variant-annotated-ref-item` and
   `oneof-bare-object-example-variant` had no candidate refused.
   `annotated-ref-target-string-const`,
@@ -2618,11 +2632,13 @@ and name every candidate the census confirmed.
 
 **What would move the rest.** Nothing a search can still do closes the six
 `search-incomplete` keys: their only open items are the 12 blobs GitHub and
-Sourcegraph's mirror both refuse, and each would be decided the moment either
-served one again; `scripts/witness-search-recensus.py reacquire-head --again`
-and `reacquire-namesake --again` re-request them. A Fern that generates APWG's eCX
-document, or a grant from a publisher the table names, would give a key a
-witness.
+Sourcegraph's mirror both refuse. Each would be decided the moment either
+served one again, and `scripts/witness-search-recensus.py reacquire-head --again`
+and `reacquire-namesake --again` re-request them. The renewed search decided
+five from the acquisition cache, and seven are still refused. A Fern that
+generates APWG's eCX document at any of its census-confirmed revisions, or
+OSRD's editoast document, would give a key a witness. So would a grant from a
+publisher the table names.
 
 **The three grant-blocked artifacts' keys are settled on replacement witnesses,
 and none on a blocked artifact.** The eight artifacts
@@ -2659,7 +2675,7 @@ functions named in each verdict are counted from that union.
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 862 | all-e2e 433, non-e2e 429 | none | **Neither.** `explain` 148, `resolve` 44, `merge` 37, `merge_generator` 28, `load` 21, `read_config` 20: the CLI > env > `crozier.yml` layering behind `crozier config`. No OpenAPI shape reaches it and no Fern golden can — Fern reads a different config format — so neither a corpus row nor a Fern probe is the instrument. The journeys are, and they already reach 433 of the 447. |
-| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 6 (after the hand-written fixtures moved five exhausted rows to `handwritten`, PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row, and row 306 `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the six ranked `FIXTURE` gaps point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `exhausted` or `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). A registered witness is the only thing that would reach those arms. **Second, golden rows' unreached arms sit here.** Most of [the 60 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
+| `src/ir.rs` | 429 | all-e2e 111, non-e2e 318 | 0 (after the hand-written fixtures moved the last eleven rows to `handwritten`, five whose searches read `exhausted` and six whose renewed search read `none-registrable`, PayPal settled `anyof-sole-member`, `fergus` settled `anyof-anyof-variant`, corpus rows 144 to 164 settled `annotated-ref-target-composed`, `annotated-ref-target-oneof`, `annotated-ref-target-closed-object`, `anyof-array-variant-struct-item`, `anyof-array-variant-closed-object-item`, `oneof-array-variant-closed-object-item`, `ref-pointer-undeclared-component-head` and `ref-pointer-unnamed-segment`, and corpus rows 167 to 179 settled ten more of this file's rows and `oauth2-password`, whose `oauth_scope_enum` fallback is here: eleven branches the instrument passes named that no golden-bearing source declares; corpus rows 303 to 305 settled `oneof-anyof-variant`, the nested-composition re-derivation's row, and row 306 `oneof-closed-empty-object-variant`, the case the repair of rows 168 and 169 added) | **Still blind, and why: three reasons, each measured.** On the 2026-09-28 run the file's union is 405 regions, led by `variant_ref` 64, `field_type_ref` 54, `hoist_union_variant` 53, `resolve_schema_pointer` 49, `ordinal_word` 23, `example_is_schema_definition` 20, `hoist_array_item_type` 15, `path_group` 15, `ref_to_class` 12, `prop_type_ref` 10, `error_class_name` 8, `nested_array_element` 7 and `pointer_has_unnamed_segment` 7. **First, the eleven `handwritten` rows the ranked backlog last held point here.** Each names a branch of `hoist_union_variant`, `prop_type_ref`, `nested_array_element` or `resolve_schema_pointer` that no golden-bearing registered source declares, and each search reads `exhausted` or `search-incomplete` ([the escalation](#generated-shapes-with-no-registrable-witness)). Their hand-written fixtures reach those arms, but this block counts goldens alone, so a registered witness is the only thing that would reach them here. **Second, golden rows' unreached arms sit here.** Most of [the 60 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file, including `resolve_schema_pointer`'s three composition arms, which no golden reaches since the loader copies a pointer into the component where it is used. Their six-source searches read `exhausted`. **Third, the two largest blocks are outside the case analysis.** `variant_ref` and `field_type_ref` hold 118 regions and are not among the six functions [the case table](#the-six-blind-regions-of-srcirrs-case-by-case) turns into selectors, so no row names their branches. That is the first entry of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). |
 | `src/emit.rs` | 405 | all-e2e 135, non-e2e 270 | none | **Still blind, and why: a probe-settled shape and example rendering the census cannot enumerate.** On the 2026-09-28 run the union is 286 regions. 125 of them are the object-typed path parameter block: `path_object_value` 39, `without_recording` 31, `path_object_required_fields` 26, `path_field_render` 19 and `path_object_documented` 10. They are driven by `parameter-style-simple-path-object`, a `limitations` row settled by its committed `absent-tree` proof. The final reconciliation's scan of every golden-bearing source found no `style: simple` path parameter over an object schema, so no golden can reach that code until one is registered. Most of the rest is example rendering: `build_example_inner` 19, `header_first_query_example` 16, `raw_type_str_ctx` 13, `named_value_inner` 10, `flat` 9, `url_arg` 9 and `value_from_example` 7. Its branches switch on generated types or on example content, which are entries 2 and 3 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage). The last named block is `append_request_call_args` 12. |
 | `src/cli.rs` | 290 | all-e2e 131, non-e2e 159 | none | **Neither**, as `src/settings.rs`: `do_config` 60, `run` 43, `do_init` 26, `do_generate` 12 are the command surface, not document behaviour. |
 | `src/refs.rs` | 249 | all-e2e 115, non-e2e 134 | none | **Still blind, and why: the failure paths and tree walks of cross-document resolution.** On the 2026-09-28 run the union is 150 regions: `from_reference` 34, `resolve_path_item` 22, `document` 18, `resolve_reference` 16, `resolve_parameter` 12, `resolve_schema` 11, `pointer` 9, `curl_fetch` 7, `error` 7, `import_pointer_at_path` 7, `import_remote_document` 3. The two registered pinned trees, FOLIO row 139 and Raybot row 140, reach part of each function. What stays blind is chiefly the error arms, a reference that fails to load or resolve, which a document Fern generates from does not take. The rest is reference forms no pinned tree declares. That is entry 6 of [the opening answer's list of what the census cannot enumerate](#openapi-surface-coverage): shapes reached through references beyond the pinned trees are not counted, so no row names them. |
@@ -2671,9 +2687,10 @@ functions named in each verdict are counted from that union.
 | `src/pyfmt.rs` | 31 | all-e2e 7, non-e2e 24 | none | **Neither.** `format_source` 24 is the `ruff format` shell-out and its failure paths. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point; `just test-fixtures-coverage` asserts it is reachable at all. |
 
-**Where the two backlogs agree.** At one file now. `src/ir.rs` carries eleven
-ranked rows; `src/openapi.rs` carried two until corpus rows 177 to 179 settled
-both, the history below says how they had come to be there. That agreement had lapsed — the
+**Where the two backlogs agree.** At no file now. The ranked backlog is empty
+again: the eleven `src/ir.rs` rows it last carried are `handwritten`.
+`src/openapi.rs` carried two until corpus rows 177 to 179 settled both, and the
+history below says how they had come to be there. That agreement had lapsed — the
 ranked backlog was empty, so no `src/` file was named by both, `src/ir.rs` having
 been the last until
 [Round 6](fern-limitations.md#round-6--parameters-and-the-31-tail)
@@ -2690,8 +2707,9 @@ is back for a different reason: a rule, not a measurement.
 Criterion 2 separated rows while both files were named: twenty-nine rows scored
 `src/ir.rs`'s 235, `oauth2-password` 453 because it named both files, and
 `securityscheme-ref` `src/openapi.rs`'s 218. Corpus rows 177 to 179 settled those
-two, so it separates none of the eleven left: each names `src/ir.rs` alone and
-scores its 429 on the 2026-09-28 run.
+two, so it separated none of the eleven left: each named `src/ir.rs` alone and
+scored its 429 on the 2026-09-28 run, until the hand-written fixtures moved all
+eleven to `handwritten`.
 **The order of size at the top has moved again and again** — it was
 `openapi.rs` 511 > `ir.rs` 201, then `ir.rs` 235 > `openapi.rs` 184, then
 `emit.rs` 437 > `ir.rs` 235 > `openapi.rs` 218, on a rise in `emit.rs` no corpus
@@ -2705,7 +2723,8 @@ with OpenAPI-derived code. It is the same `src/` those batches left, since no
 change to `src/` has landed after them.
 
 **Where they do not, and the reading that has to change with them.** No ranked
-gap points at eleven of the twelve. Four of them still hold OpenAPI-derived
+gap points at any of the twelve now, and none ever pointed at the eleven besides
+`src/ir.rs`. Four of those eleven still hold OpenAPI-derived
 blind regions, and each verdict above says why with the run's own function
 counts: `src/emit.rs` a probe-settled shape and example rendering the census
 cannot enumerate, `src/refs.rs` the failure paths of cross-document resolution,

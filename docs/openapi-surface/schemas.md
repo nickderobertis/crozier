@@ -1657,6 +1657,11 @@ read `search-incomplete` for one reason: 12 `github-code-search` candidates
 whose pinned blob GitHub answered 404 for. Each was requested again at its
 repository's current revision, at Sourcegraph's mirror of the pinned commit
 and in every repository named as its own is, and all three refused it.
+[The renewed search](witness-search-renewed/README.md) took routes these
+records do not show as tried. It read five of the 12 from the source's own
+acquisition cache (`census 0`), and every new route refused the other seven. It
+found each of the six keys `none-registrable`, so their rows are `handwritten`.
+Their lines below keep the verdict their ledgers give, `search-incomplete`.
 `oneof-anyof-variant` and `oneof-closed-empty-object-variant` had their first
 search in the remaining-gap searches, and each found the witnesses its row is
 now `golden` on.
