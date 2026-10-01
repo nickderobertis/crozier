@@ -104,3 +104,26 @@ Nothing. Every candidate above fails a screen or is measured not reaching the
 walk. Each candidate whose reach is not measured fails the licence or the Fern
 screen, which decides it whatever its reach. The census-refused
 documents in `github-publisher-trees` and `vendor-portals` are not candidates.
+
+## Selectors no other golden-bearing source declares
+
+The census over row 224's bytes (`scripts/openapi-surface-census.py`'s
+`census_document`, 128 selectors) against the census of the 236 registered
+sources that remain (`just golden-reach`'s `.local/golden-reach/census.json`, on
+2026-10-01) finds seven selectors no other golden-bearing source declares. Six
+are declared by no other registered source at all, and `schema.x-examples` only
+by two `DROPPED` rows that carry no golden. Each backs no feature: no region
+file's entry table carries it as a key and
+[`../witness-search-keys.tsv`](../witness-search-keys.tsv) records it for no key.
+So it needs no witness. Every other selector row 224 declared is also declared by
+a golden-bearing registered source.
+
+| selector | declared by (registered sources) | region row | `witness-search-keys.tsv` |
+|---|---|---|---|
+| `mediaType.x-speakeasy-usage-example` | row 224 only | none | none |
+| `openapi.x-speakeasy-retries` | row 224 only | none | none |
+| `parameter.x-stoplight` | row 224 only | none | none |
+| `schema.definitions` | row 224 only | none | none |
+| `schema.format=ISO4217` | row 224 only | none | none |
+| `schema.x-codat-validation` | row 224 only | none | none |
+| `schema.x-examples` | row 224, and `canada-holidays.ca` (3) and `groundhog-day.com` (7), both `DROPPED` with no golden | none | none |

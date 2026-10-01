@@ -2016,10 +2016,11 @@ Fern tree byte-matched. That fixture is how crozier learned that Fern types a
 pointer ending on a composition member as unknown. Every other row and selector
 `codat-assess` declared keeps a golden-bearing witness: the ledger lists three for
 `ref-pointer-composition-index`, four for `ref-pointer-nested-properties` and one,
-`auto-agent-protocol`, for `ref-pointer-unnamed-segment`. The seven selectors it
-alone declared — `schema.definitions`, `schema.format=ISO4217` and five vendor
-extensions — back no row: the first two back none, and each of the five
-extensions' objects is declared by another golden-bearing source. The
+`auto-agent-protocol`, for `ref-pointer-unnamed-segment`. The seven selectors no
+other golden-bearing source declares — `schema.definitions`,
+`schema.format=ISO4217` and five vendor extensions — back no feature: none is a
+region row's key or a `witness-search-keys.tsv` selector, so none needs a witness
+([the list](openapi-surface/withdrawn-witnesses/codat-assess.md#selectors-no-other-golden-bearing-source-declares)). The
 2026-09-28 evidence cells that listed it no longer do.
 
 #### The `example` arm, removed as a proven divergence
