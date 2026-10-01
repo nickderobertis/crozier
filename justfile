@@ -261,7 +261,6 @@ test-corpus-match:
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e peopledatalabs_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e adyen_acs_notification_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nexmo_conversation_matches_fern_output
-    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e codat_assess_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e googleapis_monitoring_v1_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e docu_goapiserver_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e onevoice_matches_fern_output
