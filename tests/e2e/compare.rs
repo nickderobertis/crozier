@@ -6,8 +6,6 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use predicates::prelude::*;
-
 use super::crozier;
 
 /// The fixture whose committed packaged and flat goldens the references copy:
@@ -457,13 +455,21 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
     assert!(!root.join("env-output").exists());
 
     let api = std::fs::canonicalize(root.join("api")).unwrap();
+    // Both sides are sorted here, in Rust: the stub's `sort` collates by the
+    // host's locale, which orders `_` differently on macOS than on Linux.
+    let sorted = |mut lines: Vec<String>| {
+        lines.sort();
+        lines
+    };
     let vars = |generator: &str| -> Vec<String> {
-        std::fs::read_to_string(dumps.path().join(generator))
-            .unwrap()
-            .lines()
-            .filter(|l| !l.starts_with("CROZIER_REFERENCE_OUTPUT="))
-            .map(str::to_string)
-            .collect()
+        sorted(
+            std::fs::read_to_string(dumps.path().join(generator))
+                .unwrap()
+                .lines()
+                .filter(|l| !l.starts_with("CROZIER_REFERENCE_OUTPUT="))
+                .map(str::to_string)
+                .collect(),
+        )
     };
     let common = |generator: &str| {
         [
@@ -481,7 +487,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
     let [config_file, generator] = common("golden");
     assert_eq!(
         vars("golden"),
-        [
+        sorted(vec![
             "CROZIER_REFERENCE_AUDIENCES=".to_string(),
             "CROZIER_REFERENCE_AUDIENCE_STRICT=false".to_string(),
             "CROZIER_REFERENCE_CLIENT_CLASS_NAME=AcmeClient".to_string(),
@@ -492,14 +498,14 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             "CROZIER_REFERENCE_PACKAGE_NAME=fern".to_string(),
             "CROZIER_REFERENCE_PROJECT_NAME=default_package_name".to_string(),
             spec.clone(),
-        ]
+        ])
     );
     // crozier's defaults are passed resolved: the package from the title
     // `Widget API`, the project from the package, the client from both.
     let [config_file, generator] = common("defaults");
     assert_eq!(
         vars("defaults"),
-        [
+        sorted(vec![
             "CROZIER_REFERENCE_AUDIENCES=public,internal".to_string(),
             "CROZIER_REFERENCE_AUDIENCE_STRICT=true".to_string(),
             "CROZIER_REFERENCE_CLIENT_CLASS_NAME=WidgetApiApi".to_string(),
@@ -510,7 +516,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             "CROZIER_REFERENCE_PACKAGE_NAME=widget_api".to_string(),
             "CROZIER_REFERENCE_PROJECT_NAME=widget_api".to_string(),
             spec,
-        ]
+        ])
     );
     let output_dir = std::fs::read_to_string(dumps.path().join("defaults"))
         .unwrap()
@@ -835,6 +841,8 @@ fn compare_with_no_paths_searches_the_whole_repository() {
 #[cfg(unix)]
 #[test]
 fn compare_refuses_an_unwritable_json_target_before_any_reference_runs() {
+    use predicates::prelude::*;
+
     let outputs = tempfile::tempdir().unwrap();
     let marker = outputs.path().join("reference-ran");
     let repo = small_repo(
@@ -917,6 +925,8 @@ fn compare_still_checks_and_reports_when_a_diff_file_cannot_be_written() {
 #[cfg(unix)]
 #[test]
 fn compare_reports_a_crozier_failure_after_a_good_reference_as_mismatched() {
+    use predicates::prelude::*;
+
     let repo = small_repo(
         "crozier.yml",
         "  python:\n    reference:\n      command: echo reference > \"$CROZIER_REFERENCE_OUTPUT/README.md\"\n",
