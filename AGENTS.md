@@ -96,10 +96,12 @@ Use the `just` recipes; do not hand-roll equivalents.
   typed responses come back. Spec-driven; separate from `check` (keeps the gate
   Node-free) but a required CI leg. Needs Node/Prism + uv. See
   [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
-- `just test-corpus-match` — enforce the real-world corpus byte-match: fetch the
-  `link-ok` corpus specs (not vendored) and byte-compare crozier's output against
-  the committed Fern goldens. Needs network; runs in the CI live-e2e leg, and the
-  byte-diff tests skip when a spec is unfetched (so `check` stays offline).
+- `just test-corpus-match` — byte-compare every registered corpus against Fern
+  using committed sources. `just test-corpus-offline` proves the real recipe and
+  census with sockets denied and no cache; CI runs this in its live-e2e leg.
+- `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
+  pinned URLs are provenance. `just lint-corpus-sources` checks every committed
+  file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fern-goldens` / `just fern-goldens-generate` / `just
   fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;
@@ -112,8 +114,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   prints the normalized diff of files it doesn't (to fix the generator). Neither
   gates. See [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just fixtures-coverage` — what the committed Fern **goldens** reach in `src/`,
-  apart from what crozier's own tests reach. Outside `check` (needs network, runs
-  the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
+  apart from what crozier's own tests reach. Outside `check` (runs the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
 - `just golden-reach` — the same golden-only tier one golden test at a time,
@@ -123,8 +124,7 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md#golden-reach-row-by-row).
 - `just surface-census` — which OpenAPI shapes the registered golden **sources**
   declare, measured off each source document's object model (never a generated
-  `expected/` tree). Outside `check` (fetches the `link-ok` half, so it needs
-  network); `just test-surface-census` drives it offline over the vendored
+  `expected/` tree). Outside `check` (reads the committed corpus); `just test-surface-census` drives it offline over the vendored
   sources and IS in `check`. What the census is for, and the grammar its
   selectors follow:
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md).

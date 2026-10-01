@@ -11,13 +11,12 @@
 # second export is the accumulated union — the all-e2e tier — and the corpus is
 # generated once rather than twice.
 #
-# NOT part of `just check`: needs network, and runs the corpus instrumented.
+# NOT part of `just check`: runs the committed corpus instrumented.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
 
-fetch=1
 scope=""
 out_dir="$repo_root/.local/fixtures-coverage"
 
@@ -28,14 +27,14 @@ Usage: scripts/fixtures-coverage.sh [--no-fetch] [--out DIR] [SCOPE]
   SCOPE      cargo-nextest filter expression ANDed into every tier, to measure
              one corpus quickly, e.g. 'test(/frankfurter/) or test(/wrap/)'.
              Every tier must still select at least one test.
-  --no-fetch Reuse the already-fetched .local/corpus instead of re-fetching.
+  --no-fetch Compatibility option; committed sources are always used.
   --out DIR  Where to write the per-tier llvm-cov JSON exports.
 USAGE
 }
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --no-fetch) fetch=0 ;;
+    --no-fetch) : ;;
     --out)
       shift
       [ "$#" -gt 0 ] || { echo "fixtures-coverage: --out needs a directory" >&2; exit 1; }
@@ -119,12 +118,7 @@ journey_tests="$(count_tests all-e2e "$journey_expr")"
 unit_tests="$(count_tests non-e2e "$unit_expr")"
 e2e_tests=$((golden_tests + journey_tests))
 
-if [ "$fetch" -eq 1 ]; then
-  step "fetching the corpus specs" \
-    "The link-ok corpus is fetched over the network (tests/fixtures/CORPUS.md); \
-re-run with --no-fetch to reuse .local/corpus offline." \
-    "$script_dir/fetch-corpus.sh"
-fi
+python3 "$script_dir/corpus_sources.py" check
 
 cd "$repo_root"
 

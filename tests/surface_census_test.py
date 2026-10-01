@@ -1829,10 +1829,9 @@ class ConfigGatedRecordTests(unittest.TestCase):
 class RecipeWiringTests(unittest.TestCase):
     """The gate must run this file, and this file must test the recipe's script."""
 
-    def test_the_unscoped_recipe_fetches_the_corpus_then_censuses_it(self) -> None:
+    def test_the_unscoped_recipe_censuses_committed_sources(self) -> None:
         self.assertEqual(
             [
-                "./scripts/fetch-corpus.sh",
                 '"$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"',
             ],
             recipe_body("surface-census"),
@@ -2382,8 +2381,8 @@ class GrammarContractTests(unittest.TestCase):
 
     def test_the_stated_corpus_sizes_are_the_measured_ones(self) -> None:
         """31 vendored / 93 link-ok / 124 registered is restated in prose; measure it."""
-        vendored = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", True)
-        registered = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
+        vendored = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", True)
+        registered = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False)
         counts = (len(vendored), len(registered) - len(vendored), len(registered))
         doc = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -6253,18 +6252,31 @@ class SourceSelectionTests(unittest.TestCase):
             [], [row for row in payload["rows"] if row["selector"] == "pathItem.trace"]
         )
 
-    def test_an_unfetched_link_ok_source_is_a_hard_failure_not_a_silent_zero(self) -> None:
-        """93 of the 124 registered sources are fetched; a silent zero would lie."""
+    def test_source_selection_flags_keep_their_legacy_aliases(self) -> None:
+        old = run("--vendored-only", "--selector", "openapi.info", "--json")
+        current = run("--original-fixtures-only", "--selector", "openapi.info", "--json")
+        self.assertEqual(0, old.returncode, old.stderr)
+        self.assertEqual(0, current.returncode, current.stderr)
+        self.assertEqual(json.loads(old.stdout), json.loads(current.stdout))
+        with tempfile.TemporaryDirectory() as directory:
+            old = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info", "--json")
+            current = run("--corpus-root", directory, "--allow-missing", "--selector", "openapi.info", "--json")
+            self.assertEqual(0, old.returncode, old.stderr)
+            self.assertEqual(0, current.returncode, current.stderr)
+            self.assertEqual(json.loads(old.stdout), json.loads(current.stdout))
+
+    def test_a_missing_committed_source_is_a_hard_failure_not_a_silent_zero(self) -> None:
+        """A missing registered document cannot count as declaring nothing."""
         with tempfile.TemporaryDirectory() as directory:
             completed = run("--corpus-root", directory)
             self.assertEqual(1, completed.returncode, completed.stdout)
-            self.assertIn("have not been fetched", completed.stderr)
-            self.assertIn("just surface-census", completed.stderr)
+            self.assertIn("source file(s) are missing", completed.stderr)
+            self.assertIn("just lint-corpus-sources", completed.stderr)
 
             allowed = run("--corpus-root", directory, "--allow-unfetched", "--selector", "openapi.info")
             self.assertEqual(0, allowed.returncode, allowed.stderr)
-            self.assertIn("is unfetched", allowed.stderr)
-            self.assertIn("32 vendored, 0 fetched", allowed.stderr)
+            self.assertIn("is missing", allowed.stderr)
+            self.assertIn("32 original fixtures, 0 corpus sources", allowed.stderr)
 
             payload = json.loads(
                 run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
@@ -6644,7 +6656,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
 
     def test_the_openbanking_client_assertion_enum_reads_as_its_one_urn(self) -> None:
         """The registered document the misread cost a `schema.enum:string-valued` site."""
-        path = REPO / ".local" / "corpus" / "openbankingproject-ch-kundenbeziehung" / "openapi.yaml"
+        path = REPO / "tests" / "fixtures" / "corpus-sources" / "openbankingproject-ch-kundenbeziehung" / "openapi.yaml"
         if not path.is_file():
             if os.environ.get("CROZIER_REQUIRE_CORPUS"):
                 self.fail(f"{path} is unfetched; run scripts/fetch-corpus.sh")
@@ -8157,7 +8169,7 @@ class RankedBacklogTests(unittest.TestCase):
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
         """The registered and golden-bearing source counts, measured rather than
         transcribed off whichever walk the section was last written on."""
-        sources = census.registered_sources(FIXTURES, REPO / ".local" / "corpus", False)
+        sources = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False)
         aliases = census.corpus_aliases(FIXTURES)
         golden = sum(
             1
@@ -10906,7 +10918,7 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
             for row in json.loads(completed.stdout)["rows"]
         }
         vendored = {source.fixture for source in census.registered_sources(
-            FIXTURES, REPO / ".local/corpus", True
+            FIXTURES, REPO / "tests/fixtures/corpus-sources", True
         )}
         checked = 0
         for selector, cell in evidence.items():

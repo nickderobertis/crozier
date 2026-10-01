@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier is a Cargo crate driven by just, not an Nx workspace; this maintenance script is owned by lint-corpus-sources, test-corpus-sources and corpus-sources.
 """The committed source documents of every registered corpus row.
 
 Every numbered `tests/fixtures/CORPUS.md` row's source document is committed
@@ -50,7 +51,7 @@ from pathlib import Path, PurePosixPath
 from urllib.parse import unquote, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import corpus_remote_ref_pins as pins  # noqa: E402
+import corpus_remote_ref_pins as pins  # noqa: E402 - the sibling scripts directory must be on sys.path first
 
 ROOT_RELATIVE = PurePosixPath("tests/fixtures/corpus-sources")
 MANIFEST_RELATIVE = PurePosixPath("tests/fixtures/corpus-sources.tsv")
@@ -107,7 +108,7 @@ def corpus_rows(root: Path) -> list[Row]:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
-        raise SourcesError(f"could not read corpus manifest {path}: {error}") from error
+        raise SourcesError(f"could not read corpus manifest {path}: {error}; restore the manifest from git") from error
     rows: list[Row] = []
     for line in lines:
         cells = [cell.strip() for cell in line.split("|")]
@@ -115,9 +116,11 @@ def corpus_rows(root: Path) -> list[Row]:
             continue
         name, url, decision = cells[2].strip("` "), cells[4], cells[7]
         if name and decision in {"committed", "link-ok"}:
+            if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", name) or ".." in name:
+                raise SourcesError(f"{path}: unsafe corpus name {name!r}; use a safe fixture directory name")
             rows.append(Row(name, url, decision))
     if not rows:
-        raise SourcesError(f"no numbered corpus rows found in {path}")
+        raise SourcesError(f"no numbered corpus rows found in {path}; restore the manifest from git")
     return rows
 
 
@@ -125,7 +128,7 @@ def spec_filename(url: str) -> str:
     """`openapi.<suffix>`, the canonical name `scripts/corpus-lib.sh` publishes."""
     suffix = PurePosixPath(urlsplit(url).path).suffix
     if suffix not in SPEC_SUFFIXES:
-        raise SourcesError(f"{url} has no supported OpenAPI suffix ({', '.join(SPEC_SUFFIXES)})")
+        raise SourcesError(f"{url} has no supported OpenAPI suffix ({', '.join(SPEC_SUFFIXES)}); use a pinned JSON or YAML source URL")
     return f"openapi{suffix}"
 
 
@@ -171,8 +174,11 @@ def load_manifest(root: Path) -> list[Record]:
     keys = [(record.corpus_name, record.path) for record in records]
     if keys != sorted(keys):
         raise SourcesError(f"{MANIFEST_RELATIVE}: records must sort by (corpus_name, path); rewrite it with `vendor`")
-    if len(set(keys)) != len(keys):
-        raise SourcesError(f"{MANIFEST_RELATIVE}: a path is recorded twice")
+    seen: set[tuple[str, str]] = set()
+    for key in keys:
+        if key in seen:
+            raise SourcesError(f"{MANIFEST_RELATIVE}: {key[1]} is recorded twice; remove the duplicate row")
+        seen.add(key)
     return records
 
 
@@ -218,11 +224,11 @@ def check(root: Path) -> int:
                 continue
             url, pinned = expected[relative]
             if record.source_url != url:
-                problems.append(f"{row.name}: {relative} records source {record.source_url}, but the row resolves {url}")
+                problems.append(f"{row.name}: {relative} records source {record.source_url}, but the row resolves {url}; restore its provenance or re-vendor the row")
             if pinned is not None and record.sha256 != pinned:
                 problems.append(
                     f"{row.name}: {relative} records sha256 {record.sha256}, but "
-                    f"tests/fixtures/corpus-remote-ref-pins.tsv pins {pinned}"
+                    f"tests/fixtures/corpus-remote-ref-pins.tsv pins {pinned}; restore the record or review the pin change and re-vendor the row"
                 )
     verified = 0
     for record in records:
@@ -258,10 +264,10 @@ def fetch(root: Path, names: list[str], destination: Path) -> None:
             cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
         )
         if result.returncode != 0:
-            raise SourcesError(f"{name}: scripts/fetch-corpus.sh failed: {result.stderr.strip()}")
+            raise SourcesError(f"{name}: scripts/fetch-corpus.sh failed: {result.stderr.strip()}; restore access to the pinned URL and retry the rebuild")
 
 
-def fetched_bytes(root: Path, row: Row, fetched: Path) -> dict[str, tuple[str, bytes]]:
+def collect_sources_and_fetch_remote_documents(root: Path, row: Row, fetched: Path) -> dict[str, tuple[str, bytes]]:
     """`row-relative path -> (source_url, bytes)` for one row's completed fetch."""
     files: dict[str, tuple[str, bytes]] = {}
     override = pins.origin_override()
@@ -274,10 +280,10 @@ def fetched_bytes(root: Path, row: Row, fetched: Path) -> dict[str, tuple[str, b
         else:
             path = fetched / row.name / relative
             if not path.is_file():
-                raise SourcesError(f"{row.name}: the fetch left no {relative} under {fetched / row.name}")
+                raise SourcesError(f"{row.name}: the fetch left no {relative} under {fetched / row.name}; retry vendor without --from to fetch the complete row")
             body = path.read_bytes()
         if pinned is not None and hashlib.sha256(body).hexdigest() != pinned:
-            raise SourcesError(f"{row.name}: {url} no longer serves its pinned sha256 {pinned}")
+            raise SourcesError(f"{row.name}: {url} no longer serves its pinned sha256 {pinned}; restore the pinned bytes or review and record a new immutable pin")
         files[relative] = (url, body)
     return files
 
@@ -289,7 +295,7 @@ def selected_rows(root: Path, fixtures: list[str]) -> list[Row]:
     known = {row.name: row for row in rows}
     unknown = [name for name in fixtures if name not in known]
     if unknown:
-        raise SourcesError(f"{unknown[0]!r} is not a canonical CORPUS.md row")
+        raise SourcesError(f"{unknown[0]!r} is not a canonical CORPUS.md row; choose a registered name from that manifest")
     return [known[name] for name in fixtures]
 
 
@@ -311,7 +317,7 @@ def refetch(root: Path, fixtures: list[str], source: Path | None, *, write: bool
         kept = [record for record in records if record.corpus_name not in replaced]
         staged: list[tuple[Path, bytes]] = []
         for row in rows:
-            for relative, (url, body) in sorted(fetched_bytes(root, row, fetched).items()):
+            for relative, (url, body) in sorted(collect_sources_and_fetch_remote_documents(root, row, fetched).items()):
                 path = (ROOT_RELATIVE / row.name / relative).as_posix()
                 digest = hashlib.sha256(body).hexdigest()
                 kept.append(Record(row.name, path, url, digest))
@@ -331,6 +337,76 @@ def refetch(root: Path, fixtures: list[str], source: Path | None, *, write: bool
         return drifted
 
 
+def prepare(root: Path, fixture: str, output: Path) -> Path:
+    """Stage immutable copies with remote refs pointing at their committed files."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", fixture) or ".." in fixture:
+        raise SourcesError("unsafe fixture name; use a registered CORPUS.md name")
+    aliases: dict[str, str] = {}
+    alias_file = root / "tests/fixtures/corpus-aliases.tsv"
+    if alias_file.is_file():
+        for number, line in enumerate(alias_file.read_text().splitlines(), 1):
+            if not line.strip() or line.startswith("#"):
+                continue
+            cells = line.split("\t")
+            if len(cells) != 2 or any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", cell)
+                                      or ".." in cell for cell in cells):
+                raise SourcesError(f"{alias_file}:{number}: invalid alias; restore two safe tab-separated names")
+            if cells[0] in aliases or cells[1] in aliases.values():
+                raise SourcesError(f"{alias_file}:{number}: duplicate alias; keep each name once")
+            aliases[cells[0]] = cells[1]
+    canonical = next((name for name, alias in aliases.items() if alias == fixture), fixture)
+    records = [record for record in load_manifest(root) if record.corpus_name == canonical]
+    if not records:
+        # Feature fixtures are outside the registered real-world corpus.
+        source = root / "tests/fixtures" / fixture / "openapi.yml"
+        if source.is_file():
+            return source
+        raise SourcesError(f"{fixture}: no committed source; run just lint-corpus-sources")
+    row = next((row for row in corpus_rows(root) if row.name == canonical), None)
+    if row is None:
+        raise SourcesError(f"{canonical}: no registered row; restore CORPUS.md or remove stale source records")
+    expected = expected_files(root, row)
+    prefix = ROOT_RELATIVE / canonical
+    recorded = {PurePosixPath(record.path).relative_to(prefix).as_posix(): record for record in records}
+    if recorded.keys() != expected.keys():
+        raise SourcesError(f"{canonical}: committed file set differs from its pins; run just lint-corpus-sources")
+    for relative, record in recorded.items():
+        url, digest = expected[relative]
+        if record.source_url != url or (digest is not None and record.sha256 != digest):
+            raise SourcesError(f"{record.path}: provenance disagrees with its pins; run just lint-corpus-sources")
+    base = root / ROOT_RELATIVE / canonical
+    if output.exists() and any(output.iterdir()):
+        raise SourcesError(f"{output}: staging directory is not empty; use a fresh directory")
+    output.mkdir(parents=True, exist_ok=True)
+    remote = {record.source_url: output / Path(record.path).relative_to(base.relative_to(root))
+              for record in records if "/remote/" in record.path}
+    for record in records:
+        source = root / record.path
+        body = source.read_bytes()
+        if hashlib.sha256(body).hexdigest() != record.sha256:
+            raise SourcesError(f"{record.path}: SHA-256 mismatch; restore the committed source")
+        target = output / source.relative_to(base)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            text = body.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise SourcesError(f"{record.path}: invalid UTF-8; restore the committed source") from error
+        for url, local in remote.items():
+            text = text.replace(url, Path(os.path.relpath(local, target.parent)).as_posix())
+        target.write_bytes(text.encode("utf-8"))
+    for suffix in SPEC_SUFFIXES:
+        source = output / f"openapi{suffix}"
+        if source.is_file():
+            return source
+    tree = pins.tree_root(root, canonical)
+    if tree is None:
+        raise SourcesError(f"{fixture}: no committed root document; run just lint-corpus-sources")
+    source = output / tree.path
+    if not source.is_file():
+        raise SourcesError(f"{fixture}: committed tree root is missing; run just lint-corpus-sources")
+    return source
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=None, help="repository root (defaults to this script's own)")
@@ -344,20 +420,28 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--fixture", action="append", default=[], metavar="NAME")
         command.add_argument("--from", dest="source", type=Path, default=None, metavar="DIR",
                              help="reuse a completed scripts/fetch-corpus.sh fetch in DIR")
+    command = commands.add_parser("prepare", help="stage committed sources for offline generation")
+    command.add_argument("--fixture", required=True)
+    command.add_argument("--output", required=True, type=Path)
     args = parser.parse_args(argv)
     root = (args.root or default_root()).resolve()
     try:
         if args.command == "check":
             check(root)
+        elif args.command == "prepare":
+            print(prepare(root, args.fixture, args.output.resolve()))
         elif args.command == "vendor":
             refetch(root, args.fixture, args.source, write=True)
             check(root)
         else:
             drifted = refetch(root, args.fixture, args.source, write=False)
             if drifted:
-                print("corpus-sources: upstream no longer serves the committed bytes:", file=sys.stderr)
+                print("corpus-sources: upstream no longer serves the committed bytes; restore the pinned bytes or review a new immutable pin and re-vendor the affected rows:", file=sys.stderr)
                 print("\n".join(f"  {line}" for line in drifted), file=sys.stderr)
                 return 1
+    except (OSError, UnicodeError) as error:
+        print(f"corpus-sources: {error}; restore the input file and run just lint-corpus-sources", file=sys.stderr)
+        return 1
     except (SourcesError, pins.PinError) as error:
         print(f"corpus-sources: {error}", file=sys.stderr)
         return 1

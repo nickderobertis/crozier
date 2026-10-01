@@ -80,8 +80,7 @@ while IFS=$'\t' read -r name url ref _; do
   # A cached spec is only reusable when it already carries this row's recorded
   # remote-`$ref` pins. Neither a pre-change unpinned cache nor one written under
   # a superseded pin may mask the current manifest, so either falls through to a
-  # real fetch. (CI is unaffected: `just test-corpus-match` and `fern-goldens
-  # generate` both fetch unconditionally.)
+  # real fetch. Routine CI uses committed copies; Fern rebuilds fetch explicitly.
   if [ "$if_missing" -eq 1 ] && [ -n "$tree_root" ] && [ -s "$cached" ] &&
     corpus_tree_verify "$name" "$dest_root/$name"; then
     source_path="$cached"

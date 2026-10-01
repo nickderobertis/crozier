@@ -1,3 +1,4 @@
+# llmlint: ignore-file[new_code_lands_in_a_project] crozier uses Cargo and just rather than Nx; this boundary suite belongs to test-corpus-sources in the deterministic check.
 """Boundary coverage for the committed corpus sources.
 
 Every registered `tests/fixtures/CORPUS.md` row's source document is committed
@@ -29,7 +30,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 SCRIPT = REPO / "scripts" / "corpus_sources.py"
 sys.path.insert(0, str(REPO / "scripts"))
-import corpus_sources  # noqa: E402
+import corpus_sources  # noqa: E402 - the production scripts directory must be on sys.path first
 
 COPIED_SCRIPTS = (
     "corpus-lib.sh",
@@ -95,6 +96,69 @@ class TheCommittedTreeHolds(unittest.TestCase):
         self.assertEqual(
             [], [row.name for row in corpus_sources.corpus_rows(REPO) if row.decision != "committed"]
         )
+
+    def test_prepared_remote_references_use_committed_files_without_changing_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            staged = Path(directory)
+            completed = run(REPO, "prepare", "--fixture", "helios-verifiable-api",
+                            "--output", str(staged))
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            source = Path(completed.stdout.strip())
+            self.assertNotIn("https://raw.githubusercontent.com", source.read_text())
+            self.assertTrue(list((staged / "remote").rglob("*.yaml")))
+            self.assertEqual(0, run(REPO, "check").returncode)
+
+    def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            result = subprocess.run(
+                ["bash", str(REPO / "scripts/fetch-corpus.sh"), "--dry-run", directory],
+                cwd=REPO, capture_output=True, text=True,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
+            self.assertEqual([(row.name, row.url) for row in corpus_sources.corpus_rows(REPO)], fetched_rows)
+
+    def test_offline_recipe_failure_restores_the_original_cache(self) -> None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("offline_cache_recovery", REPO / "tests/corpus_offline_test.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if getattr(module.OfflineCorpusRecipes, "__unittest_skip__", False):
+            self.skipTest(module.OfflineCorpusRecipes.__unittest_skip_why__)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / ".local/corpus"
+            cache.mkdir(parents=True)
+            marker = cache / "original.txt"
+            marker.write_text("original cached bytes")
+            (root / "justfile").write_text(
+                "test-corpus-match:\n    mkdir -p .local/corpus/generated\n    false\n\n"
+                "surface-census:\n    true\n"
+            )
+            tests = root / "tests"
+            tests.mkdir()
+            script = tests / "corpus_offline_test.py"
+            shutil.copy2(REPO / "tests/corpus_offline_test.py", script)
+            completed = subprocess.run(
+                [sys.executable, str(script)], cwd=root, capture_output=True, text=True,
+            )
+            self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
+            self.assertNotIn("Directory not empty", completed.stderr)
+            self.assertEqual("original cached bytes", marker.read_text())
+            self.assertFalse((cache / "generated").exists())
+
+    def test_prepare_rejects_unsafe_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            completed = run(REPO, "prepare", "--fixture", "../exhaustive", "--output", directory)
+            self.assertEqual(1, completed.returncode)
+            self.assertIn("unsafe fixture name", completed.stderr)
+
+    def test_prepare_refuses_a_missing_source_with_recovery_guidance(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            completed = run(REPO, "prepare", "--fixture", "no-such-corpus",
+                            "--output", directory)
+            self.assertEqual(1, completed.returncode)
+            self.assertIn("just lint-corpus-sources", completed.stderr)
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -164,6 +228,24 @@ class SyntheticRoot(unittest.TestCase):
     def audit(self, *args: str) -> subprocess.CompletedProcess[str]:
         return run(self.root, "audit", *args, CROZIER_CORPUS_PIN_ORIGIN=self.origin)
 
+    def test_prepare_rejects_malformed_aliases(self) -> None:
+        self.assertEqual(0, self.vendor().returncode)
+        (self.fixtures / "corpus-aliases.tsv").write_text("broken-row\n", encoding="utf-8")
+        completed = run(self.root, "prepare", "--fixture", "plain",
+                        "--output", str(self.root / "staged"))
+        self.assertEqual(1, completed.returncode)
+        self.assertIn("invalid alias", completed.stderr)
+        self.assertNotIn("Traceback", completed.stderr)
+
+    def test_prepare_reports_missing_bytes_without_a_traceback(self) -> None:
+        self.assertEqual(0, self.vendor().returncode)
+        self.committed("plain/openapi.json").unlink()
+        completed = run(self.root, "prepare", "--fixture", "plain",
+                        "--output", str(self.root / "staged"))
+        self.assertEqual(1, completed.returncode)
+        self.assertIn("just lint-corpus-sources", completed.stderr)
+        self.assertNotIn("Traceback", completed.stderr)
+
     def committed(self, relative: str) -> Path:
         return self.fixtures / "corpus-sources" / relative
 
@@ -201,6 +283,21 @@ class TheRebuildToolingFetches(SyntheticRoot):
         completed = self.audit("--fixture", "plain")
         self.assert_refused(completed, "tests/fixtures/corpus-sources/plain/openapi.json")
         self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes(), "audit never writes")
+
+    def test_rebuild_can_reuse_a_completed_fetch(self) -> None:
+        self.assertEqual(0, self.vendor().returncode)
+        fetched = self.root / "fetched"
+        fetched.mkdir()
+        result = subprocess.run(
+            ["bash", str(self.root / "scripts/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
+            cwd=self.root, capture_output=True, text=True,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        requests = len(self.server.requests)
+        self.assertEqual(0, self.vendor("--fixture", "plain", "--from", str(fetched)).returncode)
+        self.assertEqual(0, self.audit("--fixture", "plain", "--from", str(fetched)).returncode)
+        self.assertEqual(requests, len(self.server.requests), "completed plain fetch was not reused")
+        self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes())
 
     def test_vendor_refuses_a_pinned_document_whose_bytes_moved(self) -> None:
         self.server.documents[f"/example/schemas/{PINNED_SHA}/block.yaml"] = BLOCK + b"# moved\n"
@@ -273,6 +370,62 @@ class TheCheckStillDiscriminates(SyntheticRoot):
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
         pins.write_text(pins.read_text(encoding="utf-8").replace(hashlib.sha256(BLOCK).hexdigest(), "0" * 64), encoding="utf-8")
         self.assert_refused(self.check(), "corpus-remote-ref-pins.tsv pins " + "0" * 64)
+
+    def test_manifest_structure_refuses_each_malformed_record(self) -> None:
+        manifest = self.fixtures / "corpus-sources.tsv"
+        original = manifest.read_text()
+        rows = [line for line in original.splitlines() if line and not line.startswith("#")]
+        cases = (
+            (rows[0] + "\textra\n", "expected 4 tab-separated cells"),
+            ("\n".join(reversed(rows)) + "\n", "records must sort"),
+            ("\n".join(sorted(rows + [rows[0]])) + "\n", "recorded twice"),
+            (original.replace(self.origin + "/specs/plain.json", self.origin + "/other.json"),
+             "records source"),
+        )
+        for body, diagnostic in cases:
+            with self.subTest(diagnostic=diagnostic):
+                manifest.write_text(body)
+                self.assert_refused(self.check(), diagnostic)
+        manifest.write_text(original)
+        self.assertEqual(0, self.check().returncode)
+
+    def test_prepare_refuses_duplicate_aliases_and_nonempty_staging(self) -> None:
+        aliases = self.fixtures / "corpus-aliases.tsv"
+        original = aliases.read_text()
+        aliases.write_text("plain\tone\nplain\ttwo\n")
+        completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(self.root / "staged"))
+        self.assert_refused(completed, "duplicate alias")
+        aliases.write_text(original)
+        staging = self.root / "staged"
+        staging.mkdir()
+        (staging / "keep.txt").write_text("keep")
+        completed = run(self.root, "prepare", "--fixture", "plain", "--output", str(staging))
+        self.assert_refused(completed, "use a fresh directory")
+        self.assertEqual("keep", (staging / "keep.txt").read_text())
+
+    def test_unsafe_registered_names_are_refused_before_rebuild(self) -> None:
+        corpus = self.fixtures / "CORPUS.md"
+        corpus.write_text(corpus.read_text().replace("`plain`", "`../outside`"))
+        self.assert_refused(self.vendor(), "unsafe corpus name")
+        self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes())
+
+    def test_prepare_refuses_forged_remote_provenance(self) -> None:
+        manifest = self.fixtures / "corpus-sources.tsv"
+        original = manifest.read_text()
+        for url in ("", "https://wrong.example/schema.yaml"):
+            with self.subTest(url=url):
+                lines = original.splitlines()
+                for index, line in enumerate(lines):
+                    if "\t" + PINNED_URL + "\t" in line:
+                        cells = line.split("\t")
+                        cells[2] = url
+                        lines[index] = "\t".join(cells)
+                manifest.write_text("\n".join(lines) + "\n")
+                completed = run(self.root, "prepare", "--fixture", "remote",
+                                "--output", str(self.root / "stage"))
+                self.assert_refused(completed, "provenance disagrees")
+                self.assertFalse((self.root / "stage").exists())
+        manifest.write_text(original)
 
     def test_a_malformed_digest_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"

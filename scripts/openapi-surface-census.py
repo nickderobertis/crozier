@@ -15,8 +15,8 @@ Three rules make the number honest; none of them a `grep` obeys.
   *declares* a feature; the emitted Python is not. A census that read an
   `expected/` tree would be measuring the answer instead of the question, so the
   only files opened here are the vendored `tests/fixtures/<name>/openapi.*`
-  documents and the `link-ok` documents `scripts/fetch-corpus.sh` fetches into
-  `.local/corpus/<name>/` from `tests/fixtures/CORPUS.md`.
+  documents and the committed documents under `tests/fixtures/corpus-sources/`
+  registered in `tests/fixtures/CORPUS.md`.
 * **The OpenAPI object model, not the text.** A text match scores a `trace`
   operation off a path parameter named `trace`, a `name` field off a schema
   property called `name`, and a `type` field off a property called `type` — all
@@ -25,12 +25,12 @@ Three rules make the number honest; none of them a `grep` obeys.
   templates, and the keys of a Responses Object are status codes, so none of them
   can be mistaken for a declared field. Free-form values (`example`, `examples`,
   `default`, `enum`, `const`) are never descended into for the same reason.
-* **An unfetched source is a hard failure, not a silent skip.** A `link-ok` row
-  whose spec has not been fetched would otherwise report as declaring nothing,
-  and 204 of the 236 registered sources are `link-ok` (a split
+* **A missing source is a hard failure, not a silent skip.** A missing committed
+  document would otherwise report as declaring nothing,
+  and 204 of the 236 registered sources live in `corpus-sources/` (a split
   `tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
-  `--allow-unfetched` to downgrade that to a warning, or `--vendored-only` to
-  census the offline half on purpose.
+  `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
+  census only the original fixture directories on purpose.
 
 The selector grammar, the region boundaries and how a census result becomes a
 classified row are `docs/openapi-surface-coverage.md`; they are not restated
@@ -3784,7 +3784,7 @@ class Source:
 
     fixture: str
     origin: str  # "vendored" or "corpus"
-    path: Path | None  # None when a link-ok source has not been fetched
+    path: Path | None  # None when a source file is missing
 
 
 def corpus_aliases(fixtures_root: Path) -> dict[str, str]:
@@ -3802,7 +3802,7 @@ def corpus_aliases(fixtures_root: Path) -> dict[str, str]:
 
 
 def manifest_rows(manifest: Path) -> Iterator[str]:
-    """The canonical numbered `link-ok` names of tests/fixtures/CORPUS.md.
+    """The canonical numbered registered names of tests/fixtures/CORPUS.md.
 
     Only numbered rows of the first table are canonical; CORPUS.md carries prose
     status tables after it whose cells would otherwise read as fixture names.
@@ -3841,7 +3841,7 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
 
 
 def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bool) -> list[Source]:
-    """Every registered golden source: the vendored half and the link-ok half."""
+    """Every registered golden source: original fixtures and committed corpus files."""
     sources: list[Source] = []
     vendored: dict[str, Source] = {}
     for directory in sorted(p for p in fixtures_root.iterdir() if p.is_dir()):
@@ -3889,12 +3889,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="report only this selector (repeatable); an undeclared one is reported as such",
     )
     parser.add_argument(
-        "--vendored-only", action="store_true",
-        help="census the vendored tests/fixtures sources alone (needs no network)",
+        "--original-fixtures-only", "--vendored-only", dest="original_fixtures_only", action="store_true",
+        help="census only sources stored directly in tests/fixtures/<name> (legacy alias: --vendored-only)",
     )
     parser.add_argument(
-        "--allow-unfetched", action="store_true",
-        help="warn instead of failing when a link-ok source has not been fetched",
+        "--allow-missing", "--allow-unfetched", dest="allow_missing", action="store_true",
+        help="warn instead of failing for missing source files (legacy alias: --allow-unfetched)",
     )
     parser.add_argument("--json", action="store_true", help="emit the census as JSON")
     parser.add_argument("--fixtures-root", type=Path, metavar="DIR")
@@ -3930,7 +3930,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     repo_root = Path(__file__).resolve().parent.parent
     fixtures_root = args.fixtures_root or repo_root / "tests" / "fixtures"
-    corpus_root = args.corpus_root or repo_root / ".local" / "corpus"
+    corpus_root = args.corpus_root or repo_root / "tests" / "fixtures" / "corpus-sources"
     if not fixtures_root.is_dir():
         print(
             f"openapi-surface-census: missing fixtures root {fixtures_root} — run from "
@@ -3945,7 +3945,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"openapi-surface-census: {problem}", file=sys.stderr)
             return 1
 
-    sources = registered_sources(fixtures_root, corpus_root, args.vendored_only)
+    sources = registered_sources(fixtures_root, corpus_root, args.original_fixtures_only)
     if args.fixture:
         wanted = set(args.fixture)
         known = {source.fixture for source in sources}
@@ -3954,24 +3954,24 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"openapi-surface-census: no registered source is named {unknown[0]!r}. "
                 "The registered sources are the tests/fixtures/<name>/openapi.* documents "
-                "and the link-ok rows of tests/fixtures/CORPUS.md.",
+                "and the committed rows of tests/fixtures/CORPUS.md.",
                 file=sys.stderr,
             )
             return 1
         sources = [source for source in sources if source.fixture in wanted]
 
-    unfetched = [source.fixture for source in sources if source.path is None]
-    if unfetched and not args.allow_unfetched:
+    missing = [source.fixture for source in sources if source.path is None]
+    if missing and not args.allow_missing:
         print(
-            f"openapi-surface-census: {len(unfetched)} registered source(s) have not been "
-            f"fetched, starting with {unfetched[0]!r}, so the census would report them as "
-            "declaring nothing. Run 'scripts/fetch-corpus.sh' (or 'just surface-census', "
-            "which fetches first), or pass --vendored-only to census the offline half.",
+            f"openapi-surface-census: {len(missing)} registered source file(s) are missing, "
+            f"starting with {missing[0]!r}, so the census would report them as "
+            "declaring nothing. Run 'just lint-corpus-sources' to diagnose missing "
+            "committed files, or pass --original-fixtures-only to select the original fixtures.",
             file=sys.stderr,
         )
         return 1
-    for fixture in unfetched:
-        print(f"openapi-surface-census: warning: {fixture} is unfetched", file=sys.stderr)
+    for fixture in missing:
+        print(f"openapi-surface-census: warning: {fixture} is missing", file=sys.stderr)
 
     rows: dict[tuple[str, str], int] = {}
     censused: list[Source] = []
@@ -4007,7 +4007,7 @@ def main(argv: list[str] | None = None) -> int:
                     "origin": source.origin,
                     # POSIX-style inside the repo so the report reads the same on
                     # every platform of the release matrix; null when the source is
-                    # a link-ok row nothing has fetched.
+                    # missing from the selected source directories.
                     "path": path_of(source, repo_root),
                 }
                 for source in sources
@@ -4028,11 +4028,11 @@ def main(argv: list[str] | None = None) -> int:
         if rendered:
             print(rendered)
 
-    vendored = sum(1 for source in censused if source.origin == "vendored")
+    original = sum(1 for source in censused if source.origin == "vendored")
     print(
         f"openapi-surface-census: {len({selector for selector, _ in rows})} selector(s), "
         f"{sum(rows.values())} declaration site(s) across {len(censused)} source(s) "
-        f"({vendored} vendored, {len(censused) - vendored} fetched)",
+        f"({original} original fixtures, {len(censused) - original} corpus sources)",
         file=sys.stderr,
     )
     return 0

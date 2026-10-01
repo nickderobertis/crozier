@@ -384,11 +384,11 @@ unidentified older Fern output. The items below record how each shape generates;
 paths the corpus does not yet exercise are called out inline.
 
 The first **real-world** corpus, `apideck.com-crm` (issue #77), matches
-byte-for-byte too. As a `link-ok` entry its OpenAPI spec is
-fetched, not vendored, so its `apideck_crm_matches_fern_output` test resolves the
-spec from `.local/corpus` (`corpus_spec`), skips when it is absent (the offline
-`check` gate), and enforces the match under `CROZIER_REQUIRE_CORPUS` in the CI
-live-e2e leg (`just test-corpus-match`). Reaching it exercised, on a messy
+byte-for-byte too. Its source and referenced documents are committed under
+`tests/fixtures/corpus-sources/`, with every file's digest recorded and checked.
+Its `apideck_crm_matches_fern_output` test reads those copies, and
+`just test-corpus-offline` proves the byte-match and census recipes run with
+sockets denied and no ignored corpus cache. Reaching it exercised, on a messy
 real-world document, the `$ref` parameter/response resolution, Fern-matching method
 naming, ubiquitous-header promotion, inline-schema hoisting, and worked-example
 value synthesis (spec `example`s, shown only for a plain-scalar required-and-not-
@@ -1649,8 +1649,8 @@ reference to reach:
   union's own annotation accepts, not the `BlockTag.EARLIEST` member a
   single-enum argument would take.
 
-The row still depends on a **third-party fetch at generation time**, but no
-longer on a mutable one. Upstream writes those seven references against
+The root and all seven referenced documents are committed; only a deliberate
+Fern rebuild or source audit fetches their pinned URLs. Upstream writes those seven references against
 `refs/heads/main`, so the document served today and the document served tomorrow
 are not the same document.
 [`tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)

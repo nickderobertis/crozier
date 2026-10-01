@@ -20,6 +20,11 @@ Vendored runtime (shipped and redistributed as product):
     tests. Project/package names, the SDK version, and worked examples use @@...@@
     placeholders that the emitter fills in. See assets/README.md.
 
+Registered corpus source documents and all their referenced files are committed
+under tests/fixtures/corpus-sources/. Their per-file pinned provenance and SHA-256
+are recorded in tests/fixtures/corpus-sources.tsv. The per-document licence
+attributions below apply to these sources as well as their generated fixtures.
+
 Test fixtures (attribution and statement of changes, per Apache-2.0 §4(b), §4(c)):
 
   * Source: fern-api/fern, commit 3a471b03d4778f291849adc03bacfcd40340fc26.

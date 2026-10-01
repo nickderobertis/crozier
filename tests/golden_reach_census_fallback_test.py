@@ -49,10 +49,10 @@ search = _load("golden_reach_search", REPO / "scripts" / "golden-reach-search.py
 
 
 def registered_yaml_sources() -> list[Path]:
-    """Every registered source written in YAML: the vendored half, and the fetched `link-ok` half."""
+    """Every committed registered YAML source, including multi-document trees."""
     vendored = sorted(REPO.glob("tests/fixtures/*/openapi.y*ml"))
-    fetched = sorted((REPO / ".local" / "corpus").glob("*/openapi.y*ml"))
-    return vendored + fetched
+    committed = sorted((REPO / "tests" / "fixtures" / "corpus-sources").rglob("*.y*ml"))
+    return vendored + committed
 
 
 def sample_document(url: str, sha256: str) -> Path:
@@ -79,7 +79,7 @@ class FallbackAgreementTests(unittest.TestCase):
     def test_both_loaders_count_the_same_selectors_wherever_both_read(self) -> None:
         sources = registered_yaml_sources()
         self.assertTrue(sources, "no registered YAML source to compare the loaders on")
-        if os.environ.get("CROZIER_REQUIRE_CORPUS") and not (REPO / ".local" / "corpus").is_dir():
+        if os.environ.get("CROZIER_REQUIRE_CORPUS") and not (REPO / "tests" / "fixtures" / "corpus-sources").is_dir():
             self.fail("the link-ok corpus is unfetched; run scripts/fetch-corpus.sh")
         for path in sources:
             with self.subTest(source=str(path.relative_to(REPO))):

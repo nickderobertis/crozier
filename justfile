@@ -61,20 +61,54 @@ test-runtime:
 test-live-e2e *args:
     ./scripts/live-e2e.sh {{args}}
 
-# Enforce the real-world corpus byte-match: fetch the `link-ok` corpus specs (not
-# vendored; see tests/fixtures/CORPUS.md) and byte-compare crozier's output for the
+# Enforce the real-world corpus byte-match: validate the committed corpus sources and byte-compare crozier's output for the
 # vendored Fern goldens and require every registered source to generate.
-# SEPARATE from `check` because it needs network to
-# fetch the specs; CI runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
-# missing spec from a skip into a hard failure so the leg can't no-op. One
-# `cargo test` invocation per corpus keeps a fetch/spec problem attributable to
+# CI also runs it in the live-e2e leg. `CROZIER_REQUIRE_CORPUS` turns a
+# missing committed source from a skip into a hard failure so the leg cannot no-op.
+# One `cargo test` invocation per corpus keeps a source problem attributable to
 # its API rather than hidden in a shared filter. The list below is held to the
 # registered corpora in both directions by `tests/e2e.rs`'s
 # `every_registered_corpus_is_wired_into_the_gate` (part of `check`): a registered
 # corpus whose test is missing here fails it, and so does a line naming a test no
 # registered corpus owns, so a renamed test cannot drop a corpus silently.
 test-corpus-match:
-    ./scripts/fetch-corpus.sh
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e query_parameters_matches_fern_output_byte_for_byte
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_matches_fern_output_byte_for_byte
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e crozier_sdk_extensions_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e auth_schemes_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e inline_request_response_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e cookie_parameters_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e form_bodies_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e discriminated_unions_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e schema_constraints_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e integer_enums_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e servers_webhooks_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e basic_auth_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e oauth_client_credentials_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e inline_array_request_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e writeonly_fields_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e digit_leading_property_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e operation_id_non_identifier_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bracketed_property_names_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e missing_operation_id_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e error_responses_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e tag_based_grouping_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e enum_query_param_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e sse_streaming_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e enum_name_sanitization_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e enum_receiver_collision_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e client_class_name_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e pydantic_extra_fields_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e recursive_types_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e nested_core_imports_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e malformed_property_schema_matches_fern_output
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e client_class_name_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e audience_filter_strict_flat_matches_fern
+    CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e exhaustive_package_name_flat_matches_fern
+    python3 scripts/corpus_sources.py check
     "$(./scripts/census-python.sh)" tests/corpus_surface_census_test.py
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e apideck_crm_matches_fern_output
     CROZIER_REQUIRE_CORPUS=1 cargo test --locked --test e2e bunq_matches_fern_output
@@ -291,9 +325,8 @@ fixtures-refresh *args:
     ./scripts/fixtures-refresh.sh {{args}}
 
 
-# Fetch the link-only real-world corpus source repositories into .local/corpus
-# (or a caller-provided destination). Golden generation remains explicit because
-# licensing must be reviewed per spec before anything is committed.
+# Rebuild-only: fetch pinned corpus sources into .local/corpus or a supplied
+# destination. Routine checks use committed copies; this is Fern maintenance.
 fetch-corpus *args:
     ./scripts/fetch-corpus.sh {{args}}
 
@@ -350,10 +383,10 @@ test-fixtures-coverage:
 # read as what it declares. Then the witness-search re-census CLI over temporary
 # ledgers, a loopback GitHub and Sourcegraph, and the same pinned parser.
 # Outside `check` — it needs the pinned ruamel.yaml (read from each script's own
-# inline metadata) and the network for the link-ok corpus and the sample; CI's
+# inline metadata) and the network for the parser-only sample; CI's
 # live-e2e leg runs it.
 test-census-fallback:
-    ./scripts/fetch-corpus.sh
+    python3 scripts/corpus_sources.py check
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_census_fallback_test.py
     CROZIER_REQUIRE_CORPUS=1 uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/golden-reach-search.py)" python3 tests/golden_reach_test.py
     uv run --no-project --with "$(sed -n 's/^# dependencies = \["\(.*\)"\]$/\1/p' scripts/witness-search-recensus.py)" python3 tests/witness_search_recensus_test.py
@@ -429,9 +462,9 @@ fixtures-coverage *args:
 # (docs/openapi-surface/golden-reach-sites.tsv) the row's own witnesses execute
 # in the golden-only tier, one instrumented run per golden test. Writes the
 # ranked ledger (docs/openapi-surface/golden-reach.tsv) and every golden row's
-# reach cell. Outside `check`: needs network and runs the corpus instrumented.
+# reach cell. Outside `check`: runs the corpus instrumented.
 golden-reach:
-    ./scripts/fetch-corpus.sh
+    python3 scripts/corpus_sources.py check
     python3 scripts/golden-reach.py measure
     "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py --json > .local/golden-reach/census.json
     python3 scripts/golden-reach.py report --write
@@ -455,11 +488,9 @@ handwritten-reach *args:
 # to docs/openapi-surface-coverage.md, and the only measurement of what the
 # corpus has never seen. Walks each source document's object model (never its
 # generated expected/ tree, never a text match) and prints one row per
-# (selector, fixture, count). Outside `check`: fetches the link-ok half first,
-# so it needs network. The script's own flags pass straight through, e.g.
+# (selector, fixture, count). Reads the committed source copies. The script's own flags pass straight through, e.g.
 # `just surface-census --selector pathItem.trace --json`.
 surface-census *args:
-    ./scripts/fetch-corpus.sh
     "$(./scripts/census-python.sh)" ./scripts/openapi-surface-census.py "$@"
 
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
@@ -519,6 +550,11 @@ lint-corpus-sources:
 # through the real fetch against a loopback server. Part of `check`.
 test-corpus-sources:
     python3 tests/corpus_sources_test.py
+
+# Linux CI proof: run the real byte-match and census recipes with sockets denied
+# and the ignored corpus cache absent. Does not fetch a specification.
+test-corpus-offline:
+    python3 tests/corpus_offline_test.py
 
 # Rebuild-only: `vendor --fixture NAME` fetches a row from its pinned URL and
 # commits its source (run it when a row is added or its pin moves); `audit`

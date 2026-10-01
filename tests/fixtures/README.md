@@ -20,8 +20,8 @@ These fixtures are the golden target crozier is verified against. They are
 
 Each `<api>/` directory holds:
 
-- `openapi.yml` for vendored fixtures, or a numbered `CORPUS.md` URL whose source
-  is fetched to the ignored `.local/corpus` cache. Fern's own *definition* files
+- `openapi.yml` for vendored fixtures, or a numbered `CORPUS.md` row whose source
+  is committed under `corpus-sources/` and recorded in `corpus-sources.tsv`. Fern's own *definition* files
   are intentionally excluded — crozier reads only OpenAPI.
 - `expected/` — Fern's Python SDK output for that spec, **comment-stripped** (a
   string-safe removal of `#` comments, the only change from Fern's output). The

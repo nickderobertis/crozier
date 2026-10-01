@@ -364,23 +364,21 @@ class RecipeEndToEndTests(unittest.TestCase):
         self.assertIn("ruff is not on PATH", completed.stderr)
         self.assertIn("just bootstrap", completed.stderr)
 
-    def test_an_unfetched_corpus_is_a_hard_failure_not_a_silent_skip(self) -> None:
-        """The whole point of CROZIER_REQUIRE_CORPUS: a skip would shrink the denominator."""
-        cached = REPO / ".local" / "corpus" / "frankfurter"
-        if not cached.is_dir():
-            self.skipTest("run scripts/fetch-corpus.sh first: no frankfurter spec cached")
-        hidden = cached.with_name("frankfurter.hidden-by-fixtures-coverage-test")
+    def test_a_missing_committed_corpus_is_a_hard_failure(self) -> None:
+        """The committed-source preflight refuses missing inputs before measurement."""
+        committed = REPO / "tests/fixtures/corpus-sources/frankfurter"
+        if not committed.is_dir():
+            self.fail("committed frankfurter source is missing")
+        hidden = committed.with_name("frankfurter.hidden-by-fixtures-coverage-test")
         self.assertFalse(hidden.exists(), f"stale {hidden} from an interrupted run")
-        cached.rename(hidden)
-        self.addCleanup(hidden.rename, cached)
+        committed.rename(hidden)
+        self.addCleanup(hidden.rename, committed)
 
         completed, _ = self.run_recipe(
             f"test(=frankfurter_matches_fern_output) or test(={JOURNEY}) or test(={UNIT})"
         )
         self.assertEqual(1, completed.returncode, completed.stdout + completed.stderr)
-        self.assertIn("golden-only tier failed", completed.stderr)
-        self.assertIn("CROZIER_REQUIRE_CORPUS", completed.stderr)
-        self.assertIn("just test-corpus-match", completed.stderr)
+        self.assertIn("recorded but missing", completed.stderr)
 
 
 class CfgTestSpanTests(unittest.TestCase):
