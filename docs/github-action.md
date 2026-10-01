@@ -337,8 +337,64 @@ config names. Each generator's `layout` and names must be ones the recipe can
 reproduce; it exits non-zero naming any it cannot, which the Action reports as
 could not check.
 
-**Blocking or not.** The job fails on a mismatch or a generator it could not
-check. To make that block merging, mark the `compare` job as a required status
-check in the branch's protection rules or rulesets. Leave it unrequired and it
-reports without blocking: the failed check and its step summary are still there
-to read.
+**Non-blocking.** As written, the workflow reports without blocking: the
+failed `compare` check and its step summary are there to read, and nothing
+requires them. To keep even the check green while it reports, add
+`continue-on-error: true` to the `nickderobertis/crozier@v0` step: a mismatch
+then marks that step failed and still passes the job.
+
+**Blocking.** Do not mark the example's `compare` job as a required status
+check as it stands. Its `paths:` filters skip the whole workflow on a pull
+request that changes no OpenAPI document or crozier config, and a required
+check whose workflow never ran never reports: it stays "Expected — Waiting for
+status to be reported" and the pull request cannot merge. For required use, run
+the workflow on every pull request — no `paths:` filters — and let a first job
+decide whether anything relevant changed. GitHub reports a job skipped by its
+`if:` as a success, so the required `compare` check passes on a pull request
+that touches none of those files and runs the comparison on one that does:
+
+```yaml
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.changed.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for changed OpenAPI documents or crozier configs
+        id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          relevant=true
+          # A base this checkout cannot name (a branch's first push) checks everything.
+          if git cat-file -e "$BASE^{commit}" 2>/dev/null &&
+            git diff --quiet "$BASE" HEAD -- \
+              ':(glob)openapi/**' ':(glob)**/openapi.yml' ':(glob)**/openapi.yaml' \
+              ':(glob)**/openapi.json' ':(glob)**/crozier.yml' ':(glob)**/crozier.yaml' \
+              ':(glob)**/.crozier.yml' ':(glob)**/.crozier.yaml'; then
+            relevant=false
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
+  compare:
+    needs: changes
+    if: ${{ needs.changes.outputs.relevant == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # The example's steps, unchanged.
+```
+
+Keep the pathspecs in step with your OpenAPI documents, as you would the
+`paths:` globs, then mark `compare` as a required status check in the branch's
+protection rules or rulesets.

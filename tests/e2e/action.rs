@@ -1481,3 +1481,131 @@ fn action_yml_wires_its_inputs_and_steps_through_the_real_scripts() {
     );
     assert_eq!(run.final_status, 3);
 }
+
+/// docs/github-action.md's setup for a required check: a workflow with no
+/// `paths:` filter whose `changes` job decides whether `compare` runs. Its
+/// change-detection step is run as documented — its `run:` under GitHub's
+/// bash, its `env:` evaluated for the event — over real repositories, so a
+/// pull request touching no OpenAPI document or crozier config skips `compare`
+/// (which GitHub reports as a passing check) and one touching either runs it.
+#[test]
+fn the_documented_required_check_runs_compare_only_when_specs_or_configs_change() {
+    let page = std::fs::read_to_string(repo_root().join("docs/github-action.md")).unwrap();
+    let block = page
+        .split("\n```yaml\n")
+        .skip(1)
+        .map(|rest| rest.split("```\n").next().unwrap())
+        .find(|block| block.contains("\n  changes:\n"))
+        .expect("docs/github-action.md gives a required-check workflow");
+    let workflow: serde_yaml_ng::Value = serde_yaml_ng::from_str(block).unwrap();
+
+    // Every pull request runs it: a paths filter would leave the check unreported.
+    for trigger in ["pull_request", "push"] {
+        assert!(
+            workflow["on"]
+                .get(trigger)
+                .is_some_and(|t| t.get("paths").is_none()),
+            "{trigger} must run with no paths: filter"
+        );
+    }
+    let jobs = &workflow["jobs"];
+    assert_eq!(jobs["compare"]["needs"].as_str(), Some("changes"));
+    assert_eq!(
+        jobs["compare"]["if"].as_str(),
+        Some("${{ needs.changes.outputs.relevant == 'true' }}")
+    );
+    assert_eq!(
+        jobs["changes"]["outputs"]["relevant"].as_str(),
+        Some("${{ steps.changed.outputs.relevant }}")
+    );
+    let steps = jobs["changes"]["steps"].as_sequence().unwrap();
+    assert_eq!(steps[0]["with"]["fetch-depth"].as_u64(), Some(0));
+    let step = steps
+        .iter()
+        .find(|step| step["id"].as_str() == Some("changed"))
+        .expect("a step with id `changed`");
+    let run = step["run"].as_str().unwrap();
+    let env = step["env"].as_mapping().unwrap();
+
+    // The step's `relevant` output for an event whose base commit is `base`.
+    let relevant = |repo: &Path, base: &str| -> String {
+        let output_file = repo.join(".git/github-output");
+        std::fs::write(&output_file, "").unwrap();
+        let mut command = Command::new(bash());
+        command
+            .args(["--noprofile", "--norc", "-eo", "pipefail", "-c", run])
+            .current_dir(repo)
+            .env("GITHUB_OUTPUT", &output_file);
+        for (key, value) in env {
+            let value = match value.as_str().unwrap() {
+                "${{ github.event.pull_request.base.sha || github.event.before }}" => base,
+                other => panic!("an expression this test does not model: {other}"),
+            };
+            command.env(key.as_str().unwrap(), value);
+        }
+        let out = command.output().unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let outputs = parse_outputs(&std::fs::read_to_string(&output_file).unwrap());
+        outputs["relevant"].clone()
+    };
+    let git = |repo: &Path, args: &[&str]| -> String {
+        let out = Command::new("git")
+            .args(args)
+            .current_dir(repo)
+            .env_remove("GIT_DIR")
+            .env_remove("GIT_WORK_TREE")
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", "/dev/null")
+            .env("GIT_AUTHOR_NAME", "Tester")
+            .env("GIT_AUTHOR_EMAIL", "tester@example.com")
+            .env("GIT_COMMITTER_NAME", "Tester")
+            .env("GIT_COMMITTER_EMAIL", "tester@example.com")
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        String::from_utf8_lossy(&out.stdout).trim().to_string()
+    };
+
+    for (changed, expected) in [
+        ("README.md", "false"),
+        ("src/app.py", "false"),
+        ("openapi.yml", "true"),
+        ("api/v2/openapi.json", "true"),
+        ("openapi/billing.yaml", "true"),
+        ("crozier.yml", "true"),
+        ("sdks/python/.crozier.yaml", "true"),
+    ] {
+        let repo = layout(&[
+            ("README.md", "a project\n"),
+            ("crozier.yml", "spec: ./openapi.yml\n"),
+        ]);
+        git(repo.path(), &["add", "-A"]);
+        git(repo.path(), &["commit", "-qm", "base"]);
+        let base = git(repo.path(), &["rev-parse", "HEAD"]);
+        write(repo.path(), changed, "changed\n");
+        git(repo.path(), &["add", "-A"]);
+        git(repo.path(), &["commit", "-qm", "change"]);
+        assert_eq!(
+            relevant(repo.path(), &base),
+            expected,
+            "a change to {changed} must{} run compare",
+            if expected == "true" { "" } else { " not" }
+        );
+    }
+
+    // A base the checkout cannot name — a branch's first push reports
+    // all zeros — checks everything rather than skip.
+    let repo = layout(&[("README.md", "a project\n")]);
+    git(repo.path(), &["add", "-A"]);
+    git(repo.path(), &["commit", "-qm", "only"]);
+    assert_eq!(relevant(repo.path(), &"0".repeat(40)), "true");
+    assert_eq!(relevant(repo.path(), ""), "true");
+}
