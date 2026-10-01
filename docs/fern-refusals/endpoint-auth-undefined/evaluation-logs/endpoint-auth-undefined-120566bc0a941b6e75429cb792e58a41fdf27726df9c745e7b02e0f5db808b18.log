@@ -1,0 +1,14 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+source: https://raw.githubusercontent.com/dx-zone/certbot-rpm-mtls-repo/2d45e80caa83bcb6efb4c9768adef757930940ef/api/openapi.json
+digest: 120566bc0a941b6e75429cb792e58a41fdf27726df9c745e7b02e0f5db808b18
+command: [PosixPath('<scratch>/baseline-crozier'), '--no-config', 'generate', 'python', '--spec', PosixPath('<scratch>/population/120566bc0a941b6e75429cb792e58a41fdf27726df9c745e7b02e0f5db808b18.json'), '--output', PosixPath('<scratch>/population-sdks/endpoint-auth-undefined/120566bc0a941b6e75429cb792e58a41fdf27726df9c745e7b02e0f5db808b18'), '--package-name', 'fern']
+exit: 0
+generated 41 files into <scratch>/population-sdks/endpoint-auth-undefined/120566bc0a941b6e75429cb792e58a41fdf27726df9c745e7b02e0f5db808b18
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-c', 'import fern; import fern.client; print("package and client import: OK")']
+exit: 0
+package and client import: OK
+command: [PosixPath('<scratch>/sdk-env-312/bin/python'), '-m', 'mypy', '.']
+exit: 1
+src/fern/raw_client.py:285: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+src/fern/raw_client.py:566: error: Argument "type_" to "parse_obj_as" has incompatible type "<typing special form>"; expected "type[Never]"  [arg-type]
+Found 2 errors in 1 file (checked 34 source files)

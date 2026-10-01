@@ -1,0 +1,11 @@
+baseline commit: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b
+declared security: mtls client certificate
+client constructor: (*, base_url: Optional[str] = None, environment: fern.environment.FernApiEnvironment = <FernApiEnvironment.DEFAULT: 'https://api.localhost'>, headers: Optional[Dict[str, str]] = None, timeout: Optional[float] = None, max_retries: Optional[int] = None, stream_reconnection_enabled: Optional[bool] = None, max_stream_reconnection_attempts: Optional[int] = None, follow_redirects: Optional[bool] = True, httpx_client: Optional[httpx.Client] = None, logging: Union[fern.core.logging.LogConfig, fern.core.logging.Logger, NoneType] = None)
+method: GET
+URL: https://example.com/api/tags
+cookie: None
+response fixture: {'models': [{'name': 'mistral', 'modified_at': '2025-01-01T00:00:00Z'}]}
+parsed: TagsResponse(models=[ModelTag(name='mistral', modified_at='2025-01-01T00:00:00Z')])
+TLS is bypassed by MockTransport; certificate transmission is not established by this trace.
+
+exit: 0

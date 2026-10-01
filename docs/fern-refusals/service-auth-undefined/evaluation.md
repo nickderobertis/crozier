@@ -28,11 +28,16 @@ the class cannot remain `generate`:
 | [benboakye/secure-file-storage-system, `5978c16b64…`](evaluation-logs/service-auth-undefined-5978c16b642ab44cd27129784dba5900366fd6144ed04c6ce1aa963cdb3616ce.log) | succeeds | 22 | Required `mutualTLS` client certificate |
 
 These logs record each immutable source URL and digest, generation, import and
-the complete mypy diagnostics under each SDK's own configuration. Their wire
-journeys were not run after type-checking failed: no claim about their TLS
-handshake or response parsing is made. In particular a MockTransport cannot
-establish whether a client certificate is sent. Their nonzero mypy counts are
-already enough to require `refuse` under the evaluation rule.
+the complete mypy diagnostics under each SDK's own configuration. The wire
+traces also exercise [WatchTrace's POST /v1/jobs/pull](evaluation-logs/3e0c413424c67c2b58e385e6a6dbbffddcefbbf811b2e28003e7a0926f60d600.wire.log),
+[Ollama's GET /api/tags](evaluation-logs/5487bf4381fc761ccbf1d955abeb0e4133dd5af6ffc0b9d8b1268038eef0fc7a.wire.log)
+and [the key broker's GET /v1/status](evaluation-logs/5978c16b642ab44cd27129784dba5900366fd6144ed04c6ce1aa963cdb3616ce.wire.log).
+They preserve those declared paths and query names, and parse respectively a
+declared 204 as `None`, a model list with its datetime, and a status model with
+its key identifiers and hardware-backed flag. MockTransport bypasses TLS, so
+these traces cannot establish client-certificate transmission. No claim of
+security conformance is made. Their nonzero mypy counts already require
+`refuse` under the evaluation rule.
 
 The detector checks document-wide nonempty security on a service with actual
 operations when no supported authentication scheme was imported. An unused
@@ -47,6 +52,7 @@ baseline writes 36 files instead of refusing. The finished detector's same
 journey also removes the security requirement and proves both modes recover
 with byte-identical SDKs.
 
-Population strict-mode measurement is in progress; `population_strict` records
-zero completed measurements out of the 26 registered documents until that run
-is recorded.
+[All 26 population documents](evaluation-logs/population-refusals.jsonl) were
+retrieved at their recorded digests and refused in both modes: exit 1, zero
+output files, one stderr line, and `fern-strict` named in strict mode.
+`population_strict` is `26/26` and all 26 strict exits are recorded.

@@ -39,6 +39,20 @@ pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
             return refusal(path, strict, "service-auth-undefined", &element);
         }
     }
+    for (route, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if let Some(requirements) = &op.security {
+                if !requirements.is_empty() {
+                    let scheme = requirements.iter().flat_map(|r| r.keys()).next();
+                    let element = scheme.map_or_else(
+                        || format!("{method} {route} security/0"),
+                        |s| format!("{method} {route} security/{s}"),
+                    );
+                    return refusal(path, strict, "endpoint-auth-undefined", &element);
+                }
+            }
+        }
+    }
     Ok(())
 }
 
@@ -96,5 +110,18 @@ mod tests {
             .security_schemes
             .insert("bearer".into(), bearer);
         check(&doc, Path::new("api.yml"), true).unwrap();
+    }
+
+    #[test]
+    fn endpoint_security_names_the_method_and_route() {
+        let doc = document(
+            "",
+            COOKIE,
+            &format!("{OP}\n      security: [{{session: []}}]"),
+        );
+        let error = check(&doc, Path::new("api.yml"), false).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("endpoint-auth-undefined: GET /probe security/session"));
     }
 }

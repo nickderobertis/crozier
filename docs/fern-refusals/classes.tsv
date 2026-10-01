@@ -4,7 +4,7 @@ default-not-valid-for-type	documents	check	1	Default value <…> is not a valid 
 discriminant-value-unsuitable	names	check	1	Discriminant value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.	13	unevaluated	—	—
 duplicate-example-name	documents	check	1	Duplicate example name: <…>	109	unevaluated	—	—
 duplicate-path-parameter	names	check	1	Endpoint has duplicate path parameter: <…>.	6	unevaluated	—	—
-endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	22	unevaluated	—	—
+endpoint-auth-undefined	documents	check	1	Endpoint requires auth, but no auth is defined.	22	refuse	GET /probe security/session	22/22
 enum-name-unsuitable	names	check	1	Enum name <…> for value <…> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	368	unevaluated	—	—
 enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names	331	unevaluated	—	—
 example-missing-required-property	documents	check	1	Example is missing required property <…>	130	unevaluated	—	—
@@ -27,7 +27,7 @@ path-without-leading-slash	documents	check	1	Path must start with a slash.	4	une
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	29	unevaluated	—	—
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	unevaluated	—	—
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	unevaluated	—	—
-service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	0/26
+service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	26/26
 type-name-collision	names	check	1	<…> is already declared in <…>	104	unevaluated	—	—
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	unevaluated	—	—
 type-not-defined	documents	check	1	<…> is not defined.	6	unevaluated	—	—
