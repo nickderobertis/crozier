@@ -23,6 +23,7 @@ built-in's defaults.
 | `crozier init` | Write a starter `crozier.yml` (`--output <path>`, `--force`). |
 | `crozier config [<name>]` | Print the effective config and the layer each value came from. |
 | `crozier schema` | Print the config JSON Schema to stdout. |
+| `crozier compare [PATHS...]` | Check every configured generator's output against a reference SDK your `reference.command` produces, and time both sides. See [`compare.md`](compare.md). |
 
 ## Precedence
 
@@ -108,6 +109,8 @@ project-name: my-api
 audiences: [public]
 audience-strict: false
 layout: packaged          # packaged|flat — see "Output layout"
+reference:                # used only by `crozier compare` — see compare.md
+  command: ./scripts/reference-sdk.sh
 
 generators:
   python:
@@ -124,6 +127,8 @@ generators:
                                # shared top-level field)
     layout: flat               # packaged (Fern's --preview --output) | flat
                                # (Fern's local-file-system output)
+    reference:
+      command: ./scripts/reference-sdk.sh   # overrides the shared block
   admin:
     spec: ./admin-openapi.yml
     output: ./sdks/admin
@@ -132,6 +137,12 @@ generators:
 
 Unknown fields and unknown generator types are rejected at parse time, with the
 offending file's path in the error. Generators run in declaration order.
+
+The `reference` block (one key, `command`) is read only by
+[`crozier compare`](compare.md): it names the command that produces each
+generator's reference SDK. It resolves as `--reference-command` >
+`generators.<name>.reference.command` > top-level `reference.command`, with no
+environment variable and no default, and `crozier generate` ignores it.
 
 ### Editor support (JSON Schema)
 
@@ -169,6 +180,8 @@ generator `python`
 ```
 
 `layout` always shows the value a run would use, `packaged` when no layer sets it.
+`reference.command` shows the command `crozier compare` would run (its
+`--reference-command` flag aside), or `(unset)`.
 
 ## Examples
 

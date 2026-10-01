@@ -7,6 +7,8 @@
 //!   built-in `python` when nothing is configured).
 //! - `crozier generate <name>` — run one generator by name (a config-defined
 //!   instance, or the built-in `python`).
+//! - `crozier compare [PATHS...]` — check every configured generator against a
+//!   reference SDK (see [`crate::compare`]).
 //!
 //! Configuration layers per field as CLI > `CROZIER_*` env > config file
 //! (per-generator over shared top-level) > built-in defaults; see
@@ -15,8 +17,9 @@
 //! `--no-config` ignores files entirely.
 //!
 //! Exit codes: `0` success, `1` any failure (with an actionable message on
-//! stderr). Success is quiet: each generator prints a single summary line to
-//! stderr.
+//! stderr); `compare` adds `3` (a mismatch) and `4` (no mismatch, but a
+//! generator could not be checked). Success is quiet: each generator prints a
+//! single summary line to stderr.
 
 use std::path::PathBuf;
 
@@ -58,6 +61,11 @@ enum Command {
     /// Show the effective configuration and where each value comes from.
     Config(ConfigCmd),
 
+    /// Check every configured generator's output against a reference SDK that
+    /// a command you configure produces, and time both sides. See
+    /// docs/compare.md.
+    Compare(CompareCmd),
+
     /// Print the JSON Schema for `crozier.yml` to stdout (the same schema editors
     /// use via the `$schema` modeline `crozier init` writes).
     Schema,
@@ -90,6 +98,29 @@ struct ConfigCmd {
     /// Show only this generator. Omit to show every configured generator (or the
     /// built-in `python`).
     generator: Option<String>,
+}
+
+/// Arguments to `crozier compare`.
+#[derive(Parser)]
+struct CompareCmd {
+    /// Crozier config files to check, or directories to search for them (`.git`
+    /// and git-ignored paths are skipped). Omit to search the working directory.
+    paths: Vec<PathBuf>,
+
+    /// The command that writes each generator's reference SDK (run under
+    /// `sh -c`; see docs/compare.md), overriding every `reference.command`.
+    #[arg(long = "reference-command", value_name = "CMD")]
+    reference_command: Option<String>,
+
+    /// Write the JSON report to this path (`-` for stdout; the human report stays
+    /// on stderr).
+    #[arg(long = "json", value_name = "PATH")]
+    json: Option<PathBuf>,
+
+    /// Write one normalized unified diff per mismatched generator into this
+    /// directory.
+    #[arg(long = "diff-dir", value_name = "DIR")]
+    diff_dir: Option<PathBuf>,
 }
 
 /// Arguments to `crozier generate`.
@@ -180,7 +211,62 @@ where
 }
 
 /// Dispatch a parsed CLI, returning a human-readable error string on failure.
+/// A command that finishes with a non-zero status of its own (`compare`'s 3 or
+/// 4) is reported as an error here; [`execute`] returns the status itself.
 pub fn run(cli: Cli) -> std::result::Result<(), String> {
+    match execute(cli)? {
+        0 => Ok(()),
+        code => Err(format!("exited with status {code}")),
+    }
+}
+
+/// Dispatch a parsed CLI, returning the process exit status on success (`0`,
+/// or `compare`'s `3`/`4`) or a human-readable error string, which the binary
+/// reports with exit `1`.
+pub fn execute(cli: Cli) -> std::result::Result<u8, String> {
+    if let Some(Command::Compare(cmd)) = &cli.command {
+        return do_compare(cmd, &cli.config, cli.no_config);
+    }
+    run_other(cli).map(|()| 0)
+}
+
+/// Run `crozier compare` against the real process: its working directory,
+/// environment, and standard streams.
+fn do_compare(
+    cmd: &CompareCmd,
+    config_paths: &[PathBuf],
+    no_config: bool,
+) -> std::result::Result<u8, String> {
+    use std::io::IsTerminal;
+    if !config_paths.is_empty() || no_config {
+        return Err(
+            "`compare` finds its configs from its PATHS; pass a config file as a PATH \
+             instead of --config/--no-config"
+                .to_string(),
+        );
+    }
+    let cwd = std::env::current_dir()
+        .map_err(|e| format!("could not read the working directory: {e}"))?;
+    let options = crate::compare::Options {
+        paths: cmd.paths.clone(),
+        reference_command: cmd.reference_command.clone(),
+        json: cmd.json.clone(),
+        diff_dir: cmd.diff_dir.clone(),
+    };
+    let stderr = std::io::stderr();
+    let color =
+        crate::compare::color::color_enabled(|name| std::env::var(name).ok(), stderr.is_terminal());
+    let mut io = crate::compare::Io {
+        stderr: &mut stderr.lock(),
+        stdout: &mut std::io::stdout().lock(),
+        color,
+        shell_supported: !cfg!(windows),
+    };
+    crate::compare::run(&options, &cwd, &mut io)
+}
+
+/// Dispatch every command but `compare`.
+fn run_other(cli: Cli) -> std::result::Result<(), String> {
     match cli.command {
         // Bare `crozier`: run every configured generator with no per-generation
         // overrides.
@@ -198,6 +284,7 @@ pub fn run(cli: Cli) -> std::result::Result<(), String> {
             do_config(&cli.config, cli.no_config, cmd.generator.as_deref())
                 .map_err(|e| e.to_string())
         }
+        Some(Command::Compare(_)) => unreachable!("dispatched by `execute`"),
         Some(Command::Schema) => {
             let json =
                 serde_json::to_string_pretty(&crate::schema::build()).map_err(|e| e.to_string())?;

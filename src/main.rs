@@ -6,12 +6,12 @@
 use std::process::ExitCode;
 
 use clap::Parser;
-use crozier::cli::{run, Cli};
+use crozier::cli::{execute, Cli};
 
 fn main() -> ExitCode {
     match Cli::try_parse() {
-        Ok(cli) => match run(cli) {
-            Ok(()) => ExitCode::SUCCESS,
+        Ok(cli) => match execute(cli) {
+            Ok(code) => ExitCode::from(code),
             Err(message) => {
                 eprintln!("crozier: {message}");
                 ExitCode::FAILURE

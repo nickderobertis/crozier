@@ -1,0 +1,358 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "crozier compare report",
+  "description": "One `crozier compare` run.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "description": "The report format's version.",
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0,
+      "const": 1
+    },
+    "crozier_version": {
+      "description": "The version of the `crozier` binary that ran.",
+      "type": "string"
+    },
+    "searched_paths": {
+      "description": "The paths searched for crozier configs, as given (the working directory\nwhen none were).",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exit_code": {
+      "description": "The command's exit status: 0 every checked generator matched (or nothing\nwas checked), 3 at least one mismatched, 4 none mismatched and at least one\ncould not be checked.",
+      "type": "integer",
+      "format": "uint8",
+      "minimum": 0,
+      "maximum": 255,
+      "enum": [
+        0,
+        3,
+        4
+      ]
+    },
+    "counts": {
+      "description": "How many results have each status.",
+      "$ref": "#/$defs/Counts"
+    },
+    "timing_totals": {
+      "description": "Timing summed over the generators where both sides ran.",
+      "$ref": "#/$defs/TimingTotals"
+    },
+    "results": {
+      "description": "One result per generator, or per config that could not be read.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/GeneratorResult"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "crozier_version",
+    "searched_paths",
+    "exit_code",
+    "counts",
+    "timing_totals",
+    "results"
+  ],
+  "$defs": {
+    "Counts": {
+      "description": "How many results have each status.",
+      "type": "object",
+      "properties": {
+        "matched": {
+          "description": "Generators whose output matched the reference.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "mismatched": {
+          "description": "Generators whose output differed from the reference.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "could_not_check": {
+          "description": "Generators (or configs) that could not be checked.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "matched",
+        "mismatched",
+        "could_not_check"
+      ]
+    },
+    "TimingTotals": {
+      "description": "Run totals over the generators where both the reference command and crozier\nran.",
+      "type": "object",
+      "properties": {
+        "generators_timed": {
+          "description": "How many generators the totals cover.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0
+        },
+        "reference_seconds": {
+          "description": "Summed wall time of the reference commands, in seconds.",
+          "type": "number",
+          "format": "double"
+        },
+        "crozier_seconds": {
+          "description": "Summed wall time of crozier's generation, in seconds.",
+          "type": "number",
+          "format": "double"
+        },
+        "speedup": {
+          "description": "`reference_seconds / crozier_seconds`; null when nothing was timed.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "saved_seconds": {
+          "description": "`reference_seconds - crozier_seconds`.",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "generators_timed",
+        "reference_seconds",
+        "crozier_seconds",
+        "speedup",
+        "saved_seconds"
+      ]
+    },
+    "GeneratorResult": {
+      "description": "One generator's result (or one unreadable config's, with `generator` null).",
+      "type": "object",
+      "properties": {
+        "status": {
+          "description": "The result's status.",
+          "$ref": "#/$defs/Status"
+        },
+        "config_file": {
+          "description": "The crozier config file the generator is declared in.",
+          "type": "string"
+        },
+        "generator": {
+          "description": "The generator's name; null when the config itself could not be read.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "spec": {
+          "description": "The resolved OpenAPI document; null when it could not be resolved.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "description": "The reference command and how it ended; null when none was resolved.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "command": {
+              "description": "The command, exactly as configured.",
+              "type": "string"
+            },
+            "exit_code": {
+              "description": "Its exit status; null when it did not run or ended without one.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int32"
+            },
+            "diagnostic": {
+              "description": "The command's own diagnostic (the tail of its stderr) when it failed or\nleft no usable reference; null otherwise.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "command",
+            "exit_code",
+            "diagnostic"
+          ]
+        },
+        "comparison": {
+          "description": "The comparison of the two trees; null when no comparison was made.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "layout": {
+              "description": "The layout crozier generated its side with.",
+              "$ref": "#/$defs/ComparedLayout"
+            },
+            "files_compared": {
+              "description": "How many distinct paths the two trees hold between them.",
+              "type": "integer",
+              "format": "uint",
+              "minimum": 0
+            },
+            "differing": {
+              "description": "Paths on both sides whose normalized contents differ.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "only_in_reference": {
+              "description": "Paths only the reference has.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "only_in_crozier": {
+              "description": "Paths only crozier emitted.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "diff_file": {
+              "description": "The `--diff-dir` file holding this mismatch's normalized diff; null\notherwise.",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "layout",
+            "files_compared",
+            "differing",
+            "only_in_reference",
+            "only_in_crozier",
+            "diff_file"
+          ]
+        },
+        "timing": {
+          "description": "The two measurements and the figures derived from them; null when\nnothing ran.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "reference_seconds": {
+              "description": "Wall time of the generator's one reference-command invocation, in seconds.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "crozier_seconds": {
+              "description": "Wall time of crozier's generation for the generator, in seconds (the\ncomparison excluded).",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "speedup": {
+              "description": "`reference_seconds / crozier_seconds`; null unless both sides ran.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "saved_seconds": {
+              "description": "`reference_seconds - crozier_seconds`; null unless both sides ran.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "reference_seconds",
+            "crozier_seconds",
+            "speedup",
+            "saved_seconds"
+          ]
+        },
+        "reason": {
+          "description": "Why the generator could not be checked; null otherwise.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "config_file",
+        "generator",
+        "spec",
+        "reference",
+        "comparison",
+        "timing",
+        "reason"
+      ]
+    },
+    "Status": {
+      "description": "A result's status.",
+      "oneOf": [
+        {
+          "description": "crozier's whole output tree matched the whole reference tree.",
+          "type": "string",
+          "const": "matched"
+        },
+        {
+          "description": "At least one file differed or was on only one side.",
+          "type": "string",
+          "const": "mismatched"
+        },
+        {
+          "description": "The comparison could not be made; `reason` says why.",
+          "type": "string",
+          "const": "could_not_check"
+        }
+      ]
+    },
+    "ComparedLayout": {
+      "description": "The layout a comparison generated crozier's side with.",
+      "oneOf": [
+        {
+          "description": "The packaged layout.",
+          "type": "string",
+          "const": "packaged"
+        },
+        {
+          "description": "The flat layout.",
+          "type": "string",
+          "const": "flat"
+        }
+      ]
+    }
+  },
+  "$id": "https://raw.githubusercontent.com/nickderobertis/crozier/main/assets/compare-report.schema.json"
+}

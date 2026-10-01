@@ -39,14 +39,34 @@ local diagnostic recipes are documented in
 
 ## How the comparison works
 
-The e2e (`tests/e2e.rs`) runs the compiled binary over a fixture's `openapi.yml`,
-strips comments from crozier's output with the **same** stripper that produced
-the committed fixtures (`crozier::strip_python_comments`, exposed as
-`crozier internal-strip`), and asserts equality against
-`tests/fixtures/<api>/expected/**`. Comment stripping is the *only* normalization
-— everything else must match exactly. The flat goldens (`expected-flat/`, see
-[The flat layout](#the-flat-layout)) are compared the same way against
-`crozier generate --layout flat`.
+The e2e (`tests/e2e.rs`) runs the compiled binary over a fixture's `openapi.yml`
+and compares crozier's output tree with `tests/fixtures/<api>/expected/**`. The
+flat goldens (`expected-flat/`, see [The flat layout](#the-flat-layout)) are
+compared the same way against `crozier generate --layout flat`.
+
+The byte-match rules are defined once, in [`src/parity.rs`](../src/parity.rs)
+(`crozier::parity`), and shared by the corpus gate, its `just fixtures-gaps` /
+`just fixtures-diff` reporters and [`crozier compare`](compare.md). Each rule is
+applied to both sides; everything else must match exactly:
+
+- **Python comments** are stripped from every `.py` file with the **same**
+  stripper that produced the committed fixtures (`crozier::strip_python_comments`,
+  exposed as `crozier internal-strip`). A committed golden is already stripped and
+  stripping it again changes nothing (a test pins that over every committed
+  golden), so a live, unstripped reference is compared under the same rule.
+- **SDK-identity headers**: the `X-Fern-SDK-Name` / `X-Fern-SDK-Version` lines
+  (and crozier's `X-Crozier-` spellings of them) are dropped from every file, and
+  the remaining `X-Crozier-` prefix is read as `X-Fern-`
+  ([why](#crozier-vs-fern-sdk-identity-headers)).
+- **`__init__.py` import order**: after the comment strip, leading blank lines
+  are dropped and the imports sorted with `ruff check --select I --fix`, so the
+  never-executed `TYPE_CHECKING` block's order does not gate the match.
+- **`.fern/metadata.json`**: the `generatorConfig` block Fern records (the
+  `python_enums` setting every golden is generated with) is dropped.
+- **The trees**: the comparison is bidirectional — a file on only one side is a
+  difference — a symbolic link on either side is refused rather than followed,
+  and a golden's `.crozier-fern-golden.json` provenance record is not part of
+  the tree.
 
 ## Parity status and the residual manifest
 
