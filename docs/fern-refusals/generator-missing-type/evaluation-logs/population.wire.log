@@ -1,0 +1,6 @@
+baseline: 2b046a72f1fb687c5ef2399d492a5fd2b57cab3b; digest: 1542bad104f5ca9f559e34400a9206fdb672a98f5a7a9e6ae01f1a3c81655888
+declared parameter: {"description": "The [API version](/reference/versioning) to use for this request. The latest version is `2026-03-11`.", "in": "header", "name": "Notion-Version", "required": true, "schema": {"enum": ["2026-03-11"]}}
+response statuses: ['200', '400', '401', '403', '404', '406', '409', '429', '500', '503', '504', '529']
+wire: POST https://example.com/v1/agents/batch Notion-Version: 2026-03-11 body: {"operations":[]}
+parsed: AgentBatchResponse {'created_time': '2026-03-11T00:00:00Z', 'id': 'task-1', 'object': 'async_task', 'operation': {'name': 'POST /v1/agents/batch', 'surface': 'rest'}, 'poll_after_seconds': 1, 'status': 'queued', 'status_url': 'https://example.com/task-1'}
+header and response wire assertions passed; package still fails own-configuration mypy with 402 errors

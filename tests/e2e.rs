@@ -16150,3 +16150,65 @@ fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
         }
     }
 }
+
+#[test]
+fn inline_header_enum_refusal_recovers_with_a_named_schema() {
+    let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-missing-type");
+    for case in [
+        "probe.yml",
+        "optional-singleton-control.yml",
+        "two-values-control.yml",
+        "other-header-control.yml",
+        "accept-header-control.yml",
+        "inferred-type-control.yml",
+        "const-header-control.yml",
+        "two-operations-control.yml",
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
+            let failures = refused_failures("generator-missing-type", &run, "schema", strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1);
+        }
+    }
+    let dir = tempfile::tempdir().unwrap();
+    let text = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    for spelling in ["x-fern-ignore", "x-crozier-ignore"] {
+        let spec = dir.path().join(format!("{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            text.replace(
+                "            type: string",
+                &format!("            {spelling}: true\n            type: string"),
+            ),
+        )
+        .unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{spelling}: {}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+    for case in [
+        "named-enum-control.yml",
+        "authorization-header-control.yml",
+        "user-agent-header-control.yml",
+        "content-type-header-control.yml",
+        "numeric-enum-control.yml",
+    ] {
+        let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
+        let strict = refusal_run(&crozier, &class.join(case), true).unwrap();
+        assert_eq!(normal.code, Some(0), "{case}: {}", normal.stderr);
+        assert_eq!(strict.code, Some(0), "{case}: {}", strict.stderr);
+        assert!(!normal.files.is_empty());
+        assert_eq!(normal.files, strict.files);
+        for file in &normal.files {
+            assert_eq!(
+                std::fs::read(normal.target.join(file)).unwrap(),
+                std::fs::read(strict.target.join(file)).unwrap()
+            );
+        }
+    }
+}

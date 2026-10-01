@@ -22,6 +22,7 @@ enum Class {
     DefaultNotValidForType,
     ListDefaultNotArray,
     ObjectExtendsNonObject,
+    GeneratorMissingType,
 }
 
 impl Class {
@@ -37,6 +38,7 @@ impl Class {
             Self::DefaultNotValidForType => "default-not-valid-for-type",
             Self::ListDefaultNotArray => "list-default-not-array",
             Self::ObjectExtendsNonObject => "object-extends-non-object",
+            Self::GeneratorMissingType => "generator-missing-type",
         }
     }
 }
@@ -511,6 +513,36 @@ fn check_bound_schemas(
                         || format!("{element}/schema"),
                         |name| format!("{element}/{name}/schema"),
                     );
+                    if node.get("in").and_then(serde_yaml_ng::Value::as_str) == Some("header")
+                        // llmlint: ignore[contracts_have_one_source_or_a_drift_gate] These are Fern's inline-header declaration exceptions, measured in generator-missing-type/evaluation-logs/fern-*-header.log, not SDK transport ownership. In particular Authorization is a per-method SDK parameter without an auth scheme (ir::is_auth_managed_header), while Fern declares its inline enum successfully. Changing SDK header ownership must not change this refusal classification; the CLI controls preserve all three measured exceptions.
+                        && name.is_some_and(|name| {
+                            !["Authorization", "User-Agent", "Content-Type"]
+                                .iter()
+                                .any(|exception| name.eq_ignore_ascii_case(exception))
+                        })
+                        && !ignored_reference_node(value)
+                        && value.get("$ref").is_none()
+                        && value
+                            .get("type")
+                            .is_none_or(|kind| kind.as_str() == Some("string"))
+                        && (value
+                            .get("enum")
+                            .and_then(serde_yaml_ng::Value::as_sequence)
+                            .is_some_and(|values| {
+                                !values.is_empty()
+                                    && values.iter().all(|value| value.as_str().is_some())
+                            })
+                            || value
+                                .get("const")
+                                .is_some_and(|value| value.as_str().is_some()))
+                    {
+                        return refusal(
+                            context.path,
+                            context.strict,
+                            Class::GeneratorMissingType,
+                            &schema_element,
+                        );
+                    }
                     check_schema(value, context, &schema_element, location, seen)?;
                 } else if !matches!(
                     key.as_str(),

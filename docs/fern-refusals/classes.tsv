@@ -15,7 +15,7 @@ example-unexpected-property	documents	check	1	Unexpected property <…>	196	unev
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	unevaluated	—	—
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	unevaluated	—	—
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	unevaluated	—	—
-generator-missing-type	documents	generate	1	KeyError: <…>	1	unevaluated	—	—
+generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	unevaluated	—	—
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	unevaluated	—	—
