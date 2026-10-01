@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: enum-leading-zero-member-refused
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /slots:
+    get:
+      operationId: listSlots
+      responses:
+        "200":
+          description: The slot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Slot"
+components:
+  schemas:
+    Slot:
+      type: object
+      properties:
+        start:
+          $ref: "#/components/schemas/SlotStart"
+      required:
+        - start
+    SlotStart:
+      type: string
+      enum:
+        - _01_00_AM
+        - noon

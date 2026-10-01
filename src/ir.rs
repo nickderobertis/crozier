@@ -6850,7 +6850,15 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             Some("date") => TypeRef::Primitive(Prim::Date),
             // `uuid`/`byte` render as `str` but carry a content-type header.
             Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
-            _ => return None,
+            // So do the other formats Fern types, measured at 5.20.0 on the
+            // hand-written fixture `format-scalar-bodies`.
+            Some("email" | "hostname" | "ipv4" | "password" | "uri") => {
+                return Some((TypeRef::Primitive(Prim::Str), true))
+            }
+            Some("binary") => return None,
+            // Any other format is an unformatted `str` with no header: the same
+            // fixture's `duration`, `time`, `iri`, `regex`, … and `custom-thing`.
+            _ => TypeRef::Primitive(Prim::Str),
         },
         "integer" => TypeRef::Primitive(int_prim(schema)),
         "number" => TypeRef::Primitive(number_prim(schema)),
@@ -7710,9 +7718,6 @@ fn endpoint_module(op: &Operation, url: &str) -> String {
             return snake_module(prefix);
         }
         return snake_module(tag);
-    }
-    if !id.is_empty() {
-        return naming::sanitize_identifier(&naming::to_snake_case(id));
     }
     naming::sanitize_identifier(&naming::to_snake_case(&path_group(url)))
 }
@@ -13811,7 +13816,21 @@ mod tests {
             scalar("string", Some("byte")),
             Some((TypeRef::Primitive(Prim::Str), true))
         ));
-        // Other string formats and non-scalar shapes are excluded.
+        // So do the formats Fern types; any other string format is a plain
+        // `str` (the hand-written fixture `format-scalar-bodies`).
+        for format in ["email", "hostname", "ipv4", "password", "uri"] {
+            assert!(matches!(
+                scalar("string", Some(format)),
+                Some((TypeRef::Primitive(Prim::Str), true))
+            ));
+        }
+        for format in ["duration", "time", "uri-template", "custom-thing"] {
+            assert!(matches!(
+                scalar("string", Some(format)),
+                Some((TypeRef::Primitive(Prim::Str), false))
+            ));
+        }
+        // A binary string and non-scalar shapes are excluded.
         assert!(scalar("string", Some("binary")).is_none());
         assert!(scalar("object", None).is_none());
         assert!(scalar("array", None).is_none());
