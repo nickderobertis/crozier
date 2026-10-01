@@ -8,7 +8,8 @@
 # uploaded after a mismatch; finish.sh ends the action with it.
 #
 # Reads CROZIER (the binary; default `crozier` on PATH), COMPARE_PATHS
-# (whitespace-separated; empty searches the repository), REFERENCE_COMMAND
+# (separated by any whitespace, newlines included; empty searches the
+# repository), REFERENCE_COMMAND
 # (empty uses each config's `reference.command`), RUNNER_TEMP, GITHUB_OUTPUT and
 # GITHUB_STEP_SUMMARY.
 set -euo pipefail
@@ -31,7 +32,10 @@ diffs="$work/diffs"
 rm -rf "$work"
 mkdir -p "$work"
 
-read -r -a paths <<<"${COMPARE_PATHS:-}"
+# `-d ''` reads to the end rather than the first line, so a YAML block scalar
+# (`paths: |`, one path per line) names every path it lists; read returns 1 at
+# that end, which is not a failure.
+read -r -d '' -a paths <<<"${COMPARE_PATHS:-}" || true
 args=(compare --json "$report" --diff-dir "$diffs")
 if [ -n "${REFERENCE_COMMAND:-}" ]; then
   args+=(--reference-command "$REFERENCE_COMMAND")

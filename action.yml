@@ -8,8 +8,9 @@ branding:
 inputs:
   paths:
     description: >-
-      Whitespace-separated crozier config files, or directories to search for
-      them. Empty (the default) searches the whole repository.
+      Crozier config files, or directories to search for them, separated by
+      spaces or written one per line (a `|` block). Empty (the default)
+      searches the whole repository.
     required: false
     default: ""
   reference-command:

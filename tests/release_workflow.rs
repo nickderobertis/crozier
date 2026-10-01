@@ -289,7 +289,8 @@ fn windows_release_checkout_journey_has_long_paths_and_the_long_fixture() {
 /// Action resolves, so it may move only after the release fully shipped: the
 /// `major-tag` job waits on every publish and verify job and on the upload to
 /// the GitHub Release, runs only when none of them failed (a skipped registry is
-/// fine), and leaves the decision to `scripts/update-major-tag.sh`.
+/// fine), and leaves the decision to `scripts/update-major-tag.sh`, which it
+/// tells whether the Release is flagged as a pre-release.
 #[test]
 fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
     let workflow = workflow();
@@ -363,7 +364,20 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
         .collect();
     assert_eq!(
         runs,
-        ["bash scripts/update-major-tag.sh --tag \"$GITHUB_REF_NAME\""],
+        ["bash scripts/update-major-tag.sh --tag \"$GITHUB_REF_NAME\" --prerelease \"$PRERELEASE\""],
         "the tag decision belongs to scripts/update-major-tag.sh alone"
+    );
+    // The Release's own pre-release flag reaches the script through `env`,
+    // never interpolated into the `run:` (tests/e2e/major_tag.rs runs the step).
+    let step = steps
+        .iter()
+        .find(|step| step.get("run").is_some())
+        .expect("major-tag runs the script");
+    assert_eq!(
+        step.get("env")
+            .and_then(|env| env.get("PRERELEASE"))
+            .and_then(Value::as_str),
+        Some("${{ github.event.release.prerelease }}"),
+        "the script must be told when the Release is flagged as a pre-release"
     );
 }

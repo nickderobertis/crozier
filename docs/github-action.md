@@ -24,7 +24,7 @@ produces the reference. For a team moving from Fern, the
 
 | Input | Default | Meaning |
 | --- | --- | --- |
-| `paths` | empty: the whole repository | Whitespace-separated crozier config files, or directories to search for them, as `crozier compare [PATHS...]` takes. |
+| `paths` | empty: the whole repository | crozier config files, or directories to search for them, as `crozier compare [PATHS...]` takes: separated by spaces, or one per line in a `paths: \|` block. |
 | `reference-command` | empty: each config's `reference.command` | The command that writes each generator's reference SDK, used for every generator found (`--reference-command`). It runs under `sh -c` from each config file's directory, with the `CROZIER_REFERENCE_*` environment `crozier compare` gives every reference command. |
 | `diff-artifact-name` | `crozier-compare-diffs` | Name of the artifact the per-generator diffs are uploaded as when anything mismatched. |
 | `version` | empty: the release the action's own ref names | Empty installs `v<version>` for the `[package] version` in the action's own `Cargo.toml` — at `@vX.Y.Z` that is `vX.Y.Z`, at `@v0` the release `v0` points at — and fails, naming this input, when that file cannot be read; it never falls back to the latest release. Otherwise a release tag such as `v0.1.0`, `latest` for the newest release, or `local` to build the action's own source with `cargo`. |
@@ -49,10 +49,17 @@ its report (`exit-code` `1`).
 ## Versioning
 
 `@v0` is a **floating major tag**: it follows every stable `0.x` release, and
-moves onto one only after that release's archives, crates.io crate and PyPI
-wheels have published and verified, so it never resolves to unreleased work or a
-half-published release. Pre-releases never move it, and it will keep meaning
-`0.x` after a `v1` exists.
+it will keep meaning `0.x` after a `v1` exists. The release workflow moves it as
+its last job, and only when:
+
+- the release's archives uploaded to its GitHub Release, and no publish or
+  verify job failed. The crates.io and PyPI jobs are skipped while their
+  publishing tokens are unset, and a skipped job does not hold `v0` back; when
+  they run, a failure does;
+- the GitHub Release is not flagged as a pre-release, and its tag is a plain
+  `vX.Y.Z` with no pre-release (`-rc.1`) or build-metadata (`+build.3`) suffix;
+- no newer `0.x` release already exists, so re-cutting an older one never moves
+  `v0` backwards.
 
 An exact tag — `nickderobertis/crozier@v0.0.88` — pins the Action **and** its
 binary together: leave `version` unset and the Action installs the release its
@@ -330,8 +337,64 @@ config names. Each generator's `layout` and names must be ones the recipe can
 reproduce; it exits non-zero naming any it cannot, which the Action reports as
 could not check.
 
-**Blocking or not.** The job fails on a mismatch or a generator it could not
-check. To make that block merging, mark the `compare` job as a required status
-check in the branch's protection rules or rulesets. Leave it unrequired and it
-reports without blocking: the failed check and its step summary are still there
-to read.
+**Non-blocking.** As written, the workflow reports without blocking: the
+failed `compare` check and its step summary are there to read, and nothing
+requires them. To keep even the check green while it reports, add
+`continue-on-error: true` to the `nickderobertis/crozier@v0` step: a mismatch
+then marks that step failed and still passes the job.
+
+**Blocking.** Do not mark the example's `compare` job as a required status
+check as it stands. Its `paths:` filters skip the whole workflow on a pull
+request that changes no OpenAPI document or crozier config, and a required
+check whose workflow never ran never reports: it stays "Expected — Waiting for
+status to be reported" and the pull request cannot merge. For required use, run
+the workflow on every pull request — no `paths:` filters — and let a first job
+decide whether anything relevant changed. GitHub reports a job skipped by its
+`if:` as a success, so the required `compare` check passes on a pull request
+that touches none of those files and runs the comparison on one that does:
+
+```yaml
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.changed.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check for changed OpenAPI documents or crozier configs
+        id: changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          relevant=true
+          # A base this checkout cannot name (a branch's first push) checks everything.
+          if git cat-file -e "$BASE^{commit}" 2>/dev/null &&
+            git diff --quiet "$BASE" HEAD -- \
+              ':(glob)openapi/**' ':(glob)**/openapi.yml' ':(glob)**/openapi.yaml' \
+              ':(glob)**/openapi.json' ':(glob)**/crozier.yml' ':(glob)**/crozier.yaml' \
+              ':(glob)**/.crozier.yml' ':(glob)**/.crozier.yaml'; then
+            relevant=false
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
+  compare:
+    needs: changes
+    if: ${{ needs.changes.outputs.relevant == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      # The example's steps, unchanged.
+```
+
+Keep the pathspecs in step with your OpenAPI documents, as you would the
+`paths:` globs, then mark `compare` as a required status check in the branch's
+protection rules or rulesets.
