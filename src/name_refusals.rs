@@ -5,6 +5,50 @@ use crate::openapi::{AdditionalProperties, OpenApi, Schema};
 use crate::{Error, Result};
 use std::path::Path;
 
+/// The name-family refusal classes this module detects, as registered in
+/// `docs/fern-refusals/classes.tsv`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Class {
+    DiscriminantValueUnsuitable,
+    DuplicatePathParameter,
+    EnumNameUnsuitable,
+    EnumValueUnnameable,
+    GeneratedFileNameTooLong,
+    ObjectPropertyNameCollision,
+    RequestPropertyCamelcaseCollision,
+    RequestPropertyNameCollision,
+    SdkMethodCollision,
+    TypeNameCollision,
+    TypeNameNotLetterLed,
+}
+
+impl Class {
+    /// The class id every refusal line names.
+    const fn id(self) -> &'static str {
+        match self {
+            Self::DiscriminantValueUnsuitable => "discriminant-value-unsuitable",
+            Self::DuplicatePathParameter => "duplicate-path-parameter",
+            Self::EnumNameUnsuitable => "enum-name-unsuitable",
+            Self::EnumValueUnnameable => "enum-value-unnameable",
+            Self::GeneratedFileNameTooLong => "generated-file-name-too-long",
+            Self::ObjectPropertyNameCollision => "object-property-name-collision",
+            Self::RequestPropertyCamelcaseCollision => "request-property-camelcase-collision",
+            Self::RequestPropertyNameCollision => "request-property-name-collision",
+            Self::SdkMethodCollision => "sdk-method-collision",
+            Self::TypeNameCollision => "type-name-collision",
+            Self::TypeNameNotLetterLed => "type-name-not-letter-led",
+        }
+    }
+}
+
+/// A refusal of `class` at the offending element `detail`.
+fn refusal(path: &Path, class: Class, detail: String) -> Error {
+    Error::InvalidSpec {
+        path: path.to_owned(),
+        message: format!("{}: {detail}", class.id()),
+    }
+}
+
 /// Validate before rendering or touching the output tree.
 pub(crate) fn validate(doc: &OpenApi, path: &Path, strict: bool, ir: &crate::ir::Ir) -> Result<()> {
     validate_names(doc, path, ir).map_err(|error| refusal_error(error, strict))
@@ -101,8 +145,7 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
                 let mut names = std::collections::HashSet::new();
                 for (_, name) in fields {
                     if !names.insert(name.clone()) && inherited {
-                        return Err(Error::InvalidSpec { path: args.spec.clone(),
-                            message: format!("request-property-name-collision: {} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase()) });
+                        return Err(refusal(&args.spec, Class::RequestPropertyNameCollision, format!("{} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase())));
                     }
                 }
             }
@@ -152,10 +195,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
         for segment in route.split('{').skip(1) {
             if let Some((name, _)) = segment.split_once('}') {
                 if !placeholders.insert(name) {
-                    return Err(Error::InvalidSpec {
-                        path: path.to_owned(),
-                        message: format!("duplicate-path-parameter: route {route} repeats path parameter {name:?}; give each path position a distinct name"),
-                    });
+                    return Err(refusal(path, Class::DuplicatePathParameter, format!("route {route} repeats path parameter {name:?}; give each path position a distinct name")));
                 }
             }
         }
@@ -174,7 +214,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             if let (Some(group), Some(name)) = (op.sdk_group_name(), op.sdk_method_name()) {
                 let qualified = format!("{}.{}", group.join("."), name);
                 if !methods.insert(qualified.clone()) {
-                    return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("sdk-method-collision: {method} {route} declares duplicate SDK method {qualified}; give the methods distinct declared names") });
+                    return Err(refusal(path, Class::SdkMethodCollision, format!("{method} {route} declares duplicate SDK method {qualified}; give the methods distinct declared names")));
                 }
             }
             let location = format!("{method} {route}");
@@ -227,14 +267,11 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                 for (other_index, other) in op.parameters.iter().enumerate().take(index) {
                     if parameter.location != other.location && names[index] == names[other_index] {
                         let class = if parameter.name == other.name {
-                            "request-property-camelcase-collision"
+                            Class::RequestPropertyCamelcaseCollision
                         } else {
-                            "request-property-name-collision"
+                            Class::RequestPropertyNameCollision
                         };
-                        return Err(Error::InvalidSpec {
-                            path: path.to_owned(),
-                            message: format!("{class}: {location} parameters {:?} and {:?} in different locations declare the same request name {:?}; give them distinct names", parameter.name, other.name, names[index]),
-                        });
+                        return Err(refusal(path, class, format!("{location} parameters {:?} and {:?} in different locations declare the same request name {:?}; give them distinct names", parameter.name, other.name, names[index])));
                     }
                 }
             }
@@ -300,10 +337,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                             if path_names.contains(&name)
                                 || (!body_names.insert(name.clone()) && inherited)
                             {
-                                return Err(Error::InvalidSpec {
-                                    path: path.to_owned(),
-                                    message: format!("request-property-name-collision: {location} body property {name:?} collides with another request property; give the properties distinct declared names"),
-                                });
+                                return Err(refusal(path, Class::RequestPropertyNameCollision, format!("{location} body property {name:?} collides with another request property; give the properties distinct declared names")));
                             }
                             names.push(name);
                         }
@@ -317,10 +351,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                     .to_owned();
                 if let Some(previous) = parameter_names.insert(identifier, name) {
                     if previous != name {
-                        return Err(Error::InvalidSpec {
-                            path: path.to_owned(),
-                            message: format!("request-property-camelcase-collision: {location} parameters {previous:?} and {name:?} normalize to the same identifier; give them distinct names"),
-                        });
+                        return Err(refusal(path, Class::RequestPropertyCamelcaseCollision, format!("{location} parameters {previous:?} and {name:?} normalize to the same identifier; give them distinct names")));
                     }
                 }
             }
@@ -548,7 +579,7 @@ fn check_schema_names(
         let mut seen = std::collections::HashSet::new();
         for field in fields {
             if !seen.insert(field) {
-                return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("object-property-name-collision: {location} property {field:?} redeclares a nullable inherited property; give the declarations distinct names") });
+                return Err(refusal(path, Class::ObjectPropertyNameCollision, format!("{location} property {field:?} redeclares a nullable inherited property; give the declarations distinct names")));
             }
         }
     }
@@ -562,12 +593,9 @@ fn check_schema_names(
         .map(|tag| tag.property_name.clone())
         .or_else(|| crate::ir::inferred_discriminant_property(schema, schemas));
     if let Some(discriminant) = discriminant.filter(|name| !usable_name(name)) {
-        return Err(Error::InvalidSpec {
-            path: path.to_owned(),
-            message: format!(
-                "discriminant-value-unsuitable: {location} discriminant {discriminant:?}; use a letter-led identifier containing letters, numbers and underscores"
-            ),
-        });
+        return Err(refusal(path, Class::DiscriminantValueUnsuitable, format!(
+                "{location} discriminant {discriminant:?}; use a letter-led identifier containing letters, numbers and underscores"
+            )));
     }
     // Measured at Fern 5.67.1: invalid overrides warn and fall back to the
     // original value, so they cannot rescue a value Fern cannot name.
@@ -597,24 +625,26 @@ fn check_schema_names(
             let member = crate::naming::enum_member_name(value);
             let bare_number = !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit());
             if (member == "_" && !value.is_ascii()) || (bare_number && member.starts_with('_')) {
-                return Err(Error::InvalidSpec {
-                    path: path.to_owned(),
-                    message: format!(
-                        "enum-value-unnameable: {location} enum value {value:?}; declare a usable name with x-crozier-enum"
+                return Err(refusal(
+                    path,
+                    Class::EnumValueUnnameable,
+                    format!(
+                        "{location} enum value {value:?}; declare a usable name with x-crozier-enum"
                     ),
-                });
+                ));
             }
             let starts_with_unspelled_digit = !value.starts_with(|ch: char| ch.is_ascii_digit())
                 && value
                     .trim_start_matches(|ch: char| !ch.is_alphanumeric())
                     .starts_with(|ch: char| ch.is_ascii_digit());
             if member.starts_with('_') || starts_with_unspelled_digit {
-                return Err(Error::InvalidSpec {
-                    path: path.to_owned(),
-                    message: format!(
-                        "enum-name-unsuitable: {location} enum value {value:?}; declare a usable name with x-crozier-enum"
+                return Err(refusal(
+                    path,
+                    Class::EnumNameUnsuitable,
+                    format!(
+                        "{location} enum value {value:?}; declare a usable name with x-crozier-enum"
                     ),
-                });
+                ));
             }
         }
     }
@@ -680,7 +710,7 @@ pub(crate) fn validate_ir(
         .chain(ir.tag_types.iter().map(|tag| &tag.decl))
     {
         if decl.module().len() + ".py".len() > 255 {
-            return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("generated-file-name-too-long: type {} would write {}.py, exceeding the filename limit; shorten its declared name or nested property names", decl.name(), decl.module()) }, strict));
+            return Err(refusal_error(refusal(path, Class::GeneratedFileNameTooLong, format!("type {} would write {}.py, exceeding the filename limit; shorten its declared name or nested property names", decl.name(), decl.module())), strict));
         }
     }
     let mut component_names = std::collections::HashMap::new();
@@ -699,7 +729,7 @@ pub(crate) fn validate_ir(
             if previous.get(1..) != name.get(1..) {
                 continue;
             }
-            return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-collision: component schemas {previous:?} and {name:?} both declare type {normalized}; give them distinct names") }, strict));
+            return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("component schemas {previous:?} and {name:?} both declare type {normalized}; give them distinct names")), strict));
         }
     }
     let roots: std::collections::HashSet<_> = doc
@@ -739,7 +769,7 @@ pub(crate) fn validate_ir(
                                             && values.iter().all(serde_json::Value::is_string)
                                     }) && roots.contains(&name)
                                     {
-                                        return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-collision: {method} {route} body property {property:?} declares enum {name}, already declared by a component schema; give the declarations distinct names") }, strict));
+                                        return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("{method} {route} body property {property:?} declares enum {name}, already declared by a component schema; give the declarations distinct names")), strict));
                                     }
                                 }
                             }
@@ -773,7 +803,7 @@ pub(crate) fn validate_ir(
                     && ir.types.iter().any(|decl| decl.name() == name))
                     || duplicate
                 {
-                    return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-collision: {method} {route} request type {name} collides with another declaration; give the types distinct declared names") }, strict));
+                    return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("{method} {route} request type {name} collides with another declaration; give the types distinct declared names")), strict));
                 }
             }
         }
@@ -784,7 +814,7 @@ pub(crate) fn validate_ir(
             && !tag.module.contains('/')
             && roots.contains(tag.decl.name())
         {
-            return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-collision: enum {} in namespace {} collides with a schema declaration; give the types distinct declared names", tag.decl.name(), tag.module) }, strict));
+            return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("enum {} in namespace {} collides with a schema declaration; give the types distinct declared names", tag.decl.name(), tag.module)), strict));
         }
     }
     let mut names = std::collections::HashMap::new();
@@ -804,7 +834,7 @@ pub(crate) fn validate_ir(
                         .map(|(parent, _)| parent)
                         .unwrap_or("")
             {
-                return Err(refusal_error(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-collision: type {} is declared in namespaces {previous:?} and {namespace:?}; give the types distinct declared names", decl.name()) }, strict));
+                return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("type {} is declared in namespaces {previous:?} and {namespace:?}; give the types distinct declared names", decl.name())), strict));
             }
         }
     }
@@ -836,10 +866,10 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
                     .is_file()
         });
         if numeric || relative_alias {
-            return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-not-letter-led: #/components/schemas/{name} cannot form a letter-led type name; give it a valid declared type name") });
+            return Err(refusal(path, Class::TypeNameNotLetterLed, format!("#/components/schemas/{name} cannot form a letter-led type name; give it a valid declared type name")));
         }
         if property_reference_cycle(source, node, &mut std::collections::HashSet::new()) {
-            return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("generated-file-name-too-long: #/components/schemas/{name} has a recursive inline property reference whose generated filename grows without bound; use a named component reference") });
+            return Err(refusal(path, Class::GeneratedFileNameTooLong, format!("#/components/schemas/{name} has a recursive inline property reference whose generated filename grows without bound; use a named component reference")));
         }
         source_reference_names(source, node, &format!("#/components/schemas/{name}"), path)?;
     }
@@ -910,7 +940,7 @@ fn source_reference_names(
         if reference.starts_with("#/definitions/") || reference.starts_with("#/webhooks/") {
             let target = source_target(source, node);
             if target["type"].as_str() == Some("object") || target["properties"].is_mapping() {
-                return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("type-name-not-letter-led: {location} reference {reference:?} forms an empty object type name; use a component schema reference") });
+                return Err(refusal(path, Class::TypeNameNotLetterLed, format!("{location} reference {reference:?} forms an empty object type name; use a component schema reference")));
             }
         }
         return Ok(());
@@ -963,6 +993,42 @@ fn property_reference_cycle(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_class_id_is_a_registered_names_class() {
+        let registry = std::fs::read_to_string(
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-refusals/classes.tsv"),
+        )
+        .expect("read the refusal registry");
+        let names: std::collections::HashSet<&str> = registry
+            .lines()
+            .skip(1)
+            .filter_map(|row| {
+                let mut fields = row.split('\t');
+                let id = fields.next()?;
+                (fields.next()? == "names").then_some(id)
+            })
+            .collect();
+        for class in [
+            Class::DiscriminantValueUnsuitable,
+            Class::DuplicatePathParameter,
+            Class::EnumNameUnsuitable,
+            Class::EnumValueUnnameable,
+            Class::GeneratedFileNameTooLong,
+            Class::ObjectPropertyNameCollision,
+            Class::RequestPropertyCamelcaseCollision,
+            Class::RequestPropertyNameCollision,
+            Class::SdkMethodCollision,
+            Class::TypeNameCollision,
+            Class::TypeNameNotLetterLed,
+        ] {
+            assert!(
+                names.contains(class.id()),
+                "{class:?} names {:?}, which is not a `names` row of classes.tsv",
+                class.id()
+            );
+        }
+    }
 
     #[test]
     fn enum_name_refusals_respect_value_shapes_types_and_declared_names() {
