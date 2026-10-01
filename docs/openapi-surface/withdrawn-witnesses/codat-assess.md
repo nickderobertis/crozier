@@ -67,10 +67,11 @@ OpenAPI description, as that search defines it, and is no candidate.
 Every declarer above, grouped where the bytes are one publisher's description.
 *Reach* is how many of the walk's 19 regions an instrumented crozier run executes:
 the golden-only tier of `just golden-reach` for a registered row, and the same
-instrumented build run over the document alone (`scripts/handwritten-fixtures.py
-measure` over a scratch directory, on 2026-10-01) for the rest. That run over row
-224's own bytes executes 7 of 19, the reach the ledger recorded before the
-withdrawal, so a reading of 0 is the walk not running. A screen not run is marked
+instrumented build run over the document alone (`just handwritten-reach
+--handwritten-dir DIR --ledger PATH` over a scratch directory holding each
+document as a fixture with this arm's cover, on 2026-10-01) for the rest. That
+run over row 224's own bytes executes 7 of 19, the reach the ledger recorded
+before the withdrawal, so a reading of 0 is the walk not running. A screen not run is marked
 so: a candidate needs every screen, so one failure decides it.
 
 | publisher | documents (source) | licence | ref | Fern 5.67.1 / 5.20.0 | reach |
