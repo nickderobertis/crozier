@@ -8,7 +8,28 @@
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
+use crozier::parity::{self, Difference};
 use predicates::prelude::*;
+
+/// `crozier compare` journeys (a file under `tests/e2e/`, so cargo does not
+/// build it as a test binary of its own).
+#[path = "e2e/compare.rs"]
+mod compare;
+
+/// The "Migrating from Fern" guide's workflow, run from its own code blocks.
+#[cfg(unix)]
+#[path = "e2e/migration.rs"]
+mod migration;
+
+/// The GitHub Action's scripts (`scripts/action/`) over a real `crozier`.
+#[cfg(unix)]
+#[path = "e2e/action.rs"]
+mod action;
+
+/// `scripts/update-major-tag.sh`, the release's floating major tag.
+#[cfg(unix)]
+#[path = "e2e/major_tag.rs"]
+mod major_tag;
 
 /// A vendored Fern corpus: the spec at `tests/fixtures/<api>/openapi.yml`, the
 /// naming flags crozier is driven with, and the generated files it reproduces
@@ -986,121 +1007,6 @@ fn crozier() -> Command {
     Command::cargo_bin("crozier").expect("crozier binary is built for tests")
 }
 
-/// Normalize the SDK-identity headers out of the comparison. crozier brands its
-/// own `X-Crozier-*` headers rather than impersonating Fern, and — because it
-/// reproduces Fern's *packaged* wrapper — always emits the `SDK-Name`/`SDK-Version`
-/// headers that Fern's publishing metadata supplies, which the credential-free
-/// local golden trees omit. Both are deliberate, non-behavioral differences in tool
-/// branding/packaging, so drop the `SDK-Name`/`SDK-Version` lines and canonicalize
-/// the remaining `X-Crozier-` prefix (the `Language` header) to `X-Fern-`. Applied
-/// to both sides; a no-op on lines the fixtures don't contain.
-fn normalize_sdk_headers(content: &str) -> String {
-    let is_sdk_identity_line = |line: &str| {
-        let t = line.trim_start();
-        [
-            "X-Fern-SDK-Name",
-            "X-Crozier-SDK-Name",
-            "X-Fern-SDK-Version",
-            "X-Crozier-SDK-Version",
-        ]
-        .iter()
-        .any(|h| t.starts_with(&format!("\"{h}\"")))
-    };
-    content
-        .split_inclusive('\n')
-        .filter(|line| !is_sdk_identity_line(line))
-        .collect::<String>()
-        .replace("X-Crozier-", "X-Fern-")
-}
-
-/// Normalize a lazy-loader `__init__.py` for comparison: drop leading blank lines
-/// (a comment-strip artifact) and canonicalize the import order with `ruff` isort,
-/// so the semantically-irrelevant `TYPE_CHECKING` ordering does not gate the match.
-fn try_normalize_init(content: &str) -> Result<String, String> {
-    let trimmed: String = content
-        .split_inclusive('\n')
-        .skip_while(|line| line.trim().is_empty())
-        .collect();
-    try_ruff_isort(&trimmed)
-}
-
-/// Drop Fern's `generatorConfig` block from `.fern/metadata.json`. Because the
-/// whole corpus is generated with `pydantic_config.enum_type: python_enums` (so
-/// enums render as real classes — see docs/matching.md), Fern records that config
-/// in its provenance file. crozier renders python_enums unconditionally and carries
-/// no such config, so — like the SDK-identity headers — this Fern-only provenance is
-/// normalized out of both sides rather than faked by crozier. Applied only to
-/// `metadata.json`; a no-op on content without the block. The block is the object's
-/// last key, so removing it plus the preceding comma restores the shorter form.
-fn normalize_metadata(content: &str) -> String {
-    let Some(start) = content.find("\"generatorConfig\"") else {
-        return content.to_string();
-    };
-    let before = content[..start].trim_end();
-    let before = before.strip_suffix(',').unwrap_or(before);
-    // Skip past the balanced `{ ... }` value that follows `"generatorConfig":`.
-    let rest = &content[start..];
-    let (mut depth, mut started, mut end) = (0i32, false, rest.len());
-    for (i, ch) in rest.char_indices() {
-        match ch {
-            '{' => {
-                depth += 1;
-                started = true;
-            }
-            '}' if started => {
-                depth -= 1;
-                if depth == 0 {
-                    end = i + 1;
-                    break;
-                }
-            }
-            _ => {}
-        }
-    }
-    format!("{before}{}", &rest[end..])
-}
-
-/// Run `ruff check --select I --fix` over a source string, returning the
-/// import-sorted result. Uses the same `ruff` the generator depends on.
-fn try_ruff_isort(source: &str) -> Result<String, String> {
-    use std::io::Write;
-    use std::process::{Command as PCommand, Stdio};
-    let mut child = PCommand::new("ruff")
-        .args([
-            "check",
-            "--select",
-            "I",
-            "--fix",
-            "--stdin-filename",
-            "x.py",
-            "-",
-        ])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| format!("could not run ruff (see docs/matching.md): {error}"))?;
-    child
-        .stdin
-        .take()
-        .ok_or_else(|| "ruff stdin was not piped".to_string())?
-        .write_all(source.as_bytes())
-        .map_err(|error| format!("could not write to ruff: {error}"))?;
-    let out = child
-        .wait_with_output()
-        .map_err(|error| format!("could not wait for ruff: {error}"))?;
-    // Trust ruff's stdout only when it exited cleanly — a non-zero exit (e.g. a
-    // syntax error in the input) must surface, not silently yield wrong text.
-    if !out.status.success() {
-        return Err(format!(
-            "ruff isort failed ({}): {}",
-            out.status,
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
-    String::from_utf8(out.stdout).map_err(|error| format!("ruff output is not UTF-8: {error}"))
-}
-
 /// Require every Fern file except explicit residual gaps to match byte-for-byte.
 fn assert_corpus_matches(c: &Corpus) {
     let fixtures = fixture_dir(c.api);
@@ -1134,7 +1040,7 @@ fn assert_corpus_matches(c: &Corpus) {
             // generate-and-diff pass). `just fixtures-diff` prints the same thing on
             // demand for any divergent file.
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
             panic!(
                 "generated {rel} does not match the Fern fixture \
                  (normalized diff; `-` = Fern golden, `+` = crozier). \
@@ -1729,7 +1635,7 @@ fn filtered_tree_failures(
         let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
         if !generated_matches_fixture(&rel, &generated, &expected) {
             let (actual, expected) = normalized_pair(&rel, &generated, &expected);
-            let diff = unified_diff(&expected, &actual).unwrap_or_default();
+            let diff = parity::unified_diff(&expected, &actual).unwrap_or_default();
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
                  (fix the generator, never the measurement)\n{diff}"
@@ -1829,7 +1735,7 @@ fn probe_command(probe: &Path, output: &Path) -> Command {
 /// contributing its path, a NUL, its decimal byte length, a NUL, and its bytes.
 fn probe_artifact_digest(artifact: &Path) -> Result<String, String> {
     let bytes = if artifact.is_dir() {
-        let mut files = try_walk_files(artifact)?;
+        let mut files = parity::walk_files(artifact)?;
         files.sort();
         let mut stream = Vec::new();
         for rel in files {
@@ -1850,7 +1756,7 @@ fn probe_artifact_digest(artifact: &Path) -> Result<String, String> {
 }
 
 /// FIPS 180-4 SHA-256, so the digest check needs no hashing dev-dependency for
-/// one use (the suite hand-rolls [`walk_files`] and [`unified_diff`] the same way).
+/// one use (as `crozier::parity` hand-rolls its tree walk and unified diff).
 fn sha256_hex(message: &[u8]) -> String {
     const K: [u32; 64] = [
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4,
@@ -3437,143 +3343,23 @@ fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
 
 /// Whether crozier's `generated` output for `rel` equals the committed fixture
 /// under the gate's normalization — the single definition of "matches", used by
-/// both `assert_corpus_matches` and the gap reporter so they never drift.
-///
-/// Python files are compared with comments stripped (the same normalization that
-/// produced the fixtures); non-Python scaffolding (pyproject.toml, requirements.txt,
-/// JSON) is Fern's verbatim output and compared as-is.
-///
-/// The lazy-loader `__init__.py` aggregators are normalized on both sides first:
-/// leading blank lines (a comment-strip artifact of Fern's multi-line header) are
-/// trimmed, and the `TYPE_CHECKING` import block is canonicalized with `ruff` isort.
-/// That block is never executed, so its order carries no meaning — normalizing it
-/// lets crozier sort imports straightforwardly instead of reproducing Fern's
-/// traversal order.
-///
-/// The SDK-identity headers are also normalized out of both sides (see
-/// [`normalize_sdk_headers`]): crozier's `X-Crozier-*` rebrand and the
-/// packaging-only `SDK-Name`/`SDK-Version` lines are deliberate, non-behavioral
-/// differences in tool branding/packaging.
+/// both `assert_corpus_matches` and the gap reporter so they never drift. The
+/// rules (comments, SDK-identity headers, `__init__.py` import order, the
+/// metadata `generatorConfig`) live in `crozier::parity`, shared with
+/// `crozier compare`; see that module's docs and docs/matching.md.
 fn generated_matches_fixture(rel: &str, generated: &str, expected: &str) -> bool {
     let (actual, expected) = normalized_pair(rel, generated, expected);
     actual == expected
 }
 
 /// The exact `(actual, expected)` strings the gate compares for `rel`, after the
-/// per-file normalization described on [`generated_matches_fixture`]. Factored out
-/// so the match check and the diff reporters share one definition of "the bytes
-/// that decide the match" — a printed diff is then precisely what the gate sees,
-/// never a raw diff polluted by comments, SDK-identity headers, or `__init__.py`
-/// import order that the gate already normalizes away.
+/// per-file normalization described on [`generated_matches_fixture`] — the
+/// library's [`parity::normalized_pair`], panicking on a pair it cannot normalize.
+/// A printed diff is then precisely what the gate sees, never a raw diff polluted
+/// by comments, SDK-identity headers, or `__init__.py` import order that the gate
+/// already normalizes away.
 fn normalized_pair(rel: &str, generated: &str, expected: &str) -> (String, String) {
-    try_normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
-}
-
-fn try_normalized_pair(
-    rel: &str,
-    generated: &str,
-    expected: &str,
-) -> Result<(String, String), String> {
-    let generated = normalize_sdk_headers(generated);
-    let expected = normalize_sdk_headers(expected);
-    if rel.ends_with("__init__.py") {
-        Ok((
-            try_normalize_init(&crozier::strip_python_comments(&generated))?,
-            try_normalize_init(&expected)?,
-        ))
-    } else if rel.ends_with(".py") {
-        Ok((crozier::strip_python_comments(&generated), expected))
-    } else if rel.ends_with("metadata.json") {
-        Ok((
-            normalize_metadata(&generated),
-            normalize_metadata(&expected),
-        ))
-    } else {
-        Ok((generated, expected))
-    }
-}
-
-/// A minimal unified-style line diff of two already-normalized texts, dependency-free
-/// (the suite avoids a diff crate for one use, as [`walk_files`] avoids `walkdir`).
-/// Lines only in `expected` are prefixed `-`, only in `actual` `+`, shared lines a
-/// space; runs of unchanged lines beyond `CONTEXT` around each change collapse to a
-/// `⋮ (N unchanged line(s))` marker so a one-line drift in a large file prints a few
-/// lines, not the whole file. Returns `None` when the two are byte-identical.
-fn unified_diff(expected: &str, actual: &str) -> Option<String> {
-    if expected == actual {
-        return None;
-    }
-    const CONTEXT: usize = 3;
-    let a: Vec<&str> = expected.lines().collect();
-    let b: Vec<&str> = actual.lines().collect();
-    let (n, m) = (a.len(), b.len());
-
-    // Longest-common-subsequence lengths, filled from the bottom-right.
-    let mut lcs = vec![vec![0u32; m + 1]; n + 1];
-    for i in (0..n).rev() {
-        for j in (0..m).rev() {
-            lcs[i][j] = if a[i] == b[j] {
-                lcs[i + 1][j + 1] + 1
-            } else {
-                lcs[i + 1][j].max(lcs[i][j + 1])
-            };
-        }
-    }
-
-    // Backtrack into an edit script of (sign, line) ops.
-    let mut ops: Vec<(char, &str)> = Vec::new();
-    let (mut i, mut j) = (0usize, 0usize);
-    while i < n && j < m {
-        if a[i] == b[j] {
-            ops.push((' ', a[i]));
-            i += 1;
-            j += 1;
-        } else if lcs[i + 1][j] >= lcs[i][j + 1] {
-            ops.push(('-', a[i]));
-            i += 1;
-        } else {
-            ops.push(('+', b[j]));
-            j += 1;
-        }
-    }
-    while i < n {
-        ops.push(('-', a[i]));
-        i += 1;
-    }
-    while j < m {
-        ops.push(('+', b[j]));
-        j += 1;
-    }
-
-    // Keep every change, plus CONTEXT unchanged lines on each side; collapse the rest.
-    let keep: Vec<bool> = (0..ops.len())
-        .map(|k| {
-            let lo = k.saturating_sub(CONTEXT);
-            let hi = (k + CONTEXT).min(ops.len() - 1);
-            (lo..=hi).any(|x| ops[x].0 != ' ')
-        })
-        .collect();
-
-    let mut out = String::new();
-    let mut elided = 0usize;
-    for (k, (sign, line)) in ops.iter().enumerate() {
-        if keep[k] {
-            if elided > 0 {
-                out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
-                elided = 0;
-            }
-            out.push(*sign);
-            out.push(' ');
-            out.push_str(line);
-            out.push('\n');
-        } else {
-            elided += 1;
-        }
-    }
-    if elided > 0 {
-        out.push_str(&format!("      ⋮ ({elided} unchanged line(s))\n"));
-    }
-    Some(out)
+    parity::normalized_pair(rel, generated, expected).unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[test]
@@ -8079,12 +7865,12 @@ fn assert_flat_golden_matches(fixture: &str) {
         );
         return;
     };
-    let differences = fixture_differences(&expected_root, out.path(), None, true)
+    let differences = parity::tree_differences(&expected_root, out.path(), None, true)
         .unwrap_or_else(|error| panic!("{fixture}: {error}"));
     let report: Vec<String> = differences
         .iter()
         .map(|(rel, difference)| match difference {
-            FixtureDifference::Text(Some(diff)) => format!("--- {rel} ---\n{diff}"),
+            Difference::Text(Some(diff)) => format!("--- {rel} ---\n{diff}"),
             other => format!("--- {rel} --- {other:?}"),
         })
         .collect();
@@ -8326,7 +8112,7 @@ fn report_fixture_gaps() {
         let out = try_generate_flat(golden)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture))
             .expect("only flat goldens with an available spec are selected");
-        let differences = fixture_differences(&expected_root, out.path(), None, false)
+        let differences = parity::tree_differences(&expected_root, out.path(), None, false)
             .unwrap_or_else(|error| panic!("{}: {error}", golden.fixture));
         let expected_files = walk_files(&expected_root).len();
         println!("\n=== {} ({FLAT_GOLDEN_DIR}) ===", golden.fixture);
@@ -8407,103 +8193,6 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
         selected.push(corpus);
     }
     (selected, failures)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-enum FixtureDifference {
-    MissingGenerated,
-    UnexpectedGenerated,
-    Text(Option<String>),
-    Binary { expected: usize, generated: usize },
-    Processing(String),
-}
-
-fn fixture_differences(
-    expected_root: &Path,
-    generated_root: &Path,
-    file_filter: Option<&str>,
-    include_text_diffs: bool,
-) -> Result<Vec<(String, FixtureDifference)>, String> {
-    let expected_files: std::collections::BTreeSet<String> =
-        try_walk_files(expected_root)?.into_iter().collect();
-    if expected_files.is_empty() && file_filter.is_none() {
-        return Err(format!(
-            "no Fern files under {} — the fixture walk is broken",
-            expected_root.display()
-        ));
-    }
-    let generated_files: std::collections::BTreeSet<String> =
-        try_walk_files(generated_root)?.into_iter().collect();
-    let paths: std::collections::BTreeSet<&String> =
-        expected_files.union(&generated_files).collect();
-    let mut differences = Vec::new();
-
-    for rel in paths {
-        if file_filter.is_some_and(|filter| !rel.contains(filter)) {
-            continue;
-        }
-        let expected_present = expected_files.contains(rel);
-        let generated_present = generated_files.contains(rel);
-        let difference = match (expected_present, generated_present) {
-            (true, false) => Some(FixtureDifference::MissingGenerated),
-            (false, true) => Some(FixtureDifference::UnexpectedGenerated),
-            (true, true) => {
-                let expected = match std::fs::read(expected_root.join(rel)) {
-                    Ok(content) => content,
-                    Err(error) => {
-                        differences.push((
-                            rel.clone(),
-                            FixtureDifference::Processing(format!(
-                                "could not read Fern golden: {error}"
-                            )),
-                        ));
-                        continue;
-                    }
-                };
-                let generated = match std::fs::read(generated_root.join(rel)) {
-                    Ok(content) => content,
-                    Err(error) => {
-                        differences.push((
-                            rel.clone(),
-                            FixtureDifference::Processing(format!(
-                                "could not read Crozier output: {error}"
-                            )),
-                        ));
-                        continue;
-                    }
-                };
-                if expected == generated {
-                    None
-                } else {
-                    match (
-                        std::str::from_utf8(&expected),
-                        std::str::from_utf8(&generated),
-                    ) {
-                        (Ok(expected), Ok(generated)) => {
-                            match try_normalized_pair(rel, generated, expected) {
-                                Ok((actual, expected)) if actual == expected => None,
-                                Ok((actual, expected)) => {
-                                    Some(FixtureDifference::Text(include_text_diffs.then(|| {
-                                        unified_diff(&expected, &actual).unwrap_or_default()
-                                    })))
-                                }
-                                Err(error) => Some(FixtureDifference::Processing(error)),
-                            }
-                        }
-                        _ => Some(FixtureDifference::Binary {
-                            expected: expected.len(),
-                            generated: generated.len(),
-                        }),
-                    }
-                }
-            }
-            (false, false) => unreachable!("path came from the union"),
-        };
-        if let Some(difference) = difference {
-            differences.push((rel.clone(), difference));
-        }
-    }
-    Ok(differences)
 }
 
 /// Mismatch-investigation aid — NOT a gate (ignored by default). Complementing
@@ -8590,7 +8279,7 @@ fn report_fixture_diffs() {
             println!("{}", known_fern_failure_marker(c, &known_failure));
             continue;
         }
-        let differences = match fixture_differences(
+        let differences = match parity::tree_differences(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
@@ -8626,7 +8315,7 @@ fn report_fixture_diffs() {
             }
         };
         println!("\n=== {label} ===");
-        let differences = match fixture_differences(
+        let differences = match parity::tree_differences(
             &fixture_dir(golden.fixture).join(FLAT_GOLDEN_DIR),
             out.path(),
             file_filter.as_deref(),
@@ -8653,7 +8342,7 @@ fn report_fixture_diffs() {
 /// Print one golden's differences for `report_fixture_diffs`, tagging each one
 /// outside `unmatched` as a regression.
 fn print_fixture_differences(
-    differences: &[(String, FixtureDifference)],
+    differences: &[(String, Difference)],
     unmatched: &std::collections::HashSet<&str>,
 ) {
     for (rel, difference) in differences {
@@ -8666,27 +8355,27 @@ fn print_fixture_differences(
         };
         println!("\n--- {rel}{tag} ---");
         match difference {
-            FixtureDifference::MissingGenerated => {
+            Difference::OnlyInReference => {
                 println!("  Crozier did not emit this Fern file.");
             }
-            FixtureDifference::UnexpectedGenerated => {
+            Difference::OnlyInCrozier => {
                 println!("  Crozier emitted this file, but Fern did not.");
             }
-            FixtureDifference::Text(Some(diff)) => {
+            Difference::Text(Some(diff)) => {
                 println!("  (`-` Fern golden, `+` crozier)\n{diff}");
             }
-            FixtureDifference::Text(None) => {
+            Difference::Text(None) => {
                 println!("  Normalized text differs; unified diff omitted in summary mode.");
             }
-            FixtureDifference::Binary {
-                expected,
-                generated,
+            Difference::Binary {
+                reference: expected,
+                crozier: generated,
             } => {
                 println!(
                     "  Binary bytes differ (Fern: {expected} bytes; Crozier: {generated} bytes)."
                 );
             }
-            FixtureDifference::Processing(error) => {
+            Difference::Processing(error) => {
                 println!("  Could not normalize/compare this file: {error}");
             }
         }
@@ -8716,83 +8405,6 @@ fn select_flat_goldens(requested: Option<&str>, filter: Option<&str>) -> Vec<&'s
                 && (requested.is_some() || corpus_spec(flat_golden_corpus(golden).api).is_some())
         })
         .collect()
-}
-
-/// [`unified_diff`] correctness — a real self-test so the diff the reporters and the
-/// gate's failure message print is trustworthy (this binary is coverage-excluded, so
-/// the assertions here are the guardrail).
-#[test]
-fn unified_diff_reports_only_real_changes() {
-    // Identical input → no diff.
-    assert_eq!(unified_diff("a\nb\nc", "a\nb\nc"), None);
-
-    // A single changed line surfaces as a `-`/`+` pair; unchanged neighbours stay ` `.
-    let d = unified_diff("a\nb\nc", "a\nB\nc").expect("differs");
-    assert!(d.contains("- b"), "want the golden line: {d}");
-    assert!(d.contains("+ B"), "want the crozier line: {d}");
-    assert!(d.contains("  a") && d.contains("  c"), "want context: {d}");
-
-    // Far-apart changes collapse the unchanged middle to an elision marker.
-    let big = (0..40)
-        .map(|n| n.to_string())
-        .collect::<Vec<_>>()
-        .join("\n");
-    let mut lines: Vec<String> = big.lines().map(String::from).collect();
-    lines[0] = "changed".into();
-    let d = unified_diff(&big, &lines.join("\n")).expect("differs");
-    assert!(d.contains("unchanged line(s)"), "want elision marker: {d}");
-    assert!(!d.contains("\n  20\n"), "middle should be elided: {d}");
-}
-
-#[test]
-fn aggregate_fixture_diff_includes_missing_unexpected_and_changed_files() {
-    let expected = tempfile::tempdir().expect("expected tempdir");
-    let generated = tempfile::tempdir().expect("generated tempdir");
-    std::fs::write(expected.path().join("same.txt"), "same\n").unwrap();
-    std::fs::write(generated.path().join("same.txt"), "same\n").unwrap();
-    std::fs::write(expected.path().join("changed.txt"), "Fern\n").unwrap();
-    std::fs::write(generated.path().join("changed.txt"), "Crozier\n").unwrap();
-    std::fs::write(expected.path().join("missing.txt"), "Fern only\n").unwrap();
-    std::fs::write(generated.path().join("unexpected.txt"), "Crozier only\n").unwrap();
-    std::fs::write(
-        expected.path().join(".crozier-fern-golden.json"),
-        "provenance is not Fern output\n",
-    )
-    .unwrap();
-
-    let differences = fixture_differences(expected.path(), generated.path(), None, true).unwrap();
-    assert_eq!(differences.len(), 3, "{differences:?}");
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "changed.txt" && matches!(difference, FixtureDifference::Text(_))
-    }));
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "missing.txt" && difference == &FixtureDifference::MissingGenerated
-    }));
-    assert!(differences.iter().any(|(path, difference)| {
-        path == "unexpected.txt" && difference == &FixtureDifference::UnexpectedGenerated
-    }));
-
-    let summary = fixture_differences(expected.path(), generated.path(), None, false).unwrap();
-    assert!(summary.iter().any(|(path, difference)| {
-        path == "changed.txt" && difference == &FixtureDifference::Text(None)
-    }));
-}
-
-#[cfg(unix)]
-#[test]
-fn aggregate_fixture_diff_refuses_to_follow_symlinks() {
-    use std::os::unix::fs::symlink;
-
-    let expected = tempfile::tempdir().expect("expected tempdir");
-    let generated = tempfile::tempdir().expect("generated tempdir");
-    let outside = tempfile::NamedTempFile::new().expect("outside file");
-    symlink(outside.path(), expected.path().join("outside-link")).expect("create symlink");
-
-    let error = fixture_differences(expected.path(), generated.path(), None, true).unwrap_err();
-    assert!(
-        error.contains("refusing to follow symbolic link"),
-        "{error}"
-    );
 }
 
 #[test]
@@ -9131,66 +8743,10 @@ fn every_existing_manifest_golden_is_registered_for_aggregate_comparison() {
     );
 }
 
-/// Every file under `root`, as `/`-separated paths relative to `root`, sorted.
-/// A small hand-rolled walk to avoid a `walkdir` dev-dependency for one use.
+/// Every file under `root`, as `/`-separated paths relative to `root`, sorted —
+/// the library's [`parity::walk_files`], panicking on a walk it refuses.
 fn walk_files(root: &Path) -> Vec<String> {
-    try_walk_files(root).unwrap_or_else(|error| panic!("{error}"))
-}
-
-fn try_walk_files(root: &Path) -> Result<Vec<String>, String> {
-    fn rec(base: &Path, dir: &Path, out: &mut Vec<String>) -> Result<(), String> {
-        let mut entries = Vec::new();
-        let directory = std::fs::read_dir(dir)
-            .map_err(|error| format!("read_dir {}: {error}", dir.display()))?;
-        for entry in directory {
-            entries.push(
-                entry
-                    .map_err(|error| format!("read_dir entry in {}: {error}", dir.display()))?
-                    .path(),
-            );
-        }
-        entries.sort();
-        for path in entries {
-            let metadata = std::fs::symlink_metadata(&path)
-                .map_err(|error| format!("metadata {}: {error}", path.display()))?;
-            if metadata.file_type().is_symlink() {
-                return Err(format!(
-                    "refusing to follow symbolic link while walking {}",
-                    path.display()
-                ));
-            }
-            if metadata.is_dir() {
-                rec(base, &path, out)?;
-            } else {
-                let rel = path.strip_prefix(base).map_err(|error| {
-                    format!(
-                        "{} is not below {}: {error}",
-                        path.display(),
-                        base.display()
-                    )
-                })?;
-                let rel = rel.to_string_lossy().replace('\\', "/");
-                // Automation provenance is committed atomically inside the
-                // golden directory, but it is not Fern output and Crozier must
-                // not be expected to emit it.
-                if rel != ".crozier-fern-golden.json" {
-                    out.push(rel);
-                }
-            }
-        }
-        Ok(())
-    }
-    let mut out = Vec::new();
-    if root.is_symlink() {
-        return Err(format!(
-            "refusing to follow symbolic link while walking {}",
-            root.display()
-        ));
-    }
-    if root.is_dir() {
-        rec(root, root, &mut out)?;
-    }
-    Ok(out)
+    parity::walk_files(root).unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[test]
@@ -12807,6 +12363,7 @@ fn config_labels_the_layer_every_field_came_from() {
     std::fs::write(
         dir.path().join("crozier.yml"),
         "spec: ./api.yml\npackage-name: fromshared\nproject-name: shared-dist\naudiences: [internal]\n\
+         reference:\n  command: ./reference.sh --all\n\
          generators:\n  python:\n    type: python\n    output: ./out\n    package-name: fromgenerator\n    audiences: [public]\n    extra-fields: forbid\n",
     )
     .unwrap();
@@ -12844,6 +12401,8 @@ fn config_labels_the_layer_every_field_came_from() {
         ("extra-fields", "forbid", "generator"),
         // Never unset: with no layer supplying it, the value a run would use.
         ("layout", "packaged", "default"),
+        // `crozier compare`'s command, from the shared block.
+        ("reference.command", "./reference.sh --all", "shared"),
     ];
     assert_eq!(rows.len(), expected.len(), "{stdout}");
     for (row, want) in rows.iter().zip(expected) {
@@ -14519,7 +14078,7 @@ fn refusal_run(
         .output()
         .map_err(|error| format!("could not run crozier: {error}"))?;
     let files = if target.exists() {
-        try_walk_files(&target)?
+        parity::walk_files(&target)?
     } else {
         Vec::new()
     };

@@ -16,6 +16,7 @@
 //! Depend on the CLI, not on these items.
 
 pub mod cli;
+pub mod compare;
 pub mod config;
 pub mod emit;
 pub mod error;
@@ -24,6 +25,7 @@ mod name_refusals;
 pub mod naming;
 pub mod normalize;
 pub mod openapi;
+pub mod parity;
 pub mod pyfmt;
 pub mod refs;
 pub mod schema;
@@ -108,6 +110,42 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     }
     emit::write_files(&config.output, &files)?;
     Ok(files)
+}
+
+/// The names a generation run would use once crozier's defaults are filled in:
+/// what [`generate`] derives from the API title when a name is not configured.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedNames {
+    /// The Python package (import) name.
+    pub package_name: String,
+    /// The distribution name.
+    pub project_name: String,
+    /// The root client class name.
+    pub client_class_name: String,
+}
+
+/// Resolve the names `args` would generate with, reading the document's title
+/// for the defaults exactly as [`generate`] does.
+pub fn resolved_names(args: &GenerateArgs) -> Result<ResolvedNames> {
+    let doc = openapi::load(&args.spec)?;
+    let config = GenerateConfig::new(
+        args.spec.clone(),
+        args.output.clone(),
+        args.package_name.clone(),
+        args.project_name.clone(),
+        args.client_class_name.clone(),
+        args.extra_fields,
+        &doc.info.title,
+    )?;
+    let client_class_name = config
+        .client_class_name
+        .clone()
+        .unwrap_or_else(|| config::default_client_class_name(config.package_name.as_str()));
+    Ok(ResolvedNames {
+        package_name: config.package_name.as_str().to_string(),
+        project_name: config.project_name,
+        client_class_name,
+    })
 }
 
 /// Render the files for a spec without writing them — used by tests to compare

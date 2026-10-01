@@ -137,6 +137,30 @@ impl Layout {
     }
 }
 
+/// The `reference:` block: how `crozier compare` produces the reference SDK it
+/// checks a generator's output against. `crozier generate` ignores it. There is no
+/// default command and no environment variable for it; see `docs/compare.md`.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize, JsonSchema)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ReferenceSettings {
+    /// Shell command (`sh -c`, run from the config file's directory) that writes
+    /// the reference SDK into the output directory `crozier compare` names in
+    /// its environment.
+    pub command: Option<String>,
+}
+
+impl ReferenceSettings {
+    /// Per-field merge (`over` wins), keeping an absent block absent.
+    fn merge(base: Option<Self>, over: Option<Self>) -> Option<Self> {
+        match (base, over) {
+            (Some(base), Some(over)) => Some(Self {
+                command: over.command.or(base.command),
+            }),
+            (base, over) => over.or(base),
+        }
+    }
+}
+
 /// One generator's settings, as written under `generators.<name>` (or as the
 /// top-level shared defaults, which share this shape minus `type`). Every field
 /// is optional: an absent field falls through to the next layer down. Unknown
@@ -174,6 +198,9 @@ pub struct GeneratorSettings {
     /// Which tree to write: `packaged` (Fern's `--preview --output`) or `flat`
     /// (Fern's `local-file-system` output). Defaults to [`Layout::Packaged`].
     pub layout: Option<Layout>,
+    /// How `crozier compare` produces this generator's reference SDK; overrides
+    /// the shared top-level block. Ignored by `crozier generate`.
+    pub reference: Option<ReferenceSettings>,
 }
 
 /// A parsed `crozier.yml`: the shared top-level defaults plus the named
@@ -202,6 +229,9 @@ pub struct FileConfig {
     pub fern_strict: Option<bool>,
     /// Shared default output layout (`packaged` or `flat`).
     pub layout: Option<Layout>,
+    /// Shared default for how `crozier compare` produces each generator's
+    /// reference SDK. Ignored by `crozier generate`.
+    pub reference: Option<ReferenceSettings>,
     /// The named generator instances (one SDK each), in declaration order.
     // Described to `schemars` as a plain string-keyed map (same JSON shape) so
     // the schema does not depend on the indexmap feature; serde keeps the
@@ -304,6 +334,7 @@ pub fn merge(base: FileConfig, over: FileConfig) -> FileConfig {
         audience_strict: over.audience_strict.or(base.audience_strict),
         fern_strict: over.fern_strict.or(base.fern_strict),
         layout: over.layout.or(base.layout),
+        reference: ReferenceSettings::merge(base.reference, over.reference),
         generators,
     }
 }
@@ -322,6 +353,7 @@ fn merge_generator(base: GeneratorSettings, over: GeneratorSettings) -> Generato
         fern_strict: over.fern_strict.or(base.fern_strict),
         extra_fields: over.extra_fields.or(base.extra_fields),
         layout: over.layout.or(base.layout),
+        reference: ReferenceSettings::merge(base.reference, over.reference),
     }
 }
 
@@ -384,6 +416,7 @@ pub fn env_overrides(get: impl Fn(&str) -> Option<String>) -> Result<GeneratorSe
         fern_strict,
         extra_fields,
         layout,
+        reference: None,
     })
 }
 
@@ -744,7 +777,43 @@ pub fn explain(
             None,
         ),
         layout_field(cli, env, per, config),
+        // `crozier compare`'s reference command: no env layer and no default, and
+        // its flag belongs to `compare`, so `crozier config` shows the file layers.
+        field(
+            "reference.command",
+            None,
+            None,
+            per.and_then(|p| p.reference.as_ref())
+                .and_then(|r| r.command.clone()),
+            config.reference.as_ref().and_then(|r| r.command.clone()),
+        ),
     ]
+}
+
+/// Resolve one generator's `reference.command` for `crozier compare`:
+/// `--reference-command` > `generators.<name>.reference.command` > the shared
+/// top-level `reference.command`. There is no environment layer and no default,
+/// so `None` means nothing configures one.
+#[must_use]
+pub fn resolve_reference_command(
+    name: &str,
+    config: &FileConfig,
+    flag: Option<&str>,
+) -> Option<(String, Source)> {
+    let per = config
+        .generators
+        .get(name)
+        .and_then(|p| p.reference.as_ref())
+        .and_then(|r| r.command.clone());
+    let shared = config.reference.as_ref().and_then(|r| r.command.clone());
+    match pick(&[
+        (Source::Cli, flag.map(str::to_string)),
+        (Source::Generator, per),
+        (Source::Shared, shared),
+    ]) {
+        (Some(command), source) => Some((command, source)),
+        (None, _) => None,
+    }
 }
 
 /// How `layout` resolves for `crozier config`. Unlike the other optional fields it
@@ -1191,6 +1260,81 @@ mod tests {
         assert_eq!(layout.value.as_deref(), Some("packaged"));
         assert_eq!(layout.source, Source::Default);
         assert_eq!(Layout::Flat.as_str(), "flat");
+    }
+
+    #[test]
+    fn reference_command_layers_flag_over_generator_over_shared_with_no_default() {
+        let config = parsed(
+            "reference:\n  command: ./shared.sh\ngenerators:\n  a:\n    spec: ./a.yml\n  b:\n    spec: ./b.yml\n    reference:\n      command: ./b.sh\n",
+        );
+        assert_eq!(
+            resolve_reference_command("a", &config, None),
+            Some(("./shared.sh".to_string(), Source::Shared))
+        );
+        assert_eq!(
+            resolve_reference_command("b", &config, None),
+            Some(("./b.sh".to_string(), Source::Generator))
+        );
+        assert_eq!(
+            resolve_reference_command("b", &config, Some("./flag.sh")),
+            Some(("./flag.sh".to_string(), Source::Cli))
+        );
+        // No layer configures one: no default.
+        let bare = parsed("generators:\n  a:\n    spec: ./a.yml");
+        assert_eq!(resolve_reference_command("a", &bare, None), None);
+        // A block without a command is the same as no block.
+        let empty = parsed("reference: {}\n");
+        assert_eq!(resolve_reference_command("python", &empty, None), None);
+
+        // `crozier config` attributes it to its layer, and shows it unset otherwise.
+        let none = GeneratorSettings::default();
+        let cli = CliOverrides::default();
+        let report = explain("b", &config, &none, &cli);
+        let shown = field_of(&report, "reference.command");
+        assert_eq!(shown.value.as_deref(), Some("./b.sh"));
+        assert_eq!(shown.source, Source::Generator);
+        let report = explain("a", &bare, &none, &cli);
+        assert_eq!(field_of(&report, "reference.command").value, None);
+    }
+
+    #[test]
+    fn reference_block_merges_per_field_rejects_unknown_keys_and_is_ignored_by_resolve() {
+        let merged = merge(
+            parsed("reference:\n  command: ./base.sh\ngenerators:\n  a:\n    reference:\n      command: ./a.sh"),
+            parsed("generators:\n  a:\n    spec: ./a.yml\n    output: ./o\n    reference: {}"),
+        );
+        assert_eq!(
+            merged.reference.as_ref().and_then(|r| r.command.as_deref()),
+            Some("./base.sh")
+        );
+        assert_eq!(
+            merged.generators["a"]
+                .reference
+                .as_ref()
+                .and_then(|r| r.command.as_deref()),
+            Some("./a.sh")
+        );
+        let err = parse("reference:\n  comand: x").unwrap_err();
+        assert!(err.contains("comand"), "{err}");
+        // `crozier generate`'s resolution carries nothing of it.
+        let with = resolve(
+            "a",
+            &merged,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        let mut without_config = merged.clone();
+        without_config.reference = None;
+        without_config.generators["a"].reference = None;
+        let without = resolve(
+            "a",
+            &without_config,
+            &GeneratorSettings::default(),
+            &CliOverrides::default(),
+        )
+        .unwrap();
+        assert_eq!(format!("{with:?}"), format!("{without:?}"));
     }
 
     #[test]

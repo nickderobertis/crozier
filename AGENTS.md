@@ -45,6 +45,10 @@ The north star: **`crozier`'s output, with comments stripped, equals Fern's
 output with comments stripped.** The whole registered corpus reaches it today.
 See [`docs/matching.md`](docs/matching.md) for the strategy, the fixture corpus,
 and why each shape generates the way it does.
+The byte-match rules are defined once, in `src/parity.rs`: the corpus gate and
+`crozier compare` (a user's migration check against their own reference SDK,
+[`docs/compare.md`](docs/compare.md)) both call them, so change a rule there or
+nowhere.
 
 Being a Fern drop-in extends to its `x-*` vendor extensions (audience labels,
 per-node ignore, …). The standing **dual-header policy**: read *both* the
@@ -194,7 +198,9 @@ Use the `just` recipes; do not hand-roll equivalents.
   and `verify-install-script` runs `scripts/install.sh` against the GitHub
   Release — each then runs `scripts/smoke.sh`, which asserts the version and
   drives a real `crozier generate`, so "published" means "installs AND runs," not
-  just "the version string is right." **First publish reserves the name:** an
+  just "the version string is right." Last, `release.yml`'s `major-tag` job moves
+  the floating `v0` the GitHub Action's (`action.yml`) consumers pin, only once
+  no publish or verify job failed. **First publish reserves the name:** an
   early `0.0.x`/`0.1.0` release claims `crozier` on both registries.
 
 ## Invariants (non-negotiable)
