@@ -52,6 +52,7 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
     pin = REPO / "scripts/golden-reach-search.py"
     if pin.is_file():
         dependency = re.search(r'^# dependencies = \["(.*)"\]$', pin.read_text(encoding="utf-8"), re.M)
+        case.assertIsNotNone(dependency, f"{pin.relative_to(REPO)} lost its '# dependencies = [\"...\"]' pin; restore it")
         warm = subprocess.run(
             ["uv", "run", "--no-project", "--with", dependency.group(1), "python3", "-c", ""],
             cwd=REPO, env=env, capture_output=True, text=True,
