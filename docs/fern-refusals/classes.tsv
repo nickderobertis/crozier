@@ -28,7 +28,7 @@ request-property-camelcase-collision	names	check	1	Multiple request properties r
 request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	296	refuse	PATCH /repos/{name} body property "name"	296/296
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	SDK method analytics.create	2/2
 service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	unevaluated	—	—
-type-name-collision	names	check	1	<…> is already declared in <…>	104	unevaluated	—	—
+type-name-collision	names	check	1	<…> is already declared in <…>	104	refuse	type GetThingResponse	104/104
 type-name-not-letter-led	names	check	1	Type name must begin with a letter	6	refuse	#/components/schemas/123456	6/6
 type-not-defined	documents	check	1	<…> is not defined.	6	unevaluated	—	—
 undefined-component-reference	documents	check	0	<…> is undefined	3	unevaluated	—	—
