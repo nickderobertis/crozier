@@ -13,7 +13,7 @@ example-not-enum-value	documents	check	1	<…> is not a valid example for this e
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	331	unevaluated	—	—
 example-unexpected-property	documents	check	1	Unexpected property <…>	196	unevaluated	—	—
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	unevaluated	—	—
-generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	unevaluated	—	—
+generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	unevaluated	—	—
 generator-missing-type	documents	generate	1	KeyError: <…>	1	unevaluated	—	—
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	unevaluated	—	—
