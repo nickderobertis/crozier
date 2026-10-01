@@ -13392,16 +13392,19 @@ fn flat_package_import_spacing_follows_where_ruff_finds_the_package() {
     // Packaged: `src/<pkg>/` makes the package first-party, a section of its own.
     let packaged = render_layout("acme", "acme", Layout::Packaged);
     assert!(
-        packaged[test_file].contains("        import httpx_aiohttp\n\n        from acme.client")
+        packaged[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from acme.client")
     );
     // Flat: any package but `fern` is third-party to Fern's ruff, so no blank line.
     let flat = render_layout("acme", "acme", Layout::Flat);
-    assert!(flat[test_file].contains("        import httpx_aiohttp\n        from acme.client"));
-    assert!(!flat[test_file].contains("        import httpx_aiohttp\n\n"));
+    assert!(flat[test_file].contains(
+        "        import httpx_aiohttp  # type: ignore[import-not-found]\n        from acme.client"
+    ));
+    assert!(!flat[test_file]
+        .contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n"));
     // Flat `fern` is the exception Fern's `/fern` container makes resolvable.
     let flat_fern = render_layout("fern", "fern", Layout::Flat);
     assert!(
-        flat_fern[test_file].contains("        import httpx_aiohttp\n\n        from fern.client")
+        flat_fern[test_file].contains("        import httpx_aiohttp  # type: ignore[import-not-found]\n\n        from fern.client")
     );
 }
 
