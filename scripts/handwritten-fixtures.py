@@ -47,6 +47,8 @@ REACH_HEADER = ("fixture", "key", "site", "regions_executed", "regions")
 CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 LAYOUT = ("evidence.toml", "fern-expected", "openapi.yml")
 TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
+# Optional generation settings: absent, crozier and Fern generate the whole API.
+OPTIONAL_TOP_LEVEL = ("audiences",)
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
 VERDICTS = ("exhausted", "search-incomplete")
 # Every word a search record states as an outcome, so a key row stating a
@@ -99,6 +101,7 @@ class Fixture(NamedTuple):
     fern_python_sdk_version: str
     digest: str
     covers: tuple[Cover, ...]
+    audiences: tuple[str, ...]
 
 
 def table_cells(line: str) -> list[str]:
@@ -133,14 +136,26 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
     except tomllib.TOMLDecodeError as error:
         return None, [f"{name}: evidence.toml is not TOML ({error}); repair its syntax"]
     failures = []
-    if sorted(data) != sorted(TOP_LEVEL):
+    if not set(TOP_LEVEL) <= set(data) <= set(TOP_LEVEL) | set(OPTIONAL_TOP_LEVEL):
         failures.append(
             f"{name}: evidence.toml carries keys {sorted(data)}; the contract admits exactly "
-            f"{sorted(TOP_LEVEL)} — remove or add keys until they match"
+            f"{sorted(TOP_LEVEL)}, and optionally {sorted(OPTIONAL_TOP_LEVEL)} — remove or add keys "
+            "until they match"
         )
     for field in ("fern_cli_version", "fern_python_sdk_version", "digest"):
         if field in data and not isinstance(data[field], str):
             failures.append(f"{name}: evidence.toml `{field}` is not a string")
+    audiences = data.get("audiences", [])
+    if "audiences" in data and (
+        not isinstance(audiences, list)
+        or not audiences
+        or not all(isinstance(audience, str) and audience.strip() == audience and audience for audience in audiences)
+    ):
+        failures.append(
+            f"{name}: evidence.toml `audiences` is {audiences!r}; it is a non-empty list of audience "
+            "names, the same list Fern's generator group was given — or remove it to generate the whole API"
+        )
+        audiences = []
     covers: list[Cover] = []
     raw = data.get("covers", [])
     if not isinstance(raw, list) or not raw:
@@ -190,6 +205,7 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
         str(data.get("fern_python_sdk_version", "")),
         str(data.get("digest", "")),
         tuple(covers),
+        tuple(audiences),
     )
     return fixture, failures
 
@@ -494,6 +510,7 @@ def gate(root: Path) -> dict[str, Any]:
                 "fern_cli_version": fixture.fern_cli_version,
                 "fern_python_sdk_version": fixture.fern_python_sdk_version,
                 "digest": fixture.digest,
+                "audiences": list(fixture.audiences),
             }
             for name, fixture in fixtures.items()
         },
@@ -573,10 +590,12 @@ def measure(args: argparse.Namespace) -> int:
     reach = golden_reach()
     sites = reach.read_sites_table(repo_root / REGIONS / "golden-reach-sites.tsv")
     planned: list[tuple[str, Cover]] = []
+    audiences: dict[str, tuple[str, ...]] = {}
     for entry in sorted(p for p in base.iterdir() if p.is_dir()):
         fixture, failures = read_evidence(entry)
         if failures or fixture is None:
             raise SystemExit("handwritten-reach: " + "; ".join(failures))
+        audiences[entry.name] = fixture.audiences
         for cover in fixture.covers:
             if cover.arm is None:
                 continue
@@ -593,7 +612,9 @@ def measure(args: argparse.Namespace) -> int:
         profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
         runs: dict[str, tuple[dict, dict]] = {}
         for name in sorted({name for name, _cover in planned}):
-            runs[name] = scoped_run(base / name / "openapi.yml", crozier, profdata, llvm_cov, repo_root, reach)
+            runs[name] = scoped_run(
+                base / name / "openapi.yml", audiences[name], crozier, profdata, llvm_cov, repo_root, reach
+            )
         for name, cover in planned:
             universe, hit = runs[name]
             site = reach.resolve_site(cover.arm, repo_root)
@@ -623,13 +644,17 @@ def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
     return crozier
 
 
-def scoped_run(spec: Path, crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any) -> tuple[dict, dict]:
-    """(every production region, the executed ones) of one crozier run over `spec` alone."""
+def scoped_run(
+    spec: Path, audiences: tuple[str, ...], crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any
+) -> tuple[dict, dict]:
+    """(every production region, the executed ones) of one crozier run over `spec` alone,
+    filtered to the fixture's `audiences` as the gate generates it."""
     with tempfile.TemporaryDirectory(prefix="handwritten-reach-") as scratch:
         raw = Path(scratch)
         run = subprocess.run(
             [str(crozier), "generate", "python", "--spec", str(spec), "--output", str(raw / "sdk"),
-             "--package-name", "fern", "--project-name", "default_package_name"],
+             "--package-name", "fern", "--project-name", "default_package_name",
+             *(argument for audience in audiences for argument in ("--audience", audience))],
             cwd=repo_root, capture_output=True, text=True,
             env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
         )

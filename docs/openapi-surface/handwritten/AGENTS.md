@@ -42,6 +42,14 @@ These keys, and nothing else:
   stream, computed exactly as
   [Contract A](../../openapi-surface-coverage.md#what-a-committed-proof-of-non-generation-is)
   computes a tree digest.
+- `audiences` (list of strings, optional): the audience filter the fixture is
+  generated for. Fern's workspace carries the list under the `python-sdk`
+  group's `audiences:` (`FERN_AUDIENCES` in `scripts/generate-fern-fixture.sh`),
+  and the gate and `just handwritten-reach` pass each name to crozier as
+  `--audience`. Absent, both generate the whole API. It exists for an arm only an
+  audience filter runs, such as `discriminator-mapping`'s `collect_schema_refs`
+  arm. Label every operation, because Fern drops an unlabelled one and crozier's
+  default keeps it.
 - One or more `[[covers]]` tables, each with:
   - `key` (string): a region-row key, spelled as its region file spells it.
   - `arm` (string, optional): a handling site exactly as
