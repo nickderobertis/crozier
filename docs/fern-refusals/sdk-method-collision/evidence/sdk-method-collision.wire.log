@@ -1,0 +1,2 @@
+exit=0
+analytics.create sends POST /reports; declared POST /queries is lost (one create method)

@@ -16199,3 +16199,62 @@ fn name_refusals_escape_line_breaks_in_offending_schema_names() {
         assert!(!output.exists());
     }
 }
+
+#[test]
+fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("api.json");
+    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+        "../docs/fern-refusals/sdk-method-collision/probe.yml"
+    ))
+    .unwrap();
+    for strict in [false, true] {
+        std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+        let output = dir.path().join(format!("refused-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let result = command.output().unwrap();
+        let stderr = String::from_utf8(result.stderr).unwrap();
+        assert_eq!(result.status.code(), Some(1), "{stderr}");
+        assert!(stderr.contains("sdk-method-collision"), "{stderr}");
+        assert!(stderr.contains("analytics.create"), "{stderr}");
+        assert_eq!(stderr.contains("fern-strict"), strict);
+        assert_eq!(stderr.lines().count(), 1);
+        assert!(!output.exists());
+    }
+    document["paths"]["/reports"]["post"]["x-crozier-sdk-method-name"] =
+        serde_json::json!("createReport");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("recovered"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-crozier-sdk-method-name");
+    document["paths"]["/reports"]["post"]
+        .as_object_mut()
+        .unwrap()
+        .remove("x-fern-sdk-method-name");
+    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(dir.path().join("inferred"))
+        .arg("--fern-strict")
+        .assert()
+        .success();
+}

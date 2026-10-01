@@ -160,8 +160,15 @@ fn validate_names(doc: &OpenApi, path: &Path) -> Result<()> {
             &doc.components.schemas,
         )?;
     }
+    let mut methods = std::collections::HashSet::new();
     for (route, item) in &doc.paths {
         for (method, op) in item.operations() {
+            if let (Some(group), Some(name)) = (op.sdk_group_name(), op.sdk_method_name()) {
+                let qualified = format!("{}.{}", group.join("."), name);
+                if !methods.insert(qualified.clone()) {
+                    return Err(Error::InvalidSpec { path: path.to_owned(), message: format!("sdk-method-collision: {method} {route} declares duplicate SDK method {qualified}; give the methods distinct declared names") });
+                }
+            }
             let location = format!("{method} {route}");
             let raw_operation = &source["paths"][route][method.to_ascii_lowercase()];
             let mut names: Vec<String> = op
